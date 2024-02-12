@@ -1,7 +1,4 @@
 {{- $timestamp := generate "timestamp" }}
-{{- $agent_id := generate "agent_id" }}
-{{- $agent_name := generate "agent_name" }}
-{{- $agent_ephemeral_id := generate "agent_ephemeral_id" }}
 {{- $event_duration := generate "event_duration" }}
 {{- $rangeofid := generate "rangeofid" -}}
 {{- $nodeid := div $rangeofid 110 -}}
@@ -9,18 +6,20 @@
 {{- $status_phase := generate "status_phase" }}
 {{- $status_ready := generate "status_ready" }}
 {{- $restarts := generate "restarts" }}
-{{- $reason := generate "reason" }}
+{{- $reason_waiting := generate "reason_waiting" }}
+{{- $reason_terminated := generate "reason_terminated" }}
 {{- $cpu_limit_cores := generate "cpu_limit_cores" }}
 {{- $cpu_request_cores := generate "cpu_request_cores" }}
 {{- $memory_limit_bytes := generate "memory_limit_bytes" }}
 {{- $memory_request_bytes := generate "memory_request_bytes" }}
+{{- $cpu_limit_nanocores := generate "cpu_limit_nanocores" }}
+{{- $cpu_request_nanocores := generate "cpu_request_nanocores" }}
 {
     "@timestamp": "{{$timestamp.Format "2006-01-02T15:04:05.999999Z07:00"}}",
     "container": {
         "image": {
             "name": "k8s.gcr.io/coredns/coredns:v1.8.0"
         },
-        "name": "{{ $container_name }}",
         "runtime": "containerd",
         "id": "container-{{ $rangeofid }}"
     },
@@ -37,18 +36,27 @@
             "name": "{{ $container_name }}",
             "cpu": {
                 "request": {
-                    "cores": {{ $cpu_request_cores }}
+                    "cores": {{ $cpu_request_cores }},
+                    "nanocores": {{ $cpu_request_nanocores }}
                 },
                 "limit": {
-                    "cores": {{ $cpu_limit_cores }}
+                    "cores": {{ $cpu_limit_cores }},
+                    "nanocores": {{ $cpu_limit_nanocores }}
                 }
             },
             "id": "container-{{ $rangeofid }}",
             "status": {
                 "phase": "{{ $status_phase }}",
-                "ready": {{ $status_ready }},
-                "restarts": {{ $restarts }},
-                "reason": "{{ $reason }}"
+            {{- if eq $status_phase "running"}}
+                "ready": "true",
+            {{- else if eq $status_phase "terminated"}}
+                "ready": "false",
+                "reason": "{{ $reason_terminated }}",
+            {{- else if eq $status_phase "waiting"}}
+                "ready": "{{ $status_ready }}",
+                "reason": "{{ $reason_waiting }}",
+            {{- end}}
+                "restarts": {{ $restarts }}
             }
         },
         "node": {
@@ -56,7 +64,7 @@
             "hostname": "host-{{ $nodeid }}",
             "name": "host-{{ $nodeid }}",
             "labels": {
-                "kubernetes_io/hostname": "kind-control-plane",
+                "kubernetes_io/hostname": "kubernetes-scale-123456",
                 "beta_kubernetes_io/os": "linux",
                 "kubernetes_io/arch": "amd64",
                 "kubernetes_io/os": "linux",
@@ -87,14 +95,14 @@
         }
     },
     "agent": {
-        "name": "{{ $agent_name }}",
-        "id": "{{ $agent_id }}",
-        "ephemeral_id": "{{ $agent_ephemeral_id }}",
+        "name": "kubernetes-scale-123456",
+        "id": "de42127b-4db8-4471-824e-a7b14f478663",
+        "ephemeral_id": "22ed892c-43bd-408a-9121-65e2f5b6a56e",
         "type": "metricbeat",
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "{{ $agent_id }}",
+        "id": "de42127b-4db8-4471-824e-a7b14f478663",
         "version": "8.8.0",
         "snapshot": true
     },
@@ -102,8 +110,8 @@
          "provider": "gcp",
          "availability_zone": "europe-west1-d",
          "instance":{
-         "name":  "{{ $agent_name }}" ,
-         "id": "{{ $agent_id }}"
+         "name":  "kubernetes-scale-123456" ,
+         "id": "de42127b-4db8-4471-824e-a7b14f478663"
          },
          "machine":{
             "type":"e2-standard-4"
@@ -133,11 +141,11 @@
         "dataset": "kubernetes.state_container"
     },
     "service": {
-        "address": "http://{{ $agent_name }}:8080/metrics",
+        "address": "http://kubernetes-scale-123456:8080/metrics",
         "type": "kubernetes"
     },
     "host": {
-        "hostname": "kind-control-plane",
+        "hostname": "kubernetes-scale-123456",
         "os": {
             "kernel": "5.10.47-linuxkit",
             "codename": "Core",
@@ -151,7 +159,7 @@
         "ip": [
             "192.168.244.7"
         ],
-        "name": "kind-control-plane",
+        "name": "kubernetes-scale-123456",
         "id": "85e35c2b5e1b39ba72393a6baf6ee7cd",
         "mac": [
             "fe:ec:82:9f:29:19"
