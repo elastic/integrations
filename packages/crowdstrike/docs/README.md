@@ -1009,6 +1009,7 @@ and/or `session_token`.
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.device | Device that is the source of the file. | keyword |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
+| file.drive_letter | Drive letter where the file is located. This field is only relevant on Windows. The value should be uppercase, and not include the colon. | keyword |
 | file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | file.hash.sha256 | SHA256 hash. | keyword |
 | file.inode | Inode representing the file in the filesystem. | keyword |
