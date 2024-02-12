@@ -222,8 +222,12 @@ processors:
             ignore_failure: true
   - rename:
       field: json.login
-      target_field: user.email
+      target_field: user.id
       ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: user.id
+      if: ctx.user?.id != null && ctx.user.id.contains('@')
   - dissect:
       if: ctx.user?.email != null && ctx.user.email.contains('@')
       field: user.email
@@ -243,6 +247,16 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null && !(ctx.user.name instanceof List)
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null && ctx.user.id != ''
   - rename:
       field: json.action
       target_field: event.action
