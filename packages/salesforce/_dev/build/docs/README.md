@@ -13,14 +13,14 @@ As an example, users can use the data from this integration to understand the ac
 
 ## Data streams
 
-The Salesforce integration collects log events using the REST API and Streaming API of Salesforce.
+The Salesforce integration collects log events using the REST API of Salesforce.
 
 **Logs** help users to keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Login Stream](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm), [Logout REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm), [Logout Stream](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm), and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
+Log data streams collected by the Salesforce integration include [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm), [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm), [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm), [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm), and [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
 
 Data streams:
-- `login_rest` and `login_stream`: Tracks login activity of users who log in to Salesforce.
-- `logout_rest` and `logout_stream`: Tracks logout activity of users who logout from Salesforce.
+- `login` : Tracks login activity of users who log in to Salesforce.
+- `logout`: Tracks logout activity of users who logout from Salesforce.
 - `apex`: Represents information about various Apex events like Callout, Execution, REST API, SOAP API, Trigger, etc.
 - `setupaudittrail`: Represents changes users made in the user's organization's Setup area for at least the last 180 days.
 
@@ -86,7 +86,7 @@ Also, ensure that `Event Streaming` is enabled for `Login Event` and `Logout Eve
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-Note: Please enable either `login_rest` / `login_stream` data stream and either `logout_rest` / `logout_stream` data stream to avoid data duplication.
+Note: Please enable either `login` data stream and either `logout` data stream to avoid data duplication.
 
 ## Configuration
 
@@ -284,37 +284,21 @@ This is the `apex` data stream. Apex enables developers to access the Salesforce
 
 {{fields "apex"}}
 
-### Login Rest
+### Login
 
-This is the `login_rest` data stream. It represents events containing details about the user's organization's login history.
+This is the `login` data stream. It represents events containing details about the user's organization's login history.
 
-{{event "login_rest"}}
+{{event "login"}}
 
-{{fields "login_rest"}}
+{{fields "login"}}
 
-### Login Stream
+### Logout
 
-This is the `login_stream` data stream. It represents events containing details about the user's organization's login history.
+This is the `logout` data stream. It represents events containing details about the user's organization's logout history.
 
-{{event "login_stream"}}
+{{event "logout"}}
 
-{{fields "login_stream"}}
-
-### Logout Rest
-
-This is the `logout_rest` data stream. It represents events containing details about the user's organization's logout history.
-
-{{event "logout_rest"}}
-
-{{fields "logout_rest"}}
-
-### Logout Stream
-
-This is the `logout_stream` data stream. It represents events containing details about the user's organization's logout history.
-
-{{event "logout_stream"}}
-
-{{fields "logout_stream"}}
+{{fields "logout"}}
 
 ### SetupAuditTrail
 
