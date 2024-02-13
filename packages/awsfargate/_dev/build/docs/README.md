@@ -41,7 +41,7 @@ The Amazon ECS task metadata endpoint is an HTTP endpoint available to each cont
 
 This section shows you how to run the Elastic Agent in a ECS cluster, start collecting Fargate on ECS metrics, and send them to an Elastic Stack.
 
-Follow these steps for a fast deployment on your existing ECS cluster.
+To quickly deploy on your existing ECS cluster, follow these steps.
 
 ### Task Definition
 
