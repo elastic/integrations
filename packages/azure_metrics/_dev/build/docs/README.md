@@ -120,7 +120,7 @@ Take note of the content in the **Value** column in the **Client secrets** table
 Take note of the following values, which you will use later when specifying settings.
 
 * `Subscription ID`: use the content of the "Subscription ID" you selected.
-* `Tenant ID`: use the "Tenant ID" from the Azure Active Directory you use.
+* `Tenant ID`: use the "Tenant ID" from the  Microsoft Entra you use.
 
 Your App Registration is now ready for the Elastic Agent.
 
@@ -142,7 +142,7 @@ The settings' main section contains all the options needed to access the Azure A
 : The unique identifier for the Azure subscription. You can provide just one subscription ID. The Agent uses this ID to access Azure APIs. 
 
 `Tenant ID` _string_
-: The unique identifier of the Azure Active Directory's Tenant ID.
+: The unique identifier of the  Microsoft Entra Tenant ID.
 
 ### Advanced options
 
@@ -158,8 +158,8 @@ Examples:
 * `https://management.azure.com` for Azure PublicCloud
 * `https://management.usgovcloudapi.net` for Azure USGovernmentCloud
 
-`Active Directory Endpoint`  _string_
-: Optional. By default, the integration uses the associated Active Directory Endpoint. To override, users can provide a specific active directory endpoint to use a different Azure environment.
+` Microsoft Entra Endpoint`  _string_
+: Optional. By default, the integration uses the associated  Microsoft Entra Endpoint. To override, users can provide a specific active directory endpoint to use a different Azure environment.
 
 Examples:
 
