@@ -1,0 +1,63 @@
+format_version: 1.0.0
+name: jamf_protect
+title: Jamf Protect
+version: "1.0.0"
+description: Receives events from Jamf Protect with Elastic Agent.
+type: integration
+categories:
+  - security
+release: beta
+conditions:
+  kibana.version: ^8.7.1
+screenshots:
+  - src: /img/jamfprotect_kibana.png
+    title: Jamf Protect Kibana
+    size: 1800x1138
+    type: image/png
+icons:
+  - src: /img/jamf_logo.svg
+    title: Jamf Logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: Jamf Protect
+    title: Jamf Protect events
+    description: Receive Jamf Protect events.
+    inputs:
+      - type: http_endpoint
+        title: Receive Jamf Protect Events via HTTP Endpoint
+        description: Receiving Jamf Protect events.
+        vars:
+          - name: listen_address
+            type: text
+            title: Listen Address
+            description: The bind address to listen for http endpoint connections. Set to `0.0.0.0` to bind to all available interfaces.
+            multi: false
+            required: true
+            show_user: true
+            default: 0.0.0.0
+          - name: secret_header
+            type: text
+            title: Secret Header
+            description: The header to check for a specific value specified by `secret.value`.
+            required: false
+            show_user: false
+          - name: secret_value
+            type: password
+            title: Secret Value
+            description: The secret stored in the header name specified by `secret.header`.
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: TLS
+            description: Options for enabling TLS for the listening webhook endpoint. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              enabled: false
+              certificate: "/etc/pki/client/cert.pem"
+              key: "/etc/pki/client/cert.key"
+owner:
+  github: elastic/security-external-integrations
