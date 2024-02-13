@@ -53,10 +53,10 @@ To use this integration you will need:
 ### Authentication and costs
 
 **Authentication on the Azure side**
-All the tasks executed against the Azure Monitor REST API use the Azure Resource Manager authentication model. Therefore, all requests must be authenticated with Azure Active Directory (Azure AD).
-To authenticate the client application, create an Azure AD service principal and retrieve the authentication (JWT) token. For more details, check the following procedures:
+All the tasks executed against the Azure Monitor REST API use the Azure Resource Manager authentication model. Therefore, all requests must be authenticated with Microsoft Entra.
+To authenticate the client application, create a Microsoft Entra service principal and retrieve the authentication (JWT) token. For more details, check the following procedures:
 * [Create an Azure service principal with Azure PowerShell](https://docs.microsoft.com/en-us/powershell/azure/create-azure-service-principal-azureps?view=azps-2.7.0.)
-* [Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal).
+* [Use the portal to create a Microsoft Entra application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal).
 
 Make sure that the roles assigned to the application contain at least reading permissions to the monitor data. Check [Azure built-in roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles) for more details.
 
@@ -65,7 +65,7 @@ Elastic handles authentication by creating or renewing the authentication token.
 
 **Costs**
 Metric queries are charged based on the number of standard API calls. 
-Check [Azure Monitor pricing](https://azure.microsoft.com/en-gb/pricing/details/monitor/) for more details.
+Check [Azure Monitor pricing](https://azure.microsoft.com/en-gb/pricing/details/monitor/) for more detailsgit .
 
 ## Setup
 
@@ -112,7 +112,7 @@ Take note of the content in the **Value** column in the **Client secrets** table
 1. Select **Add** > **Add role assignment** to open the _Add role assignment page_.
 1. In the **Role** tab, search and select the role **Monitoring Reader**.
 1. Select the **Next** button to move to the **Members** tab.
-1. Select **Assign access to** > **User, group, or service principal**, and select **Select members**. This page does not display Azure AD applications in the available options by default.
+1. Select **Assign access to** > **User, group, or service principal**, and select **Select members**. This page does not display Microsoft Entra applications in the available options by default.
 1. To find your application, search by name (for example, "elastic-agent") and select it from the list.
 1. Click the **Select** button.
 1. Then click the **Review + assign** button.
