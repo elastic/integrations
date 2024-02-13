@@ -4,6 +4,7 @@
 {{- $agent_ephemeral_id := generate "agent_ephemeral_id" }}
 {{- $log_level := generate "log_level" }}
 {{- $thread_id := generate "thread_id" }}
+{{- $code := generate "code" }}
 {
     "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z07:00" }}",
     "agent": {
@@ -24,7 +25,15 @@
     "version": "8.8.0",
     "snapshot": false
   },
-  "message": "{{$timestamp.Format "2006-01-02 15:04:05"}} {{ $thread_id }} [{{ $log_level }}] {{ generate "message" }}",
+  {{- if eq $log_level "Note"}}
+  "message": "{{$timestamp.Format "2006-01-02 15:04:05"}} {{ $thread_id }} [{{ $log_level }}] [MY-0{{ $code }}] [Server] {{ generate "message_note" }}",
+  {{- else if eq $log_level "Warning"}}
+  "message": "{{$timestamp.Format "2006-01-02 15:04:05"}} {{ $thread_id }} [{{ $log_level }}] [MY-0{{ $code }}] [Server] {{ generate "message_warning" }}",
+  {{- else if eq $log_level "System"}}
+  "message": "{{$timestamp.Format "2006-01-02 15:04:05"}} {{ $thread_id }} [{{ $log_level }}] [MY-0{{ $code }}] [Server] {{ generate "message_system" }}",
+  {{- else if eq $log_level "ERROR"}}
+  "message": "{{$timestamp.Format "2006-01-02 15:04:05"}} {{ $thread_id }} [{{ $log_level }}] [MY-0{{ $code }}] [Server] {{ generate "message_error" }}",
+  {{- end}}
   "tags": [
     "mysql-error"
   ],
