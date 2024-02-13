@@ -60,7 +60,7 @@ Step 2:
 As for the container, you can use the following values:
 
 - Container name: `elastic-agent-container`
-- Image: `docker.elastic.co/beats/elastic-agent:8.1.0`
+- Image: `docker.elastic.co/beats/elastic-agent:8.12.0`
 - Environment variables:
   - FLEET_ENROLL: `yes`
   - FLEET_ENROLLMENT_TOKEN: `<enrollment-token>`
