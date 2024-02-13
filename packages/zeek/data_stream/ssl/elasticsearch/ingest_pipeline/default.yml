@@ -477,19 +477,16 @@ processors:
       lang: painless
       if: ctx.zeek?.ssl?.version != null
       source: >-
-        def parts = ctx.zeek.ssl.version.splitOnToken("v"); if (parts.length != 2) {
-
-
+        def parts = ctx.zeek.ssl.version.splitOnToken("v");
+        if (parts.length != 2) {
           return;
-        } if (parts[0] == "SSL") {
-
-
+        }
+        if (parts[0] == "SSL") {
           ctx.tls.version = parts[1] + ".0";
         } else {
-
-
           ctx.tls.version = parts[1].substring(0,1) + "." + parts[1].substring(1);
-        } ctx.tls.version_protocol = parts[0].toLowerCase();
+        }
+        ctx.tls.version_protocol = parts[0].toLowerCase();
   - rename:
       field: zeek.ssl.ja3
       target_field: tls.client.ja3
