@@ -47,10 +47,10 @@ To quickly deploy on your existing ECS cluster, follow these steps.
 
 Open the AWS Management Console and visit the Amazon ECS page. Here you can select "Task Definitions" and then "Create new Task Definition" to start the wizard.
 
-In the step 1 select "Fargate" from the list of available launch types.
+Step 1:
+- Select "Fargate" from the list of available launch types.
 
-In the step 2:
-
+Step 2:
 - Add your preferred name for the "Task definition name", for example "elastic-agent-fargate-deployment".
 - For the "Task role", select "ecsFargateTaskExecutionRole".
 - For the "Operating system family", select "Linux".
