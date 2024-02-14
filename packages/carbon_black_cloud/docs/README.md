@@ -815,6 +815,8 @@ An example event for `watchlist_hit` looks as following:
 | carbon_black_cloud.watchlist_hit.process.parent.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.watchlist_hit.process.parent.reputation | Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
 | carbon_black_cloud.watchlist_hit.process.parent.username | The username associated with the user context that this process was started under. | keyword |
+| carbon_black_cloud.watchlist_hit.process.publisher.name | The name of the publisher. | keyword |
+| carbon_black_cloud.watchlist_hit.process.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.watchlist_hit.process.reputation | Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
 | carbon_black_cloud.watchlist_hit.process.username | The username associated with the user context that this process was started under. | keyword |
 | carbon_black_cloud.watchlist_hit.report.id | ID of the watchlist report(s) that detected a hit on the process. | keyword |
