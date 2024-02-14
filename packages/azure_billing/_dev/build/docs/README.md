@@ -94,7 +94,19 @@ If you want to collect billing metrics from a single subscription, you only need
 1. Click the **Select** button.
 1. Then click the **Review + assign** button.
 
-If you want to collect billing metrics from multiple subscriptions, you need to assign the **Billing account reader** to the app registration on the billing account (instead of the subscription):
+You can use the department scope (EA accounts only) or the billing account scope (EA and MCA accounts) to collect billing metrics from multiple subscriptions.
+
+To collect billing metrics using from a department (instead of from a subscription):
+
+1. In the [Azure Portal](https://portal.azure.com/), search for and select **Cost Management + Billing**.
+1. Select **Billing** > **Departments** and select the department you're interested in.
+1. Select **Access control (IAM)**.
+1. Select **Add**.
+1. In the **Add role assignment** panel, select the role **Department reader**.
+1. In the **Users, groups, or apps** search box, type the name of the app registration you created and select it.
+1. Click on the **Add** button.
+
+To collect billing metrics using from a billing account (instead of from a subscription):
 
 1. In the [Azure Portal](https://portal.azure.com/), search for and select **Cost Management + Billing**.
 1. Select **Access control (IAM)**.
@@ -105,8 +117,11 @@ If you want to collect billing metrics from multiple subscriptions, you need to 
 
 Take note of the following values, which you will use later when specifying settings.
 
-* `Subscription ID`: use the content of the "Subscription ID" you selected.
-* `Tenant ID`: use the "Tenant ID" from the Azure Active Directory you use.
+* `Tenant ID`: use the "Tenant ID" from your Microsoft Entra ID.
+* Only one of the following:
+	* `Subscription ID`: use the "Subscription Id" content if you decide to collect metrics from a subscription.
+	* `Department Id`: use the "Department Id" content if you decide to collect metrics from a department.
+	* `Billing account ID`: use the "Billing account ID" content if you decide to collect metrics from a billing account.
 
 Your App Registration is now ready for the Elastic Agent.
 
