@@ -36,11 +36,11 @@ An example event for `panos` looks as following:
 {
     "@timestamp": "2012-04-10T04:39:56.000Z",
     "agent": {
-        "ephemeral_id": "3a362c46-abee-4440-bd82-f0e41a651188",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "ephemeral_id": "97b3b3ee-2b84-4648-9e44-e1e29f38fc93",
+        "id": "54d9c5f4-27e2-41dc-9adf-0283480b3f7e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.12.1"
     },
     "data_stream": {
         "dataset": "panw.panos",
@@ -69,9 +69,9 @@ An example event for `panos` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "54d9c5f4-27e2-41dc-9adf-0283480b3f7e",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.12.1"
     },
     "event": {
         "action": "url_filtering",
@@ -83,7 +83,7 @@ An example event for `panos` looks as following:
         ],
         "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "ingested": "2023-09-26T16:43:58Z",
+        "ingested": "2024-02-14T21:29:24Z",
         "kind": "alert",
         "original": "<14>Nov 30 16:09:08 PA-220 1,2012/10/30 09:46:12,01606001116,THREAT,url,1,2012/04/10 04:39:56,192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
         "outcome": "success",
@@ -103,7 +103,7 @@ An example event for `panos` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.80.7:47488"
+            "address": "172.21.0.4:45110"
         },
         "syslog": {
             "facility": {
@@ -205,7 +205,6 @@ An example event for `panos` looks as following:
         "name": "crusher"
     }
 }
-
 ```
 
 **Exported fields**
