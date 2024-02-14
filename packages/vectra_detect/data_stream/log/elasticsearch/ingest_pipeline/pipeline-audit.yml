@@ -13,7 +13,7 @@ processors:
       field: event.category
       value: authentication
       allow_duplicates: false
-      if: "['authentication', 'log in'].contains(ctx.json?.message)"
+      if: ctx.json?.message?.contains('authentication') == true || ctx.json?.message?.contains('log in') == true
   - append:
       field: event.category
       value: configuration
@@ -23,7 +23,7 @@ processors:
       field: event.type
       value: end
       allow_duplicates: false
-      if: "['timeout', 'log in'].contains(ctx.json?.message)"
+      if: ctx.json?.message?.contains('timeout') == true || ctx.json?.message?.contains('log in') == true
   - rename:
       field: json.result
       target_field: vectra_detect.log.result
