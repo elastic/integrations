@@ -37,7 +37,7 @@ The Elastic Agent collects metrics using the [Amazon ECS task metadata endpoint]
 
 The Amazon ECS task metadata endpoint is an HTTP endpoint available to each container and enabled by default on [AWS Fargate platform version 1.4.0](https://aws.amazon.com/blogs/containers/aws-fargate-launches-platform-version-1-4/) and later. The Elastic Agent uses [Task metadata endpoint version 4](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-v4-fargate.html).
 
-## Getting Started using the AWS Management Console
+## Getting started using the AWS Management Console
 
 This section shows you how to run the Elastic Agent in a ECS cluster, start collecting Fargate on ECS metrics, and send them to an Elastic Stack.
 
@@ -74,7 +74,7 @@ Select an existing ECS cluster and create a new service with launch type "FARGAT
 
 As soon as the Elastic Agent is started, open the dashboard "\[AWS Fargate\] Fargate Overview" and you will see the metrics show up in few minutes.
 
-## Getting Started using the AWS CLI
+## Getting started using the AWS CLI
 
 In this example, we will use the AWS CLI and a CloudFormation template to set up the following resources:
 
