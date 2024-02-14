@@ -7,6 +7,7 @@
 {{- $pid := generate "process.pid" }}
 {{- $threadId := generate "thread.id" }}
 {{- $connectionId := generate "connection_id" }}
+{{- $requestPath := generate "request.path" }}
 {
     "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z" }}",
     "agent": {
@@ -65,7 +66,7 @@
         },
         "offset": 0
     },
-    "message": "{{$timestamp.Format "2006/01/02 15:04:05"}} [{{ $logLevel }}] {{ $pid }}#{{ $threadId }}: *{{ $connectionId }} {{generate "message"}}",
+    "message": "{{$timestamp.Format "2006/01/02 15:04:05"}} [{{ $logLevel }}] {{ $pid }}#{{ $threadId }}: *{{ $connectionId }} open() \"/usr/local/Cellar/nginx/1.10.2_1/html{{ $requestPath }}\" failed (2: No such file or directory), client: 127.0.0.1, server: localhost, request: \"{{ generate "request.method" }} {{ $requestPath }} HTTP/1.1\", host: \"{{ generate "host.name" }}:8080\", referrer: \"http://{{ generate "referer.host.name" }}:8080/\"",
     "tags": [
         "nginx-error"
     ]
