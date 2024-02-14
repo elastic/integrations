@@ -38,6 +38,21 @@ GITHUB_TOKEN_VAULT_PATH=kv/ci-shared/platform-ingest/github_token
 EC_TOKEN_PATH=kv/ci-shared/platform-ingest/platform-ingest-ec-qa
 EC_DATA_PATH=secret/ci/elastic-integrations/ec_data
 
+# variables required for terraform
+export ENVIRONMENT="ci"
+export REPO="${REPO_NAME}"
+
+# From Jenkins
+# BRANCH_NAME_LOWER_CASE = "${env.BRANCH_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+BRANCH_NAME_LOWER_CASE=$(echo "$BUILDKITE_BRANCH" | tr '[:upper:]' '[:lower:]' | tr '_/\: ' '-')
+export BRANCH_NAME_LOWER_CASE
+export BUILD_ID="${BUILDKITE_BUILD_ID}"
+# get current timestamp in milliseconds
+# From Jenkins
+# CREATED_DATE = "${new Date().getTime()}"
+CREATED_DATE=$(date +%s%3N)
+export CREATED_DATE
+
 if [ -n "${ELASTIC_PACKAGE_LINKS_FILE_PATH+x}" ]; then
     # first upload pipeline does not have the environment variables defined in the YAML
     export ELASTIC_PACKAGE_LINKS_FILE_PATH=${BASE_DIR}/${ELASTIC_PACKAGE_LINKS_FILE_PATH}
