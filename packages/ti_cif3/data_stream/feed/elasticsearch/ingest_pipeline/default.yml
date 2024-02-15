@@ -124,13 +124,13 @@ processors:
       field: cif3.indicator
       target_field: threat.indicator.network.cidr
       ignore_missing: true
-      if: "['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type) && (ctx.cif3?.indicator_ipv4_mask != null || ctx.cif3?.indicator_ipv6_mask != null)"
+      if: "(ctx.cif3?.indicator_ipv4_mask != null || ctx.cif3?.indicator_ipv6_mask != null) && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - convert:
       field: cif3.indicator
       type: ip
       target_field: threat.indicator.ip
       ignore_missing: true
-      if: "['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type) && ctx.cif3?.indicator_ipv4_mask == null && ctx.cif3?.indicator_ipv6_mask == null"
+      if: "ctx.cif3?.indicator_ipv4_mask == null && ctx.cif3?.indicator_ipv6_mask == null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - append:
       field: related.ip
       value: "{{{ threat.indicator.ip }}}"
@@ -139,37 +139,37 @@ processors:
       field: cif3.cc
       target_field: threat.indicator.geo.country_iso_code
       ignore_missing: true
-      if: "['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type) && ctx.cif3?.cc != null"
+      if: "ctx.cif3?.cc != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.asn
       target_field: threat.indicator.as.number
       ignore_missing: true
-      if: "['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type) && ctx.cif3?.asn != null"
+      if: "ctx.cif3?.asn != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.asn_desc
       target_field: threat.indicator.as.organization.name
       ignore_missing: true
-      if: "['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type) && ctx.cif3?.asn_desc != null"
+      if: "ctx.cif3?.asn_desc != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.latitude
       target_field: threat.indicator.geo.location.lat
       ignore_missing: true
-      if: "['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type) && ctx.cif3?.latitude != null"
+      if: "ctx.cif3?.latitude != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.longitude
       target_field: threat.indicator.geo.location.lon
       ignore_missing: true
-      if: "['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type) && ctx.cif3?.longitude != null"
+      if: "ctx.cif3?.longitude != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.region
       target_field: threat.indicator.geo.region_name
       ignore_missing: true
-      if: "['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type) && ctx.cif3?.region != null"
+      if: "ctx.cif3?.region != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.timezone
       target_field: threat.indicator.geo.timezone
       ignore_missing: true
-      if: "['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type) && ctx.cif3?.timezone != null"
+      if: "ctx.cif3?.timezone != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
 
   ## URL indicator operations
   - set:
