@@ -106,7 +106,7 @@ To collect billing metrics using from a department (instead of from a subscripti
 1. In the **Users, groups, or apps** search box, type the name of the App Registration you created and select it.
 1. Click on the **Add** button.
 
-To collect billing metrics using from a billing account (instead of from a subscription):
+To collect billing metrics from a billing account (instead of a subscription):
 
 1. In the [Azure Portal](https://portal.azure.com/), search for and select **Cost Management + Billing**.
 1. Select **Access control (IAM)**.
