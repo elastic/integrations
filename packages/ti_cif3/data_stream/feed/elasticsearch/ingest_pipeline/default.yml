@@ -69,7 +69,7 @@ processors:
   - set:
       field: threat.indicator.type
       value: file
-      if: "['md5', 'sha1', 'sha256', 'sha512', 'ssdeep'].contains(ctx.cif3?.itype) && ctx.cif3?.tags?.contains('ja3') != true"
+      if: "ctx.cif3?.tags?.contains('ja3') != true && ['md5', 'sha1', 'sha256', 'sha512', 'ssdeep'].contains(ctx.cif3?.itype)"
   - rename:
       field: cif3.indicator
       target_field: threat.indicator.tls.client.ja3
