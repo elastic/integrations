@@ -19,7 +19,7 @@ Usage details metrics track actual expenses including details like subscription 
 
 To use this integration you will need:
 
-* **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires a role to access the billing information. The requried role is different depending on the subscription, department, or billing account scope. See more details in the [Setup section](#setup).
+* **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires a role to access the billing information. The required role is different depending on the subscription, department, or billing account scope. Check the [Setup section](#setup) for more details.
 * **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch?tab=Overview), or self-manage the Elastic Stack on your hardware.
 * **Payment method**: Azure Billing Metrics integration queries are charged based on the number of standard API calls. One integration makes two calls every 24 hours in the standard configuration.
 
@@ -79,9 +79,9 @@ Take note of the content in the **Value** column in the **Client secrets** table
 
 #### Assign role
 
-Assign a role to the app registration depending on the scope you're interested in.
+Assign a role to the App Registration depending on the scope you're interested in.
 
-If you want to collect billing metrics from a single subscription, you only need to assign the **Billing Reader** to the app registration on that subscription:
+To collect billing metrics from a single subscription, assign the **Billing Reader** to the App Registration on that subscription:
 
 1. In the [Azure Portal](https://portal.azure.com/), search for and select **Subscriptions**.
 1. Select the subscription to assign the application.
@@ -96,23 +96,23 @@ If you want to collect billing metrics from a single subscription, you only need
 
 You can use the department scope (EA accounts only) or the billing account scope (EA and MCA accounts) to collect billing metrics from multiple subscriptions.
 
-To collect billing metrics using from a department (instead of from a subscription):
+To collect billing metrics from a department (instead of a subscription):
 
 1. In the [Azure Portal](https://portal.azure.com/), search for and select **Cost Management + Billing**.
 1. Select **Billing** > **Departments** and select the department you're interested in.
 1. Select **Access control (IAM)**.
 1. Select **Add**.
 1. In the **Add role assignment** panel, select the role **Department reader**.
-1. In the **Users, groups, or apps** search box, type the name of the app registration you created and select it.
+1. In the **Users, groups, or apps** search box, type the name of the App Registration you created and select it.
 1. Click on the **Add** button.
 
-To collect billing metrics using from a billing account (instead of from a subscription):
+To collect billing metrics from a billing account (instead of a subscription):
 
 1. In the [Azure Portal](https://portal.azure.com/), search for and select **Cost Management + Billing**.
 1. Select **Access control (IAM)**.
 1. Select **Add**.
-1. In the **Add role assignment** panel, select the role **Billing account reader** (View-only access).
-1. In the **Users, groups, or apps** search box, type the name of the app registration you created and select it.
+1. In the **Add role assignment** panel, select the role **Billing account reader** (view-only access).
+1. In the **Users, groups, or apps** search box, type the name of the App Registration you created and select it.
 1. Click on the **Add** button.
 
 Take note of the following values, which you will use later when specifying settings.
