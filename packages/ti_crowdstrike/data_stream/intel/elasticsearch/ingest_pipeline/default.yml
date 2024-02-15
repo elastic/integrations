@@ -32,6 +32,7 @@ processors:
   - json:
       field: event.original
       tag: json_event_original
+      if: ctx.event?.original != null
       target_field: json
       on_failure:
         - append:
@@ -101,6 +102,7 @@ processors:
   - foreach:
       field: related.ip
       tag: foreach_related_ip
+      if: ctx.related?.ip instanceof List
       processor:
         convert:
           field: _ingest._value
