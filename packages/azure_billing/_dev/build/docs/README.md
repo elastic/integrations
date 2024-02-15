@@ -79,7 +79,7 @@ Take note of the content in the **Value** column in the **Client secrets** table
 
 #### Assign role
 
-Assign a role to the app registration depending on the scope you're interested in.
+Assign a role to the App Registration depending on the scope you're interested in.
 
 If you want to collect billing metrics from a single subscription, you only need to assign the **Billing Reader** to the app registration on that subscription:
 
