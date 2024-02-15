@@ -96,7 +96,7 @@ To collect billing metrics from a single subscription, assign the **Billing Read
 
 You can use the department scope (EA accounts only) or the billing account scope (EA and MCA accounts) to collect billing metrics from multiple subscriptions.
 
-To collect billing metrics using from a department (instead of from a subscription):
+To collect billing metrics from a department (instead of a subscription):
 
 1. In the [Azure Portal](https://portal.azure.com/), search for and select **Cost Management + Billing**.
 1. Select **Billing** > **Departments** and select the department you're interested in.
