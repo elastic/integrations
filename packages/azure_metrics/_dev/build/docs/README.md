@@ -40,7 +40,18 @@ For each individual data stream, you can check the exported fields in the [Metri
 
 ## Requirements
 
-The Elastic Agent fetches metric data from the Azure Monitor API and sends it to dedicated data streams named `metrics-azure.<metricset>-default` in Elasticsearch.
+The Elastic Agent fetches metric data from the Azure Monitor API and sends it to dedicated data streams named `azure-monitor.<metricset>-default` in Elasticsearch.
+
+```text
+                       ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+
+                       │  ┌─────────────────┐  │
+┌─────────────────┐       │  azure-monitor  │       ┌─────────────────┐
+│    Azure API    │◀───┼──│  <<metricset>>  │──┼───▶│  Elasticsearch  │
+└─────────────────┘       └─────────────────┘       └─────────────────┘
+                       │                       │
+                        ─ Elastic Agent ─ ─ ─ ─
+```
 
 Elastic Agent needs an App Registration to access Azure on your behalf to collect data using the Azure APIs programmatically.
 
@@ -65,7 +76,7 @@ Elastic handles authentication by creating or renewing the authentication token.
 
 **Costs**
 Metric queries are charged based on the number of standard API calls. 
-Check [Azure Monitor pricing](https://azure.microsoft.com/en-gb/pricing/details/monitor/) for more detailsgit .
+Check [Azure Monitor pricing](https://azure.microsoft.com/en-gb/pricing/details/monitor/) for more detailsgit.
 
 ## Setup
 
@@ -104,7 +115,6 @@ This integration uses Client Secrets to prove its identity.
 Take note of the content in the **Value** column in the **Client secrets** table, which you will use later when specifying a **Client Secret** in the integration settings. **This secret value is never displayed again after you leave this page.** Record the secret's value in a safe place.
 
 **Step 3: Assign role**
-
 
 1. In the [Azure Portal](https://portal.azure.com/), search for and select **Subscriptions**.
 1. Select the subscription to assign the application.
