@@ -111,7 +111,7 @@ To collect billing metrics using from a billing account (instead of from a subsc
 1. In the [Azure Portal](https://portal.azure.com/), search for and select **Cost Management + Billing**.
 1. Select **Access control (IAM)**.
 1. Select **Add**.
-1. In the **Add role assignment** panel, select the role **Billing account reader** (View-only access).
+1. In the **Add role assignment** panel, select the role **Billing account reader** (view-only access).
 1. In the **Users, groups, or apps** search box, type the name of the app registration you created and select it.
 1. Click on the **Add** button.
 
