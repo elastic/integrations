@@ -103,7 +103,7 @@ To collect billing metrics using from a department (instead of from a subscripti
 1. Select **Access control (IAM)**.
 1. Select **Add**.
 1. In the **Add role assignment** panel, select the role **Department reader**.
-1. In the **Users, groups, or apps** search box, type the name of the app registration you created and select it.
+1. In the **Users, groups, or apps** search box, type the name of the App Registration you created and select it.
 1. Click on the **Add** button.
 
 To collect billing metrics using from a billing account (instead of from a subscription):
