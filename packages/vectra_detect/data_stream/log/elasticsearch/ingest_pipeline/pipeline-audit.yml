@@ -35,11 +35,11 @@ processors:
   - set:
       field: event.outcome
       value: failure
-      if: "['failure', 'false'].contains(ctx.vectra_detect?.log?.result?.toLowerCase())"
+      if: "'failure'.equalsIgnoreCase(ctx.vectra_detect?.log?.result) || 'false'.equalsIgnoreCase(ctx.vectra_detect?.log?.result)"
   - set:
       field: event.outcome
       value: unknown
-      if: "['pending'].contains(ctx.vectra_detect?.log?.result?.toLowerCase())"
+      if: "'pending'.equalsIgnoreCase(ctx.vectra_detect?.log?.result)"
   - rename:
       field: json.dvchost
       target_field: vectra_detect.log.dvchost
