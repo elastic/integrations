@@ -1,6 +1,8 @@
 # Logstash
 
-The `logstash` package collects metrics and logs of Logstash.
+The `logstash` package collects metrics and logs related to Logstash.
+
+You can find additional information about monitoring Logstash with the Logstash integration in the **Logstash Reference**: [Monitoring Logstash with Elastic Agent](https://www.elastic.co/guide/en/logstash/current/monitoring-with-ea.html). 
 
 ## Compatibility
 
