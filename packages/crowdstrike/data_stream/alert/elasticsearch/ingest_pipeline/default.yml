@@ -1041,6 +1041,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.end
+      tag: set_process_end
+      copy_from: crowdstrike.alert.process_end_time
+      ignore_empty_value: true
   - rename:
       field: json.process_id
       tag: rename_process_id
@@ -1069,6 +1074,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.start
+      tag: set_process_start
+      copy_from: crowdstrike.alert.process_start_time
+      ignore_empty_value: true
   - rename:
       field: json.product
       tag: rename_product
@@ -1158,21 +1168,45 @@ processors:
       tag: rename_tactic
       target_field: crowdstrike.alert.tactic
       ignore_missing: true
+  - append:
+      field: threat.tactic.name
+      tag: append_threat_tactic_name
+      value: '{{{crowdstrike.alert.tactic}}}'
+      allow_duplicates: false
+      if: ctx.crowdstrike?.alert?.tactic != null
   - rename:
       field: json.tactic_id
       tag: rename_tactic_id
       target_field: crowdstrike.alert.tactic_id
       ignore_missing: true
+  - append:
+      field: threat.tactic.id
+      tag: append_threat_tactic_id
+      value: '{{{crowdstrike.alert.tactic_id}}}'
+      allow_duplicates: false
+      if: ctx.crowdstrike?.alert?.tactic_id != null
   - rename:
       field: json.technique
       tag: rename_technique
       target_field: crowdstrike.alert.technique
       ignore_missing: true
+  - append:
+      field: threat.technique.name
+      tag: append_threat_technique_name
+      value: '{{{crowdstrike.alert.technique}}}'
+      allow_duplicates: false
+      if: ctx.crowdstrike?.alert?.technique != null
   - rename:
       field: json.technique_id
       tag: rename_technique_id
       target_field: crowdstrike.alert.technique_id
       ignore_missing: true
+  - append:
+      field: threat.technique.id
+      tag: append_threat_technique_id
+      value: '{{{crowdstrike.alert.technique_id}}}'
+      allow_duplicates: false
+      if: ctx.crowdstrike?.alert?.technique_id != null
   - date:
       field: json.timestamp
       tag: date_timestamp
@@ -1276,6 +1310,12 @@ processors:
         - crowdstrike.alert.timestamp
         - crowdstrike.alert.user_id
         - crowdstrike.alert.user_name
+        - crowdstrike.alert.process_start_time
+        - crowdstrike.alert.process_end_time
+        - crowdstrike.alert.tactic
+        - crowdstrike.alert.tactic_id
+        - crowdstrike.alert.technique
+        - crowdstrike.alert.technique_id
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

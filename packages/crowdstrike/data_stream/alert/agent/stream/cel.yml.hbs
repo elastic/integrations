@@ -30,14 +30,14 @@ program: |
     state.with(
       (
         !state.want_more ?
-          request("GET", state.url + "/alerts/queries/alerts/v1?sort=timestamp|asc&offset=0&limit=" + string(state.batch_size) + '&filter=timestamp:>"' + (
+          request("GET", state.url + "/alerts/queries/alerts/v2?sort=timestamp|asc&offset=0&limit=" + string(state.batch_size) + '&filter=timestamp:>"' + (
              has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
                state.cursor.last_timestamp + '"'
              :
                (now - duration(state.initial_interval)).format(time_layout.RFC3339) + '"'
           ))
         :
-          request("GET", state.url + "/alerts/queries/alerts/v1?sort=timestamp|asc&offset=" + string(state.offset) + "&limit=" + string(state.batch_size) + '&filter=timestamp:>"' + (
+          request("GET", state.url + "/alerts/queries/alerts/v2?sort=timestamp|asc&offset=" + string(state.offset) + "&limit=" + string(state.batch_size) + '&filter=timestamp:>"' + (
             has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
               state.cursor.first_timestamp + '"'
             :
@@ -57,9 +57,9 @@ program: |
     ).as(state, state.with(
       !has(state.resources) || state.resources == "" ? {"events": []} :
         post_request(
-          state.url + "/alerts/entities/alerts/v1",
+          state.url + "/alerts/entities/alerts/v2",
           "application/json",
-          {"ids": state.resources}.encode_json()
+          {"composite_ids": state.resources}.encode_json()
         ).do_request().as(resp, bytes(resp.Body).decode_json().as(inner_body, {
           "events": inner_body.resources.map(e, {
             "message": e.encode_json(),
