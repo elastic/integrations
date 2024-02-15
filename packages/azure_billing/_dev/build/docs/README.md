@@ -81,7 +81,7 @@ Take note of the content in the **Value** column in the **Client secrets** table
 
 Assign a role to the App Registration depending on the scope you're interested in.
 
-If you want to collect billing metrics from a single subscription, you only need to assign the **Billing Reader** to the app registration on that subscription:
+To collect billing metrics from a single subscription, assign the **Billing Reader** to the App Registration on that subscription:
 
 1. In the [Azure Portal](https://portal.azure.com/), search for and select **Subscriptions**.
 1. Select the subscription to assign the application.
