@@ -2,6 +2,31 @@
 
 This integration is used to fetch logs and metrics from [MongoDB](https://www.mongodb.com/).
 
+## Configuration Notes
+
+When configuring the `hosts` option, MongoDB URLs should adhere to the following formats:
+
+- Simple: `[mongodb://][user:pass@]host[:port][?options]`
+- Complex: `mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]`
+
+Examples of URLs can vary from simple to complex:
+
+- Basic: `localhost`
+- Complex: `mongodb://myuser:mypass@localhost:40001", "otherhost:40001`
+
+Additional supported URL examples include:
+
+- Replica set: `mongodb://localhost:27017,localhost:27022,localhost:27023`
+- Direct connection: `mongodb://localhost:27017/?directConnection=true`
+
+When utilizing the parameter `directConnection=true` in the connection URI, all operations are executed on the specified host. It's important to explicitly include `directConnection=true` in the URI, as it won't be automatically added.
+
+Example with replica set specified:
+
+- Replica set with specified username and password: `mongodb://localhost:27017,localhost:27022,localhost:27023/?replicaSet=dbrs`
+
+The username and password can either be included in the URL or set using the respective configuration options. If included in the URL, the credentials take precedence over the username and password configuration options.
+
 ## Compatibility
 
 The `log` dataset is tested with logs from versions v3.2.11 and v4.4.4 in
