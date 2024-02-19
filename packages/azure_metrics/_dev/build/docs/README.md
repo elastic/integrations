@@ -69,6 +69,8 @@ To authenticate the client application, create a Microsoft Entra service princip
 * [Create an Azure service principal with Azure PowerShell](https://docs.microsoft.com/en-us/powershell/azure/create-azure-service-principal-azureps?view=azps-2.7.0.)
 * [Use the portal to create a Microsoft Entra application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal).
 
+NOTE: When you create an Azure service principal with Azure PowerShell, a linked App Registration is automatically created and is visible on the Azure portal.
+
 Make sure that the roles assigned to the application contain at least reading permissions to the monitor data. Check [Azure built-in roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles) for more details.
 
 **Authentication on the Elastic side**
