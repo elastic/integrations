@@ -29,31 +29,80 @@ auth.digest:
 resource.url: {{url}}
 state:
   groupId: {{groupId}}
-  hostName: {{hostName}}
+  want_more: false
+  page_num: 1
 program: |
+  (
     (
-      state.with({
-        "startDate": (
-        has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null
-        ?
-          state.cursor.last_timestamp
+      has(state.hostlist) && size(state.hostlist) > 0
+      ?
+        state
+      : 
+        (
+          state.page_num != 1 
+        ? 
+          state 
         :
-          int(timestamp(now) - duration("30m"))
-        ),
-        "endDate": int(timestamp(now))
-      })
-      ).as(state, state.with(
-      request("GET", state.url + "/api/atlas/v2/groups/" + state.groupId + "/clusters/" + state.hostName + "/logs/mongodb-audit-log.gz?startDate=" + string(int(state.startDate)) + "&endDate=" + string(int(state.endDate))
-      ).with({
-        "Header": {
-          "Accept": ["application/vnd.atlas." + string(timestamp(now).getFullYear()) + "-01-01+gzip"]
-        }
-      }).do_request().as(resp,
-        string(bytes(resp.Body).mime('application/gzip')).as(body,{
-          "events": body.trim_space().split("\n").map(value,{"message":value}),
-          "cursor": {
-            "last_timestamp": state.endDate
-          }
-        })
-      ))
-    )     
+          state.with({
+            "startDate": (
+              has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null
+              ?
+                state.cursor.last_timestamp
+              :
+                int(timestamp(now) - duration("30m"))
+            ),
+            "endDate": int(timestamp(now))
+        })).as(state, state.with(request("GET", state.url + "/api/atlas/v2/groups/" + state.groupId + "/processes?pageNum=" + string(state.page_num) + "&itemsPerPage=100").with({
+            "Header": {
+              "Accept": ["application/vnd.atlas." + string(timestamp(now).getFullYear()) + "-01-01+json"]
+            }
+        }).do_request().as(resp, 
+            bytes(resp.Body).decode_json().as(body, {
+              "hostlist": body.results.map(e, e.hostname),
+              "next": 0,
+              "page_num": body.links.exists_one(res,res.rel=="next") ? (int(state.page_num)+1) : 1
+            })
+        )))
+    ).as(state, state.next < size(state.hostlist)
+      ?
+        (
+          request("GET", state.url + "/api/atlas/v2/groups/" + state.groupId + "/clusters/" + string(state.hostlist[state.next]) + "/logs/mongodb-audit-log.gz?startDate=" + string(int(state.startDate)) + "&endDate=" + string(int(state.endDate))
+          ).with({
+            "Header": {
+              "Accept": ["application/vnd.atlas." + string(timestamp(now).getFullYear()) + "-01-01+gzip"]
+            }
+          }).do_request().as(resp, (
+            resp.ContentLength != 0 
+            ?
+              string(bytes(resp.Body).mime('application/gzip')).as(body,{
+                "events": body.trim_space().split("\n").map(value,{"message":value}),
+                "cursor": {
+                  "last_timestamp": state.endDate
+                },
+                "hostlist": (int(state.next)+1) < size(state.hostlist) ? state.hostlist : [],
+                "next": (int(state.next)+1) < size(state.hostlist) ? (int(state.next)+1) : 0,
+                "want_more": ((int(state.next)+1) < size(state.hostlist) || state.page_num != 1),
+                "page_num": state.page_num,
+                "startDate": state.startDate,
+                "endDate": state.endDate,
+                "groupId": state.groupId,
+              })
+            :
+              {
+                "events": [{"message":"retry"}],
+                "cursor": {
+                  "last_timestamp": state.endDate
+                },
+                "hostlist": (int(state.next)+1) < size(state.hostlist) ? state.hostlist : [],
+                "next": (int(state.next)+1) < size(state.hostlist) ? (int(state.next)+1) : 0,
+                "want_more": ((int(state.next)+1) < size(state.hostlist) || state.page_num != 1),
+                "page_num": state.page_num,
+                "startDate": state.startDate,
+                "endDate": state.endDate,
+                "groupId": state.groupId,
+              }
+        )))
+      :
+        {}
+    )
+  )

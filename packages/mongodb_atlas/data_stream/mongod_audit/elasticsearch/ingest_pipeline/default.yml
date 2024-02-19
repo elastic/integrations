@@ -16,18 +16,21 @@ processors:
   - set:
       field: event.type
       value: ["access","info"]
-  - json:
+  - drop:
+      if: ctx.message == "empty file"
+      tag: drop_retry_events
+  - rename:
       field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
       target_field: json
       tag: json_decoding
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
   - date:
       field: json.ts.$date
       target_field: '@timestamp'
@@ -76,19 +79,6 @@ processors:
       field: json.param
       target_field: mongodb_atlas.mongod_audit.param
       ignore_missing: true
-  - script:
-      description: Provide information of the error code.
-      lang: painless
-      ignore_failure: true
-      source: |
-        Map m = new HashMap();
-        m.put(0, "Success");
-        m.put(13, "Unauthorized to perform the operation");
-        m.put(18, "Authentication Failed");
-        m.put(26, "Namespace Not Found");
-        m.put(276, "Index build aborted");
-        m.put(334, "Unauthorized to perform the operation");
-        ctx.mongodb_atlas.mongod_audit.result = m.get(ctx.json.result);
   - rename:
       field: json.users
       target_field: mongodb_atlas.mongod_audit.user.names
@@ -105,6 +95,19 @@ processors:
       field: json.uuid.$type
       target_field: mongodb_atlas.mongod_audit.uuid.type
       ignore_missing: true
+  - script:
+      description: Provide information of the error code.
+      lang: painless
+      ignore_failure: true
+      source: |
+        Map m = new HashMap();
+        m.put(0, "Success");
+        m.put(13, "Unauthorized to perform the operation");
+        m.put(18, "Authentication Failed");
+        m.put(26, "Namespace Not Found");
+        m.put(276, "Index build aborted");
+        m.put(334, "Unauthorized to perform the operation");
+        ctx.mongodb_atlas.mongod_audit.result = m.get(ctx.json.result);
   - script:
       lang: painless
       source: |-
