@@ -23,7 +23,7 @@ When utilizing the parameter `directConnection=true` in the connection URI, all 
 
 Example with replica set specified:
 
-- Replica set with specified username and password: `mongodb://localhost:27017,localhost:27022,localhost:27023/?replicaSet=dbrs`
+- `mongodb://localhost:27017,localhost:27022,localhost:27023/?replicaSet=dbrs`
 
 The username and password can either be included in the URL or set using the respective configuration options. If included in the URL, the credentials take precedence over the username and password configuration options.
 
