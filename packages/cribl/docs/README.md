@@ -32,7 +32,7 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
 4. Configure an Elastic destination in Cribl
 
-    Cribl offers two options for sending data to Elastic, the Elastic Cloud ouput for cloud environments, and the Elasticsearch output for self-managed. Consult the or the [Cribl Elastic Cloud documentation](https://docs.cribl.io/stream/destinations-elastic-cloud/) or [Cribl Elasticsearch documentation](https://docs.cribl.io/stream/destinations-elastic/) for more details on how to configure.
+    Cribl offers two options for sending data to Elastic, the Elastic Cloud output for cloud environments, and the Elasticsearch output for self-managed. Consult [Cribl Elastic Cloud documentation](https://docs.cribl.io/stream/destinations-elastic-cloud/) or [Cribl Elasticsearch documentation](https://docs.cribl.io/stream/destinations-elastic/) for more details on how to configure.
 
     **Destination settings**
 
@@ -40,7 +40,7 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
     2. Set **Index or Data Stream** to `logs-cribl-default`.
 
-    3. **API key** should be a Base64 encoded Elastic API key, which can be created in Kibana by following the instructions under API Keys. If you are using an API key with “Restrict privileges”, be sure to review the Indices privileges to provide at least "auto_configure" & "write" permissions for the logs-* index, which you will be using for these Fleet integration data streams.
+    3. **API key** should be a Base64 encoded Elastic API key, which can be created in Kibana by following the instructions under **Management** > **Stack Management** > **Security** > **API Keys**. If you are using an API key with “Restrict privileges”, be sure to review the Indices privileges to provide at least "auto_configure" & "write" permissions for the logs-* index, which you will be using for these Fleet integration data streams.
 
 
 

@@ -32,7 +32,7 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
 4. Configure an Elastic destination in Cribl
 
-    Cribl offers two options for sending data to Elastic, the Elastic Cloud ouput for cloud environments, and the Elasticsearch output for self-managed. Consult [Cribl Elastic Cloud documentation](https://docs.cribl.io/stream/destinations-elastic-cloud/) or [Cribl Elasticsearch documentation](https://docs.cribl.io/stream/destinations-elastic/) for more details on how to configure.
+    Cribl offers two options for sending data to Elastic, the Elastic Cloud output for cloud environments, and the Elasticsearch output for self-managed. Consult [Cribl Elastic Cloud documentation](https://docs.cribl.io/stream/destinations-elastic-cloud/) or [Cribl Elasticsearch documentation](https://docs.cribl.io/stream/destinations-elastic/) for more details on how to configure.
 
     **Destination settings**
 
