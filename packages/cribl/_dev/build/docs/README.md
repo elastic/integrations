@@ -40,7 +40,7 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
     2. Set **Index or Data Stream** to `logs-cribl-default`.
 
-    3. **API key** should be a Base64 encoded Elastic API key, which can be created in Kibana by following the instructions under API Keys. If you are using an API key with “Restrict privileges”, be sure to review the Indices privileges to provide at least "auto_configure" & "write" permissions for the logs-* index, which you will be using for these Fleet integration data streams.
+    3. **API key** should be a Base64 encoded Elastic API key, which can be created in Kibana by following the instructions under **Management** > **Stack Management** > **Security** > **API Keys**. If you are using an API key with “Restrict privileges”, be sure to review the Indices privileges to provide at least "auto_configure" & "write" permissions for the logs-* index, which you will be using for these Fleet integration data streams.
 
 
 
