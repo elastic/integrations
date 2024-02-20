@@ -1,0 +1,144 @@
+---
+description: Pipeline for processing Exchange Server Messagetracking logs
+processors:
+- drop:
+    if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
+- set:
+    field: event.original
+    value: "{{{message}}}"
+- csv:
+    field: event.original
+    ignore_failure: true
+    ignore_missing: true
+    target_fields:
+    - microsoft.exchange.datetime
+    - microsoft.exchange.clientip
+    - microsoft.exchange.clienthostname
+    - microsoft.exchange.serverip
+    - microsoft.exchange.serverhostname
+    - microsoft.exchange.sourcecontext
+    - microsoft.exchange.connectorid
+    - microsoft.exchange.source
+    - microsoft.exchange.eventid
+    - microsoft.exchange.internalmessageid
+    - microsoft.exchange.messageid
+    - microsoft.exchange.networkmessageid
+    - microsoft.exchange.recipientaddress
+    - microsoft.exchange.recipientstatus
+    - microsoft.exchange.totalbytes
+    - microsoft.exchange.recipientcount
+    - microsoft.exchange.relatedrecipientaddress
+    - microsoft.exchange.reference
+    - microsoft.exchange.messagesubject
+    - microsoft.exchange.senderaddress
+    - microsoft.exchange.returnpath
+    - microsoft.exchange.messageinfo
+    - microsoft.exchange.directionality
+    - microsoft.exchange.tenantid
+    - microsoft.exchange.originalclientip
+    - microsoft.exchange.originalserverip
+    - microsoft.exchange.customdata
+    - microsoft.exchange.transporttraffictype
+    - microsoft.exchange.logid
+    - microsoft.exchange.schemaversion
+    if: ctx.message =~ /^\d/
+- set:
+    field: "@timestamp"
+    value: "{{{microsoft.exchange.datetime}}}"
+    if: ctx.microsoft?.exchange?.datetime != null && ctx.microsoft?.exchange?.datetime
+      =~ /^\d/
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: microsoft.exchange.logtype
+    value: messagetracking
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: client.ip
+    value: "{{{microsoft.exchange.clientip}}}"
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: client.domain
+    value: "{{{microsoft.exchange.clienthostname}}}"
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: server.ip
+    value: "{{{microsoft.exchange.serverip}}}"
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: server.domain
+    value: "{{{microsoft.exchange.serverhostname}}}"
+    ignore_empty_value: true
+    ignore_failure: true
+- append:
+    field: email.to.address
+    value: "{{{microsoft.exchange.recipientaddress}}}"
+    ignore_failure: true
+- split:
+    field: microsoft.exchange.recipientaddress
+    separator: ";"
+    preserve_trailing: true
+    ignore_missing: true
+    ignore_failure: true
+- split:
+    field: email.to.address
+    separator: ";"
+    preserve_trailing: true
+    ignore_missing: true
+    ignore_failure: true
+- append:
+    field: email.sender.address
+    value: "{{{microsoft.exchange.senderaddress}}}"
+    ignore_failure: true
+- append:
+    field: email.from.address
+    value: "{{{microsoft.exchange.senderaddress}}}"
+    ignore_failure: true
+- set:
+    field: email.subject
+    value: "{{{microsoft.exchange.messagesubject}}}"
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: email.local_id
+    value: "{{{microsoft.exchange.internalmessageid}}}"
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: email.direction
+    value: "{{{microsoft.exchange.directionality}}}"
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: email.message_id
+    value: "{{{microsoft.exchange.messageid}}}"
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: network.bytes
+    value: "{{{microsoft.exchange.totalbytes}}}"
+    ignore_empty_value: true
+    ignore_failure: true
+- convert:
+    field: "microsoft.exchange.recipientcount"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert:
+    field: "microsoft.exchange.totalbytes"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert:
+    field: "network.bytes"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- set:
+    field: event.ingested 
+    value: "{{{_ingest.timestamp}}}"
+    ignore_failure: true
