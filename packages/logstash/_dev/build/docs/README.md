@@ -2,7 +2,7 @@
 
 This integration collects logs and metrics from Logstash instances.
 
-You can find additional information about monitoring Logstash with the Logstash integration in the **Logstash Reference**: {{ url "monitoring-with-ea" "Monitoring Logstash with Elastic Agent" }}.
+You can find additional information about monitoring Logstash with the Logstash integration in the **Logstash Reference**: {{ url "logstash-monitoring-ea" "Monitoring Logstash with Elastic Agent" }}.
 
 ## Compatibility
 
