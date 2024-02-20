@@ -60,11 +60,12 @@ resource.tracer.maxsize: 5
 state:
   want_more: false
   base:
-    list_contents_url: "{{url}}/api/v1.0/{{azure_tenant_id}}/activity/feed/subscriptions/content?contentType="
+    tenant_id: "{{azure_tenant_id}}"
     list_contents_start_time: "{{initial_interval}}"
 
 redact:
-  fields: ~
+  fields:
+    - base.tenant_id
 
 program: |
   now().as(now, // Prevent now time skew. Remove this and the closing parenthesis when kibana.version is 8.10.1 or higher.
@@ -73,7 +74,7 @@ program: |
   ).map(content_type,
       request(
           "POST",
-          "{{url}}/api/v1.0/{{azure_tenant_id}}/activity/feed/subscriptions/start?contentType=" + content_type + "&PublisherIdentifier={{azure_tenant_id}}"
+          "{{url}}/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/start?contentType=" + content_type + "&PublisherIdentifier=" + state.base.tenant_id
       ).do_request().as(start_subs_resp,
           bytes(start_subs_resp.Body).decode_json().as(start_subs_resp_body, 
               (
@@ -104,7 +105,9 @@ program: |
                                           :
                                               state_created_at
                                       ).as(state_created_at_calc, 
-                                          state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}" 
+                                          "{{url}}/api/v1.0/" + state.base.tenant_id
+                                              + "/activity/feed/subscriptions/content?contentType=" + content_type
+                                              + "&PublisherIdentifier=" + state.base.tenant_id
                                               + "&startTime=" + string(state_created_at_calc + duration("1s"))
                                               + "&endTime=" + string((state_created_at_calc + batch_interval).as(calc_end_time, calc_end_time <= now ? calc_end_time : now))
                                       )
@@ -112,7 +115,9 @@ program: |
                               )
                           :
                               // initial run when no cursor state exists i.e., polling from initial_interval
-                              state.base.list_contents_url + content_type + "&PublisherIdentifier={{azure_tenant_id}}"  
+                              "{{url}}/api/v1.0/" + state.base.tenant_id
+                                  + "/activity/feed/subscriptions/content?contentType=" + content_type
+                                  + "&PublisherIdentifier=" + state.base.tenant_id
                                   + "&startTime=" + string(now - duration(state.base.list_contents_start_time))
                                   + "&endTime=" + string((now - duration(state.base.list_contents_start_time) + batch_interval).as(calc_end_time, calc_end_time <= now ? calc_end_time : now))
                       )
@@ -200,10 +205,7 @@ program: |
           )
       )
   ).flatten().drop_empty().as(events_list, {
-      "base": {
-          "list_contents_url": "{{url}}/api/v1.0/{{azure_tenant_id}}/activity/feed/subscriptions/content?contentType=",
-          "list_contents_start_time": "{{initial_interval}}"
-      },
+      "base": state.base,
       "events": events_list.collate("events_per_content_type"),
       "want_more": events_list.collate("want_more_content").filter(e, e == true).size() > 0,
       "cursor": {

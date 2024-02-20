@@ -1,0 +1,78 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $agent_id := generate "agent_id" }}
+{{- $agent_name := generate "agent_name" }}
+{{- $agent_ephemeral_id := generate "agent_ephemeral_id" }}
+{{- $log_level := generate "log_level" }}
+{{- $thread_id := generate "thread_id" }}
+{{- $code := generate "code" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z07:00" }}",
+    "agent": {
+    "name": "{{ $agent_name }}",
+    "id": "{{ $agent_id }}",
+    "type": "filebeat",
+    "ephemeral_id": "{{ $agent_ephemeral_id }}",
+    "version": "8.8.0"
+  },
+  "log": {
+    "file": {
+      "path": "/tmp/service_logs/error.log"
+    },
+    "offset": 0
+  },
+  "elastic_agent": {
+    "id": "{{ $agent_id }}",
+    "version": "8.8.0",
+    "snapshot": false
+  },
+  {{- if eq $log_level "Note"}}
+  "message": "{{$timestamp.Format "2006-01-02 15:04:05"}} {{ $thread_id }} [{{ $log_level }}] [MY-0{{ $code }}] [Server] {{ generate "message_note" }}",
+  {{- else if eq $log_level "Warning"}}
+  "message": "{{$timestamp.Format "2006-01-02 15:04:05"}} {{ $thread_id }} [{{ $log_level }}] [MY-0{{ $code }}] [Server] {{ generate "message_warning" }}",
+  {{- else if eq $log_level "System"}}
+  "message": "{{$timestamp.Format "2006-01-02 15:04:05"}} {{ $thread_id }} [{{ $log_level }}] [MY-0{{ $code }}] [Server] {{ generate "message_system" }}",
+  {{- else if eq $log_level "ERROR"}}
+  "message": "{{$timestamp.Format "2006-01-02 15:04:05"}} {{ $thread_id }} [{{ $log_level }}] [MY-0{{ $code }}] [Server] {{ generate "message_error" }}",
+  {{- end}}
+  "tags": [
+    "mysql-error"
+  ],
+  "input": {
+    "type": "log"
+  },
+  "ecs": {
+    "version": "8.5.1"
+  },
+  "data_stream": {
+    "namespace": "default",
+    "type": "logs",
+    "dataset": "mysql.error"
+  },
+  "host": {
+    "hostname": "docker-fleet-agent",
+    "os": {
+      "kernel": "3.10.0-1160.105.1.el7.x86_64",
+      "codename": "focal",
+      "name": "Ubuntu",
+      "type": "linux",
+      "family": "debian",
+      "version": "20.04.6 LTS (Focal Fossa)",
+      "platform": "ubuntu"
+    },
+    "containerized": true,
+    "ip": [
+      "192.168.244.7"
+    ],
+    "name": "docker-fleet-agent",
+    "id": "11b348d94d79496a84b7330fd69db8f8",
+    "mac": [
+      "02-42-C0-A8-FD-0A"
+    ],
+    "architecture": "x86_64"
+  },
+  "event": {
+    "agent_id_status": "verified",
+    "timezone": "{{ $timestamp.Format "-07:00" }}",
+    "dataset": "mysql.error"
+  }
+}
