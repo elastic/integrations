@@ -178,11 +178,11 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2014-10-06T07:12:57.000Z",
     "agent": {
-        "ephemeral_id": "8b7db8eb-8a30-49a2-83c7-f7e8fa4556ca",
-        "id": "3a2a2fa1-9d09-4921-b5fa-023b307e92e0",
+        "ephemeral_id": "24754055-2625-498c-8778-8566dbc8a368",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.6.2"
+        "version": "8.9.1"
     },
     "data_stream": {
         "dataset": "ti_misp.threat",
@@ -190,22 +190,26 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3a2a2fa1-9d09-4921-b5fa-023b307e92e0",
+        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
         "snapshot": false,
-        "version": "8.6.2"
+        "version": "8.9.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "threat",
-        "created": "2023-04-27T23:35:52.939Z",
+        "category": [
+            "threat"
+        ],
+        "created": "2023-08-28T15:43:07.992Z",
         "dataset": "ti_misp.threat",
-        "ingested": "2023-04-27T23:35:53Z",
+        "ingested": "2023-08-28T15:43:09Z",
         "kind": "enrichment",
         "original": "{\"Event\":{\"Attribute\":{\"Galaxy\":[],\"ShadowAttribute\":[],\"category\":\"Network activity\",\"comment\":\"\",\"deleted\":false,\"disable_correlation\":false,\"distribution\":\"5\",\"event_id\":\"22\",\"first_seen\":null,\"id\":\"12394\",\"last_seen\":null,\"object_id\":\"0\",\"object_relation\":null,\"sharing_group_id\":\"0\",\"timestamp\":\"1462454963\",\"to_ids\":false,\"type\":\"domain\",\"uuid\":\"572b4ab3-1af0-4d91-9cd5-07a1c0a8ab16\",\"value\":\"whatsapp.com\"},\"EventReport\":[],\"Galaxy\":[],\"Object\":[],\"Org\":{\"id\":\"1\",\"local\":true,\"name\":\"ORGNAME\",\"uuid\":\"5877549f-ea76-4b91-91fb-c72ad682b4a5\"},\"Orgc\":{\"id\":\"2\",\"local\":false,\"name\":\"CthulhuSPRL.be\",\"uuid\":\"55f6ea5f-fd34-43b8-ac1d-40cb950d210f\"},\"RelatedEvent\":[],\"ShadowAttribute\":[],\"Tag\":[{\"colour\":\"#004646\",\"exportable\":true,\"hide_tag\":false,\"id\":\"1\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"type:OSINT\",\"numerical_value\":null,\"user_id\":\"0\"},{\"colour\":\"#339900\",\"exportable\":true,\"hide_tag\":false,\"id\":\"2\",\"is_custom_galaxy\":false,\"is_galaxy\":false,\"local\":0,\"name\":\"tlp:green\",\"numerical_value\":null,\"user_id\":\"0\"}],\"analysis\":\"2\",\"attribute_count\":\"29\",\"date\":\"2014-10-03\",\"disable_correlation\":false,\"distribution\":\"3\",\"extends_uuid\":\"\",\"id\":\"2\",\"info\":\"OSINT New Indicators of Compromise for APT Group Nitro Uncovered blog post by Palo Alto Networks\",\"locked\":false,\"org_id\":\"1\",\"orgc_id\":\"2\",\"proposal_email_lock\":false,\"publish_timestamp\":\"1610622316\",\"published\":true,\"sharing_group_id\":\"0\",\"threat_level_id\":\"2\",\"timestamp\":\"1412579577\",\"uuid\":\"54323f2c-e50c-4268-896c-4867950d210b\"}}",
-        "type": "indicator"
+        "type": [
+            "indicator"
+        ]
     },
     "input": {
         "type": "httpjson"
@@ -221,7 +225,7 @@ An example event for `threat` looks as following:
             "id": "12394",
             "object_id": "0",
             "sharing_group_id": "0",
-            "timestamp": "1462454963",
+            "timestamp": "2016-05-05T13:29:23.000Z",
             "to_ids": false,
             "type": "domain",
             "uuid": "572b4ab3-1af0-4d91-9cd5-07a1c0a8ab16"
@@ -238,7 +242,7 @@ An example event for `threat` looks as following:
             "org_id": "1",
             "orgc_id": "2",
             "proposal_email_lock": false,
-            "publish_timestamp": "1610622316",
+            "publish_timestamp": "2021-01-14T11:05:16.000Z",
             "published": true,
             "sharing_group_id": "0",
             "threat_level_id": 2,
@@ -277,12 +281,22 @@ An example event for `threat` looks as following:
         }
     }
 }
+
 ```
 
 ### Threat Attributes
 
-The MISP integration configuration allows to set the polling interval, how far back it should look initially, and optionally any filters used to filter the results.
-This data stream uses the `/attributes/restSearch` API endpoint which returns more granular information regarding MISP attributes and additional information.
+The MISP integration configuration allows to set the polling interval, how far back it should look initially, and optionally any filters used to filter the results. This datastream supports expiration of indicators of compromise (IOC).
+This data stream uses the `/attributes/restSearch` API endpoint which returns more granular information regarding MISP attributes and additional information such as `decay_score`. Using `decay_score`, the integration makes the attribute as decayed/expired if `>= 50%` of the decaying models consider the attribute to be decayed. Inside the document, the field `decayed` is set to `true` if the attribute is considered decayed. More information on decaying models can be found [here](https://www.misp-project.org/2019/09/12/Decaying-Of-Indicators.html/#:~:text=Endpoint%3A%20attribute/restSearch).
+
+#### Expiration of Indicators of Compromise (IOCs)
+The ingested IOCs expire after certain duration which is indicated by the `decayed` field. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates destination indices named `logs-ti_misp_latest.dest_threat_attributes-*` which only contains active and unexpired IOCs. The latest destination index also has an alias named `logs-ti_misp_latest.threat_attributes`. When querying for active indicators or setting up indicator match rules, only use the latest destination indices or the alias to avoid false positives from expired IOCs. Dashboards for `Threat Attributes` datastream are also pointing to the latest destination indices containing active IoCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source datastream `.ds-logs-ti_misp.threat_attributes-*` indices.
+
+#### Handling Orphaned IOCs
+Some IOCs may never get decayed/expired and will continue to stay in the latest destination indices `logs-ti_misp_latest.dest_threat_attributes-*`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination indices `logs-ti_misp_latest.dest_threat_attributes-*` after this specified duration is reached, defaults to `90d` after attribute's `max(last_seen, timestamp)`. Note that `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case IOCs never expire.
+
+#### ILM Policy
+To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_misp.threat_attributes-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
 
 **Exported fields**
 
@@ -333,6 +347,8 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if the document is a source for the transform. This field is not added to destination indices to facilitate easier filtering of indicators for indicator match rules. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -341,6 +357,8 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | misp.attribute.comment | Comments made to the attribute itself. | keyword |
 | misp.attribute.data | The data of the attribute | keyword |
 | misp.attribute.decay_score | Group of fields describing decay score of the attribute | flattened |
+| misp.attribute.decayed | Whether atleast one decay model indicates the attribute is decayed. | boolean |
+| misp.attribute.decayed_at | Timestamp when the document is decayed. Not sent by the API. This is calculated inside the ingest pipeline. | date |
 | misp.attribute.deleted | If the attribute has been removed. | boolean |
 | misp.attribute.disable_correlation | If correlation has been enabled on the attribute. | boolean |
 | misp.attribute.distribution | How the attribute has been distributed, represented by integer numbers. | long |
@@ -394,6 +412,7 @@ This data stream uses the `/attributes/restSearch` API endpoint which returns mo
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
+| threat.indicator.email.subject |  | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
 | threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |

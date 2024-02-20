@@ -7,7 +7,7 @@ This integration is used to fetch logs and metrics from [MongoDB](https://www.mo
 The `log` dataset is tested with logs from versions v3.2.11 and v4.4.4 in
 plaintext and json formats.
 The `collstats`, `dbstats`, `metrics`, `replstatus` and `status` datasets are 
-tested with MongoDB 3.4 and 3.0 and are expected to work with all versions >= 2.8.
+tested with MongoDB 5.0 and are expected to work with all versions >= 5.0.
 
 ## MongoDB Privileges
 In order to use the metrics datasets, the MongoDB user specified in the package
@@ -407,7 +407,7 @@ The fields reported are:
 | mongodb.collstats.total.time.us | Total waiting time for locks in microseconds. | long | counter |
 | mongodb.collstats.update.count | Number of document update events. | long | counter |
 | mongodb.collstats.update.time.us | Time updating documents in microseconds. | long | counter |
-| service.address | Address of the machine where the service is running. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
@@ -1066,7 +1066,7 @@ The fields reported are:
 | mongodb.metrics.storage.search.scanned | The number of available record allocations mongod has searched. | long | counter |
 | mongodb.metrics.ttl.deleted_documents.count | The total number of documents deleted from collections with a ttl index. | long | counter |
 | mongodb.metrics.ttl.passes.count | The number of times the background process removes documents from collections with a ttl index. | long | counter |
-| service.address | Address of the machine where the service is running. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
@@ -1240,7 +1240,7 @@ The fields reported are:
 | mongodb.replstatus.optimes.last_committed | Information, from the viewpoint of this member, regarding the most recent operation that has been written to a majority of replica set members. | long | gauge |
 | mongodb.replstatus.server_date | Reflects the current time according to the server that processed the replSetGetStatus command. | date |  |
 | mongodb.replstatus.set_name | The name of the replica set. | keyword |  |
-| service.address | Address of the machine where the service is running. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
@@ -1571,7 +1571,7 @@ The fields reported are:
 | mongodb.status.background_flushing.flushes | A counter that collects the number of times the database has flushed all writes to disk. | long | counter |
 | mongodb.status.background_flushing.last.ms | The amount of time, in milliseconds, that the last flush operation took to complete. | long | gauge |
 | mongodb.status.background_flushing.last_finished | A timestamp of the last completed flush operation. | date |  |
-| mongodb.status.background_flushing.total.ms | The total number of milliseconds (ms) that the mongod processes have spent writing (i.e. flushing) data to disk. Because this is an absolute value, consider the value of `flushes` and `average_ms` to provide better context for this datum. | long | gauge |
+| mongodb.status.background_flushing.total.ms | The total amount of time in milliseconds that the mongod processes have spent writing (i.e. flushing) data to disk. Because this is an absolute value, consider the value of `flushes` and `average_ms` to provide better context for this datum. | long | gauge |
 | mongodb.status.connections.available | The number of unused available incoming connections the database can provide. | long | gauge |
 | mongodb.status.connections.current | The number of connections to the database server from clients. This number includes the current shell session. Consider the value of `available` to add more context to this datum. | long | gauge |
 | mongodb.status.connections.total_created | A count of all incoming connections created to the server. This number includes connections that have since closed. | long | counter |

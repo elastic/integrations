@@ -1,0 +1,38 @@
+{
+    "id": "e833e6a8-673d-56b2-a979-f9aa4e52cb71",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "'- Confidential Computing for Compute instances does not support live migration. Unlike regular Compute instances, Confidential VMs experience disruptions during maintenance events like a software or hardware update.\n- Additional charges may be incurred when enabling this security feature. See [https://cloud.google.com/compute/confidential-vm/pricing](https://cloud.google.com/compute/confidential-vm/pricing) for more info.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/compute/confidential-vm/docs/creating-cvm-instance\n2. https://cloud.google.com/compute/confidential-vm/docs/about-cvm\n3. https://cloud.google.com/confidential-computing\n4. https://cloud.google.com/blog/products/identity-security/introducing-google-cloud-confidential-computing-with-confidential-vms",
+            "id": "e833e6a8-673d-56b2-a979-f9aa4e52cb71",
+            "name": "Ensure That Compute Instances Have Confidential Computing Enabled",
+            "profile_applicability": "* Level 2",
+            "description": "Google Cloud encrypts data at-rest and in-transit, but customer data must be decrypted for processing.\nConfidential Computing is a breakthrough technology which encrypts data in-use\u2014while it is being processed.\nConfidential Computing environments keep data encrypted in memory and elsewhere outside the central processing unit (CPU).\n\n\nConfidential VMs leverage the Secure Encrypted Virtualization (SEV) feature of AMD EPYC\u2122 CPUs.\nCustomer data will stay encrypted while it is used, indexed, queried, or trained on.\nEncryption keys are generated in hardware, per VM, and not exportable.\nThanks to built-in hardware optimizations of both performance and security, there is no significant performance penalty to Confidential Computing workloads.",
+            "rationale": "Confidential Computing enables customers' sensitive code and other data encrypted in memory during processing.\nGoogle does not have access to the encryption keys.\nConfidential VM can help alleviate concerns about risk related to either dependency on Google infrastructure or Google insiders' access to customer data in the clear.",
+            "audit": "Note: Confidential Computing is currently only supported on N2D machines.\nTo learn more about types of N2D machines, visit [https://cloud.google.com/compute/docs/machine-types#n2d_machine_types](https://cloud.google.com/compute/docs/machine-types#n2d_machine_types)\n\n**From Google Cloud Console**\n\n1. Go to the `VM instances` page by visiting: [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances).\n\n2. Click on the instance name to see its VM instance details page.\n\n3. Ensure that `Confidential VM service` is `Enabled`.\n\n**From Google Cloud CLI**\n\n4. List the instances in your project and get details on each instance:\n\n```\ngcloud compute instances list --format=json\n```\n5. Ensure that `enableConfidentialCompute` is set to `true` for all instances with machine type starting with \"n2d-\".\n\n```\nconfidentialInstanceConfig:\n enableConfidentialCompute: true\n```",
+            "remediation": "Confidential Computing can only be enabled when an instance is created.\nYou must delete the current instance and create a new one.\n\n**From Google Cloud Console**\n\n1. Go to the VM instances page by visiting: [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances).\n\n2. Click `CREATE INSTANCE`.\n\n3. Fill out the desired configuration for your instance.\n\n4. Under the `Confidential VM service` section, check the option `Enable the Confidential Computing service on this VM instance`.\n\n5. Click `Create`.\n\n**From Google Cloud CLI**\n\nCreate a new instance with Confidential Compute enabled.\n\n\n```\ngcloud compute instances create <INSTANCE_NAME> --zone <ZONE> --confidential-compute --maintenance-policy=TERMINATE \n```",
+            "section": "Virtual Machines",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 4.11",
+                "Virtual Machines"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "4.11",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_11"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

@@ -125,7 +125,6 @@ An example event for `sns` looks as following:
 | aws.dimensions.Platform | Filters on platform objects for the push notification services, such as APNs and FCM. | keyword |  |
 | aws.dimensions.SMSType | Filters on the message type of SMS message. | keyword |  |
 | aws.dimensions.TopicName | Filters on Amazon SNS topic names. | keyword |  |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
 | aws.sns.metrics.NumberOfMessagesPublished.sum | The number of messages published to your Amazon SNS topics. | long | gauge |
 | aws.sns.metrics.NumberOfNotificationsDelivered.sum | The number of messages successfully delivered from your Amazon SNS topics to subscribing endpoints. | long | gauge |
 | aws.sns.metrics.NumberOfNotificationsFailed.sum | The number of messages that Amazon SNS failed to deliver. | long | gauge |
@@ -137,7 +136,7 @@ An example event for `sns` looks as following:
 | aws.sns.metrics.PublishSize.avg | The size of messages published. | double | gauge |
 | aws.sns.metrics.SMSMonthToDateSpentUSD.sum | The charges you have accrued since the start of the current calendar month for sending SMS messages. | long | gauge |
 | aws.sns.metrics.SMSSuccessRate.avg | The rate of successful SMS message deliveries. | double | gauge |
-| aws.tags.\* | Tag key value pairs from aws resources. | object |  |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
@@ -159,7 +158,7 @@ An example event for `sns` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
 | error.message | Error message. | match_only_text |  |
-| event.dataset | Event dataset | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -168,7 +167,7 @@ An example event for `sns` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |

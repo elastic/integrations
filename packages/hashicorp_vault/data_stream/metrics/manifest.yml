@@ -20,12 +20,13 @@ streams:
           - http://localhost:8200
         description: Vault addresses to monitor. `/v1/sys/metrics?format=prometheus` is automatically appended.
       - name: vault_token
-        type: text
+        type: password
         title: Vault Token
         multi: false
         required: true
         show_user: true
         description: A Vault token with read access to the /sys/metrics API.
+        secret: true
       - name: processors
         type: yaml
         title: Processors
@@ -49,23 +50,10 @@ streams:
           #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
           #    -----END CERTIFICATE-----
 elasticsearch:
+  index_mode: "time_series"
   index_template:
-    mappings:
-      dynamic: true
-      dynamic_templates:
-        - all_values:
-            path_match: "hashicorp_vault.metrics.*.value"
-            mapping:
-              type: double
-        - all_counters:
-            path_match: "hashicorp_vault.metrics.*.counter"
-            mapping:
-              type: double
-        - all_rates:
-            path_match: "hashicorp_vault.metrics.*.rate"
-            mapping:
-              type: double
-        - all_histograms:
-            path_match: "hashicorp_vault.metrics.*.histogram"
-            mapping:
-              type: histogram
+    settings:
+      index:
+        mapping:
+          dimension_fields:
+            limit: 32

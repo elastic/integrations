@@ -12,8 +12,8 @@ Use the Golang integration to:
 
 The Golang integration collects metrics using [expvar](https://pkg.go.dev/expvar) package. Metrics are exported on "/debug/vars" endpoint after [importing](https://pkg.go.dev/expvar#:~:text=into%20your%20program%3A-,import%20_%20%22expvar%22,-Index%20%C2%B6) expvar package and adding an HTTP handler.
 
-**Logs** help you keep a record of state of Golang application.
-Log data streams collected by the Golang integration include [expvar](https://pkg.go.dev/expvar) and [Heap](https://go.dev/src/runtime/mstats.go#:~:text=118%20119%20%2F%2F%20HeapAlloc%20is%20bytes%20of%20allocated%20heap%20objects.).
+**Metrics** help you keep a record of the state of the Go (Golang) application.
+Metric data streams collected by the Golang integration include [expvar](https://pkg.go.dev/expvar) and [heap](https://go.dev/src/runtime/mstats.go).
 
 Data streams:
 - `heap`:  Collects heap metrics like heap allocation and garbage collection metrics.
@@ -35,7 +35,101 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-## Logs reference
+### Troubleshooting
+
+If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Heap`` and ``Expvar`` data stream's indices.
+To reindex the data, the following steps must be performed.
+
+1. Stop the data stream by going to `Integrations -> Golang -> Integration policies` open the configuration of Golang and disable the `Collect Golang metrics` toggle to reindex metrics data stream and save the integration.
+
+2. Copy data into the temporary index and delete the existing data stream and index template by performing the following steps in the Dev tools.
+
+```
+POST _reindex
+{
+  "source": {
+    "index": "<index_name>"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}  
+```
+Example:
+```
+POST _reindex
+{
+  "source": {
+    "index": "logs-golang.heap-default"
+  },
+  "dest": {
+    "index": "temp_index"
+  }
+}
+```
+
+```
+DELETE /_data_stream/<data_stream>
+```
+Example:
+```
+DELETE /_data_stream/logs-golang.heap-default
+```
+
+```
+DELETE _index_template/<index_template>
+```
+Example:
+```
+DELETE _index_template/logs-golang.heap
+```
+3. Go to `Integrations -> Golang -> Settings` and click on `Reinstall Golang`.
+
+4. Copy data from temporary index to new index by performing the following steps in the Dev tools.
+
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "<index_name>",
+    "op_type": "create"
+
+  }
+}
+```
+Example:
+```
+POST _reindex
+{
+  "conflicts": "proceed",
+  "source": {
+    "index": "temp_index"
+  },
+  "dest": {
+    "index": "logs-golang.heap-default",
+    "op_type": "create"
+
+  }
+}
+```
+
+5. Verify data is reindexed completely.
+
+6. Start the data stream by going to the `Integrations -> Golang -> Integration policies` and open configuration of integration and enable the `Collect Golang metrics` toggle and save the integration.
+
+7. Delete temporary index by performing the following step in the Dev tools.
+
+```
+DELETE temp_index
+```
+
+More details about reindexing can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
+
+## Metrics reference
 
 ### expvar
 
@@ -164,7 +258,7 @@ An example event for `expvar` looks as following:
 | golang.expvar.buck_hash_sys.bytes | Bytes of memory in profiling bucket hash tables. | long | byte | gauge |
 | golang.expvar.cmdline | The cmdline of this Go program start with. | keyword |  |  |
 | golang.expvar.gc.forced | The number of GC cycles that were forced by the application calling the GC function. | long |  | counter |
-| golang.expvar.gc.last_finished.ns | The time the last garbage collection finished. | long | nanos |  |
+| golang.expvar.gc.last_finished.ns | The time the last garbage collection finished. | long | nanos | counter |
 | golang.expvar.gc.metadata.memory.bytes | Bytes of memory in garbage collection metadata. | long | byte | gauge |
 | golang.expvar.mcache.allocated.bytes | Bytes of allocated mcache structures. | long | byte | gauge |
 | golang.expvar.mcache.obtained.bytes | Bytes of memory obtained from the OS for mcache structures. | long | byte | gauge |
@@ -174,6 +268,7 @@ An example event for `expvar` looks as following:
 | golang.expvar.obtained.total.bytes | The total bytes of memory obtained from the OS. | long | byte | gauge |
 | golang.expvar.pointer.lookups | The number of pointer lookups performed by the runtime. | long |  | gauge |
 | golang.expvar.stack.bytes | Bytes in stack spans. | long | byte | gauge |
+| host.ip | Host ip addresses. | ip |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
@@ -318,6 +413,7 @@ An example event for `heap` looks as following:
 | golang.heap.system.released.bytes | Bytes of physical memory returned to the OS. | long | byte | gauge |
 | golang.heap.system.stack.bytes | Bytes of stack memory obtained from the OS. | long | byte | gauge |
 | golang.heap.system.total.bytes | Bytes of heap memory obtained from the OS. | long | byte | gauge |
+| host.ip | Host ip addresses. | ip |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |

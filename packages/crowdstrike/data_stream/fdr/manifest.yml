@@ -12,18 +12,21 @@ streams:
         multi: false
         required: false
         show_user: true
+        secret: false
       - name: secret_access_key
-        type: text
+        type: password
         title: Secret Access Key
         multi: false
         required: false
         show_user: true
+        secret: true
       - name: session_token
-        type: text
+        type: password
         title: Session Token
         multi: false
         required: false
         show_user: true
+        secret: true
       - name: queue_url
         type: text
         title: Queue URL
@@ -40,6 +43,46 @@ streams:
         description: |
           By default the FDR queue is expected. This option must be set to `false` if you are using your own queue.
         default: true
+      - name: enrich_metadata
+        required: true
+        show_user: true
+        title: Enrich Host and User Metadata
+        description: Uses data in aidmaster and userinfo to add host and user information to events. The aidmaster blob must contain the string "aidmaster" in its path and the userinfo blob path must contain "userinfo", and the FDR Notification Parsing Script must sort events so that aidmaster and userinfo events appear first in the stream.
+        type: bool
+        multi: false
+        default: true
+      - name: keep_metadata
+        required: true
+        show_user: false
+        title: Keep Original Host and User Metadata
+        description: Keep the aidmaster and userinfo documents after they have been used for event enrichment.
+        type: bool
+        multi: false
+        default: false
+      - name: metadata_ttl
+        required: true
+        show_user: true
+        title: Metadata TTL
+        description: The period of time that metadata is considered valid for. Valid time units are h, m, s, ms, us/µs and ns.
+        type: text
+        multi: false
+        default: 168h
+      - name: metadata_cache_capacity
+        required: true
+        show_user: false
+        title: Metadata cache capacity
+        description: "The maximum amount of metadata objects to cache. Operations that would cause the capacity to be exceeded will result in evictions of the oldest elements. The capacity should not be lower than the number of elements that are expected to be referenced when processing the input as evicted elements are lost. Values at or below zero indicate no limit. \nWARNING: This setting needs to be set only if the amount of metadata elements is known beforehand, otherwise it might lead to enrichment data loss. If you are not sure, leave it untouched.\n"
+        type: text
+        multi: false
+        default: 0
+      - name: metadata_cache_write_period
+        required: true
+        show_user: false
+        title: Metadata cache write period
+        description: The interval between periodic cache writes to the backing file. Valid time units are h, m, s, ms, us/µs and ns. The contents are always written out to the backing file when the processor is closed. Default is zero, no periodic writes.
+        type: text
+        multi: false
+        default: 0
       - name: preserve_original_event
         required: true
         show_user: true
@@ -113,7 +156,7 @@ streams:
         show_user: false
         description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
       - name: fdr_parsing_script
-        type: yaml
+        type: textarea
         title: FDR Notification Parsing Script
         multi: false
         required: true
@@ -128,6 +171,27 @@ streams:
             if (!Array.isArray(files) || (files.length == 0) || bucket == null || bucket == "") {
               return evts;
             }
+            files.sort(function(a, b) {
+              var isMetadata = function(a) {
+                return a.path && ((a.path.indexOf("aidmaster") !== -1) || (a.path.indexOf("userinfo") !== -1));
+              };
+              var cmp = function(a, b) {
+                if (a < b) {
+                  return -1;
+                }
+                if (a > b) {
+                  return 1;
+                }
+                return 0;
+              };
+              if (isMetadata(a) === isMetadata(b)) {
+                return cmp(a.path, b.path);
+              }
+              if (isMetadata(a)) {
+                return -1;
+              }
+              return 1;
+            });
             files.forEach(function(f){
               var evt = new S3EventV2();
               evt.SetS3BucketName(bucket);
@@ -171,6 +235,30 @@ streams:
         default:
           - /var/log/falcon_data_replicator.log
         show_user: true
+      - name: enrich_host_metadata
+        required: true
+        show_user: true
+        title: Enrich Host and User Metadata
+        description: Uses data in aidmaster and userinfo to add host and user information to events. The aidmaster file must be included in the paths configuration, include the string "aidmaster" in the path host information file path and "userinfo" in the user information file bath, and have a file paths that sorts before the FDR log file paths.
+        type: bool
+        multi: false
+        default: true
+      - name: keep_metadata
+        required: true
+        show_user: false
+        title: Keep Original Host and User Metadata
+        description: Keep the aidmaster and userinfo documents after they have been used for event enrichment.
+        type: bool
+        multi: false
+        default: false
+      - name: metadata_ttl
+        required: true
+        show_user: true
+        title: Metadata TTL
+        description: The period of time that host metadata is considered valid for. Valid time units are h, m, s, ms, us/µs and ns.
+        type: text
+        multi: false
+        default: 168h
       - name: preserve_original_event
         required: true
         show_user: true

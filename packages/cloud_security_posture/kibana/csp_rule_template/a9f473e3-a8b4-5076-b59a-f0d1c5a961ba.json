@@ -1,0 +1,38 @@
+{
+    "id": "a9f473e3-a8b4-5076-b59a-f0d1c5a961ba",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "There are no costs or limitations in Cloud Logging for exporting logs, but the export destinations charge for storing or transmitting the log data.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/logging/docs/reference/tools/gcloud-logging\n2. https://cloud.google.com/logging/quotas\n3. https://cloud.google.com/logging/docs/routing/overview\n4. https://cloud.google.com/logging/docs/export/using_exported_logs\n5. https://cloud.google.com/logging/docs/export/configure_export_v2\n6. https://cloud.google.com/logging/docs/export/aggregated_exports\n7. https://cloud.google.com/sdk/gcloud/reference/beta/logging/sinks/list",
+            "id": "a9f473e3-a8b4-5076-b59a-f0d1c5a961ba",
+            "name": "Ensure That Sinks Are Configured for All Log Entries",
+            "profile_applicability": "* Level 1",
+            "description": "It is recommended to create a sink that will export copies of all the log entries.\nThis can help aggregate logs from multiple projects and export them to a Security Information and Event Management (SIEM).",
+            "rationale": "Log entries are held in Cloud Logging.\nTo aggregate logs, export them to a SIEM.\nTo keep them longer, it is recommended to set up a log sink.\nExporting involves writing a filter that selects the log entries to export, and choosing a destination in Cloud Storage, BigQuery, or Cloud Pub/Sub.\nThe filter and destination are held in an object called a sink.\nTo ensure all log entries are exported to sinks, ensure that there is no filter configured for a sink.\nSinks can be created in projects, organizations, folders, and billing accounts.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to `Logs Router` by visiting [https://console.cloud.google.com/logs/router](https://console.cloud.google.com/logs/router).\n\n2. For every sink, click the 3-dot button for Menu options and select `View sink details`.\n\n3. Ensure there is at least one sink with an `empty` Inclusion filter.\n\n4. Additionally, ensure that the resource configured as `Destination` exists.\n\n**From Google Cloud CLI**\n\n5. Ensure that a sink with an `empty filter` exists. List the sinks for the project, folder or organization. If sinks are configured at a folder or organization level, they do not need to be configured for each project:\n```\ngcloud logging sinks list --folder=FOLDER_ID | --organization=ORGANIZATION_ID | --project=PROJECT_ID\n```\n\nThe output should list at least one sink with an `empty filter`.\n\n6. Additionally, ensure that the resource configured as `Destination` exists.\n\nSee [https://cloud.google.com/sdk/gcloud/reference/beta/logging/sinks/list](https://cloud.google.com/sdk/gcloud/reference/beta/logging/sinks/list) for more information.",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to `Logs Router` by visiting [https://console.cloud.google.com/logs/router](https://console.cloud.google.com/logs/router).\n\n2. Click on the arrow symbol with `CREATE SINK` text.\n\n3. Fill out the fields for `Sink details`.\n\n4. Choose Cloud Logging bucket in the Select sink destination drop down menu.\n\n5. Choose a log bucket in the next drop down menu.\n\n6. If an inclusion filter is not provided for this sink, all ingested logs will be routed to the destination provided above. This may result in higher than expected resource usage.\n\n7. Click `Create Sink`.\n\nFor more information, see [https://cloud.google.com/logging/docs/export/configure_export_v2#dest-create](https://cloud.google.com/logging/docs/export/configure_export_v2#dest-create).\n\n**From Google Cloud CLI**\n\nTo create a sink to export all log entries in a Google Cloud Storage bucket: \n\n```\ngcloud logging sinks create <sink-name> storage.googleapis.com/DESTINATION_BUCKET_NAME\n```\n\nSinks can be created for a folder or organization, which will include all projects.\n\n```\ngcloud logging sinks create <sink-name> storage.googleapis.com/DESTINATION_BUCKET_NAME --include-children --folder=FOLDER_ID | --organization=ORGANIZATION_ID\n```\n\n**Note:** \n\n8. A sink created by the command-line above will export logs in storage buckets. However, sinks can be configured to export logs into BigQuery, or Cloud Pub/Sub, or `Custom Destination`.\n\n9. While creating a sink, the sink option `--log-filter` is not used to ensure the sink exports all log entries.\n\n10. A sink can be created at a folder or organization level that collects the logs of all the projects underneath bypassing the option `--include-children` in the gcloud command.",
+            "section": "Logging and Monitoring",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 2.2",
+                "Logging and Monitoring"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "2.2",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_2_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

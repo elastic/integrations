@@ -151,6 +151,14 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
+### Request timeout
+
+In `Apex`, `Login Rest`, `Logout Rest`, or `SetupAuditTrail` datastreams, if the response is getting delayed from the Salesforce server side due to any reason then the following error might occur:
+```
+Error while processing http request: failed to execute rf.collectResponse: failed to execute http client.Do: failed to execute http client.Do: failed to read http.response.body
+```
+In this case, consider increasing `Request timeout` configuration from `Advanced options` section of that data stream.
+
 ### Data ingestion error
 
 In case of data ingestion if the user finds the following type of error logs:
@@ -572,7 +580,9 @@ An example event for `login_rest` looks as following:
     "user": {
         "email": "user@elastic.co",
         "id": "0055j000000utlPAAQ",
-        "roles": "Standard"
+        "roles": [
+            "Standard"
+        ]
     },
     "user_agent": {
         "name": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36"
@@ -758,7 +768,9 @@ An example event for `login_stream` looks as following:
     "user": {
         "email": "user@elastic.co",
         "id": "0055j000000utlPAAQ",
-        "roles": "Standard"
+        "roles": [
+            "Standard"
+        ]
     },
     "user_agent": {
         "name": "Unknown",
@@ -934,7 +946,9 @@ An example event for `logout_rest` looks as following:
     ],
     "user": {
         "id": "0055j000000utlPAAQ",
-        "roles": "Standard"
+        "roles": [
+            "Standard"
+        ]
     }
 }
 ```

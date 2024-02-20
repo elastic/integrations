@@ -17,11 +17,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-10-10T12:34:56.000Z",
     "agent": {
-        "ephemeral_id": "527259e1-8f53-40d5-a1b7-eeeae2bd0e5b",
-        "id": "d8aa4cb0-4002-48c4-abf4-14c12d2e4be1",
+        "ephemeral_id": "9ff3fcbd-3ca0-4634-bbaa-604ac67b8188",
+        "id": "383c6290-eea2-4a18-8adf-2ed05723031e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.10.3"
     },
     "cisco": {
         "asa": {
@@ -41,12 +41,12 @@ An example event for `log` looks as following:
         "port": 8256
     },
     "ecs": {
-        "version": "8.9.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d8aa4cb0-4002-48c4-abf4-14c12d2e4be1",
+        "id": "383c6290-eea2-4a18-8adf-2ed05723031e",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.10.3"
     },
     "event": {
         "action": "firewall-rule",
@@ -56,7 +56,7 @@ An example event for `log` looks as following:
         ],
         "code": "305011",
         "dataset": "cisco_asa.log",
-        "ingested": "2023-06-01T10:41:28Z",
+        "ingested": "2023-10-17T09:19:55Z",
         "kind": "event",
         "original": "Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:192.168.98.44/8256",
         "severity": 6,
@@ -74,7 +74,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "172.31.0.4:45752"
+            "address": "192.168.208.4:60290"
         }
     },
     "network": {
@@ -123,6 +123,7 @@ An example event for `log` looks as following:
         "forwarded"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -145,6 +146,7 @@ An example event for `log` looks as following:
 | cisco.asa.dap_records | The assigned DAP records | keyword |
 | cisco.asa.destination_interface | Destination interface for the flow or event. | keyword |
 | cisco.asa.destination_user_security_group_tag | The Security Group Tag for the destination user. Security Group Tag are 16-bit identifiers used to represent logical group privilege. | long |
+| cisco.asa.destination_user_security_group_tag_name | The name of Security Group Tag for the destination user. | keyword |
 | cisco.asa.destination_username | Name of the user that is the destination for this event. | keyword |
 | cisco.asa.full_message | The Cisco log message text. | keyword |
 | cisco.asa.icmp_code | ICMP code. | short |
@@ -157,13 +159,16 @@ An example event for `log` looks as following:
 | cisco.asa.mapped_source_port | The translated source port. | long |
 | cisco.asa.message | The message associated with SIP and Skinny VoIP events | keyword |
 | cisco.asa.message_id | The Cisco ASA message identifier. | keyword |
+| cisco.asa.original_iana_number | IANA Protocol Number of the original IP payload. | short |
 | cisco.asa.privilege.new | When a users privilege is changed this is the new value | keyword |
 | cisco.asa.privilege.old | When a users privilege is changed this is the old value | keyword |
+| cisco.asa.rejection_reason | Reason for an AAA authentication rejection. | keyword |
 | cisco.asa.rule_name | Name of the Access Control List rule that matched this event. | keyword |
 | cisco.asa.security | Cisco FTD security event fields. | flattened |
 | cisco.asa.session_type | Session type (for example, IPsec or UDP). | keyword |
 | cisco.asa.source_interface | Source interface for the flow or event. | keyword |
 | cisco.asa.source_user_security_group_tag | The Security Group Tag for the source user. Security Group Tag are 16-bit identifiers used to represent logical group privilege. | long |
+| cisco.asa.source_user_security_group_tag_name | The name of Security Group Tag for the source user. | keyword |
 | cisco.asa.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.asa.suffix | Optional suffix after %ASA identifier. | keyword |
 | cisco.asa.termination_initiator | Interface name of the side that initiated the teardown | keyword |
@@ -217,6 +222,7 @@ An example event for `log` looks as following:
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.port | Port of the destination. | long |
 | destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| destination.user.email | User email address. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -330,6 +336,7 @@ An example event for `log` looks as following:
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.port | Port of the source. | long |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | source.user.name.text | Multi-field of `source.user.name`. | match_only_text |

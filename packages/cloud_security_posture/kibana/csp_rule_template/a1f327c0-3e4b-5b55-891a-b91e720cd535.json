@@ -1,0 +1,38 @@
+{
+    "id": "a1f327c0-3e4b-5b55-891a-b91e720cd535",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/dns/dnssec-advanced#advanced_signing_options",
+            "id": "a1f327c0-3e4b-5b55-891a-b91e720cd535",
+            "name": "Ensure That RSASHA1 Is Not Used for the Key-Signing Key in Cloud DNS DNSSEC",
+            "profile_applicability": "* Level 1",
+            "description": "NOTE: Currently, the SHA1 algorithm has been removed from general use by Google, and, if being used, needs to be whitelisted on a project basis by Google and will also, therefore, require a Google Cloud support contract.\n\nDNSSEC algorithm numbers in this registry may be used in CERT RRs.\nZone signing (DNSSEC) and transaction security mechanisms (SIG(0) and TSIG) make use of particular subsets of these algorithms.\nThe algorithm used for key signing should be a recommended one and it should be strong.",
+            "rationale": "Domain Name System Security Extensions (DNSSEC) algorithm numbers in this registry may be used in CERT RRs.\nZonesigning (DNSSEC) and transaction security mechanisms (SIG(0) and TSIG) make use of particular subsets of these algorithms.\n\nThe algorithm used for key signing should be a recommended one and it should be strong.\nWhen enabling DNSSEC for a managed zone, or creating a managed zone with DNSSEC, the user can select the DNSSEC signing algorithms and the denial-of-existence type.\nChanging the DNSSEC settings is only effective for a managed zone if DNSSEC is not already enabled.\nIf there is a need to change the settings for a managed zone where it has been enabled, turn DNSSEC off and then re-enable it with different settings.",
+            "audit": "**From Google Cloud CLI**\n\nEnsure the property algorithm for keyType keySigning is not using `RSASHA1`.\n\n gcloud dns managed-zones describe ZONENAME --format=\"json(dnsName,dnssecConfig.state,dnssecConfig.defaultKeySpecs)\"",
+            "remediation": "**From Google Cloud CLI**\n\n1. If it is necessary to change the settings for a managed zone where it has been enabled, NSSEC must be turned off and re-enabled with different settings. To turn off DNSSEC, run the following command:\n\n```\ngcloud dns managed-zones update ZONE_NAME --dnssec-state off\n```\n\n2. To update key-signing for a reported managed DNS Zone, run the following command:\n\n```\ngcloud dns managed-zones update ZONE_NAME --dnssec-state on --ksk-algorithm KSK_ALGORITHM --ksk-key-length KSK_KEY_LENGTH --zsk-algorithm ZSK_ALGORITHM --zsk-key-length ZSK_KEY_LENGTH --denial-of-existence DENIAL_OF_EXISTENCE\n```\n\nSupported algorithm options and key lengths are as follows.\n\n Algorithm KSK Length ZSK Length\n --------- ---------- ----------\n RSASHA1 1024,2048 1024,2048\n RSASHA256 1024,2048 1024,2048\n RSASHA512 1024,2048 1024,2048\n ECDSAP256SHA256 256 256\n ECDSAP384SHA384 384 384",
+            "section": "Networking",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 3.4",
+                "Networking"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "3.4",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

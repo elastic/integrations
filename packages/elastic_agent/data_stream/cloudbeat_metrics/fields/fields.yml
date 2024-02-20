@@ -1,6 +1,4 @@
 - name: elastic_agent
-  title: Elastic Agent
-  description: Fields related to the Elastic Agents
   type: group
   fields:
     - name: id
@@ -45,17 +43,20 @@
           description: |
             The total CPU time spent by the process.
         - name: total.time.ms
-          type: date
+          type: long
+          metric_type: counter
           description: |
-            The time when the process was started.
+            The total CPU time spent by the process.
         - name: user.time.ms
-          type: date
+          type: long
+          metric_type: counter
           description: |
-            The time when the process was started.
+            The amount of CPU time the process spent in user space.
         - name: system.time.ms
-          type: date
+          type: long
+          metric_type: counter
           description: |
-            The time when the process was started.
+            The amount of CPU time the process spent in kernel space.
     - name: memory
       type: group
       fields:
@@ -417,3 +418,22 @@
               metric_type: counter
               description: |
                 Total number of I/O operations performed on all devices by processes in the cgroup as seen by the throttling policy.
+- name: component
+  type: group
+  fields:
+    - name: id
+      type: keyword
+      ignore_above: 1024
+      description: Component id
+    - name: binary
+      type: keyword
+      ignore_above: 1024
+      description: The binary that exeuctes the component
+      example: filebeat
+- name: metricset
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      description: Metricset name
+      example: stats

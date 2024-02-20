@@ -3,6 +3,7 @@ interval: {{interval}}
 request.method: "POST"
 {{#if enable_request_tracer}}
 request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
 {{/if}}
 {{#if url}}
 request.url: {{url}}/events/restSearch
@@ -37,8 +38,16 @@ request.transforms:
     value: json
 - set:
     target: body.timestamp
-    value: '[[.cursor.timestamp.Unix]]'
+    value: >-
+      [[- if index .cursor "timestamp" -]]
+        [[- .cursor.timestamp -]]
+      [[- else -]]
+        [[- .last_response.url.params.Get "timestamp" -]]
+      [[- end -]]
     default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
+- set:
+    target: body.order
+    value: timestamp
 - set:
     # Ignored by MISP, set as a workaround to make it available in response.pagination.
     target: url.params.timestamp

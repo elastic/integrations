@@ -3,11 +3,12 @@ description: Pipeline for Tenable.sc asset logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -16,7 +17,7 @@ processors:
       field: json.timestamp
       if: ctx.json?.timestamp != null
       formats:
-          - UNIX
+        - UNIX
       on_failure:
         - append:
             field: error.message
@@ -186,7 +187,7 @@ processors:
       source: |
         def domain = '';
         def nameArray = ctx.json.dnsName.toString().splitOnToken('.');
-        if (nameArray?.length > 0) {
+        if (nameArray?.length != null && nameArray.length > 0) {
           for (int i = 1; i < nameArray.length; i++) {
             domain += nameArray[i] + (i < nameArray.length - 1 ? '.' : '');
           }
@@ -282,7 +283,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
 on_failure:

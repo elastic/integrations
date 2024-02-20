@@ -1,15 +1,16 @@
-format_version: 1.0.0
+format_version: 3.0.0
 name: aws
 title: AWS
-version: 1.53.0
-license: basic
+version: 2.12.0
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
   - aws
-release: ga
 conditions:
-  kibana.version: "^8.9.0"
+  elastic:
+    subscription: basic
+  kibana:
+    version: "^8.12.0"
 screenshots:
   - src: /img/metricbeat-aws-overview.png
     title: metricbeat aws overview
@@ -35,20 +36,23 @@ vars:
     required: false
     show_user: false
   - name: access_key_id
-    type: text
+    type: password
     title: Access Key ID
+    secret: true
     multi: false
     required: false
     show_user: true
   - name: secret_access_key
-    type: text
+    type: password
     title: Secret Access Key
+    secret: true
     multi: false
     required: false
     show_user: true
   - name: session_token
-    type: text
+    type: password
     title: Session Token
+    secret: true
     multi: false
     required: false
     show_user: true
@@ -136,10 +140,6 @@ policy_templates:
       - observability
       - monitoring
     inputs:
-      - type: aws-s3
-        title: Collect logs from S3 (Deprecated)
-        description: Collecting logs using aws-s3 input
-        input_group: logs
       - type: aws-cloudwatch
         title: Collect logs from CloudWatch
         description: Collecting logs using aws-cloudwatch input
@@ -601,6 +601,10 @@ policy_templates:
         title: Collect Route53 logs
         description: Collecting Route53 logs using aws-cloudwatch input
         input_group: logs
+      - type: aws-s3
+        title: Collect Route53 logs
+        description: Collecting Route53 logs using aws-s3 input
+        input_group: logs
     icons:
       - src: /img/logo_route53.svg
         title: AWS Route53 logo
@@ -760,6 +764,15 @@ policy_templates:
         title: Collect API Gateway logs from CloudWatch
         description: Collecting API Gateway logs using aws-cloudwatch input
         input_group: logs
+    screenshots:
+      - src: /img/filebeat-aws-apigateway-overview.png
+        title: filebeat aws api gateway overview
+        size: 2048x1522
+        type: image/png
+      - src: /img/metricbeat-aws-apigateway-overview.png
+        title: metricbeat aws api gateway overview
+        size: 1280x1052
+        type: image/png
     icons:
       - src: /img/logo_apigateway.svg
         title: AWS API Gateway logo
@@ -797,4 +810,5 @@ policy_templates:
         size: 32x32
         type: image/svg+xml
 owner:
-  github: elastic/obs-cloud-monitoring
+  github: elastic/obs-ds-hosted-services
+  type: elastic

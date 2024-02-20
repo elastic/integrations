@@ -11,6 +11,14 @@ This integration uses Prometheus to collect above metrics.
 
 To open Prometheus endpoint read following [instructions](https://www.ibm.com/docs/en/was/9.0.5?topic=mosh-displaying-pmi-metrics-in-prometheus-format-metrics-app).
 
+## Compatibility
+
+This integration has been tested against WebSphere Application Server traditional version `9.0.5.17`.
+
+### Troubleshooting
+
+If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``JDBC``, ``Servlet``, ``Session Manager`` and ``ThreadPool`` data stream's indices.
+
 ## JDBC
 
 This data stream collects JDBC (Java Database Connectivity) related metrics.
@@ -83,7 +91,6 @@ An example event for `jdbc` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "websphere_application_server-jdbc",
         "prometheus"
     ],
@@ -128,6 +135,7 @@ An example event for `jdbc` looks as following:
 | event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.type | Event type | constant_keyword |
+| host.ip | Host ip addresses. | ip |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
@@ -225,7 +233,6 @@ An example event for `servlet` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "websphere_application_server-servlet",
         "prometheus"
     ],
@@ -253,6 +260,7 @@ An example event for `servlet` looks as following:
 | event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.type | Event type | constant_keyword |
+| host.ip | Host ip addresses. | ip |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
@@ -348,7 +356,6 @@ An example event for `session_manager` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "websphere_application_server-session_manager",
         "prometheus"
     ],
@@ -403,6 +410,7 @@ An example event for `session_manager` looks as following:
 | event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.type | Event type | constant_keyword |
+| host.ip | Host ip addresses. | ip |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
@@ -499,7 +507,6 @@ An example event for `threadpool` looks as following:
         "type": "prometheus"
     },
     "tags": [
-        "forwarded",
         "websphere_application_server-threadpool",
         "prometheus"
     ],
@@ -540,6 +547,7 @@ An example event for `threadpool` looks as following:
 | event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.type | Event type | constant_keyword |
+| host.ip | Host ip addresses. | ip |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |

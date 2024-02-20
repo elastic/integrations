@@ -3,7 +3,7 @@ description: Pipeline for processing audit logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.11.0'
   - set:
       field: event.kind
       value: event
@@ -11,6 +11,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -20,51 +21,57 @@ processors:
       value: [iam]
   - append:
       field: event.category
-      if: ctx.json?.action?.type?.toLowerCase().contains('created') || ctx.json.action.type.toLowerCase().contains('deleted') || ctx.json.action.type.toLowerCase().contains('updated') || ctx.json.action.type.toLowerCase().contains('access_allowed')
+      if: >-
+        ctx.json?.action?.type != null && (
+          ctx.json.action.type.toLowerCase().contains('created') ||
+          ctx.json.action.type.toLowerCase().contains('deleted') ||
+          ctx.json.action.type.toLowerCase().contains('updated') ||
+          ctx.json.action.type.toLowerCase().contains('access_allowed')
+        )
       value: [configuration]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('created')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('created') == true
       value: [creation]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('deleted')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('deleted') == true
       value: [deletion]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('updated')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('updated') == true
       value: [change]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('user')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('user') == true
       value: [user]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('group')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('group') == true
       value: [group]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('allowed')
-      value: [allowed]
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('allowed') == true
+      value: [info]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('denied')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('denied') == true
       value: [denied]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('started')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('started') == true
       value: [start]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('access_allowed')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('access_allowed') == true
       value: [access]
   - append:
       field: event.category
-      if: ctx.json?.action?.type?.toLowerCase().contains('password.check_succeeded')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('password.check_succeeded') == true
       value: [authentication]
   - append:
       field: event.category
-      if: ctx.json?.action?.type?.toLowerCase().contains('email')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('email') == true
       value: [email]
   - set:
       field: event.type
@@ -81,7 +88,7 @@ processors:
       target_field: ping_one.audit.created_at
       if: ctx.json?.createdAt != null && ctx.json?.createdAt != ''
       formats:
-          - ISO8601
+        - ISO8601
       on_failure:
         - append:
             field: error.message
@@ -117,7 +124,7 @@ processors:
       target_field: ping_one.audit.recorded_at
       if: ctx.json?.recordedAt != null && ctx.json?.recordedAt != ''
       formats:
-          - ISO8601
+        - ISO8601
       on_failure:
         - append:
             field: error.message
@@ -267,7 +274,7 @@ processors:
       field:
         - json
       ignore_missing: true
-# Remove ping_one.audit fields that are copied into an ECS field.
+      # Remove ping_one.audit fields that are copied into an ECS field.
   - foreach:
       field: ping_one.audit.resources
       processor:
@@ -299,7 +306,7 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '') {
             return true;

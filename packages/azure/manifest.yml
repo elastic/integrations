@@ -1,7 +1,6 @@
 name: azure
 title: Azure Logs
-version: 1.5.28
-release: ga
+version: 1.9.1
 description: This Elastic integration collects logs from Azure
 type: integration
 icons:
@@ -9,13 +8,15 @@ icons:
     title: logo azure
     size: 32x32
     type: image/svg+xml
-format_version: 1.0.0
-license: basic
+format_version: "3.0.2"
 categories:
   - azure
   - observability
 conditions:
-  kibana.version: "^8.6.0"
+  kibana:
+    version: "^8.12.0"
+  elastic:
+    subscription: basic
 screenshots:
   - src: /img/azure_user_activity_dashboard.png
     title: Azure User Activity Dashboard
@@ -38,7 +39,8 @@ vars:
     show_user: true
     default: $Default
   - name: connection_string
-    type: text
+    type: password
+    secret: true
     title: Connection String
     multi: false
     required: true
@@ -54,7 +56,8 @@ vars:
     description: >-
       The name of the storage account where the consumer group's state/offsets will be stored and updated.
   - name: storage_account_key
-    type: text
+    type: password
+    secret: true
     title: Storage Account Key
     multi: false
     required: true
@@ -156,14 +159,14 @@ policy_templates:
         size: 5002x2666
         type: image/png
   - name: springcloudlogs
-    title: Azure Spring Cloud logs
-    description: Azure Spring Cloud logs integration
+    title: Azure Spring Apps logs
+    description: Azure Spring Apps logs integration
     data_streams:
       - springcloudlogs
     inputs:
       - type: "azure-eventhub"
-        title: "Collect Azure Spring Cloud logs from Event Hub"
-        description: "Collecting Spring Cloud logs from Azure instances (input: azure-eventhub)"
+        title: "Collect Azure Spring Apps logs from Event Hub"
+        description: "Collecting Spring Apps logs from Azure instances (input: azure-eventhub)"
         input_group: logs
     icons:
       - src: /img/spring_logs.svg
@@ -220,4 +223,5 @@ policy_templates:
         size: 32x32
         type: image/svg+xml
 owner:
-  github: elastic/obs-cloud-monitoring
+  github: elastic/obs-ds-hosted-services
+  type: elastic

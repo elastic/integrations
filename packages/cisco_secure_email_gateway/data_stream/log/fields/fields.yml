@@ -15,6 +15,8 @@
       type: ip
     - name: alert_category
       type: keyword
+    - name: antivirus_result
+      type: keyword
     - name: appliance
       type: group
       fields:
@@ -164,8 +166,11 @@
       description: Disk I/O Utilization.
     - name: disposition
       type: keyword
-      description: ""
-      The file reputation disposition values are: MALICIOUS CLEAN FILE UNKNOWN - When the reputation score is zero. VERDICT UNKNOWN - When the disposition is FILE UNKNOWN and score is non-zero. LOW RISK - When no dynamic content is found in a file after file analysis, the verdict is Low Risk. The file is not sent for file analysis, and the message continues through the email pipeline.
+      description: >-
+        The file reputation disposition values are: MALICIOUS CLEAN FILE UNKNOWN - When the reputation score is zero. VERDICT UNKNOWN - When the disposition is FILE UNKNOWN and score is non-zero. LOW RISK - When no dynamic content is found in a file after file analysis, the verdict is Low Risk. The file is not sent for file analysis, and the message continues through the email pipeline.
+    - name: dkim_aligned
+      type: boolean
+      description: Protocol DKIM aligned is true or false.
     - name: dns
       type: group
       fields:
@@ -175,12 +180,29 @@
         - name: requests
           type: long
           description: DNS Requests.
+    - name: domain
+      type: keyword
     - name: dropped_messages
       type: long
       description: Dropped Messages.
+    - name: email_participants
+      type: keyword
+      description: All the participants in the email.
+    - name: email
+      type: keyword
+    - name: email_tracker_header
+      type: keyword
+      description: Header consisting of (but not typically displaying) critical information for efficient email tracking and delivery.
+    - name: encrypted_hash
+      type: keyword
     - name: encryption_queue
       type: long
       description: Messages in the Encryption Queue.
+    - name: engine
+      type: keyword
+      description: Engine used by the interim verdict.
+    - name: env
+      type: keyword
     - name: error_code
       type: keyword
     - name: esa
@@ -281,8 +303,6 @@
           type: keyword
         - name: msg_too_big
           type: keyword
-        - name: rate_limited_ip
-          type: keyword
     - name: estimated
       type: group
       fields:
@@ -314,6 +334,11 @@
     - name: hard_bounce_recipients
       type: long
       description: Hard Bounced Recipients.
+    - name: helo
+      type: keyword
+    - name: host
+      type: keyword
+      description: The hostname or serial of the host sending the log. Configured in the Cisco Secure Email Gateway log subscription dashboard.
     - name: injected
       type: group
       fields:
@@ -345,6 +370,9 @@
     - name: malware
       type: keyword
       description: The name of the malware threat.
+    - name: maturity
+      type: keyword
+      description: Sender maturity time.
     - name: max_io
       type: long
       description: Maximum disk I/O operations per second for the mail process.
@@ -378,6 +406,9 @@
       description: Other Hard Bounces.
     - name: outcome
       type: keyword
+    - name: policy
+      type: keyword
+      description: Per-recipient policy defined in the inbound table.
     - name: privilege
       type: keyword
     - name: qname
@@ -409,6 +440,8 @@
         - name: utilization
           type: long
           description: RAM Utilization.
+    - name: rank
+      type: long
     - name: read_bytes
       type: long
     - name: recepients
@@ -460,6 +493,9 @@
     - name: sophos_ld
       type: long
       description: Percent CPU used by Sophos anti-virus scanning.
+    - name: spf_aligned
+      type: boolean
+      description: Protocol SPF aligned is true or false.
     - name: spy_name
       type: keyword
       description: The name of the threat, if a malware is found in the file during file analysis.
@@ -473,6 +509,8 @@
         - name: timestamp
           type: date
           description: The date and time at which the file is uploaded to the file analysis server by the email gateway.
+    - name: suspected_domains
+      type: keyword
     - name: swap_usage
       type: keyword
     - name: swapped
@@ -493,6 +531,12 @@
             - name: out
               type: long
               description: Memory paged out.
+    - name: threat_category
+      type: keyword
+      description: Category of the threat.
+    - name: threat_level
+      type: keyword
+      description: Threat level.
     - name: total_ld
       type: long
       description: Total CPU consumption.
@@ -516,8 +560,8 @@
             The upload action value recommended by the file reputation server to take on the given file  0 - Need not send for upload. 1 - Send file for upload. Note 	 The email gateway uploads the file when the upload action value is ‘1.’. 2 - Do not send file for upload. 3 - Send only metadata for upload.
         - name: priority
           type: keyword
-          description: ""
-          Upload priority values are: High - For all selected file types, except PDF file type. Low - For only PDF file types.
+          description: >-
+            Upload priority values are: High - For all selected file types, except PDF file type. Low - For only PDF file types.
     - name: verified
       type: keyword
     - name: vendor_action
@@ -525,21 +569,20 @@
     - name: verdict
       type: keyword
       description: The file retrospective verdict value is malicious or clean.
+    - name: verdict_scale
+      type: keyword
+      description: Verdict is negative or positive.
+    - name: verdict_source
+      type: keyword
+      description: Verdict source.
     - name: work_queue
       type: long
       description: This is the number of messages currently in the work queue.
     - name: zone
       type: keyword
-- name: filepath
-  type: keyword
 - name: log.file.path
   type: keyword
   description: File path from which the log event was read / sent from.
 - name: log.source.address
   type: keyword
   description: Source address from which the log event was read / sent from.
-- name: type
-  type: keyword
-  description: Input type.
-- name: input.type
-  type: keyword

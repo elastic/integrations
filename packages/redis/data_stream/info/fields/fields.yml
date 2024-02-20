@@ -524,11 +524,13 @@
       metric_type: gauge
       description: |
         Count of slow operations
-- name: service.address
-  type: keyword
-  # Reason for adding as dimension field : A connection string to the server.
-  dimension: true
-  description: Client address
-- name: service.version
-  type: keyword
-  description: Version of the service the data was collected from
+- name: os
+  type: group
+  description: The OS fields contain information about the operating system.
+  fields:
+    - name: full
+      type: keyword
+      description: Operating system name, including the version or code name.
+      multi_fields:
+        - name: text
+          type: match_only_text

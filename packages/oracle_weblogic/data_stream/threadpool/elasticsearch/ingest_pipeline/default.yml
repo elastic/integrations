@@ -9,14 +9,23 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
   - rename:
       field: jolokia.metrics
       target_field: oracle_weblogic
       ignore_missing: true
       ignore_failure: true
+  - rename:
+      field: oracle_weblogic.mbean
+      target_field: oracle_weblogic.threadpool.mbean
+      ignore_missing: true
+  - rename:
+      field: oracle_weblogic.threadpool.temp.objectName
+      target_field: oracle_weblogic.threadpool.mbean
+      ignore_missing: true
   - set:
       field: event.type
-      value: info
+      value: [info]
       ignore_failure: true
   - set:
       field: event.kind
@@ -24,7 +33,7 @@ processors:
       ignore_failure: true
   - set:
       field: event.category
-      value: web
+      value: [web]
       ignore_failure: true
   - set:
       field: event.module
@@ -37,7 +46,6 @@ processors:
   - remove:
       field:
         - jolokia
-        - oracle_weblogic.mbean
       ignore_failure: true
       ignore_missing: true
 on_failure:

@@ -1,0 +1,38 @@
+{
+    "id": "4931d684-a386-5545-b2c4-47b836e0149b",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Automated Backups will increase required size of storage and costs associated with it.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/sql/docs/mysql/backup-recovery/backups\n2. https://cloud.google.com/sql/docs/postgres/backup-recovery/backing-up",
+            "id": "4931d684-a386-5545-b2c4-47b836e0149b",
+            "name": "Ensure That Cloud SQL Database Instances Are Configured With Automated Backups",
+            "profile_applicability": "* Level 1",
+            "description": "It is recommended to have all SQL database instances set to enable automated backups.",
+            "rationale": "Backups provide a way to restore a Cloud SQL instance to recover lost data or recover from a problem with that instance.\nAutomated backups need to be set for any instance that contains data that should be protected from loss or damage.\nThis recommendation is applicable for SQL Server, PostgreSql, MySql generation 1 and MySql generation 2 instances.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the Cloud SQL Instances page in the Google Cloud Console by visiting [https://console.cloud.google.com/sql/instances](https://console.cloud.google.com/sql/instances).\n2. Click the instance name to open its instance details page.\n3. Go to the `Backups` menu.\n4. Ensure that `Automated backups` is set to `Enabled` and `Backup time` is mentioned.\n\n**From Google Cloud CLI**\n\n5. List all Cloud SQL database instances using the following command:\n```\ngcloud sql instances list\n```\n\n6. Ensure that the below command returns `True` for every Cloud SQL database instance.\n```\ngcloud sql instances describe <INSTANCE_NAME> --format=\"value('Enabled':settings.backupConfiguration.enabled)\"\n```",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to the Cloud SQL Instances page in the Google Cloud Console by visiting [https://console.cloud.google.com/sql/instances](https://console.cloud.google.com/sql/instances).\n2. Select the instance where the backups need to be configured.\n3. Click `Edit`.\n4. In the `Backups` section, check `Enable automated backups', and choose a backup window.\n5. Click `Save`.\n\n**From Google Cloud CLI**\n\n6. List all Cloud SQL database instances using the following command:\n```\ngcloud sql instances list\n```\n\n7. Enable `Automated backups` for every Cloud SQL database instance using the below command:\n```\ngcloud sql instances patch <INSTANCE_NAME> --backup-start-time <[HH:MM]>\n```\nThe `backup-start-time` parameter is specified in 24-hour time, in the UTC\u00b100 time zone, and specifies the start of a 4-hour backup window.\nBackups can start any time during the backup window.",
+            "section": "Cloud SQL Database Services",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 6.7",
+                "Cloud SQL Database Services"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "6.7",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_6_7"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

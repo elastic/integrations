@@ -3,7 +3,7 @@ description: Pipeline for Palo Alto Networks PAN-OS Logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.9.0'
+      value: '8.11.0'
   - set:
       field: observer.vendor
       value: Palo Alto Networks
@@ -330,6 +330,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      if: ctx.panw?.panos?.parent_session?.start_time != null
+      field: session.start_time
+      value: '{{{panw.panos.parent_session.start_time}}}'
 
 # convert IP fields as the output of the CSV processor is always a string.
   - convert:

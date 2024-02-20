@@ -1,0 +1,38 @@
+{
+    "id": "61ab077c-fc0f-5920-8bcf-ccc037a4139b",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "There are additional costs for managed disks based off of disk space allocated. When converting to managed disks, VMs will be powered off and back on.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/virtual-machines/windows/convert-unmanaged-to-managed-disks\n2. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-data-protection#dp-4-enable-data-at-rest-encryption-by-default\n3. https://docs.microsoft.com/en-us/azure/virtual-machines/faq-for-disks\n4. https://azure.microsoft.com/en-us/pricing/details/managed-disks/",
+            "id": "61ab077c-fc0f-5920-8bcf-ccc037a4139b",
+            "name": "Ensure Virtual Machines are utilizing Managed Disks",
+            "profile_applicability": "* Level 1",
+            "description": "Migrate blob-based VHDs to Managed Disks on Virtual Machines to exploit the default features of this configuration.\nThe features include: \n1) Default Disk Encryption\n2) Resilience, as Microsoft will managed the disk storage and move around if underlying hardware goes faulty\n3) Reduction of costs over storage accounts",
+            "rationale": "Managed disks are by default encrypted on the underlying hardware, so no additional encryption is required for basic protection.\nIt is available if additional encryption is required.\nManaged disks are by design more resilient that storage accounts.\n\nFor ARM-deployed Virtual Machines, Azure Adviser will at some point recommend moving VHDs to managed disks both from a security and cost management perspective.",
+            "audit": "**From Azure Portal**\n\n1. Using the search feature, go to `Virtual Machines`\n2. Click the `Manage view` dropdown, then select `Edit columns`\n3. Add `Uses managed disks` to the selected columns\n4. Select `Save`\n5. Ensure all virtual machines listed are using managed disks\n\n**From PowerShell**\n\n```\nGet-AzVM | ForEach-Object {\"Name: \" + $_.Name;\"ManagedDisk Id: \" + $_.StorageProfile.OsDisk.ManagedDisk.Id;\"\"}\n```\n\nExample output:\n\n```\nName: vm1\nManagedDisk Id: /disk1/id\n\nName: vm2\nManagedDisk Id: /disk2/id\n```\n\nIf the 'ManagedDisk Id' field is empty the os disk for that vm is not managed.",
+            "remediation": "**From Azure Portal**\n\n1. Using the search feature, go to `Virtual Machines`\n2. Select the virtual machine you would like to convert\n3. Select `Disks` in the menu for the VM\n4. At the top select `Migrate to managed disks`\n5. You may follow the prompts to convert the disk and finish by selecting `Migrate` to start the process\n\n**NOTE** VMs will be stopped and restarted after migration is complete.\n\n**From PowerShell**\n```\nStop-AzVM -ResourceGroupName $rgName -Name $vmName -Force\nConvertTo-AzVMManagedDisk -ResourceGroupName $rgName -VMName $vmName\nStart-AzVM -ResourceGroupName $rgName -Name $vmName\n```",
+            "section": "Virtual Machines",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 7.2",
+                "Virtual Machines"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "7.2",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_7_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

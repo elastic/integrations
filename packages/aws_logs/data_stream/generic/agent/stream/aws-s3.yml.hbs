@@ -4,6 +4,9 @@ data_stream:
 pipeline: {{pipeline}}
 {{/if}}
 
+{{! The aws-s3 input can be configured to read from an SQS queue or an S3 bucket. }}
+
+{{! start SQS queue }}
 {{#unless bucket_arn}}
 {{#unless non_aws_bucket_name}}
 {{#if queue_url }}
@@ -11,50 +14,44 @@ queue_url: {{ queue_url }}
 {{/if}}
 {{/unless}}
 {{/unless}}
+{{! end SQS queue }}
 
-{{#unless queue_url}}
+{{#unless queue_url}}{{! start S3 bucket polling }}
+
+{{!
+When using an S3 bucket, you can specify only one of the following options:
+- An AWS bucket ARN
+- A non-AWS bucket name
+}}
+
+{{! shared S3 bucket polling options }}
+{{#if number_of_workers }}
+number_of_workers: {{ number_of_workers }}
+{{/if}}
+
+{{#if bucket_list_prefix }}
+bucket_list_prefix: {{ bucket_list_prefix }}
+{{/if}}
+
+{{#if bucket_list_interval }}
+bucket_list_interval: {{ bucket_list_interval }}
+{{/if}}
+
+{{! AWS S3 bucket ARN options }}
 {{#unless non_aws_bucket_name}}
 {{#if bucket_arn }}
 bucket_arn: {{ bucket_arn }}
 {{/if}}
-{{#if number_of_workers }}
-number_of_workers: {{ number_of_workers }}
-{{/if}}
-{{#if bucket_list_interval }}
-bucket_list_interval: {{ bucket_list_interval }}
-{{/if}}
-{{/unless}}
 {{/unless}}
 
+{{! non-AWS S3 bucket ARN options }}
 {{#unless bucket_arn}}
-{{#unless queue_url}}
 {{#if non_aws_bucket_name }}
 non_aws_bucket_name: {{ non_aws_bucket_name }}
 {{/if}}
-{{#if number_of_workers }}
-number_of_workers: {{ number_of_workers }}
-{{/if}}
-{{#if bucket_list_interval }}
-bucket_list_interval: {{ bucket_list_interval }}
-{{/if}}
-{{/unless}}
 {{/unless}}
 
-{{#unless queue_url}}
-{{#unless non_aws_bucket_name}}
-{{#unless bucket_arn }}
-{{#if bucket_list_prefix }}
-bucket_list_prefix: {{ bucket_list_prefix }}
-{{/if}}
-{{#if number_of_workers }}
-number_of_workers: {{ number_of_workers }}
-{{/if}}
-{{#if bucket_list_interval }}
-bucket_list_interval: {{ bucket_list_interval }}
-{{/if}}
-{{/unless}}
-{{/unless}}
-{{/unless}}
+{{/unless}}{{! end S3 bucket polling }}
 
 {{#if buffer_size }}
 buffer_size: {{ buffer_size }}

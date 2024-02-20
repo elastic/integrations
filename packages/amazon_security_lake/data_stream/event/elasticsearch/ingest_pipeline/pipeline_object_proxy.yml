@@ -1,6 +1,6 @@
 ---
 description: Pipeline for processing Network Proxy object.
-# Network Proxy object docs: https://schema.ocsf.io/1.0.0-rc.3/objects/network_proxy
+# Network Proxy object docs: https://schema.ocsf.io/1.0.0/objects/network_proxy?extensions=
 processors:
   - convert:
       field: ocsf.proxy.location.is_on_premises
@@ -19,7 +19,7 @@ processors:
       tag: convert_proxy_ip_to_ip
       type: ip
       ignore_missing: true
-      if: ctx.ocsf?.proxy?.ip != ''
+      if: ctx.ocsf?.proxy?.ip != '' || ctx.ocsf.proxy.ip != '-'
       on_failure:
         - remove:
             field: ocsf.proxy.ip

@@ -1,0 +1,38 @@
+{
+    "id": "8c36c21b-3c8f-5a92-bc7e-62871428f4d2",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Users already having Project-wide ssh key pairs and using third party SSH clients will lose access to the impacted Instances. For Project users using gcloud or GCP Console based SSH option, no manual key creation and distribution is required and will be handled by GCE (Google Compute Engine) itself. To access Instance using third party SSH clients Instance specific SSH key pairs need to be created and distributed to the required users.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/compute/docs/instances/adding-removing-ssh-keys\n2. https://cloud.google.com/sdk/gcloud/reference/topic/formats",
+            "id": "8c36c21b-3c8f-5a92-bc7e-62871428f4d2",
+            "name": "Ensure \u201cBlock Project-Wide SSH Keys\u201d Is Enabled for VM Instances",
+            "profile_applicability": "* Level 1",
+            "description": "It is recommended to use Instance specific SSH key(s) instead of using common/shared project-wide SSH key(s) to access Instances.",
+            "rationale": "Project-wide SSH keys are stored in Compute/Project-meta-data.\nProject wide SSH keys can be used to login into all the instances within project.\nUsing project-wide SSH keys eases the SSH key management but if compromised, poses the security risk which can impact all the instances within project.\nIt is recommended to use Instance specific SSH keys which can limit the attack surface if the SSH keys are compromised.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the `VM instances` page by visiting [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances). It will list all the instances in your project.\n\n2. For every instance, click on the name of the instance.\n\n3. Under `SSH Keys`, ensure `Block project-wide SSH keys` is selected.\n\n**From Google Cloud CLI**\n\n4. List the instances in your project and get details on each instance:\n```\ngcloud compute instances list --format=json\n```\n5. Ensure `key: block-project-ssh-keys` is set to `value: 'true'`.",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to the `VM instances` page by visiting: [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances). It will list all the instances in your project.\n\n2. Click on the name of the Impacted instance\n\n3. Click `Edit` in the toolbar\n\n4. Under SSH Keys, go to the `Block project-wide SSH keys` checkbox\n\n5. To block users with project-wide SSH keys from connecting to this instance, select `Block project-wide SSH keys`\n\n6. Click `Save` at the bottom of the page\n\n7. Repeat steps for every impacted Instance\n\n**From Google Cloud CLI**\n\nTo block project-wide public SSH keys, set the metadata value to `TRUE`:\n\n```\ngcloud compute instances add-metadata <INSTANCE_NAME> --metadata block-project-ssh-keys=TRUE\n```",
+            "section": "Virtual Machines",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 4.3",
+                "Virtual Machines"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "4.3",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

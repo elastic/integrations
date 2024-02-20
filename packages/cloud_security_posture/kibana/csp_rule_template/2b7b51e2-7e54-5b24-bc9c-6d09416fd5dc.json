@@ -1,0 +1,38 @@
+{
+    "id": "2b7b51e2-7e54-5b24-bc9c-6d09416fd5dc",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "`Regenerating Key` may break existing client connectivity as the client will try to connect with older API keys they have stored on devices.",
+            "default_value": "",
+            "references": "1. https://developers.google.com/maps/api-security-best-practices#regenerate-apikey\n2. https://cloud.google.com/sdk/gcloud/reference/alpha/services/api-keys",
+            "id": "2b7b51e2-7e54-5b24-bc9c-6d09416fd5dc",
+            "name": "Ensure API Keys Are Rotated Every 90 Days",
+            "profile_applicability": "* Level 2",
+            "description": "API Keys should only be used for services in cases where other authentication methods are unavailable.\nIf they are in use it is recommended to rotate API keys every 90 days.",
+            "rationale": "Security risks involved in using API-Keys are listed below:\n\n- API keys are simple encrypted strings\n\n- API keys do not identify the user or the application making the API request\n\n- API keys are typically accessible to clients, making it easy to discover and steal an API key\n\nBecause of these potential risks, Google recommends using the standard authentication flow instead of API Keys.\nHowever, there are limited cases where API keys are more appropriate.\nFor example, if there is a mobile application that needs to use the Google Cloud Translation API, but doesn't otherwise need a backend server, API keys are the simplest way to authenticate to that API.\n\nOnce a key is stolen, it has no expiration, meaning it may be used indefinitely unless the project owner revokes or regenerates the key.\n\nRotating API keys will reduce the window of opportunity for an access key that is associated with a compromised or terminated account to be used.\n\n\nAPI keys should be rotated to ensure that data cannot be accessed with an old key that might have been lost, cracked, or stolen.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to `APIs & Services\\Credentials` using `https://console.cloud.google.com/apis/credentials`\n\n2. In the section `API Keys`, for every key ensure the `creation date` is less than 90 days.\n\n**From Google Cloud CLI**\n\nTo list keys, use the command\n\n```\ngcloud services api-keys list\n```\nEnsure the date in `createTime` is within 90 days.",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to `APIs & Services\\Credentials` using `https://console.cloud.google.com/apis/credentials`\n\n2. In the section `API Keys`, Click the `API Key Name`. The API Key properties display on a new page.\n\n3. Click `REGENERATE KEY` to rotate API key.\n\n4. Click `Save`.\n\n5. Repeat steps 2,3,4 for every API key that has not been rotated in the last 90 days.\n\n**Note:** Do not set `HTTP referrers` to wild-cards (* or *.[TLD] or *.[TLD]/*) allowing access to any/wide HTTP referrer(s)\nDo not set `IP addresses` and referrer to `any host (0.0.0.0 or 0.0.0.0/0 or ::0)`\n\n**From Google Cloud CLI**\n\nThere is not currently a way to regenerate and API key using gcloud commands.\nTo 'regenerate' a key you will need to create a new one, duplicate the restrictions from the key being rotated, and delete the old key.\n\n6. List existing keys.\n```\ngcloud services api-keys list\n```\n7. Note the `UID` and restrictions of the key to regenerate.\n\n8. Run this command to create a new API key. <key_name> is the display name of the new key.\n````\ngcloud alpha services api-keys create --display-name=\"<key_name>\"\n````\nNote the `UID` of the newly created key\n\n9. Run the update command to add required restrictions. \n\nNote - the restriction may vary for each key.\nRefer to this documentation for the appropriate flags.\nhttps://cloud.google.com/sdk/gcloud/reference/alpha/services/api-keys/update\n```\ngcloud alpha services api-keys update <UID of new key>\n```\n10. Delete the old key.\n```\ngcloud alpha services api-keys delete <UID of old key>\n```",
+            "section": "Identity and Access Management",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 1.15",
+                "Identity and Access Management"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "1.15",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_1_15"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

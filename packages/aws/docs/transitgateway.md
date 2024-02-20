@@ -92,7 +92,7 @@ An example event for `transitgateway` looks as following:
         ],
         "name": "a20ad158868c",
         "mac": [
-            "02:42:ac:14:00:07"
+            "02-42-AC-14-00-07"
         ],
         "architecture": "aarch64"
     },
@@ -155,8 +155,7 @@ An example event for `transitgateway` looks as following:
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.TransitGateway | Filters the metric data by transit gateway. | keyword |  |
 | aws.dimensions.TransitGatewayAttachment | Filters the metric data by transit gateway attachment. | keyword |  |
-| aws.s3.bucket.name | Name of a S3 bucket. | keyword |  |
-| aws.tags.\* | Tag key value pairs from aws resources. | object |  |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | aws.transitgateway.metrics.BytesDropCountBlackhole.sum | The number of bytes dropped because they matched a blackhole route. | long | gauge |
 | aws.transitgateway.metrics.BytesDropCountNoRoute.sum | The number of bytes dropped because they did not match a route. | long | gauge |
 | aws.transitgateway.metrics.BytesIn.sum | The number of bytes received by the transit gateway. | long | gauge |
@@ -186,7 +185,7 @@ An example event for `transitgateway` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
 | error.message | Error message. | match_only_text |  |
-| event.dataset | Event dataset | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
@@ -195,7 +194,7 @@ An example event for `transitgateway` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |

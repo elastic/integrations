@@ -1,0 +1,38 @@
+{
+    "id": "92077c86-0322-5497-b94e-38ef356eadd6",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Removing the public IP address on SQL instances may break some applications that relied on it for database connectivity.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/sql/docs/mysql/configure-private-ip\n2. https://cloud.google.com/sql/docs/mysql/private-ip\n3. https://cloud.google.com/resource-manager/docs/organization-policy/org-policy-constraints\n4. https://console.cloud.google.com/iam-admin/orgpolicies/sql-restrictPublicIp",
+            "id": "92077c86-0322-5497-b94e-38ef356eadd6",
+            "name": "Ensure That Cloud SQL Database Instances Do Not Have Public IPs",
+            "profile_applicability": "* Level 2",
+            "description": "It is recommended to configure Second Generation Sql instance to use private IPs instead of public IPs.",
+            "rationale": "To lower the organization's attack surface, Cloud SQL databases should not have public IPs.\nPrivate IPs provide improved network security and lower latency for your application.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the Cloud SQL Instances page in the Google Cloud Console: [https://console.cloud.google.com/sql/instances](https://console.cloud.google.com/sql/instances)\n\n2. Ensure that every instance has a private IP address and no public IP address configured.\n\n**From Google Cloud CLI**\n\n3. List all Cloud SQL database instances using the following command:\n\n```\ngcloud sql instances list\n```\n\n4. For every instance of type `instanceType: CLOUD_SQL_INSTANCE` with `backendType: SECOND_GEN`, get detailed configuration. Ignore instances of type `READ_REPLICA_INSTANCE` because these instances inherit their settings from the primary instance. Also, note that first generation instances cannot be configured to have a private IP address.\n\n```\ngcloud sql instances describe <INSTANCE_NAME>\n```\n\n5. Ensure that the setting `ipAddresses` has an IP address configured of `type: PRIVATE` and has no IP address of `type: PRIMARY`. `PRIMARY` IP addresses are public addresses. An instance can have both a private and public address at the same time. Note also that you cannot use private IP with First Generation instances.",
+            "remediation": "**From Google Cloud Console**\n\n1. Go to the Cloud SQL Instances page in the Google Cloud Console: [https://console.cloud.google.com/sql/instances](https://console.cloud.google.com/sql/instances)\n2. Click the instance name to open its Instance details page.\n3. Select the `Connections` tab.\n4. Deselect the `Public IP` checkbox.\n5. Click `Save` to update the instance.\n\n**From Google Cloud CLI**\n\n6. For every instance remove its public IP and assign a private IP instead:\n```\ngcloud sql instances patch <INSTANCE_NAME> --network=<VPC_NETWORK_NAME> --no-assign-ip\n```\n\n7. Confirm the changes using the following command::\n```\ngcloud sql instances describe <INSTANCE_NAME>\n```\n\n**Prevention:**\n\nTo prevent new SQL instances from getting configured with public IP addresses, set up a `Restrict Public IP access on Cloud SQL instances` Organization policy at: [https://console.cloud.google.com/iam-admin/orgpolicies/sql-restrictPublicIp](https://console.cloud.google.com/iam-admin/orgpolicies/sql-restrictPublicIp).",
+            "section": "Cloud SQL Database Services",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 6.6",
+                "Cloud SQL Database Services"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "6.6",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_6_6"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

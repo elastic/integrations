@@ -1,0 +1,38 @@
+{
+    "id": "b8c40039-034b-5299-8660-a7c8d34efe36",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/compute/docs/instances/modifying-shielded-vm\n2. https://cloud.google.com/shielded-vm\n3. https://cloud.google.com/security/shielded-cloud/shielded-vm#organization-policy-constraint",
+            "id": "b8c40039-034b-5299-8660-a7c8d34efe36",
+            "name": "Ensure Compute Instances Are Launched With Shielded VM Enabled",
+            "profile_applicability": "* Level 2",
+            "description": "To defend against advanced threats and ensure that the boot loader and firmware on your VMs are signed and untampered, it is recommended that Compute instances are launched with Shielded VM enabled.",
+            "rationale": "Shielded VMs are virtual machines (VMs) on Google Cloud Platform hardened by a set of security controls that help defend against rootkits and bootkits.\n\n\nShielded VM offers verifiable integrity of your Compute Engine VM instances, so you can be confident your instances haven't been compromised by boot- or kernel-level malware or rootkits.\nShielded VM's verifiable integrity is achieved through the use of Secure Boot, virtual trusted platform module (vTPM)-enabled Measured Boot, and integrity monitoring.\n\nShielded VM instances run firmware which is signed and verified using Google's Certificate Authority, ensuring that the instance's firmware is unmodified and establishing the root of trust for Secure Boot.\n\nIntegrity monitoring helps you understand and make decisions about the state of your VM instances and the Shielded VM vTPM enables Measured Boot by performing the measurements needed to create a known good boot baseline, called the integrity policy baseline.\nThe integrity policy baseline is used for comparison with measurements from subsequent VM boots to determine if anything has changed.\n\nSecure Boot helps ensure that the system only runs authentic software by verifying the digital signature of all boot components, and halting the boot process if signature verification fails.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to the `VM instances` page by visiting: [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances).\n\n2. Click on the instance name to see its `VM instance details` page.\n\n3. Under the section `Shielded VM`, ensure that `vTPM` and `Integrity Monitoring` are `on`.\n\n**From Google Cloud CLI**\n\n4. For each instance in your project, get its metadata:\n```\ngcloud compute instances list --format=json | jq -r '.\n| \"vTPM: \\(.[].shieldedInstanceConfig.enableVtpm) IntegrityMonitoring: \\(.[].shieldedInstanceConfig.enableIntegrityMonitoring) Name: \\(.[].name)\"'\n```\n\n5. Ensure that there is a `shieldedInstanceConfig` configuration and that configuration has the `enableIntegrityMonitoring` and `enableVtpm` set to `true`. If the VM is not a Shield VM image, you will not see a shieldedInstanceConfig` in the output.",
+            "remediation": "To be able turn on `Shielded VM` on an instance, your instance must use an image with Shielded VM support.\n\n\n**From Google Cloud Console**\n\n1. Go to the `VM instances` page by visiting: [https://console.cloud.google.com/compute/instances](https://console.cloud.google.com/compute/instances).\n\n2. Click on the instance name to see its `VM instance details` page.\n\n3. Click `STOP` to stop the instance.\n\n4. When the instance has stopped, click `EDIT`.\n\n5. In the Shielded VM section, select `Turn on vTPM` and `Turn on Integrity Monitoring`.\n\n6. Optionally, if you do not use any custom or unsigned drivers on the instance, also select `Turn on Secure Boot`.\n\n7. Click the `Save` button to modify the instance and then click `START` to restart it.\n\n**From Google Cloud CLI**\n\nYou can only enable Shielded VM options on instances that have Shielded VM support.\nFor a list of Shielded VM public images, run the gcloud compute images list command with the following flags:\n\n```\ngcloud compute images list --project gce-uefi-images --no-standard-images\n```\n\n8. Stop the instance:\n```\ngcloud compute instances stop <INSTANCE_NAME>\n```\n9. Update the instance:\n\n```\ngcloud compute instances update <INSTANCE_NAME> --shielded-vtpm --shielded-vm-integrity-monitoring\n```\n10. Optionally, if you do not use any custom or unsigned drivers on the instance, also turn on secure boot.\n\n```\ngcloud compute instances update <INSTANCE_NAME> --shielded-vm-secure-boot\n```\n\n11. Restart the instance:\n\n```\ngcloud compute instances start <INSTANCE_NAME>\n```\n\n**Prevention:**\n\nYou can ensure that all new VMs will be created with Shielded VM enabled by setting up an Organization Policy to for `Shielded VM` at [https://console.cloud.google.com/iam-admin/orgpolicies/compute-requireShieldedVm](https://console.cloud.google.com/iam-admin/orgpolicies/compute-requireShieldedVm).\nLearn more at: \n[https://cloud.google.com/security/shielded-cloud/shielded-vm#organization-policy-constraint](https://cloud.google.com/security/shielded-cloud/shielded-vm#organization-policy-constraint).",
+            "section": "Virtual Machines",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 4.8",
+                "Virtual Machines"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "4.8",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_8"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

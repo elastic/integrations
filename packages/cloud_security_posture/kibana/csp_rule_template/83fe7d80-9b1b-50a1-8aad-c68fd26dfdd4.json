@@ -1,0 +1,38 @@
+{
+    "id": "83fe7d80-9b1b-50a1-8aad-c68fd26dfdd4",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "There is no cost in deploying VNets between Azure resources. If improperly implemented, it may result in loss of critical network traffic.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/storage/common/storage-private-endpoints\n2. https://docs.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview\n3. https://docs.microsoft.com/en-us/azure/private-link/create-private-endpoint-portal\n4. https://docs.microsoft.com/en-us/azure/private-link/create-private-endpoint-cli?tabs=dynamic-ip\n5. https://docs.microsoft.com/en-us/azure/private-link/create-private-endpoint-powershell?tabs=dynamic-ip\n6. https://docs.microsoft.com/en-us/azure/private-link/tutorial-private-endpoint-storage-portal\n7. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-network-security#ns-2-secure-cloud-services-with-network-controls",
+            "id": "83fe7d80-9b1b-50a1-8aad-c68fd26dfdd4",
+            "name": "Ensure Private Endpoints are used to access Storage Accounts",
+            "profile_applicability": "* Level 1",
+            "description": "Use private endpoints for your Azure Storage accounts to allow clients and services to securely access data located over a network via an encrypted Private Link.\nTo do this, the private endpoint uses an IP address from the VNet for each service.\nNetwork traffic between disparate services securely traverses encrypted over the VNet.\nThis VNet can also link addressing space, extending your network and accessing resources on it.\nSimilarly, it can be a tunnel through public networks to connect remote infrastructures together.\nThis creates further security through segmenting network traffic and preventing outside sources from accessing it.",
+            "rationale": "Securing traffic between services through encryption protects the data from easy interception and reading.",
+            "audit": "**From Azure Portal**\n\n1. Open the `Storage Accounts` blade.\n2. For each listed Storage Account, perform the following check:\n3. Under the `Security + networking` heading, click on `Networking`. \n4. Click on the `Private Endpoint Connections` tab at the top of the networking window.\n5. Ensure that for each VNet that the Storage Account must be accessed from, a unique Private Endpoint is deployed and the Connection State for each Private Endpoint is `Approved`\n\nRepeat the procedure for each Storage Account.\n\n**From PowerShell**\n\n```\n$storageAccount = Get-AzStorageAccount -ResourceGroup '<ResourceGroupName>' -Name '<storageaccountname>'\n\nGet-AzPrivateEndpoint -ResourceGroup '<ResourceGroupName>'|Where-Object {$_.PrivateLinkServiceConnectionsText -match $storageAccount.id}\n\n```\n\nIf the results of the second command returns information, the Storage Account is using a Private Endpoint and complies with this Benchmark, otherwise if the results of the second command are empty, the Storage Account generates a finding.\n\n**From Azure CLI**\n\n```\naz storage account show --name '<storage account name>' --query \"privateEndpointConnections[0].id\"\n\n```\n\nIf the above command returns data, the Storage Account complies with this Benchmark, otherwise if the results are empty, the Storage Account generates a finding.",
+            "remediation": "**From Azure Portal**\n\n1. Open the `Storage Accounts` blade\n2. For each listed Storage Account, perform the following:\n3. Under the `Security + networking` heading, click on `Networking` \n4. Click on the `Private Endpoint Connections` tab at the top of the networking window\n5. Click the `+Private endpoint` button\n6. In the `1 - Basics` tab/step:\n - `Enter a name` that will be easily recognizable as associated with the Storage Account (*Note*: The \"Network Interface Name\" will be automatically completed, but you can customize it if needed.)\n - Ensure that the `Region` matches the region of the Storage Account\n - Click `Next`\n7. In the `2 - Resource` tab/step:\n - Select the `target sub-resource` based on what type of storage resource is being made available\n - Click `Next`\n8. In the `3 - Virtual Network` tab/step:\n - Select the `Virtual network` that your Storage Account will be connecting to\n - Select the `Subnet` that your Storage Account will be connecting to\n - (Optional) Select other network settings as appropriate for your environment\n - Click `Next`\n9. In the `4 - DNS` tab/step:\n - (Optional) Select other DNS settings as appropriate for your environment\n - Click `Next`\n10. In the `5 - Tags` tab/step:\n - (Optional) Set any tags that are relevant to your organization\n - Click `Next`\n11. In the `6 - Review + create` tab/step:\n - A validation attempt will be made and after a few moments it should indicate `Validation Passed` - if it does not pass, double-check your settings before beginning more in depth troubleshooting.\n - If validation has passed, click `Create` then wait for a few minutes for the scripted deployment to complete.\n\nRepeat the above procedure for each Private Endpoint required within every Storage Account.\n\n**From PowerShell**\n\n```\n\n$storageAccount = Get-AzStorageAccount -ResourceGroupName '<ResourceGroupName>' -Name '<storageaccountname>'\n\n$privateEndpointConnection = @{ \n Name = 'connectionName'\n PrivateLinkServiceId = $storageAccount.Id\n GroupID = \"blob|blob_secondary|file|file_secondary|table|table_secondary|queue|queue_secondary|web|web_secondary|dfs|dfs_secondary\"\n}\n\n$privateLinkServiceConnection = New-AzPrivateLinkServiceConnection @privateEndpointConnection\n\n$virtualNetDetails = Get-AzVirtualNetwork -ResourceGroupName '<ResourceGroupName>' -Name '<name>'\n\n$privateEndpoint = @{\n ResourceGroupName = '<ResourceGroupName>'\n Name = '<PrivateEndpointName>'\n Location = '<location>'\n Subnet = $virtualNetDetails.Subnets[0]\n PrivateLinkServiceConnection = $privateLinkServiceConnection\n}\n\nNew-AzPrivateEndpoint @privateEndpoint \n```\n\n**From Azure CLI**\n\n```\naz network private-endpoint create --resource-group <ResourceGroupName --location <location> --name <private endpoint name> --vnet-name <VNET Name> --subnet <subnet name> --private-connection-resource-id <storage account ID> --connection-name <private link service connection name> --group-id <blob|blob_secondary|file|file_secondary|table|table_secondary|queue|queue_secondary|web|web_secondary|dfs|dfs_secondary>\n```",
+            "section": "Storage Accounts",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 3.10",
+                "Storage Accounts"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "3.10",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_10"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

@@ -7,40 +7,45 @@ processors:
         - "^zone %{DATA:dns.question.name}/%{DATA:dns.question.class}: notify from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}' from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^validating %{DATA:dns.question.name}/%{WORD:dns.question.type}: %{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? updating zone '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:client.domain}\\): query failed %{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:infoblox_nios.log.dns.before_query}\\): rewriting query name %{DATA} to '%{DATA:infoblox_nios.log.dns.after_query}', type %{DATA:dns.question.type}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:client.domain}\\): query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} %{DATA:infoblox_nios.log.dns.header_flags} \\(%{IP:server.ip}\\)$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:client.domain}\\): transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} updating zone '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:client.domain}\\): %{VIEW}?query failed %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:infoblox_nios.log.dns.before_query}\\): rewriting query name %{DATA} to '%{DATA:infoblox_nios.log.dns.after_query}', type %{DATA:dns.question.type}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:client.domain}\\): %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} %{DATA:infoblox_nios.log.dns.header_flags} \\(%{IP:server.ip}\\)$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:client.domain}\\): transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*CEF:0\\|Infoblox\\|NIOS\\|%{GREEDYDATA:infoblox_nios.log.dns.version}\\|RPZ-%{DATA:dns.answers.type}\\|%{DATA:infoblox_nios.log.dns.answers_policy}\\|\\d+\\|app=DNS dst=%{IP:server.ip} src=%{IP:client.ip} spt=%{NUMBER:client.port:long} view=%{DATA:infoblox_nios.log.dns.view_name} qtype=%{WORD:dns.question.type} msg=%{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:timestamp} client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags} %{GREEDYDATA:repeat_message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:timestamp} client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags} %{GREEDYDATA:repeat_message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dns.message}$"
+      pattern_definitions:
+        CLIENT: 'client (?:%{DATA} )?%{IP:client.ip}#%{NUMBER:client.port:long}:?'
+        VIEW: 'view %{DATA:infoblox_nios.log.view}: '
   - date:
-      field: timestamp
-      if: ctx.timestamp != null && ctx.event?.timezone != null
+      field: _tmp.timestamp
+      target_field: _tmp.timestamp
+      if: ctx._tmp?.timestamp != null && ctx.event?.timezone != null
       timezone: '{{{event.timezone}}}'
       formats:
         - dd-MMM-yyyy HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSS'Z'
       on_failure:
         - remove:
-            field: timestamp
+            field: _tmp.timestamp
             ignore_missing: true
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
-      field: timestamp
-      if: ctx.timestamp != null && ctx.event?.timezone == null
+      field: _tmp.timestamp
+      target_field: _tmp.timestamp
+      if: ctx._tmp?.timestamp != null && ctx.event?.timezone == null
       formats:
         - dd-MMM-yyyy HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSS'Z'
       on_failure:
         - remove:
-            field: timestamp
+            field: _tmp.timestamp
             ignore_missing: true
         - append:
             field: error.message
@@ -89,21 +94,28 @@ processors:
 
         for (def i = 0; i < arr?.length; i++) {
           def response = splitUnquoted(arr[i], " ");
-          map['name'].add(response[0]);
-          map['ttl'].add(response[1]);
-          map['class'].add(response[2]);
-          map['type'].add(response[3]);
-          map['data'].addAll(response.subList(4, response.length));
+          if (response.size() >= 4) {
+            map['name'].add(response[0]);
+            map['ttl'].add(response[1]);
+            map['class'].add(response[2]);
+            map['type'].add(response[3]);
+            map['data'].addAll(response.subList(4, response.length));
+          }
         }
-
         ctx.dns.answers = map;
+  - gsub:
+      field: infoblox_nios.log.dns.message
+      pattern: '"'
+      replacement: ''
+      if: ctx.infoblox_nios?.log?.dns?.message != null
+  - dissect:
+      field: infoblox_nios.log.dns.message
+      pattern: 'rpz %{infoblox_nios.log.dns.rpz.rule_type} %{infoblox_nios.log.dns.rpz.query_class} %{infoblox_nios.log.dns.rpz.action} %{infoblox_nios.log.dns.rpz.domain} %{infoblox_nios.log.dns.rpz.query_class_rewrite} via %{infoblox_nios.log.dns.rpz.domain_rewrite} CAT=%{infoblox_nios.log.dns.rpz.type}'
+      ignore_failure: true
+      if: ctx.infoblox_nios?.log?.dns?.message != null
   - convert:
       field: dns.answers.ttl
       type: long
-      ignore_missing: true
-      ignore_failure: true
-  - lowercase:
-      field: network.transport
       ignore_missing: true
       ignore_failure: true
   - script:
@@ -239,11 +251,14 @@ processors:
           ctx.put('dns', hm);
         }
         ctx.dns.put('header_flags', hf);
-
+  - registered_domain: 
+      field: "dns.question.name"
+      target_field: "dns.question"
+      if: ctx.dns?.question != null
   - remove:
       field:
-        - timestamp
         - repeat_message
+        - dns.question.domain
       ignore_missing: true
 on_failure:
   - set:

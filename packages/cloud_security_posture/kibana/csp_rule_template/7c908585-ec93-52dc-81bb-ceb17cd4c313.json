@@ -1,0 +1,38 @@
+{
+    "id": "7c908585-ec93-52dc-81bb-ceb17cd4c313",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Configuring container `Access policy` to `private` will remove access from the container for everyone except owners of the storage account. Access policy needs to be set explicitly in order to allow access to other desired users.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/storage/blobs/anonymous-read-access-configure\n2. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-network-security#ns-2-secure-cloud-services-with-network-controls",
+            "id": "7c908585-ec93-52dc-81bb-ceb17cd4c313",
+            "name": "Ensure the Storage Container Storing the Activity Logs is not Publicly Accessible",
+            "profile_applicability": "* Level 1",
+            "description": "The storage account container containing the activity log export should not be publicly accessible.",
+            "rationale": "Allowing public access to activity log content may aid an adversary in identifying weaknesses in the affected account's use or configuration.",
+            "audit": "**From Azure Portal**\n\n1. From Azure Home select the Portal Menu\n2. Select `Diagnostic Settings` in the left column.\n3. In section `Storage Account`, note the name of the Storage account\n4. Close `Diagnostic settings`. Close the `Monitor - Activity Log` blade.\n5. In left menu, Click `Storage Accounts`\n6. For each storage account, go to the `Configuration` setting\n7. Check if Blob public access is `Disabled`.\n\n**From Azure CLI**\n\n8. Get storage account id configured with Diagnostic Settings:\n\n```\naz monitor diagnostic-settings subscription list --subscription $subscription.Id --query 'value[*].storageAccountId'\n```\n\n9. Ensure the container storing activity logs (insights-activity-logs) is not publicly accessible:\n\n```\naz storage container list --account-name <Storage Account Name> --query \"[?name=='insights-activity-logs']\"\n```\n\nIf this command returns output and no errors, the storage account is publicly accessible.\n\n10. Otherwise, list `Storage Account Keys` for the storage account.\n\n```\naz storage account keys list --resource-group <storage account resource group> --account-name <storage account name>\n```\n\n11. Use a key to determine if the `Container` is also publicly accessible (in the event the storage account is)\n\n```\naz storage container list --account-name <Storage Account Name> --query \"[?name=='insights-activity-logs']\" --sas-token \"<base64 key value from step 3>\"\n```\n\nEnsure `publicAccess` is set to `null` in the output of the command in step 4.\n\n**From PowerShell**\n\nCreate a new storage account context with either a Storage-level SAS token with at least read/list permissions for Blob > Service, Container, Object.\n```\n$context = New-AzStorageContext -StorageAccountName <storage account name> -SasToken \"<SAS token>\"\n```\n\nUse the newly created storage account context to determine if the `insights-activity-logs` container is publicly accessible.\n\n```\nGet-AzStorageContainer -Context $context -name \"insights-activity-logs\"\n```\n\nEnsure `PublicAccess` is `empty` or set to `null`, `0`, or `off`.",
+            "remediation": "**From Azure Portal**\n\n1. From Azure Home select the Portal Menu\n2. Search for `Storage Accounts` to access Storage account blade\n3. Click on the storage account name\n4. Click on `Configuration` under settings\n5. Select `Enabled` under \"Allow Blob public access\"\n\n**From Azure CLI**\n\n```\naz storage container set-permission --name insights-activity-logs --account-name <Storage Account Name> --sas-token <SAS token> --public-access off\n```\n\n**From PowerShell**\n\nCreate a new storage account context for the storage account holding the `insight-activity-logs` container making sure to use a valid `Shared Access Signature (SAS)` token.\n\n```\n$context = New-AzStorageContext -StorageAccountName <storage account name> -SasToken \"<SAS token>\"\n```\n\nChange the `insights-activity-logs` container public access to `off`\n```\nSet-AzStorageContainerAcl -Context $context -Name \"insights-activity-logs\" -Permission Off -PassThru\n```",
+            "section": "Configuring Diagnostic Settings",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 5.1.3",
+                "Configuring Diagnostic Settings"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "5.1.3",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_5_1_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
