@@ -930,13 +930,31 @@ processors:
       patterns:
         - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> SVC Message: %{GREEDYDATA:event.reason}\.'
         - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} SVC Message: %{GREEDYDATA:event.reason}\.'
+
+
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '722022'"
+      field: "message"
+      description: "722022"
+      patterns:
+        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> %{GREEDYDATA:event.reason}'
+        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} %{GREEDYDATA:event.reason}'
+
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '722023'"
+      field: "message"
+      description: "722023"
+      patterns:
+        - 'Group (?:<%{NOTSPACE:source.user.group.name}> )??User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> %{GREEDYDATA:event.reason}'
+        - 'Group (?:%{NOTSPACE:source.user.group.name} )??User %{NOTSPACE:source.user.name} IP %{IP:source.address} %{GREEDYDATA:event.reason}'
+
   - grok:
       if: "ctx._temp_.cisco.message_id == '722033'"
       field: "message"
       description: "722033"
       patterns:
-        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
+        - 'Group (?:<%{NOTSPACE:source.user.group.name}> )??User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
+        - 'Group (?:%{NOTSPACE:source.user.group.name} )??User %{NOTSPACE:source.user.name} IP %{IP:source.address} First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
   - grok:
       if: "ctx._temp_.cisco.message_id == '722034'"
       field: "message"
