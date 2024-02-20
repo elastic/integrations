@@ -37,10 +37,27 @@ fields:
     range:
       min: 0
       max: 10000
-  - name: Percentage
+  - name: PercentageMemory
     range:
-      min: 0
-      max: 5000
-    fuzziness: 0.005
+      min: 0.0
+      max: 1.0
+  - name: PercentageCPU
+    range:
+      min: 0.0
+      max: 1.0
+  - name: usage.*
+    object_keys:
+      - nanoseconds
+      - nanocores
+  - name: usage.nanoseconds
+    range:
+      min: 100000
+      max: 9000000000
+    cardinality: 10000
+  - name: usage.nanocores
+    range:
+      min: 100000
+      max: 9000000
+    cardinality: 10000
   - name: container.name
     enum: ["web", "default-http-backend", "dnsmasq", "csi-driver", "web", "web", "web", "prometheus", "konnectivity-agent", "sidecar", "kubedns", "metrics-server-nanny", "web", "web", "fluentbit", "autoscaler", "gke-metrics-agent", "elastic-agent", "web", "kube-state-metrics", "metrics-server", "fluentbit", "elastic-agent", "web", "prometheus-to-sd-exporter"]
