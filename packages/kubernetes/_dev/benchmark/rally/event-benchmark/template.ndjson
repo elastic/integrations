@@ -5,20 +5,19 @@
 {{- $duration_end := generate "duration_end" }}
 {{- $first_occurrence := generate "timestamp" | date_modify (print $duration_start) }}
 {{- $last_occurrence := generate "timestamp" | date_modify (print $duration_end) }}
-{{- $involved_object_api_version := generate "involved_object_api_version" }}
 {{- $involved_object_kind := generate "involved_object_kind" }}
 {{- $involved_object_name := generate "involved_object_name" }}
-{{- $involved_object_resource_version := generate "involved_object_resource_version" }}
-{{- $involved_object_uid := generate "involved_object_uid" }}
-{{- $message := generate "message" }}
+{{- $message_normal := generate "message_normal" }}
+{{- $message_warning_backoff := generate "message_warning_backoff" }}
+{{- $message_warning_failed := generate "message_warning_failed" }}
+{{- $reason_normal := generate "reason_normal" }}
+{{- $reason_warning := generate "reason_warning" }}
 {{- $metadata_generate_name := generate "metadata_generate_name" }}
-{{- $metadata_name := generate "metadata_name" }}
 {{- $metadata_resource_version := generate "metadata_resource_version" }}
-{{- $metadata_uid := generate "metadata_uid" }}
 {{- $reason := generate "reason" }}
-{{- $source_component := generate "source_component" }}
-{{- $source_host := generate "source_host" }}
 {{- $type := generate "type" }}
+{{- $rangeofid := generate "rangeofid" -}}
+{{- $eventid := div $rangeofid 110 -}}
 {
     "@timestamp": "{{$timestamp.Format "2006-01-02T15:04:05.000Z07:00"}}",
     "metricset": {
@@ -56,34 +55,48 @@
     "kubernetes": {
         "event": {
             "metadata": {
-                "uid": "{{ $metadata_uid }}",
+                "uid": "host-{{ $eventid }}",
                 "resource_version": "{{ $metadata_resource_version }}",
                 "timestamp": {
                     "created": "{{ $first_occurrence.Format "2006-01-02T15:04:05.000Z07:00" }}"
                 },
-                "name": "monitor.{{ $metadata_name }}",
-                "namespace": "beats",
-                "self_link": "/api/v1/namespaces/beats/events/monitor.{{ $metadata_name }}",
+                "name": "host-{{ $eventid }}",
+                "namespace": "demo-{{ $eventid }}",
+                "self_link": "/api/v1/namespaces/events/host-{{ $eventid }}",
                 "generate_name": "{{ $metadata_generate_name }}"
             },
             "timestamp": {
                 "first_occurrence": "{{ $first_occurrence.Format "2006-01-02T15:04:05.000Z07:00" }}",
                 "last_occurrence": "{{ $last_occurrence.Format "2006-01-02T15:04:05.000Z07:00" }}"
             },
-            "message": "{{ $message }}",
-            "reason": "{{ $reason }}",
+            {{- if eq $type "Normal"}}
+            "message": "{{ $message_normal }} {{ $reason_normal }}",
+            "reason": "{{ $reason_normal }}",
             "type": "{{ $type }}",
             "count": {{ $event_count }},
+            {{- else if eq $type "Warning"}}
+                {{- if eq $reason_warning "BackOff"}}
+                "message": "{{ $message_warning_backoff }}",
+                "reason": "{{ $reason_warning }}",
+                "type": "{{ $type }}",
+                "count": {{ $event_count }},
+                {{- else if eq $reason_warning "Failed"}}
+                "message": "{{ $message_warning_failed }}",
+                "reason": "{{ $reason_warning }}",
+                "type": "{{ $type }}",
+                "count": {{ $event_count }},
+                {{- end}}
+            {{- end}}
             "source": {
-                "host": "{{ $source_host }}",
-                "component": "{{ $source_component }}"
+                "host": "host-{{ $eventid }}",
+                "component": "demo-component-{{ $eventid }}"
             },
             "involved_object": {
-                "api_version": "{{ $involved_object_api_version }}",
-                "resource_version": "{{ $involved_object_resource_version }}",
+                "api_version": "v1",
+                "resource_version": "{{ $metadata_resource_version }}",
                 "name": "{{ $involved_object_name }}",
                 "kind": "{{ $involved_object_kind }}",
-                "uid": "{{ $involved_object_uid }}"
+                "uid": "host-{{ $eventid }}"
             }
         }    
     },

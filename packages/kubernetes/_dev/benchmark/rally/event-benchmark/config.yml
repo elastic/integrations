@@ -3,37 +3,38 @@ fields:
     period: 60m
   - name: event_count
     range:
-        min: 1
-        max: 10000
-  - name: event_duration 
+      min: 1
+      max: 10000
+  - name: event_duration
     range:
-        min: 1
-        max: 10000000
+      min: 1
+      max: 10000000
   - name: duration_start
     enum: ["-1h", "-2h", "-3h", "-4h"]
   - name: duration_end
     enum: ["-30m", "-20m", "-10m", "-40m"]
-  - name: involved_object_api_version
-    value: "kibana.k8s.elastic.co/v1"
   - name: involved_object_kind
-    value: "Kibana"
-  - name: involved_object_name
-    value: "monitor"
-  - name: involved_object_resource_version
-    value: "101842"
-  - name: involved_object_uid
-    value: "45a19de5-5eef-4090-a2d3-dbceb0a28af8"
-  - name: message
-    value: "Failed to find referenced backend beats/monitor: Elasticsearch.elasticsearch.k8s.elastic.co \'monitor\' not found"
+    enum: ["Pod", "Node"]
+  - name: message_normal
+    value: "Node minikube status is now:"
+  - name: message_warning_backoff
+    value: "Back-off restarting failed container"
+  - name: message_warning_failed
+    enum:
+      - "Error: ErrImagePull"
+      - "Error: ImagePullBackOff"
+      - "Failed to pull image 'mylogin/posts:0.0.1': rpc error: code = Unknown desc = Error response from daemon: pull access denied for mylogin/posts, repository does not exist or may require 'docker login'"
+  - name: type
+    enum: ["Normal", "Warning"]
+  - name: reason_normal
+    enum: ["NodeHasSufficientDisk", "NodeHasSufficientMemory", "NodeHasNoDiskPressure", "NodeHasSufficientPID"]
+  - name: reason_warning
+    enum: ["Failed", "BackOff"]
+  - name: rangeofid
+    range:
+      min: 0
+      max: 10000
   - name: metadata_resource_version
     range:
       min: 400000
       max: 500000
-  - name: reason
-    value: "AssociationError"
-  - name: source_component
-    value: "kibana-association-controller"
-  - name: source_host
-    value: "agent-ingest-management-clusterscope-674dbb75df-rp8cc"
-  - name: type
-    value: "Warning"
