@@ -113,16 +113,16 @@ processors:
       field: panw_cortex.xdr.description
       target_field: event.reason
       ignore_missing: true
-      if: "ctx.panw_cortex?.xdr?.description instanceof String"
+      if: ctx.panw_cortex?.xdr?.description instanceof String
   - rename:
       field: panw_cortex.xdr.description
       target_field: panw_cortex.xdr.bioc_description
       ignore_missing: true
-      if: "ctx.event?.reason == null && ctx.panw_cortex?.xdr?.description instanceof List"
+      if: ctx.event?.reason == null && ctx.panw_cortex?.xdr?.description instanceof List
   - set:
       field: event.reason
       value: Bioc Event
-      if: "ctx.event?.reason == null && ctx.panw_cortex?.xdr?.bioc_description != null"
+      if: ctx.event?.reason == null && ctx.panw_cortex?.xdr?.bioc_description != null
   - rename:
       field: panw_cortex.xdr.agent_device_domain
       target_field: host.domain
@@ -218,31 +218,31 @@ processors:
       source: |-
         void addTactic(def ctx, def x, def y) {
           if (ctx.threat == null) {
-          ctx.threat = new HashMap();
+            ctx.threat = new HashMap();
           }
           if (ctx.threat.tactic == null) {
-          ctx.threat.tactic = new HashMap();
+            ctx.threat.tactic = new HashMap();
           }
           if (ctx.threat.tactic.id == null) {
-          ctx.threat.tactic.id = new ArrayList();
+            ctx.threat.tactic.id = new ArrayList();
           }
           if (ctx.threat.tactic.name == null) {
-          ctx.threat.tactic.name = new ArrayList();
+            ctx.threat.tactic.name = new ArrayList();
           }
           if (!ctx.threat.tactic.id.contains(x)) {
-          ctx.threat.tactic.id.add(x);
+            ctx.threat.tactic.id.add(x);
           }
           if (!ctx.threat.tactic.name.contains(y)) {
-          ctx.threat.tactic.name.add(y);
+            ctx.threat.tactic.name.add(y);
           }
         }
         for (mitre_tactic in ctx.panw_cortex.xdr.mitre_tactic_id_and_name) {
-            addTactic(ctx, mitre_tactic.splitOnToken(' - ')[0], mitre_tactic.splitOnToken(' - ')[1]);
+          addTactic(ctx, mitre_tactic.splitOnToken(' - ')[0], mitre_tactic.splitOnToken(' - ')[1]);
         }
   - set:
       field: threat.framework
       value: "MITRE ATT&CK"
-      if: "ctx.threat?.technique != null || ctx.threat?.tactic != null"
+      if: ctx.threat?.technique != null || ctx.threat?.tactic != null
   #The Action actor is an an activity that took place and was recorded by the agent.
   - convert:
       field: panw_cortex.xdr.events.action_remote_ip
@@ -448,15 +448,15 @@ processors:
   - set:
       field: email.subject
       copy_from: panw_cortex.xdr.events.fw_email_subject
-      if: "ctx.panw_cortex.xdr?.events?.fw_email_subject != null"
+      if: ctx.panw_cortex.xdr?.events?.fw_email_subject != null
   - append:
       field: email.from.address
       value: "{{{panw_cortex.xdr.events.fw_email_sender}}}"
-      if: "ctx.panw_cortex.xdr?.events?.fw_email_sender != null"
+      if: ctx.panw_cortex.xdr?.events?.fw_email_sender != null
   - append:
       field: email.to.address
       value: "{{{panw_cortex.xdr.events.fw_email_recipient}}}"
-      if: "ctx.panw_cortex.xdr?.events?.fw_email_recipient != null"
+      if: ctx.panw_cortex.xdr?.events?.fw_email_recipient != null
   - geoip:
       field: source.ip
       target_field: source.geo
