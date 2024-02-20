@@ -27,40 +27,31 @@ auth.oauth2:
 state:
   initial_interval: {{initial_interval}}
   want_more: false
-  offset: 0
   batch_size: {{batch_size}}
 redact:
   fields: ~
 program: |
   (
     !state.want_more ?
-      request("GET", state.url + "/intel/combined/indicators/v1?offset=0&limit=" + string(state.batch_size) + '&filter=last_updated:>"' + (
+      request("GET", state.url + "/intel/combined/indicators/v1?offset=0&sort=_marker.asc&limit=" + string(state.batch_size) + '&filter=_marker:>"' + (
         has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
           state.cursor.last_timestamp + '"'
         :
-          (now - duration(state.initial_interval)).format(time_layout.RFC3339) + '"'
+          string(int(now - duration(state.initial_interval))) + '"'
       ))
     :
-      request("GET", state.url + "/intel/combined/indicators/v1?offset=" + string(state.offset) + "&limit=" + string(state.batch_size) + '&filter=last_updated:>"' + (
-        has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-          state.cursor.first_timestamp + '"'
-        :
-          '"'
-      ))
-  ).do_request().as(resp, 
+      request("GET", state.url + string(state.next_url[0]))
+  ).do_request().as(resp,
     resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body, {
         "events": body.resources.map(e, {
           "message": e.encode_json(),
         }),
-        "want_more": has(body.meta.pagination) && (int(state.offset) + body.resources.size()) < body.meta.pagination.total,
-        "offset": has(body.meta.pagination) && ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
-          int(state.offset) + int(body.resources.size())
-        :
-          0,
+        "want_more": resp.as(resp, "Next-Page" in resp.Header),
         "url": state.url,
         "batch_size": state.batch_size,
         "initial_interval": state.initial_interval,
+        "next_url": resp.as(resp, "Next-Page" in resp.Header) ? resp.Header["Next-Page"] : "",
         "cursor": {
           "last_timestamp": (
             has(body.resources) && body.resources.size() > 0 ?
@@ -78,17 +69,6 @@ program: |
                   null
               )
           ),
-          "first_timestamp": (
-            has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-              (
-                state.want_more ?
-                  state.cursor.first_timestamp
-                :
-                  state.cursor.last_timestamp
-              )
-            :
-              (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-          ),
         },
       })
     :
@@ -105,7 +85,6 @@ program: |
         "batch_size": state.batch_size,
         "initial_interval": state.initial_interval,
       }
-
   )
 tags:
 {{#if preserve_original_event}}
