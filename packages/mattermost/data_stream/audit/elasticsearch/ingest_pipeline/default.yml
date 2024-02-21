@@ -12,6 +12,9 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - fail:
+      if: "!(ctx.json instanceof Map)"
+      message: Missing JSON object
   - date:
       field: json.timestamp
       formats:
