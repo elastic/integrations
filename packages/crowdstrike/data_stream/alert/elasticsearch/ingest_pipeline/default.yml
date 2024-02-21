@@ -1179,12 +1179,21 @@ processors:
       tag: rename_tactic_id
       target_field: crowdstrike.alert.tactic_id
       ignore_missing: true
-  - append:
-      field: threat.tactic.id
-      tag: append_threat_tactic_id
-      value: '{{{crowdstrike.alert.tactic_id}}}'
-      allow_duplicates: false
+  - script:
+      lang: painless
+      tag: script_to_set_threat_tactic_id
       if: ctx.crowdstrike?.alert?.tactic_id != null
+      description: Script to set threat tactic ID.
+      source: |
+        def v = ctx.crowdstrike.alert.tactic_id;
+        if (v.startsWith("CS")) {
+          v = v.substring(2, v.length());
+        }
+        ctx.threat.tactic.id = [v];
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.technique
       tag: rename_technique
@@ -1201,12 +1210,21 @@ processors:
       tag: rename_technique_id
       target_field: crowdstrike.alert.technique_id
       ignore_missing: true
-  - append:
-      field: threat.technique.id
-      tag: append_threat_technique_id
-      value: '{{{crowdstrike.alert.technique_id}}}'
-      allow_duplicates: false
+  - script:
+      lang: painless
+      tag: script_to_set_threat_technique_id
       if: ctx.crowdstrike?.alert?.technique_id != null
+      description: Script to set threat technique ID.
+      source: |
+        def v = ctx.crowdstrike.alert.technique_id;
+        if (v.startsWith("CS")) {
+          v = v.substring(2, v.length());
+        }
+        ctx.threat.technique.id = [v];
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.timestamp
       tag: date_timestamp
@@ -1313,9 +1331,7 @@ processors:
         - crowdstrike.alert.process_start_time
         - crowdstrike.alert.process_end_time
         - crowdstrike.alert.tactic
-        - crowdstrike.alert.tactic_id
         - crowdstrike.alert.technique
-        - crowdstrike.alert.technique_id
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

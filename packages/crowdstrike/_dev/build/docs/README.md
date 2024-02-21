@@ -1,6 +1,6 @@
 # CrowdStrike Integration
 
-The [CrowdStrike](https://www.crowdstrike.com/) Falcon integration allows you to easily connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator. Elastic Security can leverage this data for security analytics including correlation, visualisation and incident response. It provides support using three different modes for integrating CrowdStrike to the Elastic:
+The [CrowdStrike](https://www.crowdstrike.com/) Falcon integration allows you to easily connect your CrowdStrike Falcon platform to Elastic for seamless onboarding of alerts and telemetry from CrowdStrike Falcon and Falcon Data Replicator. Elastic Security can leverage this data for security analytics including correlation, visualization and incident response. It provides support using three different modes for integrating CrowdStrike to the Elastic:
 
 1. Falcon SIEM Connector: This is a pre-built integration designed to connect CrowdStrike Falcon with Security Information and Event Management (SIEM) systems. It streamlines the flow of security data from CrowdStrike Falcon to the SIEM, providing a standardized and structured way of feeding information into the SIEM platform. It includes the following datasets for receiving logs:
 
