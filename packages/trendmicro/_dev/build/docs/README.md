@@ -32,7 +32,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 The minimum **kibana.version** required is **8.11.0**.
 
-This integration has been tested against Deep Security 20. Please note is you have a Trend Micro Vision One XDR license, we recommend using the [Vision One](https://docs.elastic.co/integrations/trend_micro_vision_one) integration to ingest Deep Security events. For steps on how to configure Deep Security events with Vision One, please see [here](https://help.deepsecurity.trendmicro.com/aws/xdr.html).
+This integration has been tested against Deep Security 20. Please note if you have a Trend Micro Vision One XDR license, we recommend using the [Vision One](https://docs.elastic.co/integrations/trend_micro_vision_one) integration to ingest Deep Security events. For steps on how to configure Deep Security events with Vision One, please see [here](https://help.deepsecurity.trendmicro.com/aws/xdr.html).
 
 ## Setup
 
