@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.98.0
+	github.com/elastic/elastic-package v0.98.1
 	github.com/elastic/go-licenser v0.4.1
 	github.com/elastic/package-registry v1.23.1
 	github.com/magefile/mage v1.15.0
@@ -46,7 +46,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/elastic/elastic-integration-corpus-generator-tool v0.9.0 // indirect
+	github.com/elastic/elastic-integration-corpus-generator-tool v0.10.0 // indirect
 	github.com/elastic/go-elasticsearch/v7 v7.17.10 // indirect
 	github.com/elastic/go-resource v0.1.1 // indirect
 	github.com/elastic/go-sysinfo v1.9.0 // indirect
@@ -54,7 +54,7 @@ require (
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
 	github.com/elastic/kbncontent v0.1.3 // indirect
-	github.com/elastic/package-spec/v3 v3.1.1 // indirect
+	github.com/elastic/package-spec/v3 v3.1.2 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
@@ -144,7 +144,7 @@ require (
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
-	github.com/spf13/cast v1.5.1 // indirect
+	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/cobra v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.1 // indirect
@@ -192,11 +192,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.14.1 // indirect
 	howett.net/plist v1.0.0 // indirect
-	k8s.io/api v0.29.1 // indirect
+	k8s.io/api v0.29.2 // indirect
 	k8s.io/apiextensions-apiserver v0.29.0 // indirect
-	k8s.io/apimachinery v0.29.1 // indirect
-	k8s.io/cli-runtime v0.29.1 // indirect
-	k8s.io/client-go v0.29.1 // indirect
+	k8s.io/apimachinery v0.29.2 // indirect
+	k8s.io/cli-runtime v0.29.2 // indirect
+	k8s.io/client-go v0.29.2 // indirect
 	k8s.io/component-base v0.29.0 // indirect
 	k8s.io/klog/v2 v2.110.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
