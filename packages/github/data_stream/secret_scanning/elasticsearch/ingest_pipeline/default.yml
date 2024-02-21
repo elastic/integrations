@@ -15,6 +15,9 @@ processors:
   - json:
       field: event.original
       target_field: github.secret_scanning
+  - fail:
+      if: "!(ctx.github.secret_scanning instanceof Map)"
+      message: Missing JSON object
   - fingerprint:
       fields:
         - github.secret_scanning.number

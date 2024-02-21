@@ -18,6 +18,9 @@ processors:
   - json:
       field: event.original
       target_field: github.dependabot
+  - fail:
+      if: "!(ctx.github.dependabot instanceof Map)"
+      message: Missing JSON object
   - set:
       field: _temp.updated_at
       value: "{{{_ingest.timestamp}}}"

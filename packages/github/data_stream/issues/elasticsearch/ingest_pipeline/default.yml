@@ -18,6 +18,9 @@ processors:
   - json:
       field: event.original
       target_field: github.issues
+  - fail:
+      if: "!(ctx.github.issues instanceof Map)"
+      message: Missing JSON object
   - fingerprint:
       if: ctx.github.issues.url != null
       fields:
