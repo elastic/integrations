@@ -43,178 +43,193 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Metrics reference
 
-An example event for `emr` looks as following:
+An example event for `kafka` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-26T21:43:00.000Z",
+    "@timestamp": "2024-02-14T09:17:00.000Z",
     "agent": {
+        "ephemeral_id": "b6d2ef2e-748b-44b8-b86e-723a27faf339",
+        "id": "dd248d6a-84a6-47fd-a67f-b778524ece46",
         "name": "docker-fleet-agent",
-        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
         "type": "metricbeat",
-        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
-        "version": "8.3.2"
+        "version": "8.11.4"
     },
-    "elastic_agent": {
-        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
-        "version": "8.3.2",
-        "snapshot": false
+    "aws": {
+        "cloudwatch": {
+            "namespace": "AWS/Kafka"
+        },
+        "dimensions": {
+            "ClusterName": "qa-awseuw1-cp-internal-app-1-apm",
+            "Topic": "mis.aggregation.f771875fcc2946fa8102259a10260cff"
+        },
+        "kafka": {
+            "metrics": {
+                "BytesInPerSec": {
+                    "avg": 377
+                },
+                "BytesOutPerSec": {
+                    "avg": 363
+                },
+                "MessagesInPerSec": {
+                    "avg": 5
+                }
+            }
+        }
     },
     "cloud": {
-        "provider": "aws",
-        "region": "eu-central-1",
         "account": {
-            "name": "elastic-beats",
-            "id": "428152502467"
-        }
+            "id": "123456789012",
+            "name": "MonitoringAccount"
+        },
+        "provider": "aws",
+        "region": "eu-west-1"
+    },
+    "data_stream": {
+        "dataset": "aws.kafka_metrics",
+        "namespace": "default",
+        "type": "metrics"
     },
     "ecs": {
         "version": "8.0.0"
     },
-    "service": {
-        "type": "aws"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "aws.emr_metrics"
-    },
-    "metricset": {
-        "period": 300000,
-        "name": "cloudwatch"
-    },
-    "aws": {
-        "elasticmapreduce": {
-            "metrics": {
-                "IsIdle": {
-                    "avg": 1
-                }
-            }
-        },
-        "cloudwatch": {
-            "namespace": "AWS/ElasticMapReduce"
-        },
-        "dimensions": {
-            "JobFlowId": "j-3LRBO17JBA7H9"
-        }
+    "elastic_agent": {
+        "id": "dd248d6a-84a6-47fd-a67f-b778524ece46",
+        "snapshot": false,
+        "version": "8.11.4"
     },
     "event": {
-        "duration": 11576777300,
         "agent_id_status": "verified",
-        "ingested": "2022-07-26T21:47:48Z",
-        "module": "aws",
-        "dataset": "aws.emr_metrics"
+        "dataset": "aws.kafka_metrics",
+        "duration": 41577794935,
+        "ingested": "2024-02-14T09:19:14Z",
+        "module": "aws"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "1b287af46f2942b3ba34c3ee5a5c6111",
+        "ip": "172.19.0.7",
+        "mac": "02-42-AC-13-00-07",
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "6.4.16-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "cloudwatch",
+        "period": 60000
+    },
+    "service": {
+        "type": "aws"
     }
 }
 ```
 
 **Exported fields**
 
-| Field | Description | Type | Unit | Metric Type |
-|---|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |  |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
-| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
-| aws.dimensions.JobFlowId | Filters metrics by cluster ID. | keyword |  |  |
-| aws.elasticmapreduce.metrics.AppsCompleted.sum | The number of applications submitted to YARN that have completed. | long |  | gauge |
-| aws.elasticmapreduce.metrics.AppsFailed.sum | The number of applications submitted to YARN that have failed to complete. | long |  | gauge |
-| aws.elasticmapreduce.metrics.AppsKilled.sum | The number of applications submitted to YARN that have been killed. | long |  | gauge |
-| aws.elasticmapreduce.metrics.AppsPending.sum | The number of applications submitted to YARN that are in a pending state. | long |  | gauge |
-| aws.elasticmapreduce.metrics.AppsRunning.sum | The number of applications submitted to YARN that are running. | long |  | gauge |
-| aws.elasticmapreduce.metrics.AppsSubmitted.sum | The number of applications submitted to YARN. | long |  | gauge |
-| aws.elasticmapreduce.metrics.AutoTerminationIsClusterIdle.avg | Indicates whether the cluster is in use. | long | percent | gauge |
-| aws.elasticmapreduce.metrics.CapacityRemainingGB.sum | The amount of remaining HDFS disk capacity. | long | byte | gauge |
-| aws.elasticmapreduce.metrics.ContainerAllocated.sum | The number of resource containers allocated by the ResourceManager. | long |  | gauge |
-| aws.elasticmapreduce.metrics.ContainerPending.sum | The number of containers in the queue that have not yet been allocated. | long |  | gauge |
-| aws.elasticmapreduce.metrics.ContainerPendingRatio.avg | The ratio of pending containers to containers allocated | long | percent | gauge |
-| aws.elasticmapreduce.metrics.ContainerReserved.sum | The number of containers reserved. | long |  | gauge |
-| aws.elasticmapreduce.metrics.CoreNodesPending.sum | The number of core nodes waiting to be assigned. | long |  | gauge |
-| aws.elasticmapreduce.metrics.CoreNodesRequested.max | The target number of CORE nodes in a cluster as determined by managed scaling. | long |  | gauge |
-| aws.elasticmapreduce.metrics.CoreNodesRunning.avg | The current number of CORE nodes running in a cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.CoreUnitsRequested.max | The target number of CORE units in a cluster as determined by managed scaling. | long |  | gauge |
-| aws.elasticmapreduce.metrics.CoreUnitsRunning.avg | The current number of CORE units running in a cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.CoreVCPURequested.max | The target number of CORE vCPUs in a cluster as determined by managed scaling. | long |  | gauge |
-| aws.elasticmapreduce.metrics.CoreVCPURunning.avg | The current number of CORE vCPUs running in a cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.CorruptBlocks.max | The number of blocks that HDFS reports as corrupted. | long |  | gauge |
-| aws.elasticmapreduce.metrics.DfsPendingReplicationBlocks.sum | The status of block replication - blocks being replicated, age of replication requests, and unsuccessful replication requests. | long |  | gauge |
-| aws.elasticmapreduce.metrics.HDFSBytesRead.sum | The number of bytes read from HDFS. | long | byte | gauge |
-| aws.elasticmapreduce.metrics.HDFSBytesWritten.sum | The number of bytes written to HDFS. | long | byte | gauge |
-| aws.elasticmapreduce.metrics.HDFSUtilization.avg | The percentage of HDFS storage currently used. | double | percent | gauge |
-| aws.elasticmapreduce.metrics.IsIdle.avg | Indicates that a cluster is no longer performing work, but is still alive and accruing charges. | long | percent | gauge |
-| aws.elasticmapreduce.metrics.LiveDataNodes.avg | The percentage of data nodes that are receiving work from Hadoop. | double | percent | gauge |
-| aws.elasticmapreduce.metrics.MRActiveNodes.sum | The number of nodes presently running MapReduce tasks or jobs. | long |  | gauge |
-| aws.elasticmapreduce.metrics.MRDecommissionedNodes.sum | The number of nodes allocated to MapReduce applications that have been marked in a DECOMMISSIONED state. | long |  | gauge |
-| aws.elasticmapreduce.metrics.MRLostNodes.sum | The number of nodes allocated to MapReduce that have been marked in a LOST state. | long |  | gauge |
-| aws.elasticmapreduce.metrics.MRRebootedNodes.sum | The number of nodes available to MapReduce that have been rebooted and marked in a REBOOTED state. | long |  | gauge |
-| aws.elasticmapreduce.metrics.MRTotalNodes.sum | The number of nodes presently available to MapReduce jobs. | long |  | gauge |
-| aws.elasticmapreduce.metrics.MRUnhealthyNodes.sum | The number of nodes available to MapReduce jobs marked in an UNHEALTHY state. | long |  | gauge |
-| aws.elasticmapreduce.metrics.MemoryAllocatedMB.sum | The amount of memory allocated to the cluster. | long | byte | gauge |
-| aws.elasticmapreduce.metrics.MemoryAvailableMB.sum | The amount of memory available to be allocated. | long | byte | gauge |
-| aws.elasticmapreduce.metrics.MemoryReservedMB.sum | The amount of memory reserved. | long | byte | gauge |
-| aws.elasticmapreduce.metrics.MemoryTotalMB.sum | The total amount of memory in the cluster. | long | byte | gauge |
-| aws.elasticmapreduce.metrics.MissingBlocks.max | The number of blocks in which HDFS has no replicas. | long |  | gauge |
-| aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRequested.sum | The number of requested master nodes. | long |  | gauge |
-| aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRunning.sum | The number of running master nodes. | long |  | gauge |
-| aws.elasticmapreduce.metrics.MultiMasterInstanceGroupNodesRunningPercentage.avg | The percentage of master nodes that are running over the requested master node instance count. | double | percent | gauge |
-| aws.elasticmapreduce.metrics.PendingDeletionBlocks.sum | The number of blocks marked for deletion. | long |  | gauge |
-| aws.elasticmapreduce.metrics.S3BytesRead.sum | The number of bytes read from Amazon S3. | long | byte | gauge |
-| aws.elasticmapreduce.metrics.S3BytesWritten.sum | The number of bytes written to Amazon S3. | long | byte | gauge |
-| aws.elasticmapreduce.metrics.TaskNodesRequested.max | The target number of TASK nodes in a cluster as determined by managed scaling. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TaskNodesRunning.avg | The current number of TASK nodes running in a cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TaskUnitsRequested.max | The target number of TASK units in a cluster as determined by managed scaling. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TaskUnitsRunning.avg | The current number of TASK units running in a cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TaskVCPURequested.max | The target number of TASK vCPUs in a cluster as determined by managed scaling. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TaskVCPURunning.avg | The current number of TASK vCPUs running in a cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalLoad.sum | The total number of concurrent data transfers. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalNodesRequested.max | The target total number of nodes in a cluster as determined by managed scaling. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalNodesRunning.avg | The current total number of nodes available in a running cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalNotebookKernels.sum | The total number of running and idle notebook kernels on the cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalUnitsRequested.max | The target total number of units in a cluster as determined by managed scaling. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalUnitsRunning.avg | The current total number of units available in a running cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalVCPURequested.max | The target total number of vCPUs in a cluster as determined by managed scaling. | long |  | gauge |
-| aws.elasticmapreduce.metrics.TotalVCPURunning.avg | The current total number of vCPUs available in a running cluster. | long |  | gauge |
-| aws.elasticmapreduce.metrics.UnderReplicatedBlocks.sum | The number of blocks that need to be replicated one or more times. | long |  | gauge |
-| aws.elasticmapreduce.metrics.YARNMemoryAvailablePercentage.avg | The percentage of remaining memory available to YARN | double | percent | gauge |
-| aws.tags | Tag key value pairs from aws resources. | flattened |  |  |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
-| container.id | Unique container id. | keyword |  |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |  |
-| container.labels | Image labels. | object |  |  |
-| container.name | Container name. | keyword |  |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
-| data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |  |
-| error.message | Error message. | match_only_text |  |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
-| event.module | Event module | constant_keyword |  |  |
-| host.architecture | Operating system architecture. | keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
-| host.os.name | Operating system name, without the version. | keyword |  |  |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
+| aws.dimensions.BrokerID | Filters the metric data by broker ID. | keyword |  |
+| aws.dimensions.ClientAuthentication | Filters the metric data by client authentication. | keyword |  |
+| aws.dimensions.ClusterName | Filters the metric data by cluster name. | keyword |  |
+| aws.dimensions.ConsumerGroup | Filters the metric data by consumer group. | keyword |  |
+| aws.dimensions.Topic | Filters the metric data by topic. | keyword |  |
+| aws.kafka.metrics.ActiveControllerCount.sum | The total number of active controllers. Only one controller per cluster should be active at any given time. | long | gauge |
+| aws.kafka.metrics.BurstBalance.avg | The average remaining balance of input-output burst credits for EBS volumes in the cluster. | long | gauge |
+| aws.kafka.metrics.BytesInPerSec.sum | The total number of bytes per second received from clients in the given collection period. | long | gauge |
+| aws.kafka.metrics.BytesOutPerSec.sum | The total number of bytes per second sent to clients in the given collection period. | long | gauge |
+| aws.kafka.metrics.CPUCreditBalance.avg | The average number of earned CPU credits that a broker has accrued since it was launched. | long | gauge |
+| aws.kafka.metrics.ClientConnectionCount.sum | The total number of active authenticated client connections. | long | gauge |
+| aws.kafka.metrics.ConnectionCount.sum | The total number of active authenticated, unauthenticated, and inter-broker connections. | long | gauge |
+| aws.kafka.metrics.CpuIdle.avg | The average percentage of CPU idle time. | long | gauge |
+| aws.kafka.metrics.CpuIoWait.avg | The average percentage of CPU idle time during a pending disk operation. | long | gauge |
+| aws.kafka.metrics.CpuSystem.avg | The average percentage of CPU in kernel space. | long | gauge |
+| aws.kafka.metrics.CpuUser.avg | The average percentage of CPU in user space. | long | gauge |
+| aws.kafka.metrics.EstimatedMaxTimeLag.sum | The total time estimate (in seconds) to drain MaxOffsetLag in the given collection period. | long | gauge |
+| aws.kafka.metrics.FetchMessageConversionsPerSec.sum | The total number of fetch message conversions per second for the topic in the given collection period. | long | gauge |
+| aws.kafka.metrics.GlobalPartitionCount.sum | The total number of partitions across all topics in the cluster, excluding replicas. | long | gauge |
+| aws.kafka.metrics.GlobalTopicCount.sum | The total number of topics across all brokers in the cluster. | long | gauge |
+| aws.kafka.metrics.HeapMemoryAfterGC.avg | The average percentage of total heap memory in use after garbage collection. | long | gauge |
+| aws.kafka.metrics.KafkaAppLogsDiskUsed.avg | The average percentage of disk space used for application logs. | long | gauge |
+| aws.kafka.metrics.KafkaDataLogsDiskUsed.avg | The average percentage of disk space used for data logs. | long | gauge |
+| aws.kafka.metrics.LeaderCount.sum | The total number of leaders of partitions per broker, not including replicas. | long | gauge |
+| aws.kafka.metrics.MaxOffsetLag.sum | The total maximum offset lag across all partitions in a topic in the given collection period. | long | gauge |
+| aws.kafka.metrics.MemoryBuffered.avg | The average size in bytes of buffered memory for the broker. | long | gauge |
+| aws.kafka.metrics.MemoryCached.avg | The average size in bytes of cached memory for the broker. | long | gauge |
+| aws.kafka.metrics.MemoryFree.avg | The average size in bytes of memory that is free and available for the broker. | long | gauge |
+| aws.kafka.metrics.MemoryUsed.avg | The average size in bytes of memory that is in use for the broker. | long | gauge |
+| aws.kafka.metrics.MessagesInPerSec.sum | The total number of incoming messages per second for the broker in the given collection period. | long | gauge |
+| aws.kafka.metrics.NetworkRxDropped.sum | The total number of dropped receive packages. | long | counter |
+| aws.kafka.metrics.NetworkRxErrors.sum | The total number of network receive errors for the broker. | long | counter |
+| aws.kafka.metrics.NetworkRxPackets.sum | The total number of packets received by the broker. | long | counter |
+| aws.kafka.metrics.NetworkTxDropped.sum | The total number of dropped transmit packages. | long | counter |
+| aws.kafka.metrics.NetworkTxErrors.sum | The total number of network transmit errors for the broker. | long | counter |
+| aws.kafka.metrics.NetworkTxPackets.sum | The total number of packets transmitted by the broker. | long | counter |
+| aws.kafka.metrics.OfflinePartitionsCount.avg | The average number of partitions that are offline in the cluster. | long | gauge |
+| aws.kafka.metrics.PartitionCount.avg | The average number of topic partitions per broker, including replicas. | long | gauge |
+| aws.kafka.metrics.ProduceMessageConversionsPerSec.sum | The total number of produce message conversions per second for the topic in the given collection period. | long | gauge |
+| aws.kafka.metrics.ProduceTotalTimeMsMean.avg | The mean produce time in milliseconds. | long | gauge |
+| aws.kafka.metrics.RequestBytesMean.avg | The mean number of request bytes for the broker. | long | gauge |
+| aws.kafka.metrics.RequestTime.avg | The average time in milliseconds spent in broker network and I/O threads to process requests. | long | gauge |
+| aws.kafka.metrics.RootDiskUsed.avg | The average percentage of the root disk used by the broker. | long | gauge |
+| aws.kafka.metrics.SumOffsetLag.sum | The total aggregated offset lag for all the partitions in a topic. | long | gauge |
+| aws.kafka.metrics.SwapFree.avg | The average size in bytes of swap memory that is available for the broker. | long | gauge |
+| aws.kafka.metrics.SwapUsed.avg | The size in bytes of swap memory that is in use for the broker. | long | gauge |
+| aws.kafka.metrics.TrafficShaping.avg | The average number of packets shaped (dropped or queued) due to exceeding network allocations. | long | gauge |
+| aws.kafka.metrics.UnderMinIsrPartitionCount.avg | The average number of under minIsr partitions for the broker. | long | gauge |
+| aws.kafka.metrics.UnderReplicatedPartitions.avg | The average number of under-replicated partitions for the broker. | long | gauge |
+| aws.kafka.metrics.ZooKeeperRequestLatencyMsMean.avg | The mean latency in milliseconds for Apache ZooKeeper requests from broker. | long | gauge |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
+| error.message | Error message. | match_only_text |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
+| event.module | Event module | constant_keyword |  |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 

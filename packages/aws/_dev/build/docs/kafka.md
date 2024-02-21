@@ -43,6 +43,6 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Metrics reference
 
-{{event "emr_metrics"}}
+{{event "kafka_metrics"}}
 
-{{fields "emr_metrics"}}
+{{fields "kafka_metrics"}}
