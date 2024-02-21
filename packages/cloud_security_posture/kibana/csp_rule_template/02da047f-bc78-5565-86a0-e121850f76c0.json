@@ -1,0 +1,38 @@
+{
+    "id": "02da047f-bc78-5565-86a0-e121850f76c0",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/mysql/concepts-ssl-connection-security\n2. https://docs.microsoft.com/en-us/azure/mysql/howto-configure-ssl\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-data-protection#dp-4-enable-data-at-rest-encryption-by-default",
+            "id": "02da047f-bc78-5565-86a0-e121850f76c0",
+            "name": "Ensure 'TLS Version' is set to 'TLSV1.2' for MySQL flexible Database Server",
+            "profile_applicability": "* Level 1",
+            "description": "Ensure `TLS version` on `MySQL flexible` servers is set to the default value.",
+            "rationale": "TLS connectivity helps to provide a new layer of security by connecting database server to client applications using Transport Layer Security (TLS).\nEnforcing TLS connections between database server and client applications helps protect against \"man in the middle\" attacks by encrypting the data stream between the server and application.",
+            "audit": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com\n2. Go to `Azure Database for MySQL flexible servers`\n3. For each database, click on `Server parameters` under `Settings`\n4. In the search box, type in `tls_version`\n5. Ensure `tls_version` is set to `TLSV1.2`\n\n**From Azure CLI**\n\nEnsure the output of the below command contains the key value pair `\"values\": \"TLSV1.2\"`.\n ```\n az mysql flexible-server parameter show --name tls_version --resource-group <resourceGroupName> --server-name <serverName>\n```\n\nExample output:\n```\n{\n \"allowedValues\": \"TLSv1,TLSv1.1,TLSv1.2\",\n \"dataType\": \"Set\",\n \"defaultValue\": \"TLSv1.2\",\n \"description\": \"Which protocols the server permits for encrypted connections.\nBy default, TLS 1.2 is enforced\",\n \"id\": \"/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.DBforMySQL/flexibleServers/<serverName>/configurations/tls_version\",\n \"isConfigPendingRestart\": \"False\",\n \"isDynamicConfig\": \"False\",\n \"isReadOnly\": \"False\",\n \"name\": \"tls_version\",\n \"resourceGroup\": \"<resourceGroupName>\",\n \"source\": \"system-default\",\n \"systemData\": null,\n \"type\": \"Microsoft.DBforMySQL/flexibleServers/configurations\",\n \"value\": \"TLSv1.2\"\n}\n```",
+            "remediation": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com\n2. Go to `Azure Database for MySQL flexible servers`\n3. For each database, click on `Server parameters` under `Settings`\n4. In the search box, type in `tls_version`\n5. Click on the VALUE dropdown, and ensure only `TLSV1.2` is selected for `tls_version`\n\n**From Azure CLI**\n\nUse the below command to set MYSQL flexible databases to used version 1.2 for the `tls_version` parameter.\n```\n az mysql flexible-server parameter set --name tls_version --resource-group <resourceGroupName> --server-name <serverName> --value TLSV1.2\n```",
+            "section": "MySQL Database",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.4.2",
+                "MySQL Database"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.4.2",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_4_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
