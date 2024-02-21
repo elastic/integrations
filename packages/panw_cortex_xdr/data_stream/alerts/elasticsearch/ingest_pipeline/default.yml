@@ -22,7 +22,7 @@ processors:
       field: event.original
       target_field: panw_cortex.xdr
   - drop:
-      if: ctx.panw_cortex?.xdr?.reply?.result_count != null && ctx.panw_cortex?.xdr?.reply?.result_count == 0
+      if: ctx.panw_cortex?.xdr?.reply?.result_count == 0
   - fingerprint:
       fields:
         - panw_cortex.xdr.events.event_timestamp
@@ -113,16 +113,16 @@ processors:
       field: panw_cortex.xdr.description
       target_field: event.reason
       ignore_missing: true
-      if: "ctx.panw_cortex?.xdr?.description != null && ctx.panw_cortex.xdr.description instanceof String"
+      if: ctx.panw_cortex?.xdr?.description instanceof String
   - rename:
       field: panw_cortex.xdr.description
       target_field: panw_cortex.xdr.bioc_description
       ignore_missing: true
-      if: "ctx.event?.reason == null && ctx.panw_cortex?.xdr?.description != null && ctx.panw_cortex?.xdr?.description instanceof List"
+      if: ctx.event?.reason == null && ctx.panw_cortex?.xdr?.description instanceof List
   - set:
       field: event.reason
       value: Bioc Event
-      if: "ctx.event?.reason == null && ctx.panw_cortex?.xdr?.bioc_description != null"
+      if: ctx.event?.reason == null && ctx.panw_cortex?.xdr?.bioc_description != null
   - rename:
       field: panw_cortex.xdr.agent_device_domain
       target_field: host.domain
@@ -189,26 +189,26 @@ processors:
       description: "Extract Mitre Techniques and append it to Threat ECS fields"
       source: |-
         void addTechnique(def ctx, def x, def y) {
-          if (ctx?.threat == null) {
+          if (ctx.threat == null) {
             ctx.threat = new HashMap();
           }
-          if (ctx?.threat.technique == null) {
+          if (ctx.threat.technique == null) {
             ctx.threat.technique = new HashMap();
           }
-          if (ctx?.threat.technique.id == null) {
+          if (ctx.threat.technique.id == null) {
             ctx.threat.technique.id = new ArrayList();
           }
-          if (ctx?.threat.technique.name == null) {
+          if (ctx.threat.technique.name == null) {
             ctx.threat.technique.name = new ArrayList();
           }
-          if (!ctx.threat?.technique?.id.contains(x)) {
+          if (!ctx.threat.technique.id.contains(x)) {
             ctx.threat.technique.id.add(x);
           }
-          if (!ctx.threat?.technique?.name.contains(y)) {
+          if (!ctx.threat.technique.name.contains(y)) {
             ctx.threat.technique.name.add(y);
           }
         }
-        for (mitre_technique in ctx.panw_cortex?.xdr?.mitre_technique_id_and_name) {
+        for (mitre_technique in ctx.panw_cortex.xdr.mitre_technique_id_and_name) {
           addTechnique(ctx, mitre_technique.splitOnToken(' - ')[0], mitre_technique.splitOnToken(' - ')[1]);
         }
   - script:
@@ -217,32 +217,32 @@ processors:
       description: "Extract Mitre Tactics and append it to Threat ECS fields"
       source: |-
         void addTactic(def ctx, def x, def y) {
-          if (ctx?.threat == null) {
-          ctx.threat = new HashMap();
+          if (ctx.threat == null) {
+            ctx.threat = new HashMap();
           }
-          if (ctx?.threat.tactic == null) {
-          ctx.threat.tactic = new HashMap();
+          if (ctx.threat.tactic == null) {
+            ctx.threat.tactic = new HashMap();
           }
-          if (ctx?.threat.tactic.id == null) {
-          ctx.threat.tactic.id = new ArrayList();
+          if (ctx.threat.tactic.id == null) {
+            ctx.threat.tactic.id = new ArrayList();
           }
-          if (ctx?.threat.tactic.name == null) {
-          ctx.threat.tactic.name = new ArrayList();
+          if (ctx.threat.tactic.name == null) {
+            ctx.threat.tactic.name = new ArrayList();
           }
-          if (!ctx.threat?.tactic?.id.contains(x)) {
-          ctx.threat.tactic.id.add(x);
+          if (!ctx.threat.tactic.id.contains(x)) {
+            ctx.threat.tactic.id.add(x);
           }
-          if (!ctx.threat?.tactic?.name.contains(y)) {
-          ctx.threat.tactic.name.add(y);
+          if (!ctx.threat.tactic.name.contains(y)) {
+            ctx.threat.tactic.name.add(y);
           }
         }
-        for (mitre_tactic in ctx.panw_cortex?.xdr?.mitre_tactic_id_and_name) {
-            addTactic(ctx, mitre_tactic.splitOnToken(' - ')[0], mitre_tactic.splitOnToken(' - ')[1]);
+        for (mitre_tactic in ctx.panw_cortex.xdr.mitre_tactic_id_and_name) {
+          addTactic(ctx, mitre_tactic.splitOnToken(' - ')[0], mitre_tactic.splitOnToken(' - ')[1]);
         }
   - set:
       field: threat.framework
       value: "MITRE ATT&CK"
-      if: "ctx.threat?.technique != null || ctx.threat?.tactic != null"
+      if: ctx.threat?.technique != null || ctx.threat?.tactic != null
   #The Action actor is an an activity that took place and was recorded by the agent.
   - convert:
       field: panw_cortex.xdr.events.action_remote_ip
@@ -417,11 +417,11 @@ processors:
   - set:
       field: user.email
       copy_from: panw_cortex.xdr.events.user_name
-      if: "ctx.panw_cortex?.xdr?.events?.user_name != null && (ctx.panw_cortex?.xdr?.events?.user_name instanceof String) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('@')) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('.'))"
+      if: ctx.panw_cortex?.xdr?.events?.user_name instanceof String && ctx.panw_cortex.xdr.events.user_name.contains('@') && ctx.panw_cortex.xdr.events.user_name.contains('.')
   - set:
       field: user.id
       copy_from: panw_cortex.xdr.events.user_name
-      if: "ctx.panw_cortex?.xdr?.events?.user_name != null && (ctx.panw_cortex?.xdr?.events?.user_name instanceof String) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('@')) && (ctx.panw_cortex?.xdr?.events?.user_name.contains('.'))"
+      if: ctx.panw_cortex?.xdr?.events?.user_name instanceof String && ctx.panw_cortex.xdr.events.user_name.contains('@') && ctx.panw_cortex.xdr.events.user_name.contains('.')
   - remove:
       field: panw_cortex.xdr.events.user_name
       ignore_missing: true
@@ -448,15 +448,15 @@ processors:
   - set:
       field: email.subject
       copy_from: panw_cortex.xdr.events.fw_email_subject
-      if: "ctx?.panw_cortex.xdr?.events?.fw_email_subject != null"
+      if: ctx.panw_cortex.xdr?.events?.fw_email_subject != null
   - append:
       field: email.from.address
       value: "{{{panw_cortex.xdr.events.fw_email_sender}}}"
-      if: "ctx?.panw_cortex.xdr?.events?.fw_email_sender != null"
+      if: ctx.panw_cortex.xdr?.events?.fw_email_sender != null
   - append:
       field: email.to.address
       value: "{{{panw_cortex.xdr.events.fw_email_recipient}}}"
-      if: "ctx?.panw_cortex.xdr?.events?.fw_email_recipient != null"
+      if: ctx.panw_cortex.xdr?.events?.fw_email_recipient != null
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -558,7 +558,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
 on_failure:

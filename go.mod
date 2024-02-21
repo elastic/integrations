@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.97.0
+	github.com/elastic/elastic-package v0.98.0
 	github.com/elastic/go-licenser v0.4.1
 	github.com/elastic/package-registry v1.23.0
 	github.com/magefile/mage v1.15.0
@@ -185,7 +185,7 @@ require (
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	helm.sh/helm/v3 v3.14.0 // indirect
+	helm.sh/helm/v3 v3.14.1 // indirect
 	howett.net/plist v1.0.0 // indirect
 	k8s.io/api v0.29.1 // indirect
 	k8s.io/apiextensions-apiserver v0.29.0 // indirect

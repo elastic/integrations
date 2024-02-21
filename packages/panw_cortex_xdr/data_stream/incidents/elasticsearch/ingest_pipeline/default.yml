@@ -123,7 +123,7 @@ processors:
             ctx.threat.technique.name.add(y);
           }
         }
-        for (mitre_technique in ctx.panw_cortex?.xdr?.mitre_techniques_ids_and_names) {
+        for (mitre_technique in ctx.panw_cortex.xdr.mitre_techniques_ids_and_names) {
           addTechnique(ctx, mitre_technique.splitOnToken(' - ')[0], mitre_technique.splitOnToken(' - ')[1]);
         }
   - script:
@@ -151,7 +151,7 @@ processors:
           ctx.threat.tactic.name.add(y);
           }
         }
-        for (mitre_tactic in ctx.panw_cortex?.xdr?.mitre_tactics_ids_and_names) {
+        for (mitre_tactic in ctx.panw_cortex.xdr.mitre_tactics_ids_and_names) {
             addTactic(ctx, mitre_tactic.splitOnToken(' - ')[0], mitre_tactic.splitOnToken(' - ')[1]);
         }
   - set:
@@ -202,7 +202,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
 on_failure:

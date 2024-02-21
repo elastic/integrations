@@ -1,0 +1,138 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $event_duration := generate "event_duration" }}
+{{- $rangeofid := generate "rangeofid" -}}
+{{- $nodeid := div $rangeofid 110 -}}
+{{- $status_phase := generate "status_phase" }}
+{{- $status_scheduled := generate "status_scheduled" }}
+{
+    "@timestamp": "{{$timestamp.Format "2006-01-02T15:04:05.999999Z07:00"}}",
+    "kubernetes": {
+        "node": {
+            "uid": "host-{{ $nodeid }}",
+            "hostname": "host-{{ $nodeid }}",
+            "name": "host-{{ $nodeid }}",
+            "labels": {
+                "kubernetes_io/hostname": "kubernetes-scale-123456",
+                "beta_kubernetes_io/os": "linux",
+                "kubernetes_io/arch": "amd64",
+                "kubernetes_io/os": "linux",
+                "beta_kubernetes_io/arch": "amd64"
+            }
+        },
+        "pod": {
+            "uid": "demo-pod-{{ $rangeofid }}",
+            "host_ip": "{{generate `Ip`}}",
+            "ip": "{{generate `Ip`}}",
+            "name": "demo-pod-{{ $rangeofid }}",
+            "status": {
+                "phase": "{{ $status_phase }}",
+            {{- if eq $status_phase "running"}}
+                "ready": "true",
+            {{- else if eq $status_phase "pending"}}
+                "ready": "false",
+            {{- else if eq $status_phase "failed"}}
+                "ready": "false",
+            {{- else if eq $status_phase "succeeded"}}
+                "ready": "true",
+            {{- else if eq $status_phase "unknown"}}
+                "ready": "unknown",
+            {{- end}}
+                "scheduled": "{{ $status_scheduled }}"
+            }
+
+        },
+        "namespace": "demo-{{ $rangeofid }}",
+        "namespace_uid": "demo-{{ $rangeofid }}",
+        "replicaset": {
+            "name": "demo-deployment-{{ $rangeofid }}"
+        },
+        "namespace_labels": {
+            "kubernetes_io/metadata_name": "demo-{{ $rangeofid }}"
+        },
+        "labels": {
+            "app":"demo",
+            "pod-template-hash":"{{ $rangeofid }}",
+            "app-2":"demo-2",
+            "app-1":"demo-1"
+        },
+        "deployment": {
+            "name": "demo-deployment-{{ $rangeofid }}"
+        }
+    },
+    "agent": {
+        "name": "kubernetes-scale-123456",
+        "id": "de42127b-4db8-4471-824e-a7b14f478663",
+        "ephemeral_id": "22ed892c-43bd-408a-9121-65e2f5b6a56e",
+        "type": "metricbeat",
+        "version": "8.8.0"
+    },
+    "elastic_agent": {
+        "id": "de42127b-4db8-4471-824e-a7b14f478663",
+        "version": "8.8.0",
+        "snapshot": true
+    },
+    "cloud": {
+         "provider": "gcp",
+         "availability_zone": "europe-west1-d",
+         "instance":{
+         "name":  "kubernetes-scale-123456" ,
+         "id": "de42127b-4db8-4471-824e-a7b14f478663"
+         },
+         "machine":{
+            "type":"e2-standard-4"
+         },
+         "service":{
+            "name":"GCE"
+         },
+         "project":{
+            "id":"elastic-obs-integrations-dev"
+         },
+         "account":{
+            "id":"elastic-obs-integrations-dev"
+         }
+      },
+      "orchestrator":{
+         "cluster":{
+            "name":"kubernetes-scale",
+            "url":"https://{{ generate `Ip` }}"
+         }
+      },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "ep",
+        "type": "metrics",
+        "dataset": "kubernetes.state_pod"
+    },
+    "service": {
+        "address": "http://kubernetes-scale-123456:8080/metrics",
+        "type": "kubernetes"
+    },
+    "host": {
+        "hostname": "kubernetes-scale-123456",
+        "os": {
+            "kernel": "5.10.47-linuxkit",
+            "codename": "Core",
+            "name": "CentOS Linux",
+            "type": "linux",
+            "family": "redhat",
+            "version": "7 (Core)",
+            "platform": "centos"
+        },
+        "containerized": true,
+        "name": "kubernetes-scale-123456",
+        "id": "85e35c2b5e1b39ba72393a6baf6ee7cd",
+        "architecture": "x86_64"
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "state_pod"
+    },
+    "event": {
+        "duration": {{ $event_duration }},
+        "agent_id_status": "verified",
+        "module": "kubernetes",
+        "dataset": "kubernetes.state_pod"
+    }
+}
