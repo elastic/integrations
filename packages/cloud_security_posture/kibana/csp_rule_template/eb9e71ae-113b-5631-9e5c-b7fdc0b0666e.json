@@ -1,0 +1,38 @@
+{
+    "id": "eb9e71ae-113b-5631-9e5c-b7fdc0b0666e",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/postgresql/concepts-firewall-rules\n2. https://docs.microsoft.com/en-us/azure/postgresql/howto-manage-firewall-using-cli\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-network-security#ns-1-establish-network-segmentation-boundaries\n4. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-network-security#ns-6-deploy-web-application-firewall",
+            "id": "eb9e71ae-113b-5631-9e5c-b7fdc0b0666e",
+            "name": "Ensure 'Allow access to Azure services' for PostgreSQL Database Server is disabled",
+            "profile_applicability": "* Level 1",
+            "description": "Disable access from Azure services to PostgreSQL Database Server.",
+            "rationale": "If access from Azure services is enabled, the server's firewall will accept connections from all Azure resources, including resources not in your subscription.\nThis is usually not a desired configuration.\nInstead, set up firewall rules to allow access from specific network ranges or VNET rules to allow access from specific virtual networks.",
+            "audit": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com.\n2. Go to `Azure Database for PostgreSQL servers`.\n3. For each database, click on `Connection security`.\n4. Under `Firewall rules`, ensure `Allow access to Azure services` is set to `No`.\n\n**From Azure CLI**\n\nEnsure the output of the below command does not include a rule with the name AllowAllWindowsAzureIps or \"startIpAddress\": \"0.0.0.0\" & \"endIpAddress\": \"0.0.0.0\",\n```\naz postgres server firewall-rule list --resource-group <resourceGroupName> --server <serverName>\n```",
+            "remediation": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com.\n2. Go to `Azure Database for PostgreSQL servers`.\n3. For each database, click on `Connection security`.\n4. Under `Firewall rules`, set `Allow access to Azure services` to `No`.\n5. Click `Save`.\n\n**From Azure CLI**\n\nUse the below command to delete the AllowAllWindowsAzureIps rule for PostgreSQL Database.\n```\naz postgres server firewall-rule delete --name AllowAllWindowsAzureIps --resource-group <resourceGroupName> --server-name <serverName>\n```",
+            "section": "PostgreSQL Database Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.3.7",
+                "PostgreSQL Database Server"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.3.7",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_3_7"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
