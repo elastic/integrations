@@ -92,7 +92,7 @@ processors:
         map.put('type', new ArrayList());
         map.put('data', new ArrayList());
 
-        for (def i = 0; i < arr?.length; i++) {
+        for (def i = 0; i < arr.length; i++) {
           def response = splitUnquoted(arr[i], " ");
           if (response.size() >= 4) {
             map['name'].add(response[0]);
@@ -124,7 +124,7 @@ processors:
       if: ctx.dns?.answers?.data instanceof List
       source: |
         def hash = new ArrayList();
-        for(data in ctx.dns?.answers?.data){
+        for(data in ctx.dns.answers.data){
           def n = data.length();
           if(data.charAt(n-1).toString() == '.'){
             def data_substring = data.substring(0,n-1) + data.substring(n);
@@ -141,7 +141,7 @@ processors:
       if: ctx.dns?.answers?.name instanceof List
       source: |
         def hash = new ArrayList();
-        for(name in ctx.dns?.answers?.name){
+        for(name in ctx.dns.answers.name){
           def n = name.length();
           if(name.charAt(n-1).toString() == '.'){
             def name_substring = name.substring(0,n-1) + name.substring(n);
@@ -251,7 +251,7 @@ processors:
           ctx.put('dns', hm);
         }
         ctx.dns.put('header_flags', hf);
-  - registered_domain: 
+  - registered_domain:
       field: "dns.question.name"
       target_field: "dns.question"
       if: ctx.dns?.question != null
