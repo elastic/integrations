@@ -111,8 +111,12 @@ An example event for `kafka` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "id": "1b287af46f2942b3ba34c3ee5a5c6111",
-        "ip": "172.18.0.7",
-        "mac": "02-42-AC-12-00-07",
+        "ip": [
+            "172.20.0.7"
+        ],
+        "mac": [
+            "02-42-AC-14-00-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
