@@ -1,9 +1,90 @@
 ---
 description: Pipeline for processing sample logs
 processors:
-- set:
-    field: sample_field
-    value: "1"
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+  - grok:
+      field: event.original
+      patterns:
+        - ^%{CHAR:first_char}
+      pattern_definitions:
+        CHAR: .
+#   - pipeline:
+#       if: ctx.first_char != '{'
+#       name: '{{ IngestPipeline "format-common" }}'
+  - pipeline:
+      if: ctx.first_char == '{'
+      name: '{{ IngestPipeline "format-json" }}'
+  - remove:
+      field:
+        - first_char
+  - set:
+      field: event.outcome
+      value: failure
+      if: "ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code >= 400"
+  - set:
+      field: event.outcome
+      value: failure
+      if: "ctx?.event?.severity >= 40"
+  - set:
+      field: event.outcome
+      value: success
+      if: "ctx?.http?.response?.status_code < 400"
+  - set:
+      field: event.outcome
+      value: success
+      if: "ctx?.event?.outcome == null && ctx?.event?.severity < 40"
+  - append:
+      field: related.hosts
+      value: '{{ source.domain }}'
+      allow_duplicates: false
+      if: 'ctx?.source?.domain != null'
+  - append:
+      field: related.hosts
+      value: '{{ url.domain }}'
+      allow_duplicates: false
+      if: 'ctx?.url?.domain != null'
+  - append:
+      field: related.hosts
+      value: '{{ http.request.headers.host }}'
+      allow_duplicates: false
+      if: 'ctx?.http?.request?.headers?.host != null'
+  - append:
+      field: related.hosts
+      value: '{{ http.request.headers.x-forwarded-host }}'
+      allow_duplicates: false
+      if: 'ctx?.http?.request?.headers?.host != null'
+  - set:
+      field: ppbgdi.app.system
+      copy_from: kubernetes.namespace_labels.system
+      ignore_empty_value: true
+  - set:
+      field: service.name
+      copy_from: kubernetes.namespace_labels.service
+      ignore_empty_value: true
+  - set:
+      field: service.environment
+      copy_from: kubernetes.namespace_labels.en
+      ignore_empty_value: true
+
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !ctx?.tags.contains('preserve_original_event')"
+      ignore_missing: true
+
 on_failure:
 - set:
     field: error.message
