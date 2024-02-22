@@ -933,21 +933,13 @@ processors:
 
 
   - grok:
-      if: "ctx._temp_.cisco.message_id == '722022'"
+      if: '["722022", "722023"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
-      description: "722022"
+      description: "722022, 722023"
       patterns:
-        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> %{GREEDYDATA:event.reason}'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} %{GREEDYDATA:event.reason}'
-
-  - grok:
-      if: "ctx._temp_.cisco.message_id == '722023'"
-      field: "message"
-      description: "722023"
-      patterns:
-        - 'Group (?:<%{NOTSPACE:source.user.group.name}> )??User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> %{GREEDYDATA:event.reason}'
-        - 'Group (?:%{NOTSPACE:source.user.group.name} )??User %{NOTSPACE:source.user.name} IP %{IP:source.address} %{GREEDYDATA:event.reason}'
-
+        - 'Group (?:%{OPTIONAL_GTLT:source.user.group.name} )??User %{OPTIONAL_GTLT:source.user.name} IP <%{IP:source.address}> %{GREEDYDATA:event.reason}'
+      pattern_definitions:
+        OPTIONAL_GTLT: "(?:(<%{NOTSPACE}>)|%{NOTSPACE})"
   - grok:
       if: "ctx._temp_.cisco.message_id == '722033'"
       field: "message"
