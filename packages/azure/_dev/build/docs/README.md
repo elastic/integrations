@@ -268,7 +268,7 @@ The Agent will use the integration name and the event hub name to identify the b
 
 ### Running the integration behind a firewall
 
-When running the Elastic Agent behind a firewall, you need to allow specific traffic to ensure proper communication with the necessary components. In this case, you need to allow traffic on port `5671` and `5672` for the Event Hub, and port `443` for the Storage Account container.
+When you run the Elastic Agent behind a firewall, to ensure proper communication with the necessary components, you need to allow traffic on port `5671` and `5672` for the Event Hub, and port `443` for the Storage Account container.
 
 ```text
 ┌────────────────────────────────┐  ┌───────────────────┐  ┌───────────────────┐
