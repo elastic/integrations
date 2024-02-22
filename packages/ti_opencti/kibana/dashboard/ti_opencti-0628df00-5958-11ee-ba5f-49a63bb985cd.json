@@ -42,7 +42,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "### Navigation\n\n[OpenCTI Overview](/app/dashboards#/view/ti_opencti-83b2bef0-591c-11ee-ba5f-49a63bb985cd)  \n**[OpenCTI Tags \u0026 Quality](/app/dashboards#/view/ti_opencti-0628df00-5958-11ee-ba5f-49a63bb985cd)**\n\n[Integrations Page](/app/integrations/detail/ti_opencti/overview)\n\n### Tags \u0026 Quality\n\nThis dashboard allows the exploration of tags and quality metrics for indicators ingested by the OpenCTI integration.",
+                            "markdown": "### Navigation\n\n[OpenCTI Overview](/app/dashboards#/view/ti_opencti-83b2bef0-591c-11ee-ba5f-49a63bb985cd)  \n**[OpenCTI Tags \u0026 Quality](/app/dashboards#/view/ti_opencti-0628df00-5958-11ee-ba5f-49a63bb985cd)**  \n[OpenCTI Ingestion](/app/dashboards#/view/ti_opencti-274cda10-b452-11ee-9ed7-19d912c01624)  \n\n[Integrations Page](/app/integrations/detail/ti_opencti/overview)\n\n### Tags \u0026 Quality\n\nThis dashboard allows the exploration of tags and quality metrics for current indicators ingested by the OpenCTI integration.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -58,12 +58,12 @@
                     "y": 0
                 },
                 "panelIndex": "9457bd9b-5ac6-4ca1-a220-b88f783d1587",
-                "type": "visualization",
-                "version": "8.7.1"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -72,7 +72,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "96ae6ce7-f243-42d6-8bb9-de60277b6175",
+                                "name": "611380a6-8061-42ce-af79-e93f22ee5f64",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "4bb48f19-a815-45c3-b9fd-69d30f2c1b8f",
                                 "type": "index-pattern"
                             }
                         ],
@@ -97,7 +102,8 @@
                                                         "exclude": [
                                                             "forwarded",
                                                             "opencti-indicator",
-                                                            "ecs-indicator-detail"
+                                                            "ecs-indicator-detail",
+                                                            "preserve_original_event"
                                                         ],
                                                         "excludeIsRegex": false,
                                                         "include": [],
@@ -140,6 +146,50 @@
                                 }
                             },
                             "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_ioc_transform_source",
+                                        "index": "611380a6-8061-42ce-af79-e93f22ee5f64",
+                                        "key": "labels.is_ioc_transform_source",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "true"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_ioc_transform_source": "true"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "4bb48f19-a815-45c3-b9fd-69d30f2c1b8f",
+                                        "key": "event.kind",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "pipeline_error"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "pipeline_error"
+                                        }
+                                    }
+                                },
                                 {
                                     "$state": {
                                         "store": "appState"
@@ -199,21 +249,16 @@
                 },
                 "panelIndex": "0f1a93c7-ce49-479c-a71d-42b60469bc11",
                 "title": "Top 100 tags",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-71b1d087-bce6-4500-b278-55cc0b095db1",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "3c59cfa0-0292-4164-8e1e-5e295c03878a",
                                 "type": "index-pattern"
                             }
                         ],
@@ -221,6 +266,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "71b1d087-bce6-4500-b278-55cc0b095db1": {
                                             "columnOrder": [
@@ -238,7 +284,8 @@
                                                         "exclude": [
                                                             "forwarded",
                                                             "opencti-indicator",
-                                                            "ecs-indicator-detail"
+                                                            "ecs-indicator-detail",
+                                                            "preserve_original_event"
                                                         ],
                                                         "excludeIsRegex": false,
                                                         "include": [],
@@ -287,6 +334,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -304,7 +352,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "event.dataset",
-                                        "index": "3c59cfa0-0292-4164-8e1e-5e295c03878a",
+                                        "index": "44890337-8f98-41af-bf85-eb3f2d51bb5d",
                                         "key": "event.dataset",
                                         "negate": false,
                                         "params": {
@@ -315,6 +363,50 @@
                                     "query": {
                                         "match_phrase": {
                                             "event.dataset": "ti_opencti.indicator"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_ioc_transform_source",
+                                        "index": "c601a528-0cf7-4772-b3bd-e6b539ea252c",
+                                        "key": "labels.is_ioc_transform_source",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "true"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_ioc_transform_source": "true"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "3cdb4e06-c27c-4ab5-a1a7-ef328a7a2476",
+                                        "key": "event.kind",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "pipeline_error"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "pipeline_error"
                                         }
                                     }
                                 }
@@ -364,12 +456,12 @@
                 },
                 "panelIndex": "f789b019-a02c-47f1-bfe2-e3ff61d324c2",
                 "title": "Tags",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -378,7 +470,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "30a35e84-12db-4d04-96a7-730e2be6292f",
+                                "name": "529afafd-9447-4a7e-80ca-3cb28918e388",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "290b43ec-97e5-46eb-b7f4-6420595f01d7",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "6632bf4b-421e-4098-a930-3cddfb30715c",
                                 "type": "index-pattern"
                             }
                         ],
@@ -448,7 +550,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "event.dataset",
-                                        "index": "30a35e84-12db-4d04-96a7-730e2be6292f",
+                                        "index": "529afafd-9447-4a7e-80ca-3cb28918e388",
                                         "key": "event.dataset",
                                         "negate": false,
                                         "params": {
@@ -459,6 +561,50 @@
                                     "query": {
                                         "match_phrase": {
                                             "event.dataset": "ti_opencti.indicator"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_ioc_transform_source",
+                                        "index": "290b43ec-97e5-46eb-b7f4-6420595f01d7",
+                                        "key": "labels.is_ioc_transform_source",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "true"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_ioc_transform_source": "true"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "6632bf4b-421e-4098-a930-3cddfb30715c",
+                                        "key": "event.kind",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "pipeline_error"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "pipeline_error"
                                         }
                                     }
                                 }
@@ -510,12 +656,12 @@
                 },
                 "panelIndex": "7220547f-a0d6-463a-ab79-55ae71d6b36d",
                 "title": "Indicators by confidence",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -524,7 +670,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "09aab673-4ab7-45ff-a1be-6effcc17a45a",
+                                "name": "477c8a76-447e-42d1-a4db-648ad810bfda",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "ae5d2a8e-2cb5-4998-87fd-f2d81a3795d1",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "77d39d04-7bf8-45ba-97b4-829ff0f2a6b1",
                                 "type": "index-pattern"
                             }
                         ],
@@ -595,7 +751,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "event.dataset",
-                                        "index": "09aab673-4ab7-45ff-a1be-6effcc17a45a",
+                                        "index": "477c8a76-447e-42d1-a4db-648ad810bfda",
                                         "key": "event.dataset",
                                         "negate": false,
                                         "params": {
@@ -606,6 +762,50 @@
                                     "query": {
                                         "match_phrase": {
                                             "event.dataset": "ti_opencti.indicator"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_ioc_transform_source",
+                                        "index": "ae5d2a8e-2cb5-4998-87fd-f2d81a3795d1",
+                                        "key": "labels.is_ioc_transform_source",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "true"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_ioc_transform_source": "true"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "77d39d04-7bf8-45ba-97b4-829ff0f2a6b1",
+                                        "key": "event.kind",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "pipeline_error"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "pipeline_error"
                                         }
                                     }
                                 }
@@ -657,12 +857,12 @@
                 },
                 "panelIndex": "7b259062-abe4-4e8c-83d4-41464e369378",
                 "title": "Indicators by score",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -671,7 +871,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "4899e00d-792d-4c6c-9f4d-cf59dea58b1f",
+                                "name": "a8369e4f-1281-4f9a-b443-3632c41c043f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "925ad221-2903-40e2-b5ab-052b68e6e9bc",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "32003949-df5d-4324-80c3-545f27ce763e",
                                 "type": "index-pattern"
                             }
                         ],
@@ -742,7 +952,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "event.dataset",
-                                        "index": "4899e00d-792d-4c6c-9f4d-cf59dea58b1f",
+                                        "index": "a8369e4f-1281-4f9a-b443-3632c41c043f",
                                         "key": "event.dataset",
                                         "negate": false,
                                         "params": {
@@ -753,6 +963,50 @@
                                     "query": {
                                         "match_phrase": {
                                             "event.dataset": "ti_opencti.indicator"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_ioc_transform_source",
+                                        "index": "925ad221-2903-40e2-b5ab-052b68e6e9bc",
+                                        "key": "labels.is_ioc_transform_source",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "true"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_ioc_transform_source": "true"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "32003949-df5d-4324-80c3-545f27ce763e",
+                                        "key": "event.kind",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "pipeline_error"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "pipeline_error"
                                         }
                                     }
                                 }
@@ -804,8 +1058,7 @@
                 },
                 "panelIndex": "aacaa31c-1405-4b13-98cb-ec814db7915d",
                 "title": "Indicators by TLP marking",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -819,7 +1072,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "f8807b7b-8ae7-4a97-bc7a-68651001577f",
+                                "name": "35c49c70-647e-460b-9e06-33d6fa8ea069",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "678016dd-e965-4881-b864-e63ddbdf3a8c",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "8db319a5-f8a5-4387-a461-d3193840b201",
                                 "type": "index-pattern"
                             }
                         ],
@@ -889,7 +1152,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "event.dataset",
-                                        "index": "f8807b7b-8ae7-4a97-bc7a-68651001577f",
+                                        "index": "35c49c70-647e-460b-9e06-33d6fa8ea069",
                                         "key": "event.dataset",
                                         "negate": false,
                                         "params": {
@@ -900,6 +1163,50 @@
                                     "query": {
                                         "match_phrase": {
                                             "event.dataset": "ti_opencti.indicator"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_ioc_transform_source",
+                                        "index": "678016dd-e965-4881-b864-e63ddbdf3a8c",
+                                        "key": "labels.is_ioc_transform_source",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "true"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_ioc_transform_source": "true"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "8db319a5-f8a5-4387-a461-d3193840b201",
+                                        "key": "event.kind",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "pipeline_error"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "pipeline_error"
                                         }
                                     }
                                 }
@@ -946,12 +1253,12 @@
                 },
                 "panelIndex": "cfa3f9f1-28c7-44f1-a91d-d1822d34d870",
                 "title": "Indicators by provider",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -960,7 +1267,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "43144698-c2fc-4373-a3b2-da7a2e126200",
+                                "name": "48725819-5f5e-42ba-af75-b2330782dd81",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "09df8ebb-1c5b-4e74-84bc-b2e8552f9b59",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "890a47f4-ce5f-4ba9-af99-b2ac92d68c24",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1031,7 +1348,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "event.dataset",
-                                        "index": "43144698-c2fc-4373-a3b2-da7a2e126200",
+                                        "index": "48725819-5f5e-42ba-af75-b2330782dd81",
                                         "key": "event.dataset",
                                         "negate": false,
                                         "params": {
@@ -1042,6 +1359,50 @@
                                     "query": {
                                         "match_phrase": {
                                             "event.dataset": "ti_opencti.indicator"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_ioc_transform_source",
+                                        "index": "09df8ebb-1c5b-4e74-84bc-b2e8552f9b59",
+                                        "key": "labels.is_ioc_transform_source",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "true"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_ioc_transform_source": "true"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.kind",
+                                        "index": "890a47f4-ce5f-4ba9-af99-b2ac92d68c24",
+                                        "key": "event.kind",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "pipeline_error"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.kind": "pipeline_error"
                                         }
                                     }
                                 }
@@ -1087,20 +1448,17 @@
                 },
                 "panelIndex": "ac0a7cf5-0c62-4896-8935-ebc00c94e8fa",
                 "title": "Indicators by type",
-                "type": "lens",
-                "version": "8.7.1"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs OpenCTI] Tags \u0026 Quality",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-09-29T16:55:10.516Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-01-16T10:44:14.700Z",
     "id": "ti_opencti-0628df00-5958-11ee-ba5f-49a63bb985cd",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -1109,7 +1467,12 @@
         },
         {
             "id": "logs-*",
-            "name": "0f1a93c7-ce49-479c-a71d-42b60469bc11:96ae6ce7-f243-42d6-8bb9-de60277b6175",
+            "name": "0f1a93c7-ce49-479c-a71d-42b60469bc11:611380a6-8061-42ce-af79-e93f22ee5f64",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0f1a93c7-ce49-479c-a71d-42b60469bc11:4bb48f19-a815-45c3-b9fd-69d30f2c1b8f",
             "type": "index-pattern"
         },
         {
@@ -1119,17 +1482,22 @@
         },
         {
             "id": "logs-*",
-            "name": "f789b019-a02c-47f1-bfe2-e3ff61d324c2:3c59cfa0-0292-4164-8e1e-5e295c03878a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "7220547f-a0d6-463a-ab79-55ae71d6b36d:indexpattern-datasource-layer-71b1d087-bce6-4500-b278-55cc0b095db1",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "7220547f-a0d6-463a-ab79-55ae71d6b36d:30a35e84-12db-4d04-96a7-730e2be6292f",
+            "name": "7220547f-a0d6-463a-ab79-55ae71d6b36d:529afafd-9447-4a7e-80ca-3cb28918e388",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7220547f-a0d6-463a-ab79-55ae71d6b36d:290b43ec-97e5-46eb-b7f4-6420595f01d7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7220547f-a0d6-463a-ab79-55ae71d6b36d:6632bf4b-421e-4098-a930-3cddfb30715c",
             "type": "index-pattern"
         },
         {
@@ -1139,7 +1507,17 @@
         },
         {
             "id": "logs-*",
-            "name": "7b259062-abe4-4e8c-83d4-41464e369378:09aab673-4ab7-45ff-a1be-6effcc17a45a",
+            "name": "7b259062-abe4-4e8c-83d4-41464e369378:477c8a76-447e-42d1-a4db-648ad810bfda",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7b259062-abe4-4e8c-83d4-41464e369378:ae5d2a8e-2cb5-4998-87fd-f2d81a3795d1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7b259062-abe4-4e8c-83d4-41464e369378:77d39d04-7bf8-45ba-97b4-829ff0f2a6b1",
             "type": "index-pattern"
         },
         {
@@ -1149,7 +1527,17 @@
         },
         {
             "id": "logs-*",
-            "name": "aacaa31c-1405-4b13-98cb-ec814db7915d:4899e00d-792d-4c6c-9f4d-cf59dea58b1f",
+            "name": "aacaa31c-1405-4b13-98cb-ec814db7915d:a8369e4f-1281-4f9a-b443-3632c41c043f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "aacaa31c-1405-4b13-98cb-ec814db7915d:925ad221-2903-40e2-b5ab-052b68e6e9bc",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "aacaa31c-1405-4b13-98cb-ec814db7915d:32003949-df5d-4324-80c3-545f27ce763e",
             "type": "index-pattern"
         },
         {
@@ -1159,7 +1547,17 @@
         },
         {
             "id": "logs-*",
-            "name": "cfa3f9f1-28c7-44f1-a91d-d1822d34d870:f8807b7b-8ae7-4a97-bc7a-68651001577f",
+            "name": "cfa3f9f1-28c7-44f1-a91d-d1822d34d870:35c49c70-647e-460b-9e06-33d6fa8ea069",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "cfa3f9f1-28c7-44f1-a91d-d1822d34d870:678016dd-e965-4881-b864-e63ddbdf3a8c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "cfa3f9f1-28c7-44f1-a91d-d1822d34d870:8db319a5-f8a5-4387-a461-d3193840b201",
             "type": "index-pattern"
         },
         {
@@ -1169,7 +1567,17 @@
         },
         {
             "id": "logs-*",
-            "name": "ac0a7cf5-0c62-4896-8935-ebc00c94e8fa:43144698-c2fc-4373-a3b2-da7a2e126200",
+            "name": "ac0a7cf5-0c62-4896-8935-ebc00c94e8fa:48725819-5f5e-42ba-af75-b2330782dd81",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ac0a7cf5-0c62-4896-8935-ebc00c94e8fa:09df8ebb-1c5b-4e74-84bc-b2e8552f9b59",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ac0a7cf5-0c62-4896-8935-ebc00c94e8fa:890a47f4-ce5f-4ba9-af99-b2ac92d68c24",
             "type": "index-pattern"
         },
         {
@@ -1188,5 +1596,6 @@
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }
