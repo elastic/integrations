@@ -311,7 +311,7 @@ Port `443` is used for secure communication with the Storage Account container. 
 
 #### DNS
 
-Optionally, if you want to restrict traffic to domain names, here is the list of names you need to allow.
+Optionally, you can restrict the traffic to the following domain names:
 
 ```text
 *.servicebus.windows.net
