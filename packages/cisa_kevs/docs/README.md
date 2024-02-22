@@ -17,7 +17,7 @@ The CISA KEV data_stream retrieves vulnerability information from the endpoint `
 | @timestamp | Event timestamp. | date |
 | cisa_kev.vulnerability.date_added | The date the vulnerability was added to the catalog in the format YYYY-MM-DD | date |
 | cisa_kev.vulnerability.due_date | The date the required action is due in the format YYYY-MM-DD | date |
-| cisa_kev.vulnerability.known_ransomware_campaign_use | 'Known' if this vulnerability is known to have been leveraged as part of a ransomware campaign; 'Unknown' if CISA lacks confirmation that the vulnerability has been utilized for ransomware | boolean |
+| cisa_kev.vulnerability.known_ransomware_campaign_use | 'Known' if this vulnerability is known to have been leveraged as part of a ransomware campaign; 'Unknown' if CISA lacks confirmation that the vulnerability has been utilized for ransomware | keyword |
 | cisa_kev.vulnerability.name | The name of the vulnerability | keyword |
 | cisa_kev.vulnerability.notes | Any additional notes about the vulnerability | keyword |
 | cisa_kev.vulnerability.product | The vulnerability product | keyword |
