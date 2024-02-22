@@ -55,6 +55,8 @@ This module has been tested against the **CrowdStrike Falcon Intelligence API Ve
 
 Follow the [documentation](https://www.crowdstrike.com/blog/tech-center/consume-ioc-and-threat-feeds/) for enabling the scopes from the CrowdStrike console.
 
+User should either have `admin` role or `Detection Exception Manager` role to access IOCs endpoint. Follow the [documentation](https://falcon.crowdstrike.com/documentation/page/f20650df/default-roles-reference) for managing user roles and permissions.
+
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations
@@ -93,8 +95,8 @@ An example event for `intel` looks as following:
 {
     "@timestamp": "2023-11-21T06:16:01.000Z",
     "agent": {
-        "ephemeral_id": "db20600f-d3f0-4efc-9e10-5cac8e6ccd89",
-        "id": "2e2f0b52-c190-4fb3-b530-9ea2bb568091",
+        "ephemeral_id": "307dd11b-d229-4267-be8c-33d336c21c12",
+        "id": "a9a2f197-bbf4-421d-9fab-aff88e61a0f0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -108,7 +110,7 @@ An example event for `intel` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2e2f0b52-c190-4fb3-b530-9ea2bb568091",
+        "id": "a9a2f197-bbf4-421d-9fab-aff88e61a0f0",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -119,7 +121,7 @@ An example event for `intel` looks as following:
         ],
         "dataset": "ti_crowdstrike.intel",
         "id": "hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d",
-        "ingested": "2024-02-21T06:18:48Z",
+        "ingested": "2024-02-22T13:17:52Z",
         "kind": "enrichment",
         "original": "{\"_marker\":\"17005473618d17ae6353d123235e4158c5c81f25f0\",\"actors\":[\"SALTYSPIDER\"],\"deleted\":false,\"domain_types\":[\"abc.com\"],\"id\":\"hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"indicator\":\"c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"ip_address_types\":[\"81.2.69.192\"],\"kill_chains\":[\"Installation\",\"C2\"],\"labels\":[{\"created_on\":1700547356,\"last_valid_on\":1700547360,\"name\":\"MaliciousConfidence/High\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"Malware/Mofksys\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/Commodity\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/CredentialHarvesting\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/InformationStealer\"}],\"last_updated\":1700547361,\"malicious_confidence\":\"high\",\"malware_families\":[\"Mofksys\"],\"published_date\":1700547356,\"relations\":[{\"created_date\":1700547339,\"id\":\"domain.com.yy\",\"indicator\":\"domain.ds\",\"last_valid_date\":1700547339,\"type\":\"domain\"},{\"created_date\":1700547339,\"id\":\"domain.xx.yy\",\"indicator\":\"domain.xx.fd\",\"last_valid_date\":1700547339,\"type\":\"domain\"}],\"reports\":[\"reports\"],\"targets\":[\"abc\"],\"threat_types\":[\"Commodity\",\"CredentialHarvesting\",\"InformationStealer\"],\"type\":\"hash_sha256\",\"vulnerabilities\":[\"vuln\"]}",
         "type": [
@@ -307,8 +309,8 @@ An example event for `ioc` looks as following:
 {
     "@timestamp": "2023-11-01T10:22:23.106Z",
     "agent": {
-        "ephemeral_id": "0bd5e12d-ab83-461a-827f-9343556f46b5",
-        "id": "436e2e4c-333b-45e1-8138-f548a20e88a8",
+        "ephemeral_id": "2060fbe3-2954-4f45-b794-aa28be3f11f8",
+        "id": "a9a2f197-bbf4-421d-9fab-aff88e61a0f0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -322,7 +324,7 @@ An example event for `ioc` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "436e2e4c-333b-45e1-8138-f548a20e88a8",
+        "id": "a9a2f197-bbf4-421d-9fab-aff88e61a0f0",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -334,7 +336,7 @@ An example event for `ioc` looks as following:
         ],
         "dataset": "ti_crowdstrike.ioc",
         "id": "34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44",
-        "ingested": "2024-01-30T12:31:49Z",
+        "ingested": "2024-02-22T13:18:56Z",
         "kind": "enrichment",
         "original": "{\"action\":\"detect again\",\"applied_globally\":true,\"created_by\":\"abc.it@example.com\",\"created_on\":\"2023-11-01T10:22:23.10607613Z\",\"deleted\":false,\"description\":\"IS-38887\",\"expired\":false,\"from_parent\":false,\"id\":\"34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44\",\"metadata\":{\"filename\":\"High_Serverity_Heuristic_Sandbox_Threat.docx\"},\"modified_by\":\"example.it@ex.com\",\"modified_on\":\"2023-11-01T10:22:23.10607613Z\",\"platforms\":[\"windows\",\"mac\",\"linux\"],\"severity\":\"critical\",\"tags\":[\"IS-38887\"],\"type\":\"ipv4\",\"value\":\"81.2.69.192\"}",
         "type": [
