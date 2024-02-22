@@ -1,0 +1,170 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  - json:
+      field: event.original
+      target_field: ppbgdi.app
+  - foreach:
+      field: ppbgdi.app.event
+      ignore_missing: true
+      processor:
+        set:
+          field: "event.{{ _ingest._key }}"
+          value: "{{ _ingest._value }}"
+  - set:
+      field: "@timestamp"
+      copy_from: event.created
+  - convert:
+      field: event.severity
+      type: long
+  - convert:
+      field: event.duration
+      type: float
+  - script:
+      description: Convert duration from seconds nanosecond
+      source: |
+        ctx.event.duration = (long)(ctx?.event?.duration * 1000000000)
+      if: 'ctx?.event?.duration != null'
+  - remove:
+      field: ppbgdi.app.event
+      ignore_missing: true
+  - rename:
+      field: ppbgdi.app.http
+      target_field: http
+      ignore_missing: true
+  - script:
+      description: lowercase http headers
+      source: |
+        if (ctx?.http?.request?.headers != null){
+            Map request_headers = new HashMap();
+            for (header in ctx.http.request.headers.entrySet()){
+            request_headers.put(header.getKey().toLowerCase(), header.getValue());
+            }
+            ctx.http.request.headers = request_headers;
+        }
+        if (ctx?.http?.response?.headers != null){
+            Map response_headers = new HashMap();
+            for (header in ctx.http.response.headers.entrySet()){
+            response_headers.put(header.getKey().toLowerCase(), header.getValue());
+            }
+            ctx.http.response.headers = response_headers;
+        }
+  - user_agent:
+      field: http.request.headers.user-agent
+      extract_device_type: true
+      ignore_missing: true
+  - remove:
+      field: http.request.headers.user-agent
+      ignore_missing: true
+  - rename:
+      field: http.response.headers.content-length
+      target_field: http.response.bytes
+  - convert:
+      field: http.response.bytes
+      type: long
+  - rename:
+      field: http.response.headers.content-type
+      target_field: http.response.mime_type
+  - rename:
+      field: ppbgdi.app.log
+      target_field: log
+      ignore_missing: true
+  - lowercase:
+      field: log.level
+      ignore_missing: true
+  - remove:
+      field: message
+      ignore_missing: true
+  - rename:
+      field: ppbgdi.app.message
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: ppbgdi.app.process
+      target_field: process
+      ignore_missing: true
+  - uri_parts:
+      field: ppbgdi.app.url.original
+      remove_if_successful: true
+      ignore_missing: true
+  - remove:
+      field: ppbgdi.app.url
+      if: 'ctx?.ppbgdi?.app?.url != null && ctx?.ppbgdi?.app?.url.empty'
+  - set:
+      description: Override event.id with request.id if existing
+      field: event.id
+      copy_from: http.request.id
+      override: true
+      ignore_empty_value: true
+  - remove:
+      description: Remove request id to avoid redundancy
+      field: http.request.id
+      ignore_missing: true
+  - set:
+      description: Override event.id with request header if existing
+      field: event.id
+      copy_from: http.request.headers.x-amz-cf-id
+      override: true
+      ignore_empty_value: true
+      if: 'ctx?.event?.id == null'
+  - remove:
+      description: Remove request header to avoid redundancy
+      field: http.request.headers.x-amz-cf-id
+      ignore_missing: true
+  - set:
+      description: Set event.id from pidTid
+      field: event.id
+      copy_from: ppbgdi.app.pidTid
+      ignore_empty_value: true
+      if: 'ctx?.event?.id == null'
+  - remove:
+      description: Remove pidTid to avoid overhead
+      field: ppbgdi.app.pidTid
+      ignore_missing: true
+
+  # TODO: Is this always an IP addres or may be a host as well? Is it cf or the client?
+  - rename:
+      field: ppbgdi.app.request.remoteAddr
+      target_field: source.address
+  - grok:
+      field: source.address
+      patterns:
+        - "^(%{IP:source.ip}|%{HOSTNAME:source.domain})(:%{POSINT:source.port})?"
+      ecs_compatibility: v1
+      ignore_missing: true
+  - set:
+      field: service.name
+      copy_from: kubernetes.namespace_labels.service
+      ignore_empty_value: true
+      override: true
+  - set:
+      field: service.environment
+      copy_from: kubernetes.namespace_labels.env
+      ignore_empty_value: true
+      override: true
+  - set:
+      field: ppbgdi.app.system
+      copy_from: kubernetes.namespace_labels.system
+      ignore_empty_value: true
+      override: true
+
+  # TODO: Set ip.address and or ip. domain.
+  # TODO: Set related ip and related.domain
+
+  - remove:
+      description: Remove deprecated fields (old field structure)
+      field:
+        - ppbgdi.app.function
+        - ppbgdi.app.level
+        - ppbgdi.app.logger
+        - ppbgdi.app.module
+        - ppbgdi.app.request
+        - ppbgdi.app.response
+        - ppbgdi.app.time
+        - ppbgdi.app.excInfo
+      ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
+
