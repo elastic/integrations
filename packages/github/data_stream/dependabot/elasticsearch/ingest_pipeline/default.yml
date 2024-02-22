@@ -129,6 +129,16 @@ processors:
       field: github.dependabot.security_advisory.cwes
       copy_from: _temp.cwes
       if: ctx._temp?.cwes != null
+  - foreach:
+      field: github.dependabot.security_advisory.cwes
+      if: ctx.github?.dependabot?.security_advisory?.cwes instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.cweId
+          tag: rename_cweId
+          target_field: _ingest._value.cwe_id
+          ignore_missing: true
   - rename:
       field: github.dependabot.securityVulnerability
       target_field: github.dependabot.security_vulnerability
