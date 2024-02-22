@@ -68,7 +68,22 @@
                 "name": "host-{{ $eventid }}",
                 "namespace": "demo-{{ $eventid }}",
                 "self_link": "/api/v1/namespaces/events/host-{{ $eventid }}",
-                "generate_name": "{{ $metadata_generate_name }}"
+                "generate_name": "{{ $metadata_generate_name }}",
+                {{- if eq $type "Normal"}}
+                "annotations": {
+                    "kubectl_kubernetes_io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"involvedObject\":{\"kind\":\"{{ $involved_object_kind }}\"},\"kind\":\"Event\",\"message\":\"{{ $message_normal }} {{ $reason_normal }}\",\"metadata\":{\"annotations\":{},\"name\":\"host-{{ $eventid }}\",\"namespace\":\"demo-{{ $eventid }}\"},\"type\":\"{{ $type }}\"}\n"
+                }
+                {{- else if eq $type "Warning"}}
+                    {{- if eq $reason_warning "BackOff"}}
+                    "annotations": {
+                        "kubectl_kubernetes_io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"involvedObject\":{\"kind\":\"{{ $involved_object_kind }}\"},\"kind\":\"Event\",\"message\":\"{{ $message_warning_backoff }}\",\"metadata\":{\"annotations\":{},\"name\":\"host-{{ $eventid }}\",\"namespace\":\"demo-{{ $eventid }}\"},\"type\":\"{{ $type }}\"}\n"
+                    }
+                    {{- else if eq $reason_warning "Failed"}}
+                   "annotations": {
+                        "kubectl_kubernetes_io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"involvedObject\":{\"kind\":\"{{ $involved_object_kind }}\"},\"kind\":\"Event\",\"message\":\"{{ $message_warning_failed }}\",\"metadata\":{\"annotations\":{},\"name\":\"host-{{ $eventid }}\",\"namespace\":\"demo-{{ $eventid }}\"},\"type\":\"{{ $type }}\"}\n"
+                    }
+                    {{- end}}
+                {{- end}}
             },
             "timestamp": {
                 "first_occurrence": "{{ $first_occurrence.Format "2006-01-02T15:04:05.000Z07:00" }}",
