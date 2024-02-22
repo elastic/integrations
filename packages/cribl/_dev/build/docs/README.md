@@ -36,7 +36,7 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
     **Destination settings**
 
-    1. Set **Cloud Id** for the Cloud destination or **Bulk API URLs** for the Elasticaearch destination to point to your Elastic cluster.
+    1. Set **Cloud Id** for the Cloud destination or **Bulk API URLs** for the Elasticsearch destination to point to your Elastic cluster.
 
     2. Set **Index or Data Stream** to `logs-cribl-default`.
 
