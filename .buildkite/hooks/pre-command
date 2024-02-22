@@ -42,11 +42,27 @@ EC_DATA_PATH=secret/ci/elastic-integrations/ec_data
 export ENVIRONMENT="ci"
 export REPO="${REPO_NAME}"
 
-# From Jenkins
-# BRANCH_NAME_LOWER_CASE = "${env.BRANCH_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
-BRANCH_NAME_LOWER_CASE=$(echo "$BUILDKITE_BRANCH" | tr '[:upper:]' '[:lower:]' | tr '_/\:. ' '-')
+branch_name_label() {
+    local branch="$1"
+
+    if [[ "${BUILDKITE_PULL_REQUEST}" != "false" ]] ; then
+        # remove fork from branch name
+        branch=$(echo $branch | cut -d : -f 2)
+    fi
+
+    # From Jenkins
+    # BRANCH_NAME_LOWER_CASE = "${env.BRANCH_NAME.toLowerCase().replaceAll('[^a-z0-9-]', '-')}"
+    # to lower case and replace characters
+    branch=$(echo "$branch" | tr '[:upper:]' '[:lower:]' | tr '_/\:. ' '-')
+
+    # truncate up to 63 characters limit
+    echo $branch | head -c 63
+}
+
+BRANCH_NAME_LOWER_CASE=$(branch_name_label "$BUILDKITE_BRANCH")
 export BRANCH_NAME_LOWER_CASE
-export BUILD_ID="${BUILDKITE_BUILD_ID}"
+# This variable contains the build number https://buildkite.com/elastic/elastic-package/<number>
+export BUILD_ID="${BUILDKITE_BUILD_NUMBER}"
 # get current timestamp in milliseconds
 # From Jenkins
 # CREATED_DATE = "${new Date().getTime()}"

@@ -41,6 +41,11 @@ processors:
       target_field: event.id
       ignore_missing: true
       tag: rename_mobile_detect_id
+  - convert:
+      field: event.id
+      type: string
+      ignore_missing: true
+      tag: convert_event_id_to_string
   - rename:
       field: crowdstrike.event.DetectId
       target_field: rule.id
@@ -56,7 +61,7 @@ processors:
       target_field: rule.description
       ignore_missing: true
       tag: rename_detect_description
-  - set: 
+  - set:
       field: threat.framework
       value: MITRE ATT&CK
   - append:
@@ -81,7 +86,7 @@ processors:
       if: ctx.crowdstrike?.event?.TacticId != null
   - rename:
       field: crowdstrike.event.ComputerName
-      target_field: host.name     
+      target_field: host.name
       ignore_missing: true
       tag: rename_computer_name
   - rename:
@@ -91,12 +96,12 @@ processors:
       tag: rename_user_name
   - rename:
       field: crowdstrike.event.FalconHostLink
-      target_field: event.reference    
+      target_field: event.reference
       ignore_missing: true
       tag: rename_falcon_host_link
   - rename:
       field: crowdstrike.event.Severity
-      target_field: event.severity    
+      target_field: event.severity
       ignore_missing: true
       tag: rename_severity
   - rename:

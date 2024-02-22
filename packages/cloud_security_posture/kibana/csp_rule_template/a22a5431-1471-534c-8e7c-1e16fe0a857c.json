@@ -1,0 +1,38 @@
+{
+    "id": "a22a5431-1471-534c-8e7c-1e16fe0a857c",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Additional storage costs may be incurred as snapshots are retained.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-soft-delete\n2. https://docs.microsoft.com/en-us/azure/storage/blobs/soft-delete-container-overview\n3. https://docs.microsoft.com/en-us/azure/storage/blobs/soft-delete-container-enable?tabs=azure-portal",
+            "id": "a22a5431-1471-534c-8e7c-1e16fe0a857c",
+            "name": "Ensure Soft Delete is Enabled for Azure Containers and Blob Storage",
+            "profile_applicability": "* Level 1",
+            "description": "The Azure Storage blobs contain data like ePHI or Financial, which can be secret or personal.\nData that is erroneously modified or deleted by an application or other storage account user will cause data loss or unavailability.\n\nIt is recommended that both Azure Containers with attached Blob Storage and standalone containers with Blob Storage be made recoverable by enabling the **soft delete** configuration.\nThis is to save and recover data when blobs or blob snapshots are deleted.",
+            "rationale": "Containers and Blob Storage data can be incorrectly deleted.\nAn attacker/malicious user may do this deliberately in order to cause disruption.\nDeleting an Azure Storage blob causes immediate data loss.\nEnabling this configuration for Azure storage ensures that even if blobs/data were deleted from the storage account, Blobs/data objects are recoverable for a particular time which is set in the \"Retention policies,\" ranging from 7 days to 365 days.",
+            "audit": "**From Azure Portal:**\n\n1. From the Azure home page, open the hamburger menu in the top left or click on the arrow pointing right with 'More services' underneath.\n2. Select Storage.\n3. Select Storage Accounts.\n4. For each Storage Account, navigate to Data protection in the left scroll column.\n5. Ensure that soft delete is checked for both blobs and containers. Also check if the retention period is a sufficient length for your organization. \n\n**From Azure CLI**\n\n**Blob Storage**\nEnsure that the output of the below command contains enabled status as true and days is not empty or null\n\n```\naz storage blob service-properties delete-policy show --account-name <StorageAccountName> --account-key <accountkey>\n```\n\n**Azure Containers**\nMake certain that the --enable-container-delete-retention is 'true'.\n```\naz storage account blob-service-properties show\n --account-name <StorageAccountName>\n --account-key <accountkey>\n --resource-group <resource_group>\n```",
+            "remediation": "**From Azure Portal**\n1. From the Azure home page, open the hamburger menu in the top left or click on the arrow pointing right with 'More services' underneath.\n2. Select Storage.\n3. Select Storage Accounts.\n4. For each Storage Account, navigate to Data protection in the left scroll column.\n5. Check soft delete for both blobs and containers. Set the retention period to a sufficient length for your organization. \n\n**From Azure CLI**\n\nUpdate blob storage retention days in below command\n```\naz storage blob service-properties delete-policy update --days-retained <RetentionDaysValue> --account-name <StorageAccountName> --account-key <AccountKey> --enable true\n```\nUpdate container retention with the below command\n```\naz storage account blob-service-properties update\n --enable-container-delete-retention true\n --container-delete-retention-days <days>\n --account-name <storage-account>\n --resource-group <resource_group>\n --account-key <AccountKey> \n```",
+            "section": "Storage Accounts",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 3.11",
+                "Storage Accounts"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "3.11",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_11"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

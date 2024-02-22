@@ -263,8 +263,10 @@ processors:
       source: |
         def args_list = new ArrayList();
         ctx.process.args = args_list;
-        for (Map.Entry m : ctx.json?.args.entrySet()) {
-          ctx.process?.args.add(m.getValue());
+        if (ctx.json?.args != null) {
+          for (Map.Entry m : ctx.json.args.entrySet()) {
+            ctx.process.args.add(m.getValue());
+          }
         }
 on_failure:
   - set:

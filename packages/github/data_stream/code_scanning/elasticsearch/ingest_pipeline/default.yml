@@ -18,6 +18,9 @@ processors:
   - json:
       field: event.original
       target_field: github.code_scanning
+  - fail:
+      if: "!(ctx.github.code_scanning instanceof Map)"
+      message: Missing JSON object
   - fingerprint:
       fields:
         - github.code_scanning.number
@@ -30,21 +33,21 @@ processors:
         - ISO8601
       timezone: UTC
       target_field: "event.created"
-      if: ctx.github.code_scanning?.created_at != null
+      if: ctx.github.code_scanning.created_at != null
   - date:
       field: github.code_scanning.created_at
       formats:
         - ISO8601
       timezone: UTC
       target_field: "@timestamp"
-      if: ctx.github.code_scanning?.created_at != null
+      if: ctx.github.code_scanning.created_at != null
   - date:
       field: github.code_scanning.updated_at
       formats:
         - ISO8601
       timezone: UTC
       target_field: "@timestamp"
-      if: ctx.github.code_scanning?.updated_at != null
+      if: ctx.github.code_scanning.updated_at != null
   - rename:
       target_field: _temp
       field: github.code_scanning.repository
@@ -112,11 +115,11 @@ processors:
   - set:
       field: github.repository.html_url
       value: "https://github.com/{{_temp.owner}}/{{_temp.repository}}"
-      if: "ctx.github.repository?.html_url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
+      if: ctx.github.repository?.html_url == null && ctx._temp?.owner != null && ctx._temp?.repository != null
   - set:
       field: github.repository.url
       value: "https://api.github.com/repos/{{_temp.owner}}/{{_temp.repository}}"
-      if: "ctx.github.repository?.url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
+      if: ctx.github.repository?.url == null && ctx._temp?.owner != null && ctx._temp?.repository != null
   - rename:
       field: _temp.repository
       target_field: github.repository.name
@@ -130,7 +133,7 @@ processors:
   - rename:
       field: _temp.number
       target_field: github.code_scanning.number
-      if: ctx.github.code_scanning?.number == null
+      if: ctx.github.code_scanning.number == null
       ignore_missing: true
   - lowercase:
       field: github.code_scanning.state
@@ -141,7 +144,7 @@ processors:
   - set:
       field: github.severity
       value: "{{github.code_scanning.rule.security_severity_level}}"
-      if: ctx.github.code_scanning?.rule?.security_severity_level != null
+      if: ctx.github.code_scanning.rule?.security_severity_level != null
   - set:
       field: github.severity
       value: "undefined"
@@ -149,7 +152,7 @@ processors:
   - set:
       field: github.state
       value: "{{github.code_scanning.state}}"
-      if: ctx.github.code_scanning?.state != null
+      if: ctx.github.code_scanning.state != null
   - rename:
       target_field: _temp.dismissed_by
       field: github.code_scanning.dismissed_by
@@ -188,7 +191,7 @@ processors:
   - script:
       lang: painless
       description: Calculate time taken to resolve the alerts
-      if: ctx.github.code_scanning?.fixed_at != null || ctx.github.code_scanning?.dismissed_at != null
+      if: ctx.github.code_scanning.fixed_at != null || ctx.github.code_scanning.dismissed_at != null
       source: |
         def time_to_resolution = new HashMap();
         def fixedAtDt = ctx.github.code_scanning.fixed_at;
@@ -214,15 +217,15 @@ processors:
   - rename:
       field: github.code_scanning.rule.id
       target_field: rule.id
-      if: ctx.github.code_scanning?.rule?.id != null
+      if: ctx.github.code_scanning.rule?.id != null
   - rename:
       field: github.code_scanning.rule.name
       target_field: rule.name
-      if: ctx.github.code_scanning?.rule?.name != null
+      if: ctx.github.code_scanning.rule?.name != null
   - rename:
       field: github.code_scanning.rule.description
       target_field: rule.description
-      if: ctx.github.code_scanning?.rule?.description != null
+      if: ctx.github.code_scanning.rule?.description != null
   - foreach:
       field: "github.code_scanning.rule.tags"
       processor:
@@ -230,7 +233,7 @@ processors:
           field: tags
           value: "{{_ingest._value}}"
       ignore_missing: true
-      if: ctx.github.code_scanning?.rule?.tags != null
+      if: ctx.github.code_scanning.rule?.tags != null
   - remove:
       field: github.code_scanning.rule.tags
       ignore_missing: true
@@ -243,7 +246,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
   - script:

@@ -134,14 +134,17 @@ processors:
       source: |
         def args_list = new ArrayList();
         ctx.process.args = args_list;
-        for (Map.Entry m : ctx.json?.args.entrySet()) {
-          ctx.process?.args.add(m.getValue());
+        if (ctx.json?.args != null) {
+          for (Map.Entry m : ctx.json.args.entrySet()) {
+            ctx.process.args.add(m.getValue());
+          }
         }
   - script:
       description: Convert Decimal into Octal.
       lang: painless
+      if: ctx.json?.file_access_mode != null
       source: |
-        int temp = (int)ctx.json?.file_access_mode;
+        int temp = (int)ctx.json.file_access_mode;
         ctx.jamf_compliance_reporter.log.attributes.file.access_mode = Integer.toOctalString(temp);
 on_failure:
   - set:

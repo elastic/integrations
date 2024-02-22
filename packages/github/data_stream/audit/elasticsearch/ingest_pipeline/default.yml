@@ -20,6 +20,9 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - fail:
+      if: "!(ctx.json instanceof Map)"
+      message: Missing JSON object
   - fingerprint:
       fields:
         - json._document_id
@@ -31,7 +34,7 @@ processors:
         - UNIX_MS
       timezone: UTC
       target_field: "@timestamp"
-      if: ctx.json?.created_at != null
+      if: ctx.json.created_at != null
   - date:
       field: json.@timestamp
       formats:
@@ -99,7 +102,7 @@ processors:
       field: user.target.group.name
       copy_from: github.team
       ignore_empty_value: true
-      if: ctx.event?.action.startsWith("team.") && ctx.user?.target?.name != null
+      if: ctx.event?.action?.startsWith("team.") == true && ctx.user?.target?.name != null
   - set:
       field: group.name
       copy_from: github.org
@@ -109,7 +112,7 @@ processors:
       field: user.target.group.name
       copy_from: github.org
       ignore_empty_value: true
-      if: ctx.event?.action.startsWith("org.") && ctx.user?.target?.name != null
+      if: ctx.event?.action?.startsWith("org.") == true && ctx.user?.target?.name != null
   - rename:
       field: json.data.old_user
       target_field: user.target.group.name
@@ -128,7 +131,7 @@ processors:
       target_field: github.actor_ip
       type: ip
       ignore_missing: true
-      if: ctx.json?.actor_ip != null && ctx.json.actor_ip != ''
+      if: ctx.json.actor_ip != null && ctx.json.actor_ip != ''
       on_failure:
         - append:
             field: error.message
@@ -188,15 +191,15 @@ processors:
   - append:
       field: event.type
       value: creation
-      if: 'ctx._temp?.action.contains("create") || ctx._temp?.action.contains("add")'
+      if: ctx._temp?.action?.contains("create") == true || ctx._temp?.action?.contains("add") == true
   - append:
       field: event.type
       value: deletion
-      if: 'ctx._temp?.action.contains("delete") || ctx._temp?.action.contains("remove")'
+      if: ctx._temp?.action?.contains("delete") == true || ctx._temp?.action?.contains("remove") == true
   - append:
       field: event.type
       value: change
-      if: 'ctx.event?.type == null || ctx.event?.type.size() == 0'
+      if: ctx.event?.type == null || ctx.event.type.size() == 0
   - remove:
       field:
         - json
@@ -204,7 +207,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
   - script:

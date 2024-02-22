@@ -1,0 +1,38 @@
+{
+    "id": "ede1488a-e8cd-5d5f-a25d-96c136695594",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/rest/api/postgresql/configurations/listbyserver\n2. https://docs.microsoft.com/en-us/azure/postgresql/howto-configure-server-parameters-using-portal\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-logging-threat-detection#lt-3-enable-logging-for-security-investigation\n4. https://learn.microsoft.com/en-us/powershell/module/az.postgresql/get-azpostgresqlconfiguration?view=azps-9.2.0#example-2-get-specified-postgresql-configuration-by-name\n5. https://learn.microsoft.com/en-us/powershell/module/az.postgresql/update-azpostgresqlconfiguration?view=azps-9.2.0#example-1-update-postgresql-configuration-by-name",
+            "id": "ede1488a-e8cd-5d5f-a25d-96c136695594",
+            "name": "Ensure server parameter 'log_connections' is set to 'ON' for PostgreSQL Database Server",
+            "profile_applicability": "* Level 1",
+            "description": "Enable `log_connections` on `PostgreSQL Servers`.",
+            "rationale": "Enabling `log_connections` helps PostgreSQL Database to log attempted connection to the server, as well as successful completion of client authentication.\nLog data can be used to identify, troubleshoot, and repair configuration errors and suboptimal performance.",
+            "audit": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com.\n2. Go to `Azure Database for PostgreSQL servers`.\n3. For each database, click on `Server parameters`.\n4. Search for `log_connections`.\n5. Ensure that value is set to `ON`.\n\n**From Azure CLI**\n\nEnsure `log_connections` value is set to `ON`\n```\naz postgres server configuration show --resource-group <resourceGroupName> --server-name <serverName> --name log_connections\n```\n\n**From PowerShell**\n\nEnsure `log_connections` value is set to `ON`\n\n```\nGet-AzPostgreSqlConfiguration -ResourceGroupName <ResourceGroupName> -ServerName <ServerName> -Name log_connections\n```",
+            "remediation": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com.\n2. Go to `Azure Database for PostgreSQL servers`.\n3. For each database, click on `Server parameters`.\n4. Search for `log_connections`.\n5. Click `ON` and save.\n\n**From Azure CLI**\n\nUse the below command to update `log_connections` configuration.\n```\naz postgres server configuration set --resource-group <resourceGroupName> --server-name <serverName> --name log_connections --value on\n```\n\n**From PowerShell**\n\nUse the below command to update `log_connections` configuration.\n```\nUpdate-AzPostgreSqlConfiguration -ResourceGroupName <ResourceGroupName> -ServerName <ServerName> -Name log_connections -Value on\n```",
+            "section": "PostgreSQL Database Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.3.3",
+                "PostgreSQL Database Server"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.3.3",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_3_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

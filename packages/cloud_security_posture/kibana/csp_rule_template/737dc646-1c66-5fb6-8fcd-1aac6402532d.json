@@ -1,0 +1,38 @@
+{
+    "id": "737dc646-1c66-5fb6-8fcd-1aac6402532d",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Enabling this setting can have a high impact on the cost of the log analytics service and data storage used by logging more data per each request. Do not enable this without determining your need for this level of logging, and do not forget to check in on data usage and projected cost. Some users have seen their logging costs increase from $10 per month to $10,000 per month.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/rest/api/storageservices/about-storage-analytics-logging\n2. https://docs.microsoft.com/en-us/cli/azure/storage/logging?view=azure-cli-latest\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-logging-threat-detection#lt-4-enable-logging-for-azure-resources\n4. https://docs.microsoft.com/en-us/azure/storage/queues/monitor-queue-storage?tabs=azure-portal",
+            "id": "737dc646-1c66-5fb6-8fcd-1aac6402532d",
+            "name": "Ensure Storage Logging is Enabled for Queue Service for 'Read', 'Write', and 'Delete' requests",
+            "profile_applicability": "* Level 2",
+            "description": "The Storage Queue service stores messages that may be read by any client who has access to the storage account.\nA queue can contain an unlimited number of messages, each of which can be up to 64KB in size using version 2011-08-18 or newer.\nStorage Logging happens server-side and allows details for both successful and failed requests to be recorded in the storage account.\nThese logs allow users to see the details of read, write, and delete operations against the queues.\nStorage Logging log entries contain the following information about individual requests: Timing information such as start time, end-to-end latency, and server latency, authentication details, concurrency information, and the sizes of the request and response messages.",
+            "rationale": "Storage Analytics logs contain detailed information about successful and failed requests to a storage service.\nThis information can be used to monitor individual requests and to diagnose issues with a storage service.\nRequests are logged on a best-effort basis.\n\nStorage Analytics logging is not enabled by default for your storage account.",
+            "audit": "**From Azure Portal:**\n1. Go to `Storage Accounts`.\n2. Select the specific Storage Account.\n3. Click the `Diagnostics settings (classic)` blade from `Monitoring (classic)` section.\n4. Ensure the `Status` is set to `On`, if set to `Off`.\n5. Select `Queue properties`.\n6. Ensure `Read` `Write` `Delete` options are selected under the `Logging` section.\n\n**From Azure CLI**\n\nEnsure the below command's output contains properties `delete`, `read` and `write` set to `true`.\n```\naz storage logging show --services q --account-name <storageAccountName>\n```",
+            "remediation": "**From Azure Portal**\n1. Go to `Storage Accounts`.\n2. Select the specific Storage Account.\n3. Click the `Diagnostics settings (classic)` blade from `Monitoring (classic)` section.\n4. Set the `Status` to `On`, if set to `Off`.\n5. Select `Queue properties`.\n6. Select `Read`, `Write` and `Delete` options under the `Logging` section to enable Storage Logging for Queue service.\n\n**From Azure CLI**\n\nUse the below command to enable the Storage Logging for Queue service.\n```\naz storage logging update --account-name <storageAccountName> --account-key <storageAccountKey> --services q --log rwd --retention 90\n```",
+            "section": "Storage Accounts",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 3.5",
+                "Storage Accounts"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "3.5",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

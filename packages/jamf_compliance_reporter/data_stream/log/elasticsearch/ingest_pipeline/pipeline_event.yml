@@ -78,51 +78,52 @@ processors:
       field: json.host_info.serial_number
       target_field: host.id
       ignore_missing: true
+  # NOTE: ctx.event is initialized by an earlier processor
   - pipeline:
       name: '{{ IngestPipeline "pipeline_audio_video_device_event" }}'
-      if: ctx.event?.action == 'audio_video_device_event'
+      if: ctx.event.action == 'audio_video_device_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_audit_class_verification_event" }}'
-      if: ctx.event?.action == 'audit_class_verification_event'
+      if: ctx.event.action == 'audit_class_verification_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_compliance_reporter_tamper_event_and_file_event_info" }}'
-      if: '["compliance_reporter_tamper_event", "file_event"].contains(ctx.event?.action)'
+      if: '["compliance_reporter_tamper_event", "file_event"].contains(ctx.event.action)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_gatekeeper_info_event" }}'
-      if: ctx.event?.action == 'gatekeeper_info_event'
+      if: ctx.event.action == 'gatekeeper_info_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_gatekeeper_manual_overrides" }}'
-      if: ctx.event?.action == 'gatekeeper_manual_overrides'
+      if: ctx.event.action == 'gatekeeper_manual_overrides'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_gatekeeper_quarantine_log" }}'
-      if: ctx.event?.action == 'gatekeeper_quarantine_log'
+      if: ctx.event.action == 'gatekeeper_quarantine_log'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_hardware_event" }}'
-      if: ctx.event?.action == 'hardware_event'
+      if: ctx.event.action == 'hardware_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_license_info_event" }}'
-      if: ctx.event?.action == 'license_info_event'
+      if: ctx.event.action == 'license_info_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_preference_list_event" }}'
-      if: ctx.event?.action == 'preference_list_event'
+      if: ctx.event.action == 'preference_list_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_print_event_information" }}'
-      if: ctx.event?.action == 'print_event_information'
+      if: ctx.event.action == 'print_event_information'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_prohibited_app_blocked" }}'
-      if: ctx.event?.action == 'prohibited_app_blocked'
+      if: ctx.event.action == 'prohibited_app_blocked'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_signal_event" }}'
-      if: ctx.event?.action == 'signal_event'
+      if: ctx.event.action == 'signal_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_unified_log_event" }}'
-      if: ctx.event?.action == 'unified_log_event'
+      if: ctx.event.action == 'unified_log_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_xprotect_definitions_version_info" }}'
-      if: ctx.event?.action == 'xprotect_definitions_version_info'
+      if: ctx.event.action == 'xprotect_definitions_version_info'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_xprotect_event_log" }}'
-      if: ctx.event?.action == 'xprotect_event_log'
+      if: ctx.event.action == 'xprotect_event_log'
 on_failure:
   - set:
       field: event.kind

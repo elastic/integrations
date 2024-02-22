@@ -1,0 +1,38 @@
+{
+    "id": "43d5538c-17a3-5e04-9c06-ad4323bfd188",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Any deployment workflows that rely on FTP or FTPs rather than the WebDeploy or HTTPs endpoints may be affected.",
+            "default_value": "",
+            "references": "1. [Azure Web Service Deploy via FTP](https://docs.microsoft.com/en-us/azure/app-service/deploy-ftp):[Azure Web Service Deployment](https://docs.microsoft.com/en-us/azure/app-service/overview-security)\n2. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-data-protection#dp-4-encrypt-sensitive-information-in-transit\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-posture-vulnerability-management#pv-7-rapidly-and-automatically-remediate-software-vulnerabilities",
+            "id": "43d5538c-17a3-5e04-9c06-ad4323bfd188",
+            "name": "Ensure FTP deployments are Disabled",
+            "profile_applicability": "* Level 1",
+            "description": "By default, Azure Functions, Web, and API Services \ncan be deployed over FTP.\nIf FTP is required for an\nessential deployment workflow, FTPS should be required\nfor FTP login for all App Service Apps and Functions.",
+            "rationale": "Azure FTP deployment endpoints are public.\nAn attacker listening to traffic on a wifi network used by a remote employee or a corporate network could see login traffic in clear-text which would then grant them full control of the code base of the app or service.\nThis finding is more severe if User Credentials for deployment are set at the subscription level rather than using the default Application Credentials which are unique per App.",
+            "audit": "**From Azure Portal**\n\n1. Go to the Azure Portal\n2. Select `App Services`\n3. Click on an app\n4. Select `Settings` and then `Configuration`\n5. Under `General Settings`, for the `Platform Settings`, the `FTP state` should not be set to `All allowed`\n\n**From Azure CLI** \n\nList webapps to obtain the ids.\n\n```\naz webapp list\n```\n\nList the publish profiles to obtain the username, password\nand ftp server url.\n\n```\naz webapp deployment list-publishing-profiles --ids <ids>\n{\n \"publishUrl\": <URL_FOR_WEB_APP>,\n \"userName\": <USER_NAME>,\n \"userPWD\": <USER_PASSWORD>,\n}\n```\n\n**From PowerShell**\n\nList all Web Apps:\n\n```\nGet-AzWebApp\n```\n\nFor each app:\n\n```\nGet-AzWebApp -ResourceGroupName <resource group name> -Name <app name> | Select-Object -ExpandProperty SiteConfig\n```\n\nIn the output, look for the value of **FtpsState**.\nIf its value is **AllAllowed** the setting is out of compliance.\nAny other value is considered in compliance with this check.",
+            "remediation": "**From Azure Portal**\n\n1. Go to the Azure Portal\n2. Select `App Services`\n3. Click on an app\n4. Select `Settings` and then `Configuration`\n5. Under `General Settings`, for the `Platform Settings`, the `FTP state` should be set to `Disabled` or `FTPS Only`\n\n**From Azure CLI**\n\nFor each out of compliance application, run the following choosing either 'disabled' or 'FtpsOnly' as appropriate:\n\n```\naz webapp config set --resource-group <resource group name> --name <app name> --ftps-state [disabled|FtpsOnly]\n```\n\n**From PowerShell**\n\nFor each out of compliance application, run the following:\n\n```\nSet-AzWebApp -ResourceGroupName <resource group name> -Name <app name> -FtpsState <Disabled or FtpsOnly>\n```",
+            "section": "AppService",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 9.10",
+                "AppService"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "9.10",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_9_10"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

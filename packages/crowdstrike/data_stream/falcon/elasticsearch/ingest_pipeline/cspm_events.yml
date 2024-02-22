@@ -42,33 +42,39 @@ processors:
       tag: rename_event_source
   - rename:
       field: crowdstrike.event.Severity
-      target_field: event.severity    
+      target_field: event.severity
       ignore_missing: true
       tag: rename_severity
   - rename:
       field: crowdstrike.event.AccountId
       target_field: cloud.account.id
       ignore_missing: true
+      if: ctx.cloud?.account?.id == null
+      tag: rename_cloud_account_id
   - rename:
       field: crowdstrike.event.Region
       target_field: cloud.region
       ignore_missing: true
+      if: ctx.cloud?.region == null
       tag: rename_cloud_region
 #CSPMS uses Platform, CSPMIOA uses Provider
   - rename:
       field: crowdstrike.event.CloudProvider
       target_field: cloud.provider
       ignore_missing: true
+      if: ctx.cloud?.provider == null
       tag: rename_cloud_provider
   - rename:
       field: crowdstrike.event.CloudPlatform
       target_field: cloud.provider
       ignore_missing: true
+      if: ctx.cloud?.provider == null
       tag: rename_cloud_platform
   - rename:
       field: crowdstrike.event.CloudService
       target_field: cloud.service.name
       ignore_missing: true
+      if: ctx.cloud?.service?.name == null
       tag: rename_cloud_service
   - rename:
       field: crowdstrike.event.PolicyStatement
