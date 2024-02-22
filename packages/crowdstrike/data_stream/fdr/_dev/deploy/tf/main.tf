@@ -39,7 +39,7 @@ resource "aws_sqs_queue" "crowdstrike_queue" {
 # IAM Policy for EventBridge Scheduler
 resource "aws_iam_policy" "sqs_access_policy" {
   count       = var.eventbridge_role_arn == null ? 1 : 0
-  name        = "sqs-access-policy-${var.TEST_RUN_ID}"
+  name        = "elastic-package-sqs-access-policy-${var.TEST_RUN_ID}"
   description = "Policy for EventBridge Scheduler to send messages to SQS"
 
   policy = jsonencode({
@@ -60,7 +60,7 @@ resource "aws_iam_policy" "sqs_access_policy" {
 # IAM Role for EventBridge Scheduler
 resource "aws_iam_role" "eventbridge_scheduler_iam_role" {
   count               = var.eventbridge_role_arn == null ? 1 : 0
-  name_prefix         = "eb-scheduler-role-${var.TEST_RUN_ID}-"
+  name_prefix         = "elastic-package-eb-scheduler-role-${var.TEST_RUN_ID}-"
   managed_policy_arns = [aws_iam_policy.sqs_access_policy.0.arn]
   path                = "/"
   assume_role_policy  = <<EOF
@@ -83,7 +83,7 @@ EOF
 // uses a custom notification format that is different than the AWS S3 event
 // notification format.
 resource "aws_scheduler_schedule" "eventbridge_scheduler_every1minute" {
-  name       = "eventbridge_scheduler_crowdstrike_fdr_sqs-${var.TEST_RUN_ID}"
+  name       = "elastic-package-eventbridge_scheduler_crowdstrike_fdr_sqs-${var.TEST_RUN_ID}"
   group_name = "default"
 
   flexible_time_window {
