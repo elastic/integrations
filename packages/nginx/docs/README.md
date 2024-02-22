@@ -439,13 +439,13 @@ An example event for `stubstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-12-09T10:41:07.200Z",
+    "@timestamp": "2024-02-08T08:12:10.668Z",
     "agent": {
-        "ephemeral_id": "83392432-3db0-4ae9-98f1-342339cf935c",
-        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
+        "ephemeral_id": "c3d516ba-b659-4190-a29d-d28200d74d48",
+        "id": "2ea50bee-9250-43d1-8d70-949f242aa275",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.5.0"
+        "version": "8.10.1"
     },
     "data_stream": {
         "dataset": "nginx.stubstatus",
@@ -453,40 +453,38 @@ An example event for `stubstatus` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "ef5e274d-4b53-45e6-943a-a5bcf1a6f523",
+        "id": "2ea50bee-9250-43d1-8d70-949f242aa275",
         "snapshot": false,
-        "version": "8.5.0"
+        "version": "8.10.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nginx.stubstatus",
-        "duration": 4340916,
-        "ingested": "2022-12-09T10:41:08Z",
+        "duration": 1156104,
+        "ingested": "2024-02-08T08:12:13Z",
         "module": "nginx"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "66392b0697b84641af8006d87aeb89f1",
+        "id": "28da52b32df94b50aff67dfb8f1be3d6",
         "ip": [
-            "172.18.0.7"
+            "172.24.0.7"
         ],
-        "mac": [
-            "02-42-AC-12-00-07"
-        ],
+        "mac": "02-42-AC-18-00-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.15.49-linuxkit",
+            "kernel": "5.15.0-89-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -495,14 +493,14 @@ An example event for `stubstatus` looks as following:
     },
     "nginx": {
         "stubstatus": {
-            "accepts": 15,
+            "accepts": 33,
             "active": 1,
-            "current": 15,
+            "current": 33,
             "dropped": 0,
-            "handled": 15,
+            "handled": 33,
             "hostname": "elastic-package-service-nginx-1:80",
             "reading": 0,
-            "requests": 15,
+            "requests": 33,
             "waiting": 0,
             "writing": 1
         }
@@ -510,7 +508,10 @@ An example event for `stubstatus` looks as following:
     "service": {
         "address": "http://elastic-package-service-nginx-1:80/server-status",
         "type": "nginx"
-    }
+    },
+    "tags": [
+        "nginx-stubstatus"
+    ]
 }
 ```
 
@@ -568,6 +569,7 @@ An example event for `stubstatus` looks as following:
 | nginx.stubstatus.writing | The current number of connections where Nginx is writing the response back to the client. | long | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
 
 
 ## ML Modules

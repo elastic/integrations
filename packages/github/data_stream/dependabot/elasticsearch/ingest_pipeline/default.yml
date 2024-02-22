@@ -18,6 +18,9 @@ processors:
   - json:
       field: event.original
       target_field: github.dependabot
+  - fail:
+      if: "!(ctx.github.dependabot instanceof Map)"
+      message: Missing JSON object
   - set:
       field: _temp.updated_at
       value: "{{{_ingest.timestamp}}}"
@@ -41,7 +44,7 @@ processors:
         - ISO8601
       timezone: UTC
       target_field: "event.created"
-      if: ctx.github.dependabot?.created_at != null
+      if: ctx.github.dependabot.created_at != null
   - rename:
       field: github.dependabot.dependabotUpdate
       target_field: github.dependabot.dependabot_update
@@ -72,21 +75,21 @@ processors:
         - ISO8601
       timezone: UTC
       target_field: "@timestamp"
-      if: ctx.github.dependabot?.created_at != null
+      if: ctx.github.dependabot.created_at != null
   - date:
       field: github.dependabot.dismissed_at
       formats:
         - ISO8601
       timezone: UTC
       target_field: "@timestamp"
-      if: ctx.github.dependabot?.dismissed_at != null
+      if: ctx.github.dependabot.dismissed_at != null
   - date:
       field: github.dependabot.fixed_at
       formats:
         - ISO8601
       timezone: UTC
       target_field: "@timestamp"
-      if: ctx.github.dependabot?.fixed_at != null
+      if: ctx.github.dependabot.fixed_at != null
   - rename:
       field: github.dependabot.repository.isInOrganization
       target_field: github.dependabot.repository.is_in_organization
@@ -118,7 +121,7 @@ processors:
   - set:
       field: _temp.cwes
       copy_from: github.dependabot.security_advisory.cwes.nodes
-      if: ctx.github.dependabot?.security_advisory?.cwes?.nodes != null
+      if: ctx.github.dependabot.security_advisory?.cwes?.nodes != null
   - remove:
       field: github.dependabot.security_advisory.cwes
       ignore_missing: true
@@ -126,6 +129,16 @@ processors:
       field: github.dependabot.security_advisory.cwes
       copy_from: _temp.cwes
       if: ctx._temp?.cwes != null
+  - foreach:
+      field: github.dependabot.security_advisory.cwes
+      if: ctx.github?.dependabot?.security_advisory?.cwes instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.cweId
+          tag: rename_cweId
+          target_field: _ingest._value.cwe_id
+          ignore_missing: true
   - rename:
       field: github.dependabot.securityVulnerability
       target_field: github.dependabot.security_vulnerability
@@ -226,19 +239,19 @@ processors:
   - set:
       field: "event.start"
       copy_from: github.dependabot.created_at
-      if: ctx.github.dependabot?.created_at != null
+      if: ctx.github.dependabot.created_at != null
   - set:
       field: "event.end"
       copy_from: github.dependabot.fixed_at
-      if: ctx.github.dependabot?.fixed_at != null
+      if: ctx.github.dependabot.fixed_at != null
   - set:
       field: "event.end"
       copy_from: github.dependabot.dismissed_at
-      if: ctx.event?.end == null && ctx.github.dependabot?.dismissed_at != null
+      if: ctx.event?.end == null && ctx.github.dependabot.dismissed_at != null
   - script:
       lang: painless
       description: Calculate time taken to resolve the alerts
-      if: ctx?.event?.start != null && ctx?.event?.end != null
+      if: ctx.event?.start != null && ctx.event?.end != null
       source: >-
         ZonedDateTime start = ZonedDateTime.parse(ctx.event.start); ZonedDateTime end = ZonedDateTime.parse(ctx.event.end); ctx.event.duration = ChronoUnit.NANOS.between(start, end);
       #################################
@@ -253,7 +266,7 @@ processors:
   - set:
       field: github.state
       copy_from: github.dependabot.state
-      if: ctx.github.dependabot?.state != null
+      if: ctx.github.dependabot.state != null
   - set:
       field: github.severity
       copy_from: vulnerability.severity
@@ -275,7 +288,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
   - script:
