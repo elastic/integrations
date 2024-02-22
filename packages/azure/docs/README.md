@@ -268,7 +268,7 @@ The Agent will use the integration name and the event hub name to identify the b
 
 ### Running the integration behind a firewall
 
-When running the Elastic Agent behind a firewall, you need to allow specific traffic to ensure proper communication with the necessary components. In this case, you need to allow traffic on port `5671` and `5672` for the Event Hub, and port `443` for the Storage Account container.
+When you run the Elastic Agent behind a firewall, to ensure proper communication with the necessary components, you need to allow traffic on port `5671` and `5672` for the Event Hub, and port `443` for the Storage Account container.
 
 ```text
 ┌────────────────────────────────┐  ┌───────────────────┐  ┌───────────────────┐
@@ -302,7 +302,7 @@ Port `5671` and `5672` are commonly used for secure communication with the Event
 
 For more information, check the following documents:
 
-- The section [What ports do I need to open on the firewall?](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall) from the [Event Hubs frequently asked questions](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall).
+- [What ports do I need to open on the firewall?](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall) from the [Event Hubs frequently asked questions](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall).
 - [AMQP outbound port requirements](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide#amqp-outbound-port-requirements)
 
 #### Storage Account Container
@@ -311,7 +311,7 @@ Port `443` is used for secure communication with the Storage Account container. 
 
 #### DNS
 
-Optionally, if you want to restrict traffic to domain names, here is the list of names you need to allow.
+Optionally, you can restrict the traffic to the following domain names:
 
 ```text
 *.servicebus.windows.net
