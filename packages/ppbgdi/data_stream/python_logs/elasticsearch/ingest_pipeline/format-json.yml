@@ -11,6 +11,9 @@ processors:
         set:
           field: "event.{{ _ingest._key }}"
           value: "{{ _ingest._value }}"
+  - remove:
+      field: ppbgdi.app.event
+      ignore_missing: true
   - set:
       field: "@timestamp"
       copy_from: event.created
@@ -20,14 +23,12 @@ processors:
   - convert:
       field: event.duration
       type: float
+      ignore_missing: true
   - script:
       description: Convert duration from seconds nanosecond
       source: |
         ctx.event.duration = (long)(ctx?.event?.duration * 1000000000)
       if: 'ctx?.event?.duration != null'
-  - remove:
-      field: ppbgdi.app.event
-      ignore_missing: true
   - rename:
       field: ppbgdi.app.http
       target_field: http
@@ -59,12 +60,20 @@ processors:
   - rename:
       field: http.response.headers.content-length
       target_field: http.response.bytes
+      ignore_missing: true
   - convert:
       field: http.response.bytes
       type: long
+      ignore_missing: true
   - rename:
       field: http.response.headers.content-type
       target_field: http.response.mime_type
+      ignore_missing: true
+  - remove:
+      field: log
+      ignore_missing: true
+      if: 'ctx?.ppbgdi?.app != null'
+      description: Replace entire log (e.g. from kubernetes) with app log information
   - rename:
       field: ppbgdi.app.log
       target_field: log

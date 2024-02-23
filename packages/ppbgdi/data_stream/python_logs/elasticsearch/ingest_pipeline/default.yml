@@ -34,7 +34,7 @@ processors:
   - set:
       field: event.outcome
       value: failure
-      if: "ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code >= 400"
+      if: 'ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code >= 400'
   - set:
       field: event.outcome
       value: failure
@@ -42,11 +42,11 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: "ctx?.http?.response?.status_code < 400"
+      if: 'ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code < 400'
   - set:
       field: event.outcome
       value: success
-      if: "ctx?.event?.outcome == null && ctx?.event?.severity < 40"
+      if: "ctx?.event?.outcome == null && ctx?.event?.severity != null && ctx?.event?.severity < 40"
   - append:
       field: related.hosts
       value: '{{ source.domain }}'
@@ -79,7 +79,9 @@ processors:
       field: service.environment
       copy_from: kubernetes.namespace_labels.en
       ignore_empty_value: true
-
+  - set:
+      field: package.name
+      value: python
   - remove:
       field: event.original
       if: "ctx?.tags == null || !ctx?.tags.contains('preserve_original_event')"
