@@ -937,7 +937,8 @@ processors:
       field: "message"
       description: "722022, 722023"
       patterns:
-        - 'Group (?:%{OPTIONAL_GTLT:source.user.group.name} )??User %{OPTIONAL_GTLT:source.user.name} IP <%{IP:source.address}> %{GREEDYDATA:event.reason}'
+        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> %{GREEDYDATA:event.reason}'
+        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} %{GREEDYDATA:event.reason}'
       pattern_definitions:
         OPTIONAL_GTLT: "(?:(<%{NOTSPACE}>)|%{NOTSPACE})"
   - grok:
@@ -945,8 +946,8 @@ processors:
       field: "message"
       description: "722033"
       patterns:
-        - 'Group (?:<%{NOTSPACE:source.user.group.name}> )??User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
-        - 'Group (?:%{NOTSPACE:source.user.group.name} )??User %{NOTSPACE:source.user.name} IP %{IP:source.address} First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
+        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
+        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
   - grok:
       if: "ctx._temp_.cisco.message_id == '722034'"
       field: "message"
