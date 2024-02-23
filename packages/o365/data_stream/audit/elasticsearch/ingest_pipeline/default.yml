@@ -1093,6 +1093,24 @@ processors:
       field: o365audit.UserType
       type: string
       ignore_missing: true
+  - foreach:
+      field: o365audit.Actor
+      if: ctx.o365audit?.Actor instanceof List
+      processor:
+        convert:
+          field: _ingest._value.Type
+          tag: convert_actor_type_to_string
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: o365audit.Target
+      if: ctx.o365audit?.Target instanceof List
+      processor:
+        convert:
+          field: _ingest._value.Type
+          tag: convert_target_type_to_string
+          type: string
+          ignore_missing: true
   - convert:
       field: o365audit.Version
       type: string
