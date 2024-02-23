@@ -18,3 +18,8 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Setup Exchange Server
+
+To collect the SMTP Logs, the logs have to be configured on the exchange Server. To enable it, you can follow this [guide](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/configure-protocol-logging?view=exchserver-2019)
+The other logs are enabled by default, and no further configurations are required
