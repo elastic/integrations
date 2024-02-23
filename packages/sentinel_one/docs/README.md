@@ -1644,8 +1644,8 @@ An example event for `threat` looks as following:
 | sentinel_one.threat.mitigation_status.action_counters.pending_reboot | Actions counters Pending reboot. | long |
 | sentinel_one.threat.mitigation_status.action_counters.success | Actions counters Success. | long |
 | sentinel_one.threat.mitigation_status.action_counters.total | Actions counters Total. | long |
-| sentinel_one.threat.mitigation_status.agent_supports_report | The Agent generates a full mitigation report. | keyword |
-| sentinel_one.threat.mitigation_status.group_not_found | Agent could not find the threat. | keyword |
+| sentinel_one.threat.mitigation_status.agent_supports_report | The Agent generates a full mitigation report. | boolean |
+| sentinel_one.threat.mitigation_status.group_not_found | Agent could not find the threat. | boolean |
 | sentinel_one.threat.mitigation_status.last_update | Timestamp of last mitigation status update. | keyword |
 | sentinel_one.threat.mitigation_status.latest_report | Report download URL. If None, there is no report. | keyword |
 | sentinel_one.threat.mitigation_status.mitigation_ended_at | The time the Agent finished the mitigation. | keyword |
