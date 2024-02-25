@@ -1,0 +1,38 @@
+{
+    "id": "9272d2b5-4e25-5658-8a6c-d917f60134ec",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Enabling this setting will enable a log of all disconnections. If this is enabled for a high traffic server, the log may grow exponentially.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/rest/api/postgresql/singleserver/configurations/list-by-server\n2. https://docs.microsoft.com/en-us/azure/postgresql/howto-configure-server-parameters-using-portal\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-logging-threat-detection#lt-4-enable-logging-for-azure-resources\n4. https://learn.microsoft.com/en-us/powershell/module/az.postgresql/get-azpostgresqlconfiguration?view=azps-9.2.0#example-2-get-specified-postgresql-configuration-by-name\n5. https://learn.microsoft.com/en-us/powershell/module/az.postgresql/update-azpostgresqlconfiguration?view=azps-9.2.0#example-1-update-postgresql-configuration-by-name",
+            "id": "9272d2b5-4e25-5658-8a6c-d917f60134ec",
+            "name": "Ensure server parameter 'log_disconnections' is set to 'ON' for PostgreSQL Database Server",
+            "profile_applicability": "* Level 1",
+            "description": "Enable `log_disconnections` on `PostgreSQL Servers`.",
+            "rationale": "Enabling `log_disconnections` helps PostgreSQL Database to `Logs end of a session`, including duration, which in turn generates query and error logs.\nQuery and error logs can be used to identify, troubleshoot, and repair configuration errors and sub-optimal performance.",
+            "audit": "**From Azure Portal**\n\n1. From Azure Home select the Portal Menu\n2. Go to `Azure Database` for `PostgreSQL servers`\n3. For each database, click on `Server parameters`\n4. Search for `log_disconnections`.\n5. Ensure that value is set to `ON`.\n\n**From Azure CLI**\n\nEnsure `log_disconnections` value is set to `ON`\n```\naz postgres server configuration show --resource-group <resourceGroupName> --server-name <serverName> --name log_disconnections\n```\n\n**From PowerShell**\n\nEnsure `log_disconnections` value is set to `ON`\n\n```\nGet-AzPostgreSqlConfiguration -ResourceGroupName <ResourceGroupName> -ServerName <ServerName> -Name log_disconnections\n```",
+            "remediation": "**From Azure Portal**\n\n1. From Azure Home select the Portal Menu\n2. Go to `Azure Database` for `PostgreSQL servers`\n3. For each database, click on `Server parameters`\n4. Search for `log_disconnections`.\n5. Click `ON` and save.\n\n**From Azure CLI**\n\nUse the below command to update `log_disconnections` configuration.\n```\naz postgres server configuration set --resource-group <resourceGroupName> --server-name <serverName> --name log_disconnections --value on\n```\n\n**From PowerShell**\n\nUse the below command to update `log_disconnections` configuration.\n```\nUpdate-AzPostgreSqlConfiguration -ResourceGroupName <ResourceGroupName> -ServerName <ServerName> -Name log_disconnections -Value on\n```",
+            "section": "PostgreSQL Database Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.3.4",
+                "PostgreSQL Database Server"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.3.4",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_3_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

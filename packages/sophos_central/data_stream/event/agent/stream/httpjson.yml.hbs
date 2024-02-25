@@ -25,8 +25,8 @@ request.transforms:
       value: {{tenant_id}}
   - set:
       target: url.params.from_date
-      value: '[[.cursor.from_date]]'
-      default: '[[(now (parseDuration "-{{initial_interval}}")).Unix]]'
+      value: '[[max .cursor.from_date ((now).Add (parseDuration "-23h59m")).Unix]]'
+      default: '[[max (now (parseDuration "-23h59m")).Unix (now (parseDuration "-{{initial_interval}}")).Unix]]'
   - set:
       target: url.params.limit
       value: {{batch_size}}
