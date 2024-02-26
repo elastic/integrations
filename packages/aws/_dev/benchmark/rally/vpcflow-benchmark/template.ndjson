@@ -1,0 +1,88 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $cloud_region := generate "cloud_region" }}
+{{- $cloud_availability_zone := generate "cloud_availability_zone" }}
+{{- $network_direction := generate "network_direction" }}
+{{- $duration_start := generate "duration_start" }}
+{{- $duration_end := generate "duration_end" }}
+{{- $aws_vpcflow_start := generate "timestamp" | date_modify (print $duration_start) }}
+{{- $aws_vpcflow_end := generate "timestamp" | date_modify (print $duration_end) }}
+{{- $aws_s3_bucket_arn := generate "aws_s3_bucket_arn" }}
+{{- $aws_vpcflow_version := generate "aws_vpcflow_version" }}
+{{- $aws_vpcflow_account_id := generate "aws_vpcflow_account_id" }}
+{{- $aws_vpcflow_interface_id := generate "aws_vpcflow_interface_id" }}
+{{- $aws_vpcflow_action := generate "aws_vpcflow_action" }}
+{{- $log_status := generate "log_status" }}
+{{- $aws_vpcflow_pkt_srcaddr := generate "aws_vpcflow_pkt_srcaddr" }}
+{{- $aws_vpcflow_pkt_dstaddr := generate "aws_vpcflow_pkt_dstaddr" }}
+{{- $aws_vpcflow_vpc_id := generate "aws_vpcflow_vpc_id" }}
+{{- $aws_vpcflow_subnet_id := generate "aws_vpcflow_subnet_id" }}
+{{- $aws_vpcflow_tcp_flags := generate "aws_vpcflow_tcp_flags" }}
+{{- $aws_vpcflow_type := generate "aws_vpcflow_type" }}
+{{- $aws_vpcflow_pkt_dst_service := generate "aws_vpcflow_pkt_dst_service" }}
+{{- $aws_vpcflow_pkt_src_service := generate "aws_vpcflow_pkt_src_service" }}
+{{- $aws_vpcflow_traffic_path := generate "aws_vpcflow_traffic_path" }}
+{{- $aws_vpcflow_sublocation_type := generate "aws_vpcflow_sublocation_type" }}
+{{- $aws_vpcflow_sublocation_id := generate "aws_vpcflow_sublocation_id" }}
+{{- $aws_vpcflow_srcaddr := generate "aws_vpcflow_srcaddr" }}
+{{- $aws_vpcflow_dstaddr := generate "aws_vpcflow_dstaddr" }}
+{{- $aws_vpcflow_srcport := generate "aws_vpcflow_srcport" }}
+{{- $aws_vpcflow_dstport := generate "aws_vpcflow_dstport" }}
+{{- $aws_vpcflow_protocol := generate "aws_vpcflow_protocol" }}
+{{- $aws_vpcflow_packets := generate "aws_vpcflow_packets" }}
+{{- $aws_vpcflow_bytes := generate "aws_vpcflow_bytes" }}
+{{- $long_num := generate "long_num" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z" }}",
+    "agent": {
+        "ephemeral_id": "22ed892c-43bd-408a-9121-65e2f5b6a56e",
+        "id": "de42127b-4db8-4471-824e-a7b14f478663",
+        "name": "aws-scale-123456",
+        "type": "filebeat",
+        "version": "8.8.0"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::{{ $aws_s3_bucket_arn }}-{{ div $long_num 10000 }}",
+                "name": "{{ $aws_s3_bucket_arn }}-{{ div $long_num 10000 }}"
+            },
+            "object": {
+                "key": "extra-samples.log"
+            }
+        }
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "aws"
+    },
+    "data_stream": {
+        "dataset": "aws.vpcflow",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "de42127b-4db8-4471-824e-a7b14f478663",
+        "snapshot": false,
+        "version": "8.8.0"
+    },
+    "event": {
+        "dataset": "aws.vpcflow",
+        "original" : "{\"message\":\"{{ $aws_vpcflow_version }} {{ $aws_vpcflow_account_id }} {{ $aws_vpcflow_interface_id }} {{ $aws_vpcflow_srcaddr }} {{ $aws_vpcflow_dstaddr }} {{ $aws_vpcflow_srcport }} {{ $aws_vpcflow_dstport }} {{ $aws_vpcflow_protocol }} {{ $aws_vpcflow_packets }} {{ $aws_vpcflow_bytes }} {{ $aws_vpcflow_start.Unix }} {{ $aws_vpcflow_end.Unix }} {{ $aws_vpcflow_action }} {{ $log_status }} vpc-{{ $aws_vpcflow_vpc_id }}{{ $long_num }} subnet-{{ $aws_vpcflow_subnet_id }}{{ $long_num }} i-{{ $long_num }}{{ $long_num }} {{ $aws_vpcflow_tcp_flags }} {{ $aws_vpcflow_type }} {{ $aws_vpcflow_pkt_srcaddr }} {{ $aws_vpcflow_pkt_dstaddr }} {{ $cloud_region }} {{ $cloud_availability_zone }} {{ $aws_vpcflow_sublocation_type }} {{ $aws_vpcflow_sublocation_id }} {{ $aws_vpcflow_pkt_src_service }} {{ $aws_vpcflow_pkt_dst_service }} {{ $network_direction }} {{ $aws_vpcflow_traffic_path }}\"}"  
+    },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-63461.s3.us-east-1.amazonaws.com/extra-samples.log"
+        },
+        "offset": 338
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "aws-vpcflow"
+    ]
+}
