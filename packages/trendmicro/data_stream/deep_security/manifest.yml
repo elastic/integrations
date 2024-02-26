@@ -1,156 +1,49 @@
-title: "Trendmicro Deep Security logs"
+title: Collect logs from Trend Micro Deep Security
 type: logs
 streams:
-  - input: filestream
-    template_path: stream.yml.hbs
-    title: Trendmicro Deep Security logs
-    description: Collect Deep Security logs
-    vars:
-      - name: paths
-        type: text
-        title: Paths
-        multi: true
-        required: true
-        show_user: true
-        default:
-          - /var/log/trendmicro.log
-      - name: decode_trendmicro_timezone
-        type: text
-        title: Trendmicro Timezone
-        multi: false
-        required: false
-        show_user: false
-        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting timestamps without a time zone in the CEF message.
-      - name: tags
-        type: text
-        title: Tags
-        description: A list of tags to include in events. Including `forwarded` indicates that the events did not originate on this host and causes `host.name` to not be added to events.
-        multi: true
-        required: true
-        show_user: false
-        default:
-          - deep-security
-          - forwarded
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
-      - name: processors
-        type: yaml
-        title: Processors
-        multi: false
-        required: false
-        show_user: false
-        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-  - input: udp
-    template_path: udp.yml.hbs
-    title: Trendmicro Deep Security logs
-    description: Collect Deep Security logs using udp input
-    vars:
-      - name: udp_host
-        type: text
-        title: UDP host to listen on
-        multi: false
-        required: true
-        show_user: true
-        default: localhost
-      - name: udp_port
-        type: integer
-        title: UDP port to listen on
-        multi: false
-        required: true
-        show_user: true
-        default: 9003
-      - name: decode_trendmicro_timezone
-        type: text
-        title: Trendmicro Timezone
-        multi: false
-        required: false
-        show_user: false
-        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting timestamps without a time zone in the CEF message.
-      - name: tags
-        type: text
-        title: Tags
-        description: A list of tags to include in events. Including `forwarded` indicates that the events did not originate on this host and causes `host.name` to not be added to events.
-        multi: true
-        required: true
-        show_user: false
-        default:
-          - deep-security
-          - forwarded
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
-      - name: processors
-        type: yaml
-        title: Processors
-        multi: false
-        required: false
-        show_user: false
-        description: >-
-          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
   - input: tcp
+    enabled: false
     template_path: tcp.yml.hbs
-    title: Trendmicro Deep Security logs
-    description: Collect Deep Security logs using udp input
+    title: Trend Micro Deep Security logs
+    description: Collect Trend Micro Deep Security logs via TCP input.
     vars:
-      - name: tcp_host
+      - name: listen_address
         type: text
-        title: TCP host to listen on
+        title: Listen Address
+        description: The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces.
         multi: false
         required: true
         show_user: true
         default: localhost
-      - name: tcp_port
+      - name: listen_port
         type: integer
-        title: Syslog Port
-        description: TCP port to listen on
+        title: Listen Port
+        description: The TCP port number to listen on.
         multi: false
         required: true
         show_user: true
-        default: 9003
-      - name: decode_trendmicro_timezone
+        default: 9510
+      - name: tz_offset
         type: text
-        title: Trendmicro Timezone
+        title: Timezone Offset
         multi: false
         required: false
-        show_user: false
-        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting timestamps without a time zone in the CEF message.
-      - name: tags
-        type: text
-        title: Tags
-        description: A list of tags to include in events. Including `forwarded` indicates that the events did not originate on this host and causes `host.name` to not be added to events.
-        multi: true
-        required: true
-        show_user: false
-        default:
-          - deep-security
-          - forwarded
-      - name: preserve_original_event
-        required: true
         show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
-      - name: processors
+        description: |-
+          When interpreting syslog timestamps without a time zone, use this timezone offset.
+          Datetimes recorded in logs are by default interpreted in relation to the timezone set up on the host where the agent is operating.
+          Use this parameter to adjust the timezone offset when importing logs from a host in a different timezone so that datetimes are appropriately interpreted.
+          Both a canonical ID (such as "Europe/Amsterdam") and an HH:mm differential (such as "-05:00") are acceptable timezone formats.
+      - name: tcp_options
         type: yaml
-        title: Processors
+        title: Custom TCP Options
         multi: false
         required: false
         show_user: false
-        description: >-
-          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        default: |
+          #max_message_size: 50KiB
+          #max_connections: 1
+        description: Specify custom configuration options for the TCP input.
       - name: ssl
         type: yaml
         title: SSL Configuration
@@ -180,3 +73,174 @@ streams:
           #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
           #    sxSmbIUfc2SGJGCJD4I=
           #    -----END CERTIFICATE-----
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - trendmicro.deep_security
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve trendmicro.deep_security fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+          This executes in the agent before the logs are parsed.
+          See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+  - input: udp
+    enabled: false
+    template_path: udp.yml.hbs
+    title: Trend Micro Deep Security logs
+    description: Collect Trend Micro Deep Security logs via UDP input.
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The UDP port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9510
+      - name: tz_offset
+        type: text
+        title: Timezone Offset
+        multi: false
+        required: false
+        show_user: true
+        description: |-
+          When interpreting syslog timestamps without a time zone, use this timezone offset.
+          Datetimes recorded in logs are by default interpreted in relation to the timezone set up on the host where the agent is operating.
+          Use this parameter to adjust the timezone offset when importing logs from a host in a different timezone so that datetimes are appropriately interpreted.
+          Both a canonical ID (such as "Europe/Amsterdam") and an HH:mm differential (such as "-05:00") are acceptable timezone formats.
+      - name: udp_options
+        type: yaml
+        title: Custom UDP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #max_message_size: 50KiB
+          #timeout: 300s
+        description: Specify custom configuration options for the UDP input.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - trendmicro.deep_security
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve trendmicro.deep_security fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+          This executes in the agent before the logs are parsed.
+          See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+  - input: filestream
+    enabled: false
+    template_path: filestream.yml.hbs
+    title: Trend Micro Deep Security logs
+    description: Collect Trend Micro Deep Security logs via Filestream input.
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        description: A list of glob-based paths that will be crawled and fetched.
+      - name: tz_offset
+        type: text
+        title: Timezone Offset
+        multi: false
+        required: false
+        show_user: true
+        description: |-
+          When interpreting syslog timestamps without a time zone, use this timezone offset. Datetimes recorded in logs are by default interpreted in relation to the timezone set up on the host where the agent is operating.
+          Use this parameter to adjust the timezone offset when importing logs from a host in a different timezone so that datetimes are appropriately interpreted.
+          Both a canonical ID (such as "Europe/Amsterdam") and an HH:mm differential (such as "-05:00") are acceptable timezone formats.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - trendmicro.deep_security
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve trendmicro.deep_security fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+          This executes in the agent before the logs are parsed.
+          See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
