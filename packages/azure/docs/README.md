@@ -266,6 +266,59 @@ The Elastic Agent can use one Storage account container for all integrations.
 
 The Agent will use the integration name and the event hub name to identify the blob to store the consumer group information uniquely.
 
+### Running the integration behind a firewall
+
+When you run the Elastic Agent behind a firewall, to ensure proper communication with the necessary components, you need to allow traffic on port `5671` and `5672` for the Event Hub, and port `443` for the Storage Account container.
+
+```text
+┌────────────────────────────────┐  ┌───────────────────┐  ┌───────────────────┐
+│                                │  │                   │  │                   │
+│ ┌────────────┐   ┌───────────┐ │  │  ┌──────────────┐ │  │ ┌───────────────┐ │
+│ │ diagnostic │   │ event hub │ │  │  │azure-eventhub│ │  │ │ activity logs │ │
+│ │  setting   │──▶│           │◀┼AMQP─│  <<input>>   │─┼──┼▶│<<data stream>>│ │
+│ └────────────┘   └───────────┘ │  │  └──────────────┘ │  │ └───────────────┘ │
+│                                │  │          │        │  │                   │
+│                                │  │          │        │  │                   │
+│                                │  │          │        │  │                   │
+│         ┌─────────────┬─────HTTPS─┼──────────┘        │  │                   │
+│ ┌───────┼─────────────┼──────┐ │  │                   │  │                   │
+│ │       │             │      │ │  │                   │  │                   │
+│ │       ▼             ▼      │ │  └─Agent─────────────┘  └─Elastic Cloud─────┘
+│ │ ┌──────────┐  ┌──────────┐ │ │
+│ │ │    0     │  │    1     │ │ │
+│ │ │ <<blob>> │  │ <<blob>> │ │ │
+│ │ └──────────┘  └──────────┘ │ │
+│ │                            │ │
+│ │                            │ │
+│ └─Storage Account Container──┘ │
+│                                │
+│                                │
+└─Azure──────────────────────────┘
+```
+
+#### Event Hub
+
+Port `5671` and `5672` are commonly used for secure communication with the Event Hub. These ports are used to receive events. By allowing traffic on these ports, the Elastic Agent can establish a secure connection with the Event Hub. 
+
+For more information, check the following documents:
+
+- [What ports do I need to open on the firewall?](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall) from the [Event Hubs frequently asked questions](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall).
+- [AMQP outbound port requirements](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide#amqp-outbound-port-requirements)
+
+#### Storage Account Container
+
+Port `443` is used for secure communication with the Storage Account container. This port is commonly used for HTTPS traffic. By allowing traffic on port 443, the Elastic Agent can securely access and interact with the Storage Account container, which is essential for storing and retrieving checkpoint data for each event hub partition.
+
+#### DNS
+
+Optionally, you can restrict the traffic to the following domain names:
+
+```text
+*.servicebus.windows.net
+*.blob.core.windows.net
+*.cloudapp.net
+```
+
 ## Settings
 
 Use the following settings to configure the Azure Logs integration when you add it to Fleet.

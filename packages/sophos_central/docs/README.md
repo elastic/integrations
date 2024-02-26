@@ -272,7 +272,7 @@ An example event for `alert` looks as following:
 | sophos_central.alert.customer_id | The unique identifier of the customer linked with this record. | keyword |
 | sophos_central.alert.data.app_id | App identifier. | keyword |
 | sophos_central.alert.data.certificates | Certificates of alert. | keyword |
-| sophos_central.alert.data.core_remedy.items.descriptior | Descriptor of items. | keyword |
+| sophos_central.alert.data.core_remedy.items.descriptor | Descriptor of items. | keyword |
 | sophos_central.alert.data.core_remedy.items.process_path | Process path of sophos items. | keyword |
 | sophos_central.alert.data.core_remedy.items.result | The following values are allowed: NOT_APPLICABLE, SUCCESS, NOT_FOUND, DELETED, FAILED_TO_DELETE, WHITELISTED, OTHER_ERROR, FAILED_TO_DELETE_SYSTEM_PROTECTED. | keyword |
 | sophos_central.alert.data.core_remedy.items.sophos_pid | Process id of sophos items. | keyword |

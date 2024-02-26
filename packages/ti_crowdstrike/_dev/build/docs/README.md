@@ -55,6 +55,8 @@ This module has been tested against the **CrowdStrike Falcon Intelligence API Ve
 
 Follow the [documentation](https://www.crowdstrike.com/blog/tech-center/consume-ioc-and-threat-feeds/) for enabling the scopes from the CrowdStrike console.
 
+User should either have `admin` role or `Detection Exception Manager` role to access IOCs endpoint. Follow the [documentation](https://falcon.crowdstrike.com/documentation/page/f20650df/default-roles-reference) for managing user roles and permissions.
+
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations
