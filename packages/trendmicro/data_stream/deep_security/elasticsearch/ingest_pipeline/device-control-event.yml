@@ -1,26 +1,20 @@
 ---
-description: Pipeline for Web Reuptation
+description: Pipeline for processing Application Control event logs.
 processors:
   - set:
       field: trendmicro.deep_security.event_category
       tag: set_deep_security_event_category
-      value: web-reputation-event
+      value: device-control-event
   - append:
       field: event.category
       tag: set_event_category
-      value: network
+      value: intrusion_detection
       allow_duplicates: false
   - append:
       field: event.type
       tag: set_event_type
       value: info
       allow_duplicates: false
-  - append:
-      field: event.type
-      tag: set_event_type
-      value: denied
-      allow_duplicates: false
-      if: ctx.trendmicro?.deep_security?.signature_id != null && ctx.trendmicro.deep_security.signature_id == 5000001
 on_failure:
   - append:
       field: error.message
