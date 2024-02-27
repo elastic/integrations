@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Suspicious LSASS Access via MalSecLogon",
-        "query": "process where host.os.type == \"windows\" and event.code == \"10\" and\n  winlog.event_data.TargetImage : \"?:\\\\WINDOWS\\\\system32\\\\lsass.exe\" and\n\n   /* seclogon service accessing lsass */\n  winlog.event_data.CallTrace : \"*seclogon.dll*\" and process.name : \"svchost.exe\" and\n\n   /* PROCESS_CREATE_PROCESS \u0026 PROCESS_DUP_HANDLE \u0026 PROCESS_QUERY_INFORMATION */\n  winlog.event_data.GrantedAccess == \"0x14c0\"\n",
+        "query": "process where host.os.type == \"windows\" and event.code == \"10\" and\n  winlog.event_data.TargetImage : \"?:\\\\WINDOWS\\\\system32\\\\lsass.exe\" and\n\n   /* seclogon service accessing lsass */\n  winlog.event_data.CallTrace : \"*seclogon.dll*\" and process.name : \"svchost.exe\" and\n\n   /* PROCESS_CREATE_PROCESS & PROCESS_DUP_HANDLE & PROCESS_QUERY_INFORMATION */\n  winlog.event_data.GrantedAccess == \"0x14c0\"\n",
         "references": [
             "https://splintercod3.blogspot.com/p/the-hidden-side-of-seclogon-part-3.html"
         ],
@@ -56,7 +56,7 @@
         ],
         "risk_score": 73,
         "rule_id": "7ba58110-ae13-439b-8192-357b0fcfa9d7",
-        "setup": "\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2,\nevents will not define `event.ingested` and default fallback for EQL rules was not added until version 8.2.\nHence for this rule to work effectively, users will need to add a custom ingest pipeline to populate\n`event.ingested` to @timestamp.\nFor more details on adding a custom ingest pipeline refer - https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html\n",
+        "setup": "\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions <8.2,\nevents will not define `event.ingested` and default fallback for EQL rules was not added until version 8.2.\nHence for this rule to work effectively, users will need to add a custom ingest pipeline to populate\n`event.ingested` to @timestamp.\nFor more details on adding a custom ingest pipeline refer - https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html\n",
         "severity": "high",
         "tags": [
             "Domain: Endpoint",
@@ -67,7 +67,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0006",
                     "name": "Credential Access",

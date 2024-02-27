@@ -15,6 +15,8 @@ export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
 
+COVERAGE_FORMAT="generic"
+COVERAGE_OPTIONS="--test-coverage --coverage-format=${COVERAGE_FORMAT}"
 
 running_on_buildkite() {
     if [[ "${BUILDKITE:-"false"}" == "true" ]]; then
@@ -135,14 +137,51 @@ with_mage() {
     mage --version
 }
 
-with_docker_compose() {
+with_docker() {
+    echo "--- Setting up the Docker environment..."
+    echo "- Current docker client version:"
+    docker version -f json  | jq -r '.Client.Version'
+    echo "- Current docker server version:"
+    docker version -f json  | jq -r '.Server.Version'
+
+    if [[ "${DOCKER_VERSION:-"false"}" == "false" ]]; then
+        echo "Skip docker installation"
+        return
+    fi
+    local ubuntu_version
+    local ubuntu_codename
+    local architecture
+    ubuntu_version="$(lsb_release -rs)" # 20.04
+    ubuntu_codename="$(lsb_release -sc)" # focal
+    architecture=$(dpkg --print-architecture)
+    local debian_version="5:${DOCKER_VERSION}-1~ubuntu.${ubuntu_version}~${ubuntu_codename}"
+
+    sudo sudo mkdir -p /etc/apt/keyrings
+    if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    fi
+    echo "deb [arch=${architecture} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${ubuntu_codename} stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce=${debian_version}"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce-cli=${debian_version}"
+    sudo systemctl start docker
+}
+
+with_docker_compose_plugin() {
+    echo "--- Setting up the Docker compose plugin environment..."
+    if [[ "${DOCKER_COMPOSE_VERSION:-"false"}" == "false" ]]; then
+        echo "Skip docker compose installation (plugin)"
+        return
+    fi
     create_bin_folder
     check_platform_architecture
 
-    echo "--- Setting up the Docker-compose environment..."
-    retry 5 curl -sSL -o "${BIN_FOLDER}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
-    chmod +x "${BIN_FOLDER}/docker-compose"
-    docker-compose version
+    local DOCKER_CONFIG="$HOME/.docker/cli-plugins"
+    mkdir -p "$DOCKER_CONFIG"
+
+    retry 5 curl -SL -o ${DOCKER_CONFIG}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
+    chmod +x ${DOCKER_CONFIG}/docker-compose
+    docker compose version
 }
 
 with_kubernetes() {
@@ -212,22 +251,6 @@ with_github_cli() {
 }
 
 ## Logging and logout from Google Cloud
-google_cloud_upload_auth() {
-  local secretFileLocation
-  secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${PACKAGE_UPLOADER_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
-  gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
-  export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
-}
-
-google_cloud_signing_auth() {
-  local secretFileLocation
-  secretFileLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX")/${GOOGLE_CREDENTIALS_FILENAME}
-  echo "${SIGNING_PACKAGES_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
-  gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
-  export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
-}
-
 google_cloud_auth_safe_logs() {
     local gsUtilLocation
     gsUtilLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE}")
@@ -310,15 +333,90 @@ kibana_version_manifest() {
 }
 
 capabilities_manifest() {
-    cat manifest.yml | yq ".conditions.elastic.capabilities"
+    # 1) Expected format
+    #  conditions:
+    #    elastic:
+    #      capabilities:
+    #        - observability
+    #        - uptime
+    # expected output:
+    # "observability"
+    # "uptime"
+    # 2) Expected format
+    #  conditions:
+    #    elastic:
+    #      capabilities: [observability, uptime]
+    # expected output:
+    # "observability"
+    # "uptime"
+    local capabilities=""
+    capabilities=$(cat manifest.yml | yq -M -r -o json ".conditions.elastic.capabilities")
+    if [[ "$capabilities" != "null" ]]; then
+        echo "$capabilities" | jq '.[]'
+        return
+    fi
+    echo "$capabilities"
 }
+
+capabilities_in_kibana() {
+    # Expected format
+    # xpack.fleet.internal.registry.capabilities: [
+    #   'apm',
+    #   'observability',
+    #   'uptime',
+    # ]
+    # Expected output:
+    # "apm"
+    # "observability"
+    # "uptime"
+    cat "${KIBANA_CONFIG_FILE_PATH}" | yq -M -r -o json '."xpack.fleet.internal.registry.capabilities"' | jq '.[]'
+}
+
+packages_excluded() {
+    # Expected format:
+    #   xpack.fleet.internal.registry.excludePackages: [
+    #     # Security integrations
+    #     'endpoint',
+    #     'beaconing',
+    #     'osquery_manager',
+    #   ]
+    # required double quotes to ensure that the package is checked (e.g. synthetics synthetics_dashboard)
+    # excluded_packages must be:
+    # "endpoint"
+    # "beaconing"
+    # "osquery_manager"
+    local config_file_path=$1
+    local excluded_packages=""
+    excluded_packages=$(cat "${config_file_path}" | yq -M -r -o json '."xpack.fleet.internal.registry.excludePackages"')
+    if [[ "${excluded_packages}" != "null" ]]; then
+        echo "${excluded_packages}" | jq '.[]'
+        return
+    fi
+    echo "${excluded_packages}"
+}
+
+is_package_excluded() {
+    local package=$1
+    local config_file_path=$2
+    local excluded_packages=""
+
+    excluded_packages=$(packages_excluded "${config_file_path}")
+    if [[ "${excluded_packages}" == "null" ]]; then
+        return 1
+    fi
+    if echo "${excluded_packages}" | grep -q -E "\"${package}\""; then
+        return 0
+    fi
+    return 1
+}
+
 
 is_supported_capability() {
     if [ "${SERVERLESS_PROJECT}" == "" ]; then
         return 0
     fi
 
-    local capabilities
+    local capabilities=""
     capabilities=$(capabilities_manifest)
 
     # if no capabilities defined, it is available iavailable all projects
@@ -326,23 +424,24 @@ is_supported_capability() {
         return 0
     fi
 
-    if [[ ${SERVERLESS_PROJECT} == "observability" ]]; then
-        if echo "${capabilities}" | grep -E 'apm|observability|uptime' ; then
-            return 0
-        else
-            return 1
-        fi
+    local capabilities_kibana_grep=""
+
+    capabilities_kibana_grep=$(capabilities_in_kibana | tr -d '\n' | sed 's/""/"|"/g')
+    # Expected value of "capabilities_kibana"
+    # "apm"|"observability"|"uptime"
+
+    # if there is no key defined in kibana, allow to be tested
+    if [[ ${capabilities_kibana_grep} == "null" ]]; then
+        return 0
     fi
 
-    if [[ ${SERVERLESS_PROJECT} == "security" ]]; then
-        if echo "${capabilities}" | grep -E 'security' ; then
-            return 0
-        else
+    for cap in ${capabilities}; do
+        if ! echo "${cap}" | grep -q -E "${capabilities_kibana_grep}"; then
             return 1
         fi
-    fi
+    done
 
-    return 1
+    return 0
 }
 
 is_supported_stack() {
@@ -432,11 +531,14 @@ prepare_serverless_stack() {
     export EC_HOST=${EC_HOST_SECRET}
 
     echo "Boot up the Elastic stack"
-    ${ELASTIC_PACKAGE_BIN} stack up \
+    # grep command required to remove password from the output
+    if ! ${ELASTIC_PACKAGE_BIN} stack up \
         -d \
         ${args} \
         --provider serverless \
-        -U "stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT}" 2>&1 | grep -E -v "^Password: " # To remove password from the output
+        -U "stack.serverless.region=${EC_REGION_SECRET},stack.serverless.type=${SERVERLESS_PROJECT}" 2>&1 | grep -E -v "^Password: " ; then
+        return 1
+    fi
     echo ""
     ${ELASTIC_PACKAGE_BIN} stack status
     echo ""
@@ -546,7 +648,7 @@ is_pr_affected() {
     local from=${2:-""}
     local to=${3:-""}
 
-    echo "[${package}] Original commits: from '${from}' - to: '${to}'"
+    echoerr "[${package}] Original commits: from '${from}' - to: '${to}'"
 
     if ! is_supported_stack ; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
@@ -554,6 +656,10 @@ is_pr_affected() {
     fi
 
     if is_serverless; then
+        if is_package_excluded "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
+            echo "[${package}] PR is not affected: package ${package} excluded in Kibana config for ${SERVERLESS_PROJECT}"
+            return 1
+        fi
         if ! is_supported_capability ; then
             echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
             return 1
@@ -661,11 +767,11 @@ install_package() {
 
 test_package_in_local_stack() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file --test-coverage"
+    TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     # Run all test suites
-    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS}
+    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
     local ret=$?
     echo ""
     return $ret
@@ -679,10 +785,10 @@ test_package_in_serverless() {
     TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
-    if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} --test-coverage ; then
+    if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
         return 1
     fi
-    if ! ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS} --test-coverage ; then
+    if ! ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
         return 1
     fi
     # FIXME: adding test-coverage for serverless results in errors like this:
@@ -703,7 +809,9 @@ run_tests_package() {
 
     # For non serverless, each Elastic stack is boot up checking each package manifest
     if ! is_serverless ; then
-        prepare_stack
+        if ! prepare_stack ; then
+            return 1
+        fi
     fi
 
     echo "--- [${package}] test installation"
@@ -863,109 +971,6 @@ process_package() {
 
     popd > /dev/null
     return $exit_code
-}
-
-## TODO: Benchmark helpers
-add_github_comment_benchmark() {
-    if ! is_pr ; then
-        return
-    fi
-
-    local benchmark_github_file="report.md"
-    local benchmark_results="benchmark-results"
-    local current_benchmark_results="build/${benchmark_results}"
-    local baseline="build/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}/${benchmark_results}"
-    local is_full_report="false"
-
-    if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ benchmark\ fullreport ]]; then
-        is_full_report="true"
-    fi
-
-    pushd "${WORKSPACE}" > /dev/null
-
-    mkdir -p "${current_benchmark_results}"
-    mkdir -p "${baseline}"
-
-    # download PR benchmarks
-    download_benchmark_results \
-        "${JOB_GCS_BUCKET}" \
-        "$(get_benchmark_path_prefix)" \
-        "${current_benchmark_results}"
-
-    # download main benchmark if any
-    download_benchmark_results \
-        "${JOB_GCS_BUCKET}" \
-        "$(get_benchmark_path_prefix)" \
-        baseline
-
-    echo "Debug: current benchmark"
-    ls -l "${current_benchmark_results}"
-
-    echo "Debug: baseline benchmark"
-    ls -l "${baseline}"
-
-    echo "Run benchmark report"
-    ${ELASTIC_PACKAGE_BIN} report benchmark \
-        --fail-on-missing=false \
-        --new="${current_benchmark_results}" \
-        --old="${baseline}" \
-        --threshold="${BENCHMARK_THRESHOLD}" \
-        --report-output-path="${benchmark_github_file}" \
-        --full=${is_full_report}
-
-
-    if [ ! -f ${benchmark_github_file} ]; then
-        echo "add_github_comment_benchmark: it was not possible to send the message"
-        return
-    fi
-    # TODO: write github comment in PR
-    popd > /dev/null
-}
-
-stash_benchmark_results() {
-    local wildcard="build/benchmark-results/*.json"
-    if ! ls ${wildcard} ; then
-        echo "isBenchmarkResultsPresent: benchmark files not found, report won't be stashed"
-        return 0
-    fi
-
-    upload_benchmark_results \
-        "${JOB_GCS_BUCKET}" \
-        "${wildcard}" \
-        "$(get_benchmark_path_prefix)"
-}
-
-get_benchmark_path_prefix() {
-    echo "${BUILDKITE_PIPELINE_SLUG}/$(buildkite_pr_branch_build_id)/benchmark-results/"
-}
-
-upload_benchmark_results() {
-    local bucket="$1"
-    local source="$2"
-    local target="$3"
-
-    if ! ls ${source} 2>&1 > /dev/null ; then
-        echo "upload_benchmark_results: artifacts files not found, nothing will be archived"
-        return
-    fi
-
-    google_cloud_auth_safe_logs
-
-    gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
-
-    google_cloud_logout_active_account
-}
-
-download_benchmark_results() {
-    local bucket="$1"
-    local source="$2"
-    local target="$3"
-
-    google_cloud_auth_safe_logs
-
-    gsutil cp "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${source}" "${target}"
-
-    google_cloud_logout_active_account
 }
 
 add_or_edit_gh_pr_comment() {

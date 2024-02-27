@@ -230,25 +230,21 @@ Select the **subscription** and the **event hub namespace** you previously creat
 
 ### Create a Storage account container
 
-The Elastic Agent stores the consumer group information (state, position, or offset) in a Storage account container. Making this information available to all agents allows them to share the logs processing and resume from the last processed logs after a restart.
+The Elastic Agent stores the consumer group information (state, position, or offset) in a storage account container. Making this information available to all agents allows them to share the logs processing and resume from the last processed logs after a restart.
 
-To create the Storage account:
+NOTE: Use the storage account as a checkpoint store only.
 
-1. Sign in to the [Azure Portal](https://portal.azure.com/).
-1. Search for and select **Storage accounts**.
-1. Under **Project details**, select a subscription and a resource group.
-1. Under **Instance details**, enter a **Storage account name**.
-1. Select **Create**.
+To create the storage account:
 
-Take note of the **Storage account name**, which you will use later when specifying the **storage_account** in the integration settings.
+1. Sign in to the [Azure Portal](https://portal.azure.com/) and create your storage account.
+1. While configuring your project details, make sure you select the following recommended default settings:
+   - Hierarchical namespace: disabled
+   - Minimum TLS version: Version 1.2
+   - Access tier: Hot
+   - Enable soft delete for blobs: disabled
+   - Enable soft delete for containers: disabled
 
-When the new Storage account is ready, you can look for the access keys:
-
-1. Select the Storage account.
-1. In **Security + networking** select **Access keys**.
-1. In the **key1** section, click on the **Show** button and copy the **Key** value.
-
-Take note of the **Key** value, which you will use later when specifying the **storage_account_key** in the integration settings.
+1. When the new storage account is ready, you need to take note of the storage account name and the storage account access keys, as you will use them later to authenticate your Elastic application’s requests to this storage account.
 
 This is the final diagram of the a setup for collecting Activity logs from the Azure Monitor service.
 
@@ -269,6 +265,59 @@ This is the final diagram of the a setup for collecting Activity logs from the A
 The Elastic Agent can use one Storage account container for all integrations.
 
 The Agent will use the integration name and the event hub name to identify the blob to store the consumer group information uniquely.
+
+### Running the integration behind a firewall
+
+When you run the Elastic Agent behind a firewall, to ensure proper communication with the necessary components, you need to allow traffic on port `5671` and `5672` for the Event Hub, and port `443` for the Storage Account container.
+
+```text
+┌────────────────────────────────┐  ┌───────────────────┐  ┌───────────────────┐
+│                                │  │                   │  │                   │
+│ ┌────────────┐   ┌───────────┐ │  │  ┌──────────────┐ │  │ ┌───────────────┐ │
+│ │ diagnostic │   │ event hub │ │  │  │azure-eventhub│ │  │ │ activity logs │ │
+│ │  setting   │──▶│           │◀┼AMQP─│  <<input>>   │─┼──┼▶│<<data stream>>│ │
+│ └────────────┘   └───────────┘ │  │  └──────────────┘ │  │ └───────────────┘ │
+│                                │  │          │        │  │                   │
+│                                │  │          │        │  │                   │
+│                                │  │          │        │  │                   │
+│         ┌─────────────┬─────HTTPS─┼──────────┘        │  │                   │
+│ ┌───────┼─────────────┼──────┐ │  │                   │  │                   │
+│ │       │             │      │ │  │                   │  │                   │
+│ │       ▼             ▼      │ │  └─Agent─────────────┘  └─Elastic Cloud─────┘
+│ │ ┌──────────┐  ┌──────────┐ │ │
+│ │ │    0     │  │    1     │ │ │
+│ │ │ <<blob>> │  │ <<blob>> │ │ │
+│ │ └──────────┘  └──────────┘ │ │
+│ │                            │ │
+│ │                            │ │
+│ └─Storage Account Container──┘ │
+│                                │
+│                                │
+└─Azure──────────────────────────┘
+```
+
+#### Event Hub
+
+Port `5671` and `5672` are commonly used for secure communication with the Event Hub. These ports are used to receive events. By allowing traffic on these ports, the Elastic Agent can establish a secure connection with the Event Hub. 
+
+For more information, check the following documents:
+
+- [What ports do I need to open on the firewall?](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall) from the [Event Hubs frequently asked questions](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-faq#what-ports-do-i-need-to-open-on-the-firewall).
+- [AMQP outbound port requirements](https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide#amqp-outbound-port-requirements)
+
+#### Storage Account Container
+
+Port `443` is used for secure communication with the Storage Account container. This port is commonly used for HTTPS traffic. By allowing traffic on port 443, the Elastic Agent can securely access and interact with the Storage Account container, which is essential for storing and retrieving checkpoint data for each event hub partition.
+
+#### DNS
+
+Optionally, you can restrict the traffic to the following domain names:
+
+```text
+*.servicebus.windows.net
+*.blob.core.windows.net
+*.cloudapp.net
+```
 
 ## Settings
 

@@ -13,7 +13,7 @@ processors:
   - rename:
       field: message
       target_field: event.original
-      if: 'ctx.event?.original == null'
+      if: ctx.event?.original == null
       ignore_missing: true
   #
   # Parse syslog headers (if any) and extract JSON payload.
@@ -75,7 +75,7 @@ processors:
   # - Syslog header timestamp. Either ISO8601 or legacy MMM dd HH:mm:ss, depending on the syslog format in use.
   # - Original @timestamp from Filebeat.
   - date:
-      if: 'ctx.cyberarkpas.audit.IsoTimestamp != null'
+      if: ctx.cyberarkpas.audit.IsoTimestamp != null
       field: cyberarkpas.audit.IsoTimestamp
       target_field: _tmp.timestamp
       formats:
@@ -115,7 +115,7 @@ processors:
             value: "failed to parse timestamp field: {{{cyberarkpas.audit.Timestamp}}}: {{{_ingest.on_failure_message}}}"
 
   - date:
-      if: 'ctx._tmp.timestamp == null && ctx._tmp.syslog_ts != null && ctx.event?.timezone == null'
+      if: ctx._tmp.timestamp == null && ctx._tmp.syslog_ts != null && ctx.event?.timezone == null
       field: _tmp.syslog_ts
       target_field: _tmp.timestamp
       formats:
@@ -144,7 +144,7 @@ processors:
             value: "failed to parse legacy syslog timestamp: {{{_tmp.syslog_ts}}}: {{{_ingest.on_failure_message}}}"
 
   - date:
-      if: 'ctx._tmp.timestamp == null && ctx._tmp.syslog_ts != null && ctx.event?.timezone != null'
+      if: ctx._tmp.timestamp == null && ctx._tmp.syslog_ts != null && ctx.event?.timezone != null
       field: _tmp.syslog_ts
       target_field: _tmp.timestamp
       timezone: '{{{event.timezone}}}'
@@ -187,7 +187,7 @@ processors:
       description: "Converts CAProperties into an array if necessary"
       source: >
         def props = ctx.cyberarkpas?.audit?.CAProperties?.CAProperty;
-        if (props != null && props instanceof Map) {
+        if (props instanceof Map) {
           ctx.cyberarkpas.audit.CAProperties.CAProperty = [ props ];
         }
 
@@ -295,7 +295,7 @@ processors:
           return object.entrySet().stream().collect(
             Collectors.toMap(
               e -> to_snake_case(e.getKey()),
-              e -> e.getValue() instanceof Map? keys_to_snake_case_recursive(e.getValue()) : e.getValue()
+              e -> e.getValue() instanceof Map ? keys_to_snake_case_recursive(e.getValue()) : e.getValue()
             )
           );
         }
@@ -348,7 +348,7 @@ processors:
   - set:
       field: event.type
       value: [error]
-      if: 'ctx.event?.severity > 6'
+      if: ctx.event?.severity != null && ctx.event.severity > 6
 
   - rename:
       field: cyberarkpas.audit.message_id
@@ -368,7 +368,7 @@ processors:
   - set:
       field: file.path
       value: '{{{cyberarkpas.audit.file}}}'
-      if: 'ctx.cyberarkpas.audit?.file != null'
+      if: ctx.cyberarkpas.audit?.file != null
 
   #
   # Observer fields
@@ -394,7 +394,7 @@ processors:
       field: _tmp.hostname
       target_field: observer.hostname
       ignore_missing: true
-      if: 'ctx.observer?.hostname == null'
+      if: ctx.observer?.hostname == null
   #
   # Enrichment based on message_id
   #
@@ -927,13 +927,13 @@ processors:
 
       source: >
         def clone(def val) {
-            return val instanceof List? new ArrayList(val) : val;
+            return val instanceof List ? new ArrayList(val) : val;
         }
         def read_field(def map, String name) {
           if (map == null || !(map instanceof Map)) return null;
           int pos = name.indexOf(".");
-          return pos == -1? map[name]
-                          : read_field(map[name.substring(0, pos)], name.substring(pos+1));
+          return pos == -1 ? map[name]
+                           : read_field(map[name.substring(0, pos)], name.substring(pos+1));
         }
         String msgID = ctx.event?.code;
         def actions = params.get(msgID);
@@ -974,7 +974,7 @@ processors:
   - script:
       lang: painless
       description: 'Set event.duration from the session duration ("hh:mm:ss")'
-      if: "ctx._tmp?.duration_hms != null"
+      if: ctx._tmp?.duration_hms != null
       source: >
         long parse_hms(String s) {
             long cur = 0, total = 0;
@@ -1021,22 +1021,22 @@ processors:
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
-      if: 'ctx.source?.ip != null'
+      if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: '{{{destination.ip}}}'
-      if: 'ctx.destination?.ip != null'
+      if: ctx.destination?.ip != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: '{{{cyberarkpas.audit.station}}}'
-      if: 'ctx.cyberarkpas.audit.station != null'
+      if: ctx.cyberarkpas.audit.station != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: '{{{cyberarkpas.audit.gateway_station}}}'
-      if: 'ctx.cyberarkpas.audit.gateway_station != null'
+      if: ctx.cyberarkpas.audit.gateway_station != null
       allow_duplicates: false
 
   #
@@ -1045,22 +1045,22 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      if: 'ctx.user?.name != null'
+      if: ctx.user?.name != null
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{{source.user.name}}}'
-      if: 'ctx.source?.user?.name != null'
+      if: ctx.source?.user?.name != null
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{{destination.user.name}}}'
-      if: 'ctx.destination?.user?.name != null'
+      if: ctx.destination?.user?.name != null
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{{user.target.name}}}'
-      if: 'ctx.user?.target?.name != null'
+      if: ctx.user?.target?.name != null
       allow_duplicates: false
 
   #
@@ -1089,7 +1089,7 @@ processors:
       field: host.name
       value: '{{{observer.hostname}}}'
       ignore_empty_value: true
-      if: 'ctx.host?.name == null'
+      if: ctx.host?.name == null
 
   - network_direction:
       ignore_missing: true
@@ -1102,7 +1102,7 @@ processors:
       field: process.pid
       type: long
       ignore_missing: true
- 
+
   #
   # Save only interesting fields under extra_fields and ca_properties
   # to prevent mapping explosion. Keep the rest under .other (type flattened).
@@ -1176,7 +1176,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
 on_failure:

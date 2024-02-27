@@ -15,12 +15,16 @@ processors:
       target_field: crowdstrike
   - remove:
       tag: remove-metadata-aid
-      field: metadata.aid
+      field: metadata.host.aid
+      ignore_missing: true
+  - remove:
+      tag: remove-metadata-usersid
+      field: metadata.user.UserSid_readable
       ignore_missing: true
   - rename:
-      tag: aidmaster-metadata
+      tag: metadata
       field: metadata
-      target_field: crowdstrike.info.host
+      target_field: crowdstrike.info
       ignore_missing: true
       on_failure:
         - append:
@@ -1480,7 +1484,7 @@ processors:
       field: observer.ip
       processor:
         append:
-          field: related.hosts
+          field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
 
@@ -1495,6 +1499,16 @@ processors:
       copy_from: host.hostname
       ignore_empty_value: true
       ignore_failure: true
+  - append:
+      field: related.hosts
+      value: "{{{crowdstrike.info.host.ComputerName}}}"
+      allow_duplicates: false
+      if: ctx.crowdstrike?.info?.host?.ComputerName != null
+  - rename:
+      field: crowdstrike.info.host.ComputerName
+      target_field: host.name
+      ignore_missing: true
+      if: ctx.host?.name == null 
   - append:
       field: related.hosts
       value: "{{{host.name}}}"
@@ -1525,6 +1539,25 @@ processors:
       target_field: host.domain
       ignore_missing: true
       ignore_failure: true
+  - convert:
+      field: crowdstrike.info.host.aip
+      target_field: _temp.aip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: crowdstrike.info.host.aip
+      if: ctx._temp?.aip != null
+  - append:
+      field: host.ip
+      value: '{{{_temp.aip}}}'
+      allow_duplicates: false
+      if: ctx._temp?.aip != null
+  - append:
+      field: related.ip
+      value: '{{{_temp.aip}}}'
+      allow_duplicates: false
+      if: ctx._temp?.aip != null
   
   ## OS fields.
   - set:
@@ -1793,6 +1826,10 @@ processors:
       target_field: user.id
       ignore_missing: true
   - rename:
+      field: crowdstrike.info.user.UserName
+      target_field: user.name
+      ignore_missing: true
+  - rename:
       field: crowdstrike.GID
       target_field: user.group.id
       ignore_missing: true
@@ -1836,6 +1873,11 @@ processors:
       ignore_failure: true
       allow_duplicates: false
       if: ctx.user?.name != null
+  - append:
+      field: related.user
+      value: "{{{crowdstrike.info.user.User}}}"
+      allow_duplicates: false
+      if: ctx.crowdstrike?.info?.user?.User != null
   - append:
       field: related.user
       value: "{{{user.full_name}}}"
@@ -2018,7 +2060,7 @@ processors:
       field: crowdstrike.LocalAddressIP4
       processor:
         append:
-          field: related.hosts
+          field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
@@ -2026,16 +2068,16 @@ processors:
       field: crowdstrike.LocalAddressIP6
       processor:
         append:
-          field: related.hosts
+          field: related.ip
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - append:
-      field: related.hosts
+      field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
-      field: related.hosts
+      field: related.ip
       value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination.ip != ""
@@ -2285,8 +2327,8 @@ processors:
                 ctx.file.extension = ctx.file.name.substring(extIdx+1);
             }
         }
-        if (path.charAt(1) == ":") {
-          ctx.file.drive_letter = path.charAt(0).toUpperCase();
+        if (path.indexOf(':') == 1) {
+          ctx.file.drive_letter = path.substring(0, 1).toUpperCase();
         }
   - rename:
       field: _temp.hashes
@@ -2435,6 +2477,11 @@ processors:
       value: "{{{crowdstrike.ClientComputerName}}}"
       allow_duplicates: false
       if: ctx.crowdstrike?.ClientComputerName != null
+  - append:
+      field: related.hosts
+      value: "{{{crowdstrike.info.user.LastLoggedOnHost}}}"
+      allow_duplicates: false
+      if: ctx.crowdstrike?.info?.user?.LastLoggedOnHost != null
 
   ## Cleanup.
   - remove:
