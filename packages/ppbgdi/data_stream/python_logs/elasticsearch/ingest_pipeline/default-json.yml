@@ -3,16 +3,16 @@ description: Pipeline for processing sample logs
 processors:
   - json:
       field: event.original
-      target_field: ppbgdi.app
+      target_field: temp
   - foreach:
-      field: ppbgdi.app.event
+      field: temp.event
       ignore_missing: true
       processor:
         set:
           field: "event.{{ _ingest._key }}"
           value: "{{ _ingest._value }}"
   - remove:
-      field: ppbgdi.app.event
+      field: temp.event
       ignore_missing: true
   - set:
       field: "@timestamp"
@@ -30,7 +30,7 @@ processors:
         ctx.event.duration = (long)(ctx?.event?.duration * 1000000000)
       if: 'ctx?.event?.duration != null'
   - rename:
-      field: ppbgdi.app.http
+      field: temp.http
       target_field: http
       ignore_missing: true
   - script:
@@ -72,10 +72,10 @@ processors:
   - remove:
       field: log
       ignore_missing: true
-      if: 'ctx?.ppbgdi?.app != null'
+      if: 'ctx?.temp?.log != null'
       description: Replace entire log (e.g. from kubernetes) with app log information
   - rename:
-      field: ppbgdi.app.log
+      field: temp.log
       target_field: log
       ignore_missing: true
   - lowercase:
@@ -85,20 +85,17 @@ processors:
       field: message
       ignore_missing: true
   - rename:
-      field: ppbgdi.app.message
+      field: temp.message
       target_field: message
       ignore_missing: true
   - rename:
-      field: ppbgdi.app.process
+      field: temp.process
       target_field: process
       ignore_missing: true
   - uri_parts:
-      field: ppbgdi.app.url.original
+      field: temp.url.original
       remove_if_successful: true
       ignore_missing: true
-  - remove:
-      field: ppbgdi.app.url
-      if: 'ctx?.ppbgdi?.app?.url != null && ctx?.ppbgdi?.app?.url.empty'
   - set:
       description: Override event.id with request.id if existing
       field: event.id
@@ -123,18 +120,19 @@ processors:
   - set:
       description: Set event.id from pidTid
       field: event.id
-      copy_from: ppbgdi.app.pidTid
+      copy_from: temp.pidTid
       ignore_empty_value: true
       if: 'ctx?.event?.id == null'
   - remove:
       description: Remove pidTid to avoid overhead
-      field: ppbgdi.app.pidTid
+      field: temp.pidTid
       ignore_missing: true
 
   # TODO: Is this always an IP addres or may be a host as well? Is it cf or the client?
   - rename:
-      field: ppbgdi.app.request.remoteAddr
+      field: temp.request.remoteAddr
       target_field: source.address
+      ignore_missing: true
   - grok:
       field: source.address
       patterns:
@@ -142,18 +140,41 @@ processors:
       ecs_compatibility: v1
       ignore_missing: true
   - set:
+      field: service
+      copy_from: temp.service
+      ignore_empty_value: true
+      override: true
+  - remove:
+      field: temp.service
+      ignore_missing: true
+  - set:
       field: service.name
       copy_from: kubernetes.namespace_labels.service
       ignore_empty_value: true
       override: true
+  - rename:
+      field: temp.ppbgdi.app.api
+      target_field: ppbgdi.app.api
+      ignore_missing: true
+  - set:
+      field: ppbgdi.app.system
+      copy_from: kubernetes.namespace_labels.system
+      ignore_empty_value: true
+  - rename:
+      field: temp.ppbgdi.app.crs
+      target_field: ppbgdi.app.crs
+      ignore_missing: true
+  - set:
+      field: service.name
+      copy_from: kubernetes.namespace_labels.service
+      ignore_empty_value: true
   - set:
       field: service.environment
       copy_from: kubernetes.namespace_labels.env
       ignore_empty_value: true
-      override: true
   - set:
-      field: ppbgdi.app.system
-      copy_from: kubernetes.namespace_labels.system
+      field: data_stream.namespace
+      copy_from: service.environment
       ignore_empty_value: true
       override: true
 
@@ -163,17 +184,17 @@ processors:
   - remove:
       description: Remove deprecated fields (old field structure)
       field:
-        - ppbgdi.app.function
-        - ppbgdi.app.level
-        - ppbgdi.app.logger
-        - ppbgdi.app.module
-        - ppbgdi.app.request
-        - ppbgdi.app.response
-        - ppbgdi.app.time
-        - ppbgdi.app.excInfo
+        - temp.function
+        - temp.level
+        - temp.logger
+        - temp.module
+        - temp.request
+        - temp.response
+        - temp.time
+        - temp.excInfo
       ignore_missing: true
 on_failure:
-- set:
+- append:
     field: error.message
     value: '{{ _ingest.on_failure_message }}'
 
