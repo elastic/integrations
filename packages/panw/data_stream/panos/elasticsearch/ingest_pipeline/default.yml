@@ -104,24 +104,26 @@ processors:
       field: _temp_.srcuser
       ignore_missing: true
       patterns:
-        - '^%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
-        - '^%{HOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
-        - '^%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}$'
+        - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
+        - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
+        - '^%{USERNAME:source.user.name}@%{PATRUNKATEDHOSTNAME:source.user.domain}$'
         - '^%{USERNAME:source.user.name}$'
       pattern_definitions:
-        USERNAME: '[ a-zA-Z0-9._-]+[$]?'
+        USERNAME: '[ a-zA-Z0-9.:_-]+[$]?'
+        PATRUNKATEDHOSTNAME: '\b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b)'
       if: ctx._temp_?.srcuser != null
 
   - grok:
       field: _temp_.dstuser
       ignore_missing: true
       patterns:
-        - '^%{HOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
-        - '^%{HOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
-        - '^%{USERNAME:destination.user.name}@%{HOSTNAME:destination.user.domain}$'
+        - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
+        - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
+        - '^%{USERNAME:destination.user.name}@%{PATRUNKATEDHOSTNAME:destination.user.domain}$'
         - '^%{USERNAME:destination.user.name}$'
       pattern_definitions:
-        USERNAME: '[ a-zA-Z0-9._-]+[$]?'
+        USERNAME: '[ a-zA-Z0-9.:_-]+[$]?'
+        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b))'
       if: ctx._temp_?.dstuser != null
 
   - set:
