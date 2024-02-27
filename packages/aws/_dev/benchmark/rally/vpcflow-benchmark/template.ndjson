@@ -1,12 +1,11 @@
 {{- $timestamp := generate "timestamp" }}
 {{- $cloud_region := generate "cloud_region" }}
-{{- $cloud_availability_zone := generate "cloud_availability_zone" }}
+{{- $cloud_availability_zone := awsAZFromRegion (print $cloud_region) }}
 {{- $network_direction := generate "network_direction" }}
 {{- $duration_start := generate "duration_start" }}
 {{- $duration_end := generate "duration_end" }}
 {{- $aws_vpcflow_start := generate "timestamp" | date_modify (print $duration_start) }}
 {{- $aws_vpcflow_end := generate "timestamp" | date_modify (print $duration_end) }}
-{{- $aws_s3_bucket_arn := generate "aws_s3_bucket_arn" }}
 {{- $aws_vpcflow_version := generate "aws_vpcflow_version" }}
 {{- $aws_vpcflow_account_id := generate "aws_vpcflow_account_id" }}
 {{- $aws_vpcflow_interface_id := generate "aws_vpcflow_interface_id" }}
@@ -31,6 +30,8 @@
 {{- $aws_vpcflow_packets := generate "aws_vpcflow_packets" }}
 {{- $aws_vpcflow_bytes := generate "aws_vpcflow_bytes" }}
 {{- $long_num := generate "long_num" }}
+{{- $file_name := generate "file_name" }}
+{{- $bucket_num := generate "bucket_num" }}
 {
     "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z" }}",
     "agent": {
@@ -43,11 +44,11 @@
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::{{ $aws_s3_bucket_arn }}-{{ div $long_num 10000 }}",
-                "name": "{{ $aws_s3_bucket_arn }}-{{ div $long_num 10000 }}"
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-{{ $bucket_num }}",
+                "name": "elastic-package-aws-bucket-{{ $bucket_num }}"
             },
             "object": {
-                "key": "extra-samples.log"
+                "key": "{{ $file_name }}.log"
             }
         }
     },
@@ -76,7 +77,7 @@
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-aws-bucket-63461.s3.us-east-1.amazonaws.com/extra-samples.log"
+            "path": "https://elastic-package-aws-bucket-{{ $bucket_num }}.s3.{{ $cloud_region }}.amazonaws.com/{{ $file_name }}.log"
         },
         "offset": 338
     },
