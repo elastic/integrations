@@ -1,4 +1,4 @@
-# Traefik Integration
+# PPBGDI Integration
 
 This integration parses logs and metrics created by PPBGDI applications.
 

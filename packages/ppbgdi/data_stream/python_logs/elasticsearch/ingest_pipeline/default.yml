@@ -24,10 +24,13 @@ processors:
         CHAR: .
 #   - pipeline:
 #       if: ctx.first_char != '{'
-#       name: '{{ IngestPipeline "format-common" }}'
+#       name: '{{ IngestPipeline "default-common" }}'
   - pipeline:
       if: ctx.first_char == '{'
-      name: '{{ IngestPipeline "format-json" }}'
+      name: '{{ IngestPipeline "default-json" }}'
+  - pipeline:
+      if: ctx.first_char == '{' && ctx?.service?.name != null && ctx?.service?.name == 'service-wmts'
+      name: '{{ IngestPipeline "wmts-json" }}'
   - remove:
       field:
         - first_char
@@ -67,27 +70,16 @@ processors:
       value: '{{ http.request.headers.x-forwarded-host }}'
       allow_duplicates: false
       if: 'ctx?.http?.request?.headers?.host != null'
-  - set:
-      field: ppbgdi.app.system
-      copy_from: kubernetes.namespace_labels.system
-      ignore_empty_value: true
-  - set:
-      field: service.name
-      copy_from: kubernetes.namespace_labels.service
-      ignore_empty_value: true
-  - set:
-      field: service.environment
-      copy_from: kubernetes.namespace_labels.en
-      ignore_empty_value: true
-  - set:
-      field: package.name
-      value: python
   - remove:
       field: event.original
       if: "ctx?.tags == null || !ctx?.tags.contains('preserve_original_event')"
       ignore_missing: true
+  - remove:
+      field: temp
+      ignore_missing: true
+
 
 on_failure:
-- set:
+- append:
     field: error.message
     value: '{{ _ingest.on_failure_message }}'
