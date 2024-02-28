@@ -18,8 +18,11 @@ processors:
   - json:
       field: event.original
       target_field: github.issues
+  - fail:
+      if: "!(ctx.github.issues instanceof Map)"
+      message: Missing JSON object
   - fingerprint:
-      if: ctx.github?.issues?.url != null
+      if: ctx.github.issues.url != null
       fields:
         - github.issues.url
       target_field: "_id"
@@ -30,7 +33,7 @@ processors:
         - ISO8601
       timezone: UTC
       target_field: "@timestamp"
-      if: ctx.github.issues?.created_at != null
+      if: ctx.github.issues.created_at != null
   - set:
       field: event.created
       copy_from: "@timestamp"
@@ -39,7 +42,7 @@ processors:
       field: github.issues.is_pr
       value: false
   - set:
-      if: ctx.github?.issues?.pull_request != null
+      if: ctx.github.issues.pull_request != null
       field: github.issues.is_pr
       value: true
   - date:
@@ -48,7 +51,7 @@ processors:
         - ISO8601
       timezone: UTC
       target_field: github.issues.updated_at
-      if: ctx.github.issues?.updated_at != null
+      if: ctx.github.issues.updated_at != null
   - dissect:
       field: github.issues.url
       pattern: "https://api.github.com/repos/%{_temp_.owner}/%{_temp_.repository}/issues/%{_temp_.number}"
@@ -56,23 +59,23 @@ processors:
   - set:
       field: github.repository.name
       value: "{{_temp_.repository}}"
-      if: "ctx._temp_?.repository != null"
+      if: ctx._temp_?.repository != null
   - set:
       field: github.repository.html_url
       value: "https://github.com/{{_temp_.owner}}/{{_temp_.repository}}"
-      if: "ctx._temp_?.owner != null && ctx._temp_?.repository != null"
+      if: ctx._temp_?.owner != null && ctx._temp_?.repository != null
   - set:
       field: github.repository.url
       value: "https://api.github.com/repos/{{_temp_.owner}}/{{_temp_.repository}}"
-      if: "ctx._temp_?.owner != null && ctx._temp_?.repository != null"
+      if: ctx._temp_?.owner != null && ctx._temp_?.repository != null
   - set:
       field: github.repository.owner.login
       value: "{{_temp_.owner}}"
-      if: "ctx._temp_?.owner != null"
+      if: ctx._temp_?.owner != null
   - set:
       field: github.state
       value: "{{github.issues.state}}"
-      if: ctx.github.issues?.state != null
+      if: ctx.github.issues.state != null
   - foreach:
       field: github.issues.assignees
       ignore_missing: true
@@ -143,7 +146,7 @@ processors:
   - script:
       lang: painless
       description: Calculate time taken to close an issue
-      if: ctx.github?.issues?.closed_at != null
+      if: ctx.github.issues.closed_at != null
       source: |
         def time_to_close = new HashMap();
         def closedAtDt = ctx.github.issues.closed_at;
@@ -160,7 +163,7 @@ processors:
   - set:
       field: user.name
       copy_from: github.issues.user.login
-      if: ctx.github?.issues?.user?.login != null
+      if: ctx.github.issues.user?.login != null
   - convert:
       field: github.issues.user.id
       type: string
@@ -169,7 +172,7 @@ processors:
   - append:
       field: user.roles
       value: ['site_admin']
-      if: 'ctx.github?.issues?.user?.site_admin != null && ctx.github?.issues?.user?.site_admin == true'
+      if: ctx.github.issues.user?.site_admin != null && ctx.github.issues.user?.site_admin == true
       allow_duplicates: false
       ###################
       # Related ECS fields #
@@ -181,7 +184,7 @@ processors:
       allow_duplicates: false
   - foreach:
       field: github.issues.assignees
-      if: ctx.github?.issues?.assignees != null
+      if: ctx.github.issues.assignees != null
       processor:
         append:
           field: related.user
@@ -198,11 +201,11 @@ processors:
   - remove:
       field:
         - github.issues.state
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))"
+      if: ctx.tags?.contains('preserve_duplicate_custom_fields') != true
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
   - script:
