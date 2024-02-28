@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing json logs
 processors:
   - json:
       field: event.original
@@ -161,8 +161,12 @@ processors:
       copy_from: kubernetes.namespace_labels.system
       ignore_empty_value: true
   - rename:
-      field: temp.ppbgdi.app.crs
-      target_field: ppbgdi.app.crs
+      field: temp.ppbgdi.app.epsg
+      target_field: ppbgdi.app.epsg
+      ignore_missing: true
+  - convert:
+      field: ppbgdi.app.epsg
+      type: long
       ignore_missing: true
   - set:
       field: service.name

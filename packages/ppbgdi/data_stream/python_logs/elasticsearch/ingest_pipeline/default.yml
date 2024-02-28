@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing sample logs
+description: Default pipeline for processing python logs
 processors:
   - set:
       field: ecs.version
@@ -26,30 +26,32 @@ processors:
 #       if: ctx.first_char != '{'
 #       name: '{{ IngestPipeline "default-common" }}'
   - pipeline:
+      description: JSON logs pipeline
       if: ctx.first_char == '{'
-      name: '{{ IngestPipeline "default-json" }}'
-  - pipeline:
-      if: ctx.first_char == '{' && ctx?.service?.name != null && ctx?.service?.name == 'service-wmts'
-      name: '{{ IngestPipeline "wmts-json" }}'
+      name: '{{ IngestPipeline "common-json" }}'
   - remove:
       field:
         - first_char
-  - set:
-      field: event.outcome
-      value: failure
-      if: 'ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code >= 400'
+  - pipeline:
+      description: Layer object pipeline
+      if: ctx?.temp?.ppbgdi?.app?.layer != null
+      name: '{{ IngestPipeline "entity-layer" }}'
   - set:
       field: event.outcome
       value: failure
       if: "ctx?.event?.severity >= 40"
   - set:
       field: event.outcome
-      value: success
-      if: 'ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code < 400'
+      value: failure
+      if: 'ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code >= 500'
   - set:
       field: event.outcome
       value: success
-      if: "ctx?.event?.outcome == null && ctx?.event?.severity != null && ctx?.event?.severity < 40"
+      if: 'ctx?.event?.outcome == null && ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code < 500'
+  - set:
+      field: event.outcome
+      value: success
+      if: 'ctx?.event?.outcome == null && ctx?.event?.severity != null && ctx?.event?.severity < 40'
   - append:
       field: related.hosts
       value: '{{ source.domain }}'
