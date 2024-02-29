@@ -4,7 +4,6 @@ description: Pipeline for PanOS Config Logs.
 processors:
   - csv:
       field: message
-      ignore_failure: true
       target_fields:
         - panw.panos.host.ip
         - panw.panos.virtual_sys
@@ -13,8 +12,6 @@ processors:
         - panw.panos.client_type
         - panw.panos.result
         - panw.panos.path
-        - panw.panos.before_change_detail
-        - panw.panos.after_change_detail
         - panw.panos.sequence_number
         - panw.panos.action_flags
         - panw.panos.device_group_hierarchy1
@@ -25,7 +22,11 @@ processors:
         - panw.panos.device_name
         - panw.panos.device_group_id
         - panw.panos.comment
-
+        - _temp_.future_use1
+        - _temp_.high_res_timestamp
+        - panw.panos.before_change_detail
+        - panw.panos.after_change_detail
+      trim: true
   - script:
       description: Set Event Action.
       lang: painless
