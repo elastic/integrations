@@ -1,0 +1,124 @@
+---
+description: Pipeline for processing malicious files collection feed
+processors:
+  - set:
+      field: ecs.version
+      value: '8.10.0'
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: [threat]
+  - set:
+      field: event.type
+      value: [indicator]
+  - set:
+      field: threat.indicator.provider
+      value: eset
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: eti
+  - drop:
+      if: ctx?.eti?.type != 'indicator'
+  - set:
+      field: threat.feed.name
+      value: "file stix 2.1"
+  - fingerprint:
+      fields:
+        - eti.id
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: eti.created
+      target_field: "@timestamp"
+      formats:
+        - "ISO8601"
+      if: "ctx.eti?.created != null"
+  - date:
+      field: eti.modified
+      target_field: threat.indicator.last_seen
+      formats:
+        - "ISO8601"
+      if: "ctx?.eti?.modified != null"
+  - set:
+      field: threat.indicator.modified_at
+      copy_from: threat.indicator.last_seen
+      if: "ctx?.threat?.indicator?.last_seen != null"
+  - date:
+      field: eti.valid_until
+      target_field: eset.valid_until
+      formats:
+        - "ISO8601"
+      if: "ctx?.eti?.valid_until != null"
+  - rename:
+      field: eti.id
+      target_field: eset.id
+      ignore_missing: true
+  - rename:
+      field: eti.description
+      target_field: threat.indicator.description
+      ignore_missing: true
+  - foreach:
+      field: eti.labels
+      processor:
+        append:
+          field: eset.labels
+          value: "{{_ingest._value}}"
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.eti?.labels != null
+  - script:
+      lang: painless
+      params:
+        "malicious-activity": 'High'
+        "phishing-activity": 'High'
+        "unwanted-activity": 'Medium'
+        "benign": 'Low'
+      if: ctx?.eset?.labels != null
+      source: >
+        for (def label : ctx.eset.labels) {
+          if (params.containsKey(label)) {
+            ctx.threat.indicator.confidence = params.get(label);
+            break;
+          }
+        }
+  - split:
+      field: eti.pattern
+      target_field: eti._patterns
+      separator: ' OR '
+      ignore_missing: true
+  - foreach:
+      field: eti._patterns
+      processor:
+        grok:
+          field: _ingest._value
+          patterns:
+            - "^\\[?file:hashes.'MD5'%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.hash.md5}'\\]?"
+            - "^\\[?file:hashes.'SHA-1'%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.hash.sha1}'\\]?"
+            - "^\\[?file:hashes.'SHA-256'%{SPACE}=%{SPACE}'%{DATA:threat.indicator.file.hash.sha256}'\\]?"
+          ignore_failure: true
+  - set:
+      field: threat.indicator.type
+      value: file
+  - set:
+      field: threat.indicator.name
+      copy_from: eti.name
+      if: "ctx?.eti?.name != null"
+  - remove:
+      field:
+        - eti
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

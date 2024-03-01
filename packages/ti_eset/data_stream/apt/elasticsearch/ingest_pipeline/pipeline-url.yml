@@ -1,0 +1,14 @@
+---
+description: Pipeline for processing url events
+processors:
+  - foreach:
+      field: eti._patterns
+      processor:
+        grok:
+          field: _ingest._value
+          patterns:
+            - "^\\[?url:value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.url.original}'\\]?"
+            - "^\\[?url:x_misp_scheme%{SPACE}=%{SPACE}'%{DATA:threat.indicator.url.scheme}'\\]?"
+            - "^\\[?url:x_misp_port%{SPACE}=%{SPACE}'%{DATA:threat.indicator.url.port:int}'\\]?"
+            - "^\\[?url:x_misp_resource_path%{SPACE}=%{SPACE}'%{DATA:threat.indicator.url.path}'\\]?"
+          ignore_failure: true
