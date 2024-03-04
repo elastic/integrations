@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Incident (Microsoft Graph Security API) and Event (Streaming API) Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
+The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Alert, Incident (Microsoft Graph Security API) and Event (Streaming API) Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
 
 Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Azure Event Hub, Microsoft Graph Security v1.0 REST API and Microsoft 365 Defender API. Then visualise that data in Kibana.
 
@@ -10,7 +10,9 @@ For example, you could use the data from this integration to consolidate and cor
 
 ## Data streams
 
-The Microsoft 365 Defender integration collects logs for three types of events: Event, Incident and Log.
+The Microsoft 365 Defender integration collects logs for four types of events: Alert, Event, Incident and Log.
+
+**Alert:** This data streams leverages the [M365 Defender Streaming API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0) to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
 
 **Event (Recommended):** This data streams leverages the [M365 Defender Streaming API](https://learn.microsoft.com/en-us/microsoft-365/security/defender/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of Supported Events exposed by the Streaming API and supported by Elastic's integration, please see Microsoft's documentation [here](https://learn.microsoft.com/en-us/microsoft-365/security/defender/supported-event-types?view=o365-worldwide).
 
@@ -72,6 +74,16 @@ For **Event**, in filebeat [Azure Event Hub](https://www.elastic.co/guide/en/bea
 3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for log data collection.
 
 ## Logs reference
+
+### alert
+
+This is the `alert` dataset.
+
+#### Example
+
+{{event "alert"}}
+
+{{fields "alert"}}
 
 ### event
 

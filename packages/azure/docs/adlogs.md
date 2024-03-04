@@ -221,6 +221,7 @@ An example event for `signinlogs` looks as following:
 | azure.resource.name | Name | keyword |
 | azure.resource.namespace | Resource type/namespace | keyword |
 | azure.resource.provider | Resource type/namespace | keyword |
+| azure.signinlogs.caller_ip_address | The IP address of the client that made the request. | ip |
 | azure.signinlogs.category | Category | keyword |
 | azure.signinlogs.identity | Identity | keyword |
 | azure.signinlogs.operation_name | The operation name | keyword |
@@ -998,7 +999,9 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.operation_version | The operation version | keyword |
 | azure.auditlogs.properties.activity_datetime | Activity timestamp | date |
 | azure.auditlogs.properties.activity_display_name | Activity display name | keyword |
+| azure.auditlogs.properties.additional_details.key | Additional details key | keyword |
 | azure.auditlogs.properties.additional_details.user_agent | User agent name. | keyword |
+| azure.auditlogs.properties.additional_details.value | Additional details value | keyword |
 | azure.auditlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.auditlogs.properties.category | category | keyword |
 | azure.auditlogs.properties.correlation_id | Correlation ID | keyword |
