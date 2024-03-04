@@ -512,6 +512,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.security_labels.data.id | Unique identifier for the security label. | keyword |
 | threat_connect.indicator.security_labels.data.name | Actual name or label of the security classification. | keyword |
 | threat_connect.indicator.security_labels.data.owner | The entity or system that owns or manages the security label. | keyword |
+| threat_connect.indicator.security_labels.data.source | The source of the security label. | keyword |
 | threat_connect.indicator.sha1 | The SHA1 hash associated with the File Indicator. | keyword |
 | threat_connect.indicator.sha256 | The SHA256 hash associated with the File Indicator. | keyword |
 | threat_connect.indicator.size | The size of the file associated with the File Indicator. | keyword |
