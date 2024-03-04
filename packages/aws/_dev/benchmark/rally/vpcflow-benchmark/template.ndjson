@@ -64,7 +64,11 @@
     },
     "event": {
         "dataset": "aws.vpcflow",
-        "original" : "{\"message\":\"{{ $aws_vpcflow_version }} {{ $aws_vpcflow_account_id }} {{ $aws_vpcflow_interface_id }} {{ $aws_vpcflow_srcaddr }} {{ $aws_vpcflow_dstaddr }} {{ $aws_vpcflow_srcport }} {{ $aws_vpcflow_dstport }} {{ $aws_vpcflow_protocol }} {{ $aws_vpcflow_packets }} {{ $aws_vpcflow_bytes }} {{ $aws_vpcflow_start.Unix }} {{ $aws_vpcflow_end.Unix }} {{ $aws_vpcflow_action }} {{ $log_status }} vpc-{{ $aws_vpcflow_vpc_id }}{{ $long_num }} subnet-{{ $aws_vpcflow_subnet_id }}{{ $long_num }} i-{{ $long_num }}{{ $long_num }} {{ $aws_vpcflow_tcp_flags }} {{ $aws_vpcflow_type }} {{ $aws_vpcflow_pkt_srcaddr }} {{ $aws_vpcflow_pkt_dstaddr }} {{ $cloud_region }} {{ $cloud_availability_zone }} {{ $aws_vpcflow_sublocation_type }} {{ $aws_vpcflow_sublocation_id }} {{ $aws_vpcflow_pkt_src_service }} {{ $aws_vpcflow_pkt_dst_service }} {{ $network_direction }} {{ $aws_vpcflow_traffic_path }}\"}"  
+        {{- if eq $log_status "OK"}}
+        "original" : "{\"message\":\"{{ $aws_vpcflow_version }} {{ $aws_vpcflow_account_id }} eni-{{ $aws_vpcflow_interface_id }}{{ mul $long_num 2 }} {{ $aws_vpcflow_srcaddr }} {{ $aws_vpcflow_dstaddr }} {{ $aws_vpcflow_srcport }} {{ $aws_vpcflow_dstport }} {{ $aws_vpcflow_protocol }} {{ $aws_vpcflow_packets }} {{ $aws_vpcflow_bytes }} {{ $aws_vpcflow_start.Unix }} {{ $aws_vpcflow_end.Unix }} {{ $aws_vpcflow_action }} {{ $log_status }} vpc-{{ $aws_vpcflow_vpc_id }}{{ $long_num }} subnet-{{ $aws_vpcflow_subnet_id }}{{ $long_num }} i-{{ $long_num }}{{ $long_num }} {{ $aws_vpcflow_tcp_flags }} {{ $aws_vpcflow_type }} {{ $aws_vpcflow_pkt_srcaddr }} {{ $aws_vpcflow_pkt_dstaddr }} {{ $cloud_region }} {{ $cloud_availability_zone }} {{ $aws_vpcflow_sublocation_type }} {{ $aws_vpcflow_sublocation_id }} {{ $aws_vpcflow_pkt_src_service }} {{ $aws_vpcflow_pkt_dst_service }} {{ $network_direction }} {{ $aws_vpcflow_traffic_path }}\"}"  
+        {{- else}}
+        "original" : "{\"message\":\"{{ $aws_vpcflow_version }} {{ $aws_vpcflow_account_id }} eni-{{ $aws_vpcflow_interface_id }}{{ mul $long_num 2 }} - - - - - - - {{ $aws_vpcflow_start.Unix }} {{ $aws_vpcflow_end.Unix }} - {{ $log_status }}\"}"     
+        {{- end}}
     },
     "input": {
         "type": "aws-s3"
