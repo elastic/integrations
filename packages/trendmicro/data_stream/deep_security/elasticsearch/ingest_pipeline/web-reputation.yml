@@ -2,79 +2,29 @@
 description: Pipeline for Web Reuptation
 processors:
   - set:
-      field: trendmicro.event.category
-      value: "web-reputation"
-  - set:
+      field: trendmicro.deep_security.event_category
+      tag: set_deep_security_event_category
+      value: web-reputation-event
+  - append:
       field: event.category
-      value: [network]
+      tag: set_event_category
+      value: network
+      allow_duplicates: false
   - append:
       field: event.type
+      tag: set_event_type
       value: info
       allow_duplicates: false
-      if: ctx.trendmicro?.event?.signature_id != null && ctx.trendmicro.event.signature_id == '5000000'
   - append:
       field: event.type
+      tag: set_event_type
       value: denied
       allow_duplicates: false
-      if: ctx.trendmicro?.event?.signature_id != null && ctx.trendmicro.event.signature_id == '5000001'
-
-  - script:
-      lang: painless
-      params:
-        extensions:
-          # Rename field
-          - name: deviceCustomNumber1
-            to: host.id
-          - name: deviceAddress
-            to: host.ip
-          - name: deviceHostName
-            to: host.hostname
-          - name: TrendMicroDsTags
-            to: trendmicro.event.tags
-          - name: TrendMicroDsTenantId
-            to: trendmicro.event.tenant_id
-          - name: TrendMicroDsTenant
-            to: trendmicro.event.tenant_name
-      source: |
-        def actions = new ArrayList();
-        def exts = ctx.cef?.extensions;
-        if (exts == null) return;
-        for (entry in params.extensions) {
-          def value = exts[entry.name];
-          if (value == null ||
-            (entry.convert != null &&
-              (value=entry.convert[value.toLowerCase()]) == null))
-            continue;
-          if (entry.to != null) {
-            actions.add([
-              "value": value,
-              "to": entry.to
-            ]);
-            continue;
-          }
-          def label = exts[entry.name + "Label"];
-          if (label == null) continue;
-          def dest = entry.labels[label.toLowerCase()];
-          if (dest == null) continue;
-          actions.add([
-            "value": value,
-            "to": dest
-          ]);
-        }
-        ctx["_tmp_copy"] = actions;
-  - foreach:
-      field: _tmp_copy
-      processor:
-        set:
-          field: "{{_ingest._value.to}}"
-          value: "{{_ingest._value.value}}"
-  - remove:
-      field:
-        - _tmp_copy
+      if: ctx.trendmicro?.deep_security?.signature_id != null && ctx.trendmicro.deep_security.signature_id == 5000001
 on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
