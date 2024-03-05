@@ -1531,6 +1531,15 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
       processor:
+        rename:
+          field: _ingest._value.userAccount.displayName
+          target_field: _ingest._value.user_account.display_name
+          ignore_missing: true
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
+      ignore_failure: true
+      processor:
         append:
           field: related.user
           value: '{{{_ingest._value.user_account.account_name}}}'
