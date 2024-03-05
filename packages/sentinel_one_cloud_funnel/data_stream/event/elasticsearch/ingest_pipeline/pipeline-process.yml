@@ -6,7 +6,16 @@ processors:
       value: [process]
   - set:
       field: event.type
-      value: [info]
+      value: [start]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type == 'ProcessCreation'
+  - set:
+      field: event.type
+      value: [end]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type == 'ProcessExit' || ctx.sentinel_one_cloud_funnel?.event?.type == 'ProcessTermination'
+  - set:
+      field: event.action
+      copy_from: event.type
+      ignore_empty_value: true
   - rename:
       field: json.k8sCluster.containerId
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.id
