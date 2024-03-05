@@ -1,0 +1,38 @@
+{
+    "id": "01629238-aea8-5737-a59b-45baf8dab404",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "**NOTE:** You must have your key vault setup to utilize this.\nAll Audit Logs will be encrypted with a key you provide. You will need to set up customer managed keys separately, and you will select which key to use via the instructions here. You will be responsible for the lifecycle of the keys, and will need to manually replace them at your own determined intervals to keep the data secure.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-data-protection#dp-5-encrypt-sensitive-data-at-rest\n2. https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/activity-log?tabs=cli#managing-legacy-log-profiles",
+            "id": "01629238-aea8-5737-a59b-45baf8dab404",
+            "name": "Ensure the storage account containing the container with activity logs is encrypted with Customer Managed Key",
+            "profile_applicability": "* Level 2",
+            "description": "Storage accounts with the activity log exports can be configured to use Customer Managed Keys (CMK).",
+            "rationale": "Configuring the storage account with the activity log export container to use CMKs provides additional confidentiality controls on log data, as a given user must have read permission on the corresponding storage account and must be granted decrypt permission by the CMK.",
+            "audit": "**From Azure Portal**\n\n1. Go to `Activity log`\n2. Select `Export`\n3. Select `Subscription`\n4. In section `Storage Account`, note the name of the Storage account\n5. Close the `Export Audit Logs` blade. Close the `Monitor - Activity Log` blade.\n6. In right column, Click service `Storage Accounts` to access Storage account blade\n7. Click on the storage account name noted in step 4. This will open blade specific to that storage account\n8. Under `Security + networking`, click `Encryption`.\n9. Ensure `Customer-managed keys` is selected and `Key URI` is set.\n\n**From Azure CLI**\n\n10. Get storage account id configured with log profile:\n\n```\naz monitor diagnostic-settings subscription list --subscription <subscription id> --query 'value[*].storageAccountId'\n```\n\n11. Ensure the storage account is encrypted with CMK:\n\n```\naz storage account list --query \"[?name=='<Storage Account Name>']\"\n```\n\nIn command output ensure `keySource` is set to `Microsoft.Keyvault` and `keyVaultProperties` is not set to `null`\n\n**From PowerShell**\n\n```\nGet-AzStorageAccount -ResourceGroupName <resource group name> -Name <storage account name>|select-object -ExpandProperty encryption|format-list\n```\n\nEnsure the value of `KeyVaultProperties` is not `null` or empty, and ensure `KeySource` is not set to `Microsoft.Storage`.",
+            "remediation": "**From Azure Portal**\n\n1. Navigate to the Storage accounts blade.\n2. Click on the storage account.\n3. Under `Security + networking`, click `Encryption`.\n4. Next to `Encryption type`, select `Customer-managed keys`.\n5. Complete the steps to configure a customer-managed key for encryption of the storage account.\n\n**From Azure CLI**\n\n```\naz storage account update --name <name of the storage account> --resource-group <resource group for a storage account> --encryption-key-source=Microsoft.Keyvault --encryption-key-vault <Key Vault URI> --encryption-key-name <KeyName> --encryption-key-version <Key Version> \n```\n\n**From PowerShell**\n\n```\nSet-AzStorageAccount -ResourceGroupName <resource group name> -Name <storage account name> -KeyvaultEncryption -KeyVaultUri <key vault URI> -KeyName <key name>\n```",
+            "section": "Configuring Diagnostic Settings",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 5.1.4",
+                "Configuring Diagnostic Settings"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "5.1.4",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_5_1_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

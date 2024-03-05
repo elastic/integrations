@@ -43,7 +43,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "\n#### Imperva Cloud WAF\n\n#### Overview\n\nThis dashboard visualizes security and access related events collected by Imperva Cloud WAF using the Event Data-stream.\n\n[**Integration Page**](/app/integrations/detail/imperva_cloud_waf/overview)\n\n\n",
+                            "markdown": "\n#### Imperva Cloud WAF\n\n#### Overview\n\nThis dashboard visualizes security and access related events collected by Imperva Cloud WAF using the Event Data-stream. It provides metrics for total sites and different types of requests . It also provides an overview of events on the basis of browser type, http status code, request type, country code, action, attack type, client application, URL, User Agent and Source IP.\n\n[**Integration Page**](/app/integrations/detail/imperva_cloud_waf/overview)\n\n\n",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -166,7 +166,7 @@
                 "gridData": {
                     "h": 18,
                     "i": "63fdf3c4-a96a-4994-9608-35a5d3ce5f45",
-                    "w": 11,
+                    "w": 10,
                     "x": 10,
                     "y": 0
                 },
@@ -278,8 +278,8 @@
                 "gridData": {
                     "h": 9,
                     "i": "c759b864-1c05-4f5a-8a24-321a796e94c8",
-                    "w": 9,
-                    "x": 21,
+                    "w": 7,
+                    "x": 20,
                     "y": 0
                 },
                 "panelIndex": "c759b864-1c05-4f5a-8a24-321a796e94c8",
@@ -390,8 +390,8 @@
                 "gridData": {
                     "h": 9,
                     "i": "69b4961d-b2e8-49aa-b57e-18089306b583",
-                    "w": 9,
-                    "x": 30,
+                    "w": 7,
+                    "x": 27,
                     "y": 0
                 },
                 "panelIndex": "69b4961d-b2e8-49aa-b57e-18089306b583",
@@ -502,12 +502,124 @@
                 "gridData": {
                     "h": 9,
                     "i": "a098b19a-9eeb-409e-8640-5067f86078c7",
-                    "w": 9,
-                    "x": 39,
+                    "w": 7,
+                    "x": 34,
                     "y": 0
                 },
                 "panelIndex": "a098b19a-9eeb-409e-8640-5067f86078c7",
                 "title": "Allowed Requests [Logs Imperva Cloud WAF]",
+                "type": "lens",
+                "version": "8.10.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-ecfb37f1-2f60-4208-aeb7-0ae1b22579c1",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "53ec5e78-b51b-4288-870d-c159b172ed5a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "ecfb37f1-2f60-4208-aeb7-0ae1b22579c1": {
+                                            "columnOrder": [
+                                                "d8efdf0f-55db-4e33-bd77-2ff5e821bb77"
+                                            ],
+                                            "columns": {
+                                                "d8efdf0f-55db-4e33-bd77-2ff5e821bb77": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Bad Requests",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.action"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "53ec5e78-b51b-4288-870d-c159b172ed5a",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "imperva_cloud_waf.event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "imperva_cloud_waf.event"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "event.action : req-bad-*"
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "ecfb37f1-2f60-4208-aeb7-0ae1b22579c1",
+                                "layerType": "data",
+                                "metricAccessor": "d8efdf0f-55db-4e33-bd77-2ff5e821bb77"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "2ce9ebd8-844a-46ad-8814-b6c022a53559",
+                    "w": 7,
+                    "x": 41,
+                    "y": 0
+                },
+                "panelIndex": "2ce9ebd8-844a-46ad-8814-b6c022a53559",
+                "title": "Bad Requests [Logs Imperva Cloud WAF]",
                 "type": "lens",
                 "version": "8.10.1"
             },
@@ -614,8 +726,8 @@
                 "gridData": {
                     "h": 9,
                     "i": "486bf205-e29b-4c19-9f3f-4ff5eabb8b1e",
-                    "w": 9,
-                    "x": 21,
+                    "w": 7,
+                    "x": 20,
                     "y": 9
                 },
                 "panelIndex": "486bf205-e29b-4c19-9f3f-4ff5eabb8b1e",
@@ -726,8 +838,8 @@
                 "gridData": {
                     "h": 9,
                     "i": "ec9fc3cf-977e-4cde-bf7b-0f6ba27ae186",
-                    "w": 9,
-                    "x": 30,
+                    "w": 7,
+                    "x": 27,
                     "y": 9
                 },
                 "panelIndex": "ec9fc3cf-977e-4cde-bf7b-0f6ba27ae186",
@@ -742,12 +854,12 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-ecfb37f1-2f60-4208-aeb7-0ae1b22579c1",
+                                "name": "indexpattern-datasource-layer-abd9e58c-abec-44f0-9d95-3768df9b8930",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "53ec5e78-b51b-4288-870d-c159b172ed5a",
+                                "name": "43a42766-7342-4885-b71a-519aafe116cc",
                                 "type": "index-pattern"
                             }
                         ],
@@ -756,16 +868,251 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "ecfb37f1-2f60-4208-aeb7-0ae1b22579c1": {
+                                        "abd9e58c-abec-44f0-9d95-3768df9b8930": {
                                             "columnOrder": [
-                                                "d8efdf0f-55db-4e33-bd77-2ff5e821bb77"
+                                                "eed0424d-6de8-4527-a2d6-fd4bfe72ac10"
                                             ],
                                             "columns": {
-                                                "d8efdf0f-55db-4e33-bd77-2ff5e821bb77": {
+                                                "eed0424d-6de8-4527-a2d6-fd4bfe72ac10": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Bad Requests",
+                                                    "label": "Unique IP Addresses",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "source.ip"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "43a42766-7342-4885-b71a-519aafe116cc",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "imperva_cloud_waf.event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "imperva_cloud_waf.event"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "abd9e58c-abec-44f0-9d95-3768df9b8930",
+                                "layerType": "data",
+                                "metricAccessor": "eed0424d-6de8-4527-a2d6-fd4bfe72ac10"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "6d748ea7-1436-40ad-800c-8e0c636740ad",
+                    "w": 7,
+                    "x": 34,
+                    "y": 9
+                },
+                "panelIndex": "6d748ea7-1436-40ad-800c-8e0c636740ad",
+                "type": "lens",
+                "version": "8.10.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-abd9e58c-abec-44f0-9d95-3768df9b8930",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "528c259d-3bb8-4791-8a19-a37b6624b556",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "abd9e58c-abec-44f0-9d95-3768df9b8930": {
+                                            "columnOrder": [
+                                                "eed0424d-6de8-4527-a2d6-fd4bfe72ac10"
+                                            ],
+                                            "columns": {
+                                                "eed0424d-6de8-4527-a2d6-fd4bfe72ac10": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Unique Domains",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "imperva_cloud_waf.event.extensions.source.service_name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "528c259d-3bb8-4791-8a19-a37b6624b556",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "imperva_cloud_waf.event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "imperva_cloud_waf.event"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "abd9e58c-abec-44f0-9d95-3768df9b8930",
+                                "layerType": "data",
+                                "metricAccessor": "eed0424d-6de8-4527-a2d6-fd4bfe72ac10"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "5e840a5e-01ae-4a23-8893-f2f875b81c5c",
+                    "w": 7,
+                    "x": 41,
+                    "y": 9
+                },
+                "panelIndex": "5e840a5e-01ae-4a23-8893-f2f875b81c5c",
+                "title": "",
+                "type": "lens",
+                "version": "8.10.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-0e52361c-137e-4c14-8b62-af92a36c86ca",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5bfe5e3b-12af-45dd-82eb-1213ec1fb70d",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "0e52361c-137e-4c14-8b62-af92a36c86ca": {
+                                            "columnOrder": [
+                                                "4b82af58-c3ef-443b-be31-0a06235598e8",
+                                                "e51f3f8f-f4ba-4562-a06d-335ac3ba79c1"
+                                            ],
+                                            "columns": {
+                                                "4b82af58-c3ef-443b-be31-0a06235598e8": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e51f3f8f-f4ba-4562-a06d-335ac3ba79c1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -777,7 +1124,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "event.action"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -801,7 +1148,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "53ec5e78-b51b-4288-870d-c159b172ed5a",
+                                        "index": "5bfe5e3b-12af-45dd-82eb-1213ec1fb70d",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -819,31 +1166,69 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "event.action : req-bad-*"
+                                "query": ""
                             },
                             "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "ecfb37f1-2f60-4208-aeb7-0ae1b22579c1",
-                                "layerType": "data",
-                                "metricAccessor": "d8efdf0f-55db-4e33-bd77-2ff5e821bb77"
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "e51f3f8f-f4ba-4562-a06d-335ac3ba79c1"
+                                        ],
+                                        "layerId": "0e52361c-137e-4c14-8b62-af92a36c86ca",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "4b82af58-c3ef-443b-be31-0a06235598e8"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "2ce9ebd8-844a-46ad-8814-b6c022a53559",
-                    "w": 9,
-                    "x": 39,
-                    "y": 9
+                    "h": 15,
+                    "i": "97624fe6-c73f-4388-8c25-125eef8ff15e",
+                    "w": 38,
+                    "x": 10,
+                    "y": 18
                 },
-                "panelIndex": "2ce9ebd8-844a-46ad-8814-b6c022a53559",
-                "title": "Bad Requests [Logs Imperva Cloud WAF]",
+                "panelIndex": "97624fe6-c73f-4388-8c25-125eef8ff15e",
+                "title": "Events Over Time [Logs Imperva Cloud WAF]",
                 "type": "lens",
                 "version": "8.10.1"
             },
@@ -991,9 +1376,9 @@
                 "gridData": {
                     "h": 15,
                     "i": "121ba06e-38ec-4a78-8cc8-d5e592a2362c",
-                    "w": 19,
-                    "x": 10,
-                    "y": 18
+                    "w": 24,
+                    "x": 0,
+                    "y": 33
                 },
                 "panelIndex": "121ba06e-38ec-4a78-8cc8-d5e592a2362c",
                 "title": "Events by Browser Type [Logs Imperva Cloud WAF]",
@@ -1145,9 +1530,9 @@
                 "gridData": {
                     "h": 15,
                     "i": "ecd8148f-256e-4fb0-998c-7c5f8ee0f836",
-                    "w": 19,
-                    "x": 29,
-                    "y": 18
+                    "w": 24,
+                    "x": 24,
+                    "y": 33
                 },
                 "panelIndex": "ecd8148f-256e-4fb0-998c-7c5f8ee0f836",
                 "title": "Events by Request Type [Logs Imperva Cloud WAF]",
@@ -1161,12 +1546,12 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-ef914720-960e-4e8e-ba49-d46dba28d267",
+                                "name": "indexpattern-datasource-layer-e4b8b120-7757-437d-83ad-3e49ee5ccaa8",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "f1497cde-4c0c-40c4-9e3e-342948b78ed4",
+                                "name": "8aa8e1de-41cc-47b8-b258-68aca05b397e",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1175,17 +1560,17 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "ef914720-960e-4e8e-ba49-d46dba28d267": {
+                                        "e4b8b120-7757-437d-83ad-3e49ee5ccaa8": {
                                             "columnOrder": [
-                                                "327ed0b3-b769-455a-a89a-81b6e85e307c",
-                                                "b934ef88-7fe9-4c40-b1a8-55033190e8ee"
+                                                "0fc3d91c-9625-4c73-bd40-f847da073470",
+                                                "2b258188-ac41-424a-aefa-1a9f1fca9fa1"
                                             ],
                                             "columns": {
-                                                "327ed0b3-b769-455a-a89a-81b6e85e307c": {
+                                                "0fc3d91c-9625-4c73-bd40-f847da073470": {
                                                     "customLabel": true,
-                                                    "dataType": "string",
+                                                    "dataType": "number",
                                                     "isBucketed": true,
-                                                    "label": "Action",
+                                                    "label": "HTTP Status Code",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1194,7 +1579,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "b934ef88-7fe9-4c40-b1a8-55033190e8ee",
+                                                            "columnId": "2b258188-ac41-424a-aefa-1a9f1fca9fa1",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -1203,12 +1588,12 @@
                                                             "id": "terms"
                                                         },
                                                         "secondaryFields": [],
-                                                        "size": 10
+                                                        "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "event.action"
+                                                    "sourceField": "http.response.status_code"
                                                 },
-                                                "b934ef88-7fe9-4c40-b1a8-55033190e8ee": {
+                                                "2b258188-ac41-424a-aefa-1a9f1fca9fa1": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -1248,7 +1633,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "f1497cde-4c0c-40c4-9e3e-342948b78ed4",
+                                        "index": "8aa8e1de-41cc-47b8-b258-68aca05b397e",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -1269,64 +1654,42 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
                                 "layers": [
                                     {
-                                        "accessors": [
-                                            "b934ef88-7fe9-4c40-b1a8-55033190e8ee"
-                                        ],
-                                        "layerId": "ef914720-960e-4e8e-ba49-d46dba28d267",
+                                        "categoryDisplay": "default",
+                                        "layerId": "e4b8b120-7757-437d-83ad-3e49ee5ccaa8",
                                         "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_stacked",
-                                        "showGridlines": false,
-                                        "xAccessor": "327ed0b3-b769-455a-a89a-81b6e85e307c"
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "2b258188-ac41-424a-aefa-1a9f1fca9fa1"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "0fc3d91c-9625-4c73-bd40-f847da073470"
+                                        ],
+                                        "truncateLegend": false
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "show"
+                                "shape": "pie"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "282c6944-380f-44c1-9f22-4459367b204b",
+                    "i": "b5bdb40e-2ce5-4e7f-8bdd-ed0e6ac46a8e",
                     "w": 24,
                     "x": 0,
-                    "y": 33
+                    "y": 48
                 },
-                "panelIndex": "282c6944-380f-44c1-9f22-4459367b204b",
-                "title": "Events by Action [Logs Imperva Cloud WAF]",
+                "panelIndex": "b5bdb40e-2ce5-4e7f-8bdd-ed0e6ac46a8e",
+                "title": "Events by HTTP Status Code [Logs Imperva Cloud WAF]",
                 "type": "lens",
                 "version": "8.10.1"
             },
@@ -1499,10 +1862,186 @@
                     "i": "561ae70e-7755-4934-96b9-f8300d0d78a2",
                     "w": 24,
                     "x": 24,
-                    "y": 33
+                    "y": 48
                 },
                 "panelIndex": "561ae70e-7755-4934-96b9-f8300d0d78a2",
                 "title": "Events by Country Code [Logs Imperva Cloud WAF]",
+                "type": "lens",
+                "version": "8.10.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-ef914720-960e-4e8e-ba49-d46dba28d267",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "f1497cde-4c0c-40c4-9e3e-342948b78ed4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "ef914720-960e-4e8e-ba49-d46dba28d267": {
+                                            "columnOrder": [
+                                                "327ed0b3-b769-455a-a89a-81b6e85e307c",
+                                                "b934ef88-7fe9-4c40-b1a8-55033190e8ee"
+                                            ],
+                                            "columns": {
+                                                "327ed0b3-b769-455a-a89a-81b6e85e307c": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Action",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b934ef88-7fe9-4c40-b1a8-55033190e8ee",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.action"
+                                                },
+                                                "b934ef88-7fe9-4c40-b1a8-55033190e8ee": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "f1497cde-4c0c-40c4-9e3e-342948b78ed4",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "imperva_cloud_waf.event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "imperva_cloud_waf.event"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b934ef88-7fe9-4c40-b1a8-55033190e8ee"
+                                        ],
+                                        "layerId": "ef914720-960e-4e8e-ba49-d46dba28d267",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "327ed0b3-b769-455a-a89a-81b6e85e307c"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "show"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "282c6944-380f-44c1-9f22-4459367b204b",
+                    "w": 24,
+                    "x": 0,
+                    "y": 63
+                },
+                "panelIndex": "282c6944-380f-44c1-9f22-4459367b204b",
+                "title": "Events by Action [Logs Imperva Cloud WAF]",
                 "type": "lens",
                 "version": "8.10.1"
             },
@@ -1675,11 +2214,156 @@
                     "h": 15,
                     "i": "88c0a4cb-189c-4ddb-835b-4db106ec5663",
                     "w": 24,
-                    "x": 0,
-                    "y": 48
+                    "x": 24,
+                    "y": 63
                 },
                 "panelIndex": "88c0a4cb-189c-4ddb-835b-4db106ec5663",
                 "title": "Events by Attack Type [Logs Imperva Cloud WAF]",
+                "type": "lens",
+                "version": "8.10.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-d2d78c16-fd43-4762-b0f1-a60659cff9b3",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3312999c-205a-4d09-bb15-dc5818d3e852",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "d2d78c16-fd43-4762-b0f1-a60659cff9b3": {
+                                            "columnOrder": [
+                                                "dfe0fe59-38f3-40f7-8edc-9682e8fb3b6c",
+                                                "a3c1d47e-f2bd-435a-9d68-aab085315d61"
+                                            ],
+                                            "columns": {
+                                                "a3c1d47e-f2bd-435a-9d68-aab085315d61": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "dfe0fe59-38f3-40f7-8edc-9682e8fb3b6c": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Client Application",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a3c1d47e-f2bd-435a-9d68-aab085315d61",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "imperva_cloud_waf.event.extensions.device.custom_string6"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "3312999c-205a-4d09-bb15-dc5818d3e852",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "imperva_cloud_waf.event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "imperva_cloud_waf.event"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "dfe0fe59-38f3-40f7-8edc-9682e8fb3b6c"
+                                    },
+                                    {
+                                        "columnId": "a3c1d47e-f2bd-435a-9d68-aab085315d61"
+                                    }
+                                ],
+                                "layerId": "d2d78c16-fd43-4762-b0f1-a60659cff9b3",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "e1b971a5-c7f3-4c2c-a27c-d2a26f40a806",
+                    "w": 24,
+                    "x": 0,
+                    "y": 78
+                },
+                "panelIndex": "e1b971a5-c7f3-4c2c-a27c-d2a26f40a806",
+                "title": "Top 10 Client Application [Logs Imperva Cloud WAF]",
                 "type": "lens",
                 "version": "8.10.1"
             },
@@ -1822,300 +2506,10 @@
                     "i": "4eb2b76f-3066-4014-99fa-13480dc52eb0",
                     "w": 24,
                     "x": 24,
-                    "y": 48
+                    "y": 78
                 },
                 "panelIndex": "4eb2b76f-3066-4014-99fa-13480dc52eb0",
                 "title": "Top 10 URL [Logs Imperva Cloud WAF]",
-                "type": "lens",
-                "version": "8.10.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-d2d78c16-fd43-4762-b0f1-a60659cff9b3",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "3312999c-205a-4d09-bb15-dc5818d3e852",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "d2d78c16-fd43-4762-b0f1-a60659cff9b3": {
-                                            "columnOrder": [
-                                                "dfe0fe59-38f3-40f7-8edc-9682e8fb3b6c",
-                                                "a3c1d47e-f2bd-435a-9d68-aab085315d61"
-                                            ],
-                                            "columns": {
-                                                "a3c1d47e-f2bd-435a-9d68-aab085315d61": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "dfe0fe59-38f3-40f7-8edc-9682e8fb3b6c": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Client Application",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "a3c1d47e-f2bd-435a-9d68-aab085315d61",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "imperva_cloud_waf.event.extensions.device.custom_string6"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "3312999c-205a-4d09-bb15-dc5818d3e852",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "imperva_cloud_waf.event"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "imperva_cloud_waf.event"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "dfe0fe59-38f3-40f7-8edc-9682e8fb3b6c"
-                                    },
-                                    {
-                                        "columnId": "a3c1d47e-f2bd-435a-9d68-aab085315d61"
-                                    }
-                                ],
-                                "layerId": "d2d78c16-fd43-4762-b0f1-a60659cff9b3",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "e1b971a5-c7f3-4c2c-a27c-d2a26f40a806",
-                    "w": 24,
-                    "x": 0,
-                    "y": 63
-                },
-                "panelIndex": "e1b971a5-c7f3-4c2c-a27c-d2a26f40a806",
-                "title": "Top 10 Client Application [Logs Imperva Cloud WAF]",
-                "type": "lens",
-                "version": "8.10.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-dfd810b0-0b4a-4b8c-82f9-dda8ece262fb",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "9534999d-5b48-4638-a917-ae394c55590e",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "dfd810b0-0b4a-4b8c-82f9-dda8ece262fb": {
-                                            "columnOrder": [
-                                                "ca43cfbc-6a9c-455a-93c5-a53670f4ad64",
-                                                "37cdfacb-63b9-427c-a43d-054b859520a8"
-                                            ],
-                                            "columns": {
-                                                "37cdfacb-63b9-427c-a43d-054b859520a8": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "ca43cfbc-6a9c-455a-93c5-a53670f4ad64": {
-                                                    "customLabel": true,
-                                                    "dataType": "ip",
-                                                    "isBucketed": true,
-                                                    "label": "Source IP",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "37cdfacb-63b9-427c-a43d-054b859520a8",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "source.ip"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "9534999d-5b48-4638-a917-ae394c55590e",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "imperva_cloud_waf.event"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "imperva_cloud_waf.event"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "ca43cfbc-6a9c-455a-93c5-a53670f4ad64"
-                                    },
-                                    {
-                                        "columnId": "37cdfacb-63b9-427c-a43d-054b859520a8"
-                                    }
-                                ],
-                                "layerId": "dfd810b0-0b4a-4b8c-82f9-dda8ece262fb",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "cf7d51b5-cbe7-4bd2-99cd-f9e1e568c48a",
-                    "w": 24,
-                    "x": 24,
-                    "y": 63
-                },
-                "panelIndex": "cf7d51b5-cbe7-4bd2-99cd-f9e1e568c48a",
-                "title": "Top 10 Source IP [Logs Imperva Cloud WAF]",
                 "type": "lens",
                 "version": "8.10.1"
             },
@@ -2258,7 +2652,7 @@
                     "i": "0490de70-9dd6-4c32-954a-bd09449ee454",
                     "w": 24,
                     "x": 0,
-                    "y": 78
+                    "y": 93
                 },
                 "panelIndex": "0490de70-9dd6-4c32-954a-bd09449ee454",
                 "title": "Top 10 User Agent [Logs Imperva Cloud WAF]",
@@ -2267,14 +2661,159 @@
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-dfd810b0-0b4a-4b8c-82f9-dda8ece262fb",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "9534999d-5b48-4638-a917-ae394c55590e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "dfd810b0-0b4a-4b8c-82f9-dda8ece262fb": {
+                                            "columnOrder": [
+                                                "ca43cfbc-6a9c-455a-93c5-a53670f4ad64",
+                                                "37cdfacb-63b9-427c-a43d-054b859520a8"
+                                            ],
+                                            "columns": {
+                                                "37cdfacb-63b9-427c-a43d-054b859520a8": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "ca43cfbc-6a9c-455a-93c5-a53670f4ad64": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "Source IP",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "37cdfacb-63b9-427c-a43d-054b859520a8",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.ip"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "9534999d-5b48-4638-a917-ae394c55590e",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "imperva_cloud_waf.event"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "imperva_cloud_waf.event"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "ca43cfbc-6a9c-455a-93c5-a53670f4ad64"
+                                    },
+                                    {
+                                        "columnId": "37cdfacb-63b9-427c-a43d-054b859520a8"
+                                    }
+                                ],
+                                "layerId": "dfd810b0-0b4a-4b8c-82f9-dda8ece262fb",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "6257b78c-5231-4331-96e9-1aaba70a07b4",
+                    "i": "cf7d51b5-cbe7-4bd2-99cd-f9e1e568c48a",
                     "w": 24,
                     "x": 24,
-                    "y": 78
+                    "y": 93
+                },
+                "panelIndex": "cf7d51b5-cbe7-4bd2-99cd-f9e1e568c48a",
+                "title": "Top 10 Source IP [Logs Imperva Cloud WAF]",
+                "type": "lens",
+                "version": "8.10.1"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "6257b78c-5231-4331-96e9-1aaba70a07b4",
+                    "w": 48,
+                    "x": 0,
+                    "y": 108
                 },
                 "panelIndex": "6257b78c-5231-4331-96e9-1aaba70a07b4",
                 "panelRefName": "panel_6257b78c-5231-4331-96e9-1aaba70a07b4",
@@ -2290,11 +2829,49 @@
                     "i": "e20845e9-4f72-4f52-9047-513a17014667",
                     "w": 48,
                     "x": 0,
-                    "y": 93
+                    "y": 124
                 },
                 "panelIndex": "e20845e9-4f72-4f52-9047-513a17014667",
                 "panelRefName": "panel_e20845e9-4f72-4f52-9047-513a17014667",
                 "type": "search",
+                "version": "8.10.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "layerListJSON": "[{\"locale\":\"autoselect\",\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true,\"lightModeDefault\":\"road_map_desaturated\"},\"id\":\"db9b4a7d-542b-4381-957a-c974443a7861\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"EMS_VECTOR_TILE\",\"color\":\"\"},\"includeInFitToBounds\":true,\"type\":\"EMS_VECTOR_TILE\"},{\"sourceDescriptor\":{\"geoField\":\"source.geo.location\",\"requestType\":\"heatmap\",\"resolution\":\"SUPER_FINE\",\"id\":\"1fd6c814-a10f-4cfc-86bf-a819167a6854\",\"type\":\"ES_GEO_GRID\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"metrics\":[{\"type\":\"count\"}],\"indexPatternRefName\":\"layer_1_source_index_pattern\"},\"id\":\"424c7856-db96-4063-989f-218120ea1c58\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"style\":{\"type\":\"HEATMAP\",\"colorRampName\":\"theclassic\"},\"includeInFitToBounds\":true,\"type\":\"HEATMAP\"}]",
+                        "mapStateJSON": "{\"adHocDataViews\":[],\"zoom\":1.44,\"center\":{\"lon\":57.67286,\"lat\":41.32582},\"timeFilters\":{\"from\":\"now-15h\",\"to\":\"now\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":60000},\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filters\":[{\"meta\":{\"disabled\":false,\"negate\":false,\"alias\":null,\"index\":\"logs-*\",\"key\":\"data_stream.dataset\",\"field\":\"data_stream.dataset\",\"params\":{\"query\":\"imperva_cloud_waf.event\"},\"type\":\"phrase\"},\"query\":{\"match_phrase\":{\"data_stream.dataset\":\"imperva_cloud_waf.event\"}},\"$state\":{\"store\":\"appState\"}}],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"customIcons\":[],\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"keydownScrollZoom\":false,\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
+                        "title": "",
+                        "uiStateJSON": "{\"isLayerTOCOpen\":true,\"openTOCDetails\":[\"424c7856-db96-4063-989f-218120ea1c58\"]}"
+                    },
+                    "enhancements": {},
+                    "hiddenLayers": [],
+                    "hidePanelTitles": false,
+                    "isLayerTOCOpen": false,
+                    "mapBuffer": {
+                        "maxLat": 85.05113,
+                        "maxLon": 180,
+                        "minLat": -66.51326,
+                        "minLon": -90
+                    },
+                    "mapCenter": {
+                        "lat": 41.32582,
+                        "lon": 57.67286,
+                        "zoom": 1.44
+                    },
+                    "openTOCDetails": []
+                },
+                "gridData": {
+                    "h": 20,
+                    "i": "90a17859-87de-4d61-8ed6-d5c57a797613",
+                    "w": 48,
+                    "x": 0,
+                    "y": 143
+                },
+                "panelIndex": "90a17859-87de-4d61-8ed6-d5c57a797613",
+                "title": "Attack Map [Logs Imperva Cloud WAF]",
+                "type": "map",
                 "version": "8.10.1"
             }
         ],
@@ -2303,7 +2880,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-01-28T05:26:47.598Z",
+    "created_at": "2024-02-21T10:45:45.948Z",
     "id": "imperva_cloud_waf-6fbc3530-9a84-11ee-b689-05e9d8af2773",
     "managed": false,
     "references": [
@@ -2349,6 +2926,16 @@
         },
         {
             "id": "logs-*",
+            "name": "2ce9ebd8-844a-46ad-8814-b6c022a53559:indexpattern-datasource-layer-ecfb37f1-2f60-4208-aeb7-0ae1b22579c1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2ce9ebd8-844a-46ad-8814-b6c022a53559:53ec5e78-b51b-4288-870d-c159b172ed5a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "486bf205-e29b-4c19-9f3f-4ff5eabb8b1e:indexpattern-datasource-layer-ecfb37f1-2f60-4208-aeb7-0ae1b22579c1",
             "type": "index-pattern"
         },
@@ -2369,12 +2956,32 @@
         },
         {
             "id": "logs-*",
-            "name": "2ce9ebd8-844a-46ad-8814-b6c022a53559:indexpattern-datasource-layer-ecfb37f1-2f60-4208-aeb7-0ae1b22579c1",
+            "name": "6d748ea7-1436-40ad-800c-8e0c636740ad:indexpattern-datasource-layer-abd9e58c-abec-44f0-9d95-3768df9b8930",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "2ce9ebd8-844a-46ad-8814-b6c022a53559:53ec5e78-b51b-4288-870d-c159b172ed5a",
+            "name": "6d748ea7-1436-40ad-800c-8e0c636740ad:43a42766-7342-4885-b71a-519aafe116cc",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5e840a5e-01ae-4a23-8893-f2f875b81c5c:indexpattern-datasource-layer-abd9e58c-abec-44f0-9d95-3768df9b8930",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5e840a5e-01ae-4a23-8893-f2f875b81c5c:528c259d-3bb8-4791-8a19-a37b6624b556",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "97624fe6-c73f-4388-8c25-125eef8ff15e:indexpattern-datasource-layer-0e52361c-137e-4c14-8b62-af92a36c86ca",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "97624fe6-c73f-4388-8c25-125eef8ff15e:5bfe5e3b-12af-45dd-82eb-1213ec1fb70d",
             "type": "index-pattern"
         },
         {
@@ -2399,12 +3006,12 @@
         },
         {
             "id": "logs-*",
-            "name": "282c6944-380f-44c1-9f22-4459367b204b:indexpattern-datasource-layer-ef914720-960e-4e8e-ba49-d46dba28d267",
+            "name": "b5bdb40e-2ce5-4e7f-8bdd-ed0e6ac46a8e:indexpattern-datasource-layer-e4b8b120-7757-437d-83ad-3e49ee5ccaa8",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "282c6944-380f-44c1-9f22-4459367b204b:f1497cde-4c0c-40c4-9e3e-342948b78ed4",
+            "name": "b5bdb40e-2ce5-4e7f-8bdd-ed0e6ac46a8e:8aa8e1de-41cc-47b8-b258-68aca05b397e",
             "type": "index-pattern"
         },
         {
@@ -2419,22 +3026,22 @@
         },
         {
             "id": "logs-*",
+            "name": "282c6944-380f-44c1-9f22-4459367b204b:indexpattern-datasource-layer-ef914720-960e-4e8e-ba49-d46dba28d267",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "282c6944-380f-44c1-9f22-4459367b204b:f1497cde-4c0c-40c4-9e3e-342948b78ed4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "88c0a4cb-189c-4ddb-835b-4db106ec5663:indexpattern-datasource-layer-ef914720-960e-4e8e-ba49-d46dba28d267",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "88c0a4cb-189c-4ddb-835b-4db106ec5663:e255721e-3b2f-414a-bb8a-899b273c20cb",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "4eb2b76f-3066-4014-99fa-13480dc52eb0:indexpattern-datasource-layer-dfd810b0-0b4a-4b8c-82f9-dda8ece262fb",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "4eb2b76f-3066-4014-99fa-13480dc52eb0:78ef208b-b924-4bd2-8580-5a0deb623228",
             "type": "index-pattern"
         },
         {
@@ -2449,12 +3056,12 @@
         },
         {
             "id": "logs-*",
-            "name": "cf7d51b5-cbe7-4bd2-99cd-f9e1e568c48a:indexpattern-datasource-layer-dfd810b0-0b4a-4b8c-82f9-dda8ece262fb",
+            "name": "4eb2b76f-3066-4014-99fa-13480dc52eb0:indexpattern-datasource-layer-dfd810b0-0b4a-4b8c-82f9-dda8ece262fb",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "cf7d51b5-cbe7-4bd2-99cd-f9e1e568c48a:9534999d-5b48-4638-a917-ae394c55590e",
+            "name": "4eb2b76f-3066-4014-99fa-13480dc52eb0:78ef208b-b924-4bd2-8580-5a0deb623228",
             "type": "index-pattern"
         },
         {
@@ -2468,6 +3075,16 @@
             "type": "index-pattern"
         },
         {
+            "id": "logs-*",
+            "name": "cf7d51b5-cbe7-4bd2-99cd-f9e1e568c48a:indexpattern-datasource-layer-dfd810b0-0b4a-4b8c-82f9-dda8ece262fb",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "cf7d51b5-cbe7-4bd2-99cd-f9e1e568c48a:9534999d-5b48-4638-a917-ae394c55590e",
+            "type": "index-pattern"
+        },
+        {
             "id": "imperva_cloud_waf-4c603c80-9a84-11ee-b689-05e9d8af2773",
             "name": "6257b78c-5231-4331-96e9-1aaba70a07b4:panel_6257b78c-5231-4331-96e9-1aaba70a07b4",
             "type": "search"
@@ -2476,6 +3093,11 @@
             "id": "imperva_cloud_waf-c10e98f0-9cbf-11ee-b689-05e9d8af2773",
             "name": "e20845e9-4f72-4f52-9047-513a17014667:panel_e20845e9-4f72-4f52-9047-513a17014667",
             "type": "search"
+        },
+        {
+            "id": "logs-*",
+            "name": "90a17859-87de-4d61-8ed6-d5c57a797613:layer_1_source_index_pattern",
+            "type": "index-pattern"
         },
         {
             "id": "logs-*",

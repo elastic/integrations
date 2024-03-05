@@ -34,7 +34,7 @@ processors:
       tag: rename_identity_protection_incident_id
   - rename:
       field: crowdstrike.event.FalconHostLink
-      target_field: event.reference    
+      target_field: event.reference
       ignore_missing: true
       tag: rename_falcon_host_link
   - rename:
@@ -42,6 +42,11 @@ processors:
       target_field: user.name
       ignore_missing: true
       tag: rename_user_name
+  - dissect:
+      if: ctx.user?.name != null && ctx.user.name.contains('\\')
+      tag: dissect_user_name
+      field: user.name
+      pattern: '%{user.domain}\%{user.name}'
   - rename:
       field: crowdstrike.event.EndpointName
       target_field: host.hostname
