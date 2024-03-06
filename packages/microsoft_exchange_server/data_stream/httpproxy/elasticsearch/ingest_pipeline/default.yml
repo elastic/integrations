@@ -5,13 +5,13 @@ processors:
     if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
 - set:
     field: event.original
-    value: "{{{message}}}" 
+    copy_from: message
 - csv:
     field: event.original
     ignore_failure: true
     ignore_missing: true
     target_fields:
-    - microsoft.exchange.datetime
+    - "@timestamp"
     - microsoft.exchange.requestid
     - microsoft.exchange.majorversion
     - microsoft.exchange.minorversion
@@ -27,13 +27,13 @@ processors:
     - microsoft.exchange.authenticateduser
     - microsoft.exchange.organization
     - microsoft.exchange.anchormailbox
-    - microsoft.exchange.useragent
+    - user_agent.original
     - microsoft.exchange.clientipaddress
-    - microsoft.exchange.serverhostname
-    - microsoft.exchange.httpstatus
+    - observer.hostname 
+    - http.response.status_code
     - microsoft.exchange.backendstatus
     - microsoft.exchange.errorcode
-    - microsoft.exchange.method
+    - http.request.method 
     - microsoft.exchange.proxyaction
     - microsoft.exchange.targetserver
     - microsoft.exchange.targetserverversion
@@ -42,8 +42,8 @@ processors:
     - microsoft.exchange.backendcookie
     - microsoft.exchange.serverlocatorhost
     - microsoft.exchange.serverlocatorlatency
-    - microsoft.exchange.requestbytes
-    - microsoft.exchange.responsebytes
+    - http.request.bytes
+    - http.response.bytes 
     - microsoft.exchange.targetoutstandingrequests
     - microsoft.exchange.authmoduleperfcontext
     - microsoft.exchange.httppipelinelatency
@@ -76,7 +76,7 @@ processors:
     - microsoft.exchange.httpproxyoverhead
     - microsoft.exchange.totalrequesttime
     - microsoft.exchange.routerefresherlatency
-    - microsoft.exchange.urlquery
+    - url.query
     - microsoft.exchange.backendgenericinfo
     - microsoft.exchange.genericinfo
     - microsoft.exchange.genericerrors
@@ -85,47 +85,6 @@ processors:
     - microsoft.exchange.useradobjectguid
     - microsoft.exchange.partitionendpointlookuplatency
     - microsoft.exchange.routingstatus
-- set:
-    field: "@timestamp"
-    value: "{{{microsoft.exchange.datetime}}}"
-    if: ctx.microsoft?.exchange?.datetime =~ /^\d/
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: http.response.status_code
-    value: "{{{microsoft.exchange.httpstatus}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: url.query
-    value: "{{{microsoft.exchange.urlquery}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: http.request.method
-    value: "{{{microsoft.exchange.method}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: user_agent.original
-    value: "{{{microsoft.exchange.useragent}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: http.response.bytes
-    value: "{{{microsoft.exchange.responsebytes}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: http.request.bytes
-    value: "{{{microsoft.exchange.requestbytes}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: observer.hostname
-    value: "{{{microsoft.exchange.serverhostname}}}"
-    ignore_empty_value: true
-    ignore_failure: true
 - set:
     field: microsoft.exchange.logtype
     value: httpproxy
@@ -239,11 +198,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
 - convert: 
-    field: "microsoft.exchange.httpstatus"
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-- convert: 
     field: "microsoft.exchange.kerberosauthheaderlatency"
     type: long
     ignore_failure: true
@@ -264,17 +218,7 @@ processors:
     ignore_failure: true
     ignore_missing: true
 - convert: 
-    field: "microsoft.exchange.requestbytes"
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-- convert: 
     field: "microsoft.exchange.requesthandlerlatency"
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-- convert: 
-    field: "microsoft.exchange.responsebytes"
     type: long
     ignore_failure: true
     ignore_missing: true
@@ -330,5 +274,12 @@ processors:
     ignore_missing: true
 - set:
     field: event.ingested
-    value: "{{{_ingest.timestamp}}}"
+    copy_from: _ingest.timestamp
     ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

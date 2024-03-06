@@ -11,29 +11,29 @@ processors:
     ignore_failure: true
     ignore_missing: true
     target_fields:
-    - microsoft.exchange.datetime
-    - microsoft.exchange.clientip
-    - microsoft.exchange.clienthostname
-    - microsoft.exchange.serverip
-    - microsoft.exchange.serverhostname
+    - "@timestamp" 
+    - client.ip
+    - client.domain
+    - server.ip
+    - server.domain
     - microsoft.exchange.sourcecontext
     - microsoft.exchange.connectorid
     - microsoft.exchange.source
     - microsoft.exchange.eventid
-    - microsoft.exchange.internalmessageid
-    - microsoft.exchange.messageid
+    - email.local_id
+    - email.message_id
     - microsoft.exchange.networkmessageid
-    - microsoft.exchange.recipientaddress
+    - email.to.address
     - microsoft.exchange.recipientstatus
-    - microsoft.exchange.totalbytes
+    - network.bytes
     - microsoft.exchange.recipientcount
     - microsoft.exchange.relatedrecipientaddress
     - microsoft.exchange.reference
-    - microsoft.exchange.messagesubject
-    - microsoft.exchange.senderaddress
+    - email.subject
+    - microsoft.exchange.senderaddress 
     - microsoft.exchange.returnpath
     - microsoft.exchange.messageinfo
-    - microsoft.exchange.directionality
+    - email.direction
     - microsoft.exchange.tenantid
     - microsoft.exchange.originalclientip
     - microsoft.exchange.originalserverip
@@ -42,48 +42,6 @@ processors:
     - microsoft.exchange.logid
     - microsoft.exchange.schemaversion
     if: ctx.message =~ /^\d/
-- set:
-    field: "@timestamp"
-    value: "{{{microsoft.exchange.datetime}}}"
-    if: ctx.microsoft?.exchange?.datetime != null && ctx.microsoft?.exchange?.datetime
-      =~ /^\d/
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: microsoft.exchange.logtype
-    value: messagetracking
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: client.ip
-    value: "{{{microsoft.exchange.clientip}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: client.domain
-    value: "{{{microsoft.exchange.clienthostname}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: server.ip
-    value: "{{{microsoft.exchange.serverip}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: server.domain
-    value: "{{{microsoft.exchange.serverhostname}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- append:
-    field: email.to.address
-    value: "{{{microsoft.exchange.recipientaddress}}}"
-    ignore_failure: true
-- split:
-    field: microsoft.exchange.recipientaddress
-    separator: ";"
-    preserve_trailing: true
-    ignore_missing: true
-    ignore_failure: true
 - split:
     field: email.to.address
     separator: ";"
@@ -98,38 +56,10 @@ processors:
     field: email.from.address
     value: "{{{microsoft.exchange.senderaddress}}}"
     ignore_failure: true
-- set:
-    field: email.subject
-    value: "{{{microsoft.exchange.messagesubject}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: email.local_id
-    value: "{{{microsoft.exchange.internalmessageid}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: email.direction
-    value: "{{{microsoft.exchange.directionality}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: email.message_id
-    value: "{{{microsoft.exchange.messageid}}}"
-    ignore_empty_value: true
-    ignore_failure: true
-- set:
-    field: network.bytes
-    value: "{{{microsoft.exchange.totalbytes}}}"
-    ignore_empty_value: true
-    ignore_failure: true
+- remove:
+    field: microsoft.exchange.senderaddress
 - convert:
     field: "microsoft.exchange.recipientcount"
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-- convert:
-    field: "microsoft.exchange.totalbytes"
     type: long
     ignore_failure: true
     ignore_missing: true
@@ -142,3 +72,10 @@ processors:
     field: event.ingested 
     value: "{{{_ingest.timestamp}}}"
     ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

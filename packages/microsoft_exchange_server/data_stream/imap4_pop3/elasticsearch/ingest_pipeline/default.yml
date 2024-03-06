@@ -5,13 +5,13 @@ processors:
     if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
 - set:
     field: event.original
-    value: "{{{message}}}"
+    copy_from: message
 - csv:
     field: event.original
     ignore_failure: true
     ignore_missing: true
     target_fields:
-    - microsoft.exchange.datetime
+    - "@timestamp" 
     - microsoft.exchange.sessionid
     - microsoft.exchange.seqnumber
     - microsoft.exchange.sip
@@ -24,12 +24,6 @@ processors:
     - microsoft.exchange.parameters
     - microsoft.exchange.context
     - microsoft.exchange.puid
-- set:
-    field: "@timestamp"
-    value: "{{{microsoft.exchange.datetime}}}"
-    if: ctx.microsoft?.exchange?.datetime =~ /^\d/
-    ignore_empty_value: true
-    ignore_failure: true
 - grok:
     field: microsoft.exchange.cip
     patterns:
@@ -67,5 +61,12 @@ processors:
     ignore_failure: true
 - set:
     field: event.ingested
-    value: "{{{_ingest.timestamp}}}"
+    copy_from: _ingest.timestamp
     ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
