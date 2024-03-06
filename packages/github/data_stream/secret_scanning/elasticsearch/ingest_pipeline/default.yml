@@ -15,6 +15,9 @@ processors:
   - json:
       field: event.original
       target_field: github.secret_scanning
+  - fail:
+      if: "!(ctx.github.secret_scanning instanceof Map)"
+      message: Missing JSON object
   - fingerprint:
       fields:
         - github.secret_scanning.number
@@ -25,28 +28,28 @@ processors:
   - set:
       copy_from: github.secret_scanning.created_at
       field: event.created
-      if: ctx.github.secret_scanning?.created_at != null
+      if: ctx.github.secret_scanning.created_at != null
   - date:
       field: github.secret_scanning.created_at
       formats:
         - ISO8601
       timezone: UTC
       target_field: "@timestamp"
-      if: ctx.github.secret_scanning?.created_at != null && ctx.github.secret_scanning?.updated_at == null && ctx.github.secret_scanning?.resolved_at == null
+      if: ctx.github.secret_scanning.created_at != null && ctx.github.secret_scanning.updated_at == null && ctx.github.secret_scanning.resolved_at == null
   - date:
       field: github.secret_scanning.updated_at
       formats:
         - ISO8601
       timezone: UTC
       target_field: "@timestamp"
-      if: ctx.github.secret_scanning?.updated_at != null && ctx.github.secret_scanning?.resolved_at == null
+      if: ctx.github.secret_scanning.updated_at != null && ctx.github.secret_scanning.resolved_at == null
   - date:
       field: github.secret_scanning.resolved_at
       formats:
         - ISO8601
       timezone: UTC
       target_field: "@timestamp"
-      if: ctx.github.secret_scanning?.resolved_at != null
+      if: ctx.github.secret_scanning.resolved_at != null
   - rename:
       target_field: _temp.repository
       field: github.secret_scanning.repository
@@ -172,7 +175,7 @@ processors:
   - rename:
       field: _temp.number
       target_field: github.secret_scanning.number
-      if: ctx.github.secret_scanning?.number == null
+      if: ctx.github.secret_scanning.number == null
       ignore_missing: true
   - lowercase:
       field: github.secret_scanning.state
@@ -180,7 +183,7 @@ processors:
   - set:
       field: github.state
       value: "{{github.secret_scanning.state}}"
-      if: ctx.github.secret_scanning?.state != null
+      if: ctx.github.secret_scanning.state != null
   - set:
       field: github.severity
       value: "undefined"
@@ -228,7 +231,7 @@ processors:
   - script:
       lang: painless
       description: Mask the secret if hide_secret is true
-      if: ctx.tags != null && ctx.tags.contains('hide_secret') && ctx.github?.secret_scanning?.secret != null
+      if: ctx.tags != null && ctx.tags.contains('hide_secret') && ctx.github.secret_scanning.secret != null
       source: |
         def secret = ctx.github.secret_scanning.secret.toString();
         def masked_secret = secret;
@@ -240,7 +243,7 @@ processors:
   - script:
       lang: painless
       description: Calculate time taken to resolve the secrets
-      if: ctx.github.secret_scanning?.resolved_at != null
+      if: ctx.github.secret_scanning.resolved_at != null
       source: |
         def time_to_resolution = new HashMap();
         def resolvedAtDt = ctx.github.secret_scanning.resolved_at;
@@ -260,7 +263,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
   - script:

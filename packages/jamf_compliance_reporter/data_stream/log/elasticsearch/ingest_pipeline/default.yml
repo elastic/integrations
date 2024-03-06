@@ -18,7 +18,7 @@ processors:
       if: ctx.json?.header?.event_name == 'APP_METRICS'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_audit" }}'
-      if: ctx.json?.header?.event_name != null && ctx.json?.header?.event_name.startsWith('AUE_')
+      if: ctx.json?.header?.event_name?.startsWith('AUE_') == true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_event" }}'
       if: "['AUDIO_VIDEO_DEVICE_EVENT','AUDIT_CLASS_VERIFICATION_EVENT','COMPLIANCE_REPORTER_TAMPER_EVENT','FILE_EVENT','GATEKEEPER_INFO_EVENT','GATEKEEPER_MANUAL_OVERRIDES','GATEKEEPER_QUARANTINE_LOG','HARDWARE_EVENT','LICENSE_INFO_EVENT','PREFERENCE_LIST_EVENT','PRINT_EVENT_INFORMATION','PROHIBITED_APP_BLOCKED','SIGNAL_EVENT','UNIFIED_LOG_EVENT','XPROTECT_DEFINITIONS_VERSION_INFO','XPROTECT_EVENT_LOG'].contains(ctx.json?.header?.event_name)"

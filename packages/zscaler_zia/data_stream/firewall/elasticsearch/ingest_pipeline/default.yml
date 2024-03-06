@@ -151,6 +151,10 @@ processors:
       field: json.destcountry
       target_field: destination.geo.country_name
       ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: json.user
+      ignore_empty_value: true
   - urldecode:
       field: json.user
       target_field: user.email
@@ -178,6 +182,11 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null && ctx.user.id != ''
   - urldecode:
       field: json.department
       target_field: zscaler_zia.firewall.department

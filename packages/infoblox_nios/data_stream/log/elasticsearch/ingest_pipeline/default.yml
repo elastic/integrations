@@ -79,13 +79,13 @@ processors:
   - set:
       field: '@timestamp'
       value: '{{{event.created}}}'
-      if: "ctx.event?.created != null"
+      if: ctx.event?.created != null
       override: true
   # If individual pipelines has timestamp, they should take priority. This makes @timestamp < event.created conforming to ECS.
   - set:
       field: '@timestamp'
       value: '{{{_tmp.timestamp}}}'
-      if: "ctx._tmp?.timestamp != null"
+      if: ctx._tmp?.timestamp != null
       override: true
   - convert:
       field: _tmp.host.ip

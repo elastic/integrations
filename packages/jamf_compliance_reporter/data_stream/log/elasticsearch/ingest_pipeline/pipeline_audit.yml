@@ -34,12 +34,15 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      if: ctx.json?.header?.time_seconds_epoch != 0
+      if: ctx.json?.header?.time_seconds_epoch != null && ctx.json.header.time_seconds_epoch != 0
       source: |
-        ctx.json.time_milliseconds = (long)ctx.json?.header?.time_seconds_epoch * 1000 + (long)ctx.json?.header?.time_milliseconds_offset;
+        ctx.json.time_milliseconds = (long)ctx.json.header.time_seconds_epoch * 1000;
+        if (ctx.json?.header?.time_milliseconds_offset != null && ctx.json.header.time_milliseconds_offset != 0) {
+          ctx.json.time_milliseconds = ctx.json.time_milliseconds + (long)ctx.json.header.time_milliseconds_offset;
+        }
   - date:
       field: json.time_milliseconds
-      if: ctx.json?.time_milliseconds != 0
+      if: ctx.json?.time_milliseconds != null && ctx.json.time_milliseconds != 0
       formats:
         - UNIX_MS
       on_failure:
@@ -281,82 +284,82 @@ processors:
       value: authentication
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_accept" }}'
-      if: ctx.event?.action == 'aue_accept'
+      if: ctx.event.action == 'aue_accept'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_auth" }}'
-      if: '["aue_auth_user", "aue_ssauthorize", "aue_ssauthmech"].contains(ctx.event?.action)'
+      if: '["aue_auth_user", "aue_ssauthorize", "aue_ssauthmech"].contains(ctx.event.action)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_bind_and_aue_connect" }}'
-      if: '["aue_bind", "aue_connect"].contains(ctx.event?.action)'
+      if: '["aue_bind", "aue_connect"].contains(ctx.event.action)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_chdir" }}'
-      if: ctx.event?.action == 'aue_chdir'
+      if: ctx.event.action == 'aue_chdir'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_chroot" }}'
-      if: ctx.event?.action == 'aue_chroot'
+      if: ctx.event.action == 'aue_chroot'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_execve" }}'
-      if: ctx.event?.action == 'aue_execve'
+      if: ctx.event.action == 'aue_execve'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_exit" }}'
-      if: ctx.event?.action == 'aue_exit'
+      if: ctx.event.action == 'aue_exit'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_kill" }}'
-      if: ctx.event?.action == 'aue_kill'
+      if: ctx.event.action == 'aue_kill'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_mount" }}'
-      if: ctx.event?.action == 'aue_mount'
+      if: ctx.event.action == 'aue_mount'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_posix_spawn" }}'
-      if: ctx.event?.action == 'aue_posix_spawn'
+      if: ctx.event.action == 'aue_posix_spawn'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_remove_from_group_and_aue_mac_set_proc" }}'
-      if: '["aue_remove_from_group", "aue_mac_set_proc"].contains(ctx.event?.action)'
+      if: '["aue_remove_from_group", "aue_mac_set_proc"].contains(ctx.event.action)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_session" }}'
-      if: '["aue_session_end", "aue_session_update", "aue_session_close", "aue_session_start"].contains(ctx.event?.action)'
+      if: '["aue_session_end", "aue_session_update", "aue_session_close", "aue_session_start"].contains(ctx.event.action)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_arguments" }}'
-      if: '["aue_setsockopt", "aue_shutdown"].contains(ctx.event?.action)'
+      if: '["aue_setsockopt", "aue_shutdown"].contains(ctx.event.action)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_ssauthint" }}'
-      if: ctx.event?.action == 'aue_ssauthint'
+      if: ctx.event.action == 'aue_ssauthint'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_tasknameforpid" }}'
-      if: ctx.event?.action == 'aue_tasknameforpid'
+      if: ctx.event.action == 'aue_tasknameforpid'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_unmount" }}'
-      if: ctx.event?.action == 'aue_unmount'
+      if: ctx.event.action == 'aue_unmount'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_fork" }}'
-      if: ctx.event?.action == 'aue_fork'
+      if: ctx.event.action == 'aue_fork'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
-      if: '["aue_getauid", "aue_lw_login", "aue_settimeofday"].contains(ctx.event?.action)'
+      if: '["aue_getauid", "aue_lw_login", "aue_settimeofday"].contains(ctx.event.action)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_listen" }}'
-      if: ctx.event?.action == 'aue_listen'
+      if: ctx.event.action == 'aue_listen'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_logout" }}'
-      if: ctx.event?.action == 'aue_logout'
+      if: ctx.event.action == 'aue_logout'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_pidfortask" }}'
-      if: ctx.event?.action == 'aue_pidfortask'
+      if: ctx.event.action == 'aue_pidfortask'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_ptrace" }}'
-      if: ctx.event?.action == 'aue_ptrace'
+      if: ctx.event.action == 'aue_ptrace'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_setpriority" }}'
-      if: ctx.event?.action == 'aue_setpriority'
+      if: ctx.event.action == 'aue_setpriority'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_socketpair" }}'
-      if: ctx.event?.action == 'aue_socketpair'
+      if: ctx.event.action == 'aue_socketpair'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_taskforpid" }}'
-      if: ctx.event?.action == 'aue_taskforpid'
+      if: ctx.event.action == 'aue_taskforpid'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_wait4" }}'
-      if: ctx.event?.action == 'aue_wait4'
+      if: ctx.event.action == 'aue_wait4'
 on_failure:
   - set:
       field: event.kind

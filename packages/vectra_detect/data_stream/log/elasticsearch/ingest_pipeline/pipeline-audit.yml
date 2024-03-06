@@ -8,22 +8,22 @@ processors:
       field: event.category
       value: session
       allow_duplicates: false
-      if: ctx.json?.message != null && ctx.json.message.contains('session')
+      if: ctx.json?.message?.contains('session') == true
   - append:
       field: event.category
       value: authentication
       allow_duplicates: false
-      if: ctx.json?.message != null && (ctx.json.message.contains('authentication') || ctx.json.message.contains('log in'))
+      if: ctx.json?.message?.contains('authentication') == true || ctx.json?.message?.contains('log in') == true
   - append:
       field: event.category
       value: configuration
       allow_duplicates: false
-      if: ctx.json?.message != null && ctx.json.message.contains('configuration')
+      if: ctx.json?.message?.contains('configuration') == true
   - append:
       field: event.type
       value: end
       allow_duplicates: false
-      if: ctx.json?.message != null && (ctx.json.message.contains('timeout') || ctx.json.message.contains('log in'))
+      if: ctx.json?.message?.contains('timeout') == true || ctx.json?.message?.contains('log in') == true
   - rename:
       field: json.result
       target_field: vectra_detect.log.result
@@ -31,15 +31,15 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx.vectra_detect?.log?.result != null && ['success', 'true'].contains(ctx.vectra_detect.log.result.toLowerCase())
+      if: "'success'.equalsIgnoreCase(ctx.vectra_detect?.log?.result) || 'true'.equalsIgnoreCase(ctx.vectra_detect?.log?.result)"
   - set:
       field: event.outcome
       value: failure
-      if: ctx.vectra_detect?.log?.result != null && ['failure', 'false'].contains(ctx.vectra_detect.log.result.toLowerCase())
+      if: "'failure'.equalsIgnoreCase(ctx.vectra_detect?.log?.result) || 'false'.equalsIgnoreCase(ctx.vectra_detect?.log?.result)"
   - set:
       field: event.outcome
       value: unknown
-      if: ctx.vectra_detect?.log?.result != null && ['pending'].contains(ctx.vectra_detect.log.result.toLowerCase())
+      if: "'pending'.equalsIgnoreCase(ctx.vectra_detect?.log?.result)"
   - rename:
       field: json.dvchost
       target_field: vectra_detect.log.dvchost

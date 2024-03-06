@@ -8,17 +8,17 @@ This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 By default only {{ url "filebeat-input-filestream-parsers" "container parser" }} is enabled. Additional log parsers can be added as an advanced options configuration.
 
 
-## Rerouting based on pod annotations
+## Rerouting and preserve original event based on pod annotations
 
-You can customize the routing of container logs events and sending them to different datasets and namespaces using pods' annotations.
+You can customize the routing of container logs events and sending them to different datasets and namespaces,
+as well as enable `preserve_original_event` based on using pods' annotations.
 
-Routing customization can happen at:
+Customization can happen at:
 
 - pod definition time, e.g., using a deployment.
 - pod runtime, annotating pods using `kubectl`.
 
-
-### Set routing at pod definition time
+### Set at pod definition time
 
 Here is an example of an Nginx deployment where we set both `elastic.co/dataset` and `elastic.co/namespace` annotations to route the container logs to specific datasets and namespace, respectively.
 
@@ -38,6 +38,7 @@ spec:
       annotations:
         elastic.co/dataset: kubernetes.container_logs.nginx
         elastic.co/namespace: nginx
+        elastic.co/preserve_original_event: "true"
       labels:
         app: nginx
         app.kubernetes.io/name: myservice
@@ -51,10 +52,10 @@ spec:
             - containerPort: 80
 ```
 
+### Set at runtime
 
-### Set routing at runtime
-
-Suppose you want to change the container logs routing on a running container. In that case, you can annotate the pod using `kubectl`, and the integration will apply it immediately sending all the following documents to the new destination:
+Suppose you want to change the container logs routing and enable `preserve_original_event` on a running container.
+In that case, you can annotate the pod using `kubectl`, and the integration will apply it immediately sending all the following documents to the new destination:
 
 Here is an example where we route the container logs for a pod running the Elastic Agent to the `kubernetes.container_logs.agents` dataset:
 
@@ -68,19 +69,26 @@ Here's a similar example to change the namespace on a pod running Nginx:
 kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/namespace=nginx
 ```
 
-You can restore the standard routing by removing the annotations:
+Here is an example to enable `preserve_original_event` on a pod running Nginx:
+
+```shell
+kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/preserve_original_event=true
+```
+
+You can restore the standard settings by removing the annotations:
 
 ```shell
 kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/dataset-
 kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/namespace-
+kubectl annotate pods elastic-agent-managed-daemonset-6p22g elastic.co/preserve_original_event-
 ```
 
 ### Annotations Reference
 
 Here are the annotations available to customize routing:
 
-
-| Label                  | Description                                              |
-| ---------------------- | -------------------------------------------------------- |
-| `elastic.co/dataset`   | Defines the target data stream's dataset for this pod.   |
-| `elastic.co/namespace` | Defines the target data stream's namespace for this pod. |
+| Label                                | Description                                                                                    |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `elastic.co/dataset`                 | Defines the target data stream's dataset for this pod.                                         |
+| `elastic.co/namespace`               | Defines the target data stream's namespace for this pod.                                       |
+| `elastic.co/preserve_original_event` | Enables 'preserve_original_event' for this pod. Use string 'true' (case-insensitive) to enable |

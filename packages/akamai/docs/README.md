@@ -41,7 +41,13 @@ See [Akamai API get started](https://techdocs.akamai.com/siem-integration/refere
 | akamai.siem.response.headers | HTTP response headers | flattened |
 | akamai.siem.rule_actions | Actions taken for this request. | keyword |
 | akamai.siem.rule_tags | The set of categories for the triggered rule. | keyword |
-| akamai.siem.rules | Rules triggered by this request | nested |
+| akamai.siem.rules.ruleActions | Actions of rules that triggered for this request. | keyword |
+| akamai.siem.rules.ruleData | User data of rules that triggered for this request. | keyword |
+| akamai.siem.rules.ruleMessages | Messages of rules that triggered for this request. | keyword |
+| akamai.siem.rules.ruleSelectors | Selectors of rules that triggered for this request. | keyword |
+| akamai.siem.rules.ruleTags | Tags of rules that triggered for this request. | keyword |
+| akamai.siem.rules.ruleVersions | Versions of rules triggered for this request. | keyword |
+| akamai.siem.rules.rules | Rules that triggered for this request. | keyword |
 | akamai.siem.slow_post_action | Action taken if a Slow POST attack is detected: W for Warn or A for deny (abort). | keyword |
 | akamai.siem.slow_post_rate | Recorded rate of a detected Slow POST attack. | long |
 | akamai.siem.user_risk.allow | Indicates whether the user is on the allow list. A 0 indicates that the user was not on the list; a 1 indicates that the user was on the list. | long |

@@ -33,36 +33,23 @@ processors:
       ignore_missing: true
   - grok:
       field: event.original
-      patterns:
-        - '%{DATA:_temp_.header} %%{GREEDYDATA:message}'
-        - '%{DATA:_temp_.header} %{NTP_MESSAGE:ntp_message}'
-      pattern_definitions:
-        NTP_MESSAGE: 'NTP %{GREEDYDATA}'
-      tag: dissect_header
-  - grok:
-      field: _temp_.header
       tag: grok_header
       patterns:
-        - '^(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}[:]? )?%{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}: )?%{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}: )?(%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?%{HOSTNAME:log.syslog.hostname}: %{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?%{NUMBER:cisco.ios.sequence}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?%{HOSTNAME:log.syslog.hostname}: (%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
-        - '^(<%{NONNEGINT:log.syslog.priority:long}>)?(?:%{NUMBER:cisco.ios.message_count}: |: )?(%{SYSLOGTIMESTAMP}[:]? )?(%{IP}[:]? )?(%{HOSTNAME:log.syslog.hostname}: )?(%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} %{IP} %{CISCO_HOSTNAME:log.syslog.hostname}: (?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{NUMBER:cisco.ios.sequence}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{CISCO_HOSTNAME:log.syslog.hostname}|%{IP})[:]? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
       pattern_definitions:
+        CISCO_PRIORITY_MSGCOUNT: '<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT:cisco.ios.message_count})?(?:: )?'
         CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
+        CISCO_UPTIME: '[0-9a-zA-Z]+'
+        CISCO_HOSTNAME: '[a-zA-Z][0-9a-zA-Z-]{0,61}[0-9a-zA-Z]?'
         CISCO_TZ: '[a-zA-Z]{1,4}'
-      on_failure:
-        - append:
-            field: error.message
-            value: |-
-                Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
-        - remove:
-            field: _temp_.header
-            ignore_missing: true
-            tag: on_failure_remove_header
-
+  - grok:
+      field: _temp_.message
+      tag: grok_message
+      patterns:
+        - '^%%{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:_temp_.generic_message}$'
   - set:
       field: event.sequence
       copy_from: cisco.ios.sequence
@@ -83,41 +70,31 @@ processors:
       ignore_missing: true
       pattern: ' {2,}'
       replacement: ' '
-  # Adding support to map timezone abbreviations that is not supported by Java manually.
-  # If no match is found, it will default back to _conf.tz_offset as before.
-  # If tz_offset is not set, it will default to UTC as before.
   - script:
       lang: painless
       tag: script_timezone
-      if: ctx._temp_?.tz != null && ctx._temp_?.tz != ''
+      description: >-
+        Add support to map timezone abbreviations that are not supported by
+        Java manually. If no match is found, it will default back to
+        _conf.tz_offset as before. If tz_offset is not set, it will default to
+        UTC as before.
+      if:
       source: >-
-          def conf = ctx['_conf'];
-          if (conf == null) return;
-
-          if (conf.tz_offset == null) {
-            conf.tz_offset = 'UTC';
-          }
-          
-          def mappings = conf.tz_map;
-          if (mappings == null) {
-            ctx.event.timezone = conf.tz_offset;
-            return;
-          }
-
-          def tz_log = ctx._temp_.tz;
-          for (def item : mappings) {
-            if (item.tz_short == tz_log) {
-              ctx.event.timezone = item.tz_long;
-              break;
+          if (ctx._temp_?.tz != null && ctx._conf?.tz_map != null) {
+            for (def item : ctx._conf.tz_map) {
+              if (item.tz_short == ctx._temp_.tz) {
+                ctx.event.timezone = item.tz_long;
+                return;
+              }
             }
           }
-          if (ctx.event.timezone == null) {
-            ctx.event.timezone = conf.tz_offset;
+          if (ctx.event?.timezone == null) {
+            if (ctx._conf?.tz_offset != null) {
+              ctx.event.timezone = ctx._conf.tz_offset;
+            } else {
+              ctx.event.timezone = "UTC";
+            }
           }
-  - set:
-      field: event.timezone
-      value: UTC
-      if: ctx.event?.timezone == null
   - date:
       if: ctx?._temp_.cisco_timestamp != null
       field: _temp_.cisco_timestamp
@@ -162,10 +139,10 @@ processors:
       ignore_missing: true
       if: ctx.cisco?.ios?.facility == 'FW' && ctx.event?.code == 'DROP_PKT'
   - rename:
-      field: ntp_message
+      field: _temp_.generic_message
       target_field: message
-      tag: rename_ntp_message
-      if: ctx.ntp_message != null
+      tag: rename_generic_message
+      if: ctx._temp_?.generic_message != null
   - convert:
       field: event.severity
       type: long

@@ -239,25 +239,25 @@ processors:
     value: Up/Pending
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.json?.current_state?.contains("0")
+    if: ctx.json?.current_state?.contains("0") == true
 - set:
     field: nagios_xi.service.current_state
     value: Warning
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.json?.current_state?.contains("1")
+    if: ctx.json?.current_state?.contains("1") == true
 - set:
     field: nagios_xi.service.current_state
     value: Critical
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.json?.current_state?.contains("2")
+    if: ctx.json?.current_state?.contains("2") == true
 - set:
     field: nagios_xi.service.current_state
     value: Unknown
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.json?.current_state?.contains("3")
+    if: ctx.json?.current_state?.contains("3") == true
 - rename:
     field: json.has_been_checked
     target_field: nagios_xi.service.has_been_checked
@@ -395,13 +395,13 @@ processors:
     override: true
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.check_command?.contains("check_local_users")
+    if: ctx.nagios_xi?.service?.check_command?.contains("check_local_users") == true
 - dissect:
     field: nagios_xi.service.current_users.performance_data
     pattern: users=%{nagios_xi.service.current_users.users};%{}
     ignore_missing: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("current_users")
+    if: ctx.nagios_xi?.service?.containsKey("current_users") == true
 - convert:
     field: nagios_xi.service.current_users.users
     type: double
@@ -412,7 +412,7 @@ processors:
     value: nagios_xi.current_users
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("current_users")
+    if: ctx.nagios_xi?.service?.containsKey("current_users") == true
 
 - set:
     copy_from: nagios_xi.service.temp
@@ -420,13 +420,13 @@ processors:
     override: true
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.check_command?.contains("check_local_load")
+    if: ctx.nagios_xi?.service?.check_command?.contains("check_local_load") == true
 - dissect:
     field: nagios_xi.service.current_load.performance_data
     pattern: load1=%{nagios_xi.service.current_load.load1};%{?}load5=%{nagios_xi.service.current_load.load5};%{?}load15=%{nagios_xi.service.current_load.load15};%{?}
     ignore_missing: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("current_load")
+    if: ctx.nagios_xi?.service?.containsKey("current_load") == true
 - convert:
     field: nagios_xi.service.current_load.load1
     type: double
@@ -447,7 +447,7 @@ processors:
     value: nagios_xi.current_load
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("current_load")
+    if: ctx.nagios_xi?.service?.containsKey("current_load") == true
 
 - set:
     copy_from: nagios_xi.service.temp
@@ -455,13 +455,17 @@ processors:
     override: true
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.check_command?.contains("check_ssh") || ctx?.nagios_xi?.service?.check_command?.contains("check_xi_service_ssh")
+    if: >-
+      ctx.nagios_xi?.service?.check_command != null && (
+        ctx.nagios_xi.service.check_command?.contains("check_ssh") ||
+        ctx.nagios_xi.service.check_command?.contains("check_xi_service_ssh")
+      )
 - dissect:
     field: nagios_xi.service.ssh.performance_data
     pattern: time=%{nagios_xi.service.ssh.time}s%{}
     ignore_missing: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("ssh")
+    if: ctx.nagios_xi?.service?.containsKey("ssh") == true
 - convert:
     field: nagios_xi.service.ssh.time
     type: double
@@ -472,7 +476,7 @@ processors:
     value: nagios_xi.ssh
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("ssh")
+    if: ctx.nagios_xi?.service?.containsKey("ssh") == true
 
 - set:
     copy_from: nagios_xi.service.temp
@@ -480,13 +484,17 @@ processors:
     override: true
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.check_command?.contains("check_ping") || ctx?.nagios_xi?.service?.check_command?.contains("check_xi_service_ping")
+    if: >-
+      ctx.nagios_xi?.service?.check_command != null && (
+        ctx.nagios_xi.service.check_command?.contains("check_ping") ||
+        ctx.nagios_xi.service.check_command?.contains("check_xi_service_ping")
+      )
 - dissect:
     field: nagios_xi.service.ping.performance_data
     pattern: rta=%{nagios_xi.service.ping.rta}ms;%{?}pl=%{nagios_xi.service.ping.pl}%;%{?}
     ignore_missing: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("ping")
+    if: ctx.nagios_xi?.service?.containsKey("ping") == true
 - convert:
     field: nagios_xi.service.ping.rta
     type: double
@@ -502,7 +510,7 @@ processors:
     value: nagios_xi.ping
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("ping")
+    if: ctx.nagios_xi?.service?.containsKey("ping") == true
 
 - set:
     copy_from: nagios_xi.service.temp
@@ -510,13 +518,13 @@ processors:
     override: true
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.check_command?.contains("check_local_swap")
+    if: ctx.nagios_xi?.service?.check_command?.contains("check_local_swap") == true
 - dissect:
     field: nagios_xi.service.swap_usage.performance_data
     pattern: swap=%{nagios_xi.service.swap_usage.free_swap}MB;%{};%{};%{};%{nagios_xi.service.swap_usage.total_swap}
     ignore_missing: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("swap_usage")
+    if: ctx.nagios_xi?.service?.containsKey("swap_usage") == true
 - convert:
     field: nagios_xi.service.swap_usage.free_swap
     type: long
@@ -529,7 +537,7 @@ processors:
     ignore_failure: true
 - script:
     source: |
-        if(ctx?.nagios_xi?.service?.containsKey("swap_usage")) {
+        if(ctx.nagios_xi?.service?.containsKey("swap_usage") == true) {
             ctx.nagios_xi.service.swap_usage.used_swap = ctx.nagios_xi.service.swap_usage.total_swap - ctx.nagios_xi.service.swap_usage.free_swap
         }
     ignore_failure: true
@@ -538,7 +546,7 @@ processors:
     value: nagios_xi.swap_usage
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("swap_usage")
+    if: ctx.nagios_xi?.service?.containsKey("swap_usage") == true
 
 - set:
     copy_from: nagios_xi.service.temp
@@ -546,13 +554,13 @@ processors:
     override: true
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.check_command?.contains("check_local_procs")
+    if: ctx.nagios_xi?.service?.check_command?.contains("check_local_procs") == true
 - dissect:
     field: nagios_xi.service.process.performance_data
     pattern: procs=%{nagios_xi.service.process.total};%{}
     ignore_missing: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("process")
+    if: ctx.nagios_xi?.service?.containsKey("process") == true
 - convert:
     field: nagios_xi.service.process.total
     type: double
@@ -563,7 +571,7 @@ processors:
     value: nagios_xi.process
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("process")
+    if: ctx.nagios_xi?.service?.containsKey("process") == true
 
 - set:
     copy_from: nagios_xi.service.temp
@@ -571,13 +579,17 @@ processors:
     override: true
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.check_command?.contains("check_http") || ctx?.nagios_xi?.service?.check_command?.contains("check_xi_service_http")
+    if: >-
+      ctx.nagios_xi?.service?.check_command != null && (
+        ctx.nagios_xi.service.check_command?.contains("check_http") ||
+        ctx.nagios_xi.service.check_command?.contains("check_xi_service_http")
+      )
 - dissect:
     field: nagios_xi.service.http.performance_data
     pattern: time=%{nagios_xi.service.http.time}s;;;%{?un}size=%{nagios_xi.service.http.size}B;%{?}
     ignore_missing: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("http")
+    if: ctx.nagios_xi?.service?.containsKey("http") == true
 - convert:
     field: nagios_xi.service.http.time
     type: double
@@ -593,7 +605,7 @@ processors:
     value: nagios_xi.http
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("http")
+    if: ctx.nagios_xi?.service?.containsKey("http") == true
 
 - set:
     copy_from: nagios_xi.service.temp
@@ -601,13 +613,13 @@ processors:
     override: true
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.check_command?.contains("check_local_disk")
+    if: ctx.nagios_xi?.service?.check_command?.contains("check_local_disk") == true
 - dissect:
     field: nagios_xi.service.root_partition.performance_data
     pattern: "%{?}=%{nagios_xi.service.root_partition.used_space}M%{};%{};%{};%{};%{nagios_xi.service.root_partition.total_space}"
     ignore_missing: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("root_partition")
+    if: ctx.nagios_xi?.service?.containsKey("root_partition") == true
 - convert:
     field: nagios_xi.service.root_partition.total_space
     type: long
@@ -620,7 +632,7 @@ processors:
     ignore_failure: true
 - script:
     source: |
-        if(ctx?.nagios_xi?.service?.containsKey("root_partition")) {
+        if(ctx.nagios_xi?.service?.containsKey("root_partition") == true) {
             ctx.nagios_xi.service.root_partition.free_space = ctx.nagios_xi.service.root_partition.total_space - ctx.nagios_xi.service.root_partition.used_space
         }
     ignore_failure: true
@@ -629,22 +641,32 @@ processors:
     value: nagios_xi.root_partition
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.nagios_xi?.service?.containsKey("root_partition")
+    if: ctx.nagios_xi?.service?.containsKey("root_partition") == true
 
 - set:
     field: event.dataset
     value: nagios_xi.custom
     ignore_empty_value: true
     ignore_failure: true
-    if: '!(ctx?.nagios_xi?.service?.containsKey("current_users") || ctx?.nagios_xi?.service?.containsKey("current_load") || ctx?.nagios_xi?.service?.containsKey("ssh") || ctx?.nagios_xi?.service?.containsKey("ping") || ctx?.nagios_xi?.service?.containsKey("swap_usage") || ctx?.nagios_xi?.service?.containsKey("process") || ctx?.nagios_xi?.service?.containsKey("http") || ctx?.nagios_xi?.service?.containsKey("root_partition"))'
+    if: >-
+      ctx.nagios_xi?.service == null || !(
+        ctx.nagios_xi.service.containsKey("current_users") ||
+        ctx.nagios_xi.service.containsKey("current_load") ||
+        ctx.nagios_xi.service.containsKey("ssh") ||
+        ctx.nagios_xi.service.containsKey("ping") ||
+        ctx.nagios_xi.service.containsKey("swap_usage") ||
+        ctx.nagios_xi.service.containsKey("process") ||
+        ctx.nagios_xi.service.containsKey("http") ||
+        ctx.nagios_xi.service.containsKey("root_partition")
+      )
 - set:
     copy_from: nagios_xi.service.temp
     field: nagios_xi.service.custom
     override: true
     ignore_empty_value: true
     ignore_failure: true
-    if: ctx?.event?.dataset?.contains("nagios_xi.custom")
-    
+    if: ctx.event?.dataset?.contains("nagios_xi.custom") == true
+
 - set:
     field: event.kind
     value: metric
@@ -681,7 +703,7 @@ processors:
 
 - remove:
     field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
     ignore_failure: true
     ignore_missing: true
 

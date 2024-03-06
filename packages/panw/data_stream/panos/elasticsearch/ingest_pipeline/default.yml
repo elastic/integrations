@@ -330,6 +330,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      if: ctx.panw?.panos?.parent_session?.start_time != null
+      field: session.start_time
+      value: '{{{panw.panos.parent_session.start_time}}}'
 
 # convert IP fields as the output of the CSV processor is always a string.
   - convert:

@@ -12,7 +12,6 @@ processors:
   - json:
       field: event.original
       target_field: resp
-      ignore_failure: true
   - remove:
       field: json
       if: ctx.input?.type == 'http_endpoint'
@@ -95,7 +94,6 @@ processors:
       value: '{{{source.nat.ip}}}'
       if: ctx.source?.nat?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - convert:
       field: json.sip
       target_field: destination.ip
@@ -112,7 +110,6 @@ processors:
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - convert:
       field: json.reqsize
       target_field: http.request.bytes
@@ -194,36 +191,40 @@ processors:
         }
   - uri_parts:
       field: json.url
+      if: ctx.json?.url != null && ctx.json.url != ''
       on_failure:
         - set:
             field: url.original
             value: '{{{json.eurl}}}'
-            if: ctx.json?.eurl != null
-            ignore_failure: true
+            if: ctx.json?.eurl != null && ctx.json.eurl != ''
   - set:
       field: url.full
       value: '{{{url.original}}}'
-      ignore_failure: true
+      if: ctx.url?.original != null && ctx.url.original != ''
   - urldecode:
       field: url.original
       ignore_missing: true
-      ignore_failure: true
+      if: ctx.url?.original != null && ctx.url.original != ''
   - urldecode:
       field: json.eua
       ignore_missing: true
-      ignore_failure: true
+      if: ctx.json?.eua != null && ctx.json.eua != ''
   - user_agent:
       field: json.eua
+      if: ctx.json?.eua != null && ctx.json.eua != ''
       on_failure:
         - set:
             field: user_agent.original
             value: '{{{json.eua}}}'
-            if: ctx.json?.eurl != null
-            ignore_failure: true
+            if: ctx.json?.eua != null && ctx.json.eua != ''
   - rename:
       field: json.login
-      target_field: user.email
+      target_field: user.id
       ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: user.id
+      if: ctx.user?.id != null && ctx.user.id.contains('@')
   - dissect:
       if: ctx.user?.email != null && ctx.user.email.contains('@')
       field: user.email
@@ -233,7 +234,6 @@ processors:
       value: '{{{json.deviceowner}}}'
       if: ctx.json?.deviceowner != null
       allow_duplicates: false
-      ignore_failure: true
   - foreach:
       field: user.name
       if: ctx.user?.name instanceof List
@@ -243,6 +243,16 @@ processors:
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null && !(ctx.user.name instanceof List)
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null && ctx.user.id != ''
   - rename:
       field: json.action
       target_field: event.action
@@ -349,7 +359,6 @@ processors:
       value: '{{{zscaler_zia.web.device.hostname}}}'
       if: ctx.zscaler_zia?.web?.device?.hostname != null
       allow_duplicates: false
-      ignore_failure: true
   - rename:
       field: json.bwthrottle
       target_field: zscaler_zia.web.bandwidth_throttle
@@ -370,7 +379,6 @@ processors:
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
-      ignore_failure: true
   - rename:
       field: json.ehost
       target_field: zscaler_zia.web.encoded_host
@@ -388,7 +396,6 @@ processors:
       value: '{{{file.hash.md5}}}'
       if: ctx.file?.hash?.md5 != null
       allow_duplicates: false
-      ignore_failure: true
   - set:
       field: file.name
       value: '{{{json.filename}}}'
@@ -413,7 +420,6 @@ processors:
       value: '{{{destination.domain}}}'
       if: ctx.destination?.domain != null
       allow_duplicates: false
-      ignore_failure: true
   - rename:
       field: json.fileclass
       target_field: zscaler_zia.web.file.class
@@ -499,7 +505,6 @@ processors:
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
       ignore_missing: true
 on_failure:
   - set:

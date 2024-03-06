@@ -654,6 +654,7 @@ An example event for `panos` looks as following:
 | server.port | Port of the server. | long |
 | server.user.name | Short name or login of the user. | keyword |
 | server.user.name.text | Multi-field of `server.user.name`. | match_only_text |
+| session.start_time | Time of session start. | date |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |

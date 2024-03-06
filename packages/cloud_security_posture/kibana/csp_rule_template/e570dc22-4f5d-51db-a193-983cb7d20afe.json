@@ -1,0 +1,38 @@
+{
+    "id": "e570dc22-4f5d-51db-a193-983cb7d20afe",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/security-center/security-center-enable-auditing-on-sql-servers\n2. https://docs.microsoft.com/en-us/powershell/module/azurerm.sql/get-azurermsqlserverauditing?view=azurermps-5.2.0\n3. https://docs.microsoft.com/en-us/powershell/module/azurerm.sql/set-azurermsqlserverauditingpolicy?view=azurermps-5.2.0\n4. https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auditing\n5. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-logging-threat-detection#lt-3-enable-logging-for-security-investigation",
+            "id": "e570dc22-4f5d-51db-a193-983cb7d20afe",
+            "name": "Ensure that 'Auditing' is set to 'On'",
+            "profile_applicability": "* Level 1",
+            "description": "Enable auditing on SQL Servers.",
+            "rationale": "The Azure platform allows a SQL server to be created as a service.\nEnabling auditing at the server level ensures that all existing and newly created databases on the SQL server instance are audited.\n\nAuditing policy applied on the SQL database does not override auditing policy and settings applied on the particular SQL server where the database is hosted.\n\nAuditing tracks database events and writes them to an audit log in the Azure storage account.\nIt also helps to maintain regulatory compliance, understand database activity, and gain insight into discrepancies and anomalies that could indicate business concerns or suspected security violations.",
+            "audit": "**From Azure Portal**\n\n1. Go to `SQL servers`\n2. For each server instance\n3. Click on `Auditing`\n4. Ensure that `Enable Azure SQL Auditing` is set to `On`\n\n**From PowerShell**\n\nGet the list of all SQL Servers\n\n```\nGet-AzSqlServer\n```\n\nFor each Server\n\n```\nGet-AzSqlServerAudit -ResourceGroupName <ResourceGroupName> -ServerName <SQLServerName>\n```\n\nEnsure that `BlobStorageTargetState`, `EventHubTargetState`, or `LogAnalyticsTargetState` is set to `Enabled`.",
+            "remediation": "**From Azure Portal**\n\n1. Go to `SQL servers`\n2. Select the SQL server instance\n3. Under `Security`, click `Auditing`\n4. Click the toggle next to `Enable Azure SQL Auditing`\n5. Select an Audit log destination\n6. Click `Save`\n\n**From PowerShell**\n\nGet the list of all SQL Servers\n\n```\nGet-AzSqlServer\n```\n\nFor each Server, enable auditing and set the retention for at least 90 days.\n\n**Log Analytics Example**\n```\nSet-AzSqlServerAudit -ResourceGroupName <resource group name> -ServerName <SQL Server name> -RetentionInDays <Number of Days to retain the audit logs, should be 90days minimum> -LogAnalyticsTargetState Enabled -WorkspaceResourceId \"/subscriptions/<subscription ID>/resourceGroups/insights-integration/providers/Microsoft.OperationalInsights/workspaces/<workspace name>\n```\n\n**Event Hub Example**\n\n```\nSet-AzSqlServerAudit -ResourceGroupName \"<resource group name>\" -ServerName \"<SQL Server name>\" -EventHubTargetState Enabled -EventHubName \n \"<Event Hub name>\" -EventHubAuthorizationRuleResourceId \"<Event Hub Authorization Rule Resource ID>\"\n```\n\n**Blob Storage Example***\n\n```\nSet-AzSqlServerAudit -ResourceGroupName \"<resource group name>\" -ServerName \"<SQL Server name>\" -BlobStorageTargetState Enabled \n -StorageAccountResourceId \"/subscriptions/<subscription_ID>/resourceGroups/<Resource_Group>/providers/Microsoft.Stora\n ge/storageAccounts/<Storage Account name>\"\n```",
+            "section": "SQL Server - Auditing",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.1.1",
+                "SQL Server - Auditing"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.1.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_1_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
