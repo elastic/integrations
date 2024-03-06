@@ -35,10 +35,10 @@ program: |
     !state.want_more ?
       request("GET", state.url + "/intel/combined/indicators/v1?offset=0&sort=_marker.asc&limit=" + string(state.batch_size) + '&filter=_marker:>"' + (
         has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-          string(state.cursor.last_timestamp) + '"'
+          string(int(state.cursor.last_timestamp))
         :
-          string(int(now - duration(state.initial_interval))) + '"'
-      ))
+          string(int(now - duration(state.initial_interval)))
+      ) + '"')
     :
       request("GET", state.url + string(state.next_url[0]))
   ).do_request().as(resp,
