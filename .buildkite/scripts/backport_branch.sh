@@ -118,6 +118,7 @@ updateBackportBranchContents() {
       git add $JENKINS_FOLDER_PATH
     fi
     git add $PACKAGES_FOLDER_PATH/
+    git status
     git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
     git push origin $BACKPORT_BRANCH_NAME
   fi
