@@ -184,4 +184,7 @@ MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
 echo "Adding CI files into the branch ${BACKPORT_BRANCH_NAME}"
 updateBackportBranchContents
 
+if [ "${DRY_RUN}" == "true" ]; then
+  MSG="[DRY_RUN] ${MSG}."
+fi
 buildkite-agent annotate "$MSG" --style "success"
