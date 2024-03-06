@@ -4,11 +4,7 @@ This integration is used to collect metrics from [etcd v2 and v3 instances](http
 
 It periodically fetches metrics from [etcd metrics APIs](https://etcd.io/docs/v3.1/op-guide/monitoring/). 
 
-## Compatibility
-
-The etcd package was tested with etcd `3.5.x`.
-
-## Metrics
+## Data streams
 
 For etcd v2, metrics are collected through the etcd v2 APIs, whereas for v3, they are fetched from the `/metrics` endpoint.
 
@@ -16,6 +12,19 @@ When using v3, datasets are bundled within `metrics` data stream, while for v2, 
 
 The etcd v2 APIs are not enabled by default. However, you can enable etcd v2 APIs when using etcd v3 and above by utilizing the --enable-v2 flag, provided it is supported.
 
+## Compatibility
+
+The etcd package was tested with etcd `3.5.x`.
+
+## Requirements
+
+In order to ingest data from etcd, you must know the instance host.
+
+Host Configuration Format: `http[s]://host:port`
+
+Example Host Configuration: `http://localhost:2379`
+
+## Metrics reference
 
 ### metrics
 
