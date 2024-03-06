@@ -84,6 +84,7 @@ removeOtherPackages() {
 updateBackportBranchContents() {
   local BUILDKITE_FOLDER_PATH=".buildkite"
   local JENKINS_FOLDER_PATH=".ci"
+  local files_cached_num=""
   if git ls-tree -d --name-only main:.ci >/dev/null 2>&1; then
     git checkout $BACKPORT_BRANCH_NAME
     echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
@@ -108,18 +109,26 @@ updateBackportBranchContents() {
   git config --global user.name "${GITHUB_USERNAME_SECRET}"
   git config --global user.email "${GITHUB_EMAIL_SECRET}"
 
+  echo "Commiting"
+  git add $BUILDKITE_FOLDER_PATH
+  if [ -d "${JENKINS_FOLDER_PATH}" ]; then
+    git add $JENKINS_FOLDER_PATH
+  fi
+  git add $PACKAGES_FOLDER_PATH/
+  git status
+
+  files_cached_num=$(git diff --name-only --cached | wc -l)
+  if [ "${files_cached_num}" -gt 0 ]; then
+    git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
+  else
+    echo "Nothing to commit, skip."
+  fi
+
   if [ "$DRY_RUN" == "true" ];then
     echo "DRY_RUN mode, nothing will be pushed."
     git diff $SOURCE_BRANCH...$BACKPORT_BRANCH_NAME
   else
-    echo "Commiting and pushing..."
-    git add $BUILDKITE_FOLDER_PATH
-    if [ -d "${JENKINS_FOLDER_PATH}" ]; then
-      git add $JENKINS_FOLDER_PATH
-    fi
-    git add $PACKAGES_FOLDER_PATH/
-    git status
-    git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
+    echo "Pushing..."
     git push origin $BACKPORT_BRANCH_NAME
   fi
 }
