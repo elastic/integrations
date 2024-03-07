@@ -5,7 +5,7 @@ run_sonar_scanner() {
     local message=""
     echo "--- Download coverage reports and merge them"
     if ! buildkite-agent artifact download build/test-coverage/coverage-*.xml . ; then
-        message="Error downloading XML files for coverage. Skip coverage."
+        echo "--- :boom: Could not download XML artifacts. Skip coverage."
         buildkite-agent annotate \
             "${message}" \
             --context "ctx-sonarqube-no-files" \
