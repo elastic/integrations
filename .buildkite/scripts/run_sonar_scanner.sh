@@ -2,8 +2,16 @@
 set -euo pipefail
 
 run_sonar_scanner() {
+    local message=""
     echo "--- Download coverage reports and merge them"
-    buildkite-agent artifact download build/test-coverage/coverage-*.xml .
+    if ! buildkite-agent artifact download build/test-coverage/coverage-*.xml . ; then
+        message="Error downloading XML files for coverage. Skip coverage."
+        buildkite-agent annotate \
+            "${message}" \
+            --context "ctx-sonarqube-no-files" \
+            --style "warning"
+        exit 0
+    fi
 
     echo "Merge all coverage reports"
     .buildkite/scripts/merge_xml.sh
