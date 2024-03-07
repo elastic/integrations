@@ -199,6 +199,17 @@ processors:
       field: host.os.platform
       copy_from: sentinel_one_cloud_funnel.event.endpoint.os
       ignore_empty_value: true
+  - set:
+      field: host.os.type
+      copy_from: sentinel_one_cloud_funnel.event.endpoint.os
+      if: >-
+        [
+          'linux',
+          'windows',
+          'macos',
+          'ios',
+          'android'
+        ].contains(ctx.sentinel_one_cloud_funnel?.event?.endpoint?.os)
   - append:
       field: related.hosts
       value: '{{{sentinel_one_cloud_funnel.event.endpoint.os}}}'
@@ -229,6 +240,10 @@ processors:
       field: json.src.process.image.path
       target_field: sentinel_one_cloud_funnel.event.src.process.image.path
       ignore_missing: true
+  - set:
+      field: process.executable
+      copy_from: sentinel_one_cloud_funnel.event.src.process.image.path
+      ignore_empty_value: true
   - rename:
       field: json.src.process.image.md5
       target_field: sentinel_one_cloud_funnel.event.src.process.image.md5
@@ -554,6 +569,19 @@ processors:
       field: process.user.name
       copy_from: sentinel_one_cloud_funnel.event.src.process.user.name
       ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: process.user.name
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      copy_from: process.user.name
+      ignore_empty_value: true
+  - dissect:
+      field: process.user.name
+      pattern: '%{user.domain}\%{user.name}'
+      if: ctx.process?.user?.name?.contains('\\') == true
+      description: "Split user and domain"
   - rename:
       field: json.src.process.eUserName
       target_field: sentinel_one_cloud_funnel.event.src.process.e_user.name
@@ -595,6 +623,10 @@ processors:
       field: json.agent.uuid
       target_field: sentinel_one_cloud_funnel.event.agent.uuid
       ignore_missing: true
+  - set:
+      field: host.id
+      copy_from: sentinel_one_cloud_funnel.event.agent.uuid
+      ignore_empty_value: true
   - rename:
       field: json.agent.version
       target_field: sentinel_one_cloud_funnel.event.agent.version
@@ -1457,6 +1489,10 @@ processors:
       field: json.src.process.parent.image.path
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.image.path
       ignore_missing: true
+  - set:
+      field: process.parent.executable
+      copy_from: sentinel_one_cloud_funnel.event.src.process.parent.image.path
+      ignore_empty_value: true
   - rename:
       field: json.src.process.parent.integrityLevel
       target_field: sentinel_one_cloud_funnel.event.src.process.parent.integrity_level
@@ -1868,6 +1904,14 @@ processors:
       field: json.src.process.signedStatus
       target_field: sentinel_one_cloud_funnel.event.src.process.signed_status
       ignore_missing: true
+  - set:
+      field: process.code_signature.exists
+      value: true
+      if: ctx.sentinel_one_cloud_funnel?.event?.src?.process?.signed_status == 'signed'
+  - set:
+      field: process.code_signature.exists
+      value: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.src?.process?.signed_status == 'unsigned'
   - convert:
       field: json.src.process.tgtFileDeletionCount
       tag: 'convert_json_src_process_tgtFileDeletionCount'
@@ -1976,10 +2020,23 @@ processors:
       field: json.src.process.publisher
       target_field: sentinel_one_cloud_funnel.event.src.process.publisher
       ignore_missing: true
+  - set:
+      field: process.code_signature.subject_name
+      copy_from: sentinel_one_cloud_funnel.event.src.process.publisher
+      ignore_empty_value: true
   - rename:
       field: json.src.process.verifiedStatus
       target_field: sentinel_one_cloud_funnel.event.src.process.verified_status
       ignore_missing: true
+  - set:
+      field: process.code_signature.trusted
+      value: true
+      if: ctx.sentinel_one_cloud_funnel?.event?.src?.process?.verified_status?.contains('verified') == true
+  - set:
+      field: process.code_signature.trusted
+      value: false
+      override: false
+      if: ctx.process?.code_signature?.exists == true
   - rename:
       field: json.driver.certificate.thumbprint
       target_field: sentinel_one_cloud_funnel.event.driver.certificate.thumbprint.value
@@ -2702,6 +2759,96 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      # This must happen after the pipelines since the process pipeline also touches process.command_line.
+      description: Implements Windows-like SplitCommandLine
+      lang: painless
+      if: |-
+        (ctx.process?.command_line != null && ctx.process.command_line != "") || 
+        (ctx.process?.parent?.command_line != null && ctx.process.parent.command_line != "")
+      source: |-
+        // appendBSBytes appends n '\\' bytes to b and returns the resulting slice.
+        def appendBSBytes(StringBuilder b, int n) {
+            for (; n > 0; n--) {
+                b.append('\\');
+            }
+            return b;
+        }
+
+        // readNextArg splits command line string cmd into next
+        // argument and command line remainder.
+        def readNextArg(String cmd) {
+            def b = new StringBuilder();
+            boolean inquote;
+            int nslash;
+            for (; cmd.length() > 0; cmd = cmd.substring(1)) {
+                def c = cmd.charAt(0);
+                if (c == (char)' ' || c == (char)0x09) {
+                    if (!inquote) {
+                        return [
+                            "arg":  appendBSBytes(b, nslash).toString(),
+                            "rest": cmd.substring(1)
+                        ];
+                    }
+                } else if (c == (char)'"') {
+                    b = appendBSBytes(b, nslash/2);
+                    if (nslash%2 == 0) {
+                        // use "Prior to 2008" rule from
+                        // http://daviddeley.com/autohotkey/parameters/parameters.htm
+                        // section 5.2 to deal with double double quotes
+                        if (inquote && cmd.length() > 1 && cmd.charAt(1) == (char)'"') {
+                            b.append(c);
+                            cmd = cmd.substring(1);
+                        }
+                        inquote = !inquote;
+                    } else {
+                        b.append(c);
+                    }
+                    nslash = 0;
+                    continue;
+                } else if (c == (char)'\\') {
+                    nslash++;
+                    continue;
+                }
+                b = appendBSBytes(b, nslash);
+                nslash = 0;
+                b.append(c);
+            }
+            return [
+                "arg":  appendBSBytes(b, nslash).toString(), 
+                "rest": ''
+            ];
+        }
+
+        // commandLineToArgv splits a command line into individual argument
+        // strings, following the Windows conventions documented
+        // at http://daviddeley.com/autohotkey/parameters/parameters.htm#WINARGV
+        // Original implementation found at: https://github.com/golang/go/commit/39c8d2b7faed06b0e91a1ad7906231f53aab45d1
+        def commandLineToArgv(String cmd) {
+            def args = new ArrayList();
+            while (cmd.length() > 0) {
+                if (cmd.charAt(0) == (char)' ' || cmd.charAt(0) == (char)0x09) {
+                    cmd = cmd.substring(1);
+                    continue;
+                }
+                def next = readNextArg(cmd);
+                cmd = next.rest;
+                args.add(next.arg);
+            }
+            return args;
+        }
+
+        def cmd = ctx.process?.command_line;
+        if (cmd != null && cmd != "") {
+          ctx.process.args = commandLineToArgv(cmd);
+          ctx.process.args_count = ctx.process.args.length;
+        }
+
+        def parentCmd = ctx.process?.parent?.command_line;
+        if (parentCmd != null && parentCmd != "") {
+          ctx.process.parent.args = commandLineToArgv(parentCmd);
+          ctx.process.parent.args_count = ctx.process.parent.args.length;
+        }
   - remove:
       field: json
       ignore_missing: true

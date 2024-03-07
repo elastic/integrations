@@ -6,19 +6,48 @@ processors:
       value: [file]
   - set:
       field: event.type
-      value: [info]
-  - set:
-      field: event.type
       value: [creation]
-      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('creat')
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('creat')
   - set:
       field: event.type
       value: [deletion]
-      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('delet')
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('delet')
   - set:
       field: event.type
       value: [change]
-      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && (ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('change') || ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('modif'))
+      if: >-
+        ctx.sentinel_one_cloud_funnel?.event?.type != null &&
+        (
+          ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('change') ||
+          ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('modif') ||
+          ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('rename')
+        )
+  - set:
+      field: event.type
+      value: [info]
+      override: false
+  - set:
+      field: event.action
+      value: [creation]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('creat')
+  - set:
+      field: event.action
+      value: [deletion]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('delet')
+  - set:
+      field: event.action
+      value: [change]
+      if: >-
+        ctx.sentinel_one_cloud_funnel?.event?.type != null &&
+        (
+          ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('change') ||
+          ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('modif')
+        )
+  - set:
+      field: event.action
+      value: [rename]
+      if: >-
+        ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('rename')
   - rename:
       field: json.k8sCluster.containerId
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.id
@@ -152,6 +181,38 @@ processors:
       field: file.path
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.path
       ignore_empty_value: true
+  - rename:
+      field: json.tgt.file.type
+      target_field: sentinel_one_cloud_funnel.event.tgt.file.type
+      ignore_missing: true
+  - set:
+      field: file.type
+      copy_from: sentinel_one_cloud_funnel.event.tgt.file.type
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.file?.path instanceof String && ctx.sentinel_one_cloud_funnel.event.tgt.file.path.length() > 1
+      source: |-
+        def path = ctx.sentinel_one_cloud_funnel.event.tgt.file.path;
+        def idx = path.lastIndexOf("\\");
+        if (idx == -1) {
+          idx = path.lastIndexOf("/");
+        }
+        if (idx > -1) {
+            if (ctx.file == null) {
+                ctx.file = new HashMap();
+            }
+            ctx.file.name = path.substring(idx+1);
+            ctx.file.directory = path.substring(0, idx);
+
+            def extIdx = ctx.file.name.lastIndexOf(".");
+            if (extIdx > -1 && ctx.file.type == "file") {
+                ctx.file.extension = ctx.file.name.substring(extIdx+1);
+            }
+        }
+        if (path.indexOf(':') == 1) {
+          ctx.file.drive_letter = path.substring(0, 1).toUpperCase();
+        }
   - convert:
       field: json.tgt.file.size
       tag: 'convert_json_tgt_file_size'
@@ -166,14 +227,6 @@ processors:
   - set:
       field: file.size
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.size
-      ignore_empty_value: true
-  - rename:
-      field: json.tgt.file.type
-      target_field: sentinel_one_cloud_funnel.event.tgt.file.type
-      ignore_missing: true
-  - set:
-      field: file.type
-      copy_from: sentinel_one_cloud_funnel.event.tgt.file.type
       ignore_empty_value: true
   - convert:
       field: json.src.process.tid
