@@ -8,7 +8,7 @@ This module has been tested against `Alerts API (v6)`, `Audit Log Events (v3)` a
 
 ## Version 1.21+ Update Disclaimer
 Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
-data stream. The default values of files elector regexes have been commented out for this reason. The only reason the global queue now exists is to avoid
+data stream. The default values of file selector regexes have been commented out for this reason. The only reason the global queue now exists is to avoid
 a breaking change while upgrading to version 1.21 and above. A separate SQS queue per data stream should help fix the data loss that's been occurring in the 
 older versions.
 
