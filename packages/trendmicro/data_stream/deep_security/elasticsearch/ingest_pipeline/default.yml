@@ -30,6 +30,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.action
+      tag: set_default_event_action_from_event_name
+      copy_from: cef.name
+      ignore_empty_value: true
+  - gsub:
+      field: event.action
+      pattern: '[^a-zA-Z0-0]'
+      replacement: ' '
+      if: ctx.event?.action != null
   - rename:
       field: cef.device.product
       tag: rename_cef_device_product
