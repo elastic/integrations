@@ -6,7 +6,16 @@ processors:
       value: [authentication]
   - set:
       field: event.type
+      value: [start]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type == 'Login'
+  - set:
+      field: event.type
+      value: [end]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type == 'Logout'
+  - set:
+      field: event.type
       value: [info]
+      override: false
   - rename:
       field: json.event.login.userName
       target_field: sentinel_one_cloud_funnel.event.login.user_name
