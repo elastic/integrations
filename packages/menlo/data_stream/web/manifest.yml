@@ -1,10 +1,10 @@
 title: Collect Menlo Web from Menlo Security API
 type: logs
 streams:
-  - input: httpjson
+  - input: cel
     title: Menlo Web Logs
     description: Collect Menlo Web logs
-    template_path: httpjson.yml.hbs
+    template_path: input.yml.hbs
     vars:
       - name: batch_size
         type: text
@@ -28,6 +28,14 @@ streams:
         multi: false
         required: true
         show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
@@ -35,6 +43,15 @@ streams:
         required: false
         show_user: false
         description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - menlo
+          - forwarded
       - name: preserve_original_event
         required: true
         show_user: true
@@ -51,3 +68,11 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve menlo.web fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false

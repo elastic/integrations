@@ -178,6 +178,11 @@ processors:
       field: "json.event.userid"
       target_field: "user.name"
       ignore_missing: true
+  - append:
+      field: related.user
+      value: "{{{json.event.userid}}}"
+      allow_duplicates: false
+      if: ctx.json?.event.userid != null    
   - rename:
       field: "json.event.protocol"
       target_field: "network.protocol"

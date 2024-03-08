@@ -41,8 +41,8 @@ An example event for `web` looks as following:
 {
     "@timestamp": "2023-11-21T13:12:37.102Z",
     "agent": {
-        "ephemeral_id": "eff1d7c7-f7ee-461c-aa04-d511324f0781",
-        "id": "41685dc6-3783-43a1-b01b-6a8ffb704b4e",
+        "ephemeral_id": "3c8580d2-212a-4726-9143-3e478caecf33",
+        "id": "8603039e-f576-4116-b9cc-0bcc1e1a8875",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -78,7 +78,7 @@ An example event for `web` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "41685dc6-3783-43a1-b01b-6a8ffb704b4e",
+        "id": "8603039e-f576-4116-b9cc-0bcc1e1a8875",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -89,35 +89,12 @@ An example event for `web` looks as following:
             "network",
             "threat"
         ],
-        "created": "2023-12-27T19:23:25.356Z",
         "dataset": "menlo.web",
-        "ingested": "2023-12-27T19:23:28Z",
+        "ingested": "2024-03-08T15:31:01Z",
         "kind": "event",
         "module": "menlo",
         "outcome": "unknown",
         "reason": "a77757d5-d3be-47ab-9394-cfff5887ade4"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "28da52b32df94b50aff67dfb8f1be3d6",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02-42-AC-12-00-07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "6.5.11-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
     },
     "http": {
         "request": {
@@ -128,7 +105,7 @@ An example event for `web` looks as following:
         }
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "menlo": {
         "web": {
@@ -177,6 +154,10 @@ An example event for `web` looks as following:
         },
         "ip": "192.18.1.3"
     },
+    "tags": [
+        "menlo",
+        "forwarded"
+    ],
     "url": {
         "domain": "elastic.co",
         "original": "http://elastic.co/",
@@ -272,6 +253,7 @@ An example event for `web` looks as following:
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | risk.calculated_level | A risk classification level calculated by an internal system as part of entity analytics and entity risk scoring. | keyword |
 | server.geo.country_iso_code | Country ISO code. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
@@ -310,10 +292,10 @@ An example event for `dlp` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-12-27T19:22:33.235Z",
+    "@timestamp": "2024-03-08T15:28:36.988Z",
     "agent": {
-        "ephemeral_id": "42e264a0-d8ae-45b9-8167-9f7a0630e1d6",
-        "id": "41685dc6-3783-43a1-b01b-6a8ffb704b4e",
+        "ephemeral_id": "eb9cb19e-e0ac-4f9f-b510-7bc03d8a386d",
+        "id": "8603039e-f576-4116-b9cc-0bcc1e1a8875",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.10.1"
@@ -327,7 +309,7 @@ An example event for `dlp` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "41685dc6-3783-43a1-b01b-6a8ffb704b4e",
+        "id": "8603039e-f576-4116-b9cc-0bcc1e1a8875",
         "snapshot": false,
         "version": "8.10.1"
     },
@@ -341,7 +323,7 @@ An example event for `dlp` looks as following:
         "created": "2020-03-09T17:16:22.227Z",
         "dataset": "menlo.dlp",
         "id": "a4c2161b3f81a287ec46d3c993a33f3b97ded5fd854fa184e7f50679303111ce",
-        "ingested": "2023-12-27T19:22:36Z",
+        "ingested": "2024-03-08T15:28:39Z",
         "kind": "event",
         "module": "menlo",
         "original": "{\"event\":{\"action\":\"block\",\"alerted\":\"false\",\"categories\":\"Download Sites\",\"ccl_ids\":\"CreditordebitcardnumbersGlobal\",\"ccl_match_counts\":\"1\",\"ccl_scores\":\"1\",\"domain\":\"tinyupload.com\",\"dst_url\":\"http://tinyupload.com/\",\"event_id\":\"a4c2161b3f81a287ec46d3c993a33f3b97ded5fd854fa184e7f50679303111ce\",\"event_time\":\"2020-03-09T17:16:22.227000\",\"file_type\":\"CSV\",\"filename\":\"credit_cards.csv\",\"name\":\"file_upload\",\"product\":\"MSIP\",\"protocol\":\"http\",\"request_type\":\"GET\",\"rule_id\":\"1f3ef32c-ec62-42fb-8cad-e1fee3375099\",\"rule_name\":\"Credit card block rule\",\"severity\":\"5\",\"sha256\":\"fd1aee671d92aba0f9f0a8a6d5c6b843e09c8295ced9bb85e16d97360b4d7b3a\",\"src_url\":\"http://tinyupload.com/\",\"status\":\"dirty\",\"stream_name\":\"/safefile-input/working_file\",\"user_input\":\"false\",\"userid\":\"admin@menlosecurity.com\",\"vendor\":\"Menlo Security\",\"version\":\"2.0\"}}",
@@ -354,35 +336,13 @@ An example event for `dlp` looks as following:
         },
         "name": "credit_cards.csv"
     },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "28da52b32df94b50aff67dfb8f1be3d6",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02-42-AC-12-00-07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "6.5.11-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
-    },
     "http": {
         "request": {
             "method": "GET"
         }
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "menlo": {
         "dlp": {
@@ -407,6 +367,10 @@ An example event for `dlp` looks as following:
         "id": "1f3ef32c-ec62-42fb-8cad-e1fee3375099",
         "name": "Credit card block rule"
     },
+    "tags": [
+        "menlo",
+        "forwarded"
+    ],
     "url": {
         "domain": "tinyupload.com",
         "original": "http://tinyupload.com/",
@@ -456,6 +420,7 @@ An example event for `dlp` looks as following:
 | observer.product | The product name of the observer. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | tags | User defined tags. | keyword |
