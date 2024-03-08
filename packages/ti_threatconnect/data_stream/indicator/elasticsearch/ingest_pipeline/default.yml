@@ -39,7 +39,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
-        - json.id
+        - json.summary
         - json.lastModified
       target_field: _id
       ignore_missing: true
@@ -1641,11 +1641,6 @@ processors:
       target_field: threat_connect.indicator.id
       type: string
       ignore_missing: true
-  - set:
-      field: event.id
-      tag: set_event_id_from_indicator_id
-      copy_from: threat_connect.indicator.id
-      ignore_empty_value: true
   - rename:
       field: json.investigationLinks
       tag: rename_investigationLinks
@@ -1980,6 +1975,11 @@ processors:
       tag: rename_summary
       target_field: threat_connect.indicator.summary
       ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_indicator_summary
+      copy_from: threat_connect.indicator.summary
+      ignore_empty_value: true
   - foreach:
       field: json.tags.data
       if: ctx.json?.tags?.data != null
