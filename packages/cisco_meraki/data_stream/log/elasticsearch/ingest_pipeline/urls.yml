@@ -73,6 +73,15 @@ processors:
 - user_agent:
     field: user_agent.original
     ignore_missing: true
+# url processing
+- uri_parts:
+    field: url.original
+    target_field: url
+    if: ctx.url?.original != null && ctx.url.original != ""
+- registered_domain:
+    field: url.domain
+    target_field: url
+    ignore_missing: true
 on_failure:
 - set:
     field: event.kind
