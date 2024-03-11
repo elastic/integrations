@@ -88,10 +88,10 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-03-07T04:54:03.747Z",
+    "@timestamp": "2024-03-11T21:06:28.277Z",
     "agent": {
-        "ephemeral_id": "648c8e7c-cf0a-4b7f-aca2-08a70160d7d0",
-        "id": "069f6385-0641-4b35-8f50-779fb950f1fe",
+        "ephemeral_id": "798665d1-a592-4f07-8517-f7bdcdbda09f",
+        "id": "b7f7fd67-e199-4daf-b640-92e89c091cc6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.1"
@@ -105,7 +105,7 @@ An example event for `asset_host_detection` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "069f6385-0641-4b35-8f50-779fb950f1fe",
+        "id": "b7f7fd67-e199-4daf-b640-92e89c091cc6",
         "snapshot": false,
         "version": "8.12.1"
     },
@@ -115,7 +115,7 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2024-03-07T04:54:15Z",
+        "ingested": "2024-03-11T21:06:40Z",
         "kind": "alert",
         "type": [
             "info"
@@ -144,25 +144,55 @@ An example event for `asset_host_detection` looks as following:
             },
             "tracking_method": "IP",
             "vulnerability": {
+                "affect": {
+                    "running": {
+                        "kernel": "0"
+                    }
+                },
                 "first": {
-                    "found_datetime": "2023-06-28T06:04:26.000Z"
+                    "found_datetime": "2021-02-05T04:50:45.000Z"
                 },
                 "is_disabled": false,
                 "is_ignored": false,
                 "last": {
-                    "found_datetime": "2023-07-03T06:23:47.000Z",
-                    "processed_datetime": "2023-07-03T06:25:17.000Z",
-                    "test_datetime": "2023-07-03T06:23:47.000Z",
-                    "update_datetime": "2023-07-03T06:25:17.000Z"
+                    "fixed_datetime": "2022-12-14T06:52:57.000Z",
+                    "found_datetime": "2024-03-08T20:15:41.000Z",
+                    "processed_datetime": "2024-03-08T20:15:41.000Z",
+                    "test_datetime": "2024-03-08T20:15:41.000Z",
+                    "update_datetime": "2024-03-08T20:15:41.000Z"
                 },
-                "qid": "91681",
-                "severity": 5,
+                "qds": {
+                    "severity": "LOW",
+                    "text": "35"
+                },
+                "qds_factors": [
+                    {
+                        "name": "CVSS",
+                        "text": "7.7"
+                    },
+                    {
+                        "name": "CVSS_version",
+                        "text": "v3.x"
+                    },
+                    {
+                        "name": "epss",
+                        "text": "0.00232"
+                    },
+                    {
+                        "name": "CVSS_vector",
+                        "text": "AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H"
+                    }
+                ],
+                "qid": "197595",
+                "results": "Package Installed Version Required Version\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092",
+                "severity": 3,
                 "ssl": "0",
                 "status": "Active",
                 "times": {
-                    "found": 11
+                    "found": 5393
                 },
-                "type": "Confirmed"
+                "type": "Confirmed",
+                "unique_vuln_id": "5555555555"
             }
         }
     },
@@ -274,6 +304,7 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.vulnerability.times.found |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.times.reopened |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.type |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.unique_vuln_id |  | keyword |
 | tags | User defined tags. | keyword |
 
 
@@ -289,8 +320,8 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "4b9701ba-baa8-4dad-9c50-8a7ea93d1a58",
-        "id": "2fe75851-fb2d-4304-b410-3b1195ac0a44",
+        "ephemeral_id": "59f8cd8a-60d4-4773-a9bb-4603e5bbfb75",
+        "id": "b7f7fd67-e199-4daf-b640-92e89c091cc6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.1"
@@ -304,7 +335,7 @@ An example event for `knowledge_base` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2fe75851-fb2d-4304-b410-3b1195ac0a44",
+        "id": "b7f7fd67-e199-4daf-b640-92e89c091cc6",
         "snapshot": false,
         "version": "8.12.1"
     },
@@ -315,7 +346,7 @@ An example event for `knowledge_base` looks as following:
         ],
         "dataset": "qualys_vmdr.knowledge_base",
         "id": "11830",
-        "ingested": "2024-03-07T04:46:35Z",
+        "ingested": "2024-03-11T21:08:19Z",
         "kind": "alert",
         "type": [
             "info"
