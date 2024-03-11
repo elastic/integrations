@@ -1,0 +1,38 @@
+{
+    "id": "a45dfded-5559-5d76-bbd1-f3e2132ec819",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Enabling the `Azure Defender for SQL` feature will incur additional costs for each SQL server.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/sql-database/sql-vulnerability-assessment\n2. https://docs.microsoft.com/en-us/rest/api/sql/servervulnerabilityassessments/listbyserver\n3. https://docs.microsoft.com/en-in/powershell/module/Az.Sql/Update-AzSqlServerVulnerabilityAssessmentSetting?view=azps-2.6.0\n4. https://docs.microsoft.com/en-in/powershell/module/Az.Sql/Get-AzSqlServerVulnerabilityAssessmentSetting?view=azps-2.6.0\n5. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-posture-vulnerability-management#pv-6-perform-software-vulnerability-assessments",
+            "id": "a45dfded-5559-5d76-bbd1-f3e2132ec819",
+            "name": "Ensure that Vulnerability Assessment (VA) setting 'Periodic recurring scans' is set to 'on' for each SQL server",
+            "profile_applicability": "* Level 2",
+            "description": "Enable Vulnerability Assessment (VA) Periodic recurring scans for critical SQL servers and corresponding SQL databases.",
+            "rationale": "VA setting 'Periodic recurring scans' schedules periodic (weekly) vulnerability scanning for the SQL server and corresponding Databases.\nPeriodic and regular vulnerability scanning provides risk visibility based on updated known vulnerability signatures and best practices.",
+            "audit": "**From Azure Portal**\n\n1. Go to `SQL servers`\n2. Select a server instance\n3. Click on `Security Center`\n4. Ensure that `Microsoft Defender for SQL` is set to `Enabled`\n5. In Section `Vulnerability Assessment Settings`, Ensure `Storage Accounts` is configured.\n6. In Section `Vulnerability Assessment Settings`, Ensure `Periodic recurring scans` is set to On.\n\n**From PowerShell**\n\nGet the list of all SQL Servers\n```\nGet-AZSqlServer\n```\nFor each Server\n```\nGet-AzSqlServerVulnerabilityAssessmentSetting -ResourceGroupName <resource group name> -ServerName <server name>\n```\nEnsure that value for parameter `RecurringScansInterval` is not set to `None`.\n\nSample Output:\n\n```\nResourceGroupName : ResourceGroup01\n\nServerName : Server01\n\nStorageAccountName : mystorage\n\nScanResultsContainerName : vulnerability-assessment\n\nRecurringScansInterval : weekly\n\nEmailSubscriptionAdmins : False\n\nNotificationEmail : {}\n```",
+            "remediation": "**From Azure Portal**\n\n1. Go to `SQL servers`\n2. For each server instance\n3. Click on `Security Center`\n4. In Section `Vulnerability Assessment Settings`, set `Storage Account` if not already\n5. Toggle 'Periodic recurring scans' to ON.\n6. Click `Save`\n\n**From PowerShell**\n\nIf not already, Enable `Advanced Data Security` for a SQL Server: \n\n```\nSet-AZSqlServerThreatDetectionPolicy -ResourceGroupName <resource group name> -ServerName <server name> -EmailAdmins $True\n```\nTo enable ADS-VA service with 'Periodic recurring scans'\n```\nUpdate-AzSqlServerVulnerabilityAssessmentSetting `\n -ResourceGroupName \"<resource group name>\"`\n -ServerName \"<Server Name>\"`\n -StorageAccountName \"<Storage Name from same subscription and same Location\" `\n -ScanResultsContainerName \"vulnerability-assessment\" `\n -RecurringScansInterval Weekly `\n -EmailSubscriptionAdmins $true `\n -NotificationEmail @(\"mail1@mail.com\" , \"mail2@mail.com\")\n```",
+            "section": "SQL Server - Microsoft Defender for SQL",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.2.3",
+                "SQL Server - Microsoft Defender for SQL"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.2.3",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_2_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

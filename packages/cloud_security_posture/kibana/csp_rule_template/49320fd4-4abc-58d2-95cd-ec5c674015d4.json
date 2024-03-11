@@ -1,0 +1,38 @@
+{
+    "id": "49320fd4-4abc-58d2-95cd-ec5c674015d4",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Enabling the `Microsoft Defender for SQL` features will incur additional costs for each SQL server.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/sql-database/sql-vulnerability-assessment\n2. https://docs.microsoft.com/en-us/rest/api/sql/servervulnerabilityassessments/listbyserver\n3. https://docs.microsoft.com/en-in/powershell/module/Az.Sql/Update-AzSqlServerVulnerabilityAssessmentSetting?view=azps-2.6.0\n4. https://docs.microsoft.com/en-in/powershell/module/Az.Sql/Get-AzSqlServerVulnerabilityAssessmentSetting?view=azps-2.6.0\n5. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-posture-vulnerability-management#pv-6-perform-software-vulnerability-assessments",
+            "id": "49320fd4-4abc-58d2-95cd-ec5c674015d4",
+            "name": "Ensure that Vulnerability Assessment (VA) is enabled on a SQL server by setting a Storage Account",
+            "profile_applicability": "* Level 2",
+            "description": "Enable Vulnerability Assessment (VA) service scans for critical SQL servers and corresponding SQL databases.",
+            "rationale": "Enabling Microsoft Defender for SQL server does not enables Vulnerability Assessment capability for individual SQL databases unless storage account is set to store the scanning data and reports.\n\nThe Vulnerability Assessment service scans databases for known security vulnerabilities and highlights deviations from best practices, such as misconfigurations, excessive permissions, and unprotected sensitive data.\n\nResults of the scan include actionable steps to resolve each issue and provide customized remediation scripts where applicable.\nAdditionally, an assessment report can be customized by setting an acceptable baseline for permission configurations, feature configurations, and database settings.",
+            "audit": "**From Azure Portal**\n\n1. Go to `SQL servers`\n2. Select a server instance\n3. Click on `Security Center`\n4. Ensure that `Microsoft Defender for SQL` is set to `Enabled`\n5. Select `Configure` next to `Enabled at subscription-level`\n6. In Section `Vulnerability Assessment Settings`, Ensure `Storage Accounts` does not read `Select Storage account` with no storage accounts listed under the `Storage account` heading.\n\n**From PowerShell**\n\nGet the list of all SQL Servers\n```\nGet-AZSqlServer\n```\nFor each Server\n```\nGet-AzSqlServerVulnerabilityAssessmentSetting -ResourceGroupName <resource group name> -ServerName <server name>\n```\nEnsure that value for parameter `StorageAccountName` is not `empty` (blank).\n\nSample Output:\n\n```\nResourceGroupName : ResourceGroup01\n\nServerName : Server01\n\nStorageAccountName : mystorage\n\nScanResultsContainerName : vulnerability-assessment\n\nRecurringScansInterval : None\n\nEmailSubscriptionAdmins : False\n\nNotificationEmail : {}\n```",
+            "remediation": "**From Azure Portal**\n\n1. Go to `SQL servers`\n2. Select a server instance\n3. Click on `Security Center`\n4. Select `Configure` next to `Enabled at subscription-level`\n5. In Section `Vulnerability Assessment Settings`, Click `Select Storage account`\n6. Choose Storage Account (Existing or `Create New`). Click `Ok`\n7. Click `Save`\n\n**From PowerShell**\n\nIf not already, Enable `Microsoft Defender for a SQL`: \n```\nSet-AZSqlServerThreatDetectionPolicy -ResourceGroupName <resource group name> -ServerName <server name> -EmailAdmins $True\n```\nTo enable ADS-VA service by setting Storage Account\n```\nUpdate-AzSqlServerVulnerabilityAssessmentSetting `\n -ResourceGroupName \"<resource group name>\"`\n -ServerName \"<Server Name>\"`\n -StorageAccountName \"<Storage Name from same subscription and same Location\" `\n -ScanResultsContainerName \"vulnerability-assessment\" `\n -RecurringScansInterval Weekly `\n -EmailSubscriptionAdmins $true `\n -NotificationEmail @(\"mail1@mail.com\" , \"mail2@mail.com\")\n```",
+            "section": "SQL Server - Microsoft Defender for SQL",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.2.2",
+                "SQL Server - Microsoft Defender for SQL"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.2.2",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_2_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
