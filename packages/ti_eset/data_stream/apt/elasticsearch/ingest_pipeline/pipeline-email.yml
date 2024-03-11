@@ -11,7 +11,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: eti._patterns
-      if: ctx?.threat?.indicator?.email?.address != null
+      if: ctx.threat?.indicator?.email?.address != null
       processor:
         grok:
           field: _ingest._value
@@ -20,6 +20,6 @@ processors:
           ignore_failure: true
   - script:
       lang: painless
-      if: ctx?.threat?.indicator?.email?.address != null
+      if: ctx.threat?.indicator?.email?.address != null
       source: >
         ctx.threat.indicator.email.address = ctx.threat.indicator.email.address.splitOnToken(' ');
