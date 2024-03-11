@@ -12,7 +12,7 @@ processors:
     patterns:
     - (?:%{NUMBER:http.response.body.bytes:long}|-)( (?:"%{DATA:http.request.referrer}"|-)?(
       (?:"%{DATA:user_agent.original}"|-)?)?( (?:%{NUMBER:traefik.access.request_count:long}|-)?)?(
-      (?:"%{DATA:traefik.access.router.name}"|-)?)?( "%{DATA:traefik.access.service.url.original}")?(
+      (?:"%{DATA:traefik.access.router.name}"|-)?)?( "%{DATA:traefik.access.service.address}")?(
       %{NUMBER:temp.duration:long}ms)?)?
     ignore_missing: true
 - remove:
@@ -32,12 +32,21 @@ processors:
     field: source.address
     patterns:
     - ^(%{IP:source.ip}|%{HOSTNAME:source.domain})$
+- grok:
+    field: traefik.access.service.address
+    patterns:
+    - ^(https?://)?%{DATA:destination.address}$
+- grok:
+    field: destination.address
+    patterns:
+    - ^(%{IP:destination.ip}|%{HOSTNAME:destination.domain})(:%{POSINT:destination.port})?$
 - script:
     lang: painless
     source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
     params:
       scale: 1000000
     if: ctx.temp?.duration != null
+
 on_failure:
 - set:
     field: error.message
