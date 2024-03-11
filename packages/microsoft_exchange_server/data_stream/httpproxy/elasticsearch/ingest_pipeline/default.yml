@@ -1,0 +1,285 @@
+---
+description: Pipeline for processing Exchange Server HTTPProxy Logs
+processors:
+- drop:
+    if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
+- set:
+    field: event.original
+    copy_from: message
+- csv:
+    field: event.original
+    ignore_failure: true
+    ignore_missing: true
+    target_fields:
+    - "@timestamp"
+    - microsoft.exchange.requestid
+    - microsoft.exchange.majorversion
+    - microsoft.exchange.minorversion
+    - microsoft.exchange.buildversion
+    - microsoft.exchange.revisionversion
+    - microsoft.exchange.clientrequestid
+    - microsoft.exchange.protocol
+    - microsoft.exchange.urlhost
+    - microsoft.exchange.urlstem
+    - microsoft.exchange.protocolaction
+    - microsoft.exchange.authenticationtype
+    - microsoft.exchange.isauthenticated
+    - microsoft.exchange.authenticateduser
+    - microsoft.exchange.organization
+    - microsoft.exchange.anchormailbox
+    - user_agent.original
+    - microsoft.exchange.clientipaddress
+    - observer.hostname 
+    - http.response.status_code
+    - microsoft.exchange.backendstatus
+    - microsoft.exchange.errorcode
+    - http.request.method 
+    - microsoft.exchange.proxyaction
+    - microsoft.exchange.targetserver
+    - microsoft.exchange.targetserverversion
+    - microsoft.exchange.routingtype
+    - microsoft.exchange.routinghint
+    - microsoft.exchange.backendcookie
+    - microsoft.exchange.serverlocatorhost
+    - microsoft.exchange.serverlocatorlatency
+    - http.request.bytes
+    - http.response.bytes 
+    - microsoft.exchange.targetoutstandingrequests
+    - microsoft.exchange.authmoduleperfcontext
+    - microsoft.exchange.httppipelinelatency
+    - microsoft.exchange.calculatetargetbackendlatency
+    - microsoft.exchange.glslatencybreakup
+    - microsoft.exchange.totalglslatency
+    - microsoft.exchange.accountforestlatencybreakup
+    - microsoft.exchange.totalaccountforestlatency
+    - microsoft.exchange.resourceforestlatencybreakup
+    - microsoft.exchange.totalresourceforestlatency
+    - microsoft.exchange.adlatency
+    - microsoft.exchange.sharedcachelatencybreakup
+    - microsoft.exchange.totalsharedcachelatency
+    - microsoft.exchange.activitycontextlifetime
+    - microsoft.exchange.moduletohandlerswitchinglatency
+    - microsoft.exchange.clientreqstreamlatency
+    - microsoft.exchange.backendreqinitlatency
+    - microsoft.exchange.backendreqstreamlatency
+    - microsoft.exchange.backendprocessinglatency
+    - microsoft.exchange.backendrespinitlatency
+    - microsoft.exchange.backendrespstreamlatency
+    - microsoft.exchange.clientrespstreamlatency
+    - microsoft.exchange.kerberosauthheaderlatency
+    - microsoft.exchange.handlercompletionlatency
+    - microsoft.exchange.requesthandlerlatency
+    - microsoft.exchange.handlertomoduleswitchinglatency
+    - microsoft.exchange.proxytime
+    - microsoft.exchange.corelatency
+    - microsoft.exchange.routinglatency
+    - microsoft.exchange.httpproxyoverhead
+    - microsoft.exchange.totalrequesttime
+    - microsoft.exchange.routerefresherlatency
+    - url.query
+    - microsoft.exchange.backendgenericinfo
+    - microsoft.exchange.genericinfo
+    - microsoft.exchange.genericerrors
+    - microsoft.exchange.edgetraceid
+    - microsoft.exchange.databaseguid
+    - microsoft.exchange.useradobjectguid
+    - microsoft.exchange.partitionendpointlookuplatency
+    - microsoft.exchange.routingstatus
+- set:
+    field: microsoft.exchange.logtype
+    value: httpproxy
+    ignore_empty_value: true
+    ignore_failure: true
+- grok:
+    field: microsoft.exchange.authenticateduser
+    patterns:
+    - "%{DATA}\\\\%{NOTSPACE:user.name}"
+    ignore_failure: true
+    ignore_missing: true
+- grok:
+    field: microsoft.exchange.clientipaddress
+    patterns:
+    - "^%{IP:microsoft.exchange.clientipaddress_external}%{SPACE}%{IP:microsoft.exchange.clientipaddress_internal}$"
+    ignore_failure: true
+    ignore_missing: true
+- split:
+    field: microsoft.exchange.clientipaddress
+    separator: "  "
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "http.request.bytes"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "http.response.bytes"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "http.response.status_code"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.adlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.backendprocessinglatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.backendreqinitlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.backendreqstreamlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.backendrespinitlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.backendrespstreamlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.backendstatus"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.buildversion"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.calculatetargetbackendlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.clientreqstreamlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.clientrespstreamlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.corelatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.handlercompletionlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.handlertomoduleswitchinglatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.httppipelinelatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.kerberosauthheaderlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.majorversion"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.minorversion"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.moduletohandlerswitchinglatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.requesthandlerlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.revisionversion"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.routinglatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.totalaccountforestlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.totalglslatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.totalrequesttime"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.totalresourceforestlatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.totalsharedcachelatency"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.activitycontextlifetime"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.httpproxyoverhead"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert: 
+    field: "microsoft.exchange.proxytime"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- set:
+    field: event.ingested
+    copy_from: _ingest.timestamp
+    ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
