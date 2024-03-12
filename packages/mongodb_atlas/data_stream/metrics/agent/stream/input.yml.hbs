@@ -26,59 +26,553 @@ processors:
 auth.digest:
   user: {{public_key}}
   password: {{private_key}}
-resource.url: {{url}}/processes/?pageNum=1&itemsPerPage=2
+resource.url: {{url}}
 state:
-  query: "/measurements?granularity=PT5M&period=PT5m"
+  groupId: {{group_id}}
   want_more: false
-  next_url: ""
+  next: 0
+  page_num: 1
 program: |
   (
-    bytes(get(state.url).Body).decode_json().as(body,(
-          body.results.map(e, e.with( (bytes(get(e.links[0].href + state.query).Body).decode_json())
-            )).as(res, {
-              "temp": res.map(f,(f).with({"final" : zip(
-                          f.measurements.map(m,
-                            m.name
-                          ), 
-                          f.measurements.map(m,
-                            m.dataPoints.map(d,
-                              d.value
-                            ).as(v,
-                          size(v) == 0 ?
-                            0.0
-                          :
-                            v[0]
+      (
+        has(state.hostlist) && size(state.hostlist) > 0
+          ?
+            state
+          : 
+          state.with(request("GET", state.url + "/api/atlas/v2/groups/" + state.groupId + "/processes?pageNum=" + string(state.page_num) + "&itemsPerPage=100").with({
+                    "Header": {
+                      "Accept": ["application/vnd.atlas." + string(timestamp(now).getFullYear()) + "-01-01+json"]
+                    }
+                }).do_request().as(resp, 
+                  bytes(resp.Body).decode_json().as(body, {
+                    "hostlist": body.results.map(e, e.links[0].href + "/measurements?granularity=PT5M&period=PT5m"),
+                    "next": 0,
+                    "page_num": body.links.exists_one(res,res.rel=="next") ? (int(state.page_num)+1) : 1
+                  })))
+              ).as(state, state.next < size(state.hostlist)
+                  ?
+                    (
+                      request("GET", string(state.hostlist[state.next]))
+                      ).with({
+                        "Header": {
+                          "Accept": ["application/vnd.atlas." + string(timestamp(now).getFullYear()) + "-01-01+json"]
+                        }
+                      }).do_request().as(res, {
+                      "events": bytes(res.Body).decode_json().as(f,(f).with({"final" : zip(
+                        f.measurements.map(m,
+                          m.name
+                        ), 
+                        f.measurements.map(m,
+                          m.dataPoints.map(d,
+                            d.value
+                          ).as(v,
+                        size(v) == 0 ?
+                          0.0 // Choose a sensible default here.
+                        :
+                          v[0]
+                      )
                         )
-                          )
-                        )}).drop("measurements").as(rs,[(rs).with(
-                            {"cpu_state_kernel" : {
-                                  "PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL" : (has(rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL) ?
-                                  (rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL)
-                                  :null),
-                                  "MAX_PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL" : (has(rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL) ?
-                                  (rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL)
-                                  :null)
-                            }}),
-                            (rs).with({"cpu_state_user" : {
-
-                                  "PROCESS_NORMALIZED_CPU_CHILDREN_USER" : (has(rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_USER) ?
-                                  (rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_USER)
-                                  :null),
-                                  "MAX_PROCESS_NORMALIZED_CPU_CHILDREN_USER" : (has(rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_USER) ?
-                                  (rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_USER)
-                                  :null)
-                            }}
-                          )]).drop("final")).flatten()
-            }).as(event,{"events" : event.collate("temp")}).with(
-          body.links.exists_one(res,res.rel=="next") ?
-          {
-          "url": body.links.filter(res,res.rel=="next")[0].href,
-          "want_more": true,
-          "query": state.query
-          }
-          :
-          {
-            "want_more": false
-          })
-      ))
-  )
+                      )}).drop("measurements").as(rs,[
+                      (rs).with({"assert_type_regular": {
+                      "ASSERT_REGULAR": (has(rs.final.ASSERT_REGULAR) ?
+                      (rs.final.ASSERT_REGULAR)
+                      :null)
+                    }}),
+                    (rs).with({"assert_type_msg": {
+                      "ASSERT_MSG": (has(rs.final.ASSERT_MSG) ?
+                      (rs.final.ASSERT_MSG)
+                      :null)
+                    }}),
+                    (rs).with({"assert_type_warning": {
+                      "ASSERT_WARNING": (has(rs.final.ASSERT_WARNING) ?
+                      (rs.final.ASSERT_WARNING)
+                      :null)
+                    }}),
+                    (rs).with({"cache_direction_read_into": {
+                      "CACHE_BYTES_READ_INTO": (has(rs.final.CACHE_BYTES_READ_INTO) ?
+                      (rs.final.CACHE_BYTES_READ_INTO)
+                      :null)
+                    }}),
+                    (rs).with({"assert_type_user": {
+                      "ASSERT_USER": (has(rs.final.ASSERT_USER) ?
+                      (rs.final.ASSERT_USER)
+                      :null)
+                    }}),
+                    (rs).with({"cache_status_dirty": {
+                      "CACHE_DIRTY_BYTES": (has(rs.final.CACHE_DIRTY_BYTES) ?
+                      (rs.final.CACHE_DIRTY_BYTES)
+                      :null)
+                    }}),
+                    (rs).with({"cache_direction_written_from": {
+                      "CACHE_BYTES_WRITTEN_FROM": (has(rs.final.CACHE_BYTES_WRITTEN_FROM) ?
+                      (rs.final.CACHE_BYTES_WRITTEN_FROM)
+                      :null)
+                    }}),
+                    (rs).with({"cpu_state_kernel": {
+                      "PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL": (has(rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL) ?
+                      (rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL)
+                      :null),
+                      "MAX_PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL": (has(rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL) ?
+                      (rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL)
+                      :null),
+                      "PROCESS_CPU_CHILDREN_KERNEL": (has(rs.final.PROCESS_CPU_CHILDREN_KERNEL) ?
+                      (rs.final.PROCESS_CPU_CHILDREN_KERNEL)
+                      :null),
+                      "MAX_PROCESS_CPU_CHILDREN_USER": (has(rs.final.MAX_PROCESS_CPU_CHILDREN_USER) ?
+                      (rs.final.MAX_PROCESS_CPU_CHILDREN_USER)
+                      :null),
+                      "PROCESS_NORMALIZED_CPU_KERNEL": (has(rs.final.PROCESS_NORMALIZED_CPU_KERNEL) ?
+                      (rs.final.PROCESS_NORMALIZED_CPU_KERNEL)
+                      :null),
+                      "MAX_PROCESS_NORMALIZED_CPU_KERNEL": (has(rs.final.MAX_PROCESS_NORMALIZED_CPU_KERNEL) ?
+                      (rs.final.MAX_PROCESS_NORMALIZED_CPU_KERNEL)
+                      :null),
+                      "PROCESS_CPU_KERNEL": (has(rs.final.PROCESS_CPU_KERNEL) ?
+                      (rs.final.PROCESS_CPU_KERNEL)
+                      :null),
+                      "MAX_PROCESS_CPU_KERNEL": (has(rs.final.MAX_PROCESS_CPU_KERNEL) ?
+                      (rs.final.MAX_PROCESS_CPU_KERNEL)
+                      :null)
+                    }}),
+                    (rs).with({"cache_status_used": {
+                      "CACHE_USED_BYTES": (has(rs.final.CACHE_USED_BYTES) ?
+                      (rs.final.CACHE_USED_BYTES)
+                      :null)
+                    }}),
+                    (rs).with({"cursor_state_timed_out": {
+                      "CURSORS_TOTAL_TIMED_OUT": (has(rs.final.CURSORS_TOTAL_TIMED_OUT) ?
+                      (rs.final.CURSORS_TOTAL_TIMED_OUT)
+                      :null)
+                    }}),
+                    (rs).with({"cpu_state_user": {
+                      "PROCESS_NORMALIZED_CPU_CHILDREN_USER": (has(rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_USER) ?
+                      (rs.final.PROCESS_NORMALIZED_CPU_CHILDREN_USER)
+                      :null),
+                      "MAX_PROCESS_NORMALIZED_CPU_CHILDREN_USER": (has(rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_USER) ?
+                      (rs.final.MAX_PROCESS_NORMALIZED_CPU_CHILDREN_USER)
+                      :null),
+                      "PROCESS_CPU_CHILDREN_USER": (has(rs.final.PROCESS_CPU_CHILDREN_USER) ?
+                      (rs.final.PROCESS_CPU_CHILDREN_USER)
+                      :null),
+                      "MAX_PROCESS_CPU_CHILDREN_USER": (has(rs.final.MAX_PROCESS_CPU_CHILDREN_USER) ?
+                      (rs.final.MAX_PROCESS_CPU_CHILDREN_USER)
+                      :null),
+                      "PROCESS_NORMALIZED_CPU_USER": (has(rs.final.PROCESS_NORMALIZED_CPU_USER) ?
+                      (rs.final.PROCESS_NORMALIZED_CPU_USER)
+                      :null),
+                      "MAX_PROCESS_NORMALIZED_CPU_USER": (has(rs.final.MAX_PROCESS_NORMALIZED_CPU_USER) ?
+                      (rs.final.MAX_PROCESS_NORMALIZED_CPU_USER)
+                      :null),
+                      "PROCESS_CPU_USER": (has(rs.final.PROCESS_CPU_USER) ?
+                      (rs.final.PROCESS_CPU_USER)
+                      :null),
+                      "MAX_PROCESS_CPU_USER": (has(rs.final.MAX_PROCESS_CPU_USER) ?
+                      (rs.final.MAX_PROCESS_CPU_USER)
+                      :null)
+                    }}),
+                    (rs).with({"document_status_updated": {
+                      "DOCUMENT_METRICS_UPDATED": (has(rs.final.DOCUMENT_METRICS_UPDATED) ?
+                      (rs.final.DOCUMENT_METRICS_UPDATED)
+                      :null)
+                    }}),
+                    (rs).with({"cursor_state_open": {
+                      "CURSORS_TOTAL_OPEN": (has(rs.final.CURSORS_TOTAL_OPEN) ?
+                      (rs.final.CURSORS_TOTAL_OPEN)
+                      :null)
+                    }}),
+                    (rs).with({"document_status_returned": {
+                      "DOCUMENT_METRICS_RETURNED": (has(rs.final.DOCUMENT_METRICS_RETURNED) ?
+                      (rs.final.DOCUMENT_METRICS_RETURNED)
+                      :null)
+                    }}),
+                    (rs).with({"document_status_deleted": {
+                      "DOCUMENT_METRICS_DELETED": (has(rs.final.DOCUMENT_METRICS_DELETED) ?
+                      (rs.final.DOCUMENT_METRICS_DELETED)
+                      :null)
+                    }}),
+                    (rs).with({"execution_type_writes": {
+                      "OP_EXECUTION_TIME_WRITES": (has(rs.final.OP_EXECUTION_TIME_WRITES) ?
+                      (rs.final.OP_EXECUTION_TIME_WRITES)
+                      :null)
+                    }}),
+                    (rs).with({"document_status_inserted": {
+                      "DOCUMENT_METRICS_INSERTED": (has(rs.final.DOCUMENT_METRICS_INSERTED) ?
+                      (rs.final.DOCUMENT_METRICS_INSERTED)
+                      :null)
+                    }}),
+                    (rs).with({"execution_type_commands": {
+                      "OP_EXECUTION_TIME_COMMANDS": (has(rs.final.OP_EXECUTION_TIME_COMMANDS) ?
+                      (rs.final.OP_EXECUTION_TIME_COMMANDS)
+                      :null)
+                    }}),
+                    (rs).with({"execution_type_reads": {
+                      "OP_EXECUTION_TIME_READS": (has(rs.final.OP_EXECUTION_TIME_READS) ?
+                      (rs.final.OP_EXECUTION_TIME_READS)
+                      :null)
+                    }}),
+                    (rs).with({"scanned_type_objects": {
+                      "QUERY_EXECUTOR_SCANNED_OBJECTS": (has(rs.final.QUERY_EXECUTOR_SCANNED_OBJECTS) ?
+                      (rs.final.QUERY_EXECUTOR_SCANNED_OBJECTS)
+                      :null),
+                      "QUERY_TARGETING_SCANNED_OBJECTS_PER_RETURNED": (has(rs.final.QUERY_TARGETING_SCANNED_OBJECTS_PER_RETURNED) ?
+                      (rs.final.QUERY_TARGETING_SCANNED_OBJECTS_PER_RETURNED)
+                      :null)
+                    }}),
+                    (rs).with({"scanned_type_index_items": {
+                      "QUERY_EXECUTOR_SCANNED": (has(rs.final.QUERY_EXECUTOR_SCANNED) ?
+                      (rs.final.QUERY_EXECUTOR_SCANNED)
+                      :null),
+                      "QUERY_TARGETING_SCANNED_PER_RETURNED": (has(rs.final.QUERY_TARGETING_SCANNED_PER_RETURNED) ?
+                      (rs.final.QUERY_TARGETING_SCANNED_PER_RETURNED)
+                      :null)
+                    }}),
+                    (rs).with({"storage_status_data_size": {
+                      "DB_DATA_SIZE_TOTAL": (has(rs.final.DB_DATA_SIZE_TOTAL) ?
+                      (rs.final.DB_DATA_SIZE_TOTAL)
+                      :null)
+                    }}),
+                    (rs).with({"storage_status_total": {
+                      "DB_STORAGE_TOTAL": (has(rs.final.DB_STORAGE_TOTAL) ?
+                      (rs.final.DB_STORAGE_TOTAL)
+                      :null)
+                    }}),
+                    (rs).with({"global_lock_state_current_queue_readers": {
+                      "GLOBAL_LOCK_CURRENT_QUEUE_READERS": (has(rs.final.GLOBAL_LOCK_CURRENT_QUEUE_READERS) ?
+                      (rs.final.GLOBAL_LOCK_CURRENT_QUEUE_READERS)
+                      :null)
+                    }}),
+                    (rs).with({"global_lock_state_current_queue_writers": {
+                      "GLOBAL_LOCK_CURRENT_QUEUE_WRITERS": (has(rs.final.GLOBAL_LOCK_CURRENT_QUEUE_WRITERS) ?
+                      (rs.final.GLOBAL_LOCK_CURRENT_QUEUE_WRITERS)
+                      :null)
+                    }}),
+                    (rs).with({"btree_counter_type_misses": {
+                      "INDEX_COUNTERS_BTREE_MISSES": (has(rs.final.INDEX_COUNTERS_BTREE_MISSES) ?
+                      (rs.final.INDEX_COUNTERS_BTREE_MISSES)
+                      :null)
+                    }}),
+                    (rs).with({"global_lock_state_current_queue_total": {
+                      "GLOBAL_LOCK_CURRENT_QUEUE_TOTAL": (has(rs.final.GLOBAL_LOCK_CURRENT_QUEUE_TOTAL) ?
+                      (rs.final.GLOBAL_LOCK_CURRENT_QUEUE_TOTAL)
+                      :null)
+                    }}),
+                    (rs).with({"btree_counter_type_hits": {
+                      "INDEX_COUNTERS_BTREE_HITS": (has(rs.final.INDEX_COUNTERS_BTREE_HITS) ?
+                      (rs.final.INDEX_COUNTERS_BTREE_HITS)
+                      :null)
+                    }}),
+                    (rs).with({"btree_counter_type_accesses": {
+                      "INDEX_COUNTERS_BTREE_ACCESSES": (has(rs.final.INDEX_COUNTERS_BTREE_ACCESSES) ?
+                      (rs.final.INDEX_COUNTERS_BTREE_ACCESSES)
+                      :null)
+                    }}),
+                    (rs).with({"cluster_role_primary_operation_scan_and_order": {
+                      "OPERATIONS_SCAN_AND_ORDER": (has(rs.final.OPERATIONS_SCAN_AND_ORDER) ?
+                      (rs.final.OPERATIONS_SCAN_AND_ORDER)
+                      :null)
+                    }}),
+                    (rs).with({"cluster_role_primary_operation_getmore": {
+                      "OPCOUNTER_GETMORE": (has(rs.final.OPCOUNTER_GETMORE) ?
+                      (rs.final.OPCOUNTER_GETMORE)
+                      :null)
+                    }}),
+                    (rs).with({"cluster_role_primary_operation_cmd": {
+                      "OPCOUNTER_CMD": (has(rs.final.OPCOUNTER_CMD) ?
+                      (rs.final.OPCOUNTER_CMD)
+                      :null)
+                    }}),
+                    (rs).with({"cluster_role_primary_operation_update": {
+                      "OPCOUNTER_UPDATE": (has(rs.final.OPCOUNTER_UPDATE) ?
+                      (rs.final.OPCOUNTER_UPDATE)
+                      :null)
+                    }}),
+                    (rs).with({"cluster_role_primary_operation_query": {
+                      "OPCOUNTER_QUERY": (has(rs.final.OPCOUNTER_QUERY) ?
+                      (rs.final.OPCOUNTER_QUERY)
+                      :null)
+                    }}),
+                    (rs).with({"cluster_role_primary_operation_delete": {
+                      "OPCOUNTER_DELETE": (has(rs.final.OPCOUNTER_DELETE) ?
+                      (rs.final.OPCOUNTER_DELETE)
+                      :null)
+                    }}),
+                    (rs).with({"cluster_role_replica_operation_update": {
+                      "OPCOUNTER_REPL_UPDATE": (has(rs.final.OPCOUNTER_REPL_UPDATE) ?
+                      (rs.final.OPCOUNTER_REPL_UPDATE)
+                      :null)
+                    }}),
+                    (rs).with({"cluster_role_primary_operation_insert": {
+                      "OPCOUNTER_INSERT": (has(rs.final.OPCOUNTER_INSERT) ?
+                      (rs.final.OPCOUNTER_INSERT)
+                      :null)
+                    }}),
+                    (rs).with({"cluster_role_replica_operation_cmd": {
+                      "OPCOUNTER_REPL_CMD": (has(rs.final.OPCOUNTER_REPL_CMD) ?
+                      (rs.final.OPCOUNTER_REPL_CMD)
+                      :null)
+                    }}),
+                    (rs).with({"cluster_role_replica_operation_delete": {
+                      "OPCOUNTER_REPL_DELETE": (has(rs.final.OPCOUNTER_REPL_DELETE) ?
+                      (rs.final.OPCOUNTER_REPL_DELETE)
+                      :null)
+                    }}),
+                    (rs).with({"memory_state_mapped": {
+                      "MEMORY_MAPPED": (has(rs.final.MEMORY_MAPPED) ?
+                      (rs.final.MEMORY_MAPPED)
+                      :null)
+                    }}),
+                    (rs).with({"cluster_role_replica_operation_insert": {
+                      "OPCOUNTER_REPL_INSERT": (has(rs.final.OPCOUNTER_REPL_INSERT) ?
+                      (rs.final.OPCOUNTER_REPL_INSERT)
+                      :null)
+                    }}),
+                    (rs).with({"memory_state_computed": {
+                      "COMPUTED_MEMORY": (has(rs.final.COMPUTED_MEMORY) ?
+                      (rs.final.COMPUTED_MEMORY)
+                      :null)
+                    }}),
+                    (rs).with({"memory_state_virtual": {
+                      "MEMORY_VIRTUAL": (has(rs.final.MEMORY_VIRTUAL) ?
+                      (rs.final.MEMORY_VIRTUAL)
+                      :null)
+                    }}),
+                    (rs).with({"direction_receive": {
+                      "NETWORK_BYTES_IN": (has(rs.final.NETWORK_BYTES_IN) ?
+                      (rs.final.NETWORK_BYTES_IN)
+                      :null),
+                      "SYSTEM_NETWORK_IN": (has(rs.final.SYSTEM_NETWORK_IN) ?
+                      (rs.final.SYSTEM_NETWORK_IN)
+                      :null),
+                      "MAX_SYSTEM_NETWORK_IN": (has(rs.final.MAX_SYSTEM_NETWORK_IN) ?
+                      (rs.final.MAX_SYSTEM_NETWORK_IN)
+                      :null)
+                    }}),
+                    (rs).with({"memory_state_resident": {
+                      "MEMORY_RESIDENT": (has(rs.final.MEMORY_RESIDENT) ?
+                      (rs.final.MEMORY_RESIDENT)
+                      :null)
+                    }}),
+                    (rs).with({"oplog_type_master_time": {
+                      "OPLOG_MASTER_TIME": (has(rs.final.OPLOG_MASTER_TIME) ?
+                      (rs.final.OPLOG_MASTER_TIME)
+                      :null)
+                    }}),
+                    (rs).with({"direction_transmit": {
+                      "NETWORK_BYTES_OUT": (has(rs.final.NETWORK_BYTES_OUT) ?
+                      (rs.final.NETWORK_BYTES_OUT)
+                      :null),
+                      "SYSTEM_NETWORK_OUT": (has(rs.final.SYSTEM_NETWORK_OUT) ?
+                      (rs.final.SYSTEM_NETWORK_OUT)
+                      :null),
+                      "MAX_SYSTEM_NETWORK_OUT": (has(rs.final.MAX_SYSTEM_NETWORK_OUT) ?
+                      (rs.final.MAX_SYSTEM_NETWORK_OUT)
+                      :null)
+                    }}),
+                    (rs).with({"oplog_type_master_lag_time_diff": {
+                      "OPLOG_MASTER_LAG_TIME_DIFF": (has(rs.final.OPLOG_MASTER_LAG_TIME_DIFF) ?
+                      (rs.final.OPLOG_MASTER_LAG_TIME_DIFF)
+                      :null)
+                    }}),
+                    (rs).with({"oplog_type_slave_lag_master_time": {
+                      "OPLOG_SLAVE_LAG_MASTER_TIME": (has(rs.final.OPLOG_SLAVE_LAG_MASTER_TIME) ?
+                      (rs.final.OPLOG_SLAVE_LAG_MASTER_TIME)
+                      :null)
+                    }}),
+                    (rs).with({"memory_issue_type_extra_info": {
+                      "EXTRA_INFO_PAGE_FAULTS": (has(rs.final.EXTRA_INFO_PAGE_FAULTS) ?
+                      (rs.final.EXTRA_INFO_PAGE_FAULTS)
+                      :null)
+                    }}),
+                    (rs).with({"memory_issue_type_exceptions_thrown": {
+                      "GLOBAL_PAGE_FAULT_EXCEPTIONS_THROWN": (has(rs.final.GLOBAL_PAGE_FAULT_EXCEPTIONS_THROWN) ?
+                      (rs.final.GLOBAL_PAGE_FAULT_EXCEPTIONS_THROWN)
+                      :null)
+                    }}),
+                    (rs).with({"ticket_type_available_reads": {
+                      "TICKETS_AVAILABLE_READS": (has(rs.final.TICKETS_AVAILABLE_READS) ?
+                      (rs.final.TICKETS_AVAILABLE_READS)
+                      :null)
+                    }}),
+                    (rs).with({"memory_issue_type_global_accesses_not_in_memory": {
+                      "GLOBAL_ACCESSES_NOT_IN_MEMORY": (has(rs.final.GLOBAL_ACCESSES_NOT_IN_MEMORY) ?
+                      (rs.final.GLOBAL_ACCESSES_NOT_IN_MEMORY)
+                      :null)
+                    }}),
+                    (rs).with({"cpu_state_iowait": {
+                      "SYSTEM_NORMALIZED_CPU_IOWAIT": (has(rs.final.SYSTEM_NORMALIZED_CPU_IOWAIT) ?
+                      (rs.final.SYSTEM_NORMALIZED_CPU_IOWAIT)
+                      :null),
+                      "MAX_SYSTEM_NORMALIZED_CPU_IOWAIT": (has(rs.final.MAX_SYSTEM_NORMALIZED_CPU_IOWAIT) ?
+                      (rs.final.MAX_SYSTEM_NORMALIZED_CPU_IOWAIT)
+                      :null),
+                      "SYSTEM_CPU_IOWAIT": (has(rs.final.SYSTEM_CPU_IOWAIT) ?
+                      (rs.final.SYSTEM_CPU_IOWAIT)
+                      :null),
+                      "MAX_SYSTEM_CPU_IOWAIT": (has(rs.final.MAX_SYSTEM_CPU_IOWAIT) ?
+                      (rs.final.MAX_SYSTEM_CPU_IOWAIT)
+                      :null)
+                    }}),
+                    (rs).with({"ticket_type_available_writes": {
+                      "TICKETS_AVAILABLE_WRITE": (has(rs.final.TICKETS_AVAILABLE_WRITE) ?
+                      (rs.final.TICKETS_AVAILABLE_WRITE)
+                      :null)
+                    }}),
+                    (rs).with({"cpu_state_irq": {
+                      "SYSTEM_NORMALIZED_CPU_IRQ": (has(rs.final.SYSTEM_NORMALIZED_CPU_IRQ) ?
+                      (rs.final.SYSTEM_NORMALIZED_CPU_IRQ)
+                      :null),
+                      "MAX_SYSTEM_NORMALIZED_CPU_IRQ": (has(rs.final.MAX_SYSTEM_NORMALIZED_CPU_IRQ) ?
+                      (rs.final.MAX_SYSTEM_NORMALIZED_CPU_IRQ)
+                      :null),
+                      "SYSTEM_CPU_IRQ": (has(rs.final.SYSTEM_CPU_IRQ) ?
+                      (rs.final.SYSTEM_CPU_IRQ)
+                      :null),
+                      "MAX_SYSTEM_CPU_IRQ": (has(rs.final.MAX_SYSTEM_CPU_IRQ) ?
+                      (rs.final.MAX_SYSTEM_CPU_IRQ)
+                      :null)
+                    }}),
+                    (rs).with({"cpu_state_guest": {
+                      "SYSTEM_NORMALIZED_CPU_GUEST": (has(rs.final.SYSTEM_NORMALIZED_CPU_GUEST) ?
+                      (rs.final.SYSTEM_NORMALIZED_CPU_GUEST)
+                      :null),
+                      "MAX_SYSTEM_NORMALIZED_CPU_GUEST": (has(rs.final.MAX_SYSTEM_NORMALIZED_CPU_GUEST) ?
+                      (rs.final.MAX_SYSTEM_NORMALIZED_CPU_GUEST)
+                      :null),
+                      "SYSTEM_CPU_GUEST": (has(rs.final.SYSTEM_CPU_GUEST) ?
+                      (rs.final.SYSTEM_CPU_GUEST)
+                      :null),
+                      "MAX_SYSTEM_CPU_GUEST": (has(rs.final.MAX_SYSTEM_CPU_GUEST) ?
+                      (rs.final.MAX_SYSTEM_CPU_GUEST)
+                      :null)
+                    }}),
+                    (rs).with({"cpu_state_steal": {
+                      "SYSTEM_NORMALIZED_CPU_STEAL": (has(rs.final.SYSTEM_NORMALIZED_CPU_STEAL) ?
+                      (rs.final.SYSTEM_NORMALIZED_CPU_STEAL)
+                      :null),
+                      "MAX_SYSTEM_NORMALIZED_CPU_STEAL": (has(rs.final.MAX_SYSTEM_NORMALIZED_CPU_STEAL) ?
+                      (rs.final.MAX_SYSTEM_NORMALIZED_CPU_STEAL)
+                      :null),
+                      "SYSTEM_CPU_STEAL": (has(rs.final.SYSTEM_CPU_STEAL) ?
+                      (rs.final.SYSTEM_CPU_STEAL)
+                      :null),
+                      "MAX_SYSTEM_CPU_STEAL": (has(rs.final.MAX_SYSTEM_CPU_STEAL) ?
+                      (rs.final.MAX_SYSTEM_CPU_STEAL)
+                      :null)
+                    }}),
+                    (rs).with({"cpu_state_KERNEL": {
+                      "SYSTEM_NORMALIZED_CPU_KERNEL": (has(rs.final.SYSTEM_NORMALIZED_CPU_KERNEL) ?
+                      (rs.final.SYSTEM_NORMALIZED_CPU_KERNEL)
+                      :null),
+                      "MAX_SYSTEM_NORMALIZED_CPU_KERNEL": (has(rs.final.MAX_SYSTEM_NORMALIZED_CPU_KERNEL) ?
+                      (rs.final.MAX_SYSTEM_NORMALIZED_CPU_KERNEL)
+                      :null),
+                      "SYSTEM_CPU_KERNEL": (has(rs.final.SYSTEM_CPU_KERNEL) ?
+                      (rs.final.SYSTEM_CPU_KERNEL)
+                      :null),
+                      "MAX_SYSTEM_CPU_KERNEL": (has(rs.final.MAX_SYSTEM_CPU_KERNEL) ?
+                      (rs.final.MAX_SYSTEM_CPU_KERNEL)
+                      :null),
+                      "FTS_PROCESS_NORMALIZED_CPU_KERNEL": (has(rs.final.FTS_PROCESS_NORMALIZED_CPU_KERNEL) ?
+                      (rs.final.FTS_PROCESS_NORMALIZED_CPU_KERNEL)
+                      :null),
+                      "FTS_PROCESS_CPU_KERNEL": (has(rs.final.FTS_PROCESS_CPU_KERNEL) ?
+                      (rs.final.FTS_PROCESS_CPU_KERNEL)
+                      :null)
+                    }}),
+                    (rs).with({"cpu_state_nice": {
+                      "SYSTEM_NORMALIZED_CPU_NICE": (has(rs.final.SYSTEM_NORMALIZED_CPU_NICE) ?
+                      (rs.final.SYSTEM_NORMALIZED_CPU_NICE)
+                      :null),
+                      "MAX_SYSTEM_NORMALIZED_CPU_NICE": (has(rs.final.MAX_SYSTEM_NORMALIZED_CPU_NICE) ?
+                      (rs.final.MAX_SYSTEM_NORMALIZED_CPU_NICE)
+                      :null),
+                      "SYSTEM_CPU_NICE": (has(rs.final.SYSTEM_CPU_NICE) ?
+                      (rs.final.SYSTEM_CPU_NICE)
+                      :null)
+                    }}),
+                    (rs).with({"cpu_state_softirq": {
+                      "SYSTEM_NORMALIZED_CPU_SOFTIRQ": (has(rs.final.SYSTEM_NORMALIZED_CPU_SOFTIRQ) ?
+                      (rs.final.SYSTEM_NORMALIZED_CPU_SOFTIRQ)
+                      :null),
+                      "MAX_SYSTEM_NORMALIZED_CPU_SOFTIRQ": (has(rs.final.MAX_SYSTEM_NORMALIZED_CPU_SOFTIRQ) ?
+                      (rs.final.MAX_SYSTEM_NORMALIZED_CPU_SOFTIRQ)
+                      :null),
+                      "SYSTEM_CPU_SOFTIRQ": (has(rs.final.SYSTEM_CPU_SOFTIRQ) ?
+                      (rs.final.SYSTEM_CPU_SOFTIRQ)
+                      :null),
+                      "MAX_SYSTEM_CPU_SOFTIRQ": (has(rs.final.MAX_SYSTEM_CPU_SOFTIRQ) ?
+                      (rs.final.MAX_SYSTEM_CPU_SOFTIRQ)
+                      :null)
+                    }}),
+                    (rs).with({"memory_state_mapped": {
+                      "FTS_MEMORY_MAPPED": (has(rs.final.FTS_MEMORY_MAPPED) ?
+                      (rs.final.FTS_MEMORY_MAPPED)
+                      :null)
+                    }}),
+                    (rs).with({"cpu_state_user": {
+                      "SYSTEM_NORMALIZED_CPU_USER": (has(rs.final.SYSTEM_NORMALIZED_CPU_USER) ?
+                      (rs.final.SYSTEM_NORMALIZED_CPU_USER)
+                      :null),
+                      "MAX_SYSTEM_NORMALIZED_CPU_USER": (has(rs.final.MAX_SYSTEM_NORMALIZED_CPU_USER) ?
+                      (rs.final.MAX_SYSTEM_NORMALIZED_CPU_USER)
+                      :null),
+                      "SYSTEM_CPU_USER": (has(rs.final.SYSTEM_CPU_USER) ?
+                      (rs.final.SYSTEM_CPU_USER)
+                      :null),
+                      "MAX_SYSTEM_CPU_USER": (has(rs.final.MAX_SYSTEM_CPU_USER) ?
+                      (rs.final.MAX_SYSTEM_CPU_USER)
+                      :null),
+                      "FTS_PROCESS_NORMALIZED_CPU_USER": (has(rs.final.FTS_PROCESS_NORMALIZED_CPU_USER) ?
+                      (rs.final.FTS_PROCESS_NORMALIZED_CPU_USER)
+                      :null),
+                      "FTS_PROCESS_CPU_USER": (has(rs.final.FTS_PROCESS_CPU_USER) ?
+                      (rs.final.FTS_PROCESS_CPU_USER)
+                      :null)
+                    }}),
+                    (rs).with({"memory_state_available": {
+                      "SYSTEM_MEMORY_AVAILABLE": (has(rs.final.SYSTEM_MEMORY_AVAILABLE) ?
+                      (rs.final.SYSTEM_MEMORY_AVAILABLE)
+                      :null),
+                      "MAX_SYSTEM_MEMORY_AVAILABLE": (has(rs.final.MAX_SYSTEM_MEMORY_AVAILABLE) ?
+                      (rs.final.MAX_SYSTEM_MEMORY_AVAILABLE)
+                      :null)
+                    }}),
+                    (rs).with({"memory_state_used": {
+                      "SYSTEM_MEMORY_USED": (has(rs.final.SYSTEM_MEMORY_USED) ?
+                      (rs.final.SYSTEM_MEMORY_USED)
+                      :null),
+                      "MAX_SYSTEM_MEMORY_USED": (has(rs.final.MAX_SYSTEM_MEMORY_USED) ?
+                      (rs.final.MAX_SYSTEM_MEMORY_USED)
+                      :null),
+                      "SWAP_USAGE_USED": (has(rs.final.SWAP_USAGE_USED) ?
+                      (rs.final.SWAP_USAGE_USED)
+                      :null),
+                      "MAX_SWAP_USAGE_USED": (has(rs.final.MAX_SWAP_USAGE_USED) ?
+                      (rs.final.MAX_SWAP_USAGE_USED)
+                      :null)
+                    }}),
+                    (rs).with({"memory_state_free": {
+                      "SYSTEM_MEMORY_FREE": (has(rs.final.SYSTEM_MEMORY_FREE) ?
+                      (rs.final.SYSTEM_MEMORY_FREE)
+                      :null),
+                      "MAX_SYSTEM_MEMORY_FREE": (has(rs.final.MAX_SYSTEM_MEMORY_FREE) ?
+                      (rs.final.MAX_SYSTEM_MEMORY_FREE)
+                      :null),
+                      "SWAP_USAGE_FREE": (has(rs.final.SWAP_USAGE_FREE) ?
+                      (rs.final.SWAP_USAGE_FREE)
+                      :null),
+                      "MAX_SWAP_USAGE_FREE": (has(rs.final.MAX_SWAP_USAGE_FREE) ?
+                      (rs.final.MAX_SWAP_USAGE_FREE)
+                      :null)
+                    }})
+                      ]).drop("links").drop("final")).flatten(),
+                      "hostlist": (int(state.next)+1) < size(state.hostlist) ? state.hostlist : [],
+                      "next": (int(state.next)+1) < size(state.hostlist) ? (int(state.next)+1) : 0,
+                      "want_more": ((int(state.next)+1) < size(state.hostlist) || state.page_num != 1),
+                      "page_num": state.page_num,
+                      "groupId": state.groupId,
+                      })
+                  :
+                  {}
+              )
+      )

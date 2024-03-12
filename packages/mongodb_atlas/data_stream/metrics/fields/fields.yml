@@ -1,12 +1,365 @@
-- name: process.cpu.children.normalized.usage
+- name: mongodbatlas
   type: group
   fields:
-    - name: max
-      type: long
-      description: Maximum CPU Usage for child processes, normalized to pct.
-    - name: average
-      type: long
-      description: Avrage CPU Usage for child processes, normalized to pct.
-- name: label.cpu_state
-  type: keyword
-  description: CPU state.
+      - name : mongodbatlas.process
+        type: group
+        fields:
+         - name: asserts 
+           type: double
+           metric_type: gauge
+           description: |-
+             Number of assertions per second.
+             Aggregate of MongoDB Metrics ASSERT_REGULAR, ASSERT_USER, ASSERT_MSG, ASSERT_WARNING
+         - name: cache
+           type: group
+           fields:
+            - name: io 
+              type: double
+              metric_type: gauge
+              unit: byte
+              description: |-
+                Cache throughput (per second).
+                Aggregate of MongoDB Metrics CACHE_BYTES_READ_INTO, CACHE_BYTES_WRITTEN_FROM
+            - name: size 
+              type: double
+              metric_type: gauge
+              unit: byte
+              description: |- 
+                Cache sizes.
+                Aggregate of MongoDB Metrics CACHE_USED_BYTES, CACHE_DIRTY_BYTES
+         - name: cpu 
+           type: group
+           fields:
+            - name: children
+              type: group
+              fields:
+               - name: normalized.usage
+                 type: group
+                 fields:
+                  - name: average
+                    type: double
+                    metric_type: gauge
+                    unit: byte
+                    description: |-
+                      CPU Usage for child processes, normalized to pct.
+                      Aggregate of MongoDB Metrics PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL, PROCESS_NORMALIZED_CPU_CHILDREN_USER
+                  - name: max
+                    type: double
+                    metric_type: gauge
+                    unit: byte
+                    description: |-
+                      CPU Usage for child processes, normalized to pct.
+                      Aggregate of MongoDB Metrics MAX_PROCESS_NORMALIZED_CPU_CHILDREN_KERNEL, MAX_PROCESS_NORMALIZED_CPU_CHILDREN_USER
+               - name: usage
+                 type: group
+                 fields:
+                  - name: average
+                    type: double
+                    metric_type: gauge
+                    unit: percent
+                    description: |-
+                      CPU Usage for child processes (%).
+                      Aggregate of MongoDB Metrics PROCESS_CPU_CHILDREN_KERNEL, PROCESS_CPU_CHILDREN_USER
+               - name: max
+                 type: double
+                 metric_type: gauge
+                 unit: percent
+                 description: |-
+                   CPU Usage for child processes (%).
+                   Aggregate of MongoDB Metrics MAX_PROCESS_CPU_CHILDREN_USER, MAX_PROCESS_CPU_CHILDREN_KERNEL
+            - name: normalized.usage
+              type: group
+              fields:
+                - name: average 
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: |-
+                    CPU Usage, normalized to pct.
+                    Aggregate of MongoDB Metrics PROCESS_NORMALIZED_CPU_KERNEL, PROCESS_NORMALIZED_CPU_USER
+                - name: max
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: |- 
+                    CPU Usage, normalized to pct.
+                    Aggregate of MongoDB Metrics MAX_PROCESS_NORMALIZED_CPU_USER, MAX_PROCESS_NORMALIZED_CPU_KERNEL
+            - name: usage
+              type: group
+              fields:
+                - name: average 
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: |-
+                    CPU Usage (%).
+                    Aggregate of MongoDB Metrics PROCESS_CPU_KERNEL, PROCESS_CPU_USER
+                - name: max
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: |- 
+                    CPU Usage (%).
+                    Aggregate of MongoDB Metrics MAX_PROCESS_CPU_KERNEL, MAX_PROCESS_CPU_USER
+         - name: cursors
+           type: double
+           metric_type: gauge
+           description: |-
+             Number of cursors.
+             Aggregate of MongoDB Metrics CURSORS_TOTAL_OPEN, CURSORS_TOTAL_TIMED_OUT
+         - name: db 
+           type: group
+           fields:
+            - name: document.rate 
+              type: double
+              metric_type: gauge
+              description: |-
+                Document access rates.
+                Aggregate of MongoDB Metrics DOCUMENT_METRICS_UPDATED, DOCUMENT_METRICS_DELETED, DOCUMENT_METRICS_RETURNED, DOCUMENT_METRICS_INSERTED
+            - name: operations 
+              type: group
+              fields:
+               - name: rate 
+                 type: double
+                 metric_type: gauge
+                 description: |-
+                   DB Operation Rates.
+                   Aggregate of MongoDB Metrics OPCOUNTER_GETMORE, OPERATIONS_SCAN_AND_ORDER, OPCOUNTER_UPDATE, OPCOUNTER_REPL_UPDATE, OPCOUNTER_CMD, OPCOUNTER_DELETE, OPCOUNTER_REPL_DELETE, OPCOUNTER_REPL_CMD, OPCOUNTER_QUERY, OPCOUNTER_REPL_INSERT, OPCOUNTER_INSERT
+               - name: time
+                 type: double
+                 metric_type: gauge
+                 unit: ms
+                 description: |-
+                   DB Operation Times.
+                   Aggregate of MongoDB Metrics OP_EXECUTION_TIME_WRITES, OP_EXECUTION_TIME_COMMANDS, OP_EXECUTION_TIME_READS
+            - name: query_executor.scanned
+              type: double
+              metric_type: gauge
+              description: |-
+                Scanned objects.
+                Aggregate of MongoDB Metrics QUERY_EXECUTOR_SCANNED_OBJECTS, QUERY_EXECUTOR_SCANNED
+            - name: query_targeting.scanned_per_returned
+              type: double
+              metric_type: gauge
+              description: |- 
+                Scanned objects per returned.
+                Aggregate of MongoDB Metrics QUERY_TARGETING_SCANNED_OBJECTS_PER_RETURNED, QUERY_TARGETING_SCANNED_PER_RETURNED
+            - name: storage
+              type: double
+              metric_type: gauge
+              unit: byte
+              description: |- 
+                Storage used by the database.
+                Aggregate of MongoDB Metrics DB_INDEX_SIZE_TOTAL, DB_DATA_SIZE_TOTAL_WO_SYSTEM, DB_STORAGE_TOTAL, DB_DATA_SIZE_TOTAL
+         - name: global_lock
+           type: double
+           metric_type: gauge
+           description: |-
+             Number and status of locks.
+             Aggregate of MongoDB Metrics GLOBAL_LOCK_CURRENT_QUEUE_WRITERS, GLOBAL_LOCK_CURRENT_QUEUE_READERS, GLOBAL_LOCK_CURRENT_QUEUE_TOTAL   
+         - name: index.counters
+           type: double
+           metric_type: gauge
+           description: |-
+             Indexes.
+             Aggregate of MongoDB Metrics INDEX_COUNTERS_BTREE_MISSES, INDEX_COUNTERS_BTREE_ACCESSES, INDEX_COUNTERS_BTREE_HITS         
+         - name: memory.usage 
+           type: double
+           metric_type: gauge
+           unit: byte
+           description: |-
+             Memory Usage.
+             Aggregate of MongoDB Metrics MEMORY_MAPPED, MEMORY_VIRTUAL, COMPUTED_MEMORY, MEMORY_RESIDENT
+         - name: network.io 
+           type: double
+           metric_type: gauge
+           description: |-
+              Network IO.
+              Aggregate of MongoDB Metrics NETWORK_BYTES_OUT, NETWORK_BYTES_IN
+         - name: oplog.time
+           type: double
+           metric_type: gauge
+           unit: s
+           description: |-
+             Execution time by operation.
+             Aggregate of MongoDB Metrics OPLOG_MASTER_TIME, OPLOG_SLAVE_LAG_MASTER_TIME, OPLOG_MASTER_LAG_TIME_DIFF
+         - name: page_faults
+           type: double
+           metric_type: gauge
+           description: |-   
+             Page faults.
+             Aggregate of MongoDB Metrics GLOBAL_PAGE_FAULT_EXCEPTIONS_THROWN, EXTRA_INFO_PAGE_FAULTS, GLOBAL_ACCESSES_NOT_IN_MEMORY     
+         - name: tickets
+           type: double
+           metric_type: gauge
+           description: |-
+             Tickets.
+             Aggregate of MongoDB Metrics TICKETS_AVAILABLE_WRITE, TICKETS_AVAILABLE_READS
+      - name: mongodbatlas.system  
+        type: group
+        fields:
+         - name: cpu 
+           type: group
+           fields:
+            - name: normalized.usage
+              type: group
+              fields:
+               - name: average
+                 type: double
+                 metric_type: gauge
+                 unit: percent
+                 description: |-
+                   System CPU Normalized to pct.
+                   Aggregate of MongoDB Metrics SYSTEM_NORMALIZED_CPU_IOWAIT, SYSTEM_NORMALIZED_CPU_GUEST, SYSTEM_NORMALIZED_CPU_IRQ, SYSTEM_NORMALIZED_CPU_KERNEL, SYSTEM_NORMALIZED_CPU_STEAL, SYSTEM_NORMALIZED_CPU_SOFTIRQ, SYSTEM_NORMALIZED_CPU_NICE, SYSTEM_NORMALIZED_CPU_USER
+               - name: max
+                 type: double
+                 metric_type: gauge
+                 unit: percent
+                 description: |-
+                   System CPU Normalized to pct.
+                   Aggregate of MongoDB Metrics MAX_SYSTEM_NORMALIZED_CPU_USER, MAX_SYSTEM_NORMALIZED_CPU_NICE, MAX_SYSTEM_NORMALIZED_CPU_IOWAIT, MAX_SYSTEM_NORMALIZED_CPU_SOFTIRQ, MAX_SYSTEM_NORMALIZED_CPU_STEAL, MAX_SYSTEM_NORMALIZED_CPU_KERNEL, MAX_SYSTEM_NORMALIZED_CPU_GUEST, MAX_SYSTEM_NORMALIZED_CPU_IRQ
+            - name: usage
+              type: group
+              fields:
+               - name: average
+                 type: double
+                 metric_type: gauge
+                 unit: percent
+                 description: |-
+                   System CPU Usage (%).
+                   Aggregate of MongoDB Metrics SYSTEM_CPU_USER, SYSTEM_CPU_GUEST, SYSTEM_CPU_SOFTIRQ, SYSTEM_CPU_IRQ, SYSTEM_CPU_KERNEL, SYSTEM_CPU_IOWAIT, SYSTEM_CPU_NICE, SYSTEM_CPU_STEAL
+               - name: max
+                 type: double
+                 metric_type: gauge
+                 unit: percent
+                 description: |-
+                   System CPU Usage (%).
+                   Aggregate of MongoDB Metrics MAX_SYSTEM_CPU_SOFTIRQ, MAX_SYSTEM_CPU_IRQ, MAX_SYSTEM_CPU_GUEST, MAX_SYSTEM_CPU_IOWAIT, MAX_SYSTEM_CPU_NICE, MAX_SYSTEM_CPU_KERNEL, MAX_SYSTEM_CPU_USER, MAX_SYSTEM_CPU_STEAL
+         - name: fts 
+           type: group 
+           fields:
+             - name: cpu 
+               type: group
+               fields:
+                - name: normalized.usage
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: |- 
+                    Full text search disk usage (%).
+                    Aggregate of MongoDB Metrics FTS_PROCESS_NORMALIZED_CPU_USER, FTS_PROCESS_NORMALIZED_CPU_KERNEL  
+                - name: usage
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                  description: |-
+                    Full-text search (%).
+                    Aggregate of MongoDB Metrics FTS_PROCESS_CPU_USER, FTS_PROCESS_CPU_KERNEL
+             - name: memory.usage
+               type: double
+               metric_type: gauge
+               description: |- 
+                 Full-text search.
+                 Aggregate of MongoDB Metrics FTS_MEMORY_MAPPED, FTS_PROCESS_SHARED_MEMORY, FTS_PROCESS_RESIDENT_MEMORY, FTS_PROCESS_VIRTUAL_MEMORY
+         - name: memory.usage
+           type: group
+           fields:
+            - name: average
+              type: double
+              metric_type: gauge
+              description: |- 
+                System Memory Usage.
+                Aggregate of MongoDB Metrics SYSTEM_MEMORY_AVAILABLE, SYSTEM_MEMORY_BUFFERS, SYSTEM_MEMORY_USED, SYSTEM_MEMORY_CACHED, SYSTEM_MEMORY_SHARED, SYSTEM_MEMORY_FREE
+            - name: max
+              type: double
+              metric_type: gauge
+              description: |-
+                System Memory Usage.
+                Aggregate of MongoDB Metrics MAX_SYSTEM_MEMORY_CACHED, MAX_SYSTEM_MEMORY_AVAILABLE, MAX_SYSTEM_MEMORY_USED, MAX_SYSTEM_MEMORY_BUFFERS, MAX_SYSTEM_MEMORY_FREE, MAX_SYSTEM_MEMORY_SHARED
+         - name: network.io
+           type: group
+           fields:
+            - name: average
+              type: double
+              metric_type: gauge
+              description: |-
+                System Network IO.
+                Aggregate of MongoDB Metrics SYSTEM_NETWORK_IN, SYSTEM_NETWORK_OUT
+            - name: max
+              type: double
+              metric_type: gauge
+              description: |-
+                System Network IO.
+                Aggregate of MongoDB Metrics MAX_SYSTEM_NETWORK_OUT, MAX_SYSTEM_NETWORK_IN
+         - name: paging.usage
+           type: group
+           fields:
+            - name: average
+              type: double
+              metric_type: gauge
+              description: |- 
+                Swap usage.
+                Aggregate of MongoDB Metrics SWAP_USAGE_FREE, SWAP_USAGE_USED
+            - name: max
+              type: double
+              metric_type: gauge
+              description: |-
+                Swap usage.
+                Aggregate of MongoDB Metrics MAX_SWAP_USAGE_FREE, MAX_SWAP_USAGE_USED
+- name: label
+  type: group
+  fields:
+   - name: assert_type   
+     type: keyword
+     description: "MongoDB assertion type. Such as: regular, warning, msg, user."
+   - name: btree_counter_type
+     type: keyword
+     description: "Database index effectiveness. Such as: accesses, hits, misses."
+   - name: cache_direction   
+     type: keyword
+     description: "Whether read into or written from. Such as: read_into, written_from."
+   - name: cache_status 
+     type: keyword
+     description: "Cache status. such as: dirty, used."
+   - name: cluster_role  
+     type: keyword
+     description: "Whether process is acting as replica or primary.	Such as: primary, replica."
+   - name: cpu_state
+     type: keyword
+     description: "CPU state. Such as: kernel, user, nice, iowait, irq, softirq, guest, steal."
+   - name: cursor_state
+     type: keyword
+     description: "Whether cursor is open or timed out. Such as: timed_out, open."
+   - name: direction
+     type: keyword
+     description: "Network traffic direction. Such as: receive, transmit."
+   - name: document_status
+     type: keyword
+     description: "Status of documents in the database. Such as: returned, inserted, updated, deleted."
+   - name: execution_type
+     type: keyword
+     description: "Type of command. Such as: reads, writes, commands."
+   - name: global_lock_state
+     type: keyword
+     description: "Which queue is locked. Such as: current_queue_total, current_queue_readers, current_queue_writers."
+   - name: memory_issue_type
+     type: keyword
+     description: "Type of memory issue encountered. Such as: extra_info, global_accesses_not_in_memory, exceptions_thrown."
+   - name: memory_state
+     type: keyword
+     description: "Memory usage type.	Such as: resident, virtual, mapped, computed, shared, free, used."
+   - name: operation
+     type: keyword
+     description: "Type of database operation.	Such as: cmd, query, update, delete, getmore, insert, scan_and_order."
+   - name: oplog_type
+     type: keyword
+     description: "Oplog type. Such as: slave_lag_master_time, master_time, master_lag_time_diff."
+   - name: scanned_type
+     type: keyword
+     description: "Objects or indexes scanned during query. Such as: index_items, objects."
+   - name: storage_status
+     type: keyword
+     description: "Views on database size. Such as: total, data_size, index_size, data_size_wo_system."
+   - name: ticket_type
+     type: keyword
+     description: "Type of ticket available	.Such as: available_reads, available_writes."
