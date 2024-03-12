@@ -50,7 +50,7 @@ The values highlighted above are typical of beaconing behavior and can help with
 
 ## Exceptionlist customizations
 
-There are two places where you can customize which processes are on an exceptionlist for this detection. The first is in the transforms: these contain processes which are common, and thus it is beneficial for performance and data processing to keep some processes here. You can read more on how to customize the transforms in the next section.
+There are two places where you can customize which processes are on an exceptionlist for this detection. The first is in the transforms: these contain processes which are common, and thus it is beneficial for the transform's performance and data processing to keep some processes here. You can read more on how to customize the transforms in the next section.
 
 We also provide a default exceptionlist in the rules, which you can [inspect and customize in the UI](https://www.elastic.co/guide/en/security/current/detections-ui-exceptions.html). The source can be viewed [here](https://github.com/elastic/detection-rules/tree/main/rules/integrations/beaconing).
 
