@@ -1,11 +1,6 @@
 ---
 description: Pipeline for processing sample logs
 processors:
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
-      if: ctx.event?.original == null
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -14,42 +9,45 @@ processors:
   # The syslog header should have been stripped off, so we need to process the key=value data
   # We will be using painless here, because it is the best option we have.
   - script:
+      tag: stormshield_kv_parse
+      description: Parse key/value pairs from message.
       lang: painless
-      source: |
-        ArrayList splitBySpace(String input) {
-          def fields = new ArrayList();
-          def lastSep = 0;
-          def inQuote = false;
-          for (int i = 0, n = input.length(); i < n; ++i) {
-            char c = input.charAt(i);
-            if (c == (char)'"') {
-              inQuote = !inQuote;
-            }
-            if (!inQuote && c == (char)' ') {
-              fields.add(input.substring(lastSep, i));
-              lastSep = i + 1;
-            }
-            if (i == n - 1) {
-              fields.add(input.substring(lastSep));
-            }
-          }
-          return fields;
-        }
-        ctx["stormshield"] = new HashMap();
-        def fields = splitBySpace(ctx["event.original"]);
-        for (String field : fields) {
-          int equal = field.indexOf('=');
-          if (equal > 0) {
-            String key = field.substring(0, equal);
-            String value = field.substring(equal + 1);
-            char c = value.charAt(0);
-            if (c == (char)'"') {
-              value = value.substring(1, value.length()-1);
-            }
-            ctx["stormshield"][key] = value;
-          }
-        }
+      source: >-
+        ctx["_fields_"] = new HashMap();
 
+        def kvStart = 0;
+        def kvSplit = 0;
+        def kvEnd = 0;
+        def inQuote = false;
+
+        for (int i = 0, n = ctx["message"].length(); i < n; ++i) {
+          char c = ctx["message"].charAt(i);
+          if (c == (char)'"') {
+            inQuote = !inQuote;
+          }
+          if (inQuote) {
+            continue;
+          }
+          
+          if (c == (char)'=') {
+            kvSplit = i;
+          }
+          if (c == (char)' ') {
+            if (kvStart != kvSplit) {
+              def key = ctx["message"].substring(kvStart, kvSplit);
+              def value = ctx["message"].substring(kvSplit + 1, i).replace("\"", "");
+              ctx["_fields_"][key] = value;
+            }
+
+            kvStart = i + 1;
+            kvSplit = i + 1;
+          }
+        }
+  - rename:
+      field: _fields_.msg
+      target_field: event.log.msg
+      ignore_missing: true
+      if: ctx.event?.log?.msg == null
 on_failure:
 - set:
     field: error.message

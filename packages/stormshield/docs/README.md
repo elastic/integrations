@@ -1,44 +1,28 @@
 <!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
 <!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
 
-# StormShield EVA-1
+# Stormshield SNS
 
-<!-- The StormShield EVA-1 integration allows you to monitor {name of service}. {name of service} is {describe service}.
+Stormshield Network Security (SNS) firewalls are a stable and efficient security solution to protect corporate networks from cyberattacks. Real-time protection (intrusion prevention and detection, application control, antivirus, etc.), control and supervision (URL filtering, IP geolocation, vulnerability detection, etc.) and content filtering (antispam, antispyware, antiphishing, etc.) all guarantee secure communications. All Stormshield Network Security firewalls are based on the same firmware, and with their core features, Stormshield Network Security firewalls give you comprehensive security and high performance network protection.
 
-Use the StormShield EVA-1 integration to {purpose}. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference {data stream type} when troubleshooting an issue.
+Use the Stormshield SNS integration to ingest syslog data into your Elasticsearch cluster, then visualize that data in Kibana. Create alerts to notify you if something goes wrong.
 
+<!-- 
 For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
 
 ## Data streams
 
-<!-- The StormShield EVA-1 integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
+The StormShield SNS integration collects one type of data streams: logs.
 
-<!-- If applicable -->
-<!-- **Logs** help you keep a record of events happening in {service}.
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference). -->
-
-<!-- If applicable -->
-<!-- **Metrics** give you insight into the state of {service}.
-Metric data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Metrics](#metrics-reference). -->
-
-<!-- Optional: Any additional notes on data streams -->
+**Logs** help you keep a record of events happening in your firewalls.
+Log data streams collected by the SNS integration include syslogs and more. See more details in the [Logs](#logs-reference).
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-<!--
-	Optional: Other requirements including:
-	* System compatibility
-	* Supported versions of third-party products
-	* Permissions needed
-	* Anything else that could block a user from successfully using the integration
--->
-
 ## Setup
-
-<!-- Any prerequisite instructions -->
 
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
