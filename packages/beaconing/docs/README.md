@@ -58,7 +58,7 @@ We also provide a default exceptionlist in the rules, which you can [inspect and
 
 Advanced users can also tune the scripted metric aggregation's parameters, such as jitter percentage or time window. Navigate to Transforms on your Elastic cluster and find the transform installed by this package (search `beaconing`). You can browse the source of the transform there by clicking on the `.json` tab; the source code of the latest version can also be viewed [here](https://github.com/elastic/integrations/blob/main/packages/beaconing/elasticsearch/transform/pivot_transform/transform.yml#L364).
 
-To overwrite the default parameters: delete the transform, change the parameters, and restart the transform. The configurable parameters are:
+To overwrite the default parameters: stop the transform installed by the package, clone the transform, change the parameters of the cloned transform, then start the cloned transform. The configurable parameters are:
 
 * `number_buckets_in_range`: The number of time buckets into which the time window is split. Using more buckets improves estimates for various statistics, but also increases resource usage.
 * `time_bucket_length`: The length of each time bucket. A higher value indicates a longer time window. Set this to a higher value to check for very low-frequency beacons.
