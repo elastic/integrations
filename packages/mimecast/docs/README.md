@@ -28,11 +28,11 @@ An example event for `archive_search` looks as following:
 {
     "@timestamp": "2021-03-18T18:35:49.000Z",
     "agent": {
-        "ephemeral_id": "ef42d9ea-67ec-4494-bad4-9d47b9ed68d2",
-        "id": "f81bb806-77be-4e89-9f08-d426b37fd611",
+        "ephemeral_id": "33b422bb-ff57-4039-80c8-23c64e5f54d7",
+        "id": "5e5700e6-bb04-40f9-b6fc-e5adb94ec6b5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.12.1"
     },
     "data_stream": {
         "dataset": "mimecast.archive_search_logs",
@@ -87,7 +87,6 @@ An example event for `archive_search` looks as following:
         "name": "admin_dhamilton"
     }
 }
-
 ```
 
 **Exported fields**
@@ -217,7 +216,6 @@ An example event for `audit_events` looks as following:
         "name": "johndoe"
     }
 }
-
 ```
 
 **Exported fields**
@@ -372,7 +370,6 @@ An example event for `dlp` looks as following:
         "mimecast-dlp-logs"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -444,11 +441,11 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2021-11-12T12:15:46.000Z",
     "agent": {
-        "ephemeral_id": "3a0135b8-1557-4b7f-9f04-b7cbe8b6490c",
-        "id": "b256abb3-219e-4360-96f0-e1176f971883",
+        "ephemeral_id": "4bd86916-fe3a-4aca-9f71-186da79c6cf6",
+        "id": "5e5700e6-bb04-40f9-b6fc-e5adb94ec6b5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.1"
+        "version": "8.12.1"
     },
     "data_stream": {
         "dataset": "mimecast.siem_logs",
@@ -459,9 +456,9 @@ An example event for `siem` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b256abb3-219e-4360-96f0-e1176f971883",
+        "id": "5e5700e6-bb04-40f9-b6fc-e5adb94ec6b5",
         "snapshot": false,
-        "version": "8.11.1"
+        "version": "8.12.1"
     },
     "email": {
         "direction": "internal",
@@ -481,7 +478,7 @@ An example event for `siem` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-12T12:15:46+0000",
         "dataset": "mimecast.siem_logs",
-        "ingested": "2024-02-08T03:05:16Z",
+        "ingested": "2024-03-12T03:42:30Z",
         "original": "{\"Content-Disposition\":\"attachment; filename=\\\"jrnl_20211018093329655.json\\\"\",\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
         "outcome": "unknown"
     },
@@ -717,7 +714,6 @@ An example event for `threat_intel_malware_customer` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -874,7 +870,6 @@ An example event for `threat_intel_malware_grid` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -1039,7 +1034,6 @@ An example event for `ttp_ap` looks as following:
         "mimecast-ttp-ap"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1206,7 +1200,6 @@ An example event for `ttp_ip` looks as following:
         "mimecast-ttp-ip"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1388,7 +1381,6 @@ An example event for `ttp_url` looks as following:
         ]
     }
 }
-
 ```
 
 **Exported fields**
