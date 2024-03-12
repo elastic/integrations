@@ -135,7 +135,6 @@ An example event for `audit` looks as following:
         "carbon_black_cloud-audit"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -302,7 +301,6 @@ An example event for `alert` looks as following:
         "name": "test34@demo.com"
     }
 }
-
 ```
 
 **Exported fields**
@@ -590,8 +588,6 @@ An example event for `endpoint_event` looks as following:
 | carbon_black_cloud.endpoint_event.sensor_action | The sensor action taken on event. | keyword |
 | carbon_black_cloud.endpoint_event.target_cmdline | Process command line associated with the target process. | keyword |
 | carbon_black_cloud.endpoint_event.type | The event type. | keyword |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
-| client.port | Port of the client. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -608,6 +604,8 @@ An example event for `endpoint_event` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
 | dll.hash.md5 | MD5 hash. | keyword |
 | dll.hash.sha256 | SHA256 hash. | keyword |
 | dll.path | Full file path of the library. | keyword |
@@ -978,7 +976,6 @@ An example event for `asset_vulnerability_summary` looks as following:
         "severity": "CRITICAL"
     }
 }
-
 ```
 
 **Exported fields**

@@ -62,7 +62,6 @@ processors:
       if: ctx.json?.netconn_inbound == false
   - convert:
       field: json.remote_port
-      target_field: source.port
       type: long
       ignore_missing: true
       on_failure:
@@ -73,7 +72,6 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.remote_ip
-      target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -82,19 +80,8 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{source.ip}}}'
-      if: ctx.source?.ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - rename:
-      field: json.netconn_domain
-      target_field: source.address
-      ignore_missing: true
   - convert:
       field: json.local_port
-      target_field: client.port
       type: long
       ignore_missing: true
       on_failure:
@@ -105,7 +92,6 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.local_ip
-      target_field: client.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -114,6 +100,56 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: json.remote_ip
+      ignore_empty_value: true
+      if: ctx.network?.direction == 'inbound'
+  - set:
+      field: source.port
+      copy_from: json.remote_port
+      ignore_empty_value: true
+      if: ctx.network?.direction == 'inbound'
+  - set:
+      field: destination.ip
+      copy_from: json.local_ip
+      ignore_empty_value: true
+      if: ctx.network?.direction == 'inbound'
+  - set:
+      field: destination.port
+      copy_from: json.local_port
+      ignore_empty_value: true
+      if: ctx.network?.direction == 'inbound'
+  - set:
+      field: source.ip
+      copy_from: json.local_ip
+      ignore_empty_value: true
+      if: ctx.network?.direction == 'outbound'
+  - set:
+      field: source.port
+      copy_from: json.local_port
+      ignore_empty_value: true
+      if: ctx.network?.direction == 'outbound'
+  - set:
+      field: destination.ip
+      copy_from: json.remote_ip
+      ignore_empty_value: true
+      if: ctx.network?.direction == 'outbound'
+  - set:
+      field: destination.port
+      copy_from: json.remote_port
+      ignore_empty_value: true
+      if: ctx.network?.direction == 'outbound'
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.netconn_domain
+      target_field: source.address
+      ignore_missing: true
   - append:
       field: related.ip
       value: '{{{client.ip}}}'
