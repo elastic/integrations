@@ -21,12 +21,30 @@ icons:
     size: 32x32
     type: image/svg+xml
 policy_templates:
-  - name: container
-    title: Container Metrics
-    description: Collect metrics for containers. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics with Elastic Agent.
+  - name: container-logs
+    title: Container Logs
+    description: Collect container related logs and audit logs from Kubernetes clusters with Elastic Agent.
     data_streams:
       - container_logs
       - audit_logs
+    inputs:
+      - type: filestream
+        title: Container logs
+        description: Collecting Kubernetes container and audit logs
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat_kubernetes_overview.png
+        title: Metricbeat Kubernetes Overview
+        size: 1896x961
+        type: image/png
+  - name: container
+    title: Container Metrics
+    description: Collect metrics for containers with Elastic Agent. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics.
+    data_streams:
       - container
       - state_container
     inputs:
@@ -44,9 +62,6 @@ policy_templates:
             multi: false
             required: false
             show_user: false
-      - type: filestream
-        title: Container Logs
-        description: Collect Kubernetes container logs
     icons:
       - src: /img/logo_kubernetes.svg
         title: Logo Kubernetes
@@ -59,7 +74,7 @@ policy_templates:
         type: image/png
   - name: pod
     title: Pod Metrics
-    description: Collect metrics for pod. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics with Elastic Agent.
+    description: Collect metrics for pod with Elastic Agent. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics.
     data_streams:
       - pod
       - state_pod
@@ -92,7 +107,7 @@ policy_templates:
         type: image/png
   - name: node
     title: Node Metrics
-    description: Collect metrics for node. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics with Elastic Agent.
+    description: Collect metrics for node with Elastic Agent. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics.
     data_streams:
       - node
       - state_node
@@ -123,7 +138,7 @@ policy_templates:
         type: image/png
   - name: volume
     title: Volume Metrics
-    description: Collect metrics for node. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics with Elastic Agent.
+    description: Collect metrics for node with Elastic Agent. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics.
     data_streams:
       - volume
       - state_persistentvolume
@@ -154,9 +169,9 @@ policy_templates:
         title: Metricbeat Kubernetes Overview
         size: 1896x961
         type: image/png
-  - name: general-metrics
-    title: general-metrics
-    description: Collect general metrics from Kubernetes Kube-state-metrics with Elastic Agent and system and volume metrics from Kubelet.
+  - name: cluster-metrics
+    title: Cluster Resource  metrics
+    description: Collect other general Cluster metrics with Elastic Agent. It includes metrics from Kube-state-metrics and also system and volume metrics from Kubelet.
     data_streams:
       - system
       - state_daemonset
@@ -168,8 +183,8 @@ policy_templates:
       - state_statefulset
     inputs:
       - type: kubernetes/metrics
-        title: General Resource Metrics
-        description: Collecting metrics from kube-state-metrics (cronjob, deployment, daemonset, namespace, replicaset, resourcequota, service, statefulset) and Kubelet (system)
+        title: Cluster Resource Metrics
+        description: Collecting metrics from kube-state-metrics (deployment, daemonset, namespace, replicaset, resourcequota, service, statefulset) and Kubelet (system)
         input_group: metrics
         vars:
           - name: condition
