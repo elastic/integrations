@@ -5,7 +5,7 @@ logs created by the Traefik server.
 
 ## Compatibility
 
-The Traefik datasets were tested with Traefik 1.6 and 2.9.
+The Traefik datasets were tested with Traefik 1.6, 1.7 and 2.9.
 
 ## Logs
 
