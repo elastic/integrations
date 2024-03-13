@@ -6,6 +6,15 @@ streams:
     description: Collect watchlist hit from Carbon Black Cloud.
     template_path: aws-s3.yml.hbs
     vars:
+      - name: queue_url_watchlist_hit
+        type: text
+        title: "[Watchlist Hit][SQS] Queue URL"
+        multi: false
+        required: false
+        show_user: true
+        description: |-
+          URL of the AWS SQS queue that messages will be received from. This is only required if you want to collect logs via AWS SQS.
+          This is a watchlist hit data stream specific queue URL. This will override the global queue URL if provided.
       - name: bucket_list_prefix
         type: text
         title: "[S3] Bucket Prefix"
@@ -60,8 +69,8 @@ streams:
         required: false
         show_user: false
         default: |
-          - regex: "watchlist_hit_logs/"
-        description: If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that don’t match one of the regexes will not be processed.
+          # - regex: "watchlist_hit_logs/"
+        description: "If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. \nThis is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. \nIf file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. \nRegexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that don’t match one of the regexes will not be processed.\n[NOTE]: It is recommended to use data stream specific SQS queues instead of file_selectors to avoid data loss."
       - name: tags
         type: text
         title: Tags
