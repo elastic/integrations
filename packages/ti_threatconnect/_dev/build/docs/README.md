@@ -34,6 +34,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 The minimum **kibana.version** required is **8.11.0**.
 This module has been tested against the **ThreatConnect API Version v3**.
+The minimum required ThreatConnect Platform version needs to be **7.3.1**.
 
 ## Setup
 
