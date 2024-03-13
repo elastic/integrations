@@ -3,7 +3,6 @@
 {{- $system_diskio_io_time := generate "system_diskio_io_time" }}
 {{- $system_diskio_io_ops := generate "system_diskio_io_ops" }}
 {{- $system_diskio_name := generate "system_diskio_name" }}    
-{{- $system_diskio_serial_number := generate "system_diskio_serial_number" }}
 {{- $system_diskio_read_count := generate "system_diskio_read_count" }}
 {{- $system_diskio_write_count := generate "system_diskio_write_count" }}
 {{- $system_diskio_read_bytes := generate "system_diskio_read_bytes" }}
@@ -21,7 +20,7 @@
   },
   "data_stream": {
     "dataset": "system.diskio",
-    "namespace": "default",
+    "namespace": "ep",
     "type": "metrics"
   },
   "ecs": {
@@ -70,7 +69,17 @@
         "time": {{ $system_diskio_io_time }}
       },
       "name": "{{ $system_diskio_name }}",
-      "serial_number": "{{ $system_diskio_serial_number }}",
+      {{- if eq $system_diskio_name "sda"}}
+      "serial_number": "SN20240308001",
+      {{- else if eq $system_diskio_name "sda1"}}
+      "serial_number": "SN20240308002",
+      {{- else if eq $system_diskio_name "sda2"}}
+      "serial_number": "SN20240308003",
+      {{- else if eq $system_diskio_name "dm-0"}}
+      "serial_number": "SN20240308004",
+      {{- else }}
+      "serial_number": "SN20240308005",
+      {{- end }}
       "read": {
         "bytes": {{ $system_diskio_read_bytes }},
         "count": {{ $system_diskio_read_count }},
