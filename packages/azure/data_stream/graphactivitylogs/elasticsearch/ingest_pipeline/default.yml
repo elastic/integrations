@@ -18,12 +18,6 @@ processors:
       target_field: azure-eventhub
       ignore_missing: true
       tag: rename-azure
-  - script:
-      source: ctx.message = ctx.message.replace(params.empty_field_name, '')
-      params:
-        empty_field_name: '"":"",'
-      ignore_failure: true
-      tag: script-message-emptyfields
   - rename:
       field: message
       target_field: event.original
@@ -175,10 +169,10 @@ processors:
       tag: rename-properties-durationMs
   - script:
       lang: painless
-      source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
-        * params.param_nano;}
-      params:
-        param_nano: 1000000
+      source: |
+        if (ctx.event.duration!= null) {
+          ctx.event.duration = ctx.event.duration * 1000000;
+        }
       ignore_failure: true
       tag: script-duration
   - remove:
