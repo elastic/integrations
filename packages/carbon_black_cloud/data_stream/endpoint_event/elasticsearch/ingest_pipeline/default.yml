@@ -62,7 +62,6 @@ processors:
       if: ctx.json?.netconn_inbound == false
   - convert:
       field: json.remote_port
-      target_field: source.port
       type: long
       ignore_missing: true
       on_failure:
@@ -73,7 +72,6 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.remote_ip
-      target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -82,19 +80,8 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{source.ip}}}'
-      if: ctx.source?.ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - rename:
-      field: json.netconn_domain
-      target_field: source.address
-      ignore_missing: true
   - convert:
       field: json.local_port
-      target_field: client.port
       type: long
       ignore_missing: true
       on_failure:
@@ -105,7 +92,6 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.local_ip
-      target_field: client.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -114,6 +100,43 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      source: |
+        // These allocations may be futile, but will be cleaned up in the postamble.
+        if (ctx.client == null) {
+          ctx.client = new HashMap();
+        }
+        if (ctx.source == null) {
+          ctx.source = new HashMap();
+        }
+        if (ctx.destination == null) {
+          ctx.destination = new HashMap();
+        }
+        // Nulls inserted into the document will be cleaned up in the postamble.
+        ctx.client.ip = ctx.json.local_ip;
+        ctx.client.port = ctx.json.local_port;
+        if (ctx.json?.netconn_inbound == true) {
+          ctx.destination.ip = ctx.json?.local_ip;
+          ctx.destination.port = ctx.json?.local_port;
+          ctx.source.ip = ctx.json?.remote_ip;
+          ctx.source.port = ctx.json?.remote_port;
+        } else {
+          ctx.source.ip = ctx.json?.local_ip;
+          ctx.source.port = ctx.json?.local_port;
+          ctx.destination.ip = ctx.json?.remote_ip;
+          ctx.destination.port = ctx.json?.remote_port;
+        }     
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.netconn_domain
+      target_field: source.address
+      ignore_missing: true
   - append:
       field: related.ip
       value: '{{{client.ip}}}'
