@@ -135,7 +135,6 @@ An example event for `audit` looks as following:
         "carbon_black_cloud-audit"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -302,7 +301,6 @@ An example event for `alert` looks as following:
         "name": "test34@demo.com"
     }
 }
-
 ```
 
 **Exported fields**
@@ -608,6 +606,8 @@ An example event for `endpoint_event` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
 | dll.hash.md5 | MD5 hash. | keyword |
 | dll.hash.sha256 | SHA256 hash. | keyword |
 | dll.path | Full file path of the library. | keyword |
@@ -978,7 +978,6 @@ An example event for `asset_vulnerability_summary` looks as following:
         "severity": "CRITICAL"
     }
 }
-
 ```
 
 **Exported fields**
