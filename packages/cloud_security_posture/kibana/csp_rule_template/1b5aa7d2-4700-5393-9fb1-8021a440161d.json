@@ -1,0 +1,38 @@
+{
+    "id": "1b5aa7d2-4700-5393-9fb1-8021a440161d",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "None",
+            "default_value": "By default, cluster control plane logs aren't sent to CloudWatch Logs. ... When you enable a log type, the logs are sent with a log verbosity level of 2 .  To enable or disable control plane logs with the console. Open the Amazon EKS console at https://console.aws.amazon.com/eks/home#/clusters . Amazon EKS Information in CloudTrail CloudTrail is enabled on your AWS account when you create the account. When activity occurs in Amazon EKS, that activity is recorded in a CloudTrail event along with other AWS service events in Event history.\n",
+            "references": "",
+            "id": "1b5aa7d2-4700-5393-9fb1-8021a440161d",
+            "name": "The default namespace should not be used",
+            "profile_applicability": "* Level 2",
+            "description": "Kubernetes provides a default namespace, where objects are placed if no namespace is specified for them.\nPlacing objects in this namespace makes application of RBAC and other controls more difficult.",
+            "rationale": "Resources in a Kubernetes cluster should be segregated by namespace, to allow for security controls to be applied at that level and to make it easier to manage resources.",
+            "audit": "Run this command to list objects in default namespace\n\n```\nkubectl get all -n default\n```\n\nThe only entries there should be system managed resources such as the `kubernetes` service",
+            "remediation": "Ensure that namespaces are created to allow for appropriate segregation of Kubernetes resources and that all new resources are created in a specific namespace.",
+            "section": "General Policies",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 4.6.3",
+                "General Policies"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS)",
+                "version": "v1.0.1",
+                "id": "cis_eks",
+                "rule_number": "4.6.3",
+                "posture_type": "kspm"
+            },
+            "rego_rule_id": "cis_4_6_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
