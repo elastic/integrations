@@ -8,6 +8,12 @@ This integration connects with the commercial [Cybersixgill Darkfeed](https://ww
 
 The Cybersixgill Darkfeed integration collects threat intelligence from the Darkfeed TAXII service available using the credentials provided from Cybersixgill.
 
+#### Expiration of Indicators of Compromise (IOCs)
+The ingested IOCs are expired after the duration configured by `IOC Expiration Duration` integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates destination indices named `logs-ti_cybersixgill_latest.dest_threat-*` which only contains active and unexpired IOCs. The latest destination index also has an alias named `logs-ti_cybersixgill_latest.threat`. When querying for active indicators or setting up indicator match rules, only use the latest destination indices or the alias to avoid false positives from expired IOCs. Dashboards are also pointing to the latest destination indices containing active IOC. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source datastream `.ds-logs-ti_cybersixgill.threat-*` indices.
+
+#### ILM Policy
+To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_cybersixgill.threat-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_cybersixgill.threat-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -107,8 +113,8 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2021-12-07T13:58:01.596Z",
     "agent": {
-        "ephemeral_id": "f8b702a6-24c6-472a-8b2e-83c13ab5c138",
-        "id": "dfc5a982-973e-403f-8d3b-c8bb6ba2b64b",
+        "ephemeral_id": "5b99e697-c059-40e4-9097-eb5a21a371c6",
+        "id": "49b0da18-7d53-4b44-9bda-940341f4fb0f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.1"
@@ -136,7 +142,7 @@ An example event for `threat` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dfc5a982-973e-403f-8d3b-c8bb6ba2b64b",
+        "id": "49b0da18-7d53-4b44-9bda-940341f4fb0f",
         "snapshot": false,
         "version": "8.12.1"
     },
@@ -145,9 +151,9 @@ An example event for `threat` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2024-03-15T18:38:14.019Z",
+        "created": "2024-03-15T19:20:27.045Z",
         "dataset": "ti_cybersixgill.threat",
-        "ingested": "2024-03-15T18:38:14Z",
+        "ingested": "2024-03-15T19:20:27Z",
         "kind": "enrichment",
         "original": "{\"confidence\":70,\"created\":\"2021-12-07T13:58:01.596Z\",\"description\":\"Hash attributed to malware that was discovered in the dark and deep web\",\"extensions\":{\"extension-definition--3de9ff00-174d-4d41-87c9-05a27a7e117c\":{\"extension_type\":\"toplevel-property-extension\"}},\"external_references\":[{\"positive_rate\":\"medium\",\"source_name\":\"VirusTotal\",\"url\":\"https://virustotal.com/#/file/7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\"},{\"description\":\"Mitre attack tactics and technique reference\",\"mitre_attack_tactic\":\"Build Capabilities\",\"mitre_attack_tactic_id\":\"TA0024\",\"mitre_attack_tactic_url\":\"https://attack.mitre.org/tactics/TA0024/\",\"source_name\":\"mitre-attack\"}],\"id\":\"indicator--302dab0f-64dc-42f5-b99e-702b28c1aaa9\",\"indicator_types\":[\"malicious-activity\"],\"lang\":\"en\",\"modified\":\"2021-12-07T13:58:01.596Z\",\"name\":\"4d0f21919d623bd1631ee15ca7429f28;5ce39ef0700b64bd0c71b55caf64ae45d8400965;7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\",\"pattern\":\"[file:hashes.MD5 = '4d0f21919d623bd1631ee15ca7429f28' OR file:hashes.'SHA-1' = '5ce39ef0700b64bd0c71b55caf64ae45d8400965' OR file:hashes.'SHA-256' = '7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d']\",\"pattern_type\":\"stix\",\"sixgill_actor\":\"vaedzy\",\"sixgill_confidence\":70,\"sixgill_feedid\":\"darkfeed_012\",\"sixgill_feedname\":\"dark_web_hashes\",\"sixgill_post_virustotallink\":\"https://virustotal.com/#/file/7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\",\"sixgill_postid\":\"c0c9a0085fb5281cfb40a0ddb62e1d2c6a53eb7a\",\"sixgill_posttitle\":\"[病毒样本] #Trickbot (2021-12-07)\",\"sixgill_severity\":70,\"sixgill_source\":\"forum_kafan\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2021-12-07T02:55:17Z\"}",
         "severity": 70,
