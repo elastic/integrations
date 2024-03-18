@@ -542,6 +542,7 @@ An example event for `endpoint_event` looks as following:
 | carbon_black_cloud.endpoint_event.childproc.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.childproc.reputation | Carbon Black Cloud Reputation string for the childproc. | keyword |
 | carbon_black_cloud.endpoint_event.childproc.username | The username associated with the user context that the child process was started under. | keyword |
+| carbon_black_cloud.endpoint_event.create_time | The time at which the event was ingested in carbon black cloud. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.action | The action taken on cross-process. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.api | Name of the operating system API called by the actor process. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.guid | Unique ID of the cross process. | keyword |
