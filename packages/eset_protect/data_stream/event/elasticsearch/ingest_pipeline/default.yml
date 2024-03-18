@@ -80,16 +80,37 @@ processors:
       target_field: eset_protect.event.hostname
       ignore_missing: true
   - set:
-      field: host.hostname
-      tag: set_host_hostname_from_event_hostname
+      field: host.name
+      tag: set_host_name_from_event_hostname
       copy_from: eset_protect.event.hostname
-      ignore_empty_value: true
+      if: "ctx.eset_protect?.event?.hostname != null && ctx.eset_protect?.event?.hostname.contains(\".\")"
+  - grok:
+      field: eset_protect.event.hostname
+      tag: grok_host_hostname_and_domain_from_event_hostname
+      patterns:
+        - '(%{DATA:host.hostname}\.%{GREEDYDATA:host.domain}|%{GREEDYDATA:host.hostname})'
+      if: ctx.eset_protect?.event?.hostname != null 
+  - set:
+      field: host.name
+      tag: set_host_name_from_host_hostname
+      copy_from: host.hostname
+      if: "ctx.host?.hostname != null && ctx.host?.name == null"
+  - lowercase:
+      field: host.name
+      tag: lowercase_host_name
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_host_name_into_related_hosts
+      value: "{{{host.name}}}"
+      allow_duplicates: false
+      if: ctx.host?.name != null
   - append:
       field: related.hosts
       tag: append_hostname_into_related_hosts
-      value: "{{{eset_protect.event.hostname}}}"
+      value: "{{{host.hostname}}}"
       allow_duplicates: false
-      if: ctx.eset_protect?.event?.hostname != null
+      if: ctx.host?.hostname != null
   - convert:
       field: json.ipv4
       tag: convert_ipv4_to_ip
