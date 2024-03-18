@@ -475,6 +475,16 @@ processors:
       tag: rename_object_uri
       target_field: eset_protect.event.object_uri
       ignore_missing: true
+  - set:
+      field: file.path
+      if: "ctx.eset_protect?.event?.object_uri != null && ctx.eset_protect?.event?.object_type?.toLowerCase() == 'file'"
+      copy_from: eset_protect.event.object_uri
+  - grok: 
+      field: file.path
+      patterns: 
+        - '^(file\:\/\/\/)?(?<file.drive_letter>\w)\:(?<file.directory>\/.*\/)?(?<file.name>.+(\.(?<file.extension>.+))?)?$'
+        - '.*\/(?<file.name>.+\.(?<file.extension>.+))$'
+      if: ctx.file?.path != null
   - rename:
       field: json.operation
       tag: rename_operation
@@ -501,8 +511,8 @@ processors:
       ignore_missing: true
       patterns:
         - '^%{GREEDYDATA:json._temp}\\%{DATA:process.name}$'
-        - "^%{GREEDYDATA:json._temp}/%{DATA:process.name}$"
-        - "^%{DATA:process.name}$"
+        - '^%{GREEDYDATA:json._temp}/%{DATA:process.name}$'
+        - '^%{DATA:process.name}$'
       if: ctx.eset_protect?.event?.processname != ''
       on_failure:
         - append:
@@ -773,8 +783,8 @@ processors:
       patterns:
         - '^%{HOSTNAME:user.domain}\\%{USERNAME:user.name}$'
         - '^%{HOSTNAME:user.domain}\\\\%{USERNAME:user.name}$'
-        - "^%{USERNAME:user.name}@%{HOSTNAME:user.domain}$"
-        - "^%{GREEDYDATA:user.name}$"
+        - '^%{USERNAME:user.name}@%{HOSTNAME:user.domain}$'
+        - '^%{GREEDYDATA:user.name}$'
       if: ctx.eset_protect?.event?.username != ''
       on_failure:
         - append:
