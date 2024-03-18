@@ -2,7 +2,7 @@
 
 This integration is used to collect metrics from [etcd v2 and v3 instances](https://etcd.io/).
 
-It periodically fetches metrics from [etcd metrics APIs](https://etcd.io/docs/v3.1/op-guide/monitoring/). 
+It periodically fetches metrics from [etcd metrics APIs](https://etcd.io/docs/v3.5/op-guide/monitoring/). 
 
 ## Data streams
 
