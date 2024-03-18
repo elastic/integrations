@@ -358,10 +358,10 @@ An example event for `knowledge_base` looks as following:
     "qualys_vmdr": {
         "knowledge_base": {
             "category": "CGI",
-            "cve": {
-                "id": "CVE-2022-31629",
-                "url": "http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-31629"
-            },
+            "cve_list": [
+                "CVE-2022-31629",
+                "CVE-2022-31628"
+            ],
             "discovery": {
                 "remote": 1
             },
@@ -388,20 +388,14 @@ An example event for `knowledge_base` looks as following:
         "forwarded",
         "qualys_vmdr-knowledge_base"
     ],
-    "url": {
-        "domain": "cve.mitre.org",
-        "extension": "cgi",
-        "original": "http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-31629",
-        "path": "/cgi-bin/cvename.cgi",
-        "query": "name=CVE-2022-31629",
-        "scheme": "http"
-    },
     "vulnerability": {
         "category": [
             "CGI"
         ],
-        "id": "CVE-2022-31629",
-        "reference": "http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-31629",
+        "id": [
+            "CVE-2022-31629",
+            "CVE-2022-31628"
+        ],
         "severity": "Medium"
     }
 }
@@ -441,8 +435,7 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.correlation.malware.src.list.info.rating |  | keyword |
 | qualys_vmdr.knowledge_base.correlation.malware.src.list.info.type |  | keyword |
 | qualys_vmdr.knowledge_base.correlation.malware.src.name |  | keyword |
-| qualys_vmdr.knowledge_base.cve.id |  | keyword |
-| qualys_vmdr.knowledge_base.cve.url |  | keyword |
+| qualys_vmdr.knowledge_base.cve_list |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.access.complexity |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.access.vector |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.authentication |  | keyword |
