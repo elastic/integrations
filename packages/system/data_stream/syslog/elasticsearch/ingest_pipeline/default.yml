@@ -17,6 +17,11 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+  - remove:
+      if: 'ctx.event?.original != null' 
+      field: message
+      ignore_missing: true
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - rename:
       field: system.syslog.message
       target_field: message

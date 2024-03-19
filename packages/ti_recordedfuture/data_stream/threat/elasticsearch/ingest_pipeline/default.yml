@@ -6,7 +6,7 @@ processors:
 #
   - set:
       field: ecs.version
-      value: '8.10.0'
+      value: '8.11.0'
   - set:
       field: event.dataset
       value: "ti_recordedfuture.threat"
@@ -192,6 +192,10 @@ processors:
         - set:
             field: threat.indicator.url.original
             copy_from: json.Name
+  - set:
+      field: threat.indicator.url.full
+      copy_from: json.Name
+      if: 'ctx.threat?.indicator?.type == "url"'
 
 #
 # Domain indicators (threat.indicator.type=domain)

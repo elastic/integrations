@@ -10,23 +10,14 @@ The Amazon Security Lake integration can be used in two different modes to colle
 
 ## Compatibility
 
-This module follows the latest OCSF Schema Version **v1.0.0-rc.3**.
+This module follows the latest OCSF Schema Version **v1.0.0**.
 
 ## Data streams
 
-The Amazon Security Lake integration collects logs for the below [AWS services](https://docs.aws.amazon.com/security-lake/latest/userguide/open-cybersecurity-schema-framework.html) combined in a data stream named event:
-
-| Source                              | Class Name                                          |
-|-------------------------------------|-----------------------------------------------------|
-| CloudTrail Lambda Data Events       | API Activity                                        |
-| CloudTrail Management Events        | API Activity, Authentication, or Account Change     |
-| CloudTrail S3 Data Events           | API Activity                                        |
-| Route 53                            | DNS Activity                                        |
-| Security Hub                        | Security Finding                                    |
-| VPC Flow Logs                       | Network Activity                                    |
+The Amazon Security Lake integration collects logs from both [Third-party services](https://docs.aws.amazon.com/security-lake/latest/userguide/integrations-third-party.html) and [AWS services](https://docs.aws.amazon.com/security-lake/latest/userguide/open-cybersecurity-schema-framework.html) in an event data stream.
 
 ### **NOTE**:
-- The Amazon Security Lake integration supports events collected from [AWS services](https://docs.aws.amazon.com/security-lake/latest/userguide/internal-sources.html).
+- The Amazon Security Lake integration supports events collected from [AWS services](https://docs.aws.amazon.com/security-lake/latest/userguide/internal-sources.html) and [third-party services](https://docs.aws.amazon.com/security-lake/latest/userguide/custom-sources.html).
 
 ## Requirements
 

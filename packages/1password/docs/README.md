@@ -91,7 +91,7 @@ An example event for `signin_attempts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -232,7 +232,7 @@ An example event for `item_usages` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -297,6 +297,7 @@ An example event for `item_usages` looks as following:
         "id": "OJQGU46KAPROEJLCK674RHSAY5"
     }
 }
+
 ```
 
 
@@ -380,7 +381,7 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
@@ -452,4 +453,5 @@ An example event for `audit_events` looks as following:
         "id": "GLF6WUEKS5CSNDJ2OG6TCZD3M4"
     }
 }
+
 ```

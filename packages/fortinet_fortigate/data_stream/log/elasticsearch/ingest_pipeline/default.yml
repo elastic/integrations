@@ -3,7 +3,7 @@ description: Pipeline for parsing fortinet firewall logs
 processors:
   - set:
       field: ecs.version
-      value: '8.10.0'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
@@ -240,6 +240,9 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "event" }}'
       if: ctx.fortinet?.firewall?.type == 'event'
+  - pipeline:
+      name: '{{ IngestPipeline "login" }}'
+      if: "ctx.message instanceof String && ctx.message.toLowerCase().contains('login')"
   - pipeline:
       name: '{{ IngestPipeline "traffic" }}'
       if: ctx.fortinet?.firewall?.type == 'traffic'

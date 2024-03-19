@@ -3,7 +3,7 @@ description: Pipeline for parsing m365 defender logs
 processors:
   - set:
       field: ecs.version
-      value: '8.10.0'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
@@ -262,6 +262,17 @@ processors:
   #########################
   ## ECS Related Mapping ##
   #########################
+  - convert:
+      field: json.alerts.entities.ipAddress
+      type: ip
+      if: ctx.json?.alerts?.entities?.ipAddress != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+        - remove:
+            field:
+              - json.alerts.entities.ipAddress
   - append:
       field: related.ip
       value: "{{{json.alerts.entities.ipAddress}}}"

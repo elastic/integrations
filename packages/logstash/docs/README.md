@@ -1,6 +1,8 @@
 # Logstash
 
-The `logstash` package collects metrics and logs of Logstash.
+This integration collects logs and metrics from Logstash instances.
+
+You can find additional information about monitoring Logstash with the Logstash integration in the **Logstash Reference**: [Monitoring Logstash with Elastic Agent](https://www.elastic.co/guide/en/logstash/current/monitoring-with-ea.html).
 
 ## Compatibility
 
@@ -1016,8 +1018,6 @@ An example event for `pipeline` looks as following:
         }
     }
 }
-
-
 ```
 
 #### Plugin
@@ -1259,5 +1259,4 @@ An example event for `plugins` looks as following:
         }
     }
 }
-
 ```

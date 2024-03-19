@@ -36,7 +36,7 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.9.0**.
+The minimum **kibana.version** required is **8.11.0**.
 
 ## Setup
 
@@ -190,7 +190,7 @@ An example event for `entity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "15e5a007-7f90-47f5-be2c-f8f167a4d8ba",
@@ -217,6 +217,7 @@ An example event for `entity` looks as following:
         "entityanalytics_entra_id-entity"
     ]
 }
+
 ```
 
 **Exported fields**

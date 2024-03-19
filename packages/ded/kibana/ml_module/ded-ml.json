@@ -16,29 +16,37 @@
                         }
                     },
                     {
-                    "bool":{
-                        "filter":[
-                              {
-                                "term":{
-                                  "event.category":"network"
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "network"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "source.bytes"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination"
+                                    }
                                 }
-                              },
-                             {
-                                "exists": {
-                                    "field": "source.bytes"
-                                }
-                             },
-                             {
-                                "exists": {
-                                    "field": "destination"
-                                }
-                            }
+                            ]
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
                         ]
-                      }
-                   }
-                ]
+                    }
+                }
             }
-      },
+        },
         "jobs": [
             {
                 "id": "ded_high_sent_bytes_destination_geo_country_iso_code",
@@ -210,12 +218,12 @@
                             }
                         ],
                         "influencers": [
-                              "host.name",
-                              "user.name",
-                              "file.name",
-                              "file.path",
-                              "file.Ext.device.bus_type",
-                              "process.name"
+                            "host.name",
+                            "user.name",
+                            "file.name",
+                            "file.path",
+                            "file.Ext.device.bus_type",
+                            "process.name"
                         ]
                     },
                     "data_description": {
@@ -247,12 +255,12 @@
                             }
                         ],
                         "influencers": [
-                              "host.name",
-                              "user.name",
-                              "file.name",
-                              "file.path",
-                              "file.Ext.device.bus_type",
-                              "process.name"
+                            "host.name",
+                            "user.name",
+                            "file.name",
+                            "file.path",
+                            "file.Ext.device.bus_type",
+                            "process.name"
                         ]
                     },
                     "data_description": {
@@ -264,7 +272,7 @@
                     }
                 }
             },
-          {
+            {
                 "id": "ded_high_bytes_written_to_external_device_airdrop",
                 "config": {
                     "groups": [
@@ -284,11 +292,11 @@
                             }
                         ],
                         "influencers": [
-                              "host.name",
-                              "user.name",
-                              "file.name",
-                              "file.path",
-                              "process.name"
+                            "host.name",
+                            "user.name",
+                            "file.name",
+                            "file.path",
+                            "process.name"
                         ]
                     },
                     "data_description": {
@@ -311,50 +319,73 @@
                     ],
                     "job_id": "ded_high_sent_bytes_destination_geo_country_iso_code",
                     "query": {
-                            "bool": {
-                                "must_not": [
-                                    {
-                            "terms": {
-                              "network.direction": ["internal","inbound"]
-                            }
-                          },
-                          {
-                            "term": {
-                              "source.bytes": 0
-                            }
-                          },
-                                 {
-                        "terms": {
-                            "destination.ip" : ["0.0.0.0/8","10.0.0.0/8","100.64.0.0/10","127.0.0.0/8","169.254.0.0/16","172.16.0.0/12","192.0.0.0/24",
-                            "192.0.2.0/24","192.88.99.0/24","192.168.0.0/16","198.18.0.0/15","198.51.100.0/24","203.0.113.0/24","224.0.0.0/4","233.252.0.0/24",
-                            "240.0.0.0/4","255.255.255.255/32"]
-                        }
-                    }],
-                        "filter": [
-                    {
-                        "term": {
-                            "event.category": "network"
-                        }
-                    },
-                    {
-                        "exists": {
-                            "field": "source.bytes"
-                        }
-                    },
-                            {
-                        "exists": {
-                            "field": "destination.port"
-                        }
-                    },
-                    {
-                        "terms": {
-                            "source.ip" : ["192.168.0.0/16","10.0.0.0/8","172.16.0.0/12"]
+                        "bool": {
+                            "must_not": [
+                                {
+                                    "terms": {
+                                        "network.direction": [
+                                            "internal",
+                                            "inbound"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "source.bytes": 0
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "destination.ip": [
+                                            "0.0.0.0/8",
+                                            "10.0.0.0/8",
+                                            "100.64.0.0/10",
+                                            "127.0.0.0/8",
+                                            "169.254.0.0/16",
+                                            "172.16.0.0/12",
+                                            "192.0.0.0/24",
+                                            "192.0.2.0/24",
+                                            "192.88.99.0/24",
+                                            "192.168.0.0/16",
+                                            "198.18.0.0/15",
+                                            "198.51.100.0/24",
+                                            "203.0.113.0/24",
+                                            "224.0.0.0/4",
+                                            "233.252.0.0/24",
+                                            "240.0.0.0/4",
+                                            "255.255.255.255/32"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "network"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "source.bytes"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination.port"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "source.ip": [
+                                            "192.168.0.0/16",
+                                            "10.0.0.0/8",
+                                            "172.16.0.0/12"
+                                        ]
+                                    }
+                                }
+                            ]
                         }
                     }
-
-                ]
-              }
-            }
                 }
             },
             {
@@ -365,51 +396,74 @@
                         "INDEX_PATTERN_NAME"
                     ],
                     "job_id": "ded_high_sent_bytes_destination_ip",
-                   "query": {
-                            "bool": {
-                                "must_not": [
-                                    {
-                            "terms": {
-                              "network.direction": ["internal","inbound"]
-                            }
-                          },
-                          {
-                            "term": {
-                              "source.bytes": 0
-                            }
-                          },
-                                 {
-                        "terms": {
-                            "destination.ip" : ["0.0.0.0/8","10.0.0.0/8","100.64.0.0/10","127.0.0.0/8","169.254.0.0/16","172.16.0.0/12","192.0.0.0/24",
-                            "192.0.2.0/24","192.88.99.0/24","192.168.0.0/16","198.18.0.0/15","198.51.100.0/24","203.0.113.0/24","224.0.0.0/4","233.252.0.0/24",
-                            "240.0.0.0/4","255.255.255.255/32"]
-                        }
-                    }],
-                        "filter": [
-                    {
-                        "term": {
-                            "event.category": "network"
-                        }
-                    },
-                    {
-                        "exists": {
-                            "field": "source.bytes"
-                        }
-                    },
-                            {
-                        "exists": {
-                            "field": "destination.port"
-                        }
-                    },
-                    {
-                        "terms": {
-                            "source.ip" : ["192.168.0.0/16","10.0.0.0/8","172.16.0.0/12"]
+                    "query": {
+                        "bool": {
+                            "must_not": [
+                                {
+                                    "terms": {
+                                        "network.direction": [
+                                            "internal",
+                                            "inbound"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "source.bytes": 0
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "destination.ip": [
+                                            "0.0.0.0/8",
+                                            "10.0.0.0/8",
+                                            "100.64.0.0/10",
+                                            "127.0.0.0/8",
+                                            "169.254.0.0/16",
+                                            "172.16.0.0/12",
+                                            "192.0.0.0/24",
+                                            "192.0.2.0/24",
+                                            "192.88.99.0/24",
+                                            "192.168.0.0/16",
+                                            "198.18.0.0/15",
+                                            "198.51.100.0/24",
+                                            "203.0.113.0/24",
+                                            "224.0.0.0/4",
+                                            "233.252.0.0/24",
+                                            "240.0.0.0/4",
+                                            "255.255.255.255/32"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "network"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "source.bytes"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination.port"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "source.ip": [
+                                            "192.168.0.0/16",
+                                            "10.0.0.0/8",
+                                            "172.16.0.0/12"
+                                        ]
+                                    }
+                                }
+                            ]
                         }
                     }
-
-                ]
-              }
-            }
                 }
             },
             {
@@ -421,50 +475,73 @@
                     ],
                     "job_id": "ded_high_sent_bytes_destination_port",
                     "query": {
-                            "bool": {
-                                "must_not": [
-                                    {
-                            "terms": {
-                              "network.direction": ["internal","inbound"]
-                            }
-                          },
-                          {
-                            "term": {
-                              "source.bytes": 0
-                            }
-                          },
-                                 {
-                        "terms": {
-                            "destination.ip" : ["0.0.0.0/8","10.0.0.0/8","100.64.0.0/10","127.0.0.0/8","169.254.0.0/16","172.16.0.0/12","192.0.0.0/24",
-                            "192.0.2.0/24","192.88.99.0/24","192.168.0.0/16","198.18.0.0/15","198.51.100.0/24","203.0.113.0/24","224.0.0.0/4","233.252.0.0/24",
-                            "240.0.0.0/4","255.255.255.255/32"]
-                        }
-                    }],
-                        "filter": [
-                    {
-                        "term": {
-                            "event.category": "network"
-                        }
-                    },
-                    {
-                        "exists": {
-                            "field": "source.bytes"
-                        }
-                    },
-                            {
-                        "exists": {
-                            "field": "destination.port"
-                        }
-                    },
-                    {
-                        "terms": {
-                            "source.ip" : ["192.168.0.0/16","10.0.0.0/8","172.16.0.0/12"]
+                        "bool": {
+                            "must_not": [
+                                {
+                                    "terms": {
+                                        "network.direction": [
+                                            "internal",
+                                            "inbound"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "source.bytes": 0
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "destination.ip": [
+                                            "0.0.0.0/8",
+                                            "10.0.0.0/8",
+                                            "100.64.0.0/10",
+                                            "127.0.0.0/8",
+                                            "169.254.0.0/16",
+                                            "172.16.0.0/12",
+                                            "192.0.0.0/24",
+                                            "192.0.2.0/24",
+                                            "192.88.99.0/24",
+                                            "192.168.0.0/16",
+                                            "198.18.0.0/15",
+                                            "198.51.100.0/24",
+                                            "203.0.113.0/24",
+                                            "224.0.0.0/4",
+                                            "233.252.0.0/24",
+                                            "240.0.0.0/4",
+                                            "255.255.255.255/32"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "network"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "source.bytes"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination.port"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "source.ip": [
+                                            "192.168.0.0/16",
+                                            "10.0.0.0/8",
+                                            "172.16.0.0/12"
+                                        ]
+                                    }
+                                }
+                            ]
                         }
                     }
-
-                ]
-              }
-            }
                 }
             },
             {
@@ -475,51 +552,74 @@
                         "INDEX_PATTERN_NAME"
                     ],
                     "job_id": "ded_high_sent_bytes_destination_region_name",
-                      "query": {
-                            "bool": {
-                                "must_not": [
-                                    {
-                            "terms": {
-                              "network.direction": ["internal","inbound"]
-                            }
-                          },
-                          {
-                            "term": {
-                              "source.bytes": 0
-                            }
-                          },
-                                 {
-                        "terms": {
-                            "destination.ip" : ["0.0.0.0/8","10.0.0.0/8","100.64.0.0/10","127.0.0.0/8","169.254.0.0/16","172.16.0.0/12","192.0.0.0/24",
-                            "192.0.2.0/24","192.88.99.0/24","192.168.0.0/16","198.18.0.0/15","198.51.100.0/24","203.0.113.0/24","224.0.0.0/4","233.252.0.0/24",
-                            "240.0.0.0/4","255.255.255.255/32"]
-                        }
-                    }],
-                        "filter": [
-                    {
-                        "term": {
-                            "event.category": "network"
-                        }
-                    },
-                    {
-                        "exists": {
-                            "field": "source.bytes"
-                        }
-                    },
-                            {
-                        "exists": {
-                            "field": "destination.port"
-                        }
-                    },
-                    {
-                        "terms": {
-                            "source.ip" : ["192.168.0.0/16","10.0.0.0/8","172.16.0.0/12"]
+                    "query": {
+                        "bool": {
+                            "must_not": [
+                                {
+                                    "terms": {
+                                        "network.direction": [
+                                            "internal",
+                                            "inbound"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "source.bytes": 0
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "destination.ip": [
+                                            "0.0.0.0/8",
+                                            "10.0.0.0/8",
+                                            "100.64.0.0/10",
+                                            "127.0.0.0/8",
+                                            "169.254.0.0/16",
+                                            "172.16.0.0/12",
+                                            "192.0.0.0/24",
+                                            "192.0.2.0/24",
+                                            "192.88.99.0/24",
+                                            "192.168.0.0/16",
+                                            "198.18.0.0/15",
+                                            "198.51.100.0/24",
+                                            "203.0.113.0/24",
+                                            "224.0.0.0/4",
+                                            "233.252.0.0/24",
+                                            "240.0.0.0/4",
+                                            "255.255.255.255/32"
+                                        ]
+                                    }
+                                }
+                            ],
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "network"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "source.bytes"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "destination.port"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "source.ip": [
+                                            "192.168.0.0/16",
+                                            "10.0.0.0/8",
+                                            "172.16.0.0/12"
+                                        ]
+                                    }
+                                }
+                            ]
                         }
                     }
-
-                ]
-              }
-            }
                 }
             },
             {
@@ -531,29 +631,29 @@
                     ],
                     "job_id": "ded_high_bytes_written_to_external_device",
                     "query": {
-                      "bool": {
-                        "filter": [
-                          {
-                            "term": {
-                              "event.category": "file"
-                            }
-                          },
-                          {
-                            "exists": {
-                              "field": "file.Ext.device.bus_type"
-                            }
-                          },
-                          {
-                            "terms": {
-                              "event.action": [
-                                "creation",
-                                "overwrite",
-                                "modification"
-                              ]
-                            }
-                          }
-                        ]
-                      }
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "file"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "file.Ext.device.bus_type"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "event.action": [
+                                            "creation",
+                                            "overwrite",
+                                            "modification"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             },
@@ -566,33 +666,33 @@
                     ],
                     "job_id": "ded_rare_process_writing_to_external_device",
                     "query": {
-                      "bool": {
-                        "filter": [
-                          {
-                            "term": {
-                              "event.category": "file"
-                            }
-                          },
-                          {
-                            "exists": {
-                              "field": "file.Ext.device.bus_type"
-                            }
-                          },
-                          {
-                            "terms": {
-                              "event.action": [
-                                "creation",
-                                "overwrite",
-                                "modification"
-                              ]
-                            }
-                          }
-                        ]
-                      }
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "file"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "file.Ext.device.bus_type"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "event.action": [
+                                            "creation",
+                                            "overwrite",
+                                            "modification"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             },
-          {
+            {
                 "id": "datafeed-ded_high_bytes_written_to_external_device_airdrop",
                 "job_id": "ded_high_bytes_written_to_external_device_airdrop",
                 "config": {
@@ -601,33 +701,34 @@
                     ],
                     "job_id": "ded_high_bytes_written_to_external_device_airdrop",
                     "query": {
-                      "bool": {
-                        "filter": [
-                          {
-                            "term": {
-                              "event.category": "file"
-                            }
-                          },
-                          {
-                            "term": {
-                              "process.name": "sharingd"
-                            }
-                          },
-                          {
-                            "terms": {
-                              "event.action": [
-                                "creation",
-                                "overwrite",
-                                "modification"
-                              ]
-                            }
-                          }
-                        ]
-                      }
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "event.category": "file"
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "process.name": "sharingd"
+                                    }
+                                },
+                                {
+                                    "terms": {
+                                        "event.action": [
+                                            "creation",
+                                            "overwrite",
+                                            "modification"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
-            ]},
+        ]
+    },
     "id": "ded-ml",
     "migrationVersion": {
         "search": "7.16.0"

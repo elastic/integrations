@@ -1,6 +1,11 @@
 ---
 description: Pipeline for parsing GCP CloudSQL SQL Server metrics.
 processors:
+  - fingerprint:
+      fields:
+        - gcp.labels
+      target_field: gcp.labels_fingerprint
+      ignore_missing: true
   - drop:
       description: Drop if database is not SQLServer.
       if: "ctx?.gcp?.labels?.cloudsql?.name != 'sqlserver'"

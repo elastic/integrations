@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Image Loaded with Invalid Signature",
-        "query": "library where host.os.type == \"windows\" and event.action == \"load\" and\n  dll.code_signature.status : (\"errorUntrustedRoot\", \"errorBadDigest\", \"errorUntrustedRoot\") and\n  (dll.Ext.relative_file_creation_time \u003c= 500 or dll.Ext.relative_file_name_modify_time \u003c= 500) and\n  not startswith~(dll.name, process.name) and\n  not dll.path : (\n    \"?:\\\\Windows\\\\System32\\\\DriverStore\\\\FileRepository\\\\*\"\n  )\n",
+        "query": "library where host.os.type == \"windows\" and event.action == \"load\" and\n  dll.code_signature.status : (\"errorUntrustedRoot\", \"errorBadDigest\", \"errorUntrustedRoot\") and\n  (dll.Ext.relative_file_creation_time <= 500 or dll.Ext.relative_file_name_modify_time <= 500) and\n  not startswith~(dll.name, process.name) and\n  not dll.path : (\n    \"?:\\\\Windows\\\\System32\\\\DriverStore\\\\FileRepository\\\\*\"\n  )\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -75,7 +75,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0005",
                     "name": "Defense Evasion",

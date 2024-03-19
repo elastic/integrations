@@ -49,6 +49,7 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | gcp.audit.authorization_info.resource_attributes.name | The name of the resource. | keyword |
 | gcp.audit.authorization_info.resource_attributes.service | The name of the service. | keyword |
 | gcp.audit.authorization_info.resource_attributes.type | The type of the resource. | keyword |
+| gcp.audit.flattened | Contains the full audit document as sent by GCP. | flattened |
 | gcp.audit.labels | A map of key, value pairs that provides additional information about the log entry. The labels can be user-defined or system-defined. | flattened |
 | gcp.audit.logentry_operation.first | Optional. Set this to True if this is the first log entry in the operation. | boolean |
 | gcp.audit.logentry_operation.id | Optional. An arbitrary operation identifier. Log entries with the same identifier are assumed to be part of the same operation. | keyword |
@@ -147,8 +148,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "7780bdcf-661a-4891-83bd-dd5233873f9d",
-        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "ephemeral_id": "a22278bb-5e1f-4ab7-b468-277c8c0b80a9",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.1"
@@ -173,7 +174,7 @@ An example event for `audit` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "snapshot": false,
         "version": "8.7.1"
     },
@@ -184,10 +185,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2023-07-19T18:53:36.388Z",
+        "created": "2023-10-25T04:18:46.637Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2023-07-19T18:53:40Z",
+        "ingested": "2023-10-25T04:18:47Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",

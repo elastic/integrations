@@ -1,0 +1,72 @@
+---
+description: Pipeline for processing sample logs
+processors:
+- drop:
+    if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
+- set:
+    field: event.original
+    copy_from: message
+- csv:
+    field: event.original
+    ignore_failure: true
+    ignore_missing: true
+    target_fields:
+    - "@timestamp" 
+    - microsoft.exchange.sessionid
+    - microsoft.exchange.seqnumber
+    - microsoft.exchange.sip
+    - microsoft.exchange.cip
+    - microsoft.exchange.user
+    - microsoft.exchange.duration
+    - microsoft.exchange.rqsize
+    - microsoft.exchange.rpsize
+    - microsoft.exchange.command
+    - microsoft.exchange.parameters
+    - microsoft.exchange.context
+    - microsoft.exchange.puid
+- grok:
+    field: microsoft.exchange.cip
+    patterns:
+    - "%{NOTSPACE:source.ip}:%{NUMBER}"
+    ignore_missing: true
+    if: ctx.microsoft?.exchange?.cip != null
+    ignore_failure: true
+- set:
+    field: microsoft.exchange.logtype
+    if: ctx.log?.file?.path =~ /Imap4/
+    value: imap4
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: microsoft.exchange.logtype
+    if: ctx.log?.file?.path =~ /Pop3/
+    value: pop3
+    ignore_empty_value: true
+    ignore_failure: true
+- convert: 
+    field: microsoft.exchange.duration
+    type: long
+    ignore_failure: true
+- convert:
+    field: microsoft.exchange.rpsize
+    type: long
+    ignore_failure: true
+- convert:
+    field: microsoft.exchange.rqsize
+    type: long
+    ignore_failure: true
+- convert:
+    field: microsoft.exchange.seqnumber
+    type: long
+    ignore_failure: true
+- set:
+    field: event.ingested
+    copy_from: _ingest.timestamp
+    ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
