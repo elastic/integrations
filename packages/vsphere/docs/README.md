@@ -441,8 +441,7 @@ An example event for `datastore` looks as following:
 
 ## Logs
 
-Log collection works through a syslog daemon. You need to configure the listening host address/IP (default: localhost) and port (default: 9525) in the integration. After that you need to configure vSphere to send logs to a remote syslog host and provide the configured hostname/IP and port of the Elastic Agent host.
-
+To access the logs, host address (localhost) and host port (9525) needs to be passed in Kibana UI. 
 
 ### vSphere Logs
 
