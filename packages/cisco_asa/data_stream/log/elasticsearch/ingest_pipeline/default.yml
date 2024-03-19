@@ -930,6 +930,15 @@ processors:
       patterns:
         - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> SVC Message: %{GREEDYDATA:event.reason}\.'
         - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} SVC Message: %{GREEDYDATA:event.reason}\.'
+
+
+  - grok:
+      if: '["722022", "722023"].contains(ctx._temp_.cisco.message_id)'
+      field: "message"
+      description: "722022, 722023"
+      patterns:
+        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> %{GREEDYDATA:event.reason}'
+        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} %{GREEDYDATA:event.reason}'
   - grok:
       if: "ctx._temp_.cisco.message_id == '722033'"
       field: "message"
@@ -1811,11 +1820,13 @@ processors:
       if: 'ctx.source?.user?.name != null'
       tag: "grok_source_user_name"
       patterns:
+        - (%{CISCO_DOMAIN})?%{CISCO_USER_EMAIL:source.user.email}
         - (%{CISCO_DOMAIN})?%{CISCO_USER}
         - \*+
       pattern_definitions:
         USERNAME: "[^@$]+"
-        CISCO_USER: "%{USERNAME:source.user.name}(@%{HOSTNAME:source.user.domain})?"
+        CISCO_USER_EMAIL: "%{CISCO_USER}@%{HOSTNAME:source.user.domain}"
+        CISCO_USER: "%{USERNAME:source.user.name}"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME:source.user.domain}\\)?
       on_failure:
         - append:
@@ -1828,10 +1839,12 @@ processors:
       tag: "grok_destination_user_name"
       if: 'ctx?.destination?.user?.name != null'
       patterns:
+        - (%{CISCO_DOMAIN})?%{CISCO_USER_EMAIL:destination.user.email}
         - (%{CISCO_DOMAIN})?%{CISCO_USER}
       pattern_definitions:
         USERNAME: "[^@$]+"
-        CISCO_USER: "%{USERNAME:destination.user.name}(@%{HOSTNAME:destination.user.domain})?"
+        CISCO_USER_EMAIL: "%{CISCO_USER}@%{HOSTNAME:destination.user.domain}"
+        CISCO_USER: "%{USERNAME:destination.user.name}"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME:destination.user.domain}\\)?
       on_failure:
         - append:

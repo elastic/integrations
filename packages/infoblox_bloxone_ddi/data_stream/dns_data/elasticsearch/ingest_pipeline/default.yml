@@ -370,10 +370,6 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: dns.answers.ttl
-      copy_from: infoblox_bloxone_ddi.dns_data.ttl
-      ignore_failure: true
   - rename:
       field: json.type
       target_field: infoblox_bloxone_ddi.dns_data.type
@@ -404,6 +400,41 @@ processors:
       field: json.zone
       target_field: infoblox_bloxone_ddi.dns_data.zone
       ignore_missing: true
+  - set:
+      field: dns.answers.data
+      copy_from: infoblox_bloxone_ddi.dns_data.rdata_value
+      ignore_empty_value: true
+  - set:
+      field: dns.answers.ttl
+      copy_from: infoblox_bloxone_ddi.dns_data.ttl
+      ignore_empty_value: true
+  - set:
+      field: dns.answers.type
+      copy_from: infoblox_bloxone_ddi.dns_data.type
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      if: ctx.dns?.answers != null
+      source: |
+        def a = new ArrayList();
+        a.add(ctx.dns.answers);
+        ctx.dns.answers = a;
+  - set:
+      field: dns.question.type
+      copy_from: infoblox_bloxone_ddi.dns_data.type
+      ignore_empty_value: true
+  - set:
+      field: dns.question.name
+      copy_from: infoblox_bloxone_ddi.dns_data.absolute.name.spec
+      ignore_empty_value: true
+  - set:
+      field: dns.question.registered_domain
+      copy_from: infoblox_bloxone_ddi.dns_data.absolute.zone.name
+      ignore_empty_value: true
+  - set:
+      field: dns.question.subdomain
+      copy_from: infoblox_bloxone_ddi.dns_data.name_in.zone
+      ignore_empty_value: true
   - remove:
       field: json
       ignore_missing: true
@@ -413,6 +444,11 @@ processors:
         - infoblox_bloxone_ddi.dns_data.lame_ttl
         - infoblox_bloxone_ddi.dns_data.created_at
         - infoblox_bloxone_ddi.dns_data.id
+        - infoblox_bloxone_ddi.dns_data.type
+        - infoblox_bloxone_ddi.dns_data.absolute.name.spec
+        - infoblox_bloxone_ddi.dns_data.absolute.zone.name
+        - infoblox_bloxone_ddi.dns_data.name_in.zone
+        - infoblox_bloxone_ddi.dns_data.rdata_value
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_failure: true
       ignore_missing: true

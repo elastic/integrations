@@ -1,0 +1,24 @@
+---
+description: Pipeline for processing Application Control event logs.
+processors:
+  - set:
+      field: trendmicro.deep_security.event_category
+      tag: set_deep_security_event_category
+      value: device-control-event
+  - append:
+      field: event.category
+      tag: set_event_category
+      value: intrusion_detection
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: set_event_type
+      value: info
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

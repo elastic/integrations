@@ -1,0 +1,102 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  want_more: false
+  user: "{{api_id}}"
+  password: "{{api_key}}"
+program: |
+  (
+    has(state.worklist) && size(state.worklist) > 0 ?
+      state
+    :
+      request("GET", ( state.url + "logs.index")).with({
+        "Header":{
+          "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
+        }
+      }).do_request().as(resp, bytes(resp.Body).as(body, {
+        "worklist": (
+          has(state.cursor) && has(state.cursor.log_file) && state.cursor.log_file != null
+          ?
+            string(body).split(state.cursor.log_file)[1].split("\n").filter(x,x!="").map(x,{"filename":x})
+          :
+            string(body).split("\n").map(x,{"filename":x})
+        ),
+        "next": 0,
+      }))
+  ).as(v, v.next < size(v.worklist) ?
+    (
+      request("GET",
+        state.url+v.worklist[v.next].filename
+      ).with({
+        "Header":{
+          "Authorization": ["Basic "+string(base64(state.user + ":" + state.password))],
+        }
+      }).do_request().as(resp, bytes(resp.Body).as(body, {
+        "events": string(body).split("|==|")[1].split("\n").filter(x,x!="").map(x,{"message":x}),
+        "cursor": {
+          "log_file": (
+            has(state.cursor) && has(state.cursor.log_file) && state.cursor.log_file != null
+            ?
+              (
+                (v.worklist[v.next].filename).split(".")[0] != (state.cursor.log_file).split(".")[0] ?
+                  v.worklist[v.next].filename
+                :
+                  state.cursor.log_file
+              )
+            :
+              v.worklist[v.next].filename
+          )
+        },
+        "worklist": (int(v.next)+1) < size(v.worklist) ? v.worklist : [],
+        "next": (int(v.next)+1) < size(v.worklist) ? (int(v.next)+1) : 0,
+        "want_more": (int(v.next)+1) < size(v.worklist),
+        "user": state.user,
+        "password": state.password
+      }))
+    )
+  :
+    {
+      "events": [],
+      "want_more": false,
+      "user": state.user,
+      "password": state.password,
+      "cursor": {
+        "log_file": has(state.cursor) && has(state.cursor.log_file) ? state.cursor.log_file : null
+      }
+    }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- rename:
+    fields:
+      - {from: "message", to: "event.original"}
+- decode_cef:
+    field: event.original
+{{#if processors}}
+{{processors}}
+{{/if}}
