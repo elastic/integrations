@@ -21,6 +21,7 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | abusech.url.blacklists.surbl | If the indicator is listed on the surbl blacklist. | keyword |
 | abusech.url.id | The ID of the indicator. | keyword |
 | abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false) | boolean |
+| abusech.url.last_online | Last timestamp when the URL has been serving malware. | date |
 | abusech.url.reporter | The Twitter handle of the reporter that has reported this malware URL (or anonymous). | keyword |
 | abusech.url.tags | A list of tags associated with the queried malware URL | keyword |
 | abusech.url.threat | The threat corresponding to this malware URL. | keyword |
