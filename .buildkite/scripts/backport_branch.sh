@@ -164,7 +164,7 @@ if branchExist "$BACKPORT_BRANCH_NAME"; then
 fi
 
 # backport branch does not exist, running checks and create branch
-version="$(git show ${BASE_COMMIT}:packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)"
+version="$(git show "${BASE_COMMIT}":"packages/${PACKAGE_NAME}/manifest.yml" | yq -r .version)"
 echo "Check if version from ${BASE_COMMIT} (${version}) matches with version from input step ${PACKAGE_VERSION}"
 if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
   buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "error"
