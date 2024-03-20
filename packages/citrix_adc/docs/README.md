@@ -46,7 +46,7 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **Kibana version** required is **8.7.1**.  
+The minimum **Kibana version** required is **8.12.0**.  
 
 ## Compatibility
 
@@ -1126,11 +1126,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2012-12-18T21:46:17.000Z",
     "agent": {
-        "ephemeral_id": "3e393838-f281-4aeb-9f60-26b7afd34193",
-        "id": "c8a2157b-7aab-441a-8bb6-564f4408f9d2",
+        "ephemeral_id": "2976e761-4399-4de7-8ea0-97ea83ec7726",
+        "id": "418f7c57-c332-4913-b3ec-ddaa31f832a0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.12.0"
     },
     "citrix": {
         "cef_format": true,
@@ -1172,16 +1172,16 @@ An example event for `log` looks as following:
         "version": "8.12.0"
     },
     "elastic_agent": {
-        "id": "c8a2157b-7aab-441a-8bb6-564f4408f9d2",
+        "id": "418f7c57-c332-4913-b3ec-ddaa31f832a0",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.12.0"
     },
     "event": {
         "action": "not blocked",
         "agent_id_status": "verified",
         "dataset": "citrix_adc.log",
         "id": "465",
-        "ingested": "2024-03-18T10:18:04Z",
+        "ingested": "2024-03-20T08:51:14Z",
         "original": "Dec 18 21:46:17 <local0.info> 81.2.69.144 CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
         "severity": 6,
         "timezone": "+00:00"
@@ -1193,13 +1193,12 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "log"
+        "type": "udp"
     },
     "log": {
-        "file": {
-            "path": "/tmp/service_logs/citrix-adc.log"
-        },
-        "offset": 3138
+        "source": {
+            "address": "192.168.249.4:48549"
+        }
     },
     "message": "Disallow Illegal URL.",
     "observer": {

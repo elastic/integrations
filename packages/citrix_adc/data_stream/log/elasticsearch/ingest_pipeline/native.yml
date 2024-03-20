@@ -1,11 +1,13 @@
 ---
-description: Pipeline for Citrix Native messages
+description: Pipeline for Citrix Native messages.
 processors:
   - set:
       field: citrix.cef_format
+      tag: set_cef_format
       value: false
   - grok:
       description: Extract native header and message.
+      tag: grok_detail
       field: citrix.detail
       patterns:
         - '^%{SPACE}%{HEADER} : %{DATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
@@ -15,6 +17,7 @@ processors:
         NATIVE_TIMESTAMP: '(?:%{MONTHNUM}/%{MONTHDAY}/%{YEAR}|%{YEAR}/%{MONTHNUM}/%{MONTHDAY}):%{HOUR}:%{MINUTE}:%{SECOND}'
   - grok:
       description: Parse out details.
+      tag: grok_tmp_details
       field: _tmp.details
       patterns:
         - '^%{DEFAULT:_tmp.default}?%{WORD:citrix.device_event_class_id} %{GREEDYDATA:citrix.name} %{INT:event.id} %{INT:event.severity}$'
@@ -66,6 +69,7 @@ processors:
       ignore_failure: true
   - set:
       field: citrix.default_class
+      tag: set_default_class
       value: true
       if: ctx._tmp?.default == 'default ' # The trailing space is intended.
   - pipeline:
@@ -257,61 +261,73 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
+      tag: append_source_ip_into_related_ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
       field: related.ip
+      tag: append_destination_ip_into_related_ip
       value: '{{{destination.ip}}}'
       allow_duplicates: false
       if: ctx.destination?.ip != null
   - append:
       field: related.ip
+      tag: append_destination_nat_ip_into_related_ip
       value: '{{{destination.nat.ip}}}'
       allow_duplicates: false
       if: ctx.destination?.nat?.ip != null
   - append:
       field: related.ip
+      tag: append_source_nat_ip_into_related_ip
       value: '{{{source.nat.ip}}}'
       allow_duplicates: false
       if: ctx.source?.nat?.ip != null
   - append:
       field: related.ip
+      tag: append_server_ip_into_related_ip
       value: '{{{server.ip}}}'
       allow_duplicates: false
       if: ctx.server?.ip != null
   - append:
       field: related.ip
+      tag: append_client_ip_into_related_ip
       value: '{{{client.ip}}}'
       allow_duplicates: false
       if: ctx.client?.ip != null
   - append:
       field: related.ip
+      tag: append_ip_address_into_related_ip
       value: '{{{citrix_adc.log.ip_address}}}'
       allow_duplicates: false
       if: ctx.citrix_adc?.log?.ip_address != null
   - append:
       field: related.ip
+      tag: append_original_destination_ip_into_related_ip
       value: '{{{citrix_adc.log.original_destination.ip}}}'
       allow_duplicates: false
       if: ctx.citrix_adc?.log?.original_destination?.ip != null
   - append:
       field: related.ip
+      tag: append_ssl_relay_address_into_related_ip
       value: '{{{citrix_adc.log.ssl_relay.address}}}'
       allow_duplicates: false
       if: ctx.citrix_adc?.log?.ssl_relay?.address != null
   - append:
       field: related.user
+      tag: append_user_name_into_related_user
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
+      tag: append_user_name_into_related_user
       value: '{{{source.user.name}}}'
       allow_duplicates: false
       if: ctx.source?.user?.name != null
   - append:
       field: related.user
+      tag: append_user_name_into_related_user
       value: '{{{destination.user.name}}}'
       allow_duplicates: false
       if: ctx.destination?.user?.name != null
@@ -391,9 +407,10 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
 on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
