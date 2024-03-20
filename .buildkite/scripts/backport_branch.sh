@@ -172,7 +172,7 @@ if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
 fi
 
 echo "Check that this changeset is the one creating the version $PACKAGE_NAME"
-if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_NAME}/manifest.yml | grep -E "^\+version: ${PACKAGE_VERSION}" ; then
+if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_NAME}/manifest.yml | grep -E "^\+version: \"{0,1}${PACKAGE_VERSION}" ; then
   buildkite-agent annotate "This changeset does not creates the version ${PACKAGE_VERSION}" --style "error"
   exit 1
 fi
