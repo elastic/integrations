@@ -16,6 +16,13 @@ processors:
   - set:
       field: event.type
       value: [indicator]
+# Set `labels.is_ioc_transform_source: true` only if `_conf.ioc_expiry` value is true. 
+# This field is required by Indicator Match Rules to omit source datastream using query `NOT labels.is_ioc_transform_source: "true"` during indicator matches.
+  - set:
+      field: labels.is_ioc_transform_source
+      value: "true"
+      if: "ctx.labels?.is_ioc_transform_source == null && ctx._conf?.ioc_expiry != null && ctx._conf.ioc_expiry == 'true'"
+
   ######################
   # General ECS fields #
   ######################
@@ -27,10 +34,33 @@ processors:
   - json:
       field: event.original
       target_field: abusech.url
+# abusech.url.data field is present if `Enable Indicator Expiry` is selected in the manifest.
+# This field contains the actual indicator data.
+  # - rename:
+  #     field: _temp_.abusech_url
+  #     target_field: abusech.url
+  #     ignore_missing: true
+  #     if: ctx._temp_.abusech_url?.data == null
+  # - rename:
+  #     field: _temp_.abusech_url.data
+  #     target_field: abusech.url
+  #     ignore_missing: true
+  #     if: ctx._temp_.abusech_url?.data != null
+  
+# Process URL's ID captured into keyfield inside input config.
+  # - rename:
+  #     field: _temp_.abusech_url.keyfield
+  #     target_field: abusech.url.id
+  #     if: ctx._temp_.abusech_url?.keyfield != null && ctx.abusech.url.id == null
+  
   - fingerprint:
       fields:
         - abusech.url.id
+        - abusech.url.url
+        - abusech.url.last_online
       target_field: "_id"
+      ignore_missing: true
+
   #####################
   # Threat ECS Fields #
   #####################
@@ -44,8 +74,38 @@ processors:
         - "yyyy-MM-dd HH:mm:ss z"
         - "yyyy-MM-dd HH:mm:ss Z"
       if: "ctx.abusech?.url?.date_added != null"
+  - date:
+      field: abusech.url.dateadded
+      target_field: threat.indicator.first_seen
+      formats:
+        - "yyyy-MM-dd HH:mm:ss z"
+        - "yyyy-MM-dd HH:mm:ss Z"
+      if: "ctx.abusech?.url?.dateadded != null && ctx.threat?.indicator?.first_seen == null"
+  - date:
+      field: abusech.url.last_online
+      target_field: threat.indicator.last_seen
+      formats:
+        - "yyyy-MM-dd HH:mm:ss z"
+        - "yyyy-MM-dd HH:mm:ss Z"
+      if: ctx.abusech?.url?.last_online != null
+  - remove: 
+      field: abusech.url.last_online
+      if: ctx.threat?.indicator?.last_seen != null
+  - set:
+      field: threat.indicator.name
+      copy_from: abusech.url.url
+      tag: set-indicator-name
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - fail:
+            description: 'Since transform used threat.indicator.name, if this processor fails, it leads to transform errors. Hence failing the document for investigation.'
+            message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
   - uri_parts:
       field: abusech.url.url
+      # TODO add IoC Expiry support
+      if: ctx.abusech?.url?.url != null
       target_field: threat.indicator.url
       keep_original: true
       remove_if_successful: true
@@ -57,9 +117,15 @@ processors:
       field: abusech.url.urlhaus_reference
       target_field: threat.indicator.reference
       ignore_missing: true
+  - rename:
+      field: abusech.url.urlhaus_link
+      target_field: threat.indicator.reference
+      if: ctx.abusech?.url?.urlhaus_link != null && ctx.threat?.indicator?.reference == null
+      ignore_missing: true
   # Host can be both IP addresses and domain names
   - grok:
       field: abusech.url.host
+      if: ctx.abusech?.url?.host != null
       patterns:
         - "(?:%{IP:threat.indicator.ip}|%{GREEDYDATA:threat.indicator.url.domain})"
       ignore_failure: true
@@ -67,20 +133,32 @@ processors:
       field: abusech.url.reporter
       target_field: threat.indicator.provider
       ignore_missing: true
+  # Copy tags and remove
+  - foreach:
+      field: abusech.url.tags
+      if: ctx.abusech?.url?.tags instanceof List
+      processor:
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      field: abusech.url.tags
+      ignore_missing: true
   ######################
   # Cleanup processors #
   ######################
   - set:
       field: threat.indicator.type
       value: unknown
-      if: ctx?.threat?.indicator?.type == null
+      if: ctx.threat?.indicator?.type == null
   - convert:
       field: abusech.url.larted
       type: boolean
       ignore_missing: true
   - script:
       lang: painless
-      if: ctx?.abusech != null
+      if: ctx.abusech != null
       source: |
         void handleMap(Map map) {
           for (def x : map.values()) {
@@ -104,15 +182,17 @@ processors:
         handleMap(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_missing: true
   - remove:
       field:
         - abusech.url.date_added
+        - abusech.url.dateadded
         - abusech.url.url
         - abusech.url.host
         - message
+        - _conf
+        - _temp_
       ignore_missing: true
   - script:
       description: Remove null/empty values recursively.
