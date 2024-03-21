@@ -409,6 +409,7 @@ An example event for `firewall` looks as following:
 | checkpoint.observable_name | IOC observable signature name. | keyword |
 | checkpoint.operation | Operation made by Threat Extraction. | keyword |
 | checkpoint.operation_number | The operation number. | keyword |
+| checkpoint.operation_result_description |  | keyword |
 | checkpoint.operation_results |  | keyword |
 | checkpoint.origin_sic_name | SIC name of the Security Gateway that generated the event. | keyword |
 | checkpoint.original_queue_id | Original postfix email queue id. | keyword |
@@ -472,6 +473,7 @@ An example event for `firewall` looks as following:
 | checkpoint.scan_results | "Infected"/description of a failure. | keyword |
 | checkpoint.scheme | Describes the scheme used for the log. | keyword |
 | checkpoint.scope | IP related to the attack. | keyword |
+| checkpoint.script_value_for_one_time_scripts |  | keyword |
 | checkpoint.scrub_activity | The result of the extraction | keyword |
 | checkpoint.scrub_download_time | File download time from resource. | keyword |
 | checkpoint.scrub_time | Extraction process duration. | keyword |
@@ -532,6 +534,11 @@ An example event for `firewall` looks as following:
 | checkpoint.sys_message | System messages | keyword |
 | checkpoint.syslog_severity | Syslog severity level. | keyword |
 | checkpoint.system_application |  | keyword |
+| checkpoint.task |  | keyword |
+| checkpoint.task_percent |  | keyword |
+| checkpoint.task_progress |  | keyword |
+| checkpoint.taskid |  | keyword |
+| checkpoint.tasktargetid |  | keyword |
 | checkpoint.tcp_end_reason | Reason for TCP connection closure. | keyword |
 | checkpoint.tcp_flags | TCP packet flags (SYN, ACK, etc.,). | keyword |
 | checkpoint.tcp_packet_out_of_state | State violation. | keyword |

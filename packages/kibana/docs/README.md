@@ -47,6 +47,7 @@ UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package con
 | kibana.delete_from_spaces | The set of space ids that a saved object was removed from. | keyword |
 | kibana.lookup_realm | The Elasticsearch lookup realm which fulfilled a login event. | keyword |
 | kibana.saved_object.id | The id of the saved object associated with this event. | keyword |
+| kibana.saved_object.name | The name of the saved object associated with this event. | keyword |
 | kibana.saved_object.type | The type of the saved object associated with this event. | keyword |
 | kibana.session_id | The ID of the user session associated with this event. Each login attempt results in a unique session id. | keyword |
 | kibana.space_id | The id of the space associated with this event. | keyword |

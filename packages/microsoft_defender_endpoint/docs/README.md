@@ -157,7 +157,6 @@ An example event for `log` looks as following:
         "name": "temp123"
     }
 }
-
 ```
 
 **Exported fields**

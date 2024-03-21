@@ -102,13 +102,13 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-26T06:02:18.318Z",
+    "@timestamp": "2024-03-08T02:55:33.690Z",
     "agent": {
-        "ephemeral_id": "7e240822-d6d7-44de-a74b-02c744232f29",
-        "id": "ce0bce5a-6e51-4f74-abca-79147f80e169",
+        "ephemeral_id": "8edc1f21-05cd-4fa5-aadc-66e64f44856a",
+        "id": "f29e7d89-991e-4f0a-838f-9c2eb93d876e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.12.1"
     },
     "data_stream": {
         "dataset": "ti_otx.threat",
@@ -119,18 +119,18 @@ An example event for `threat` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ce0bce5a-6e51-4f74-abca-79147f80e169",
-        "snapshot": true,
-        "version": "8.11.0"
+        "id": "f29e7d89-991e-4f0a-838f-9c2eb93d876e",
+        "snapshot": false,
+        "version": "8.12.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-09-26T06:02:18.318Z",
+        "created": "2024-03-08T02:55:33.690Z",
         "dataset": "ti_otx.threat",
-        "ingested": "2023-09-26T06:02:21Z",
+        "ingested": "2024-03-08T02:55:45Z",
         "kind": "enrichment",
         "original": "{\"count\":40359,\"next\":\"https://otx.alienvault.com/api/v1/indicators/export?types=domain%2CIPv4%2Chostname%2Curl%2CFileHash-SHA256\\u0026modified_since=2020-11-29T01%3A10%3A00+00%3A00\\u0026page=2\",\"previous\":null,\"results\":{\"content\":\"\",\"description\":null,\"id\":1251,\"indicator\":\"info.3000uc.com\",\"title\":null,\"type\":\"hostname\"}}",
         "type": [
@@ -155,7 +155,6 @@ An example event for `threat` looks as following:
         }
     }
 }
-
 ```
 
 ### Pulses Subscribed (Recommended)
@@ -233,7 +232,7 @@ The following subscriptions are included by this API:
 | otx.created |  | date |
 | otx.description |  | keyword |
 | otx.expiration |  | date |
-| otx.id | The ID of the indicator. | long |
+| otx.id | The ID of the indicator. | keyword |
 | otx.indicator |  | keyword |
 | otx.is_active |  | integer |
 | otx.prefetch_pulse_ids |  | boolean |
@@ -291,11 +290,11 @@ An example event for `pulses_subscribed` looks as following:
 {
     "@timestamp": "2023-08-08T05:05:15.000Z",
     "agent": {
-        "ephemeral_id": "613b36ba-6bb7-4e3d-9a90-b5e6ec5a860c",
-        "id": "8130bdff-3530-4540-8c03-ba091c47a24f",
+        "ephemeral_id": "98babf94-9cf4-45af-aef8-2d57d61d9876",
+        "id": "f29e7d89-991e-4f0a-838f-9c2eb93d876e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.12.1"
     },
     "data_stream": {
         "dataset": "ti_otx.pulses_subscribed",
@@ -306,9 +305,9 @@ An example event for `pulses_subscribed` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8130bdff-3530-4540-8c03-ba091c47a24f",
+        "id": "f29e7d89-991e-4f0a-838f-9c2eb93d876e",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.12.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -316,7 +315,7 @@ An example event for `pulses_subscribed` looks as following:
             "threat"
         ],
         "dataset": "ti_otx.pulses_subscribed",
-        "ingested": "2023-12-22T11:25:24Z",
+        "ingested": "2024-03-08T02:54:50Z",
         "kind": "enrichment",
         "original": "{\"content\":\"\",\"count\":2,\"created\":\"2023-08-08T05:05:15\",\"description\":\"\",\"expiration\":null,\"id\":3454375108,\"indicator\":\"pinup-casino-tr.site\",\"is_active\":1,\"prefetch_pulse_ids\":false,\"pulse_raw\":\"{\\\"adversary\\\":\\\"\\\",\\\"attack_ids\\\":[\\\"T1531\\\",\\\"T1059\\\",\\\"T1566\\\"],\\\"author_name\\\":\\\"SampleUser\\\",\\\"created\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"description\\\":\\\"\\\",\\\"extract_source\\\":[],\\\"id\\\":\\\"64e38336d783f91d6948a7b1\\\",\\\"industries\\\":[],\\\"malware_families\\\":[\\\"WHIRLPOOL\\\"],\\\"modified\\\":\\\"2023-08-22T09:43:18.855000\\\",\\\"more_indicators\\\":false,\\\"name\\\":\\\"Sample Pulse\\\",\\\"public\\\":1,\\\"references\\\":[\\\"https://www.cisa.gov/news-events/analysis-reports/ar23-230a\\\"],\\\"revision\\\":1,\\\"tags\\\":[\\\"cisa\\\",\\\"backdoor\\\",\\\"whirlpool\\\",\\\"malware\\\"],\\\"targeted_countries\\\":[],\\\"tlp\\\":\\\"white\\\"}\",\"role\":null,\"t\":0,\"t2\":0.0050694942474365234,\"t3\":2.7960586547851562,\"title\":\"\",\"type\":\"domain\"}",
         "type": [
@@ -330,7 +329,7 @@ An example event for `pulses_subscribed` looks as following:
         "count": 2,
         "created": "2023-08-08T05:05:15.000Z",
         "expiration": "2023-08-13T05:05:15.000Z",
-        "id": 3454375108,
+        "id": "3454375108",
         "is_active": 1,
         "prefetch_pulse_ids": false,
         "pulse": {
