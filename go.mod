@@ -50,7 +50,7 @@ require (
 	github.com/elastic/go-elasticsearch/v7 v7.17.10 // indirect
 	github.com/elastic/go-resource v0.1.1 // indirect
 	github.com/elastic/go-sysinfo v1.9.0 // indirect
-	github.com/elastic/go-ucfg v0.8.6 // indirect
+	github.com/elastic/go-ucfg v0.8.7 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
 	github.com/elastic/kbncontent v0.1.3 // indirect
@@ -73,7 +73,7 @@ require (
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
@@ -190,13 +190,13 @@ require (
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	helm.sh/helm/v3 v3.14.2 // indirect
+	helm.sh/helm/v3 v3.14.3 // indirect
 	howett.net/plist v1.0.0 // indirect
-	k8s.io/api v0.29.2 // indirect
+	k8s.io/api v0.29.3 // indirect
 	k8s.io/apiextensions-apiserver v0.29.0 // indirect
-	k8s.io/apimachinery v0.29.2 // indirect
-	k8s.io/cli-runtime v0.29.2 // indirect
-	k8s.io/client-go v0.29.2 // indirect
+	k8s.io/apimachinery v0.29.3 // indirect
+	k8s.io/cli-runtime v0.29.3 // indirect
+	k8s.io/client-go v0.29.3 // indirect
 	k8s.io/component-base v0.29.0 // indirect
 	k8s.io/klog/v2 v2.110.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
@@ -208,3 +208,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace github.com/elastic/elastic-package => github.com/jsoriano/elastic-package v0.66.1-0.20240319161406-b7a084cbe7e3
