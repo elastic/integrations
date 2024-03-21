@@ -4,6 +4,10 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
+  - set:
+      copy_from: message
+      field: event.original
+      ignore_failure: true 
 
   #
   # The syslog header should have been stripped off, so we need to process the key=value data
@@ -13,7 +17,7 @@ processors:
       description: Parse key/value pairs from message.
       lang: painless
       source: >-
-        ctx["_fields_"] = new HashMap();
+        ctx["stormshield"] = new HashMap();
 
         def kvStart = 0;
         def kvSplit = 0;
@@ -36,18 +40,61 @@ processors:
             if (kvStart != kvSplit) {
               def key = ctx["message"].substring(kvStart, kvSplit);
               def value = ctx["message"].substring(kvSplit + 1, i).replace("\"", "");
-              ctx["_fields_"][key] = value;
+              ctx["stormshield"][key] = value;
             }
 
             kvStart = i + 1;
             kvSplit = i + 1;
           }
         }
+
+  # rename some fields
   - rename:
-      field: _fields_.msg
-      target_field: event.log.msg
+      field: "stormshield.msg"
+      target_field: "event.log.msg"
+      if: ctx.stormshield?.msg != null
+  - rename:
+      field: "stormshield.startime"
+      target_field: "event.created"
+      if: ctx.stormshield?.startime != null
+  - rename:
+      field: "stormshield.time"
+      target_field: "@timestamp"
+      if: ctx.stormshield?.time != null
+
+  - rename:
+      field: "stormshield.fw"
+      target_field: "host.name"
+      if: ctx.stormshield?.fw != null
+
+  - rename:
+      field: "stormshield.tz"
+      target_field: "event.timezone"
+      if: ctx.stormshield?.tz != null
+
+  - rename:
+      field: "stormshield.service"
+      target_field: "process.name"
+      if: ctx.stormshield?.service != null
+
+  - remove:
+      field: stormshield.id
+      if: ctx.stormshield?.id == "firewall"
+
+  - set:
+      field: event.kind
+      value: "metric"
+      if: ctx.stormshield?.CPU != null && ctx.stormshield?.mem != null
+  
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
       ignore_missing: true
-      if: ctx.event?.log?.msg == null
+  - remove:
+      field: message
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
 - set:
     field: error.message

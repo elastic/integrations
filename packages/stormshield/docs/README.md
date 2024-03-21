@@ -24,6 +24,12 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
+* how to setup SNS to send syslog (with RFC) to where the Agent is running
+
+* test out adding the integration, and then setup stormshield to send syslogs to it
+
+* copy some cisco asa config variables into this integration
+
 <!-- Additional set up instructions -->
 
 <!-- If applicable -->
