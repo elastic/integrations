@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Suspicious which Enumeration",
-        "query": "process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and \nprocess.name == \"which\" and process.args_count \u003e= 10\n\n/* potential tuning if rule would turn out to be noisy\nand process.args in (\"nmap\", \"nc\", \"ncat\", \"netcat\", nc.traditional\", \"gcc\", \"g++\", \"socat\") and \nprocess.parent.name in (\"bash\", \"dash\", \"ash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\")\n*/ \n",
+        "query": "process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and \nprocess.name == \"which\" and process.args_count >= 10\n\n/* potential tuning if rule would turn out to be noisy\nand process.args in (\"nmap\", \"nc\", \"ncat\", \"netcat\", nc.traditional\", \"gcc\", \"g++\", \"socat\") and \nprocess.parent.name in (\"bash\", \"dash\", \"ash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\")\n*/ \n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -60,7 +60,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0007",
                     "name": "Discovery",

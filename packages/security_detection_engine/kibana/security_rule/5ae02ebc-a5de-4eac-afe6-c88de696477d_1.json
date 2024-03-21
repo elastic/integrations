@@ -11,7 +11,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Chroot Container Escape via Mount",
-        "query": "sequence by host.id, process.parent.entity_id with maxspan=5m\n  [process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and\n   process.name == \"mount\" and process.args : \"/dev/sd*\" and process.args_count \u003e= 3 and\n   process.parent.name in (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\")]\n  [process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and\n   process.name == \"chroot\"]\n",
+        "query": "sequence by host.id, process.parent.entity_id with maxspan=5m\n  [process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and\n   process.name == \"mount\" and process.args : \"/dev/sd*\" and process.args_count >= 3 and\n   process.parent.name in (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\")]\n  [process where host.os.type == \"linux\" and event.action == \"exec\" and event.type == \"start\" and\n   process.name == \"chroot\"]\n",
         "references": [
             "https://book.hacktricks.xyz/v/portugues-ht/linux-hardening/privilege-escalation/escaping-from-limited-bash"
         ],
@@ -82,7 +82,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0004",
                     "name": "Privilege Escalation",
