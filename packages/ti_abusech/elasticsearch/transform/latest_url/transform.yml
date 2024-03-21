@@ -12,12 +12,15 @@ source:
 # us that ability in order to prevent having duplicate IoC data and prevent query
 # time field type conflicts.
 dest:
-  index: "logs-ti_abusech_latest.dest_indicators-1"
+  index: "logs-ti_abusech_latest.dest_url-1"
+  pipeline: 1.25.0-ti_abusech_latest-dest_url
+  aliases:
+    - alias: "logs-ti_abusech_latest.url"
+      move_on_creation: true
 latest:
   unique_key:
     - event.dataset
-    - threat.indicator.type
-    - _id
+    - threat.indicator.name
   sort: "@timestamp"
 description: Latest Abuse CH IoC data
 frequency: 30s

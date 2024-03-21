@@ -2,6 +2,7 @@ type: logs
 title: AbuseCH URL logs
 streams:
   - input: httpjson
+    enabled: false
     vars:
       - name: url
         type: text
@@ -10,22 +11,6 @@ streams:
         required: true
         show_user: false
         default: https://urlhaus-api.abuse.ch/v1/urls/recent/
-      - name: ioc_expiry_url
-        type: text
-        title: AbuseCH Active URL API endpoint
-        description: Active URL API fetches URLs that are either actively distributing malware or that have been added to URLhaus within the past 90 days.
-        multi: false
-        required: true
-        show_user: false
-        default: https://urlhaus.abuse.ch/downloads/json
-      - name: ioc_expiry
-        type: bool
-        title: Enable Indicator Expiry.
-        multi: false
-        required: false
-        show_user: false
-        description: Whether to enable expiry on indicators of compromise (IoC). This uses `AbuseCH Active URL API endpoint` if configured above. Please read the integration docs for more information on IoC Expiry and how it is handled for AbuseCH. Default is `true`.
-        default: true
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -81,5 +66,90 @@ streams:
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
     template_path: httpjson.yml.hbs
-    title: AbuseCH URL logs
-    description: Collect AbuseCH URL logs
+    title: AbuseCH URL logs using HTTPJSON input - Deprecated. Please disable this and use the CEL input instead.
+    description: Collect AbuseCH URL logs using HTTPJSON input
+
+  - input: cel
+    enabled: true
+    vars:
+      - name: ioc_expiry
+        type: bool
+        title: Enable Indicator Expiry.
+        multi: false
+        required: true
+        show_user: true
+        description: Whether to enable indicators of compromise (IoC) expiry. When enabled, the integration uses `AbuseCH Active URL API` to fetch only active indicators. Please read the integration docs for more information on IoC Expiry and how it is handled. Default is `true`.
+        default: true
+      - name: ioc_expiry_url
+        type: text
+        title: AbuseCH Active URL API
+        description: Active URL API fetches URLs that are either actively distributing malware or that have been added to URLhaus within the past 90 days. This URL is used when `Enable Indicator Expiry` is checked.
+        multi: false
+        required: true
+        show_user: false
+        default: https://urlhaus.abuse.ch/downloads/json
+      - name: url
+        type: text
+        title: AbuseCH URL API
+        description: This URL is used when `Enable Indicator Expiry` is unchecked.
+        multi: false
+        required: true
+        show_user: false
+        default: https://urlhaus-api.abuse.ch/v1/urls/recent/
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 10m
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - abusech-url
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: cel.yml.hbs
+    title: AbuseCH URL logs using CEL input
+    description: Collect AbuseCH URL logs using CEL input

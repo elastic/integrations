@@ -16,11 +16,12 @@ processors:
   - set:
       field: event.type
       value: [indicator]
-# Set `labels.is_ioc_transform_source` only if user configured `ioc_expiry` value is true. Only documents from `NOT labels.is_ioc_transform_source: true` are the used inside the Indicator Match Rules. 
+# Set `labels.is_ioc_transform_source: true` only if `_conf.ioc_expiry` value is true. 
+# This field is required by Indicator Match Rules to omit source datastream using query `NOT labels.is_ioc_transform_source: "true"` during indicator matches.
   - set:
       field: labels.is_ioc_transform_source
-      value: true
-      if: "ctx.labels?.is_ioc_transform_source == null && ctx._conf?.ioc_expiry != null && ctx._conf.ioc_expiry == true"
+      value: "true"
+      if: "ctx.labels?.is_ioc_transform_source == null && ctx._conf?.ioc_expiry != null && ctx._conf.ioc_expiry == 'true'"
 
   ######################
   # General ECS fields #
@@ -32,39 +33,33 @@ processors:
       if: ctx.event?.original == null
   - json:
       field: event.original
-      target_field: _temp_.abusech_url
+      target_field: abusech.url
 # abusech.url.data field is present if `Enable Indicator Expiry` is selected in the manifest.
 # This field contains the actual indicator data.
-  - rename:
-      field: _temp_.abusech_url
-      target_field: abusech.url
-      ignore_missing: true
-      if: ctx._temp_.abusech_url?.data == null
-  - rename:
-      field: _temp_.abusech_url.data
-      target_field: abusech.url
-      ignore_missing: true
-      if: ctx._temp_.abusech_url?.data != null
-  # - json:
-  #     field: _temp_url_data
-  #     tag: json_abusech-url-data
-  #     add_to_root: true
-  #     if: ctx._temp_url_data instanceof Map && ctx._temp_url_data.size() > 0
-  #     on_failure:
-  #       - append:
-  #           field: error.message
-  #           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
+  # - rename:
+  #     field: _temp_.abusech_url
+  #     target_field: abusech.url
+  #     ignore_missing: true
+  #     if: ctx._temp_.abusech_url?.data == null
+  # - rename:
+  #     field: _temp_.abusech_url.data
+  #     target_field: abusech.url
+  #     ignore_missing: true
+  #     if: ctx._temp_.abusech_url?.data != null
+  
 # Process URL's ID captured into keyfield inside input config.
-  - rename:
-      field: _temp_.abusech_url.keyfield
-      target_field: abusech.url.id
-      if: ctx._temp_.abusech_url?.keyfield != null && ctx.abusech.url.id == null
+  # - rename:
+  #     field: _temp_.abusech_url.keyfield
+  #     target_field: abusech.url.id
+  #     if: ctx._temp_.abusech_url?.keyfield != null && ctx.abusech.url.id == null
+  
   - fingerprint:
       fields:
         - abusech.url.id
+        - abusech.url.url
+        - abusech.url.last_online
       target_field: "_id"
-      if: ctx.abusech?.url?.id != null
+      ignore_missing: true
 
   #####################
   # Threat ECS Fields #
@@ -88,11 +83,25 @@ processors:
       if: "ctx.abusech?.url?.dateadded != null && ctx.threat?.indicator?.first_seen == null"
   - date:
       field: abusech.url.last_online
-      target_field: abusech.url.last_online
+      target_field: threat.indicator.last_seen
       formats:
         - "yyyy-MM-dd HH:mm:ss z"
         - "yyyy-MM-dd HH:mm:ss Z"
       if: ctx.abusech?.url?.last_online != null
+  - remove: 
+      field: abusech.url.last_online
+      if: ctx.threat?.indicator?.last_seen != null
+  - set:
+      field: threat.indicator.name
+      copy_from: abusech.url.url
+      tag: set-indicator-name
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - fail:
+            description: 'Since transform used threat.indicator.name, if this processor fails, it leads to transform errors. Hence failing the document for investigation.'
+            message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
   - uri_parts:
       field: abusech.url.url
       # TODO add IoC Expiry support
@@ -116,12 +125,25 @@ processors:
   # Host can be both IP addresses and domain names
   - grok:
       field: abusech.url.host
+      if: ctx.abusech?.url?.host != null
       patterns:
         - "(?:%{IP:threat.indicator.ip}|%{GREEDYDATA:threat.indicator.url.domain})"
       ignore_failure: true
   - rename:
       field: abusech.url.reporter
       target_field: threat.indicator.provider
+      ignore_missing: true
+  # Copy tags and remove
+  - foreach:
+      field: abusech.url.tags
+      if: ctx.abusech?.url?.tags instanceof List
+      processor:
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      field: abusech.url.tags
       ignore_missing: true
   ######################
   # Cleanup processors #
@@ -161,7 +183,6 @@ processors:
   - remove:
       field: event.original
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
       ignore_missing: true
   - remove:
       field:

@@ -1,13 +1,13 @@
 name: ti_abusech
 title: AbuseCH
-version: "1.25.0"
+version: "2.0.0"
 description: Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent.
 type: integration
 format_version: "3.0.0"
 categories: ["security", "threat_intel"]
 conditions:
   kibana:
-    version: ^8.7.1
+    version: ^8.12.0
 icons:
   - src: /img/abusech2.svg
     title: AbuseCH
@@ -19,7 +19,18 @@ policy_templates:
     description: Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent.
     inputs:
       - type: httpjson
-        title: "Collect AbuseCH logs via API"
+        title: "Collect AbuseCH logs via API using HTTPJSON input - Deprecated. Please disable this and use the CEL input instead."
+        description: "Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent."
+        vars:
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+      - type: cel
+        title: "Collect AbuseCH logs via API using CEL input"
         description: "Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent."
         vars:
           - name: enable_request_tracer
