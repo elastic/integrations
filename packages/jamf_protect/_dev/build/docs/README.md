@@ -66,6 +66,7 @@ Then, depding on which events you want to send to Elastic, configure one or mult
 **Network Traffic Stream**:
 - [ ] In the Server hostname or IP field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
 
+
 **Copyright (c) 2024, Jamf Software, LLC.  All rights reserved.**
 
 ## Logs reference
