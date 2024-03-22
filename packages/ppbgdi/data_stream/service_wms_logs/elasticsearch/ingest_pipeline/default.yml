@@ -7,35 +7,10 @@ processors:
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
-      if: 'ctx.event?.original == null'
-  - remove:
-      field: message
-      ignore_missing: true
-      if: 'ctx.event?.original != null'
-  - grok:
-      field: event.original
-      patterns:
-        - ^%{CHAR:first_char}
-      pattern_definitions:
-        CHAR: .
-  - set:
-      field: ppbgdi.app.system
-      copy_from: kubernetes.namespace_labels.system
-      ignore_empty_value: true
-#   - pipeline:
-#       if: ctx.first_char != '{'
-#       name: '{{ IngestPipeline "default-common" }}'
   - pipeline:
-      description: JSON logs pipeline
-      if: ctx.first_char == '{'
-      name: '{{ IngestPipeline "common-json" }}'
-  - remove:
-      field:
-        - first_char
+      description: Pipeline used to create fields for elastic-package tests
+      if: ctx?.url == null
+      name: '{{ IngestPipeline "elastic-package-test" }}'
   - pipeline:
       description: Parse query parameters
       if: ctx?.url?.query != null && ctx?.url?.query != ""
@@ -44,9 +19,10 @@ processors:
       field: service.environment
       copy_from: kubernetes.namespace_labels.env
       ignore_empty_value: true
-#   - remove:
-#       field: temp
-#       ignore_missing: true
+  - set:
+      field: ppbgdi.app.system
+      copy_from: kubernetes.namespace_labels.system
+      ignore_empty_value: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null or empty values.

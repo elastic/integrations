@@ -18,13 +18,10 @@ processors:
       field: temp.query_params.bbox
       target_field: ppbgdi.app.layer.bbox
       ignore_missing: true
-  - urldecode:
-      field: ppbgdi.app.layer.bbox
-      ignore_missing: true
   - dissect:
       description: Parse epsg code from crs. Raises an error if not starts with EPSG%2F
       field: temp.query_params.crs
-      pattern: "EPSG%3A%{ppbgdi.app.epsg}"
+      pattern: "EPSG:%{ppbgdi.app.epsg}"
       ignore_missing: true
   - remove:
       field: temp.query_params.crs
@@ -38,7 +35,7 @@ processors:
   - gsub:
       description: Strip mime type info from extension
       field: ppbgdi.app.layer.extension
-      pattern: "image%2F"
+      pattern: "image/"
       replacement: ""
   - rename:
       field: temp.query_params.height
@@ -47,6 +44,10 @@ processors:
   - convert:
       field: ppbgdi.app.layer.height
       type: long
+      ignore_missing: true
+  - rename:
+      field: temp.query_params.lang
+      target_field: ppbgdi.app.language
       ignore_missing: true
   - split:
       field: temp.query_params.layers
@@ -79,6 +80,14 @@ processors:
       ignore_missing: true
   - remove:
       field: temp.query_params.styles
+      ignore_missing: true
+  - rename:
+      field: temp.query_params.transparent
+      target_field: ppbgdi.app.layer.transparent
+      ignore_missing: true
+  - convert:
+      field: ppbgdi.app.layer.transparent
+      type: boolean
       ignore_missing: true
   - rename:
       field: temp.query_params.version
