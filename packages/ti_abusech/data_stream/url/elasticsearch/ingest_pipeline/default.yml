@@ -18,10 +18,14 @@ processors:
       value: [indicator]
 # Set `labels.is_ioc_transform_source: true` only if `_conf.ioc_expiry` value is true. 
 # This field is required by Indicator Match Rules to omit source datastream using query `NOT labels.is_ioc_transform_source: "true"` during indicator matches.
-  - set:
+  # - set:
+  #     field: labels.is_ioc_transform_source
+  #     value: "true"
+  #     if: "ctx.labels?.is_ioc_transform_source == null && ctx._conf?.ioc_expiry != null && ctx._conf.ioc_expiry == 'true'"
+  - remove: 
       field: labels.is_ioc_transform_source
-      value: "true"
-      if: "ctx.labels?.is_ioc_transform_source == null && ctx._conf?.ioc_expiry != null && ctx._conf.ioc_expiry == 'true'"
+      if: ctx._conf?.ioc_expiry != 'true'
+      ignore_missing: true
 
   ######################
   # General ECS fields #
