@@ -144,6 +144,11 @@ processors:
       field: json.details.md5_hash
       target_field: slack.audit.details.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{slack.audit.details.md5}}'
+      allow_duplicates: false
+      if: ctx.slack?.audit?.details?.md5 != null
   - set:
       field: file.hash.md5
       copy_from: slack.audit.details.md5
