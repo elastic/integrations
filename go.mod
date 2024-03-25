@@ -210,3 +210,5 @@ require (
 )
 
 replace github.com/elastic/elastic-package => github.com/jsoriano/elastic-package v0.66.1-0.20240325141911-d1215f921b08
+
+replace github.com/elastic/package-spec/v3 => github.com/elastic/package-spec/v3 v3.1.3-0.20240321100501-fcc5e239fae6
