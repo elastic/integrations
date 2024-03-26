@@ -79,7 +79,7 @@ processors:
         _conf.tz_offset as before. If tz_offset is not set, it will default to
         UTC as before.
       if:
-      source: >-
+      source: |-
           if (ctx._temp_?.tz != null && ctx._conf?.tz_map != null) {
             for (def item : ctx._conf.tz_map) {
               if (item.tz_short == ctx._temp_.tz) {
@@ -88,12 +88,11 @@ processors:
               }
             }
           }
+          if (ctx._conf?.tz_offset != null) {
+            ctx.event.timezone = ctx._conf.tz_offset;
+          }
           if (ctx.event?.timezone == null) {
-            if (ctx._conf?.tz_offset != null) {
-              ctx.event.timezone = ctx._conf.tz_offset;
-            } else {
-              ctx.event.timezone = "UTC";
-            }
+            ctx.event.timezone = 'UTC';
           }
   - date:
       if: ctx?._temp_.cisco_timestamp != null
