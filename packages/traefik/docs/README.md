@@ -140,11 +140,13 @@ An example event for `access` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| http.request.headers | The canonical headers of the monitored HTTP request. | object |
-| http.response.headers | The canonical headers of the monitored HTTP request. | object |
+| http.request.headers.\* | The canonical headers of the monitored HTTP request. | object |
+| http.response.headers.\* | The canonical headers of the monitored HTTP request. | object |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
 | traefik.access.origin.content_size | The content length specified by the origin server, or 0 if unspecified. | long |
 | traefik.access.origin.duration | The time taken (in nanoseconds) by the origin server ('upstream') to return its response. | long |
-| traefik.access.origin.headers | The canonical headers of the monitored HTTP request. | object |
+| traefik.access.origin.headers.\* | The canonical headers of the monitored HTTP request. | object |
 | traefik.access.origin.status_code | The HTTP status code returned by the origin server. If the request was handled by this Traefik instance (e.g. with a redirect), then this value will be absent (0). | long |
 | traefik.access.origin.status_line | OriginStatus + Status code explanation | keyword |
 | traefik.access.overhead | The processing time overhead (in nanoseconds) caused by Traefik | long |
