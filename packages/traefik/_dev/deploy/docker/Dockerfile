@@ -1,5 +1,5 @@
 ARG TRAEFIK_VERSION
-FROM traefik:${TRAEFIK_VERSION}-alpine
+FROM traefik:${TRAEFIK_VERSION}
 
 ARG TRAEFIK_LOG_FORMAT
 COPY ./traefik_format_${TRAEFIK_LOG_FORMAT}.toml /etc/traefik/traefik.toml
