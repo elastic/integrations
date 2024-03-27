@@ -430,13 +430,13 @@ processors:
       ignore_missing: true
   - set:
       field: file.hash.sha1
-      tag: set_file_hash_sha1_from_detection_object_hash_sha1
-      copy_from: eset_protect.detection.object_hash_sha1
+      tag: set_file_hash_sha1_from_eset_protect_event_hash
+      copy_from: eset_protect.event.hash
       ignore_empty_value: true
-      if: ctx.eset_protect?.detection?.object_type_name == "File"
+      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
   - lowercase:
       field: file.hash.sha1
-      tag: lowercase_eset_protect_event_hash
+      tag: lowercase_file_hash_sha1
       ignore_missing: true
   - set:
       field: threat.indicator.file.hash.sha1
@@ -446,11 +446,15 @@ processors:
       if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
   - append:
       field: related.hash
-      tag: append_file_hash_sha1_into_related_hash
-      value: "{{{file.hash.sha1}}}"
+      tag: append_eset_protect_event_hash_into_related_hash
+      value: "{{{eset_protect.event.hash}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.hash != null
-  - convert:
+  - lowercase:
+      field: related.hash
+      tag: lowercase_file_hash_sha1
+      ignore_missing: true
+  - convert: 
       field: json.inbound
       tag: convert_inbound_to_boolean
       target_field: eset_protect.event.inbound
