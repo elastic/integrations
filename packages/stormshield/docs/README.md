@@ -4,8 +4,6 @@ Stormshield Network Security (SNS) firewalls are a stable and efficient security
 
 Use the Stormshield SNS integration to ingest syslog data into your Elasticsearch cluster, then visualize that data in Kibana. Create alerts to notify you if something goes wrong.
 
-<!-- 
-For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
 
 ## Data streams
 
