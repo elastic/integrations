@@ -215,12 +215,6 @@ processors:
       value: ESET PROTECT
       if: ctx.eset_protect?.event?.type != null && ['Threat_Event','HipsAggregated_Event','FirewallAggregated_Event','FilteredWebsites_Event','BlockedFiles_Event'].contains(ctx.eset_protect.event.type)
   - set:
-      field: threat.indicator.file.hash.sha1
-      tag: set_threat_indicator_file_hash_sha1
-      copy_from: json.hash
-      ignore_empty_value: true
-      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
-  - set:
       field: threat.indicator.type
       tag: set_threat_indicator_type
       value: file
@@ -440,6 +434,16 @@ processors:
       value: "{{{eset_protect.event.hash}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.hash != null
+  - lowercase:
+      field: related.hash
+      tag: lowercase_related_hash
+      ignore_missing: true
+  - set:
+      field: threat.indicator.file.hash.sha1
+      tag: set_threat_indicator_file_hash_sha1
+      copy_from: related.hash
+      ignore_empty_value: true
+      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
   - convert:
       field: json.inbound
       tag: convert_inbound_to_boolean
