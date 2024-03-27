@@ -25,7 +25,8 @@ processors:
       if: ctx.panw_cortex?.xdr?.reply?.result_count == 0
   - fingerprint:
       fields:
-        - panw_cortex.xdr.alert_count
+        - panw_cortex.xdr.creation_time
+        - panw_cortex.xdr.modification_time
         - panw_cortex.xdr.incident_id
       target_field: "_id"
       ignore_missing: true
@@ -48,9 +49,12 @@ processors:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.modification_time != null
   - set:
-      field: "@timestamp"
+      field: event.created
       copy_from: panw_cortex.xdr.creation_time
-      if: ctx.panw_cortex?.xdr?.creation_time != null
+  - set:
+      field: "@timestamp"
+      copy_from: panw_cortex.xdr.modification_time
+      if: ctx.panw_cortex?.xdr?.modification_time != null
   - set:
       field: event.severity
       value: 0
@@ -71,6 +75,10 @@ processors:
       field: event.severity
       value: 4
       if: ctx.panw_cortex?.xdr?.severity == "high"
+  - set:
+      field: event.severity
+      value: 5
+      if: ctx.panw_cortex?.xdr?.severity == "critical"    
   - rename:
       field: panw_cortex.xdr.incident_id
       target_field: event.id
