@@ -17,7 +17,8 @@ The MongoDB Atlas integration collects logs.
 Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration is `mongod_audit`.
 
 Data streams:
-- `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications.
+- `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod is the primary daemon method for the MongoDB system. It helps in handling the data requests, managing the data access, performing background management operations, and other core database operations. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
+
 
 Note:
 - Users can monitor and see the log inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
@@ -52,7 +53,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Troubleshooting
 
-- If the user encounters the following error during data ingestion, it is likely due to the data collected through this endpoint covers a long time span. As a result, generating a response may take longer. Additionally, if the `HTTP Client Timeout` parameter is set to a small duration,  a request timeout might happen. It is important to note that no data will be lost in this scenario. However, if the user wishes to avoid this error altogether, it is recommended to adjust the `HTTP Client Timeout` and `Interval` parameters based on the duration of data collection.
+- If the user encounters the following error during data ingestion, it is likely due to the data collected through this endpoint covers a long time span. As a result, generating a response may take longer. Additionally, if the `HTTP Client Timeout` parameter is set to a small duration,  a request timeout might happen. However, if the user wishes to avoid this error altogether, it is recommended to adjust the `HTTP Client Timeout` and `Interval` parameters based on the duration of data collection.
 ```
 {
   "error": {
@@ -66,5 +67,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 ### Mongod Audit
 
 This is the `mongod_audit` data stream. This data stream allows administrators and users to track system activity for deployments with multiple users and applications.
+
+{{event "mongod_audit"}}
 
 {{fields "mongod_audit"}}

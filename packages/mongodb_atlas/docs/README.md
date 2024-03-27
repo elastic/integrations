@@ -17,7 +17,8 @@ The MongoDB Atlas integration collects logs.
 Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration is `mongod_audit`.
 
 Data streams:
-- `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications.
+- `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod is the primary daemon method for the MongoDB system. It helps in handling the data requests, managing the data access, performing background management operations, and other core database operations. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
+
 
 Note:
 - Users can monitor and see the log inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
@@ -52,7 +53,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Troubleshooting
 
-- If the user encounters the following error during data ingestion, it is likely due to the data collected through this endpoint covers a long time span. As a result, generating a response may take longer. Additionally, if the `HTTP Client Timeout` parameter is set to a small duration,  a request timeout might happen. It is important to note that no data will be lost in this scenario. However, if the user wishes to avoid this error altogether, it is recommended to adjust the `HTTP Client Timeout` and `Interval` parameters based on the duration of data collection.
+- If the user encounters the following error during data ingestion, it is likely due to the data collected through this endpoint covers a long time span. As a result, generating a response may take longer. Additionally, if the `HTTP Client Timeout` parameter is set to a small duration,  a request timeout might happen. However, if the user wishes to avoid this error altogether, it is recommended to adjust the `HTTP Client Timeout` and `Interval` parameters based on the duration of data collection.
 ```
 {
   "error": {
@@ -66,6 +67,112 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 ### Mongod Audit
 
 This is the `mongod_audit` data stream. This data stream allows administrators and users to track system activity for deployments with multiple users and applications.
+
+An example event for `mongod_audit` looks as following:
+
+```json
+{
+    "@timestamp": "2023-04-01T12:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "8d14f098-5577-476e-8f30-15b792ccf10f",
+        "id": "97f845ab-0826-49c5-8574-b2921ee4e366",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.12.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb_atlas.mongod_audit",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "97f845ab-0826-49c5-8574-b2921ee4e366",
+        "snapshot": false,
+        "version": "8.12.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network",
+            "authentication"
+        ],
+        "dataset": "mongodb_atlas.mongod_audit",
+        "ingested": "2024-03-11T13:58:12Z",
+        "kind": "event",
+        "module": "mongodb_atlas",
+        "type": [
+            "access",
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "829324aac17946dcace17006fa82a2d2",
+        "ip": [
+            "192.168.248.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-F8-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "mongodb_atlas": {
+        "mongod_audit": {
+            "action": {
+                "type": "authenticate"
+            },
+            "hostname": "hostname1",
+            "local": {
+                "ip": "127.0.0.1",
+                "port": 27017
+            },
+            "remote": {
+                "ip": "192.168.1.100",
+                "port": 54320
+            },
+            "result": "Success",
+            "user": {
+                "names": [
+                    {
+                        "db": "admin",
+                        "user": "auditUser"
+                    }
+                ],
+                "roles": [
+                    {
+                        "db": "admin",
+                        "role": "dbAdmin"
+                    }
+                ]
+            },
+            "uuid": {
+                "binary": "some-unique-identifier",
+                "type": "04"
+            }
+        }
+    },
+    "tags": [
+        "mongodb_atlas-mongod_audit"
+    ]
+}
+```
 
 **Exported fields**
 
@@ -83,7 +190,9 @@ This is the `mongod_audit` data stream. This data stream allows administrators a
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | mongodb_atlas.mongod_audit.action.type | Action type of Audit Event. | keyword |
+| mongodb_atlas.mongod_audit.hostname | Human-readable label that identifies the host that stores the log files that you want to download. | keyword |
 | mongodb_atlas.mongod_audit.local.ip | A document that contains the IP address of the running instance. | ip |
 | mongodb_atlas.mongod_audit.local.is_system_user | This field indicates whether the user who caused the event was a system user. | boolean |
 | mongodb_atlas.mongod_audit.local.port | A document that contains the port number of the running instance. | long |

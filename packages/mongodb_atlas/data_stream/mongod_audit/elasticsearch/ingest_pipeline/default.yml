@@ -12,16 +12,20 @@ processors:
       value: mongodb_atlas
   - set:
       field: event.category
-      value: ["network","authentication"]
+      value: ["network", "authentication"]
   - set:
       field: event.type
-      value: ["access","info"]
+      value: ["access", "info"]
   - drop:
-      if: ctx.message == "empty file"
-      tag: drop_retry_events
+      if: ctx.message == "No data for given time period or host is unreachable"
+      tag: drop_empty_events
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+  - rename:
+      field: host_name
+      target_field: mongodb_atlas.mongod_audit.hostname
       ignore_missing: true
   - json:
       field: event.original

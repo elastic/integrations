@@ -66,16 +66,16 @@ program: |
     ).as(state, state.next < size(state.hostlist)
       ?
         (
-          request("GET", state.url + "/api/atlas/v2/groups/" + state.groupId + "/clusters/" + string(state.hostlist[state.next]) + "/logs/mongodb-audit-log.gz?startDate=" + string(int(state.startDate)) + "&endDate=" + string(int(state.endDate))
+          request("GET", state.url + "/api/atlas/v2/groups/" + state.groupId + "/clusters/" + state.hostlist[state.next] + "/logs/mongodb-audit-log.gz?startDate=" + string(int(state.startDate)) + "&endDate=" + string(int(state.endDate))
           ).with({
             "Header": {
               "Accept": ["application/vnd.atlas." + string(timestamp(now).getFullYear()) + "-01-01+gzip"]
             }
           }).do_request().as(resp, (
-            resp.ContentLength != 0 
+            resp.StatusCode == 200 && resp.ContentLength != 0
             ?
               string(bytes(resp.Body).mime('application/gzip')).as(body,{
-                "events": body.trim_space().split("\n").map(value,{"message":value}),
+                "events": body.trim_space().split("\n").map(value,{"message":value, "host_name": state.hostlist[state.next]}),
                 "cursor": {
                   "last_timestamp": state.endDate
                 },
@@ -89,7 +89,7 @@ program: |
               })
             :
               {
-                "events": [{"message":"retry"}],
+                "events": [{"message":"No data for given time period or host is unreachable"}],
                 "cursor": {
                   "last_timestamp": state.endDate
                 },
