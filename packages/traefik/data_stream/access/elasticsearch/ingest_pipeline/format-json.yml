@@ -100,13 +100,17 @@ processors:
   - rename:
       field: temp.ClientHost
       target_field: source.ip
-      ignore_missing: true
+      ignore_missing:
       if: 'ctx?.source?.ip == null'
-  - set:
-      field: source.address
-      copy_from: source.ip
-      ignore_empty_value: true
-      override: false
+  - rename:
+      field: temp.ClientHost
+      target_field: network.forwarded_ip
+      ignore_missing: true
+      if: 'ctx?.source?.ip != null && ctx?.source?.ip != ctx?.temp?.ClientHost'
+  - append:
+      field: related.ip
+      value: "{{{network.forwarded_ip}}}"
+      if: 'ctx?.network?.forwarded_ip != null'
   - rename:
       field: temp.ClientPort
       target_field: source.port
