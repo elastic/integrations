@@ -1,0 +1,26 @@
+source:
+  index:
+    - logs-tychon.tychon_ciphers*
+  query:
+    bool:
+      must:
+        - match_phrase:
+            event.kind: 'state'
+        - match_phrase:
+            script.name: 'Get-CipherFromListeningProcess.ps1'
+dest:
+  index: tychon_ciphers
+frequency: 30m
+sync:
+  time:
+    field: 'event.ingested'
+    delay: 60s
+latest:
+  unique_key:
+    - id
+  sort: '@timestamp'
+_meta:
+  fleet_transform_version: 1.0.2
+  run_as_kibana_system: false
+  managed: true
+description: This transformation ensures there is a running configuration of what certificates are currently on a device from TYCHON.

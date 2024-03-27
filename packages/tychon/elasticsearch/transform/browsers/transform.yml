@@ -1,0 +1,26 @@
+source:
+  index:
+    - logs-tychon.tychon_browser*
+  query:
+    bool:
+      must:
+        - match_phrase:
+            event.kind: 'state'
+        - match_phrase:
+            tychon.script.name: 'Get-BrowserCryptography.ps1'
+dest:
+  index: tychon_browser_crypto
+frequency: 30m
+sync:
+  time:
+    field: 'event.ingested'
+    delay: 60s
+latest:
+  unique_key:
+    - tychon.id
+  sort: '@timestamp'
+_meta:
+  fleet_transform_version: 1.0.2
+  run_as_kibana_system: false
+  managed: true
+description: This transformation ensures there is a running configuration of what certificates are currently on a device from TYCHON.
