@@ -428,6 +428,16 @@ processors:
       tag: rename_hash
       target_field: eset_protect.event.hash
       ignore_missing: true
+  - set:
+      field: threat.indicator.file.hash.sha1
+      tag: set_threat_indicator_file_hash_sha1
+      copy_from: eset_protect.event.hash
+      ignore_empty_value: true
+      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
+  - lowercase:
+      field: threat.indicator.file.hash.sha1
+      tag: lowercase_threat_indicator_file_hash_sha1
+      ignore_missing: true
   - append:
       field: related.hash
       tag: append_hash_into_related_hash
@@ -438,12 +448,6 @@ processors:
       field: related.hash
       tag: lowercase_related_hash
       ignore_missing: true
-  - set:
-      field: threat.indicator.file.hash.sha1
-      tag: set_threat_indicator_file_hash_sha1
-      copy_from: related.hash
-      ignore_empty_value: true
-      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
   - convert:
       field: json.inbound
       tag: convert_inbound_to_boolean
