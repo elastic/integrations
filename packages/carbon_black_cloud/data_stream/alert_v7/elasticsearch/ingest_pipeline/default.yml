@@ -85,6 +85,15 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.ttps
+      if: ctx.json?.ttps instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: carbon_black_cloud.alert.ttps
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - rename:
       field: json.reason
       target_field: event.reason
@@ -154,18 +163,6 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.process_name
-      target_field: process.name
-      ignore_missing: true
-  - rename:
-      field: json.process_path
-      target_field: process.executable
-      ignore_missing: true
-  - rename:
-      field: json.process_guid
-      target_field: process.entity_id
-      ignore_missing: true
-  - rename:
       field: json.vendor_name
       target_field: carbon_black_cloud.alert.vendor_name
       ignore_missing: true
@@ -185,57 +182,129 @@ processors:
       field: json.policy_applied
       target_field: carbon_black_cloud.alert.policy_applied
       ignore_missing: true
+# process fields
+  - foreach:
+      field: json.process_issuer
+      if: ctx.json?.process_issuer instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: carbon_black_cloud.alert.process.issuer
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.process_publisher
+      if: ctx.json?.process_publisher instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: carbon_black_cloud.alert.process.publisher
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - rename:
-      field: json.threat_cause_actor_name
-      target_field: carbon_black_cloud.alert.threat_cause.actor.name
+      field: json.process_name
+      target_field: process.name
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.process.name
+      copy_from: process.name
+      ignore_empty_value: true
+  - rename:
+      field: json.process_path
+      target_field: process.executable
       ignore_missing: true
   - rename:
-      field: json.threat_cause_actor_process_pid
-      target_field: carbon_black_cloud.alert.threat_cause.actor.process_pid
+      field: json.process_cmdline
+      target_field: process.command_line
       ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.process.cmdline
+      copy_from: process.command_line
+      ignore_empty_value: true
   - rename:
-      field: json.threat_cause_actor_sha256
-      target_field: carbon_black_cloud.alert.threat_cause.actor.sha256
+      field: json.process_guid
+      target_field: process.entity_id
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.process.guid
+      copy_from: process.entity_id
+      ignore_empty_value: true
+  - rename:
+      field: json.process_pid
+      target_field: process.pid
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.process.pid
+      copy_from: process.pid
+      ignore_empty_value: true
+  - rename:
+      field: json.process_sha256
+      target_field: carbon_black_cloud.alert.process.hash.sha256
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{carbon_black_cloud.alert.threat_cause.actor.sha256}}}'
-      if: ctx.carbon_black_cloud?.alert?.threat_cause?.actor?.sha256 != null
+      value: '{{{carbon_black_cloud.alert.process.hash.sha256}}}'
+      if: ctx.carbon_black_cloud?.alert?.process?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.threat_cause_actor_md5
-      target_field: carbon_black_cloud.alert.threat_cause.actor.md5
+      field: json.process_md5
+      target_field: carbon_black_cloud.alert.process.hash.md5
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{carbon_black_cloud.alert.threat_cause.actor.md5}}}'
-      if: ctx.carbon_black_cloud?.alert?.threat_cause?.actor?.md5 != null
+      value: '{{{carbon_black_cloud.alert.process.hash.md5}}}'
+      if: ctx.carbon_black_cloud?.alert?.process?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.threat_cause_cause_event_id
-      target_field: carbon_black_cloud.alert.threat_cause.cause_event_id
+      field: json.process_reputation
+      target_field: carbon_black_cloud.alert.process.reputation
+      ignore_missing: true
+  # parent fields
+  - rename:
+      field: json.parent_name
+      target_field: carbon_black_cloud.alert.parent.name
       ignore_missing: true
   - rename:
-      field: json.threat_cause_parent_guid
-      target_field: carbon_black_cloud.alert.threat_cause.process.parent.guid
+      field: json.parent_cmdline
+      target_field: carbon_black_cloud.alert.parent.cmdline
       ignore_missing: true
   - rename:
-      field: json.threat_cause_process_guid
-      target_field: carbon_black_cloud.alert.threat_cause.process.guid
+      field: json.parent_guid
+      target_field: carbon_black_cloud.alert.parent.guid
       ignore_missing: true
   - rename:
-      field: json.threat_cause_reputation
-      target_field: carbon_black_cloud.alert.threat_cause.reputation
+      field: json.parent_pid
+      target_field: carbon_black_cloud.alert.parent.pid
       ignore_missing: true
   - rename:
-      field: json.threat_cause_threat_category
-      target_field: carbon_black_cloud.alert.threat_cause.threat_category
+      field: json.parent_sha256
+      target_field: carbon_black_cloud.alert.parent.hash.sha256
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.parent.hash.sha256}}}'
+      if: ctx.carbon_black_cloud?.alert?.parent?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.parent_md5
+      target_field: carbon_black_cloud.alert.parent.hash.md5
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.parent.hash.md5}}}'
+      if: ctx.carbon_black_cloud?.alert?.parent?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.parent_reputation
+      target_field: carbon_black_cloud.alert.parent.reputation
       ignore_missing: true
   - rename:
-      field: json.threat_cause_vector
-      target_field: carbon_black_cloud.alert.threat_cause.vector
+      field: json.primary_event_id
+      target_field: carbon_black_cloud.alert.primary_event_id
       ignore_missing: true
   - rename:
       field: json.ioc_field
@@ -245,17 +314,6 @@ processors:
       field: json.ioc_hit
       target_field: carbon_black_cloud.alert.ioc.hit
       ignore_missing: true
-  - convert:
-      field: json.count
-      target_field: carbon_black_cloud.alert.count
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.count
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.alert_notes_present
       target_field: carbon_black_cloud.alert.alert_notes_present
@@ -342,6 +400,23 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.determination
+      target_field: carbon_black_cloud.alert.determination
+      ignore_missing: true
+  - date:
+      field: carbon_black_cloud.alert.determination.change_timestamp
+      target_field: carbon_black_cloud.alert.determination.change_timestamp
+      if: ctx.carbon_black_cloud?.alert?.determination?.change_timestamp != null && ctx.carbon_black_cloud.alert.determination.change_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: carbon_black_cloud.alert.determination.change_timestamp
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+        
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))

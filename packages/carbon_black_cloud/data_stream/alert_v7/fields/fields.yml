@@ -97,31 +97,42 @@
     - name: target_value
       type: keyword
       description: The priority of the device assigned by the policy.
-    # threat_cause fields
-    - name: threat_cause
+    # parent fields
+    - name: parent
       type: group
+      description: Fields related to the parent information.
       fields:
-        - name: process
+        - name: hash
           type: group
+          description: Hash values associated with the parent process.
           fields:
-            - name: guid
+            - name: sha256
               type: keyword
-              description: The global unique identifier of the process.
-            - name: parent
-              type: group
-              fields:
-                - name: guid
-                  type: keyword
-                  description: The global unique identifier of the process.
+              description: SHA-256 hash of the parent process.
+            - name: md5
+              type: keyword
+              description: MD5 hash of the parent process.
+        - name: pid
+          type: long
+          description: PID of the parent process that has fired the alert.
+        - name: guid
+          type: keyword
+          description: Guid of the parent process that has fired the alert.
+        - name: name
+          type: keyword
+          description: Filesystem path of the parent process binary.
+        - name: cmdline
+          type: keyword
+          description: Command line executed by the parent process.
+        - name: username
+          type: keyword
+          description: User context in which the parent process was executed.
+        - name: effective_reputation
+          type: keyword
+          description: Effective reputation of the parent hash.
         - name: reputation
           type: keyword
-          description: Reputation of the threat cause.
-        - name: threat_category
-          type: keyword
-          description: Category of the threat cause.
-        - name: vector
-          type: keyword
-          description: The source of the threat cause.
+          description: Reputation of the parent process; applied when event is processed by the Carbon Black Cloud.
     # process fields
     - name: process
       type: group
@@ -131,9 +142,6 @@
           type: group
           description: Hash values associated with the process.
           fields:
-            - name: sha1
-              type: keyword
-              description: SHA-1 hash of the process.
             - name: sha256
               type: keyword
               description: SHA-256 hash of the process.
@@ -143,32 +151,36 @@
         - name: pid
           type: long
           description: PID of the process that has fired the alert.
+        - name: guid
+          type: keyword
+          description: Guid of the process that has fired the alert.
         - name: name
           type: keyword
-          description: "The name can be one of the following: process commandline, process name, or analytic matched threat. Analytic matched threats are Exploit, Malware, PUP, or Trojan."
-        - name: command_line
+          description: Filesystem path of the actor process binary.
+        - name: cmdline
           type: keyword
-          description: Command line used to execute the process.
-        
+          description: Command line executed by the actor process.
+        - name: username
+          type: keyword
+          description: User context in which the actor process was executed.
+        - name: effective_reputation
+          type: keyword
+          description: Effective reputation of the actor hash.
+        - name: reputation
+          type: keyword
+          description: Reputation of the actor process; applied when event is processed by the Carbon Black Cloud.   
+        - name: issuer
+          type: array
+          description: The certificate authority associated with the process’s certificate. 
+        - name: publisher
+          type: array
+          description: Publisher name on the certificate used to sign the Windows or macOS process binary.      
     - name: primary_event_id
       type: keyword
       description: ID of the primary event in the alert.
     - name: threat_id
       type: keyword
       description: The identifier of a threat which this alert belongs. Threats are comprised of a combination of factors that can be repeated across devices.
-    - name: threat_indicators
-      type: group
-      description: List of the threat indicators that make up the threat.
-      fields:
-        - name: process_name
-          type: keyword
-          description: Process name associated with threat.
-        - name: sha256
-          type: keyword
-          description: Sha256 associated with threat.
-        - name: ttps
-          type: keyword
-          description: Tactics, techniques and procedures associated with threat.
     - name: type
       type: keyword
       description: Type of alert.
@@ -178,6 +190,10 @@
     - name: vendor_name
       type: keyword
       description: The name of the USB device’s vendor.
+    - name: ttps
+      type: array
+      description: Other potential malicious activities involved in a threat.
+      # watchlist fields
     - name: watchlists
       type: group
       description: List of watchlists associated with an alert.
@@ -188,6 +204,24 @@
         - name: name
           type: keyword
           description: The name of the watchlist.
+    # determination fields
+    - name: determination
+      type: group
+      description: "Fields related to alert determination"
+      fields:
+        - name: change_timestamp
+          type: date
+          description: "Timestamp of the determination change"
+        - name: value
+          type: keyword
+          description: "Value of the determination"
+        - name: changed_by_type
+          type: keyword
+          description: "Type of entity that changed the determination"
+        - name: changed_by
+          type: keyword
+          description: "Entity that changed the determination"
+    # workflow fields
     - name: workflow
       type: group
       description: Tracking system for alerts as they are triaged and resolved.
