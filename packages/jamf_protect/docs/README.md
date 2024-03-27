@@ -234,7 +234,7 @@ An example event for `telemetry` looks as following:
         "version": "8.4.0"
     },
     "data_stream": {
-        "dataset": "jamf_protect_telemetry.log",
+        "dataset": "jamf_protect.telemetry",
         "namespace": "ep",
         "type": "logs"
     },
@@ -252,7 +252,7 @@ An example event for `telemetry` looks as following:
         "category": [
             "process"
         ],
-        "dataset": "jamf_protect_telemetry.log",
+        "dataset": "jamf_protect.telemetry",
         "ingested": "2022-11-04T11:01:45Z",
         "kind": "event",
         "type": [

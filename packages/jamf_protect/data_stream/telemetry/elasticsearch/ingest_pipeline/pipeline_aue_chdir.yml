@@ -3,7 +3,7 @@ description: Pipeline for Jamf Protect Telemetry aue_chdir audit logs.
 processors:
   - convert:
       field: json.attributes.device
-      target_field: jamf_protect_telemetry.log.attributes.device
+      target_field: jamf_protect.telemetry.attributes.device
       type: string
       ignore_missing: true
       ignore_failure: true
@@ -13,13 +13,13 @@ processors:
       ignore_failure: true
   - convert:
       field: json.attributes.file_system_id
-      target_field: jamf_protect_telemetry.log.attributes.file.system.id
+      target_field: jamf_protect.telemetry.attributes.file.system.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.attributes.node_id
-      target_field: jamf_protect_telemetry.log.attributes.node.id
+      target_field: jamf_protect.telemetry.attributes.node.id
       type: string
       ignore_missing: true
       ignore_failure: true
@@ -60,11 +60,11 @@ processors:
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
   - rename:
       field: json.path
-      target_field: jamf_protect_telemetry.log.path
+      target_field: jamf_protect.telemetry.path
       ignore_missing: true
   - script:
       description: Convert Decimal into Octal.
       lang: painless
       source: |
         int temp = (int)ctx.json?.file_access_mode;
-        ctx.jamf_protect_telemetry.log.attributes.file.access_mode = Integer.toOctalString(temp);
+        ctx.jamf_protect.telemetry.attributes.file.access_mode = Integer.toOctalString(temp);
