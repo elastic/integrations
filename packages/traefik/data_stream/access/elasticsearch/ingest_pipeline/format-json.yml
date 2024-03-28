@@ -97,16 +97,22 @@ processors:
       pattern: "%{source.ip}:%{source.port}"
       ignore_missing: true
       ignore_failure: true
-  - rename:
+  - convert:
       field: temp.ClientHost
       target_field: source.ip
-      ignore_missing:
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
       if: 'ctx?.source?.ip == null'
-  - rename:
+  - convert:
       field: temp.ClientHost
       target_field: network.forwarded_ip
+      type: ip
       ignore_missing: true
       if: 'ctx?.source?.ip != null && ctx?.source?.ip != ctx?.temp?.ClientHost'
+  - remove:
+      field: temp.ClientHost
+      ignore_missing: true
   - append:
       field: related.ip
       value: "{{{network.forwarded_ip}}}"
