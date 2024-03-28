@@ -54,7 +54,7 @@ require (
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
 	github.com/elastic/kbncontent v0.1.3 // indirect
-	github.com/elastic/package-spec/v3 v3.1.2 // indirect
+	github.com/elastic/package-spec/v3 v3.1.3 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
@@ -209,4 +209,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/elastic/elastic-package => github.com/flash1293/elastic-package v0.0.0-20240322102016-dc5d299edf10
+replace github.com/elastic/elastic-package => github.com/flash1293/elastic-package v0.0.0-20240328084811-54a846bad496
