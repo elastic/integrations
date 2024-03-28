@@ -1,0 +1,119 @@
+format_version: 3.1.0
+name: windows_etw
+title: Custom Windows ETW logs
+description: Collect and parse logs from any Windows ETW provider with Elastic Agent.
+type: input
+version: 0.1.0
+conditions:
+  kibana:
+    version: ^8.13.0
+categories:
+  - custom
+  - os_system
+policy_templates:
+  - name: etw
+    type: logs
+    title: Custom Windows ETW logs
+    description: Collect custom Windows ETW logs.
+    input: etw
+    template_path: etw.yml.hbs
+    vars:
+      - name: provider_name
+        type: text
+        title: Provider Name
+        description: >-
+          Name of of an ETW provider (eg. Microsoft-Windows-DNSServer). Run `logman query providers` to list the available providers in the endpoint.
+        required: false
+        show_user: true
+      - name: provider_guid
+        type: text
+        title: Provider GUID
+        description: >-
+          GUID of of an ETW provider (eg. `{EB79061A-A566-4698-9119-3ED2807060E7}`). Run `logman query providers` to list the available providers in the endpoint.
+        required: false
+        show_user: true
+      - name: session_name
+        type: text
+        title: Session Name
+        description: >-
+          When specifying a provider, a new session is created. This controls the name for the new ETW session it will create. If not specified, the session will be named using the provider ID prefixed by 'Elastic-'.
+        required: false
+        show_user: true
+      - name: logfile
+        type: text
+        title: File
+        description: >-
+          Path to an .etl file to read from.
+        required: false
+        show_user: true
+      - name: session
+        type: text
+        title: Session
+        description: >-
+          An existing ETW session to read from. Existing sessions can be listed using `logman query -ets`.
+        required: false
+        show_user: true
+      - name: trace_level
+        type: text
+        title: Trace Level
+        description: >-
+          Defines the filtering level for events based on severity. Valid options include critical, error, warning, information, and verbose. The provider writes an event if the event's level is more severe or equal to the defined value.
+        default: information
+        required: false
+        show_user: true
+      - name: match_any_keyword
+        type: text
+        title: Match Any Keyword
+        description: >-
+          An 8-byte bitmask used for filtering events from specific provider subcomponents based on keyword matching. Any matching keyword will enable the event to be written. Default value is `0xfffffffffffffffff` so it matches every available keyword. Run `logman query providers "<provider.name>"` to list the available keywords for a specific provider.
+        default: "0xffffffffffffffff"
+        required: false
+        show_user: false
+      - name: match_all_keyword
+        type: text
+        title: Match All Keyword
+        description: >-
+          Similar to MatchAnyKeyword, this 8-byte bitmask filters events that match all specified keyword bits. Default value is 0 to let every event pass. Run `logman query providers "<provider.name>"` to list the available keywords for a specific provider.
+        default: "0x0000000000000000"
+        required: false
+        show_user: false
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: >-
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: etw.winlog
+        required: true
+        show_user: true
+      - name: pipeline
+        type: text
+        show_user: true
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        required: false
+        multi: true
+        show_user: false
+      - name: custom
+        type: yaml
+        title: Custom Configurations
+        description: >-
+          Here YAML configuration options can be used to be added to your configuration. Be careful using this as it might break your configuration file.
+        required: false
+        show_user: false
+        default: |-
+          # Configuration example
+          #processors:
+          #  - drop_event.when.not.or:
+          #    - equals.event.code: '903'
+          #    - equals.event.code: '1024'
+icons:
+  - src: "/img/logo_windows.svg"
+    type: "image/svg+xml"
+owner:
+  github: elastic/sec-windows-platform
+  type: elastic
