@@ -19,6 +19,7 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | @timestamp | Event timestamp. | date |
 | abusech.url.blacklists.spamhaus_dbl | If the indicator is listed on the spamhaus blacklist. | keyword |
 | abusech.url.blacklists.surbl | If the indicator is listed on the surbl blacklist. | keyword |
+| abusech.url.deleted_at | The timestamp when the indicator is (will be) deleted. | date |
 | abusech.url.id | The ID of the indicator. | keyword |
 | abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false) | boolean |
 | abusech.url.last_online | Last timestamp when the URL has been serving malware. | date |
@@ -72,6 +73,8 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.interval | User-configured value for `Interval` setting. This is used in calculation of indicator expiration time. | keyword |
+| labels.ioc_expiry | User-configured value for `Enable Indicator Expiry` setting. | boolean |
 | labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |

@@ -15,10 +15,6 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 
 {{#if ioc_expiry}}
-fields_under_root: true
-fields:
-  _conf:
-    ioc_expiry: "{{ioc_expiry}}"
 {{#if ioc_expiry_url}}
 resource.url: {{ioc_expiry_url}}
 program: |
@@ -46,7 +42,7 @@ program: |
         })
         .do_request()
         .as(resp, bytes(resp.Body).decode_json().as(body, {
-        "events": body.map(url, {
+        "events": body.urls.map(url, {
             "message": url.encode_json()
         }),
         "url": state.url
@@ -56,6 +52,12 @@ program: |
 
 redact:
   fields: ~
+
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiry: "{{ioc_expiry}}"
+    interval: "{{interval}}"
 
 tags:
 {{#if preserve_original_event}}

@@ -3,12 +3,14 @@ source:
   index:
     - "logs-ti_abusech.url-*"
   query:
-    term:
-      labels.is_ioc_transform_source:
-        value: true
-    # - "logs-ti_abusech.active_malware-*"
-    # - "logs-ti_abusech.active_malwarebazaar-*"
-    # - "logs-ti_abusech.active_threatfox-*"
+    bool:
+      filter:
+        - term:
+            'labels.is_ioc_transform_source':
+              value: true
+        - term:
+            'labels.ioc_expiry':
+              value: true
 # The version suffix on the dest.index should be incremented if a breaking change
 # is made to the index mapping. You must also bump the fleet_transform_version
 # for any change to this transform configuration to take effect. The old destination
@@ -17,7 +19,6 @@ source:
 # time field type conflicts.
 dest:
   index: "logs-ti_abusech_latest.dest_url-1"
-  # pipeline: 1.25.0-ti_abusech_latest-dest_url
   aliases:
     - alias: "logs-ti_abusech_latest.url"
       move_on_creation: true
@@ -26,7 +27,7 @@ latest:
     - event.dataset
     - threat.indicator.name
   sort: "@timestamp"
-description: Latest Abuse CH IoC data
+description: Latest Abuse CH URL data
 frequency: 30s
 sync:
   time:
@@ -34,8 +35,8 @@ sync:
     delay: 60s
 retention_policy:
   time:
-    field: event.ingested
-    max_age: 1h
+    field: abusech.url.deleted_at
+    max_age: 1m
 _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
