@@ -1,0 +1,85 @@
+config_version: 2
+
+resource.url: {{url}}
+interval: {{interval}}
+
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+resource.tracer.maxsize: 5
+{{/if}}
+
+state:
+  want_more: false
+  auth_token: "{{auth_token}}"
+{{#if limit}}
+  limit: "{{limit}}"
+{{/if}}
+{{#if incidents_since}}
+  incidents_since: "{{incidents_since}}"
+{{/if}}
+{{#if tz}}
+  tz: "{{tz}}"
+{{/if}}
+
+redact:
+  fields:
+    - auth_token
+
+program: |
+  get_request(state.url.trim_suffix("/")+"/api/v1/incidents/all".parse_url().with({
+    "RawQuery": {
+      "auth_token": [state.auth_token],
+      ?"limit": has(state.limit) ? optional.of([string(state.limit)]) : optional.none(),
+      ?"incidents_since": (state.?cursor.next.orValue(null) == null && (has(state.?cursor.current) || has(state.incidents_since))) ?
+        optional.of([string(state.?cursor.current.orValue(state.incidents_since))])
+      :
+        optional.none(),
+      ?"cursor": state.?cursor.next.orValue(null) != null ? optional.of([state.?cursor.next]) : optional.none(),
+      ?"tz": has(state.tz) ? optional.of([state.tz]) : optional.none(),
+    }.format_query()
+  }).format_url()).as(req, req.do_request().as(resp, resp.StatusCode == 200 && size(resp.Body) != 0 ?
+      bytes(resp.Body).decode_json().as(body, body.?incidents.orValue(null) == null ?
+        state
+      :
+        state.with({
+          "events": body.incidents.map(e, {
+            "message": e.with({
+              ?"feed": body.?feed,
+              ?"max_updated_id": body.?max_updated_id,
+            }).encode_json(),
+          }),
+          "cursor": {
+            ?"next": body.?cursor.next.orValue(null) != null ? body.?cursor.next : optional.none(),
+            ?"current": body.?max_updated_id,
+          },
+          "want_more": body.?cursor.next != optional.none(),
+        }))
+    :
+      {"events": {"error": {"message": [
+        req.Method+" "+req.URL.replace_all("auth_token="+state.auth_token, "auth_token=*")+
+          " -> ("+string(resp.StatusCode)+") '"+string(resp.Body)+"'"]}}}
+  ))
+
+{{#if tz_offset}}
+fields_under_root: true
+fields:
+  _conf:
+    tz_offset: {{tz_offset}}
+{{/if}}
+{{#if tags}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
