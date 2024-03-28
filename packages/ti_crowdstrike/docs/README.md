@@ -95,7 +95,7 @@ An example event for `intel` looks as following:
 {
     "@timestamp": "2023-11-21T06:16:01.000Z",
     "agent": {
-        "ephemeral_id": "921f8b53-2e4c-4052-9b4b-9310c925e324",
+        "ephemeral_id": "ee250a38-ef6d-486c-a245-6d0dd0785a11",
         "id": "803f2aef-a6c1-47c8-b64d-e484bb967db4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -121,7 +121,7 @@ An example event for `intel` looks as following:
         ],
         "dataset": "ti_crowdstrike.intel",
         "id": "hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d",
-        "ingested": "2024-03-26T12:04:44Z",
+        "ingested": "2024-03-28T10:49:11Z",
         "kind": "enrichment",
         "original": "{\"_marker\":\"17005473618d17ae6353d123235e4158c5c81f25f0\",\"actors\":[\"SALTYSPIDER\"],\"deleted\":false,\"domain_types\":[\"abc.com\"],\"id\":\"hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"indicator\":\"c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"ip_address_types\":[\"81.2.69.192\"],\"kill_chains\":[\"Installation\",\"C2\"],\"labels\":[{\"created_on\":1700547356,\"last_valid_on\":1700547360,\"name\":\"MaliciousConfidence/High\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"Malware/Mofksys\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/Commodity\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/CredentialHarvesting\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/InformationStealer\"}],\"last_updated\":1700547361,\"malicious_confidence\":\"high\",\"malware_families\":[\"Mofksys\"],\"published_date\":1700547356,\"relations\":[{\"created_date\":1700547339,\"id\":\"domain.com.yy\",\"indicator\":\"domain.ds\",\"last_valid_date\":1700547339,\"type\":\"domain\"},{\"created_date\":1700547339,\"id\":\"domain.xx.yy\",\"indicator\":\"domain.xx.fd\",\"last_valid_date\":1700547339,\"type\":\"domain\"}],\"reports\":[\"reports\"],\"targets\":[\"abc\"],\"threat_types\":[\"Commodity\",\"CredentialHarvesting\",\"InformationStealer\"],\"type\":\"hash_sha256\",\"vulnerabilities\":[\"vuln\"]}",
         "type": [
@@ -309,7 +309,7 @@ An example event for `ioc` looks as following:
 {
     "@timestamp": "2023-11-01T10:22:23.106Z",
     "agent": {
-        "ephemeral_id": "531eb939-14eb-49d3-bbf3-7c110cdaf123",
+        "ephemeral_id": "ca4c5a70-0aa1-4cb3-867c-3c099798eef4",
         "id": "803f2aef-a6c1-47c8-b64d-e484bb967db4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -336,7 +336,7 @@ An example event for `ioc` looks as following:
         ],
         "dataset": "ti_crowdstrike.ioc",
         "id": "34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44",
-        "ingested": "2024-03-26T12:05:34Z",
+        "ingested": "2024-03-28T10:50:10Z",
         "kind": "enrichment",
         "original": "{\"action\":\"detect again\",\"applied_globally\":true,\"created_by\":\"abc.it@example.com\",\"created_on\":\"2023-11-01T10:22:23.10607613Z\",\"deleted\":false,\"description\":\"IS-38887\",\"expired\":false,\"from_parent\":false,\"id\":\"34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44\",\"metadata\":{\"filename\":\"High_Serverity_Heuristic_Sandbox_Threat.docx\"},\"modified_by\":\"example.it@ex.com\",\"modified_on\":\"2023-11-01T10:22:23.10607613Z\",\"platforms\":[\"windows\",\"mac\",\"linux\"],\"severity\":\"critical\",\"tags\":[\"IS-38887\"],\"type\":\"ipv4\",\"value\":\"81.2.69.192\"}",
         "type": [
