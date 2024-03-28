@@ -1,0 +1,114 @@
+---
+description: Pipeline for ingesting BBOT ndjson files.
+
+processors:
+####################
+# Event ECS Fields #
+####################
+- set:
+    field: ecs.version
+    value: 8.12.0
+- set:
+    field: event.kind
+    value: asset
+- json:
+    field: message
+    target_field: bbot
+    tag: json_message
+- date:
+    field: bbot.timestamp
+    formats:
+    -   UNIX
+    if: ctx?.bbot?.timestamp != null
+    ignore_failure: false
+##############
+# ECS Fields #
+##############
+- rename:
+    field: bbot.data.PROTOCOL.port
+    target_field: url.port
+    ignore_missing: true
+- rename:
+    field: bbot.data.VULNERABILITY.severity
+    target_field: vulnerability.severity
+    ignore_missing: true
+- rename:
+    field: bbot.data.DNS_NAME
+    target_field: host.name
+    ignore_missing: true
+- rename:
+    field: bbot.resolved_hosts
+    target_field: related.hosts
+    ignore_missing: true
+- append:
+    field: host.ip
+    value: ["{{bbot.data.IP_ADDRESS}}"]
+    if: ctx?.bbot?.data?.IP_ADDRESS != null
+- append:
+    field: url.full 
+    value: ["{{bbot.data.URL}}"]
+    if: ctx?.bbot?.data?.URL != null
+- append:
+    field: url.full
+    value: ["{{bbot.data.FINDING.url}}"]
+    if: ctx?.bbot?.data?.FINDING?.url != null
+- append:
+    field: url.full
+    value: ["{{bbot.data.SOCIAL.url}}"]
+    if: ctx?.bbot?.data?.SOCIAL?.url != null
+- append:
+    field: url.full
+    value: ["{{bbot.data.STORAGE_BUCKET.url}}"]
+    if: ctx?.bbot?.data?.STORAGE_BUCKET?.url != null
+- append:
+    field: url.full
+    value: ["{{bbot.data.TECHNOLOGY.url}}"]
+    if: ctx?.bbot?.data?.TECHNOLOGY?.url != null
+- append:
+    field: url.full
+    value: ["{{bbot.data.VULNERABILITY.url}}"]
+    if: ctx?.bbot?.data?.VULNERABILITY?.url != null
+- append:
+    field: url.full
+    value: ["{{bbot.data.WAF.url}}"]
+    if: ctx?.bbot?.data?.WAF?.url != null
+- append:
+    field: url.full
+    value: ["{{bbot.data.WEBSCREENSHOT.url}}"]
+    if: ctx?.bbot?.data?.WEBSCREENSHOT?.url != null
+- append:
+    field: url.domain 
+    value: ["{{bbot.data.FINDING.host}}"]
+    if: ctx?.bbot?.data?.FINDING?.host != null
+- append:
+    field: url.domain 
+    value: ["{{bbot.data.PROTOCOL.host}}"]
+    if: ctx?.bbot?.data?.PROTOCOL?.host != null
+- append:
+    field: url.domain 
+    value: ["{{bbot.data.TECHNOLOGY.host}}"]
+    if: ctx?.bbot?.data?.TECHNOLOGY?.host != null
+- append:
+    field: url.domain 
+    value: ["{{bbot.data.VULNERABILITY.host}}"]
+    if: ctx?.bbot?.data?.VULNERABILITY?.host != null
+- append:
+    field: url.domain 
+    value: ["{{bbot.data.WAF.host}}"]
+    if: ctx?.bbot?.data?.WAF?.host != null
+- append:
+    field: url.domain 
+    value: ["{{host.name}}"]
+    if: ctx?.host?.name != null
+
+#################
+# Custom Fields #
+#################
+- remove:
+    field: bbot.timestamp
+    ignore_missing: false
+    description: Drop bbot.timestamp as this is used in the @timestamp field
+- remove:
+    field: bbot.data.IP_ADDRESS
+    ignore_missing: true
+    description: Drop bbot.data.IP_ADDRESS as this is used in the host.ip field
