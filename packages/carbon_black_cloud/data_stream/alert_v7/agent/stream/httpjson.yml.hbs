@@ -1,0 +1,56 @@
+config_version: 2
+interval: {{interval}}
+request.timeout: 2m
+request.method: POST
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+
+request.url: {{hostname}}/api/alerts/v7/orgs/{{org_key}}/alerts/_search
+request.transforms:
+  - set:
+      target: header.X-Auth-Token
+      value: {{custom_api_secret_key}}/{{custom_api_id}}
+  - set:
+      target: body.time_range.start
+      value: '[[.cursor.last_update_timestamp]]'
+      default: '[[formatDate ((now (parseDuration "-{{initial_interval}}")).Add (parseDuration "-15m")) "RFC3339"]]'
+  - set:
+      target: body.time_range.end
+      value: '[[formatDate (now (parseDuration "-15m")) "RFC3339"]]'
+  - set:
+      target: body.sort
+      value: '[{ "field": "backend_update_timestamp", "order": "ASC"}]'
+      value_type: json
+response.pagination:
+  - set:
+      target: body.time_range.start
+      value: '[[if (ne .last_response.body.num_found .last_response.body.num_available)]][[.last_event.backend_update_timestamp]][[end]]'
+      fail_on_template_error: true
+cursor:
+  last_update_timestamp:
+    value: '[[.last_event.backend_update_timestamp]]'
+response.split:
+  target: body.results
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
