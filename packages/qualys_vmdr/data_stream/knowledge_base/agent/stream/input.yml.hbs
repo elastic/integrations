@@ -38,8 +38,12 @@ program: |
       }
   }).do_request().as(resp, bytes(resp.Body).decode_xml('qualys_api_2_0').as(body, {
       "events": (has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST) ?
-          body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e,{
-            "message": e.encode_json()
+          body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, {
+            "message": e.with({"CVE_LIST": has(e.CVE_LIST) && has(e.CVE_LIST.CVE) ?
+                e.CVE_LIST.CVE.map(c, c.ID)
+              :
+                []
+            }).encode_json()
           })
         :
           has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET) ?
