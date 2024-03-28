@@ -27,6 +27,8 @@ The Menlo Security integration collects data for the following two events:
 
 To collect data through the REST API you will need your Menlo Security API URL and an API token.
 
+The API token to collect logs must have the *Log Export API* permission
+
 ## Logs Reference
 
 ### Web
@@ -41,11 +43,11 @@ An example event for `web` looks as following:
 {
     "@timestamp": "2023-11-21T13:12:37.102Z",
     "agent": {
-        "ephemeral_id": "3c8580d2-212a-4726-9143-3e478caecf33",
-        "id": "8603039e-f576-4116-b9cc-0bcc1e1a8875",
+        "ephemeral_id": "22fb9f42-0c3b-4c46-9fae-06cd89923a5b",
+        "id": "9a98930c-439d-4a0b-81f0-f4228f8c523f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.12.2"
     },
     "client": {
         "geo": {
@@ -78,9 +80,9 @@ An example event for `web` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8603039e-f576-4116-b9cc-0bcc1e1a8875",
+        "id": "9a98930c-439d-4a0b-81f0-f4228f8c523f",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -90,9 +92,8 @@ An example event for `web` looks as following:
             "threat"
         ],
         "dataset": "menlo.web",
-        "ingested": "2024-03-08T15:31:01Z",
-        "kind": "event",
-        "module": "menlo",
+        "ingested": "2024-03-28T13:32:25Z",
+        "kind": "alert",
         "outcome": "unknown",
         "reason": "a77757d5-d3be-47ab-9394-cfff5887ade4"
     },
@@ -114,6 +115,7 @@ An example event for `web` looks as following:
             "has_password": false,
             "is_iframe": "false",
             "request_type": "page_request",
+            "risk_score": "low",
             "tab_id": "1",
             "tally": -1,
             "ua_type": "supported_browser"
@@ -137,10 +139,10 @@ An example event for `web` looks as following:
         "ip": [
             "192.18.1.3",
             "192.18.1.1"
+        ],
+        "user": [
+            "example_user"
         ]
-    },
-    "risk": {
-        "calculated_level": "low"
     },
     "server": {
         "geo": {
@@ -192,13 +194,25 @@ An example event for `web` looks as following:
 | @timestamp | Event timestamp. | date |
 | client.geo.country_iso_code | Country ISO code. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
-| dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
 | dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
@@ -211,16 +225,30 @@ An example event for `web` looks as following:
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
-| event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.mime_type | Mime type of the body of the request. This value must only be populated based on the content of the request body, not on the `Content-Type` header. Comparing the mime type of a request with the request's Content-Type header can be helpful in detecting threats or misconfigured clients. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.status_code | HTTP response status code. | long |
-| input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
 | menlo.web.cached | Indicates whether the resource was obtained from the isolated browser’s cache (True) or by downloading from the origin server (False) | boolean |
 | menlo.web.casb_app_name | Cloud application name | keyword |
 | menlo.web.casb_cat_name | Application category ID | keyword |
@@ -235,6 +263,7 @@ An example event for `web` looks as following:
 | menlo.web.has_password | Presence of password in form POST request | boolean |
 | menlo.web.is_iframe | Is inline frame (iframe) element | boolean |
 | menlo.web.request_type | Request type | keyword |
+| menlo.web.risk_score | Risk calculated for URL | keyword |
 | menlo.web.sbox | Sandbox Inspection Result | keyword |
 | menlo.web.sbox_mal_act | List of malicious activities found | keyword |
 | menlo.web.soph | Full file scan result | keyword |
@@ -252,14 +281,14 @@ An example event for `web` looks as following:
 | observer.product | The product name of the observer. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
-| risk.calculated_level | A risk classification level calculated by an internal system as part of entity analytics and entity risk scoring. | keyword |
 | server.geo.country_iso_code | Country ISO code. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| tags | User defined tags. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
@@ -292,13 +321,13 @@ An example event for `dlp` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-03-08T15:28:36.988Z",
+    "@timestamp": "2024-03-28T13:30:21.204Z",
     "agent": {
-        "ephemeral_id": "eb9cb19e-e0ac-4f9f-b510-7bc03d8a386d",
-        "id": "8603039e-f576-4116-b9cc-0bcc1e1a8875",
+        "ephemeral_id": "1054908a-63b4-46fd-8028-f975d0f878c2",
+        "id": "9a98930c-439d-4a0b-81f0-f4228f8c523f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.12.2"
     },
     "data_stream": {
         "dataset": "menlo.dlp",
@@ -309,24 +338,22 @@ An example event for `dlp` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8603039e-f576-4116-b9cc-0bcc1e1a8875",
+        "id": "9a98930c-439d-4a0b-81f0-f4228f8c523f",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.12.2"
     },
     "event": {
         "action": "block",
         "agent_id_status": "verified",
         "category": [
-            "threat",
+            "intrusion_detection",
             "network"
         ],
-        "created": "2020-03-09T17:16:22.227Z",
+        "created": "2020-03-09T17:17:22.227Z",
         "dataset": "menlo.dlp",
         "id": "a4c2161b3f81a287ec46d3c993a33f3b97ded5fd854fa184e7f50679303111ce",
-        "ingested": "2024-03-08T15:28:39Z",
-        "kind": "event",
-        "module": "menlo",
-        "original": "{\"event\":{\"action\":\"block\",\"alerted\":\"false\",\"categories\":\"Download Sites\",\"ccl_ids\":\"CreditordebitcardnumbersGlobal\",\"ccl_match_counts\":\"1\",\"ccl_scores\":\"1\",\"domain\":\"tinyupload.com\",\"dst_url\":\"http://tinyupload.com/\",\"event_id\":\"a4c2161b3f81a287ec46d3c993a33f3b97ded5fd854fa184e7f50679303111ce\",\"event_time\":\"2020-03-09T17:16:22.227000\",\"file_type\":\"CSV\",\"filename\":\"credit_cards.csv\",\"name\":\"file_upload\",\"product\":\"MSIP\",\"protocol\":\"http\",\"request_type\":\"GET\",\"rule_id\":\"1f3ef32c-ec62-42fb-8cad-e1fee3375099\",\"rule_name\":\"Credit card block rule\",\"severity\":\"5\",\"sha256\":\"fd1aee671d92aba0f9f0a8a6d5c6b843e09c8295ced9bb85e16d97360b4d7b3a\",\"src_url\":\"http://tinyupload.com/\",\"status\":\"dirty\",\"stream_name\":\"/safefile-input/working_file\",\"user_input\":\"false\",\"userid\":\"admin@menlosecurity.com\",\"vendor\":\"Menlo Security\",\"version\":\"2.0\"}}",
+        "ingested": "2024-03-28T13:30:33Z",
+        "kind": "alert",
         "outcome": "success",
         "severity": 5
     },
@@ -334,7 +361,7 @@ An example event for `dlp` looks as following:
         "hash": {
             "sha256": "fd1aee671d92aba0f9f0a8a6d5c6b843e09c8295ced9bb85e16d97360b4d7b3a"
         },
-        "name": "credit_cards.csv"
+        "name": "more_credit_cards.csv"
     },
     "http": {
         "request": {
@@ -363,6 +390,14 @@ An example event for `dlp` looks as following:
         "vendor": "Menlo Security",
         "version": "2.0"
     },
+    "related": {
+        "hash": [
+            "fd1aee671d92aba0f9f0a8a6d5c6b843e09c8295ced9bb85e16d97360b4d7b3a"
+        ],
+        "user": [
+            "admin@menlosecurity.com"
+        ]
+    },
     "rule": {
         "id": "1f3ef32c-ec62-42fb-8cad-e1fee3375099",
         "name": "Credit card block rule"
@@ -372,10 +407,10 @@ An example event for `dlp` looks as following:
         "forwarded"
     ],
     "url": {
-        "domain": "tinyupload.com",
-        "original": "http://tinyupload.com/",
+        "domain": "tinynewupload.com",
+        "original": "http://tinynewupload.com/",
         "path": "/",
-        "registered_domain": "tinyupload.com",
+        "registered_domain": "tinynewupload.com",
         "scheme": "http",
         "top_level_domain": "com"
     },
@@ -390,6 +425,19 @@ An example event for `dlp` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -406,9 +454,24 @@ An example event for `dlp` looks as following:
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | file.hash.sha256 | SHA256 hash. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
-| input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
 | menlo.dlp.alerted | Whether or not an email alert was sent to a DLP Auditor profile | boolean |
 | menlo.dlp.category | Category Rules Category type classification | keyword |
 | menlo.dlp.ccl.id | Name of DLP dictionary that was violated | keyword |
@@ -420,10 +483,11 @@ An example event for `dlp` looks as following:
 | observer.product | The product name of the observer. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| tags | User defined tags. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
@@ -433,3 +497,4 @@ An example event for `dlp` looks as following:
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
+

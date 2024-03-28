@@ -27,6 +27,8 @@ The Menlo Security integration collects data for the following two events:
 
 To collect data through the REST API you will need your Menlo Security API URL and an API token.
 
+The API token to collect logs must have the *Log Export API* permission
+
 ## Logs Reference
 
 ### Web
