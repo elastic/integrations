@@ -1,0 +1,141 @@
+---
+description: Pipeline for Jamf Protect Telemetry aue_execve audit logs.
+processors:
+  - convert:
+      field: json.attributes.device
+      target_field: jamf_protect.telemetry.attributes.device
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.attributes.file_access_mode
+      target_field: json.file_access_mode
+      ignore_failure: true
+  - convert:
+      field: json.attributes.file_system_id
+      target_field: jamf_protect.telemetry.attributes.file.system.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.attributes.node_id
+      target_field: jamf_protect.telemetry.attributes.node.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.attributes.owner_group_id
+      target_field: user.group.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.attributes.owner_group_name
+      target_field: user.group.name
+      ignore_missing: true
+  - convert:
+      field: json.attributes.owner_user_id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: user.id
+      value: '{{{json.attributes.owner_user_id}}}'
+      if: ctx.json?.attributes?.owner_user_id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: user.name
+      value: '{{{json.attributes.owner_user_name}}}'
+      if: ctx.json?.attributes?.owner_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{json.attributes.owner_user_name}}}'
+      if: ctx.json?.attributes?.owner_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'
+  - rename:
+      field: json.path
+      target_field: jamf_protect.telemetry.path
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
+  - rename:
+      field: json.exec_args.args
+      target_field: json.args
+      ignore_missing: true
+  - rename:
+      field: json.exec_args.args_compiled
+      target_field: jamf_protect.telemetry.exec_args.args_compiled
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.json?.exec_env?.env?.ARCH != null && ctx.json.exec_env.env.ARCH != ''
+      params:
+        'allowed':
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+        'replacements':
+          'macintosh': macos
+      source: |
+        for (entry in params.replacements.entrySet()) {
+          if (ctx.json.exec_env.env.ARCH == entry.getKey()) {
+            ctx.json.exec_env.env.put('ARCH', entry.getValue());
+          }
+        }
+        if (!params.allowed.contains(ctx.json.exec_env.env.ARCH)) {
+          return;
+        }
+        if (ctx.host == null) {
+          HashMap hm = new HashMap();
+          ctx.put('host', hm);
+        }
+        if (ctx.host.os == null) {
+          HashMap hm = new HashMap();
+          ctx.host.put('os', hm);
+        }
+        ctx.host.os.put('type', ctx.json.exec_env.env.ARCH);
+        ctx.json.exec_env.env.remove('ARCH');
+  - rename:
+      field: json.exec_env.env.CPU
+      target_field: host.architecture
+      ignore_missing: true
+  - rename:
+      field: json.exec_env.env.PATH
+      target_field: jamf_protect.telemetry.exec_env.env.path
+      ignore_missing: true
+  - rename:
+      field: json.exec_env.env.XPC_FLAGS
+      target_field: jamf_protect.telemetry.exec_env.env.xpc.flags
+      ignore_missing: true
+  - rename:
+      field: json.exec_env.env.XPC_SERVICE_NAME
+      target_field: jamf_protect.telemetry.exec_env.env.xpc.service_name
+      ignore_missing: true
+  - rename:
+      field: json.exec_env.env_compiled
+      target_field: jamf_protect.telemetry.exec_env.env.compiled
+      ignore_missing: true
+  - script:
+      description: Convert Object into Array.
+      lang: painless
+      source: |
+        def args_list = new ArrayList();
+        ctx.process.args = args_list;
+        for (Map.Entry m : ctx.json?.args.entrySet()) {
+          ctx.process?.args.add(m.getValue());
+        }
+  - script:
+      description: Convert Decimal into Octal.
+      lang: painless
+      source: |
+        int temp = (int)ctx.json?.file_access_mode;
+        ctx.jamf_protect.telemetry.attributes.file.access_mode = Integer.toOctalString(temp);

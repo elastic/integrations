@@ -1,0 +1,146 @@
+---
+description: Pipeline for Jamf process_object audit logs.
+processors:
+  - convert:
+      field: json.process.audit_id
+      target_field: jamf_protect.telemetry.process.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.process.effective_group_id
+      target_field: jamf_protect.telemetry.process.effective.group.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.process.effective_group_name
+      target_field: jamf_protect.telemetry.process.effective.group.name
+      ignore_missing: true
+  - convert:
+      field: json.process.effective_user_id
+      target_field: jamf_protect.telemetry.process.effective.user.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: user.effective.id
+      value: '{{{json.process.effective_user_id}}}'
+      if: ctx.json?.process?.effective_user_id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: user.effective.name
+      value: '{{{json.process.effective_user_name}}}'
+      if: ctx.json?.process?.effective_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.process.effective_user_name
+      target_field: jamf_protect.telemetry.process.effective.user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{jamf_protect.telemetry.process.effective.user.name}}}'
+      if: ctx.jamf_compliance_reporter?.log?.process?.effective?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.process.group_id
+      target_field: jamf_protect.telemetry.process.group.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.process.group_name
+      target_field: jamf_protect.telemetry.process.group.name
+      ignore_missing: true
+  - append:
+      field: process.hash.sha1
+      value: '{{{json.process.process_hash}}}'
+      if: ctx.json?.process?.process_hash != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hash
+      value: '{{{json.process.process_hash}}}'
+      if: ctx.json?.process?.process_hash != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.process.process_id
+      target_field: process.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.process.process_name
+      target_field: process.name
+      ignore_missing: true
+  - convert:
+      field: json.process.session_id
+      target_field: jamf_protect.telemetry.process.session.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.process.terminal_id.addr
+      target_field: jamf_protect.telemetry.process.terminal_id.addr
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.process.terminal_id.ip_address
+      target_field: jamf_protect.telemetry.process.terminal_id.ip_address
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.process.terminal_id.ip_address
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{jamf_protect.telemetry.process.terminal_id.ip_address}}}'
+      if: ctx.jamf_compliance_reporter?.log?.process?.terminal_id?.ip_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.process.terminal_id.port
+      target_field: jamf_protect.telemetry.process.terminal_id.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.process.terminal_id.type
+      target_field: jamf_protect.telemetry.process.terminal_id.type
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.process.user_id
+      target_field: process.user.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.process.user_name
+      target_field: jamf_protect.telemetry.process.user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{jamf_protect.telemetry.process.user.name}}}'
+      if: ctx.jamf_compliance_reporter?.log?.process?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true

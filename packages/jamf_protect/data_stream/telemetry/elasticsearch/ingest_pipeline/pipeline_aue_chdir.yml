@@ -1,0 +1,70 @@
+---
+description: Pipeline for Jamf Protect Telemetry aue_chdir audit logs.
+processors:
+  - convert:
+      field: json.attributes.device
+      target_field: jamf_protect.telemetry.attributes.device
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.attributes.file_access_mode
+      target_field: json.file_access_mode
+      ignore_failure: true
+  - convert:
+      field: json.attributes.file_system_id
+      target_field: jamf_protect.telemetry.attributes.file.system.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.attributes.node_id
+      target_field: jamf_protect.telemetry.attributes.node.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.attributes.owner_group_id
+      target_field: user.group.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.attributes.owner_group_name
+      target_field: user.group.name
+      ignore_missing: true
+  - convert:
+      field: json.attributes.owner_user_id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: user.id
+      value: '{{{json.attributes.owner_user_id}}}'
+      if: ctx.json?.attributes?.owner_user_id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: user.name
+      value: '{{{json.attributes.owner_user_name}}}'
+      if: ctx.json?.attributes?.owner_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{json.attributes.owner_user_name}}}'
+      if: ctx.json?.attributes?.owner_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'
+  - rename:
+      field: json.path
+      target_field: jamf_protect.telemetry.path
+      ignore_missing: true
+  - script:
+      description: Convert Decimal into Octal.
+      lang: painless
+      source: |
+        int temp = (int)ctx.json?.file_access_mode;
+        ctx.jamf_protect.telemetry.attributes.file.access_mode = Integer.toOctalString(temp);
