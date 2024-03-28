@@ -167,8 +167,9 @@ An example event for `firewall` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation_id | Correlation ID | keyword |
-| azure.firewall.action | Firewall action taken | keyword |
 | azure.firewall.category | Category | keyword |
+| azure.firewall.destination_ip | Packet's destination IP address | keyword |
+| azure.firewall.destination_port | Packet's destination port | keyword |
 | azure.firewall.dnssec_bool_flag | True if DNS request is using DNSSEC | boolean |
 | azure.firewall.dnssec_buffer_size | Size of the DNSSEC buffer | long |
 | azure.firewall.duration | Duration of the firewall request | keyword |
@@ -176,8 +177,13 @@ An example event for `firewall` looks as following:
 | azure.firewall.icmp.request.code | ICMP request code | keyword |
 | azure.firewall.identity_name | identity name | keyword |
 | azure.firewall.operation_name | Operation name | keyword |
-| azure.firewall.policy | Name of firewall policy containing the matched rule | keyword |
-| azure.firewall.rule_collection_group | Name of rule collection group containing the matched rule  - name: icmp | keyword |
+| azure.firewall.policy | Name of the policy in which the triggered rule resides | keyword |
+| azure.firewall.protocol | Packet's network protocol. For example: UDP, TCP | keyword |
+| azure.firewall.rule | Name of the triggered rule | keyword |
+| azure.firewall.rule_collection | Name of the rule collection in which the triggered rule resides | keyword |
+| azure.firewall.rule_collection_group | Name of the rule collection group in which the triggered rule resides | keyword |
+| azure.firewall.source_ip | Packet's source IP address | keyword |
+| azure.firewall.source_port | Packet's source port | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
