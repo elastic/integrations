@@ -1,0 +1,80 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+redact:
+  fields:
+    - token
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  batch_size: {{batch_size}} 
+  initial_interval: {{initial_interval}}
+  token: {{token}}
+program: |
+  post_request(
+    state.url + "?format=json" + "&limit=" + string(state.batch_size) + "&end=" + string(int(now())) + "&start=" + (
+      has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
+        string(int(state.cursor.last_timestamp.parse_time(time_layout.RFC3339)))
+      :
+        (string(int(now() - duration(state.initial_interval))))
+    ),
+    "application/json",
+    {"token": state.token, "log_type": "web", "pagingIdentifiers": (
+      has(state.cursor) && has(state.cursor.paging) && state.cursor.paging != null ?
+        state.cursor.paging
+      :
+        {}
+    )
+    }.encode_json()
+  ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
+    "events": body[0].result.events.map(e, {
+        "message": e.encode_json(),
+      }),
+      "url": state.url,
+      "batch_size": state.batch_size,
+      "token": state.token,
+      "cursor": {
+        "last_timestamp": (
+          has(body[0].timestamp) && body[0].timestamp.size() > 0
+          ?
+            body[0].timestamp.parse_time(time_layout.RFC3339)
+          :
+            null
+          ),
+        "paging": (
+          has(body[0].result.pagingIdentifiers) && body[0].result.pagingIdentifiers.size() > 0 ?
+            body[0].result.pagingIdentifiers
+          : 
+            null
+        )
+      }
+    })
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
