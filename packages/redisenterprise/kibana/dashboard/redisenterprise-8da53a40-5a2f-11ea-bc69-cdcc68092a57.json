@@ -7,7 +7,6 @@
             "panelsJSON": "{\"e559fd7e-eea6-44b4-b160-10c0697b1595\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"title\":\"Cluster name\",\"fieldName\":\"redisenterprise.node.labels.cluster\",\"id\":\"e559fd7e-eea6-44b4-b160-10c0697b1595\",\"singleSelect\":true,\"enhancements\":{},\"selectedOptions\":[]}},\"4ff55854-42f6-4cf9-a3c7-21a5946d04ed\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"redisenterprise.node.labels.node\",\"title\":\"Node name\",\"id\":\"4ff55854-42f6-4cf9-a3c7-21a5946d04ed\",\"enhancements\":{},\"selectedOptions\":[]}}}"
         },
         "description": "Overview of Redis Enterprise dashboard",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [],
@@ -19,6 +18,9 @@
         },
         "optionsJSON": {
             "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -34,8 +36,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "574877b7-6844-40a1-85be-71d18aff873b": {
                                             "columnOrder": [
@@ -45,17 +48,21 @@
                                                 "cbd062f2-9ac1-49e3-a737-6d34982bbfb3": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "redisenterprise.node.cpu_system.value: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "System CPU time",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "percent",
                                                             "params": {
                                                                 "decimals": 2
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "redisenterprise.node.cpu_system.value"
@@ -67,6 +74,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -141,7 +149,7 @@
                 "panelIndex": "d6d82aa8-b6f2-467e-a20c-8a88e5065c2a",
                 "title": "System CPU time",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -155,28 +163,34 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "574877b7-6844-40a1-85be-71d18aff873b": {
                                             "columnOrder": [
-                                                "cbd062f2-9ac1-49e3-a737-6d34982bbfb3"
+                                                "3557347a-9207-4c4c-9e09-f6e69e4990bb"
                                             ],
                                             "columns": {
-                                                "cbd062f2-9ac1-49e3-a737-6d34982bbfb3": {
+                                                "3557347a-9207-4c4c-9e09-f6e69e4990bb": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "redisenterprise.node.ephemeral_storage_free.value: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": " ",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
                                                                 "decimals": 1
                                                             }
-                                                        }
+                                                        },
+                                                        "showArrayValues": false,
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "redisenterprise.node.ephemeral_storage_free.value"
@@ -188,17 +202,15 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "cbd062f2-9ac1-49e3-a737-6d34982bbfb3",
                                 "layerId": "574877b7-6844-40a1-85be-71d18aff873b",
                                 "layerType": "data",
-                                "size": "xl",
-                                "textAlign": "center",
-                                "titlePosition": "top"
+                                "metricAccessor": "3557347a-9207-4c4c-9e09-f6e69e4990bb"
                             }
                         },
                         "title": "",
@@ -218,7 +230,7 @@
                 "panelIndex": "52949c1f-e254-4ebb-8146-6e986ebde6d9",
                 "title": "Free ephemeral disk space",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -232,8 +244,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "574877b7-6844-40a1-85be-71d18aff873b": {
                                             "columnOrder": [
@@ -243,17 +256,21 @@
                                                 "cbd062f2-9ac1-49e3-a737-6d34982bbfb3": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "redisenterprise.node.cpu_user.value: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "User CPU time",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "percent",
                                                             "params": {
                                                                 "decimals": 2
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "redisenterprise.node.cpu_user.value"
@@ -265,6 +282,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -339,7 +357,7 @@
                 "panelIndex": "06815712-6173-446e-978f-114cea4db516",
                 "title": "User CPU time",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -353,8 +371,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "ce637707-620b-4183-8e5d-b95c6fdafd49": {
                                             "columnOrder": [
@@ -365,11 +384,15 @@
                                                 "4a6bfe54-3a07-449f-a1dc-a4a0530c0a51": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "redisenterprise.node.conns.value: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Connections",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "redisenterprise.node.conns.value"
@@ -383,7 +406,7 @@
                                                         "dropPartials": true,
                                                         "ignoreTimeRange": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "1m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -395,6 +418,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -457,7 +481,7 @@
                 "panelIndex": "125e15e6-7381-42a3-aaf4-ca1d623f5ec3",
                 "title": "Total client connections",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -466,55 +490,59 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-574877b7-6844-40a1-85be-71d18aff873b",
+                                "name": "indexpattern-datasource-layer-3ed169d9-6e45-485d-b9dd-c0b12f0edb44",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
-                                        "574877b7-6844-40a1-85be-71d18aff873b": {
+                                        "3ed169d9-6e45-485d-b9dd-c0b12f0edb44": {
                                             "columnOrder": [
-                                                "cbd062f2-9ac1-49e3-a737-6d34982bbfb3"
+                                                "dfb122bf-c378-4ca6-a5f2-35ab69855bce"
                                             ],
                                             "columns": {
-                                                "cbd062f2-9ac1-49e3-a737-6d34982bbfb3": {
+                                                "dfb122bf-c378-4ca6-a5f2-35ab69855bce": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "redisenterprise.node.free_memory.value: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": " ",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
                                                                 "decimals": 1
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "redisenterprise.node.free_memory.value"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "sampling": 1
                                         }
                                     }
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "cbd062f2-9ac1-49e3-a737-6d34982bbfb3",
-                                "layerId": "574877b7-6844-40a1-85be-71d18aff873b",
+                                "layerId": "3ed169d9-6e45-485d-b9dd-c0b12f0edb44",
                                 "layerType": "data",
-                                "size": "xl",
-                                "textAlign": "center",
-                                "titlePosition": "top"
+                                "metricAccessor": "dfb122bf-c378-4ca6-a5f2-35ab69855bce"
                             }
                         },
                         "title": "",
@@ -534,7 +562,7 @@
                 "panelIndex": "467f33cb-f5f3-4fba-9c20-68e0ad74ecd6",
                 "title": "Node free memory",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -543,55 +571,59 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-574877b7-6844-40a1-85be-71d18aff873b",
+                                "name": "indexpattern-datasource-layer-ebdb8586-4fa4-49ba-8c81-5beb11dfbdc7",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
-                                        "574877b7-6844-40a1-85be-71d18aff873b": {
+                                        "ebdb8586-4fa4-49ba-8c81-5beb11dfbdc7": {
                                             "columnOrder": [
-                                                "cbd062f2-9ac1-49e3-a737-6d34982bbfb3"
+                                                "7a7311ff-2032-4651-b4ce-816d7b7912bf"
                                             ],
                                             "columns": {
-                                                "cbd062f2-9ac1-49e3-a737-6d34982bbfb3": {
+                                                "7a7311ff-2032-4651-b4ce-816d7b7912bf": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "redisenterprise.node.persistent_storage_free.value: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": " ",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
                                                                 "decimals": 1
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "redisenterprise.node.persistent_storage_free.value"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "sampling": 1
                                         }
                                     }
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "cbd062f2-9ac1-49e3-a737-6d34982bbfb3",
-                                "layerId": "574877b7-6844-40a1-85be-71d18aff873b",
+                                "layerId": "ebdb8586-4fa4-49ba-8c81-5beb11dfbdc7",
                                 "layerType": "data",
-                                "size": "xl",
-                                "textAlign": "center",
-                                "titlePosition": "top"
+                                "metricAccessor": "7a7311ff-2032-4651-b4ce-816d7b7912bf"
                             }
                         },
                         "title": "",
@@ -611,7 +643,7 @@
                 "panelIndex": "481df135-8012-4826-a109-489d7ab89c08",
                 "title": "Free persistent disk space",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -630,8 +662,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "18c332b7-b112-49ce-8bcd-91171ad7f470": {
                                             "columnOrder": [
@@ -642,17 +675,21 @@
                                                 "0006f19a-85f0-4d54-ba8c-8ea6f9d113a9": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "redisenterprise.node.egress_bytes.value: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Node egress",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
                                                                 "decimals": 2
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "redisenterprise.node.egress_bytes.value"
@@ -666,7 +703,7 @@
                                                         "dropPartials": true,
                                                         "ignoreTimeRange": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "1m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -683,20 +720,24 @@
                                                 "372823cc-4856-49f5-8d8f-b4c109c7af6a": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "redisenterprise.node.ingress_bytes.value: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Node ingress",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
                                                                 "decimals": 1
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "host.network.ingress.bytes"
+                                                    "sourceField": "redisenterprise.node.ingress_bytes.value"
                                                 },
                                                 "b9488d92-6496-474a-a9eb-8efc3bc28667": {
                                                     "dataType": "date",
@@ -707,7 +748,7 @@
                                                         "dropPartials": true,
                                                         "ignoreTimeRange": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "1m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -719,6 +760,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -793,7 +835,7 @@
                 "panelIndex": "7c3df2aa-4474-4a41-bda6-8f1ebeb4580c",
                 "title": "Rate of incoming/outgoing network traffic",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -807,8 +849,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "ce637707-620b-4183-8e5d-b95c6fdafd49": {
                                             "columnOrder": [
@@ -819,11 +862,15 @@
                                                 "4a6bfe54-3a07-449f-a1dc-a4a0530c0a51": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "redisenterprise.node.total_req.value: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Total requests (ops/sec)",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "redisenterprise.node.total_req.value"
@@ -837,7 +884,7 @@
                                                         "dropPartials": true,
                                                         "ignoreTimeRange": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "1m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -849,6 +896,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -907,7 +955,7 @@
                 "panelIndex": "aaf23040-511f-4f76-856a-aa83ef10ea41",
                 "title": "Total requests",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -921,8 +969,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "8b251c71-771e-4396-bbda-912424a34947": {
                                             "columnOrder": [
@@ -941,7 +990,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1016,7 +1065,7 @@
                                                                 "44c3656b-d872-48e7-a174-87a565ec4133X1"
                                                             ],
                                                             "location": {
-                                                                "max": 176,
+                                                                "max": 168,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
@@ -1037,6 +1086,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1111,7 +1161,7 @@
                 "panelIndex": "1225cd28-b41a-49cc-8079-98396d50f324",
                 "title": "Listener latency",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -1130,8 +1180,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "18c332b7-b112-49ce-8bcd-91171ad7f470": {
                                             "columnOrder": [
@@ -1160,7 +1211,7 @@
                                                         "dropPartials": true,
                                                         "ignoreTimeRange": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "1m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1195,7 +1246,7 @@
                                                         "dropPartials": true,
                                                         "ignoreTimeRange": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "1m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1207,6 +1258,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1282,7 +1334,7 @@
                 "panelIndex": "0e4c8792-3811-4ffd-bfcf-f2c6a0bfde3b",
                 "title": "Memcached GET/SET commands",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
@@ -1306,8 +1358,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "04a2d8ab-0231-40d2-894b-e54623e2e89a": {
                                             "columnOrder": [
@@ -1336,7 +1389,7 @@
                                                         "dropPartials": true,
                                                         "ignoreTimeRange": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "1m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1371,7 +1424,7 @@
                                                         "dropPartials": true,
                                                         "ignoreTimeRange": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "1m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1406,7 +1459,7 @@
                                                         "dropPartials": true,
                                                         "ignoreTimeRange": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "1m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1418,6 +1471,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1509,17 +1563,18 @@
                 "panelIndex": "bf490604-6e5f-40e7-b9de-cbc43c9be756",
                 "title": "Other memcached commands",
                 "type": "lens",
-                "version": "8.3.0"
+                "version": "8.7.1"
             }
         ],
         "timeRestore": false,
         "title": "[Redis Enterprise] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "8.7.1",
+    "created_at": "2024-03-26T09:54:51.624Z",
     "id": "redisenterprise-8da53a40-5a2f-11ea-bc69-cdcc68092a57",
     "migrationVersion": {
-        "dashboard": "8.3.0"
+        "dashboard": "8.7.0"
     },
     "references": [
         {
@@ -1544,12 +1599,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "467f33cb-f5f3-4fba-9c20-68e0ad74ecd6:indexpattern-datasource-layer-574877b7-6844-40a1-85be-71d18aff873b",
+            "name": "467f33cb-f5f3-4fba-9c20-68e0ad74ecd6:indexpattern-datasource-layer-3ed169d9-6e45-485d-b9dd-c0b12f0edb44",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "481df135-8012-4826-a109-489d7ab89c08:indexpattern-datasource-layer-574877b7-6844-40a1-85be-71d18aff873b",
+            "name": "481df135-8012-4826-a109-489d7ab89c08:indexpattern-datasource-layer-ebdb8586-4fa4-49ba-8c81-5beb11dfbdc7",
             "type": "index-pattern"
         },
         {
