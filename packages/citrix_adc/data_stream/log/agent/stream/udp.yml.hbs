@@ -1,0 +1,28 @@
+host: "{{listen_address}}:{{listen_port}}"
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_locale: ~
+{{#if processors}}
+{{processors}}
+{{/if}}
+{{#if udp_options}}
+{{udp_options}}
+{{/if}}
+{{#if tz_offset}}
+fields_under_root: true
+fields:
+  _conf:
+    tz_offset: {{tz_offset}}
+{{/if}}

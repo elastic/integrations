@@ -1,0 +1,36 @@
+---
+description: Pipeline for Citrix Native messages of BOT feature.
+processors:
+  - grok:
+      description: Extract fields from message of BOT feature.
+      tag: grok_bot_feature
+      field: citrix.extended.message
+      patterns:
+        - '^Bot%{SPACE}New%{SPACE}Signature%{SPACE}Available.%{SPACE}Newly%{SPACE}added%{SPACE}Rules%{SPACE}:%{SPACE}%{INT:citrix_adc.log.newly_added_rules}%{SPACE}Deleted%{SPACE}Rules%{SPACE}:%{SPACE}%{INT:citrix_adc.log.deleted_rules}$'
+        - '%{GREEDYDATA:citrix_adc.log.message}'
+      ignore_failure: true
+  - convert:
+      field: citrix_adc.log.newly_added_rules
+      tag: convert_newly_added_rules_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.deleted_rules
+      tag: convert_deleted_rules_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
