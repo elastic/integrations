@@ -23,10 +23,10 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-03-29T10:58:56.956Z",
+    "@timestamp": "2024-03-29T13:00:04.736Z",
     "agent": {
-        "ephemeral_id": "5e0ba850-09aa-473a-9a17-b7fe075d721f",
-        "id": "f6c2c545-4e66-4b27-8c3b-14f898e815dc",
+        "ephemeral_id": "fe05693b-59ec-47c6-9d5e-b0ef7c71ee65",
+        "id": "bc94f76a-cdb2-4211-9412-c5d6c5711711",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.1"
@@ -40,7 +40,7 @@ An example event for `threat` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f6c2c545-4e66-4b27-8c3b-14f898e815dc",
+        "id": "bc94f76a-cdb2-4211-9412-c5d6c5711711",
         "snapshot": false,
         "version": "8.12.1"
     },
@@ -49,79 +49,61 @@ An example event for `threat` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2024-03-29T10:58:56.956Z",
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2024-03-29T10:59:08Z",
+        "ingested": "2024-03-29T13:00:14Z",
         "kind": "enrichment",
-        "original": "{\"EvidenceDetails\":\"{\\\"EvidenceDetails\\\": [{\\\"Rule\\\": \\\"Historically Linked to Intrusion Method\\\", \\\"CriticalityLabel\\\": \\\"Unusual\\\", \\\"EvidenceString\\\": \\\"7 sightings on 1 source: PasteBin. 3 related intrusion methods: Trojan, Banking Trojan, QakBot. Most recent link (Nov 8, 2021): https://pastebin.com/G1Jvm5T0\\\", \\\"Sources\\\": [\\\"Jv_xrR\\\"], \\\"Timestamp\\\": \\\"2021-11-08T16:27:15.000Z\\\", \\\"Name\\\": \\\"linkedIntrusion\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Criticality\\\": 1.0}, {\\\"Rule\\\": \\\"Historically Reported as a Defanged IP\\\", \\\"CriticalityLabel\\\": \\\"Unusual\\\", \\\"EvidenceString\\\": \\\"2 sightings on 1 source: GitHub. Most recent link (Nov 16, 2021): https://github.com/pan-unit42/tweets/blob/master/2021-11-15-IOCs-for-Matanbuchus-Qakbot-CobaltStrike-and-spambot-activity.txt\\\", \\\"Sources\\\": [\\\"MIKjae\\\"], \\\"Timestamp\\\": \\\"2021-11-16T00:00:00.000Z\\\", \\\"Name\\\": \\\"defanged\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Criticality\\\": 1.0}, {\\\"Rule\\\": \\\"Current C\\u0026C Server\\\", \\\"CriticalityLabel\\\": \\\"Very Malicious\\\", \\\"EvidenceString\\\": \\\"164 sightings on 4 sources: Recorded Future Command \\u0026 Control List, Joe Security Sandbox Analysis - Malware C2 Extractions, Abuse.ch: Feodo IP Blocklist, Polyswarm Sandbox Analysis - Malware C2 Extractions. Joe Security malware sandbox identified 103.143.8.71:443 as TA0011 (Command and Control) QakBot using configuration extraction on sample 8f97195fc90ce520e75db6785204da0adbda9be5464bb27cd4dcc5b23b547651\\\", \\\"Sources\\\": [\\\"b5tNVA\\\", \\\"h_iZX8\\\", \\\"report:OtiCOp\\\", \\\"hyihHO\\\"], \\\"Timestamp\\\": \\\"2021-12-29T02:11:16.658Z\\\", \\\"Name\\\": \\\"recentCncServer\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Criticality\\\": 4.0}, {\\\"Rule\\\": \\\"Actively Communicating C\\u0026C Server\\\", \\\"CriticalityLabel\\\": \\\"Very Malicious\\\", \\\"EvidenceString\\\": \\\"1 sighting on 1 source: Recorded Future Network Traffic Analysis. Identified as C\\u0026C server for 1 malware family: Qakbot. Communication observed on TCP:443, TCP:6881, TCP:995. Exfiltration behavior observed. Last observed on Dec 27, 2021.\\\", \\\"Sources\\\": [\\\"report:aEft3k\\\"], \\\"Timestamp\\\": \\\"2021-12-29T02:11:16.663Z\\\", \\\"Name\\\": \\\"recentActiveCnc\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Criticality\\\": 4.0}]}\",\"Name\":\"1.128.3.4\",\"Risk\":\"99\",\"RiskString\":\"4/64\"}",
-        "risk_score": 99,
+        "risk_score": 75,
+        "timezone": "+00:00",
         "type": [
             "indicator"
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/rf_file_default.csv"
+        },
+        "offset": 57
     },
     "recordedfuture": {
         "evidence_details": [
             {
-                "Criticality": 1,
-                "CriticalityLabel": "Unusual",
-                "EvidenceString": "7 sightings on 1 source: PasteBin. 3 related intrusion methods: Trojan, Banking Trojan, QakBot. Most recent link (Nov 8, 2021): https://pastebin.com/G1Jvm5T0",
+                "Criticality": 2,
+                "CriticalityLabel": "Suspicious",
+                "EvidenceString": "2 sightings on 1 source: PolySwarm. Most recent link (Mar 23, 2024): https://polyswarm.network/scan/results/file/63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f",
                 "MitigationString": "",
-                "Name": "linkedIntrusion",
-                "Rule": "Historically Linked to Intrusion Method",
+                "Name": "linkedToMalware",
+                "Rule": "Linked to Malware",
+                "SightingsCount": 2,
                 "Sources": [
-                    "Jv_xrR"
+                    "source:doLlw5"
                 ],
-                "Timestamp": "2021-11-08T16:27:15.000Z"
+                "SourcesCount": 1,
+                "Timestamp": "2024-03-23T17:10:20.642Z"
             },
             {
-                "Criticality": 1,
-                "CriticalityLabel": "Unusual",
-                "EvidenceString": "2 sightings on 1 source: GitHub. Most recent link (Nov 16, 2021): https://github.com/pan-unit42/tweets/blob/master/2021-11-15-IOCs-for-Matanbuchus-Qakbot-CobaltStrike-and-spambot-activity.txt",
+                "Criticality": 3,
+                "CriticalityLabel": "Malicious",
+                "EvidenceString": "3 sightings on 3 sources: Polyswarm Sandbox Analysis, Recorded Future Triage Malware Analysis, PolySwarm. Most recent link (Mar 23, 2024): https://polyswarm.network/scan/results/file/63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f",
                 "MitigationString": "",
-                "Name": "defanged",
-                "Rule": "Historically Reported as a Defanged IP",
+                "Name": "positiveMalwareVerdict",
+                "Rule": "Positive Malware Verdict",
+                "SightingsCount": 3,
                 "Sources": [
-                    "MIKjae"
+                    "source:hzRhwZ",
+                    "source:ndy5_2",
+                    "source:doLlw5"
                 ],
-                "Timestamp": "2021-11-16T00:00:00.000Z"
-            },
-            {
-                "Criticality": 4,
-                "CriticalityLabel": "Very Malicious",
-                "EvidenceString": "164 sightings on 4 sources: Recorded Future Command & Control List, Joe Security Sandbox Analysis - Malware C2 Extractions, Abuse.ch: Feodo IP Blocklist, Polyswarm Sandbox Analysis - Malware C2 Extractions. Joe Security malware sandbox identified 103.143.8.71:443 as TA0011 (Command and Control) QakBot using configuration extraction on sample 8f97195fc90ce520e75db6785204da0adbda9be5464bb27cd4dcc5b23b547651",
-                "MitigationString": "",
-                "Name": "recentCncServer",
-                "Rule": "Current C&C Server",
-                "Sources": [
-                    "b5tNVA",
-                    "h_iZX8",
-                    "report:OtiCOp",
-                    "hyihHO"
-                ],
-                "Timestamp": "2021-12-29T02:11:16.658Z"
-            },
-            {
-                "Criticality": 4,
-                "CriticalityLabel": "Very Malicious",
-                "EvidenceString": "1 sighting on 1 source: Recorded Future Network Traffic Analysis. Identified as C&C server for 1 malware family: Qakbot. Communication observed on TCP:443, TCP:6881, TCP:995. Exfiltration behavior observed. Last observed on Dec 27, 2021.",
-                "MitigationString": "",
-                "Name": "recentActiveCnc",
-                "Rule": "Actively Communicating C&C Server",
-                "Sources": [
-                    "report:aEft3k"
-                ],
-                "Timestamp": "2021-12-29T02:11:16.663Z"
+                "SourcesCount": 3,
+                "Timestamp": "2024-03-23T16:36:02.000Z"
             }
         ],
-        "list": "default",
-        "name": "1.128.3.4",
-        "risk_string": "4/64"
+        "name": "63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f",
+        "risk_string": "2/17"
     },
     "tags": [
-        "preserve_original_event",
         "forwarded",
         "recordedfuture"
     ],
@@ -130,17 +112,17 @@ An example event for `threat` looks as following:
             "name": "Recorded Future"
         },
         "indicator": {
-            "ip": "1.128.3.4",
+            "file": {
+                "hash": {
+                    "sha256": "63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f"
+                }
+            },
             "provider": [
-                "PasteBin",
-                "GitHub",
-                "Recorded Future Command & Control List",
-                "Joe Security Sandbox Analysis - Malware C2 Extractions",
-                "Abuse.ch: Feodo IP Blocklist",
-                "Polyswarm Sandbox Analysis - Malware C2 Extractions",
-                "Recorded Future Network Traffic Analysis"
+                "PolySwarm",
+                "Polyswarm Sandbox Analysis",
+                "Recorded Future Triage Malware Analysis"
             ],
-            "type": "ipv4-addr"
+            "type": "file"
         }
     }
 }
