@@ -1,9 +1,20 @@
 # Prometheus Integration
 
 This integration can collect metrics from:
-- [Prometheus Exporters (Collectors)](#prometheus-exporters-collectors)
-- [Prometheus Server Remote-Write](#prometheus-server-remote-write)
-- [Prometheus Queries (PromQL)](#prometheus-queries-promql)
+- [Prometheus Integration](#prometheus-integration)
+  - [Metrics](#metrics)
+    - [Prometheus Exporters (Collectors)](#prometheus-exporters-collectors)
+      - [Scraping from a Prometheus exporter](#scraping-from-a-prometheus-exporter)
+      - [Histograms and types](#histograms-and-types)
+      - [Scraping all metrics from a Prometheus server](#scraping-all-metrics-from-a-prometheus-server)
+      - [Filtering metrics](#filtering-metrics)
+    - [Prometheus Server Remote-Write](#prometheus-server-remote-write)
+      - [Histograms and types](#histograms-and-types-1)
+      - [Types' patterns](#types-patterns)
+    - [Prometheus Queries (PromQL)](#prometheus-queries-promql)
+      - [Instant queries](#instant-queries)
+      - [Range queries](#range-queries)
+  - [Dashboard](#dashboard)
 
 ## Metrics
 
@@ -452,6 +463,10 @@ types, including [histograms](https://www.elastic.co/guide/en/elasticsearch/refe
 `rate_counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `use_types`.
+
+`period` parameter (default: 60s) configures the timeout of internal cache, which stores counter values in order to calculate rates between consecutive fetches. The parameter will be validated and all values lower than 60sec will be reset to the default value.
+
+Note that by default prometheus pushes data with the interval of 60s (in remote write). In case that prometheus push rate is changed, the `period` parameter needs to be configured accordingly.
 
 When `use_types` and `rate_counters` are enabled, metrics are stored like this:
 
