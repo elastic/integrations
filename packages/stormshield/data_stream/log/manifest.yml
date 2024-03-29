@@ -2,8 +2,8 @@ title: "StormShield SNS logs"
 type: logs
 streams:
   - input: udp
-    title: "Collect logs via syslog over UDP"
-    description: "Collecting firewall logs from Stormshield instances (input: udp)."
+    title: Stormshield logs
+    description: Collect Stormshield logs
     template_path: udp.yml.hbs
     vars:
       - name: tags
@@ -13,16 +13,16 @@ streams:
         required: true
         show_user: false
         default:
-          - stormshield
-      - name: syslog_host
+          - forwarded
+      - name: udp_host
         type: text
         title: Listen Address
         description: The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces.
         multi: false
         required: true
         show_user: true
-        default: 0.0.0.0
-      - name: syslog_port
+        default: localhost
+      - name: udp_port
         type: integer
         title: Listen Port
         description: The UDP port number to listen on.
@@ -38,3 +38,27 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: udp_options
+        type: yaml
+        title: Custom UDP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #read_buffer: 100MiB
+          #max_message_size: 50KiB
+          #timeout: 300s
+        description: Specify custom configuration options for the UDP input.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tz_offset
+        type: text
+        title: Timezone offset (Country/City or +HH:mm format)
+        required: false
+        show_user: false

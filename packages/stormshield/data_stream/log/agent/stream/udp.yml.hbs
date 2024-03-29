@@ -1,4 +1,4 @@
-host: "{{syslog_host}}:{{syslog_port}}"
+host: "{{udp_host}}:{{udp_port}}"
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
@@ -19,8 +19,12 @@ processors:
 {{/if}}
 - syslog:
     field: message
-    format: auto
+    format: rfc5424
+    protocol.udp:
+      host: "{{udp_host}}:{{udp_port}}"
+{{#if tz_offset}}
     timezone: "{{tz_offset}}"
+{{/if}}
 {{#if processors}}
 {{processors}}
 {{/if}}

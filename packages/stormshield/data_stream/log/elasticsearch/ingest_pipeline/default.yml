@@ -13,7 +13,7 @@ processors:
   # The syslog header should have been stripped off, so we need to process the key=value data
   # We will be using painless here, because it is the best option we have.
   - script:
-      tag: stormshield_kv_parse
+      tag: script_kv_parse
       description: Parse key/value pairs from message.
       lang: painless
       source: >-
@@ -96,6 +96,9 @@ processors:
       ignore_failure: true
       ignore_missing: true
 on_failure:
-- set:
+- append:
     field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- set:
+    field: event.kind
+    value: pipeline_error
