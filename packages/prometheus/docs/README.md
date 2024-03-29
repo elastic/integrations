@@ -1,20 +1,9 @@
 # Prometheus Integration
 
 This integration can collect metrics from:
-- [Prometheus Integration](#prometheus-integration)
-  - [Metrics](#metrics)
-    - [Prometheus Exporters (Collectors)](#prometheus-exporters-collectors)
-      - [Scraping from a Prometheus exporter](#scraping-from-a-prometheus-exporter)
-      - [Histograms and types](#histograms-and-types)
-      - [Scraping all metrics from a Prometheus server](#scraping-all-metrics-from-a-prometheus-server)
-      - [Filtering metrics](#filtering-metrics)
-    - [Prometheus Server Remote-Write](#prometheus-server-remote-write)
-      - [Histograms and types](#histograms-and-types-1)
-      - [Types' patterns](#types-patterns)
-    - [Prometheus Queries (PromQL)](#prometheus-queries-promql)
-      - [Instant queries](#instant-queries)
-      - [Range queries](#range-queries)
-  - [Dashboard](#dashboard)
+  - [Prometheus Exporters (Collectors)](#prometheus-exporters-collectors)
+  - [Prometheus Server Remote-Write](#prometheus-server-remote-write)
+  - [Prometheus Queries (PromQL)](#prometheus-queries-promql)
 
 ## Metrics
 
