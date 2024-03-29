@@ -237,6 +237,10 @@ processors:
   - rename:
       field: json
       target_field: recordedfuture
+  - set:
+      field: recordedfuture.list
+      copy_from: _conf.list
+      ignore_empty_value: true
 
 #
 # Cleanup
@@ -253,6 +257,7 @@ processors:
         - recordedfuture.Name
         - recordedfuture.Risk
         - _temp_
+        - _conf
       ignore_missing: true
 on_failure:
   - set:
