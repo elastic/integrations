@@ -16,20 +16,6 @@ processors:
   - set:
       field: event.type
       value: [indicator]
-# Set `labels.is_ioc_transform_source: true` only if `_conf.ioc_expiry` value is true. 
-# This field is required by Indicator Match Rules to omit source datastream using query `NOT labels.is_ioc_transform_source: "true"` during indicator matches.
-  # - set:
-  #     field: labels.is_ioc_transform_source
-  #     value: "true"
-  #     if: "ctx.labels?.is_ioc_transform_source == null && ctx._conf?.ioc_expiry != null && ctx._conf.ioc_expiry == 'true'"
-  - remove: 
-      field: labels.is_ioc_transform_source
-      # if: ctx._conf?.ioc_expiry == null || ctx._conf?.ioc_expiry == "false" 
-      ignore_missing: true
-  - set:
-      field: labels.ioc_expiry
-      value: true
-      if: ctx._conf?.ioc_expiry == "true"
   - set:
       field: labels.interval
       copy_from: _conf.interval
@@ -140,7 +126,7 @@ processors:
   - script:
       lang: painless
       tag: script-default-deleted_at
-      if: ctx.labels?.ioc_expiry == true && ctx.abusech?.url?.deleted_at == null 
+      if: ctx.abusech?.url?.deleted_at == null
       description: Indicator are expired after every `labels.interval` since `event.ingested`. This script adds a default `abusech.url.deleted_at` field to allow indicator expiration at the transform.
       source: >
         def dur = ctx.labels.interval;

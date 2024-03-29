@@ -14,9 +14,7 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 
-{{#if ioc_expiry}}
-{{#if ioc_expiry_url}}
-resource.url: {{ioc_expiry_url}}
+resource.url: {{url}}
 program: |
     request("GET", state.url).with({
             "Header":{
@@ -30,25 +28,6 @@ program: |
         }),
         "url": state.url
     })))
-{{/if}}
-{{else}}
-{{#if url}}
-resource.url: {{url}}
-program: |
-    request("GET", state.url).with({
-            "Header":{
-                "Content-Type": ["application/json"],
-            }
-        })
-        .do_request()
-        .as(resp, bytes(resp.Body).decode_json().as(body, {
-        "events": body.urls.map(url, {
-            "message": url.encode_json()
-        }),
-        "url": state.url
-    }))
-{{/if}}
-{{/if}}
 
 redact:
   fields: ~
@@ -56,7 +35,6 @@ redact:
 fields_under_root: true
 fields:
   _conf:
-    ioc_expiry: "{{ioc_expiry}}"
     interval: "{{interval}}"
 
 tags:

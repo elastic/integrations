@@ -74,7 +74,6 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | input.type | Type of Filebeat input. | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
 | labels.interval | User-configured value for `Interval` setting. This is used in calculation of indicator expiration time. | keyword |
-| labels.ioc_expiry | User-configured value for `Enable Indicator Expiry` setting. | boolean |
 | labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
