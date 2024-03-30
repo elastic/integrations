@@ -2,9 +2,7 @@
 {{- $cloud_region := generate "cloud_region" }}
 {{- $cloud_account_id := generate "cloud_account_id" }}
 {{- $file_name := generate "file_name" }}
-{{- $rangeofid := generate "rangeofid" -}}
-{{- $aws_waf_arn := generate "aws_waf_arn" }}
-{{- $aws_waf_id := generate "aws_waf_id" }}
+{{- $rangeofid := generate "rangeofid" }}
 {{- $rule_id := generate "rule_id" }}
 {{- $rule_ruleset := generate "rule_ruleset" }}
 {{- $event_action := generate "event_action" }}
@@ -13,7 +11,6 @@
 {{- $aws_waf_non_terminating_matching_rules := generate "aws_waf_non_terminating_matching_rules" }}
 {{- $aws_waf_terminating_rule_match_details := generate "aws_waf_terminating_rule_match_details" }}
 {{- $aws_waf_source_name := generate "aws_waf_source_name" }}
-{{- $aws_waf_source_id := generate "aws_waf_source_id" }}
 {{- $client_ip := generate "client_ip" }}
 {{- $condition_type := generate "condition_type" }}
 {{- $location := generate "location" }}
@@ -43,25 +40,7 @@
             "object": {
                 "key": "{{ $file_name }}.log"
             }
-        },
-        "waf": {
-            "id": "{{ $aws_waf_id }}",
-            "request": {
-                "headers": {
-                    "Accept": "*/*",
-                    "Host": "localhost:1989",
-                    "User-Agent": "curl/7.61.1",
-                    "x-stm-test": "10 AND 1=1"
-                }
-            }
         }
-    },
-    "cloud": {
-        "account": {
-            "id": "{{ generate "cloud_account_id" }}"
-        },
-        "provider": "aws",
-        "region": "{{ $cloud_region }}"
     },
     "data_stream": {
         "dataset": "aws.waf",
@@ -73,7 +52,11 @@
         "snapshot": false,
         "version": "8.8.0"
     },
-    "message": "{\"timestamp\":{{ $timestamp.UnixMilli }},\"formatVersion\":1,\"webaclId\":\"arn:aws:wafv2:{{ $cloud_region }}:{{ $cloud_account_id }}:{{ $aws_waf_id }}\",\"terminatingRuleId\":\"{{ $rule_id }}\",\"terminatingRuleType\":\"{{ $rule_ruleset }}\",\"action\":\"{{ $event_action }}\",\"terminatingRuleMatchDetails\": [{\"conditionType\": \"{{ $condition_type }}\",\"location\": \"{{ generate "location" }}\",\"matchedData\": [\"{{ $matched_data }}\",\"AND\",\"{{ $matched_data }}\"]}],\"httpSourceName\":\"{{ $aws_waf_source_name }}\",\"httpSourceId\":\"{{ $aws_waf_source_id }}\",\"ruleGroupList\":[],\"rateBasedRuleList\":[],\"nonTerminatingMatchingRules\":[],\"requestHeadersInserted\":null,\"responseCodeSent\":null,\"httpRequest\":{\"clientIp\":\"{{ $client_ip}}\",\"country\":\"{{ $country_codes }}\",\"headers\":[{\"name\":\"Host\",\"value\":\"wordpress-{{ $long_num }}.{{ $cloud_region }}.elb.amazonaws.com\"},{\"name\":\"User-Agent\",\"value\":\"Apache-HttpClient/4.5.6 (Java/1.8.0_191)\"}],\"uri\":\"/wp-content/{{ $uri_path }}{{ $uri_extension }}\",\"args\":\"{{ $args }}\",\"httpVersion\":\"HTTP/1.1\",\"httpMethod\":\"{{ $http_method }}\",\"requestId\":\"rid-{{ $rangeofid }}\"},\"labels\":[{\"name\":\"value\"}]}",
+    {{- if eq $rule_id "Default_Action" }}
+    "message": "{\"timestamp\":{{ $timestamp.UnixMilli }},\"formatVersion\":1,\"webaclId\":\"arn:aws:wafv2:{{ $cloud_region }}:{{ $cloud_account_id }}:9b3b8307-f0d8-4425-bd32-499444d92ea1\",\"terminatingRuleId\":\"{{ $rule_id }}\",\"terminatingRuleType\":\"{{ $rule_ruleset }}\",\"action\":\"{{ $event_action }}\",\"httpSourceName\":\"{{ $aws_waf_source_name }}\",\"httpSourceId\":\"{{ $long_num }}-app/wordpress/d3fad233572a26a0\",\"ruleGroupList\":[],\"rateBasedRuleList\":[],\"nonTerminatingMatchingRules\":[],\"httpRequest\":{\"clientIp\":\"{{ $client_ip}}\",\"country\":\"{{ $country_codes }}\",\"headers\":[{\"name\":\"Host\",\"value\":\"wordpress-{{ $long_num }}.{{ $cloud_region }}.elb.amazonaws.com\"},{\"name\":\"User-Agent\",\"value\":\"Apache-HttpClient/4.5.6 (Java/1.8.0_191)\"}],\"uri\":\"/wp-content/{{ $uri_path }}{{ $uri_extension }}\",\"args\":\"{{ $args }}\",\"httpVersion\":\"HTTP/1.1\",\"httpMethod\":\"{{ $http_method }}\",\"requestId\":\"rid-{{ $rangeofid }}\"}}",
+    {{- else}}
+    "message": "{\"timestamp\":{{ $timestamp.UnixMilli }},\"formatVersion\":1,\"webaclId\":\"arn:aws:wafv2:{{ $cloud_region }}:{{ $cloud_account_id }}:9b3b8307-f0d8-4425-bd32-499444d92ea1\",\"terminatingRuleId\":\"{{ $rule_id }}\",\"terminatingRuleType\":\"{{ $rule_ruleset }}\",\"action\":\"{{ $event_action }}\",\"terminatingRuleMatchDetails\": [{\"conditionType\": \"{{ $condition_type }}\",\"location\": \"{{ generate "location" }}\",\"matchedData\": [\"{{ $matched_data }}\",\"AND\",\"{{ $matched_data }}\"]}],\"httpSourceName\":\"{{ $aws_waf_source_name }}\",\"httpSourceId\":\"{{ $long_num }}-app/wordpress/d3fad233572a26a0\",\"ruleGroupList\":[],\"rateBasedRuleList\":[],\"nonTerminatingMatchingRules\":[],\"requestHeadersInserted\":null,\"responseCodeSent\":null,\"httpRequest\":{\"clientIp\":\"{{ $client_ip}}\",\"country\":\"{{ $country_codes }}\",\"headers\":[{\"name\":\"Host\",\"value\":\"wordpress-{{ $long_num }}.{{ $cloud_region }}.elb.amazonaws.com\"},{\"name\":\"User-Agent\",\"value\":\"Apache-HttpClient/4.5.6 (Java/1.8.0_191)\"}],\"uri\":\"/wp-content/{{ $uri_path }}{{ $uri_extension }}\",\"args\":\"{{ $args }}\",\"httpVersion\":\"HTTP/1.1\",\"httpMethod\":\"{{ $http_method }}\",\"requestId\":\"rid-{{ $rangeofid }}\"}}",
+    {{- end}}
     "event": {
         "dataset": "aws.waf"
     },
@@ -86,36 +69,7 @@
         },
         "offset": 0
     },
-    "network": {
-        "transport": "tcp"
-    },
-    "related": {
-        "ip": [
-            "89.160.20.156"
-        ]
-    },
-    "source": {
-        "as": {
-            "number": 29518,
-            "organization": {
-                "name": "Bredband2 AB"
-            }
-        },
-        "geo": {
-            "city_name": "Linköping",
-            "continent_name": "Europe",
-            "country_iso_code": "SE",
-            "country_name": "Sweden",
-            "location": {
-                "lat": 58.4167,
-                "lon": 15.6167
-            },
-            "region_iso_code": "SE-E",
-            "region_name": "Östergötland County"
-        }
-    },
     "tags": [
-        "preserve_original_event",
         "forwarded",
         "aws-waf"
     ]
