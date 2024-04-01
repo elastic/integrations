@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing MongoDB Atlas Audit logs.
+description: Pipeline for processing MongoDB Atlas Mongod Audit logs.
 processors:
   - set:
       field: ecs.version
@@ -43,6 +43,16 @@ processors:
         - append:
             field: error.message
             value: '{{ _ingest.on_failure_message }}'
+  - append:
+      field: related.ip
+      value: '{{{json.local.ip}}}'
+      if: ctx.json?.local?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{json.remote.ip}}}'
+      if: ctx.json?.remote?.ip != null
+      allow_duplicates: false
   - rename:
       field: json.atype
       target_field: mongodb_atlas.mongod_audit.action.type

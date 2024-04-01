@@ -17,8 +17,7 @@ The MongoDB Atlas integration collects logs.
 Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration is `mongod_audit`.
 
 Data streams:
-- `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod is the primary daemon method for the MongoDB system. It helps in handling the data requests, managing the data access, performing background management operations, and other core database operations. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
-
+- `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 
 Note:
 - Users can monitor and see the log inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
@@ -51,6 +50,10 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 5. Add all the required integration configuration parameters, such as Public Key, Private Key, URL and GroupId. For Mongod Audit data stream.
 6. Save the integration.
 
+Note:
+- The `mongod_audit` data stream gathers historical data spanning the previous 30 minutes.
+- Mongod: Mongod is the primary daemon method for the MongoDB system. It helps in handling the data requests, managing the data access, performing background management operations, and other core database operations.
+
 ## Troubleshooting
 
 - If the user encounters the following error during data ingestion, it is likely due to the data collected through this endpoint covers a long time span. As a result, generating a response may take longer. Additionally, if the `HTTP Client Timeout` parameter is set to a small duration,  a request timeout might happen. However, if the user wishes to avoid this error altogether, it is recommended to adjust the `HTTP Client Timeout` and `Interval` parameters based on the duration of data collection.
@@ -74,8 +77,8 @@ An example event for `mongod_audit` looks as following:
 {
     "@timestamp": "2023-04-01T12:00:00.000Z",
     "agent": {
-        "ephemeral_id": "8d14f098-5577-476e-8f30-15b792ccf10f",
-        "id": "97f845ab-0826-49c5-8574-b2921ee4e366",
+        "ephemeral_id": "d3ebc4ac-0cb3-41a2-90b2-cbd7055d60b8",
+        "id": "6baea824-3495-4407-aac0-d9a0cb99c4f8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -89,7 +92,7 @@ An example event for `mongod_audit` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "97f845ab-0826-49c5-8574-b2921ee4e366",
+        "id": "6baea824-3495-4407-aac0-d9a0cb99c4f8",
         "snapshot": false,
         "version": "8.12.0"
     },
@@ -100,7 +103,7 @@ An example event for `mongod_audit` looks as following:
             "authentication"
         ],
         "dataset": "mongodb_atlas.mongod_audit",
-        "ingested": "2024-03-11T13:58:12Z",
+        "ingested": "2024-04-01T09:36:02Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
@@ -114,10 +117,10 @@ An example event for `mongod_audit` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "829324aac17946dcace17006fa82a2d2",
         "ip": [
-            "192.168.248.7"
+            "192.168.255.7"
         ],
         "mac": [
-            "02-42-C0-A8-F8-07"
+            "02-42-C0-A8-FF-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -168,6 +171,12 @@ An example event for `mongod_audit` looks as following:
             }
         }
     },
+    "related": {
+        "ip": [
+            "127.0.0.1",
+            "192.168.1.100"
+        ]
+    },
     "tags": [
         "mongodb_atlas-mongod_audit"
     ]
@@ -207,4 +216,5 @@ An example event for `mongod_audit` looks as following:
 | mongodb_atlas.mongod_audit.user.roles | Array of documents that specify the roles granted to the user. | object |
 | mongodb_atlas.mongod_audit.uuid.binary | Document that contains a universally unique identifier (UUID) for the audit message. | keyword |
 | mongodb_atlas.mongod_audit.uuid.type | The $type field specifies the BSON subtype for the $binary field. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |

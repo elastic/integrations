@@ -17,8 +17,7 @@ The MongoDB Atlas integration collects logs.
 Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration is `mongod_audit`.
 
 Data streams:
-- `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod is the primary daemon method for the MongoDB system. It helps in handling the data requests, managing the data access, performing background management operations, and other core database operations. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
-
+- `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 
 Note:
 - Users can monitor and see the log inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
@@ -50,6 +49,10 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 4. Click on the "Add MongoDB Atlas" button to add the integration.
 5. Add all the required integration configuration parameters, such as Public Key, Private Key, URL and GroupId. For Mongod Audit data stream.
 6. Save the integration.
+
+Note:
+- The `mongod_audit` data stream gathers historical data spanning the previous 30 minutes.
+- Mongod: Mongod is the primary daemon method for the MongoDB system. It helps in handling the data requests, managing the data access, performing background management operations, and other core database operations.
 
 ## Troubleshooting
 
