@@ -453,6 +453,7 @@ processors:
       target_field: event.start
       timezone: '{{{event.timezone}}}'
       if: ctx.event?.start != null
+      tag: date event.start
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
@@ -469,6 +470,7 @@ processors:
             field: event.start
             target_field: event.start
             if: ctx.event?.start != null
+            tag: date re-parse event.start
             formats:
               - E MMM dd HH:mm:ss yyyy
               - E MMM  d HH:mm:ss yyyy
@@ -488,6 +490,7 @@ processors:
       target_field: event.end
       timezone: '{{{event.timezone}}}'
       if: ctx.event?.end != null
+      tag: date event.end
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
@@ -504,6 +507,7 @@ processors:
             field: event.end
             target_field: event.end
             if: ctx.event?.end != null
+            tag: date re-parse event.end
             formats:
               - E MMM dd HH:mm:ss yyyy
               - E MMM  d HH:mm:ss yyyy
@@ -529,4 +533,5 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
