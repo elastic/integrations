@@ -28,11 +28,11 @@ processors:
       target_field: cisco_secure_email_gateway.log.esa.attachment_details
       ignore_missing: true
       ignore_failure: true
-  - grok:
+  - convert:
       field: _tmp.fields.ESADHASource
+      target_field: cisco_secure_email_gateway.log.esa.dha_source
       if: ctx._tmp?.fields?.ESADHASource != null
-      patterns:
-        - "%{IP:cisco_secure_email_gateway.log.esa.dha_source}"
+      type: ip
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -80,11 +80,11 @@ processors:
       target_field: cisco_secure_email_gateway.log.esa.helo.domain
       ignore_missing: true
       ignore_failure: true
-  - grok:
+  - convert:
       field: _tmp.fields.ESAHeloIP
+      target_field: cisco_secure_email_gateway.log.esa.helo.ip
       if: ctx._tmp?.fields?.ESAHeloIP != null
-      patterns:
-        - "%{IP:cisco_secure_email_gateway.log.esa.helo.ip}"
+      type: ip
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -282,11 +282,11 @@ processors:
       target_field: email.to.address
       ignore_missing: true
       ignore_failure: true
-  - grok:
+  - convert:
       field: _tmp.fields.dvc
+      target_field : cisco_secure_email_gateway.log.data.ip
+      type: ip
       if: ctx._tmp?.fields?.dvc != null
-      patterns:
-        - "%{IP:cisco_secure_email_gateway.log.data.ip}"
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -309,18 +309,18 @@ processors:
       target_field: source.domain
       ignore_missing: true
       ignore_failure: true
-  - grok:
+  - convert:
       field: _tmp.fields.sourceAddress
+      target_field: source.ip
       if: ctx._tmp?.fields?.sourceAddress != null
-      patterns:
-        - "%{IP:source.ip}"
+      type: ip
       ignore_missing: true
       ignore_failure: true
-  - grok:
+  - convert:
       field: _tmp.fields.src
+      target_field: source.ip
       if: ctx._tmp?.fields?.src != null
-      patterns:
-        - "%{IP:source.ip}"
+      type: ip
       ignore_missing: true
       ignore_failure: true
   - grok:
