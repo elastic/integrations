@@ -11,7 +11,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: message
       target_field: event.original
@@ -1307,11 +1307,11 @@ processors:
           ctx.file.mime_type = setList;
         }
   - script:
-      if: ctx.user?.email != null  && !(ctx.user.email instanceof String)
+      if: ctx.user?.email != null
       lang: painless
       source: >-
-        def parts = ctx.user.email; if (parts != null && parts.size() > 0) {
-
+        def parts = ctx.user.email;
+        if (!(parts instanceof String)) {
 
           List l = new ArrayList();
           for (entry in parts.entrySet()) {
