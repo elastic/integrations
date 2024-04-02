@@ -41,7 +41,6 @@ from logs-nessus.vulnerability*
 
 The CISA KEV data_stream retrieves vulnerability information from the endpoint `https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json`.
 
-
 {{event "vulnerability"}}
 
 {{fields "vulnerability"}}
