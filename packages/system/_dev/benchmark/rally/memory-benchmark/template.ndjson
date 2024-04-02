@@ -1,0 +1,94 @@
+{{- $event_duration := generate "event_duration" }}
+{{- $timestamp := generate "timestamp" }}
+{{- $system_memory_used_bytes := generate "system_memory_used_bytes" }}
+{{- $system_memory_free := generate "system_memory_free" }}
+{{- $system_memory_cached := generate "system_memory_cached" }}
+{{- $system_memory_actual_used_bytes := generate "system_memory_actual_used_bytes" }}
+{{- $system_memory_actual_free := generate "system_memory_actual_free" }}
+{{- $system_memory_actual_sum := add $system_memory_actual_used_bytes $system_memory_actual_free  }}
+{{- $system_memory_swap_used_bytes := generate "system_memory_swap_used_bytes" }}
+{{- $system_memory_swap_free := generate "system_memory_swap_free" }}
+{{- $system_memory_swap_total := add $system_memory_swap_free $system_memory_swap_used_bytes }}
+{{- $system_memory_swap_used_pct := divf $system_memory_swap_used_bytes $system_memory_swap_total }}
+{{- $system_memory_total := add $system_memory_used_bytes $system_memory_free }}
+{{- $system_memory_used_pct := divf $system_memory_used_bytes $system_memory_total }}
+{
+  "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z07:00" }}",
+  "agent": {
+    "ephemeral_id": "22ed892c-43bd-408a-9121-65e2f5b6a56e",
+    "id": "de42127b-4db8-4471-824e-a7b14f478663",
+    "name": "system-scale-123456",
+    "type": "metricbeat",
+    "version": "8.8.0"
+  },
+  "data_stream": {
+    "dataset": "system.memory",
+    "namespace": "ep",
+    "type": "metrics"
+  },
+  "ecs": {
+    "version": "8.0.0"
+  },
+  "elastic_agent": {
+    "id": "404fc805-04b8-420a-9fcf-12d54b89d4fd",
+    "snapshot": false,
+    "version": "8.12.1"
+  },
+  "event": {
+    "agent_id_status": "verified",
+    "dataset": "system.memory",
+    "duration": {{ $event_duration }},
+    "module": "system"
+  },
+  "host": {
+    "architecture": "x86_64",
+    "containerized": true,
+    "hostname": "docker-fleet-agent",
+    "id": "96bd755dd266474fb86bd80a98cbaad5",
+    "ip": "192.168.241.7",
+    "mac": "02-42-C0-A8-F1-07",
+    "name": "docker-fleet-agent",
+    "os": {
+      "codename": "focal",
+      "family": "debian",
+      "kernel": "3.10.0-1160.105.1.el7.x86_64",
+      "name": "Ubuntu",
+      "platform": "ubuntu",
+      "type": "linux",
+      "version": "20.04.6 LTS (Focal Fossa)"
+    }
+  },
+  "metricset": {
+    "name": "memory",
+    "period": 10000
+  },
+  "service": {
+    "type": "system"
+  },
+  "system": {
+    "memory": {
+      "actual": {
+        "free": {{ $system_memory_actual_free }},
+        "used": {
+          "bytes": {{ $system_memory_actual_used_bytes }},
+          "pct": {{ divf $system_memory_actual_used_bytes $system_memory_actual_sum }}
+        }
+      },
+      "cached": {{ $system_memory_cached }},
+      "free": {{ $system_memory_free }},
+      "swap": {
+        "free": {{ $system_memory_swap_free }},
+        "total": {{ $system_memory_swap_total }},
+        "used": {
+          "bytes": {{ $system_memory_swap_used_bytes }},
+          "pct": {{ $system_memory_swap_used_pct }}
+        }
+      },
+      "total": {{ $system_memory_total }},
+      "used": {
+        "bytes": {{ $system_memory_used_bytes }},
+        "pct": {{ $system_memory_used_pct }}
+      }
+    }
+  }
+}
