@@ -1,28 +1,18 @@
 ---
 description: Pipeline for processing json logs
 processors:
-  - grok:
-      field: message
-      patterns:
-        - ^%{CHAR:first_char}
-      pattern_definitions:
-        CHAR: .
-      ignore_missing: true
-  - json:
-      field: message
-      target_field: temp
-      if: ctx?.first_char != null && ctx.first_char == '{'
-  - remove:
-      field: first_char
-  - remove:
-      field: message
-      if: ctx?.temp?.url != null
   - rename:
-      field: temp.url
-      target_field: url
-      ignore_missing: true
+      field: message
+      target_field: temp_message
+  - json:
+      field: temp_message
+      add_to_root: true
   - remove:
-      field: temp
+      field: temp_message
+  - script:
+      lang: painless
+      description: This script removes the 'elastic-package-test' tag for cleaner expected log
+      inline: ctx?.tags.removeIf(item -> item == 'elastic-package-test')
 
 on_failure:
 - append:
