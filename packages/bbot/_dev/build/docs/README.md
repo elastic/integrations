@@ -1,6 +1,10 @@
 # BBOT integration
 
+Please read this page in it's entirety as this integration requires some setup.
+
 This integration is for [BBOT](https://www.blacklanternsecurity.com/bbot/), an Attack Surface Management (ASM) Open Source Inteligence (OSINT) Tool. BBOT itself stands for Bighuge BLS OSINT Tool (BBOT).
+
+This integration requires the external use of BBOT! You will have to download and run the tool apart from this integration. Once your scan is complete, this integration will ingest the results into Elastic.
 
 This tool is used to enhance your external knowledge of your environment. This is done through the integration of many tools into BBOT providing a overview of your attack surface. Here is [how it works](https://www.blacklanternsecurity.com/bbot/how_it_works/).
 
