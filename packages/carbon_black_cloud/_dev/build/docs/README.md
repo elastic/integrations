@@ -2,9 +2,19 @@
 
 The VMware Carbon Black Cloud integration collects and parses data from the Carbon Black Cloud REST APIs and AWS S3 bucket.
 
+## Disclaimer
+According to VMware Carbon Black Cloud [Migration Docs](https://developer.carbonblack.com/reference/carbon-black-cloud/api-migration/#migration-summary)
+`Alerts API (v6)` will be deactivated on July 31, 2024, post which the current alerts data stream will become unusable. To mitigate this and enable a smooth
+transition for our users we have introduced a new data stream named `alert_v7` based on the major `Alerts API (v7)` schema changes and `Data Forwarder 2.0`
+schema changes. This data stream has been tagged as `Beta` and has significant changes and deprecations/additions compared to the original data stream, please 
+consult the official docs [Alerts v7](https://developer.carbonblack.com/reference/carbon-black-cloud/guides/api-migration/alerts-migration) and [Data Forwarder 2.0](https://developer.carbonblack.com/reference/carbon-black-cloud/data-forwarder/schema/latest/alert-2.0.0/) for further info. We want feedback from users on this new data stream and its dashboards. Post July 31, 2024, the old alerts v6 data stream will be deprecated and removed and only this new data stream will exist. 
+
+## Note
+Use either the alert or the alert_v7 data stream and not both simultaneously. Same with the AWS-S3 input. Use either the old data stream or the new beta alert_v7 data stream that supports the Data Forwarder 2.0 schema.
+
 ## Compatibility
 
-This module has been tested against `Alerts API (v6)`, `Audit Log Events (v3)` and `Vulnerability Assessment (v1)`.
+This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`, `Audit Log Events (v3)` and `Vulnerability Assessment (v1)`.
 
 ## Version 1.21+ Update Disclaimer
 Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
@@ -21,6 +31,7 @@ older versions.
 
   | Data Stream Name  | Bucket List Prefix     |
   | ----------------- | ---------------------- |
+  | Alert_v7          | alert_logs_v7          |
   | Alert             | alert_logs             |
   | Endpoint Event    | endpoint_event_logs    |
   | Watchlist Hit     | watchlist_hit_logs     |
