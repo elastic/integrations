@@ -323,11 +323,12 @@ processors:
       type: ip
       ignore_missing: true
       ignore_failure: true
-  - grok:
+  - gsub:
       field: _tmp.fields.msg
+      target_field: email.subject
       if: ctx._tmp?.fields?.msg != null
-      patterns:
-        - "^['\"]%{DATA:email.subject}['\"]$"
+      pattern: "(?:^['\"]|['\"]$)"
+      replacement: ""
       ignore_missing: true
       ignore_failure: true
   - rename:
