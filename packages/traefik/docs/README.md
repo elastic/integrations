@@ -212,8 +212,12 @@ An example event for `health` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "id": "65c6e8a59cee4f20baaa9c3b45722316",
-        "ip": "172.18.0.6",
-        "mac": "02-42-AC-12-00-06",
+        "ip": [
+            "172.18.0.6"
+        ],
+        "mac": [
+            "02-42-AC-12-00-06"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -251,6 +255,7 @@ An example event for `health` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -271,6 +276,8 @@ An example event for `health` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |  |
