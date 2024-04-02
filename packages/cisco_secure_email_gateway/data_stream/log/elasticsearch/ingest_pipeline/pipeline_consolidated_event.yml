@@ -235,11 +235,12 @@ processors:
       target_field: cisco_secure_email_gateway.log.cs4_label
       ignore_missing: true
       ignore_failure: true
-  - grok:
+  - gsub:
       field: _tmp.fields.cs4
-      if: ctx._tmp?.fields?.cs4 != null
-      patterns:
-        - '<%{DATA:cisco_secure_email_gateway.log.cs4}>'
+      target_field: cisco_secure_email_gateway.log.cs4
+      if: ctx._tmp?.fields?.cs4 != null && ctx._tmp?.fields?.cs4 != "''"
+      pattern: "^'<|>'$"
+      replacement: ""
       ignore_missing: true
       ignore_failure: true
   - rename:
