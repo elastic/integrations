@@ -110,9 +110,6 @@ processors:
       type: ip
       ignore_missing: true
       if: 'ctx?.source?.ip != null && ctx?.source?.ip != ctx?.temp?.ClientHost'
-  - remove:
-      field: temp.ClientHost
-      ignore_missing: true
   - append:
       field: related.ip
       value: "{{{network.forwarded_ip}}}"
@@ -240,10 +237,6 @@ processors:
         field : temp.request_User-Agent
         ignore_missing: true
         extract_device_type: true
-  - remove:
-        field: temp.request_User-Agent
-        ignore_missing: true
-        if: 'ctx?.user_agent != null'
   - script:
       source: |
         Map downstream_headers = new HashMap();
