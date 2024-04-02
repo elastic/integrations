@@ -1,14 +1,46 @@
 # CISA KEV integration
 
-This integration is for [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) logs. This data can be useful for current awareness of Known Exploited Vulnerabilities according to CISA and also for enriching other vulnerability scan data in the Elastic stack. It includes the following datasets for retrieving logs from the CISA KEV website:
+This integration is for [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) logs. This data can be useful for current awareness of Known Exploited Vulnerabilities according to CISA and also for enriching other vulnerability scan data in the Elastic stack. The integration checks every 60 minutes by default for the latest CISA KEV list but this can be configured. It includes the following datasets for retrieving logs from the CISA KEV website:
 
 - `vulnerability` dataset: Supports vulnerabilities classified as known exploited from CISA.
+
+### Example Enrich Policy and ES|QL Correlation Query
+
+An enrich policy can be created to have other vulnerability information be enriched based on the CVE number.
+
+The following request can be used to create the enrich policy after the integration has been installed:
+
+```
+PUT /_enrich/policy/enrich_cve_with_context_cisa_kev
+{
+  "match": {
+    "indices": ".ds-logs-cisa_kevs.vulnerability-*",
+    "match_field": "vulnerability.id",
+    "enrich_fields": ["cisa_kev.vulnerability.date_added", "cisa_kev.vulnerability.due_date", "cisa_kev.vulnerability.known_ransomware_campaign_use", "cisa_kev.vulnerability.name", "cisa_kev.vulnerability.notes","cisa_kev.vulnerability.product","cisa_kev.vulnerability.required_action","cisa_kev.vulnerability.vendor_project"]
+  }
+}
+```
+
+Here is an example ES|QL query that uses the index pattern of logs-nessus.vulnerability* to enrich the data source with CISA KEV information and keeping the top 10 results. Note, the enrich policy must be created first which has been provided above:
+
+```
+from logs-nessus.vulnerability*
+| where vulnerability.id IS NOT NULL
+| keep vulnerability.*, nessus.plugin.name, host.name
+| enrich enrich_cve_with_context_cisa_kev with cisa_kev.vulnerability.due_date, cisa_kev.vulnerability.known_ransomware_campaign_use, cisa_kev.vulnerability.name, cisa_kev.vulnerability.notes, cisa_kev.vulnerability.product, cisa_kev.vulnerability.required_action, cisa_kev.vulnerability.vendor_project, cisa_kev.vulnerability.date_added
+| where cisa_kev.vulnerability.name IS NOT NULL
+| stats count = COUNT(host.name) BY nessus.plugin.name, vulnerability.severity, cisa_kev.vulnerability.date_added, cisa_kev.vulnerability.product
+| sort count desc
+| keep nessus.plugin.name, vulnerability.severity, cisa_kev.vulnerability.product, cisa_kev.vulnerability.date_added, count
+| limit 10
+```
 
 ## Logs
 
 ### Vulnerabilities
 
 The CISA KEV data_stream retrieves vulnerability information from the endpoint `https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json`.
+
 
 An example event for `vulnerability` looks as following:
 
@@ -106,4 +138,3 @@ An example event for `vulnerability` looks as following:
 | vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created[Common Vulnerabilities and Exposure CVE description]) | keyword |
 | vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |
 | vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
-
