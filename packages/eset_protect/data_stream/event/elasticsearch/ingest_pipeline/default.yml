@@ -433,7 +433,7 @@ processors:
       tag: set_file_hash_sha1_from_eset_protect_event_hash
       copy_from: eset_protect.event.hash
       ignore_empty_value: true
-      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
+      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || 'file'.equalsIgnoreCase(ctx.json?.object_type)
   - lowercase:
       field: file.hash.sha1
       tag: lowercase_file_hash_sha1
@@ -443,7 +443,7 @@ processors:
       tag: set_threat_indicator_file_hash_sha1
       copy_from: file.hash.sha1
       ignore_empty_value: true
-      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
+      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || 'file'.equalsIgnoreCase(ctx.json?.object_type)
   - append:
       field: related.hash
       tag: append_eset_protect_event_hash_into_related_hash
