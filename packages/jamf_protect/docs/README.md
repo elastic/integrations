@@ -225,135 +225,144 @@ An example event for `telemetry` looks as following:
 
 ```json
 {
-    "@timestamp": "2019-10-02T16:17:08.000Z",
-    "agent": {
-        "ephemeral_id": "d5ffc842-05cf-43da-96fe-905f95ab2e41",
-        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.4.0"
-    },
-    "data_stream": {
-        "dataset": "jamf_protect.telemetry",
-        "namespace": "ep",
-        "type": "logs"
-    },
+    "@timestamp": "2024-02-06T16:01:34.442Z",
     "ecs": {
-        "version": "8.6.0"
+        "version": "8.11.0"
     },
-    "elastic_agent": {
-        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
-        "snapshot": false,
-        "version": "8.4.0"
+    "error": {
+        "code": "0"
     },
     "event": {
-        "action": "preference_list_event",
-        "agent_id_status": "verified",
+        "action": "aue_posix_spawn",
         "category": [
-            "process"
+            "authentication"
         ],
-        "dataset": "jamf_protect.telemetry",
-        "ingested": "2022-11-04T11:01:45Z",
+        "code": "43190",
         "kind": "event",
+        "outcome": "success",
         "type": [
             "info"
         ]
     },
     "host": {
-        "hostname": "macbook_pro",
-        "id": "X03XX889XXX3",
-        "mac": [
-            "38-F9-E8-15-5A-82"
+        "hostname": "Mac mini",
+        "id": "H2WGF2U9Q6NV",
+        "ip": [
+            "0.0.0.0"
         ],
         "os": {
-            "type": "macos",
-            "version": "Version 10.14.6 (Build 18G95)"
+            "version": "Version 14.2.1 (Build 23C71)"
         }
     },
-    "input": {
-        "type": "tcp"
-    },
-    "jamf_protect_telemetry": {
-        "log": {
-            "dataset": "event",
-            "event_attributes": {
-                "audit_event": {
-                    "excluded_processes": [
-                        "/usr/bin/log",
-                        "/usr/sbin/syslogd"
-                    ],
-                    "excluded_users": [
-                        "_spotlight",
-                        "_windowserver"
-                    ]
-                },
-                "audit_event_log_verbose_messages": "1",
-                "audit_level": 3,
-                "file_event": {
-                    "exclusion_paths": [
-                        "/Users/.*/Library/.*"
-                    ],
-                    "inclusion_paths": [
-                        "/Users/.*"
-                    ],
-                    "use_fuzzy_match": 0
-                },
-                "file_license_info": {
-                    "license_expiration_date": "2020-01-01T00:00:00.000Z",
-                    "license_key": "43cafc3da47e792939ea82c70...",
-                    "license_type": "Annual",
-                    "license_version": "1"
-                },
-                "log": {
-                    "file": {
-                        "location": "/var/log/JamfComplianceReporter.log",
-                        "max_number_backups": 10,
-                        "max_size_mega_bytes": 10,
-                        "ownership": "root:wheel",
-                        "permission": "640"
-                    },
-                    "remote_endpoint_enabled": 1,
-                    "remote_endpoint_type": "AWSKinesis",
-                    "remote_endpoint_type_awskinesis": {
-                        "access_key_id": "AKIAQFE...",
-                        "region": "us-east-1",
-                        "secret_key": "JAdcoRIo4zsPz...",
-                        "stream_name": "compliancereporter_testing"
-                    }
-                },
-                "unified_log_predicates": [
-                    "'(subsystem == \"com.example.networkstatistics\")'",
-                    "'(subsystem == \"com.apple.CryptoTokenKit\" AND category == \"AHP\")'"
-                ],
-                "version": "3.1b43"
+    "jamf_protect": {
+        "telemetry": {
+            "arguments": {
+                "child": {
+                    "pid": 70851
+                }
             },
-            "event_score": 0,
+            "dataset": "audit",
+            "exec_args": {
+                "args_compiled": "/usr/bin/profiles,status,-type,enrollment"
+            },
+            "exec_chain_parent": {
+                "uuid": "87F2E500-EDF1-4F12-A489-C5E05B0F523E"
+            },
+            "exec_env": {
+                "env": {
+                    "compiled": "PWD=/,PATH=/usr/bin:/bin:/usr/sbin:/sbin"
+                }
+            },
+            "header": {
+                "event_modifier": "0",
+                "version": "11"
+            },
             "host_info": {
                 "host": {
-                    "uuid": "3X6E4X3X-9285-4X7X-9X0X-X3X62XX379XX"
+                    "uuid": "AE2FA359-6AB0-5F54-9E4A-39EDCF015C91"
+                }
+            },
+            "identity": {
+                "cd_hash": "a2c787fe5e26ead7c68909e45a75edced4147c68",
+                "signer": {
+                    "id_truncated": "false",
+                    "type": "0"
+                }
+            },
+            "path": [
+                "/usr/bin/profiles",
+                "/usr/bin/profiles"
+            ],
+            "return": {
+                "description": "success"
+            },
+            "subject": {
+                "effective": {
+                    "group": {
+                        "id": "0",
+                        "name": "wheel"
+                    }
+                },
+                "process": {
+                    "name": "/Library/Application Support/Microsoft/EdgeUpdater/118.0.2088.86/EdgeUpdater.app/Contents/MacOS/EdgeUpdater",
+                    "pid": 70848
+                },
+                "session": {
+                    "id": "100016"
+                },
+                "terminal_id": {
+                    "port": 0,
+                    "type": "4"
                 }
             }
         }
     },
-    "log": {
-        "source": {
-            "address": "192.168.224.7:58764"
+    "process": {
+        "args": [
+            "/usr/bin/profiles",
+            "status",
+            "-type",
+            "enrollment"
+        ],
+        "code_signature": {
+            "signing_id": "com.microsoft.EdgeUpdater",
+            "team_id": "UBF8T346G9"
+        },
+        "exit_code": 0,
+        "hash": {
+            "sha1": "9cfc802baf45b74693d146686ebe9ec59ac6367f"
+        },
+        "real_group": {
+            "id": "0",
+            "name": "wheel"
+        },
+        "real_user": {
+            "id": "4294967295"
+        },
+        "user": {
+            "id": "0",
+            "name": "root"
         }
     },
     "related": {
+        "hash": [
+            "9cfc802baf45b74693d146686ebe9ec59ac6367f"
+        ],
         "hosts": [
-            "macbook_pro"
+            "Mac mini"
+        ],
+        "ip": [
+            "0.0.0.0"
         ],
         "user": [
-            "dan@email.com"
+            "root"
         ]
     },
-    "tags": [
-        "forwarded",
-        "jamf_protect_telemetry-log"
-    ],
     "user": {
-        "email": "dan@email.com"
+        "id": "0",
+        "name": [
+            "root"
+        ]
     }
 }
 ```
