@@ -87,24 +87,26 @@ processors:
   - urldecode:
       tag: urldecode_httpMessage_responseHeaders
       field: json.httpMessage.responseHeaders
-      target_field: _tmp.response.headers
       ignore_missing: true
   - kv:
-      field: _tmp.response.headers
+      if: ctx.json?.httpMessage?.responseHeaders != ""
+      tag: kv_httpMessage_responseHeaders
+      field: json.httpMessage.responseHeaders
       target_field: akamai.siem.response.headers
       field_split: '\r\n'
-      value_split: ': '
+      value_split: ':\s?'
       ignore_missing: true
   - urldecode:
       tag: urldecode_httpMessage_requestHeaders
       field: json.httpMessage.requestHeaders
-      target_field: _tmp.request.headers
       ignore_missing: true
   - kv:
-      field: _tmp.request.headers
+      if: ctx.json?.httpMessage?.requestHeaders != ""
+      tag: kv_httpMessage_requestHeaders
+      field: json.httpMessage.requestHeaders
       target_field: akamai.siem.request.headers
       field_split: '\r\n'
-      value_split: ': '
+      value_split: ':\s?'
       ignore_missing: true
   - script:
       lang: painless
