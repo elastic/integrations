@@ -160,7 +160,7 @@ An example event for `detection` looks as following:
     },
     "file": {
         "hash": {
-            "sha1": "AAF4C61DDCC5E8A2DABEDE0F3B4820123456789D"
+            "sha1": "aaf4c61ddcc5e8a2dabede0f3b4820123456789d"
         }
     },
     "host": {
@@ -181,7 +181,7 @@ An example event for `detection` looks as following:
     },
     "related": {
         "hash": [
-            "AAF4C61DDCC5E8A2DABEDE0F3B4820123456789D"
+            "aaf4c61ddcc5e8a2dabede0f3b4820123456789d"
         ],
         "hosts": [
             "xxx-xxxx-1234-5678-xxxxxxxxxxxx"
@@ -265,13 +265,13 @@ An example event for `device_task` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-03-18T21:48:50.773Z",
+    "@timestamp": "2024-03-27T16:00:29.582Z",
     "agent": {
-        "ephemeral_id": "d53e8e23-6aa6-45ba-9806-ccb21bab0098",
-        "id": "78166295-0693-4726-a27f-cd8722896c22",
+        "ephemeral_id": "c5a8ca66-614e-438e-b69a-9e12cb12aa7d",
+        "id": "e270d8a1-0a98-417c-a79f-840c446ad79a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.12.2"
     },
     "data_stream": {
         "dataset": "eset_protect.device_task",
@@ -282,9 +282,9 @@ An example event for `device_task` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "78166295-0693-4726-a27f-cd8722896c22",
+        "id": "e270d8a1-0a98-417c-a79f-840c446ad79a",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.12.2"
     },
     "eset_protect": {
         "device_task": {
@@ -324,7 +324,7 @@ An example event for `device_task` looks as following:
         "action": "Shutdown computer",
         "agent_id_status": "verified",
         "dataset": "eset_protect.device_task",
-        "ingested": "2024-03-18T21:49:02Z",
+        "ingested": "2024-03-27T16:00:39Z",
         "kind": "event",
         "original": "{\"action\":{\"name\":\"Shutdown computer\",\"params\":{\"@type\":\"type.googleapis.com/Era.Common.DataDefinition.Task.ESS.OnDemandScan\",\"cleaningEnabled\":true,\"customProfileName\":\"DefaultProfile\",\"scanProfile\":\"InDepth\",\"scanTargets\":[\"eset://AllTargets\"]}},\"description\":\"Automatically created via context menu\",\"displayName\":\"Reboot Computer - via context menu\",\"targets\":{\"devicesUuids\":[\"0205321e-XXXX-XXXX-1234-feeb35010ea7\",\"0205321e-XXXX-XXXX-5678-feeb35010ea7\",\"0205321e-XXXX-1234-5678-feeb35010ea7\"]},\"triggers\":[{\"manual\":{\"expireTime\":\"2023-12-01T01:30:00Z\"}}],\"uuid\":\"c93070e0-XXXX-1234-5678-c48f0e5e0b7e\",\"versionId\":\"1511\"}",
         "type": [
@@ -401,11 +401,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2021-06-21T03:56:20.000Z",
     "agent": {
-        "ephemeral_id": "fc18dc4a-49f4-460b-a78c-e47e315c9f05",
-        "id": "78166295-0693-4726-a27f-cd8722896c22",
+        "ephemeral_id": "c8765a56-3694-4bf7-aada-7f979a9581cd",
+        "id": "e270d8a1-0a98-417c-a79f-840c446ad79a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.12.2"
     },
     "data_stream": {
         "dataset": "eset_protect.event",
@@ -437,9 +437,9 @@ An example event for `event` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "78166295-0693-4726-a27f-cd8722896c22",
+        "id": "e270d8a1-0a98-417c-a79f-840c446ad79a",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.12.2"
     },
     "eset_protect": {
         "event": {
@@ -472,7 +472,7 @@ An example event for `event` looks as following:
             "web"
         ],
         "dataset": "eset_protect.event",
-        "ingested": "2024-03-18T21:50:00Z",
+        "ingested": "2024-03-27T16:01:32Z",
         "kind": "alert",
         "original": "{\"event_type\":\"FilteredWebsites_Event\",\"ipv4\":\"192.168.30.30\",\"hostname\":\"win-test\",\"group_name\":\"All/Lost & found\",\"os_name\":\"Microsoft Windows 11 Pro\",\"group_description\":\"Lost & found static group\",\"source_uuid\":\"d9477661-8fa4-4144-b8d4-e37b983bcd69\",\"occured\":\"21-Jun-2021 03:56:20\",\"severity\":\"Warning\",\"event\":\"An attempt to connect to URL\",\"target_address\":\"89.160.20.128\",\"target_address_type\":\"IPv4\",\"scanner_id\":\"HTTP filter\",\"action_taken\":\"blocked\",\"object_uri\":\"https://test.com\",\"hash\":\"ABCDAA625E6961037B8904E113FD0C232A7D0EDC\",\"username\":\"WIN-TEST\\\\Administrator\",\"processname\":\"C:\\\\Program Files\\\\Web browser\\\\brwser.exe\",\"rule_id\":\"Blocked by PUA blacklist\"}",
         "type": [
@@ -498,7 +498,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.16.8:46210"
+            "address": "172.19.0.11:48112"
         },
         "syslog": {
             "appname": "ERAServer",
@@ -522,7 +522,7 @@ An example event for `event` looks as following:
     },
     "related": {
         "hash": [
-            "ABCDAA625E6961037B8904E113FD0C232A7D0EDC"
+            "abcdaa625e6961037b8904e113fd0c232a7d0edc"
         ],
         "hosts": [
             "win-test",
