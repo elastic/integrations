@@ -21,7 +21,7 @@ PUT /_enrich/policy/enrich_cve_with_context_cisa_kev
 }
 ```
 
-Here is an example ES|QL query that uses the index pattern of logs-nessus.vulnerability* to enrich the data source with CISA KEV information and keeping the top 10 results. Note, the enrich policy must be created first which has been provided above:
+Here is an example ES|QL query that uses the index pattern of logs-nessus.vulnerability* to enrich the data source with CISA KEV information and keeping the top 10 results. Note, the enrich policy (shown above) must be created first:
 
 ```
 from logs-nessus.vulnerability*
