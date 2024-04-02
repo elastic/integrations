@@ -1,6 +1,6 @@
 # CISA KEV integration
 
-This integration is for [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) logs. This data can be useful for current awareness of Known Exploited Vulnerabilities according to CISA and also for enriching other vulnerability scan data in the Elastic stack. The integration checks every 60 minutes by default for the latest CISA KEV list but this can be configured. It includes the following datasets for retrieving logs from the CISA KEV website:
+This integration is for [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) logs. This data can be useful for current awareness of Known Exploited Vulnerabilities according to CISA and also for enriching other vulnerability scan data in the Elastic stack. The integration periodically checks for the latest CISA KEV list. It includes the following datasets for retrieving logs from the CISA KEV website:
 
 - `vulnerability` dataset: Supports vulnerabilities classified as known exploited from CISA.
 
