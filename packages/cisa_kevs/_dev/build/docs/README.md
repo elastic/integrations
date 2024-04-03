@@ -8,7 +8,7 @@ This integration is for [CISA KEV](https://www.cisa.gov/known-exploited-vulnerab
 
 An enrich policy can be created to have other vulnerability information be enriched based on the CVE number.
 
-The following request can be used to create the enrich policy after the integration has been installed:
+The following requests can be used to create and execute the enrich policy after the integration has been installed:
 
 ```
 PUT /_enrich/policy/enrich_cve_with_context_cisa_kev
@@ -19,6 +19,8 @@ PUT /_enrich/policy/enrich_cve_with_context_cisa_kev
     "enrich_fields": ["cisa_kev.vulnerability.date_added", "cisa_kev.vulnerability.due_date", "cisa_kev.vulnerability.known_ransomware_campaign_use", "cisa_kev.vulnerability.name", "cisa_kev.vulnerability.notes","cisa_kev.vulnerability.product","cisa_kev.vulnerability.required_action","cisa_kev.vulnerability.vendor_project"]
   }
 }
+
+PUT /_enrich/policy/enrich_cve_with_context_cisa_kev/_execute
 ```
 
 Here is an example ES|QL query that uses the index pattern of logs-nessus.vulnerability* to enrich the data source with CISA KEV information and keeping the top 10 results. Note, the enrich policy (shown above) must be created first:

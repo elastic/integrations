@@ -1,6 +1,6 @@
 # CISA KEV integration
 
-This integration is for [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) logs. This data can be useful for current awareness of Known Exploited Vulnerabilities according to CISA and also for enriching other vulnerability scan data in the Elastic stack. The integration checks every 60 minutes by default for the latest CISA KEV list but this can be configured. It includes the following datasets for retrieving logs from the CISA KEV website:
+This integration is for [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) logs. This data can be useful for current awareness of Known Exploited Vulnerabilities according to CISA and also for enriching other vulnerability scan data in the Elastic stack. The integration periodically checks for the latest CISA KEV list. It includes the following datasets for retrieving logs from the CISA KEV website:
 
 - `vulnerability` dataset: Supports vulnerabilities classified as known exploited from CISA.
 
@@ -8,7 +8,7 @@ This integration is for [CISA KEV](https://www.cisa.gov/known-exploited-vulnerab
 
 An enrich policy can be created to have other vulnerability information be enriched based on the CVE number.
 
-The following request can be used to create the enrich policy after the integration has been installed:
+The following requests can be used to create and execute the enrich policy after the integration has been installed:
 
 ```
 PUT /_enrich/policy/enrich_cve_with_context_cisa_kev
@@ -19,9 +19,11 @@ PUT /_enrich/policy/enrich_cve_with_context_cisa_kev
     "enrich_fields": ["cisa_kev.vulnerability.date_added", "cisa_kev.vulnerability.due_date", "cisa_kev.vulnerability.known_ransomware_campaign_use", "cisa_kev.vulnerability.name", "cisa_kev.vulnerability.notes","cisa_kev.vulnerability.product","cisa_kev.vulnerability.required_action","cisa_kev.vulnerability.vendor_project"]
   }
 }
+
+PUT /_enrich/policy/enrich_cve_with_context_cisa_kev/_execute
 ```
 
-Here is an example ES|QL query that uses the index pattern of logs-nessus.vulnerability* to enrich the data source with CISA KEV information and keeping the top 10 results. Note, the enrich policy must be created first which has been provided above:
+Here is an example ES|QL query that uses the index pattern of logs-nessus.vulnerability* to enrich the data source with CISA KEV information and keeping the top 10 results. Note, the enrich policy (shown above) must be created first:
 
 ```
 from logs-nessus.vulnerability*
@@ -40,7 +42,6 @@ from logs-nessus.vulnerability*
 ### Vulnerabilities
 
 The CISA KEV data_stream retrieves vulnerability information from the endpoint `https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json`.
-
 
 An example event for `vulnerability` looks as following:
 
