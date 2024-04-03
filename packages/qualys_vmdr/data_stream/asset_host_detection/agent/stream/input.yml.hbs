@@ -36,9 +36,11 @@ program: |
           "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
       }
   }).do_request().as(resp, bytes(resp.Body).decode_xml('qualys_api_2_0').as(body, {
-      "events": body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(e, {
-        "message": e.encode_json(),
-      }),
+      "events": body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(h, 
+        h.DETECTION_LIST.DETECTION.map(v, {
+          "message": h.with({"DETECTION_LIST": v}).encode_json(),
+        })
+      ).flatten(),
       "url": (
         has(body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING) && has(body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL)
         ?
