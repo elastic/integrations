@@ -237,6 +237,10 @@ processors:
   - rename:
       field: json
       target_field: recordedfuture
+  - rename:
+      target_field: recordedfuture.list
+      field: _conf.list
+      if: ctx._conf?.list != null
 
 #
 # Cleanup
@@ -253,6 +257,7 @@ processors:
         - recordedfuture.Name
         - recordedfuture.Risk
         - _temp_
+        - _conf
       ignore_missing: true
 on_failure:
   - set:
