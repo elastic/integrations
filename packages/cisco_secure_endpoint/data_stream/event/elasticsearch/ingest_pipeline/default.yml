@@ -12,9 +12,9 @@ processors:
   - json:
       field: event.original
       target_field: json
-      if: ctx?.json == null
+      if: ctx.json == null
   - drop:
-      if: ctx.json?.data != null && ctx.json?.data.isEmpty()
+      if: ctx.json?.data != null && ctx.json.data.isEmpty()
   #########################
   ## ECS General Mapping ##
   #########################
@@ -65,11 +65,11 @@ processors:
   - append:
       field: event.category
       value: file
-      if: ctx?.cisco?.secure_endpoint?.file?.file_name != null
+      if: ctx.cisco?.secure_endpoint?.file?.file_name != null
   - append:
       field: event.category
       value: malware
-      if: 'ctx?.cisco?.secure_endpoint?.file?.disposition == "Malicious"'
+      if: 'ctx.cisco?.secure_endpoint?.file?.disposition == "Malicious"'
   - rename:
       field: cisco.secure_endpoint.event_type
       target_field: event.action
@@ -82,110 +82,110 @@ processors:
   - set:
       field: event.severity
       value: 1
-      if: ctx?.cisco?.secure_endpoint?.severity == 'Low'
+      if: ctx.cisco?.secure_endpoint?.severity == 'Low'
   - set:
       field: event.severity
       value: 2
-      if: ctx?.cisco?.secure_endpoint?.severity == 'Medium'
+      if: ctx.cisco?.secure_endpoint?.severity == 'Medium'
   - set:
       field: event.severity
       value: 3
-      if: ctx?.cisco?.secure_endpoint?.severity == 'High'
+      if: ctx.cisco?.secure_endpoint?.severity == 'High'
   - set:
       field: event.severity
       value: 4
-      if: ctx?.cisco?.secure_endpoint?.severity == 'Critical'
+      if: ctx.cisco?.secure_endpoint?.severity == 'Critical'
   - set:
       field: event.severity
       value: 0
-      if: ctx?.cisco?.secure_endpoint?.severity == null
+      if: ctx.cisco?.secure_endpoint?.severity == null
   - date:
       field: cisco.secure_endpoint.start_timestamp
       target_field: event.start
       formats:
         - UNIX
       ignore_failure: true
-      if: ctx?.cisco?.secure_endpoint?.start_timestamp != null
+      if: ctx.cisco?.secure_endpoint?.start_timestamp != null
   - rename:
       field: cisco.secure_endpoint.techniques
       target_field: threat.technique.id
-      if: "ctx?.cisco?.secure_endpoint?.techniques != null && ctx?.cisco?.secure_endpoint?.techniques.length > 0 && ctx?.cisco?.secure_endpoint?.techniques[0] instanceof String"
+      if: "ctx.cisco?.secure_endpoint?.techniques != null && ctx.cisco?.secure_endpoint?.techniques.length > 0 && ctx.cisco?.secure_endpoint?.techniques[0] instanceof String"
   - rename:
       field: cisco.secure_endpoint.tactics
       target_field: threat.tactic.id
-      if: "ctx?.cisco?.secure_endpoint?.tactics != null && ctx?.cisco?.secure_endpoint?.tactics.length > 0 && ctx?.cisco?.secure_endpoint?.tactics[0] instanceof String"
+      if: "ctx.cisco?.secure_endpoint?.tactics != null && ctx.cisco?.secure_endpoint?.tactics.length > 0 && ctx.cisco?.secure_endpoint?.tactics[0] instanceof String"
   - script:
       lang: painless
       source: |
-        if (ctx?.threat == null) {
+        if (ctx.threat == null) {
             ctx.threat = new HashMap();
         }
-        if (ctx?.threat.technique == null) {
+        if (ctx.threat.technique == null) {
             ctx.threat.technique = new HashMap();
         }
-        if (ctx?.threat.technique.id == null) {
+        if (ctx.threat.technique.id == null) {
             ctx.threat.technique.id = new ArrayList();
         }
-        if (ctx?.threat.technique.name == null) {
+        if (ctx.threat.technique.name == null) {
             ctx.threat.technique.name = new ArrayList();
         }
-        if (ctx?.threat.technique.reference == null) {
+        if (ctx.threat.technique.reference == null) {
             ctx.threat.technique.reference = new ArrayList();
         }
-        for (technique in ctx?.cisco?.secure_endpoint?.techniques) {
+        for (technique in ctx.cisco?.secure_endpoint?.techniques) {
             if (technique.name != null) {
-                if (!ctx?.threat.technique.name.contains(technique.name)) {
-                    ctx?.threat.technique.name.add(technique.name);  
+                if (!ctx.threat.technique.name.contains(technique.name)) {
+                    ctx.threat.technique.name.add(technique.name);  
                 }
             }
             if (technique.external_id != null) {
-                if (!ctx?.threat.technique.id.contains(technique.external_id)) {
-                    ctx?.threat.technique.id.add(technique.external_id);  
+                if (!ctx.threat.technique.id.contains(technique.external_id)) {
+                    ctx.threat.technique.id.add(technique.external_id);  
                 }
             }
             if (technique.mitre_url != null) {
-                if (!ctx?.threat.technique.reference.contains(technique.mitre_url)) {
-                    ctx?.threat.technique.reference.add(technique.mitre_url);  
+                if (!ctx.threat.technique.reference.contains(technique.mitre_url)) {
+                    ctx.threat.technique.reference.add(technique.mitre_url);  
                 }
             }
         }
-      if: ctx?.cisco?.secure_endpoint?.tactics != null
+      if: ctx.cisco?.secure_endpoint?.tactics != null
   - script:
       lang: painless
       source: |
-        if (ctx?.threat == null) {
+        if (ctx.threat == null) {
             ctx.threat = new HashMap();
         }
-        if (ctx?.threat.tactic == null) {
+        if (ctx.threat.tactic == null) {
             ctx.threat.tactic = new HashMap();
         }
-        if (ctx?.threat.tactic.id == null) {
+        if (ctx.threat.tactic.id == null) {
             ctx.threat.tactic.id = new ArrayList();
         }
-        if (ctx?.threat.tactic.name == null) {
+        if (ctx.threat.tactic.name == null) {
             ctx.threat.tactic.name = new ArrayList();
         }
-        if (ctx?.threat.tactic.reference == null) {
+        if (ctx.threat.tactic.reference == null) {
             ctx.threat.tactic.reference = new ArrayList();
         }
-        for (tactic in ctx?.cisco?.secure_endpoint?.tactics) {
+        for (tactic in ctx.cisco?.secure_endpoint?.tactics) {
             if (tactic.name != null) {
-                if (!ctx?.threat.tactic.name.contains(tactic.name)) {
-                    ctx?.threat.tactic.name.add(tactic.name);  
+                if (!ctx.threat.tactic.name.contains(tactic.name)) {
+                    ctx.threat.tactic.name.add(tactic.name);  
                 }
             }
             if (tactic.external_id != null) {
-                if (!ctx?.threat.tactic.id.contains(tactic.external_id)) {
-                    ctx?.threat.tactic.id.add(tactic.external_id);  
+                if (!ctx.threat.tactic.id.contains(tactic.external_id)) {
+                    ctx.threat.tactic.id.add(tactic.external_id);  
                 }
             }
             if (tactic.mitre_url != null) {
-                if (!ctx?.threat.tactic.reference.contains(tactic.mitre_url)) {
-                    ctx?.threat.tactic.reference.add(tactic.mitre_url);  
+                if (!ctx.threat.tactic.reference.contains(tactic.mitre_url)) {
+                    ctx.threat.tactic.reference.add(tactic.mitre_url);  
                 }
             }
         }
-      if: ctx?.cisco?.secure_endpoint?.tactics != null
+      if: ctx.cisco?.secure_endpoint?.tactics != null
   #######################
   ## ECS Group Mapping ##
   #######################
@@ -204,7 +204,7 @@ processors:
       field: cisco.secure_endpoint.hostname
       target_field: host.name
       ignore_missing: true
-      if: ctx?.host?.name == null
+      if: ctx.host?.name == null
   - script:
       lang: painless
       if: 'ctx.host?.name != null && ctx.host?.name.contains(".")'
@@ -214,7 +214,7 @@ processors:
         if (ctx.host == null) {
             ctx.host = new HashMap();
         }
-        if (nameArray?.length > 0) {
+        if (nameArray.length > 0) {
             for (int i = 1; i < nameArray.length; i++) {
             domain += nameArray[i] + (i < nameArray.length - 1 ? "." : "");
             }
@@ -225,7 +225,7 @@ processors:
       field: host.hostname
       copy_from: host.name
       ignore_empty_value: true
-      if: ctx?.host?.hostname == null
+      if: ctx.host?.hostname == null
   - lowercase:
       field: host.name
       if: ctx.host?.name != null
@@ -247,7 +247,7 @@ processors:
       field: cisco.secure_endpoint.computer.user
       target_field: user.name
       ignore_missing: true
-      if: ctx?.user?.name == null && ctx?.cisco?.secure_endpoint?.computer?.user != null
+      if: ctx.user?.name == null && ctx.cisco?.secure_endpoint?.computer?.user != null
   - script:
       lang: painless
       source: |
@@ -280,7 +280,7 @@ processors:
       ignore_missing: true
   - remove:
       field: user.name
-      if: ctx?.user?.name != null && ctx?.user?.name == "Not Available"
+      if: ctx.user?.name != null && ctx.user?.name == "Not Available"
   #########################
   ## ECS Network Mapping ##
   #########################
@@ -291,11 +291,11 @@ processors:
   - set:
       field: network.direction
       value: egress
-      if: "ctx?.cisco?.secure_endpoint?.network_info?.nfm?.direction == 'Outgoing connection from'"
+      if: "ctx.cisco?.secure_endpoint?.network_info?.nfm?.direction == 'Outgoing connection from'"
   - set:
       field: network.direction
       value: ingress
-      if: "ctx?.cisco?.secure_endpoint?.network_info?.nfm?.direction != null && ctx?.cisco?.secure_endpoint?.network_info?.nfm?.direction != 'Outgoing connection from'"
+      if: "ctx.cisco?.secure_endpoint?.network_info?.nfm?.direction != null && ctx.cisco?.secure_endpoint?.network_info?.nfm?.direction != 'Outgoing connection from'"
   #####################
   ## ECS URL Mapping ##
   #####################
@@ -304,7 +304,7 @@ processors:
       target_field: url
       keep_original: true
       remove_if_successful: true
-      if: ctx?.cisco?.secure_endpoint?.network_info?.dirty_url != null
+      if: ctx.cisco?.secure_endpoint?.network_info?.dirty_url != null
   - rename:
       field: cisco.secure_endpoint.network_info.dirty_url
       target_field: url.original
@@ -360,11 +360,11 @@ processors:
   - set:
       field: host.os.family
       value: windows
-      if: 'ctx?.file?.path != null && ctx?.file?.path.contains("\\\\")'
+      if: 'ctx.file?.path != null && ctx.file?.path.contains("\\\\")'
   - set:
       field: host.os.platform
       value: windows
-      if: 'ctx?.file?.path != null && ctx?.file?.path.contains("\\\\")'
+      if: 'ctx.file?.path != null && ctx.file?.path.contains("\\\\")'
   #########################
   ## ECS Process Mapping ##
   #########################
@@ -417,7 +417,7 @@ processors:
       tag: set-process-command_line
       lang: painless
       source: |
-        def commandLine = ctx?.cisco?.secure_endpoint?.command_line?.arguments;
+        def commandLine = ctx.cisco?.secure_endpoint?.command_line?.arguments;
         if (commandLine != null) {
           commandLine = commandLine.trim();
           if (commandLine != "") {
@@ -438,7 +438,7 @@ processors:
       description: Set process.args_count and process.executable based on process.args.
       tag: set-process-args_count
       lang: painless
-      if: ctx?.process?.args != null
+      if: ctx.process?.args != null
       source: |
         ctx.process.args_count = ctx.process.args.length;
         if (ctx.process.args.length > 0) {
@@ -450,108 +450,108 @@ processors:
   - append:
       field: related.user
       value: "{{ user.name }}"
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
       allow_duplicates: false
   - append:
       field: related.hash
       value: "{{ process.hash.sha256 }}"
-      if: ctx?.process?.parent?.hash?.sha256 != null
+      if: ctx.process?.parent?.hash?.sha256 != null
       allow_duplicates: false
   - append:
       field: related.hash
       value: "{{ process.hash.md5 }}"
-      if: ctx?.process?.parent?.hash?.md5 != null
+      if: ctx.process?.parent?.hash?.md5 != null
       allow_duplicates: false
   - append:
       field: related.hash
       value: "{{ process.hash.sha1 }}"
-      if: ctx?.process?.parent?.hash?.sha1 != null
+      if: ctx.process?.parent?.hash?.sha1 != null
       allow_duplicates: false
   - append:
       field: related.hash
       value: "{{ file.hash.sha256 }}"
-      if: ctx?.file?.hash?.sha256 != null
+      if: ctx.file?.hash?.sha256 != null
       allow_duplicates: false
   - append:
       field: related.hash
       value: "{{ file.hash.md5 }}"
-      if: ctx?.file?.hash?.md5 != null
+      if: ctx.file?.hash?.md5 != null
       allow_duplicates: false
   - append:
       field: related.hash
       value: "{{ file.hash.sha1 }}"
-      if: ctx?.file?.hash?.sha1 != null
+      if: ctx.file?.hash?.sha1 != null
       allow_duplicates: false
   - append:
       field: related.hash
       value: "{{ cisco.secure_endpoint.network_info.parent.identity.sha256 }}"
-      if: ctx?.cisco?.secure_endpoint?.network_info?.parent?.identity?.sha256 != null
+      if: ctx.cisco?.secure_endpoint?.network_info?.parent?.identity?.sha256 != null
       allow_duplicates: false
   - append:
       field: related.hash
       value: "{{ cisco.secure_endpoint.network_info.parent.identity.md5 }}"
-      if: ctx?.cisco?.secure_endpoint?.network_info?.parent?.identity?.md5 != null
+      if: ctx.cisco?.secure_endpoint?.network_info?.parent?.identity?.md5 != null
       allow_duplicates: false
   - append:
       field: related.hash
       value: "{{ cisco.secure_endpoint.network_info.parent.identity.sha1 }}"
-      if: ctx?.cisco?.secure_endpoint?.network_info?.parent?.identity?.sha1 != null
+      if: ctx.cisco?.secure_endpoint?.network_info?.parent?.identity?.sha1 != null
       allow_duplicates: false
   - append:
       field: related.hosts
       value: "{{ host.name }}"
-      if: ctx?.host?.name != null
+      if: ctx.host?.name != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: "{{ source.ip }}"
-      if: ctx?.source?.ip != null
+      if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: "{{ destination.ip }}"
-      if: ctx?.destination?.ip != null
+      if: ctx.destination?.ip != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: "{{ cisco.secure_endpoint.computer.external_ip }}"
-      if: ctx?.cisco?.secure_endpoint?.computer?.external_ip != null
+      if: ctx.cisco?.secure_endpoint?.computer?.external_ip != null
       allow_duplicates: false
   - script:
       lang: painless
       source: |
-        if (ctx?.related == null) {
+        if (ctx.related == null) {
             ctx.related = new HashMap();
         }
-        if (ctx?.related?.ip == null) {
+        if (ctx.related?.ip == null) {
             ctx.related.ip = new ArrayList();
         }
-        for (addr in ctx?.cisco?.secure_endpoint?.computer?.network_addresses) {
+        for (addr in ctx.cisco?.secure_endpoint?.computer?.network_addresses) {
             if (addr.ip != null && !addr.ip.isEmpty()) {
-                if (!ctx?.related?.ip.contains(addr.ip)) {
-                    ctx?.related?.ip.add(addr.ip);  
+                if (!ctx.related.ip.contains(addr.ip)) {
+                    ctx.related.ip.add(addr.ip);  
                 }
             }
         }
-      if: ctx?.cisco?.secure_endpoint?.computer?.network_addresses != null
+      if: ctx.cisco?.secure_endpoint?.computer?.network_addresses != null
   - script:
       lang: painless
       source: |
-        if (ctx?.cisco?.secure_endpoint?.related == null) {
+        if (ctx.cisco?.secure_endpoint?.related == null) {
             ctx.cisco.secure_endpoint.related = new HashMap();
         }
-        if (ctx?.cisco?.secure_endpoint?.related?.mac == null) {
+        if (ctx.cisco?.secure_endpoint?.related?.mac == null) {
             ctx.cisco.secure_endpoint.related.mac = new ArrayList();
         }
-        for (addr in ctx?.cisco?.secure_endpoint?.computer?.network_addresses) {
+        for (addr in ctx.cisco?.secure_endpoint?.computer?.network_addresses) {
             if (addr.mac != null && !addr.mac.isEmpty()) {
-                if (!ctx?.cisco?.secure_endpoint?.related?.mac.contains(addr.mac)) {
+                if (!ctx.cisco.secure_endpoint.related.mac.contains(addr.mac)) {
                     def mac_addr = addr.mac.replace(":","-").toUpperCase();
-                    ctx?.cisco?.secure_endpoint?.related?.mac.add(mac_addr);
+                    ctx.cisco.secure_endpoint.related.mac.add(mac_addr);
                 }
             }
         }
-      if: ctx?.cisco?.secure_endpoint?.computer?.network_addresses != null
+      if: ctx.cisco?.secure_endpoint?.computer?.network_addresses != null
   - foreach:
       field: cisco.secure_endpoint.vulnerabilities
       processor:
@@ -559,7 +559,7 @@ processors:
           field: cisco.secure_endpoint.related.cve
           value: "{{ _ingest._value.cve }}"
           allow_duplicates: false
-      if: ctx?.cisco?.secure_endpoint?.vulnerabilities != null
+      if: ctx.cisco?.secure_endpoint?.vulnerabilities != null
   #############
   ## GeoIP ##
   #############
@@ -614,18 +614,18 @@ processors:
       formats:
         - UNIX
       ignore_failure: true
-      if: ctx?.cisco?.secure_endpoint?.threat_hunting?.incident_start_time != null
+      if: ctx.cisco?.secure_endpoint?.threat_hunting?.incident_start_time != null
   - date:
       field: cisco.secure_endpoint.threat_hunting.incident_end_time
       target_field: cisco.secure_endpoint.threat_hunting.incident_end_time
       formats:
         - UNIX
       ignore_failure: true
-      if: ctx?.cisco?.secure_endpoint?.threat_hunting?.incident_end_time != null
+      if: ctx.cisco?.secure_endpoint?.threat_hunting?.incident_end_time != null
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null or empty values.
-      if: ctx?.json != null
+      if: ctx.json != null
       source: | 
         boolean dropEmptyFields(Object object) {
             if (object == null || object == '') {
@@ -642,7 +642,7 @@ processors:
         dropEmptyFields(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
   - remove:

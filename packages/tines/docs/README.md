@@ -111,6 +111,10 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.diagramNoteIds |  | long |
 | tines.audit_log.inputs.inputs.actionId |  | long |
 | tines.audit_log.inputs.inputs.actionIds |  | long |
+| tines.audit_log.inputs.inputs.actions.actionId |  | long |
+| tines.audit_log.inputs.inputs.actions.options |  | keyword |
+| tines.audit_log.inputs.inputs.actions.schedule.cron |  | keyword |
+| tines.audit_log.inputs.inputs.actions.schedule.timezone |  | keyword |
 | tines.audit_log.inputs.inputs.agents |  | flattened |
 | tines.audit_log.inputs.inputs.allowedHosts |  | keyword |
 | tines.audit_log.inputs.inputs.authenticationTokenId |  | long |
