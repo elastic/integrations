@@ -26,3 +26,16 @@ services:
       - --exit-on-unmatched-rule
       - --addr=:8080
       - --config=/config.yml
+  m365-defender-alert-http:
+    image: docker.elastic.co/observability/stream:v0.13.0
+    ports:
+      - 8080
+    volumes:
+      - ./alert-http-mock-config.yml:/config.yml
+    environment:
+      PORT: 8080
+    command:
+      - http-server
+      - --exit-on-unmatched-rule
+      - --addr=:8080
+      - --config=/config.yml

@@ -999,7 +999,9 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.operation_version | The operation version | keyword |
 | azure.auditlogs.properties.activity_datetime | Activity timestamp | date |
 | azure.auditlogs.properties.activity_display_name | Activity display name | keyword |
+| azure.auditlogs.properties.additional_details.key | Additional details key | keyword |
 | azure.auditlogs.properties.additional_details.user_agent | User agent name. | keyword |
+| azure.auditlogs.properties.additional_details.value | Additional details value | keyword |
 | azure.auditlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.auditlogs.properties.category | category | keyword |
 | azure.auditlogs.properties.correlation_id | Correlation ID | keyword |

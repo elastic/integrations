@@ -333,15 +333,90 @@ kibana_version_manifest() {
 }
 
 capabilities_manifest() {
-    cat manifest.yml | yq ".conditions.elastic.capabilities"
+    # 1) Expected format
+    #  conditions:
+    #    elastic:
+    #      capabilities:
+    #        - observability
+    #        - uptime
+    # expected output:
+    # "observability"
+    # "uptime"
+    # 2) Expected format
+    #  conditions:
+    #    elastic:
+    #      capabilities: [observability, uptime]
+    # expected output:
+    # "observability"
+    # "uptime"
+    local capabilities=""
+    capabilities=$(cat manifest.yml | yq -M -r -o json ".conditions.elastic.capabilities")
+    if [[ "$capabilities" != "null" ]]; then
+        echo "$capabilities" | jq '.[]'
+        return
+    fi
+    echo "$capabilities"
 }
+
+capabilities_in_kibana() {
+    # Expected format
+    # xpack.fleet.internal.registry.capabilities: [
+    #   'apm',
+    #   'observability',
+    #   'uptime',
+    # ]
+    # Expected output:
+    # "apm"
+    # "observability"
+    # "uptime"
+    cat "${KIBANA_CONFIG_FILE_PATH}" | yq -M -r -o json '."xpack.fleet.internal.registry.capabilities"' | jq '.[]'
+}
+
+packages_excluded() {
+    # Expected format:
+    #   xpack.fleet.internal.registry.excludePackages: [
+    #     # Security integrations
+    #     'endpoint',
+    #     'beaconing',
+    #     'osquery_manager',
+    #   ]
+    # required double quotes to ensure that the package is checked (e.g. synthetics synthetics_dashboard)
+    # excluded_packages must be:
+    # "endpoint"
+    # "beaconing"
+    # "osquery_manager"
+    local config_file_path=$1
+    local excluded_packages=""
+    excluded_packages=$(cat "${config_file_path}" | yq -M -r -o json '."xpack.fleet.internal.registry.excludePackages"')
+    if [[ "${excluded_packages}" != "null" ]]; then
+        echo "${excluded_packages}" | jq '.[]'
+        return
+    fi
+    echo "${excluded_packages}"
+}
+
+is_package_excluded() {
+    local package=$1
+    local config_file_path=$2
+    local excluded_packages=""
+
+    excluded_packages=$(packages_excluded "${config_file_path}")
+    if [[ "${excluded_packages}" == "null" ]]; then
+        return 1
+    fi
+    if echo "${excluded_packages}" | grep -q -E "\"${package}\""; then
+        return 0
+    fi
+    return 1
+}
+
 
 is_supported_capability() {
     if [ "${SERVERLESS_PROJECT}" == "" ]; then
         return 0
     fi
 
-    local capabilities
+    local capabilities=""
     capabilities=$(capabilities_manifest)
 
     # if no capabilities defined, it is available iavailable all projects
@@ -349,23 +424,24 @@ is_supported_capability() {
         return 0
     fi
 
-    if [[ ${SERVERLESS_PROJECT} == "observability" ]]; then
-        if echo "${capabilities}" | grep -E 'apm|observability|uptime' ; then
-            return 0
-        else
-            return 1
-        fi
+    local capabilities_kibana_grep=""
+
+    capabilities_kibana_grep=$(capabilities_in_kibana | tr -d '\n' | sed 's/""/"|"/g')
+    # Expected value of "capabilities_kibana"
+    # "apm"|"observability"|"uptime"
+
+    # if there is no key defined in kibana, allow to be tested
+    if [[ ${capabilities_kibana_grep} == "null" ]]; then
+        return 0
     fi
 
-    if [[ ${SERVERLESS_PROJECT} == "security" ]]; then
-        if echo "${capabilities}" | grep -E 'security' ; then
-            return 0
-        else
+    for cap in ${capabilities}; do
+        if ! echo "${cap}" | grep -q -E "${capabilities_kibana_grep}"; then
             return 1
         fi
-    fi
+    done
 
-    return 1
+    return 0
 }
 
 is_supported_stack() {
@@ -572,7 +648,7 @@ is_pr_affected() {
     local from=${2:-""}
     local to=${3:-""}
 
-    echo "[${package}] Original commits: from '${from}' - to: '${to}'"
+    echoerr "[${package}] Original commits: from '${from}' - to: '${to}'"
 
     if ! is_supported_stack ; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
@@ -580,6 +656,10 @@ is_pr_affected() {
     fi
 
     if is_serverless; then
+        if is_package_excluded "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
+            echo "[${package}] PR is not affected: package ${package} excluded in Kibana config for ${SERVERLESS_PROJECT}"
+            return 1
+        fi
         if ! is_supported_capability ; then
             echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
             return 1
