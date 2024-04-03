@@ -80,17 +80,6 @@ processors:
       ignore_missing: true
   - foreach:
       field: ti_crowdstrike.intel.ip_address_types
-      tag: foreach_ti_crowdstrike_intel_ip_address_types_append_into_threat_indicator_ip
-      if: ctx.json?.type != null && ctx.json.type.contains('ip_address') && ctx.ti_crowdstrike?.intel?.ip_address_types instanceof List
-      processor:
-        convert:
-          field: _ingest._value
-          target_field: threat.indicator.ip
-          tag: convert_ti_crowdstrike_intel_ip_address_types
-          type: ip
-          ignore_failure: true
-  - foreach:
-      field: ti_crowdstrike.intel.ip_address_types
       tag: foreach_ti_crowdstrike_intel_ip_address_types_append_into_related_ip
       if: ctx.ti_crowdstrike?.intel?.ip_address_types instanceof List
       processor:
@@ -321,6 +310,7 @@ processors:
         file_path: file
         hash_ion: file
         hash_md5: file
+        hash_sha1: file
         hash_sha256: file
         ip_address: ipv4-addr
         ip_address_block: ipv4-addr
@@ -346,25 +336,54 @@ processors:
       target_field: ti_crowdstrike.intel.value
       ignore_missing: true
   - set:
-      field: file.hash.sha256
-      tag: set_file_hash_sha256
+      field: threat.indicator.file.hash.sha256
+      tag: set_threat_indicator_file_hash_sha256
       value: '{{{ti_crowdstrike.intel.value}}}'
       if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('hash_sha256') && ctx.ti_crowdstrike?.intel?.value != null
   - set:
-      field: file.hash.md5
-      tag: set_file_hash_md5
+      field: threat.indicator.file.hash.sha1
+      tag: set_threat_indicator_file_hash_sha1
+      value: '{{{ti_crowdstrike.intel.value}}}'
+      if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.value != null && ctx.ti_crowdstrike.intel.type.contains('hash_sha1')
+  - set:
+      field: threat.indicator.file.hash.md5
+      tag: set_threat_indicator_file_hash_md5
       value: '{{{ti_crowdstrike.intel.value}}}'
       if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('hash_md5') && ctx.ti_crowdstrike?.intel?.value != null
+  - set:
+      field: threat.indicator.url.full
+      tag: set_threat_indicator_url_full
+      value: '{{{ti_crowdstrike.intel.value}}}'
+      if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('url') && ctx.ti_crowdstrike?.intel?.value != null
+  - uri_parts:
+      field: threat.indicator.url.full
+      tag: uri_parts_threat_indicator_url_full
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.type
       tag: set_threat_indicator_type_to_ipv6_addr
       value: ipv6-addr
       if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('ip_address') && ctx.ti_crowdstrike?.intel?.value != null && ctx.ti_crowdstrike.intel.value.contains(":")
+  - convert:
+      field: ti_crowdstrike.intel.value
+      tag: convert_intel_value_to_ip_and_set_threat_indicator_ip
+      target_field: threat.indicator.ip
+      type: ip
+      if: ctx.ti_crowdstrike?.intel?.type != null && ctx.ti_crowdstrike.intel.type.contains('ip_address') && ctx.ti_crowdstrike?.intel?.value != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hash
       tag: append_intel_value_into_related_hash
       value: '{{{ti_crowdstrike.intel.value}}}'
-      if: ctx.ti_crowdstrike?.intel?.type != null && ['hash_ion', 'hash_md5', 'hash_sha256', 'hash_sha2'].contains(ctx.ti_crowdstrike.intel.type)
+      if: ctx.ti_crowdstrike?.intel?.type != null && ['hash_ion', 'hash_md5', 'hash_sha256', 'hash_sha1'].contains(ctx.ti_crowdstrike.intel.type)
       allow_duplicates: false
   - set:
       field: threat.indicator.name
