@@ -1,6 +1,10 @@
 # Custom Windows ETW package
 
-The custom Windows ETW ([Event Tracing for Windows](https://learn.microsoft.com/en-us/windows/win32/etw/event-tracing-portal)) package allows you to ingest events from any ETW provider available. Providers can be listed by running [`logman query providers`](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/logman-query) in PowerShell on Windows Vista or newer.
+The custom Windows ETW ([Event Tracing for Windows](https://learn.microsoft.com/en-us/windows/win32/etw/event-tracing-portal)) package allows you to ingest events from any ETW provider available. Providers can be listed by running [`logman query providers`](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/logman-query) in any Windows command-line interface.
+
+This integration currently supports manifest-based, user-mode MOF (classic) and TraceLogging providers while WPP providers are not supported. [`Here`](https://learn.microsoft.com/en-us/windows/win32/etw/about-event-tracing#types-of-providers) you can find more information about the available types of providers.
+
+It is supported in every Windows versions supported by [`Filebeat`](https://www.elastic.co/support/matrix), starting from Windows 10 and Windows Server 2016.
 
 This package does not contain any ingest pipeline, so no pre-ingest data processing is applied out of the box. Custom ingest pipelines can be added through the Kibana UI, to get the data in the desired format.
 
@@ -10,7 +14,7 @@ This integration can interact with ETW in three distinct ways: it can create a n
 
 Regarding the specification of the trace level, permissible selections include `critical`, `error`, `warning`, `information`, and `verbose`. The system will ingest events that correspond to the specified trace level or exceed it in terms of severity.
 
-There are two native filters at the moment when configuring this integration. The `Match Any Keyword` parameter specifies a 64-bit bitmask where an event is ingested if any of the bits set in this bitmask match any of the keyword bits set in the event's properties, allowing for a broad selection of events based on multiple criteria. Conversely, the `Math All Keyword` parameter requires that all bits set in its 64-bit bitmask match the event's keyword bits for the event to be ingested.The correct format for both fields is `0x` followed by a 16-character hexadecimal number.
+There are two native filters at the moment when configuring this integration. The `Match Any Keyword` parameter specifies a 64-bit bitmask where an event is ingested if any of the bits set in this bitmask match any of the keyword bits set in the event's properties, allowing for a broad selection of events based on multiple criteria. Conversely, the `Match All Keyword` parameter requires that all bits set in its 64-bit bitmask match the event's keyword bits for the event to be ingested.The correct format for both fields is `0x` followed by a 16-character hexadecimal number.
 
 [Here](https://learn.microsoft.com/en-us/windows/win32/api/evntrace/nf-evntrace-enabletraceex2) you can read more information about these parameters.
 
@@ -73,9 +77,16 @@ In addition to the fields specified below, this integration includes the ECS Dyn
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| winlog.activity_guid | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. Deprectad in favor of `winlog.activity_id` from 8.14.0, it will be removed in future releases. | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.channel | Used to enable special event processing. Channel values below 16 are reserved for use by Microsoft to enable special treatment by the ETW runtime. Channel values 16 and above will be ignored by the ETW runtime (treated the same as channel 0) and can be given user-defined semantics. | keyword |
 | winlog.event_data | The event-specific data. The content of this object is specific to any provider and event. | object |
+| winlog.event_data.Address |  | keyword |
+| winlog.event_data.AddressLength |  | keyword |
+| winlog.event_data.DynamicAddress |  | keyword |
+| winlog.event_data.Index |  | keyword |
+| winlog.event_data.Interface |  | keyword |
+| winlog.event_data.TotalServerCount |  | keyword |
 | winlog.flags | Flags that provide information about the event such as the type of session it was logged to and if the event contains extended data. | keyword |
 | winlog.keywords | The keywords are used to indicate an event's membership in a set of event categories. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |

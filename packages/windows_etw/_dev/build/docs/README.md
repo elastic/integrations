@@ -1,6 +1,10 @@
 # Custom Windows ETW package
 
-The custom Windows ETW ([Event Tracing for Windows](https://learn.microsoft.com/en-us/windows/win32/etw/event-tracing-portal)) package allows you to ingest events from any ETW provider available. Providers can be listed by running [`logman query providers`](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/logman-query) in PowerShell on Windows Vista or newer.
+The custom Windows ETW ([Event Tracing for Windows](https://learn.microsoft.com/en-us/windows/win32/etw/event-tracing-portal)) package allows you to ingest events from any ETW provider available. Providers can be listed by running [`logman query providers`](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/logman-query) in any Windows command-line interface.
+
+This integration currently supports manifest-based, user-mode MOF (classic) and TraceLogging providers while WPP providers are not supported. [`Here`](https://learn.microsoft.com/en-us/windows/win32/etw/about-event-tracing#types-of-providers) you can find more information about the available types of providers.
+
+It is supported in every Windows versions supported by [`Filebeat`](https://www.elastic.co/support/matrix), starting from Windows 10 and Windows Server 2016.
 
 This package does not contain any ingest pipeline, so no pre-ingest data processing is applied out of the box. Custom ingest pipelines can be added through the Kibana UI, to get the data in the desired format.
 
@@ -10,7 +14,7 @@ This integration can interact with ETW in three distinct ways: it can create a n
 
 Regarding the specification of the trace level, permissible selections include `critical`, `error`, `warning`, `information`, and `verbose`. The system will ingest events that correspond to the specified trace level or exceed it in terms of severity.
 
-There are two native filters at the moment when configuring this integration. The `Match Any Keyword` parameter specifies a 64-bit bitmask where an event is ingested if any of the bits set in this bitmask match any of the keyword bits set in the event's properties, allowing for a broad selection of events based on multiple criteria. Conversely, the `Math All Keyword` parameter requires that all bits set in its 64-bit bitmask match the event's keyword bits for the event to be ingested.The correct format for both fields is `0x` followed by a 16-character hexadecimal number.
+There are two native filters at the moment when configuring this integration. The `Match Any Keyword` parameter specifies a 64-bit bitmask where an event is ingested if any of the bits set in this bitmask match any of the keyword bits set in the event's properties, allowing for a broad selection of events based on multiple criteria. Conversely, the `Match All Keyword` parameter requires that all bits set in its 64-bit bitmask match the event's keyword bits for the event to be ingested.The correct format for both fields is `0x` followed by a 16-character hexadecimal number.
 
 [Here](https://learn.microsoft.com/en-us/windows/win32/api/evntrace/nf-evntrace-enabletraceex2) you can read more information about these parameters.
 
