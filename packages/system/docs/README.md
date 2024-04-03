@@ -145,6 +145,8 @@ The Windows `application` data stream provides events from the Windows
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
 | winlog.computer_name | The name of the computer that generated the record. When using Windows event forwarding, this name can differ from `agent.hostname`. | keyword |
 | winlog.event_data | The event-specific data. This field is mutually exclusive with `user_data`. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows. | object |
+| winlog.event_data.AttributeValue |  | keyword |
+| winlog.event_data.AttributeValue.wildcard | Multi-field of `winlog.event_data.AttributeValue` | wildcard |
 | winlog.event_data.AuthenticationPackageName |  | keyword |
 | winlog.event_data.Binary |  | keyword |
 | winlog.event_data.BitlockerUserInputTime |  | keyword |
