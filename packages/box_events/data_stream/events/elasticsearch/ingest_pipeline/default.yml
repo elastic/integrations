@@ -15,7 +15,11 @@ processors:
   - fingerprint:
       fields:
         - box.event_id
+        - _conf.client_id
       target_field: "_id"
+      ignore_missing: true
+  - remove:
+      field: _conf.client_id
       ignore_missing: true
   - date:
       field: box.recorded_at
@@ -1244,6 +1248,9 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - remove:
+      field: _conf
+      ignore_missing: true
 on_failure:
   - set:
       field: event.kind
