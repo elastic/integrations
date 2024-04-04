@@ -7,11 +7,11 @@ processors:
   - set:
       field: event.type
       value: [connection]
-      if: ctx.sentinel_one_cloud_funnel?.event?.type == 'IP Connect'
+      if: (ctx.sentinel_one_cloud_funnel?.event?.type == 'IPConnect' || ctx.sentinel_one_cloud_funnel?.event?.type == 'IP Connect')
   - set:
       field: event.action
       value: [connection_attempted]
-      if: ctx.sentinel_one_cloud_funnel?.event?.type == 'IP Connect'
+      if: (ctx.sentinel_one_cloud_funnel?.event?.type == 'IPConnect' || ctx.sentinel_one_cloud_funnel?.event?.type == 'IP Connect')
   - rename:
       field: json.k8sCluster.containerId
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.id
