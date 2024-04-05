@@ -1,0 +1,193 @@
+---
+description: Pipeline for processing user dataset.
+processors:
+  - append:
+      field: event.category
+      tag: append_event_category_iam
+      value: iam
+  - append:
+      field: event.type
+      tag: append_event_type_user_info
+      value:
+        - user
+        - info
+  - set:
+      field: asset.category
+      tag: set_asset_category
+      value: entity
+  - set:
+      field: asset.type
+      tag: set_asset_type
+      value: microsoft_entra_id_user
+  - convert:
+      field: azure_ad.accountEnabled
+      tag: convert_accountEnabled_to_boolean
+      target_field: entityanalytics_entra_id.user.account_enabled
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.enabled
+      value: true
+      tag: set_user_enabled
+      if: ctx.entityanalytics_entra_id?.user?.account_enabled == true
+  - rename:
+      field: azure_ad.mail
+      tag: rename_mail
+      target_field: entityanalytics_entra_id.user.mail
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: "{{{entityanalytics_entra_id.user.mail}}}"
+      tag: append_mail_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_entra_id?.user?.mail != null
+  - set:
+      field: user.email
+      copy_from: entityanalytics_entra_id.user.mail
+      tag: set_user_email
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.userPrincipalName
+      tag: rename_userPrincipalName
+      target_field: entityanalytics_entra_id.user.user_principal_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: "{{{entityanalytics_entra_id.user.user_principal_name}}}"
+      tag: append_user_principal_name_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_entra_id?.user?.user_principal_name != null
+  - set:
+      field: user.name
+      copy_from: entityanalytics_entra_id.user.user_principal_name
+      tag: set_user_name
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.displayName
+      tag: rename_displayName
+      target_field: entityanalytics_entra_id.user.display_name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: "{{{entityanalytics_entra_id.user.display_name}}}"
+      tag: append_display_name_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_entra_id?.user?.display_name != null
+  - set:
+      field: user.full_name
+      copy_from: entityanalytics_entra_id.user.display_name
+      tag: set_user_full_name
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.givenName
+      tag: rename_givenName
+      target_field: entityanalytics_entra_id.user.given_name
+      ignore_missing: true
+  - set:
+      field: user.first_name
+      copy_from: entityanalytics_entra_id.user.given_name
+      tag: set_user_first_name
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.surname
+      tag: rename_surname
+      target_field: entityanalytics_entra_id.user.surname
+      ignore_missing: true
+  - set:
+      field: user.last_name
+      copy_from: entityanalytics_entra_id.user.surname
+      tag: set_user_last_name
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.mobilePhone
+      tag: rename_mobilePhone
+      target_field: entityanalytics_entra_id.user.mobile_phone
+      ignore_missing: true
+  - rename:
+      field: azure_ad.businessPhones
+      tag: rename_businessPhones
+      target_field: entityanalytics_entra_id.user.business_phones
+      ignore_missing: true
+  - append:
+      field: user.phone
+      value: "{{{entityanalytics_entra_id.user.mobile_phone}}}"
+      tag: append_mobile_phone_into_user_phone
+      allow_duplicates: false
+      if: ctx.entityanalytics_entra_id?.user?.mobile_phone != null
+  - append:
+      field: user.phone
+      value: "{{{entityanalytics_entra_id.user.business_phones}}}"
+      tag: append_business_phones_into_user_phone_if_string
+      allow_duplicates: false
+      if: ctx.entityanalytics_entra_id?.user?.business_phones instanceof String
+  - foreach:
+      field: entityanalytics_entra_id.user.business_phones
+      if: ctx.entityanalytics_entra_id?.user?.business_phones instanceof List
+      processor:
+        append:
+          field: user.phone
+          value: "{{{_ingest._value}}}"
+          tag: append_business_phones_into_user_phone_if_list
+          allow_duplicates: false
+  - rename:
+      field: azure_ad.jobTitle
+      tag: rename_jobTitle
+      target_field: entityanalytics_entra_id.user.job_title
+      ignore_missing: true
+  - set:
+      field: user.job_title
+      copy_from: entityanalytics_entra_id.user.job_title
+      tag: set_user_job_title
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.officeLocation
+      tag: rename_officeLocation
+      target_field: entityanalytics_entra_id.user.office_location
+      ignore_missing: true
+  - set:
+      field: user.work.location_name
+      copy_from: entityanalytics_entra_id.user.office_location
+      tag: set_user_work_location
+      ignore_empty_value: true
+  - rename:
+      field: azure_ad.preferredLanguage
+      tag: rename_preferredLanguage
+      target_field: entityanalytics_entra_id.user.preferred_language
+      ignore_missing: true
+  - set:
+      field: entityanalytics_entra_id.user.id
+      copy_from: user.id
+      tag: set_entityanalytics_entra_id_user_id
+      ignore_empty_value: true
+  - set:
+      field: asset.id
+      copy_from: user.id
+      tag: set_asset_id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: "{{{entityanalytics_entra_id.user.id}}}"
+      tag: append_id_into_related_user
+      allow_duplicates: false
+      if: ctx.entityanalytics_entra_id?.user?.id != null
+  - set:
+      field: entityanalytics_entra_id.user.group
+      copy_from: user.group
+      tag: set_entityanalytics_entra_id_user_group
+      ignore_empty_value: true
+  - set:
+      field: asset.group
+      copy_from: user.group
+      tag: set_asset_group
+      ignore_empty_value: true
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

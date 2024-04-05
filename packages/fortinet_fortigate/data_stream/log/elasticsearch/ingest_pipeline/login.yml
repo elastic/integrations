@@ -1,0 +1,132 @@
+---
+description: "Pipeline for parsing fortinet firewall logs for login events"
+processors:
+- set:
+    field: "event.kind"
+    value: "event"
+- set:
+    field: "event.action"
+    value: "login"
+    override: false
+- append:
+    field: "event.category"
+    value:
+    - "authentication"
+- set:
+    field: "user.name"
+    value: "{{ source.user.name }}"
+    if: ctx.source?.user?.name != null
+- append:
+    field: "user.roles"
+    value: "{{ fortinet.firewall.adminprof }}"
+    if: ctx.fortinet?.firewall?.adminprof != null
+- append:
+    field: "source.user.roles"
+    value: "{{ fortinet.firewall.adminprof }}"
+    if: ctx.fortinet?.firewall?.adminprof != null
+- dissect:
+    field: "fortinet.firewall.userfrom"
+    tag: "userfrom"
+    pattern: "JSON(%{source.ip})"
+    if: "ctx.fortinet?.firewall?.userfrom != null && ctx.fortinet.firewall.userfrom.startsWith('JSON(')"
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+    description: "JSON(192.168.0.10)"
+- dissect:
+    field: "fortinet.firewall.desc"
+    pattern: "User login/logout %{event.outcome}"
+    if: "ctx.message != null && ctx.message.startsWith('user')"
+    tag: "event outcome"
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+    description: "User login/logout successful"
+- dissect:
+    field: "message"
+    tag: "ssh login 1"
+    pattern: "Login from ssh: %{event.outcome} for %{user.name} from %{source.ip} port %{source.port}"
+    if: "ctx.message != null && ctx.message.startsWith('Login from ssh:')"
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+    description: "Login from ssh: Failed for philipp from 192.168.0.10 port 38654"
+- dissect:
+    field: "message"
+    tag: "ssh login 2"
+    pattern: "%{_tmp.user.roles} %{user.name} login %{event.outcome} from ssh(%{source.ip}) %{}"
+    if: "ctx.message != null && ctx.message.startsWith('Administrator')"
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+    description: "Administrator philipp login failed from ssh(192.168.0.10) because of invalid ssh key"
+- set:
+    field: "event.outcome"
+    value: "failure"
+    if: "ctx.event?.outcome != null && ctx.event?.outcome.toLowerCase().startsWith('fail')"
+- set:
+    field: "event.outcome"
+    value: "success"
+    if: "ctx.event?.outcome != null && ctx.event?.outcome.toLowerCase().startsWith('success')"
+- rename:
+    field: "fortinet.firewall.log_id"
+    target_field: "event.id"
+    ignore_missing: true
+- rename:
+    field: "fortinet.firewall.pri"
+    target_field: "log.level"
+    ignore_missing: true
+- rename:
+    field: "fortinet.firewall.device_id"
+    target_field: "observer.serial_number"
+    ignore_missing: true
+- append:
+    field: user.roles
+    value: "{{ _tmp.user.roles }}"
+    if: ctx._tmp?.user?.roles != null
+    allow_duplicates: false
+- append:
+    field: source.user.roles
+    value: "{{ _tmp.user.roles }}"
+    if: ctx._tmp?.user?.roles != null
+    allow_duplicates: false
+- convert:
+    field: source.port
+    type: long
+    tag: convert source.port
+    if: ctx.source?.port != null
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- convert:
+    field: fortinet.firewall.valid
+    type: long
+    tag: convert fortinet.firewall.valid
+    if: ctx.fortinet?.firewall?.valid != null
+    on_failure:
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- remove:
+    field:
+    - "fortinet.firewall.adminprof"
+    - "fortinet.firewall.userfrom"
+    - "fortinet.firewall.remote_ip"
+    - "fortinet.firewall.remote_port"
+    - "fortinet.firewall.ui"
+    - "fortinet.firewall.status"
+    - "_tmp.user.roles"
+    ignore_missing: true
+    ignore_failure: true
+on_failure:
+- set:
+    field: "event.kind"
+    value: "pipeline_error"
+- append:
+    field: "error.message"
+    value: "{{{ _ingest.on_failure_message }}}"

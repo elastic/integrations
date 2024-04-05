@@ -2,19 +2,21 @@
 
 ## Overview
 
-The [Bitwarden](https://bitwarden.com) integration allows users to monitor collections, groups, events and policies. Bitwarden is a free and open-source password management service that stores sensitive information such as website credentials in an encrypted vault. The Bitwarden platform offers a variety of client applications including a web interface, desktop applications, browser extensions, mobile apps and a command-line interface. Bitwarden offers a cloud-hosted service as well as the ability to deploy the solution on-premises.
+The [Bitwarden](https://bitwarden.com) integration allows users to monitor collections, events, groups, members and policies. Bitwarden is a free and open-source password management service that stores sensitive information such as website credentials in an encrypted vault. The Bitwarden platform offers a variety of client applications including a web interface, desktop applications, browser extensions, mobile apps and a command-line interface. Bitwarden offers a cloud-hosted service as well as the ability to deploy the solution on-premises.
 
 Use the Bitwarden integration to collect and parse data from the REST APIs. Then visualize that data in Kibana.
 
 ## Data streams
 
-The Bitwarden integration collects four types of data: collections, events, groups and policies.
+The Bitwarden integration collects five types of data: Collections, Events, Groups, Members and Policies.
 
 **Collections** returns a list of an organization's collections.
 
 **Events** returns a list of an organization's event logs.
 
 **Groups** returns a list of an organization's groups.
+
+**Members** returns the details of an organization's members.
 
 **Policies** returns a list of an organization's policies.
 
@@ -69,6 +71,16 @@ This is the `Group` dataset.
 {{event "group"}}
 
 {{fields "group"}}
+
+### Member
+
+This is the `Member` dataset.
+
+#### Example
+
+{{event "member"}}
+
+{{fields "member"}}
 
 ### Policy
 

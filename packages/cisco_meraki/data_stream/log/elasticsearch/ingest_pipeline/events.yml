@@ -28,6 +28,10 @@ processors:
     field: cisco_meraki.event_subtype
     value: port
     if: ctx.msgtype.toLowerCase() == "port"
+- set:
+    field: cisco_meraki.event_subtype
+    value: carrier_change
+    if: ctx.msgtype.toLowerCase() == "carrier_change"
 ####################################################
 # log event with type=<value> format
 # these are dfs_event, association, disassocation, 
@@ -123,14 +127,14 @@ processors:
 - grok:
     field: event.original
     patterns: 
-      - '^(?i)%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}(?<message>port %{NOTSPACE} %{PORTACTION:_temp.port_action}.*)$'
+      - '^(?i)%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events%{SPACE}(?<message>port %{NOTSPACE:cisco_meraki.port} %{PORTACTION:_temp.port_action}(?: from %{NOTSPACE:cisco_meraki.old_port_status} to %{NOTSPACE:cisco_meraki.new_port_status}|.*))$'
     pattern_definitions:
       SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
       SYSLOGVER: '\b(?:\d{1,2})\b'
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
       WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
       PORTACTION: '(?:changed stp role|status changed)'
-    if: ctx.event.original.startsWith('<') && ctx?.cisco_meraki?.event_subtype == "port"
+    if: ctx.event.original.startsWith('<') && ctx.cisco_meraki?.event_subtype == "port"
 - gsub:
     field: _temp.port_action
     pattern: ' '
@@ -143,6 +147,28 @@ processors:
     field: cisco_meraki.event_subtype
     value: 'port_{{{_temp.port_action}}}'
     if: ctx._temp?.port_action != null
+
+####################################################
+# Handle Carrier Change
+####################################################
+- grok:
+    field: event.original
+    patterns: 
+      - '^(?i)%{SYSLOGHDR}%{SPACE}%{NUMBER}%{SPACE}%{WORDORHOST}%{SPACE}events carrier_change device%{SPACE}%{NOTSPACE:cisco_meraki.mxport} up %{NOTSPACE:_temp.up}.*$'
+    pattern_definitions:
+      SYSLOGPRI: '<%{NONNEGINT:log.syslog.priority:long}>'
+      SYSLOGVER: '\b(?:\d{1,2})\b'
+      SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
+      WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
+    if: ctx.event.original.startsWith('<') && ctx.cisco_meraki?.event_subtype == "carrier_change"
+- set:
+    field: cisco_meraki.new_port_status
+    value: up
+    if: ctx._temp?.up == 'true'
+- set:
+    field: cisco_meraki.new_port_status
+    value: down
+    if: ctx._temp?.up == 'false'
 
 ####################################################
 # Handle dfs_event, wpa_auth, wpa_deauth, 

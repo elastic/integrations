@@ -3,23 +3,41 @@ description: Pipeline for parsing Carbon Black Cloud Endpoint Events.
 processors:
   - set:
       field: ecs.version
-      value: '8.10.0'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
       ignore_failure: true
-  - date:
-      field: json.create_time
-      if: ctx.json?.create_time != null && ctx.json.create_time != ''
-      formats:
-        - ISO8601
+  - set:
+      field: _temp_.device_timestamp
+      copy_from: json.device_timestamp
       on_failure:
         - remove:
-            field: json.create_time
+            field: json.device_timestamp
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.device_timestamp
+      if: ctx.json?.device_timestamp != null && ctx.json.device_timestamp != ''
+      formats:
+        - ISO8601
+        - 'yyyy-MM-dd HH:mm:ss Z z'
+        - 'yyyy-MM-dd HH:mm:ss.S Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SS Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SSS Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SSSS Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SSSSS Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SSSSSS Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SSSSSSS Z z'
+      on_failure:
+        - remove:
+            field: json.device_timestamp
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
@@ -61,7 +79,6 @@ processors:
       if: ctx.json?.netconn_inbound == false
   - convert:
       field: json.remote_port
-      target_field: source.port
       type: long
       ignore_missing: true
       on_failure:
@@ -72,7 +89,6 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.remote_ip
-      target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -81,19 +97,8 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{source.ip}}}'
-      if: ctx.source?.ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - rename:
-      field: json.netconn_domain
-      target_field: source.address
-      ignore_missing: true
   - convert:
       field: json.local_port
-      target_field: client.port
       type: long
       ignore_missing: true
       on_failure:
@@ -104,7 +109,6 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.local_ip
-      target_field: client.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -113,6 +117,43 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      source: |
+        // These allocations may be futile, but will be cleaned up in the postamble.
+        if (ctx.client == null) {
+          ctx.client = new HashMap();
+        }
+        if (ctx.source == null) {
+          ctx.source = new HashMap();
+        }
+        if (ctx.destination == null) {
+          ctx.destination = new HashMap();
+        }
+        // Nulls inserted into the document will be cleaned up in the postamble.
+        ctx.client.ip = ctx.json.local_ip;
+        ctx.client.port = ctx.json.local_port;
+        if (ctx.json?.netconn_inbound == true) {
+          ctx.destination.ip = ctx.json?.local_ip;
+          ctx.destination.port = ctx.json?.local_port;
+          ctx.source.ip = ctx.json?.remote_ip;
+          ctx.source.port = ctx.json?.remote_port;
+        } else {
+          ctx.source.ip = ctx.json?.local_ip;
+          ctx.source.port = ctx.json?.local_port;
+          ctx.destination.ip = ctx.json?.remote_ip;
+          ctx.destination.port = ctx.json?.remote_port;
+        }     
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.netconn_domain
+      target_field: source.address
+      ignore_missing: true
   - append:
       field: related.ip
       value: '{{{client.ip}}}'
@@ -293,9 +334,19 @@ processors:
       field: json.backend_timestamp
       target_field: carbon_black_cloud.endpoint_event.backend.timestamp
       ignore_missing: true
+  - set:
+      field: carbon_black_cloud.endpoint_event.device.timestamp
+      copy_from: _temp_.device_timestamp
+      ignore_empty_value: true
+      on_failure:
+        - remove:
+            field: carbon_black_cloud.endpoint_event.device.timestamp
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.device_timestamp
-      target_field: carbon_black_cloud.endpoint_event.device.timestamp
+      field: json.create_time
+      target_field: carbon_black_cloud.endpoint_event.create_time
       ignore_missing: true
   - rename:
       field: json.device_os
@@ -370,9 +421,7 @@ processors:
       field: json.type
       target_field: carbon_black_cloud.endpoint_event.type
       ignore_missing: true
-
-# Mapping for endpoint.event.crossproc event type
-
+      # Mapping for endpoint.event.crossproc event type
   - rename:
       field: json.crossproc_action
       target_field: carbon_black_cloud.endpoint_event.crossproc.action
@@ -437,9 +486,7 @@ processors:
       if: ctx.carbon_black_cloud?.endpoint_event?.crossproc?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
-
-# Mapping for endpoint.event.filemod event type
-
+      # Mapping for endpoint.event.filemod event type
   - rename:
       field: json.filemod_hash_md5
       target_field: file.hash.md5
@@ -460,12 +507,11 @@ processors:
       if: ctx.file?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
-# Mapping for endpoint.event.fileless_scriptload event type
-
   - rename:
       field: json.fileless_scriptload_cmdline
       target_field: carbon_black_cloud.endpoint_event.fileless_scriptload.cmdline
       ignore_missing: true
+      # Mapping for endpoint.event.fileless_scriptload event type
   - rename:
       field: json.fileless_scriptload_cmdline_length
       target_field: carbon_black_cloud.endpoint_event.fileless_scriptload.cmdline_length
@@ -490,9 +536,7 @@ processors:
       if: ctx.carbon_black_cloud?.endpoint_event?.fileless_scriptload?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
-
-# Mapping for endpoint.event.moduleload event type
-
+      # Mapping for endpoint.event.moduleload event type
   - rename:
       field: json.modload_md5
       target_field: dll.hash.md5
@@ -541,9 +585,7 @@ processors:
       field: json.modload_publisher
       target_field: carbon_black_cloud.endpoint_event.modload.publisher
       ignore_missing: true
-
-# Mapping for endpoint.event.netconn_proxy event type
-
+      # Mapping for endpoint.event.netconn_proxy event type
   - rename:
       field: json.netconn_proxy_domain
       target_field: carbon_black_cloud.endpoint_event.netconn.proxy.domain
@@ -569,9 +611,7 @@ processors:
       if: ctx.carbon_black_cloud?.endpoint_event?.netconn?.proxy?.ip != null
       allow_duplicates: false
       ignore_failure: true
-
-# Mapping for endpoint.event.procstart event type
-
+      # Mapping for endpoint.event.procstart event type
   - rename:
       field: json.childproc_guid
       target_field: carbon_black_cloud.endpoint_event.childproc.guid
@@ -638,12 +678,11 @@ processors:
       if: ctx.carbon_black_cloud?.endpoint_event?.childproc?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
-# Mapping for NGAV endpoint.event.scriptload event type
-
   - rename:
       field: json.scriptload_name
       target_field: carbon_black_cloud.endpoint_event.scriptload.name
       ignore_missing: true
+      # Mapping for NGAV endpoint.event.scriptload event type
   - foreach:
       field: json.scriptload_publisher
       processor:
@@ -786,6 +825,8 @@ processors:
         - json.device_external_ip
         - json.device_internal_ip
         - json.netconn_proxy_ip
+        - json.device_timestamp
+        - _temp_
       ignore_missing: true
   - script:
       description: Adds all the remaining fields in fields under carbon_black_cloud.endpoint_event.

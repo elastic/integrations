@@ -1,0 +1,38 @@
+{
+    "id": "a4b61e0e-b0ca-53c5-a744-4587c57e0f2d",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "There is no charge for Admin Activity audit logs.\nEnabling the Data Access audit logs might result in your project being charged for the additional logs usage.",
+            "default_value": "",
+            "references": "1. https://cloud.google.com/logging/docs/audit/\n2. https://cloud.google.com/logging/docs/audit/configure-data-access",
+            "id": "a4b61e0e-b0ca-53c5-a744-4587c57e0f2d",
+            "name": "Ensure That Cloud Audit Logging Is Configured Properly",
+            "profile_applicability": "* Level 1",
+            "description": "It is recommended that Cloud Audit Logging is configured to track all admin activities and read, write access to user data.",
+            "rationale": "Cloud Audit Logging maintains two audit logs for each project, folder, and organization: Admin Activity and Data Access.\n\n1. Admin Activity logs contain log entries for API calls or other administrative actions that modify the configuration or metadata of resources. Admin Activity audit logs are enabled for all services and cannot be configured.\n\n2. Data Access audit logs record API calls that create, modify, or read user-provided data. These are disabled by default and should be enabled.\n\n There are three kinds of Data Access audit log information:\n\n - Admin read: Records operations that read metadata or configuration information.\nAdmin Activity audit logs record writes of metadata and configuration information that cannot be disabled.\n - Data read: Records operations that read user-provided data.\n - Data write: Records operations that write user-provided data.\n\nIt is recommended to have an effective default audit config configured in such a way that:\n\n3. logtype is set to DATA_READ (to log user activity tracking) and DATA_WRITES (to log changes/tampering to user data).\n\n4. audit config is enabled for all the services supported by the Data Access audit logs feature.\n\n5. Logs should be captured for all users, i.e., there are no exempted users in any of the audit config sections. This will ensure overriding the audit config will not contradict the requirement.",
+            "audit": "**From Google Cloud Console**\n\n1. Go to `Audit Logs` by visiting [https://console.cloud.google.com/iam-admin/audit](https://console.cloud.google.com/iam-admin/audit).\n2. Ensure that Admin Read, Data Write, and Data Read are enabled for all Google Cloud services and that no exemptions are allowed.\n\n**From Google Cloud CLI**\n\n3. List the Identity and Access Management (IAM) policies for the project, folder, or organization: \n```\ngcloud organizations get-iam-policy ORGANIZATION_ID\ngcloud resource-manager folders get-iam-policy FOLDER_ID\ngcloud projects get-iam-policy PROJECT_ID\n```\n4. Policy should have a default auditConfigs section which has the logtype set to DATA_WRITES and DATA_READ for all services. Note that projects inherit settings from folders, which in turn inherit settings from the organization. When called, projects get-iam-policy, the result shows only the policies set in the project, not the policies inherited from the parent folder or organization. Nevertheless, if the parent folder has Cloud Audit Logging enabled, the project does as well. \n\nSample output for default audit configs may look like this:\n\n```\n auditConfigs:\n - auditLogConfigs:\n - logType: ADMIN_READ\n - logType: DATA_WRITE\n - logType: DATA_READ\n service: allServices\n```\n\n5. Any of the auditConfigs sections should not have parameter \"exemptedMembers:\" set, which will ensure that Logging is enabled for all users and no user is exempted.",
+            "remediation": "**From Google Cloud Console**\n1. Go to `Audit Logs` by visiting [https://console.cloud.google.com/iam-admin/audit](https://console.cloud.google.com/iam-admin/audit).\n2. Follow the steps at [https://cloud.google.com/logging/docs/audit/configure-data-access](https://cloud.google.com/logging/docs/audit/configure-data-access) to enable audit logs for all Google Cloud services. Ensure that no exemptions are allowed.\n\n**From Google Cloud CLI**\n\n3. To read the project's IAM policy and store it in a file run a command:\n\n```\ngcloud projects get-iam-policy PROJECT_ID > /tmp/project_policy.yaml\n```\n\nAlternatively, the policy can be set at the organization or folder level.\nIf setting the policy at the organization level, it is not necessary to also set it for each folder or project.\n\n```\ngcloud organizations get-iam-policy ORGANIZATION_ID > /tmp/org_policy.yaml\ngcloud resource-manager folders get-iam-policy FOLDER_ID > /tmp/folder_policy.yaml\n```\n\n4. Edit policy in /tmp/policy.yaml, adding or changing only the audit logs configuration to:\n**Note: Admin Activity Logs are enabled by default, and cannot be disabled.\nSo they are not listed in these configuration changes.**\n```\nauditConfigs:\n- auditLogConfigs:\n - logType: DATA_WRITE\n - logType: DATA_READ\n service: allServices\n```\n\n**Note:** `exemptedMembers:` is not set as audit logging should be enabled for all the users\n\n5. To write new IAM policy run command:\n\n```\ngcloud organizations set-iam-policy ORGANIZATION_ID /tmp/org_policy.yaml\ngcloud resource-manager folders set-iam-policy FOLDER_ID /tmp/folder_policy.yaml\ngcloud projects set-iam-policy PROJECT_ID /tmp/project_policy.yaml\n```\n\nIf the preceding command reports a conflict with another change, then repeat these steps, starting with the first step.",
+            "section": "Logging and Monitoring",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "GCP",
+                "CIS 2.1",
+                "Logging and Monitoring"
+            ],
+            "benchmark": {
+                "name": "CIS Google Cloud Platform Foundation",
+                "version": "v2.0.0",
+                "id": "cis_gcp",
+                "rule_number": "2.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_2_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

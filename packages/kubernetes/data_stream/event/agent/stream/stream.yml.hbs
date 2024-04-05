@@ -2,8 +2,16 @@ metricsets: ["event"]
 period: {{period}}
 add_metadata: {{add_metadata}}
 skip_older: {{skip_older}}
-{{#if leaderelection}}
+{{#if leaderelection }}
+{{#if condition }}
+condition: ${kubernetes_leaderelection.leader} == true and {{ condition }}
+{{ else }}
 condition: ${kubernetes_leaderelection.leader} == true
+{{/if}}
+{{ else }}
+{{#if condition }}
+condition: {{ condition }}
+{{/if}}
 {{/if}}
 
 {{#if processors}}

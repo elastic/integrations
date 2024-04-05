@@ -6,6 +6,12 @@ The VMware Carbon Black Cloud integration collects and parses data from the Carb
 
 This module has been tested against `Alerts API (v6)`, `Audit Log Events (v3)` and `Vulnerability Assessment (v1)`.
 
+## Version 1.21+ Update Disclaimer
+Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
+data stream. The default values of file selector regexes have been commented out for this reason. The only reason the global queue now exists is to avoid
+a breaking change while upgrading to version 1.21 and above. A separate SQS queue per data stream should help fix the data loss that's been occurring in the 
+older versions.
+
 ## Requirements
 
 ### In order to ingest data from the AWS S3 bucket you must:
@@ -21,21 +27,23 @@ This module has been tested against `Alerts API (v6)`, `Audit Log Events (v3)` a
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
-2. To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
   - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
-3. Setup event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
-  - The user has to perform Step 3 for all the data-streams individually, and each time prefix parameter should be set the same as the S3 Bucket List Prefix as created earlier. (for example, `alert_logs/` for alert data stream.)
+3. Set up event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+  - The user has to perform Step 3 for all the data streams individually, and each time prefix parameter should be set the same as the S3 Bucket List Prefix as created earlier. (for example, `alert_logs/` for the alert data stream.)
   - For all the event notifications that have been created, select the event type as s3:ObjectCreated:*, select the destination type SQS Queue, and select the queue that has been created in Step 2.
 
 **Note**:
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
+  - When configuring SQS queues, separate queues should be used for each data stream instead of the global SQS queue from version 1.21 onwards to avoid data 
+    loss. File selectors should not be used to filter out data stream logs using the global queue as it was in versions prior.
 
 ### In order to ingest data from the APIs you must generate API keys and API Secret Keys:
 1. In Carbon Black Cloud, On the left navigation pane, click **Settings > API Access**.
 2. Click Add API Key.
 3. Give the API key a unique name and description.
-    - Select the appropriate access level type. Please check required Access Levels & Permissions for integration in below table.  
+    - Select the appropriate access level type. Please check the required Access Levels & Permissions for integration in the table below.  
      **Note:** To use a custom access level, select Custom from the Access Level type drop-down menu and specify the Custom Access Level.
     - Optional: Add authorized IP addresses.
     - You can restrict the use of an API key to a specific set of IP addresses for security reasons.  
@@ -92,7 +100,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
@@ -244,7 +252,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c073dde3-4d37-4b40-8161-a008a04d551f",
@@ -465,7 +473,7 @@ An example event for `endpoint_event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "3b20ea47-9610-412d-97e3-47cd19b7e4d5",
@@ -515,6 +523,7 @@ An example event for `endpoint_event` looks as following:
         "carbon_black_cloud-endpoint-event"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -533,6 +542,7 @@ An example event for `endpoint_event` looks as following:
 | carbon_black_cloud.endpoint_event.childproc.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.childproc.reputation | Carbon Black Cloud Reputation string for the childproc. | keyword |
 | carbon_black_cloud.endpoint_event.childproc.username | The username associated with the user context that the child process was started under. | keyword |
+| carbon_black_cloud.endpoint_event.create_time | The time at which the event was ingested in carbon black cloud. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.action | The action taken on cross-process. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.api | Name of the operating system API called by the actor process. | keyword |
 | carbon_black_cloud.endpoint_event.crossproc.guid | Unique ID of the cross process. | keyword |
@@ -597,6 +607,8 @@ An example event for `endpoint_event` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
 | dll.hash.md5 | MD5 hash. | keyword |
 | dll.hash.sha256 | SHA256 hash. | keyword |
 | dll.path | Full file path of the library. | keyword |
@@ -732,7 +744,7 @@ An example event for `watchlist_hit` looks as following:
             "watchlists": [
                 {
                     "id": "P5f9AW29TGmTOvBW156Cig",
-                    "name": "ATT\u0026CK Framework"
+                    "name": "ATT&CK Framework"
                 }
             ]
         }
@@ -743,7 +755,7 @@ An example event for `watchlist_hit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -776,7 +788,7 @@ An example event for `watchlist_hit` looks as following:
             "sha256": "4fe6d9eb8109fb79ff645138de7cff37906867aade589bd68afa503a9ab3cfb2"
         },
         "parent": {
-            "command_line": "C:\\WINDOWS\\system32\\cmd.exe /c \"sc query aella_conf | findstr RUNNING \u003e null\"",
+            "command_line": "C:\\WINDOWS\\system32\\cmd.exe /c \"sc query aella_conf | findstr RUNNING > null\"",
             "entity_id": "7DESJ9GN-00442a47-00000fec-00000000-1d81ed87d4655d1",
             "executable": "c:\\windows\\syswow64\\cmd.exe",
             "hash": {
@@ -793,6 +805,7 @@ An example event for `watchlist_hit` looks as following:
         "carbon_black_cloud-watchlist-hit"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -811,6 +824,8 @@ An example event for `watchlist_hit` looks as following:
 | carbon_black_cloud.watchlist_hit.process.parent.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.watchlist_hit.process.parent.reputation | Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
 | carbon_black_cloud.watchlist_hit.process.parent.username | The username associated with the user context that this process was started under. | keyword |
+| carbon_black_cloud.watchlist_hit.process.publisher.name | The name of the publisher. | keyword |
+| carbon_black_cloud.watchlist_hit.process.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.watchlist_hit.process.reputation | Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud. | keyword |
 | carbon_black_cloud.watchlist_hit.process.username | The username associated with the user context that this process was started under. | keyword |
 | carbon_black_cloud.watchlist_hit.report.id | ID of the watchlist report(s) that detected a hit on the process. | keyword |
@@ -919,7 +934,7 @@ An example event for `asset_vulnerability_summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",

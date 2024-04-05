@@ -1,0 +1,96 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: https://{{region}}.automation.eset.systems
+auth.oauth2:
+  client.id: {{username}}
+  client.secret: {{password}}
+  token_url: https://{{region}}.business-account.iam.eset.systems/oauth/token
+state:
+  page_size: {{batch_size}}
+  want_more: false
+  page_token: ""
+redact:
+  fields: ~
+program: |
+  (
+    request(
+      "GET",
+      state.url + "/v1/device_tasks?" + {
+        "page_size": [string(state.page_size)],
+        "page_token": [state.page_token]
+      }.format_query()
+    ).as(request, (
+      has(state.cursor) && has(state.cursor.response_id) && state.cursor.response_id != null
+      ?
+        request.with({
+          "Header":{
+            "response-id": [state.cursor.response_id],
+          }
+        })
+      :
+        request
+    )).do_request().as(resp, (
+      resp.StatusCode == 200
+      ?
+        bytes(resp.Body).decode_json().as(body, {
+          "events": (
+            has(body.tasks) && body.tasks != null
+            ?
+              body.tasks.map(e, {
+                "message": e.encode_json(),
+              })
+            :
+              []
+          ),
+          "page_token": (
+            has(body.nextPageToken) && body.nextPageToken != null
+            ?
+              body.nextPageToken
+            :
+              ""
+          ),
+          "want_more": has(body.nextPageToken) && body.nextPageToken != null && body.nextPageToken != "",
+          "page_size": state.page_size
+        })
+      :
+        {
+          "events": resp.StatusCode == 202 ? [{"message":"retry"}] : [],
+          "page_size": state.page_size,
+          "page_token": resp.StatusCode == 202 ? state.page_token : "",
+          "want_more": resp.StatusCode == 202 ? true : false,
+          "cursor": {
+            "response_id": resp.StatusCode == 202 ? resp.Header["Response-Id"][0] : null
+          }
+        }
+    ))
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

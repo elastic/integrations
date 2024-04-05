@@ -1,10 +1,10 @@
 name: profiler_collector
 title: Universal Profiling Collector
-version: 8.10.0
+version: 8.12.0
 categories: ["elastic_stack", "monitoring"]
 description: Fleet-wide, whole-system, continuous profiling with zero instrumentation.
 conditions:
-  kibana.version: ^8.10.2
+  kibana.version: ^8.12.0
   elastic.subscription: basic
 format_version: 2.8.0
 icons:
@@ -30,10 +30,20 @@ policy_templates:
             type: bool
             default: false
             description: Enable debug logging
-          - name: telemetry
-            type: bool
-            default: true
-            description: Enable metrics
+          - name: metrics_prometheus_host
+            type: text
+            default: ""
+            description: |
+              Network address used to serve Prometheus metrics over HTTP, formatted as host:port.
+              An empty string disables Prometheus metrics exposition.
+          - name: metrics_expvar_host
+            show_user: false
+            type: text
+            default: ""
+            description: |
+              Network address used to serve expvar metrics over HTTP, formatted as host:port or Unix Domain Socket path; in the second case the path must be prefixed with 'unix://'.
+              An empty string disables expvar metrics exposition.
+              Setting this value has no effect when the policy is applied to an Elastic Agent.
           - name: memory_limit
             type: text
             default: ""
@@ -64,6 +74,16 @@ policy_templates:
           - name: tls_curve_types
             type: text
             multi: true
+          - name: agent_metrics_disable
+            type: bool
+            default: false
+            description: |
+              Do not write Universal Profiling agent metrics/metadata to a centralized (non-customer controlled) cluster. This does not affect writing metrics/metadata to the customer cluster.
+          - name: agent_metrics_write_all
+            type: bool
+            default: false
+            description: |
+              Write full set of Universal Profiling agent metrics to the customer ES cluster. If false, which is the default, only a limited set of CPU usage and I/O metrics will be written.
     multiple: false
 type: integration
 owner:

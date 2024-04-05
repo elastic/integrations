@@ -4,17 +4,13 @@ processors:
 - dissect:
     description: Determine if the token is src= or operation
     field: event.original
-    pattern: "%{} %{} %{} %{_temp.event_type} %{_temp.token} %{}"
-- dissect:
-    description: Case for src= follows ip_flow_start
-    field: event.original
-    pattern: "%{} ip_flow_start %{*src}=%{&src} %{*dst}=%{&dst} %{*prot}=%{&prot} %{*sport}=%{&sport} %{*dport}=%{&dport} %{*tsi}=%{&tsi} %{*tp}=%{&tp}"
-    if: ctx._temp.event_type == 'ip_flow_start' && ctx._temp.token.startsWith("src=") == true
-- dissect:
-    description: Case for src= follows ip_flow_end
-    field: event.original
-    pattern: "%{} ip_flow_end %{*src}=%{&src} %{*dst}=%{&dst} %{*prot}=%{&prot} %{*sport}=%{&sport} %{*dport}=%{&dport} %{*tsi_or_tdi}=%{&tsi_or_tdi} %{*tp}=%{&tp}"
-    if: ctx._temp.event_type == 'ip_flow_end' && ctx._temp.token.startsWith("src=") == true
+    pattern: "%{} %{} %{} %{_temp.event_type} %{_temp.event}"
+- kv:
+    field: _temp.event
+    field_split: ' '
+    value_split: '='
+    if: ctx._temp?.event != null
+    tag: kv_ip_flow_fields
 # source field IP:port handling
 - convert:
     type: ip

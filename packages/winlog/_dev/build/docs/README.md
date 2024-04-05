@@ -7,17 +7,6 @@ Custom ingest pipelines may be added by setting one up in [Ingest Node Pipelines
 
 ## Configuration
 
-### Ingesting Windows Events via Splunk
-
-This integration offers the ability to seamlessly ingest data from a Splunk Enterprise instance.
-These integrations work by using the {{ url "filebeat-input-httpjson" "httpjson input" }} in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
-The raw event is then processed via the Elastic Agent.
-The Splunk search is customizable and the interval between searches is customizable.
-See the {{ url "observability-ingest-splunk" "Splunk API integration documentation" }} for more information.
-
-This integration requires Windows Events from Splunk to be in XML format.
-To achieve this, `renderXml` needs to be set to `1` in your [inputs.conf](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
-
 ### Windows Event ID clause limit
 
 If you specify more than 22 query conditions (event IDs or event ID ranges), some
@@ -47,6 +36,8 @@ the events from Windows. The filter shown below is equivalent to
       winlog.event_id.lte: 2004
 ```
 
-## Logs
+## Fields Mapping
 
-{{fields "winlog"}}
+In addition to the fields specified below, this integration includes the ECS Dynamic Template. Any field that follow the ECS Schema will get assigned the correct index field mapping and does not need to be added manually.
+
+{{ fields }}

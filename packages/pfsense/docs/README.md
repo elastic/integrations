@@ -77,7 +77,7 @@ An example event for `log` looks as following:
         "port": 853
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "0746c3a9-3a6e-4fb6-8c0d-bf706948547a",
@@ -93,7 +93,7 @@ An example event for `log` looks as following:
         "dataset": "pfsense.log",
         "ingested": "2023-09-22T15:34:05Z",
         "kind": "event",
-        "original": "\u003c134\u003e1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale",
+        "original": "<134>1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale",
         "provider": "filterlog",
         "reason": "match",
         "timezone": "-05:00",
@@ -183,6 +183,7 @@ An example event for `log` looks as following:
         "forwarded"
     ]
 }
+
 ```
 
 **Exported fields**

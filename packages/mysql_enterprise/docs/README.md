@@ -142,7 +142,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "2c39d956-ec71-4ff1-ba44-ee2a67272f8f",
@@ -236,4 +236,5 @@ An example event for `audit` looks as following:
         "mysql_enterprise-audit"
     ]
 }
+
 ```

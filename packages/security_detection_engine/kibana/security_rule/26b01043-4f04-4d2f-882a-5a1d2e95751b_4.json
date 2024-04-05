@@ -11,7 +11,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Privileges Elevation via Parent Process PID Spoofing",
-        "query": "/* This rule is compatible with Elastic Endpoint only */\n\nprocess where host.os.type == \"windows\" and event.action == \"start\" and\n\n /* process creation via seclogon */\n process.parent.Ext.real.pid \u003e 0 and\n\n /* PrivEsc to SYSTEM */\n user.id : \"S-1-5-18\"  and\n\n /* Common FPs - evasion via hollowing is possible, should be covered by code injection */\n not process.executable : (\"?:\\\\Windows\\\\System32\\\\WerFault.exe\",\n                           \"?:\\\\Windows\\\\SysWOW64\\\\WerFault.exe\",\n                           \"?:\\\\Windows\\\\System32\\\\WerFaultSecure.exe\",\n                           \"?:\\\\Windows\\\\SysWOW64\\\\WerFaultSecure.exe\",\n                           \"?:\\\\Windows\\\\System32\\\\Wermgr.exe\",\n                           \"?:\\\\Windows\\\\SysWOW64\\\\Wermgr.exe\",\n                           \"?:\\\\Windows\\\\SoftwareDistribution\\\\Download\\\\Install\\\\securityhealthsetup.exe\") and\n\n not process.parent.executable : \"?:\\\\Windows\\\\System32\\\\AtBroker.exe\" and\n\n not (process.code_signature.subject_name in\n           (\"philandro Software GmbH\", \"Freedom Scientific Inc.\", \"TeamViewer Germany GmbH\", \"Projector.is, Inc.\",\n            \"TeamViewer GmbH\", \"Cisco WebEx LLC\", \"Dell Inc\") and process.code_signature.trusted == true)\n",
+        "query": "/* This rule is compatible with Elastic Endpoint only */\n\nprocess where host.os.type == \"windows\" and event.action == \"start\" and\n\n /* process creation via seclogon */\n process.parent.Ext.real.pid > 0 and\n\n /* PrivEsc to SYSTEM */\n user.id : \"S-1-5-18\"  and\n\n /* Common FPs - evasion via hollowing is possible, should be covered by code injection */\n not process.executable : (\"?:\\\\Windows\\\\System32\\\\WerFault.exe\",\n                           \"?:\\\\Windows\\\\SysWOW64\\\\WerFault.exe\",\n                           \"?:\\\\Windows\\\\System32\\\\WerFaultSecure.exe\",\n                           \"?:\\\\Windows\\\\SysWOW64\\\\WerFaultSecure.exe\",\n                           \"?:\\\\Windows\\\\System32\\\\Wermgr.exe\",\n                           \"?:\\\\Windows\\\\SysWOW64\\\\Wermgr.exe\",\n                           \"?:\\\\Windows\\\\SoftwareDistribution\\\\Download\\\\Install\\\\securityhealthsetup.exe\") and\n\n not process.parent.executable : \"?:\\\\Windows\\\\System32\\\\AtBroker.exe\" and\n\n not (process.code_signature.subject_name in\n           (\"philandro Software GmbH\", \"Freedom Scientific Inc.\", \"TeamViewer Germany GmbH\", \"Projector.is, Inc.\",\n            \"TeamViewer GmbH\", \"Cisco WebEx LLC\", \"Dell Inc\") and process.code_signature.trusted == true)\n",
         "references": [
             "https://gist.github.com/xpn/a057a26ec81e736518ee50848b9c2cd6",
             "https://blog.didierstevens.com/2017/03/20/",
@@ -77,7 +77,7 @@
         ],
         "threat": [
             {
-                "framework": "MITRE ATT\u0026CK",
+                "framework": "MITRE ATT&CK",
                 "tactic": {
                     "id": "TA0004",
                     "name": "Privilege Escalation",

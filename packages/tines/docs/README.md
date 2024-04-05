@@ -111,6 +111,10 @@ All fields ingested to this data stream are stored under `tines.audit_log` as ea
 | tines.audit_log.inputs.diagramNoteIds |  | long |
 | tines.audit_log.inputs.inputs.actionId |  | long |
 | tines.audit_log.inputs.inputs.actionIds |  | long |
+| tines.audit_log.inputs.inputs.actions.actionId |  | long |
+| tines.audit_log.inputs.inputs.actions.options |  | keyword |
+| tines.audit_log.inputs.inputs.actions.schedule.cron |  | keyword |
+| tines.audit_log.inputs.inputs.actions.schedule.timezone |  | keyword |
 | tines.audit_log.inputs.inputs.agents |  | flattened |
 | tines.audit_log.inputs.inputs.allowedHosts |  | keyword |
 | tines.audit_log.inputs.inputs.authenticationTokenId |  | long |
@@ -216,7 +220,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "681e4da0-a57a-4818-b61e-2bb4a9557356",
@@ -326,6 +330,7 @@ An example event for `audit` looks as following:
         "version": "109.0.0.0"
     }
 }
+
 ```
 
 ### time_saved
@@ -428,7 +433,7 @@ An example event for `time_saved` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "681e4da0-a57a-4818-b61e-2bb4a9557356",
@@ -458,4 +463,5 @@ An example event for `time_saved` looks as following:
         }
     }
 }
+
 ```

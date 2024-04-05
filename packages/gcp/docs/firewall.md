@@ -59,6 +59,7 @@ The `firewall` dataset collects logs from Firewall Rules in your Virtual Private
 | gcp.destination.vpc.project_id | ID of the project containing the VM. | keyword |
 | gcp.destination.vpc.subnetwork_name | Subnetwork on which the VM is operating. | keyword |
 | gcp.destination.vpc.vpc_name | VPC on which the VM is operating. | keyword |
+| gcp.firewall.flattened | Contains the full firewall document as sent by GCP. | flattened |
 | gcp.firewall.rule_details.action | Action that the rule performs on match. | keyword |
 | gcp.firewall.rule_details.destination_range | List of destination ranges that the firewall applies to. | keyword |
 | gcp.firewall.rule_details.direction | Direction of traffic that matches this rule. | keyword |
@@ -133,8 +134,8 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "cf009128-e43c-42e4-9158-9b088bd6f3f5",
-        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "ephemeral_id": "175ae0b3-355c-4ca7-87ea-d5f1ee34102e",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.7.1"
@@ -162,7 +163,7 @@ An example event for `firewall` looks as following:
         "version": "8.8.0"
     },
     "elastic_agent": {
-        "id": "5872ddcf-0f11-4ff9-84ce-30e042fe8327",
+        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
         "snapshot": false,
         "version": "8.7.1"
     },
@@ -172,10 +173,10 @@ An example event for `firewall` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-07-19T18:55:10.718Z",
+        "created": "2023-10-25T04:20:37.182Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2023-07-19T18:55:14Z",
+        "ingested": "2023-10-25T04:20:41Z",
         "kind": "event",
         "type": [
             "allowed",

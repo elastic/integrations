@@ -1,0 +1,38 @@
+{
+    "id": "b794635d-a338-5b4e-bfa0-75257e854c6a",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Being a level 2, enabling this setting can have a high impact on the cost of data storage used for logging more data per each request. Do not enable this without determining your need for this level of logging or forget to check in on data usage and projected cost.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/rest/api/storageservices/about-storage-analytics-logging\n2. https://docs.microsoft.com/en-us/cli/azure/storage/logging?view=azure-cli-latest\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-logging-threat-detection#lt-3-enable-logging-for-security-investigation",
+            "id": "b794635d-a338-5b4e-bfa0-75257e854c6a",
+            "name": "Ensure Storage logging is Enabled for Blob Service for 'Read', 'Write', and 'Delete' requests",
+            "profile_applicability": "* Level 2",
+            "description": "The Storage Blob service provides scalable, cost-efficient object storage in the cloud.\nStorage Logging happens server-side and allows details for both successful and failed requests to be recorded in the storage account.\nThese logs allow users to see the details of read, write, and delete operations against the blobs.\nStorage Logging log entries contain the following information about individual requests: timing information such as start time, end-to-end latency, and server latency; authentication details; concurrency information; and the sizes of the request and response messages.",
+            "rationale": "Storage Analytics logs contain detailed information about successful and failed requests to a storage service.\nThis information can be used to monitor each individual request to a storage service for increased security or diagnostics.\nRequests are logged on a best-effort basis.\n\nStorage Analytics logging is not enabled by default for your storage account.",
+            "audit": "**From Azure Portal**\n\n1. From the default portal page select `Storage Accounts`.\n2. Select the specific Storage Account.\n3. Click the `Diagnostics settings` under the `Monitoring` section in the left column.\n4. Select the 'blob' tab indented below the storage account. Then select the diagnostic setting listed.\n5. Ensure `StorageRead`, `StorageWrite`, and `StorageDelete` options are selected under the `Logging section` and that they are sent to the correct destination.\n\n**From Azure CLI**\n\nEnsure the below command's output contains properties delete, read and write set to true.\n\n```\naz storage logging show --services b --account-name <storageAccountName>\n```",
+            "remediation": "**From Azure Portal**\n\n1. From the default portal page select `Storage Accounts`.\n2. Select the specific Storage Account.\n3. Click the `Diagnostics settings` under the `Monitoring` section in the left column.\n4. Select the 'blob' tab indented below the storage account. \n5. Click '+ Add diagnostic setting'.\n6. Select `StorageRead`, `StorageWrite` and `StorageDelete` options under the `Logging` section to enable Storage Logging for Blob service.\n7. Select a destination for your logs to be sent to.\n\n**From Azure CLI**\n\nUse the below command to enable the Storage Logging for Blob service.\n\n```\naz storage logging update --account-name <storageAccountName> --account-key <storageAccountKey> --services b --log rwd --retention 90\n```",
+            "section": "Storage Accounts",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 3.13",
+                "Storage Accounts"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "3.13",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_13"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}
