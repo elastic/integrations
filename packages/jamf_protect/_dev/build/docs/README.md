@@ -49,7 +49,7 @@ For more information on configuring Jamf Protect, see
 - [Configure Threat Event Stream](https://learn.jamf.com/bundle/jamf-protect-documentation/page/Configuring_the_Network_Threat_Events_Stream_to_send_HTTP_Events.html)
 - [Configure Network Traffic Stream](https://learn.jamf.com/bundle/jamf-protect-documentation/page/Configuring_the_Network_Threat_Events_Stream_to_send_HTTP_Events.html)
 
-Then, depding on which events you want to send to Elastic, configure one or multiple HTTP endpoints:
+Then, depending on which events you want to send to Elastic, configure one or multiple HTTP endpoints:
 
 **Remote Alert Collection Endpoints**:
 - [ ] In the URL field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
