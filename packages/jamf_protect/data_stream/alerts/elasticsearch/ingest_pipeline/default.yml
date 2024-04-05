@@ -408,19 +408,19 @@ processors:
         value: "{{ user.name }}"
         if: ctx.user?.name != null
         allow_duplicates: false
-    - append:
-        field: related.ip
-        value: "{{ host.ip }}"
-        if: ctx.host?.ip != null
-        allow_duplicates: false
-    # - foreach:
-    #     field: host.ip
+    # - append:
+    #     field: related.ip
+    #     value: "{{ host.ip }}"
     #     if: ctx.host?.ip != null
-    #     processor:
-    #     - append:
-    #         field: related.ip
-    #         value: '{{ host.ip }}'
-    #         allow_duplicates: false
+    #     allow_duplicates: false
+    - foreach:
+        field: host.ip
+        if: ctx.host?.ip instanceof List
+        processor:
+            append:
+            field: related.ip
+            value: '{{{_ingest._value}}}'
+            allow_duplicates: false
     - append:
         field: related.hash
         value: "{{ file.hash.sha1 }}"
