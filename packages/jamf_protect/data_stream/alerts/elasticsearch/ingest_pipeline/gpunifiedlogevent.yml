@@ -5,10 +5,6 @@ processors:
 ######################
 ## ECS Log Mapping ##
 ######################
-    - set:
-        field: event.module
-        value: Alerts
-        if: ctx.jamf_protect?.alerts?.input?.eventType == 'GPUnifiedLogEvent'
     - rename:
         field: jamf_protect.alerts.input.match.event.process
         target_field: process.name
@@ -17,10 +13,6 @@ processors:
         field: jamf_protect.alerts.input.match.event.processIdentifier
         target_field: process.pid
         if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUnifiedLogEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.processIdentifier != null
-    #   - rename:
-    #       field: jamf_protect.alerts.input.match.event.timestamp
-    #       target_field: process.start
-    #       if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUnifiedLogEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.timestamp != null
     - date:
         field: jamf_protect.alerts.input.match.event.timestamp
         target_field: process.start

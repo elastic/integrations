@@ -9,13 +9,13 @@ Then visualize that data in Kibana, create alerts to notify you if something goe
 
 The Jamf Protect integration collects 4 types of events: alerts, telemetry, web threat events, and web traffic events.
 
-**Alerts** help you keep a record of Alerts and Unified Logs happening on endpoints using Jamf Protect.
+[**Alerts**](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Alerts.html) help you keep a record of Alerts and Unified Logs happening on endpoints using Jamf Protect.
 
-**Telemetry** help you keep a record of audit events happening on endpoints using Jamf Protect.
+[**Telemetry**](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Creating_an_Action_Configuration.html) help you keep a record of audit events happening on endpoints using Jamf Protect.
 
-**Web threat events** help you keep a record of web threat events happening on endpoints using Jamf Protect.
+[**Web threat events**](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Data_Streams_Overview.html) help you keep a record of web threat events happening on endpoints using Jamf Protect.
 
-**Web traffic events** help you keep a record of content filtering and network requests happening on endpoints using Jamf Protect.
+[**Web traffic events**](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Data_Streams_Overview.html) help you keep a record of content filtering and network requests happening on endpoints using Jamf Protect.
 
 ## Requirements
 
@@ -52,19 +52,19 @@ For more information on configuring Jamf Protect, see
 Then, depending on which events you want to send to Elastic, configure one or multiple HTTP endpoints:
 
 **Remote Alert Collection Endpoints**:
-- [ ] In the URL field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
+- In the URL field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
 
 **Unified Logs Collection Endpoints**:
-- [ ] In the URL field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
+- In the URL field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
 
 **Telemetry Collection Endpoints**:
-- [ ] In the URL field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
+- In the URL field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
 
 **Threats Event Stream**:
-- [ ] In the Server hostname or IP field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
+- In the Server hostname or IP field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
 
 **Network Traffic Stream**:
-- [ ] In the Server hostname or IP field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
+- In the Server hostname or IP field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
 
 
 **Copyright (c) 2024, Jamf Software, LLC.  All rights reserved.**
@@ -78,6 +78,7 @@ This is the `Alerts` dataset.
 ##### Example
 
 {{event "alerts"}}
+{{fields "alerts"}}
 
 #### telemetry
 
@@ -86,6 +87,7 @@ This is the `Telemetry` dataset.
 ##### Example
 
 {{event "telemetry"}}
+{{fields "telemetry"}}
 
 #### threats event stream
 
@@ -94,6 +96,7 @@ This is the `Threats Event Stream` dataset.
 ##### Example
 
 {{event "web_threat_events"}}
+{{fields "web_threat_events"}}
 
 #### network traffic stream
 
@@ -102,3 +105,4 @@ This is the `Network Traffic Stream` dataset.
 ##### Example
 
 {{event "web_traffic_events"}}
+{{fields "web_traffic_events"}}
