@@ -3,6 +3,7 @@ interval: {{interval}}
 request.method: "GET"
 {{#if enable_request_tracer}}
 request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
 {{/if}}
 
 auth.basic.user: {{username}}
@@ -48,6 +49,13 @@ response.split:
 cursor:
   timestamp:
     value: '[[ .last_response.header.Get "X-TAXII-Date-Added-Last" ]]'
+
+{{#if ioc_expiration_duration}}
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiration_duration: "{{ioc_expiration_duration}}"
+{{/if}}
 
 tags:
 {{#if preserve_original_event}}

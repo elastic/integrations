@@ -49,6 +49,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -87,16 +88,16 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Total Estimated Charges ($)",
-                                                    "operationType": "sum",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "decimals": 2,
-                                                                "suffix": ""
+                                                                "compact": false,
+                                                                "decimals": 2
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "reducedTimeRange": "12h",
                                                     "scale": "ratio",
@@ -118,31 +119,231 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "bc3ef8f7-e93e-4e67-9ff3-3f7aa140c4f7",
                                 "layerId": "fe01457b-2279-4f97-9032-3a29f57e877a",
                                 "layerType": "data",
-                                "size": "l",
-                                "textAlign": "center"
+                                "metricAccessor": "bc3ef8f7-e93e-4e67-9ff3-3f7aa140c4f7"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsLegacyMetric"
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": true
                 },
                 "gridData": {
-                    "h": 16,
+                    "h": 5,
                     "i": "221aab02-2747-4d84-9dde-028ccd51bdce",
-                    "w": 16,
+                    "w": 17,
                     "x": 0,
                     "y": 0
                 },
                 "panelIndex": "221aab02-2747-4d84-9dde-028ccd51bdce",
                 "title": "Total Estimated Charges",
                 "type": "lens",
-                "version": "8.7.1"
+                "version": "8.10.2"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "tsvb_ad_hoc_metrics-*/@timestamp": {
+                                    "allowNoIndex": true,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "id": "tsvb_ad_hoc_metrics-*/@timestamp",
+                                    "name": "metrics-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "3fc613f6-8db8-4fb4-889e-de4e079f0821": {
+                                            "columnOrder": [
+                                                "5a83d040-e3d3-4467-85fe-eb3e6ed95a15",
+                                                "1b5242d7-8eab-4fd2-a2c2-6c04031c2ba2",
+                                                "3e6b810b-7a82-4574-ab3b-d20480ede81e"
+                                            ],
+                                            "columns": {
+                                                "1b5242d7-8eab-4fd2-a2c2-6c04031c2ba2": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "12h"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "3e6b810b-7a82-4574-ab3b-d20480ede81e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": ""
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "aws.billing.EstimatedCharges",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "$"
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.billing.EstimatedCharges",
+                                                    "timeShift": ""
+                                                },
+                                                "5a83d040-e3d3-4467-85fe-eb3e6ed95a15": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of aws.billing.ServiceName",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": true,
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "3e6b810b-7a82-4574-ab3b-d20480ede81e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.billing.ServiceName"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "tsvb_ad_hoc_metrics-*/@timestamp",
+                                    "name": "indexpattern-datasource-layer-3fc613f6-8db8-4fb4-889e-de4e079f0821",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "emphasizeFitting": true,
+                                "endValue": "Zero",
+                                "fillOpacity": 0,
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "3e6b810b-7a82-4574-ab3b-d20480ede81e"
+                                        ],
+                                        "layerId": "3fc613f6-8db8-4fb4-889e-de4e079f0821",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "5a83d040-e3d3-4467-85fe-eb3e6ed95a15",
+                                        "xAccessor": "1b5242d7-8eab-4fd2-a2c2-6c04031c2ba2",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185FC",
+                                                "forAccessor": "3e6b810b-7a82-4574-ab3b-d20480ede81e"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "21e91e6b-0ff0-42ba-9132-6f30c5c6bbb7",
+                    "w": 31,
+                    "x": 17,
+                    "y": 0
+                },
+                "panelIndex": "21e91e6b-0ff0-42ba-9132-6f30c5c6bbb7",
+                "title": "Top 10 Estimated Billing Per Service Name",
+                "type": "lens",
+                "version": "8.10.2"
             },
             {
                 "embeddableConfig": {
@@ -167,11 +368,15 @@
                                             "columns": {
                                                 "05b1916d-7ebc-40ae-8a8b-d5a8503d2672": {
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws.billing.EstimatedCharges: *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Sum of aws.billing.EstimatedCharges",
-                                                    "operationType": "sum",
+                                                    "label": "Last value of aws.billing.EstimatedCharges",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "aws.billing.EstimatedCharges"
@@ -182,6 +387,7 @@
                                                     "label": "Top 10 values of aws.billing.ServiceName",
                                                     "operationType": "terms",
                                                     "params": {
+                                                        "accuracyMode": true,
                                                         "exclude": [],
                                                         "excludeIsRegex": false,
                                                         "include": [],
@@ -189,11 +395,15 @@
                                                         "missingBucket": false,
                                                         "orderAgg": {
                                                             "dataType": "number",
+                                                            "filter": {
+                                                                "language": "kuery",
+                                                                "query": "aws.billing.EstimatedCharges: *"
+                                                            },
                                                             "isBucketed": false,
-                                                            "label": "Average of aws.billing.EstimatedCharges",
-                                                            "operationType": "average",
+                                                            "label": "Last value of aws.billing.EstimatedCharges",
+                                                            "operationType": "last_value",
                                                             "params": {
-                                                                "emptyAsNull": true
+                                                                "sortField": "@timestamp"
                                                             },
                                                             "scale": "ratio",
                                                             "sourceField": "aws.billing.EstimatedCharges"
@@ -266,230 +476,26 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 16,
+                    "h": 11,
                     "i": "26670498-b079-4447-bbc8-e4ca8215898c",
-                    "w": 32,
-                    "x": 16,
-                    "y": 0
+                    "w": 17,
+                    "x": 0,
+                    "y": 5
                 },
                 "panelIndex": "26670498-b079-4447-bbc8-e4ca8215898c",
                 "title": "Estimated Billing Chart",
                 "type": "lens",
-                "version": "8.7.1"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "tsvb_ad_hoc_metrics-*/@timestamp": {
-                                    "allowNoIndex": true,
-                                    "fieldAttrs": {},
-                                    "fieldFormats": {},
-                                    "id": "tsvb_ad_hoc_metrics-*/@timestamp",
-                                    "name": "metrics-*",
-                                    "runtimeFieldMap": {},
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "metrics-*"
-                                }
-                            },
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "3fc613f6-8db8-4fb4-889e-de4e079f0821": {
-                                            "columnOrder": [
-                                                "5a83d040-e3d3-4467-85fe-eb3e6ed95a15",
-                                                "1b5242d7-8eab-4fd2-a2c2-6c04031c2ba2",
-                                                "3e6b810b-7a82-4574-ab3b-d20480ede81e"
-                                            ],
-                                            "columns": {
-                                                "1b5242d7-8eab-4fd2-a2c2-6c04031c2ba2": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "12h"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "3e6b810b-7a82-4574-ab3b-d20480ede81e": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": ""
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "avg(aws.billing.EstimatedCharges)",
-                                                    "operationType": "sum",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2,
-                                                                "suffix": "$"
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "aws.billing.EstimatedCharges",
-                                                    "timeShift": ""
-                                                },
-                                                "5a83d040-e3d3-4467-85fe-eb3e6ed95a15": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of aws.billing.ServiceName",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "accuracyMode": true,
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "3e6b810b-7a82-4574-ab3b-d20480ede81e",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "aws.billing.ServiceName"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "tsvb_ad_hoc_metrics-*/@timestamp",
-                                    "name": "indexpattern-datasource-layer-3fc613f6-8db8-4fb4-889e-de4e079f0821",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "curveType": "LINEAR",
-                                "emphasizeFitting": false,
-                                "endValue": "Zero",
-                                "fillOpacity": 0,
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "3e6b810b-7a82-4574-ab3b-d20480ede81e"
-                                        ],
-                                        "layerId": "3fc613f6-8db8-4fb4-889e-de4e079f0821",
-                                        "layerType": "data",
-                                        "palette": {
-                                            "name": "default",
-                                            "type": "palette"
-                                        },
-                                        "seriesType": "line",
-                                        "splitAccessor": "5a83d040-e3d3-4467-85fe-eb3e6ed95a15",
-                                        "xAccessor": "1b5242d7-8eab-4fd2-a2c2-6c04031c2ba2",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "color": "#3185FC",
-                                                "forAccessor": "3e6b810b-7a82-4574-ab3b-d20480ede81e"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "legendSize": "large",
-                                    "maxLines": 1,
-                                    "position": "right",
-                                    "shouldTruncate": true,
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "valuesInLegend": true,
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yLeftScale": "linear",
-                                "yRightExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightScale": "linear"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "21e91e6b-0ff0-42ba-9132-6f30c5c6bbb7",
-                    "w": 48,
-                    "x": 0,
-                    "y": 16
-                },
-                "panelIndex": "21e91e6b-0ff0-42ba-9132-6f30c5c6bbb7",
-                "title": "Top 10 Estimated Billing Per Service Name",
-                "type": "lens",
-                "version": "8.7.1"
+                "version": "8.10.2"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics AWS] Billing Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.0",
-    "created_at": "2023-07-18T08:47:59.330Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-11-21T05:24:42.345Z",
     "id": "aws-e6776b10-1534-11ea-841c-01bf20a6c8ba",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "metrics-*",
@@ -512,5 +518,6 @@
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

@@ -55,7 +55,7 @@ An example event for `waf` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "11940e5d-16a1-424a-aeb2-97fb8029a5d0",
@@ -67,7 +67,7 @@ An example event for `waf` looks as following:
         "created": "2023-03-01T13:54:44.502Z",
         "dataset": "barracuda.waf",
         "ingested": "2023-03-29T09:12:07Z",
-        "original": "\u003c129\u003e2023-03-01 14:54:44.502 +0100  barracuda WF ALER NO_PARAM_PROFILE_MATCH 193.56.29.26 61507 10.9.0.4 443 Hackazon:adaptive_url_42099b4af021e53fd8fd URL_PROFILE LOG NONE [Parameter\\=\"0x\\\\[\\\\]\" value\\=\"androxgh0st\"] POST / TLSv1.2 \"-\" \"Mozilla/5.0 (Linux; U; Android 4.4.2; en-US; HM NOTE 1W Build/KOT49H) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/11.0.5.850 U3/0.8.0 Mobile Safari/534.30\" 20.88.228.79 61507 \"-\" \"-\" 1869d743696-dfcf8d96",
+        "original": "<129>2023-03-01 14:54:44.502 +0100  barracuda WF ALER NO_PARAM_PROFILE_MATCH 193.56.29.26 61507 10.9.0.4 443 Hackazon:adaptive_url_42099b4af021e53fd8fd URL_PROFILE LOG NONE [Parameter\\=\"0x\\\\[\\\\]\" value\\=\"androxgh0st\"] POST / TLSv1.2 \"-\" \"Mozilla/5.0 (Linux; U; Android 4.4.2; en-US; HM NOTE 1W Build/KOT49H) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/11.0.5.850 U3/0.8.0 Mobile Safari/534.30\" 20.88.228.79 61507 \"-\" \"-\" 1869d743696-dfcf8d96",
         "timezone": "+00:00"
     },
     "input": {
@@ -89,6 +89,7 @@ An example event for `waf` looks as following:
         "forwarded"
     ]
 }
+
 ```
 
 **Exported fields**
@@ -196,7 +197,7 @@ An example event for `waf` looks as following:
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
-| network.inner | Network.inner fields are added in addition to network.vlan fields to describe the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
+| network.inner | Network.inner fields are added in addition to network.vlan fields to describe the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | group |
 | network.inner.vlan.id | VLAN ID as reported by the observer. | keyword |
 | network.inner.vlan.name | Optional VLAN name as reported by the observer. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |

@@ -528,7 +528,8 @@ An example event for `cluster_status` looks as following:
 | ceph.cluster_status.pg.degraded.ratio | Degraded objects ratio in Placement Groups (pgs). | double |  | gauge |
 | ceph.cluster_status.pg.degraded.total.count | Total degraded Placement Groups (pgs). | long |  | counter |
 | ceph.cluster_status.pg.remapped.count | Number of Placement Groups (pgs) in cluster. | long |  | gauge |
-| ceph.cluster_status.pg.state | Placement Groups (pgs) state information. | object |  |  |
+| ceph.cluster_status.pg.state.count | Total number of Placement Groups (pgs) in cluster. | long |  |  |
+| ceph.cluster_status.pg.state.state_name | Represents the current status of individual Placement Groups (pgs). | keyword |  |  |
 | ceph.cluster_status.pg.total.bytes | Total bytes of the cluster. | long | byte | gauge |
 | ceph.cluster_status.pg.used.bytes | Used bytes of the cluster. | long | byte | gauge |
 | ceph.cluster_status.pool.count | Number of pools in the cluster. | long |  | gauge |

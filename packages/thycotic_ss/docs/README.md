@@ -101,7 +101,7 @@ An example event for `logs` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "21fd6389-bda5-46dd-9abe-cc77aef72e44",
@@ -176,6 +176,7 @@ An example event for `logs` looks as following:
         "name": "U.Admin"
     }
 }
+
 ```
 
 The following fields may be used by the package:

@@ -88,13 +88,13 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-08-28T09:53:52.909Z",
+    "@timestamp": "2024-03-11T21:06:28.277Z",
     "agent": {
-        "ephemeral_id": "24c009cf-e26d-4f8a-b66f-7412425ed0fe",
-        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
+        "ephemeral_id": "798665d1-a592-4f07-8517-f7bdcdbda09f",
+        "id": "b7f7fd67-e199-4daf-b640-92e89c091cc6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.12.1"
     },
     "data_stream": {
         "dataset": "qualys_vmdr.asset_host_detection",
@@ -102,12 +102,12 @@ An example event for `asset_host_detection` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
+        "id": "b7f7fd67-e199-4daf-b640-92e89c091cc6",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.12.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -115,7 +115,7 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2023-08-28T09:53:53Z",
+        "ingested": "2024-03-11T21:06:40Z",
         "kind": "alert",
         "type": [
             "info"
@@ -142,30 +142,58 @@ An example event for `asset_host_detection` looks as following:
                     "scanned_duration": 1113
                 }
             },
-            "list": [
-                {
-                    "first": {
-                        "found_datetime": "2023-06-28T06:04:26.000Z"
+            "tracking_method": "IP",
+            "vulnerability": {
+                "affect": {
+                    "running": {
+                        "kernel": "0"
+                    }
+                },
+                "first": {
+                    "found_datetime": "2021-02-05T04:50:45.000Z"
+                },
+                "is_disabled": false,
+                "is_ignored": false,
+                "last": {
+                    "fixed_datetime": "2022-12-14T06:52:57.000Z",
+                    "found_datetime": "2024-03-08T20:15:41.000Z",
+                    "processed_datetime": "2024-03-08T20:15:41.000Z",
+                    "test_datetime": "2024-03-08T20:15:41.000Z",
+                    "update_datetime": "2024-03-08T20:15:41.000Z"
+                },
+                "qds": {
+                    "severity": "LOW",
+                    "text": "35"
+                },
+                "qds_factors": [
+                    {
+                        "name": "CVSS",
+                        "text": "7.7"
                     },
-                    "is_disabled": false,
-                    "is_ignored": false,
-                    "last": {
-                        "found_datetime": "2023-07-03T06:23:47.000Z",
-                        "processed_datetime": "2023-07-03T06:25:17.000Z",
-                        "test_datetime": "2023-07-03T06:23:47.000Z",
-                        "update_datetime": "2023-07-03T06:25:17.000Z"
+                    {
+                        "name": "CVSS_version",
+                        "text": "v3.x"
                     },
-                    "qid": "91681",
-                    "severity": 5,
-                    "ssl": "0",
-                    "status": "Active",
-                    "times": {
-                        "found": 11
+                    {
+                        "name": "epss",
+                        "text": "0.00232"
                     },
-                    "type": "Confirmed"
-                }
-            ],
-            "tracking_method": "IP"
+                    {
+                        "name": "CVSS_vector",
+                        "text": "AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H"
+                    }
+                ],
+                "qid": "197595",
+                "results": "Package Installed Version Required Version\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092",
+                "severity": 3,
+                "ssl": "0",
+                "status": "Active",
+                "times": {
+                    "found": 5393
+                },
+                "type": "Confirmed",
+                "unique_vuln_id": "5555555555"
+            }
         }
     },
     "related": {
@@ -217,37 +245,6 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.last.vm.auth.scanned_duration |  | long |
 | qualys_vmdr.asset_host_detection.last.vm.scanned_date |  | date |
 | qualys_vmdr.asset_host_detection.last.vm.scanned_duration |  | long |
-| qualys_vmdr.asset_host_detection.list.affect.exploitable_config |  | keyword |
-| qualys_vmdr.asset_host_detection.list.affect.running.kernel |  | keyword |
-| qualys_vmdr.asset_host_detection.list.affect.running.service |  | keyword |
-| qualys_vmdr.asset_host_detection.list.asset_cve |  | keyword |
-| qualys_vmdr.asset_host_detection.list.first.found_datetime |  | date |
-| qualys_vmdr.asset_host_detection.list.first.reopened_datetime |  | date |
-| qualys_vmdr.asset_host_detection.list.fqdn |  | keyword |
-| qualys_vmdr.asset_host_detection.list.instance |  | keyword |
-| qualys_vmdr.asset_host_detection.list.is_disabled |  | boolean |
-| qualys_vmdr.asset_host_detection.list.is_ignored |  | boolean |
-| qualys_vmdr.asset_host_detection.list.last.fixed_datetime |  | date |
-| qualys_vmdr.asset_host_detection.list.last.found_datetime |  | date |
-| qualys_vmdr.asset_host_detection.list.last.processed_datetime |  | date |
-| qualys_vmdr.asset_host_detection.list.last.reopened_datetime |  | date |
-| qualys_vmdr.asset_host_detection.list.last.test_datetime |  | date |
-| qualys_vmdr.asset_host_detection.list.last.update_datetime |  | date |
-| qualys_vmdr.asset_host_detection.list.port |  | long |
-| qualys_vmdr.asset_host_detection.list.protocol |  | keyword |
-| qualys_vmdr.asset_host_detection.list.qds.severity |  | keyword |
-| qualys_vmdr.asset_host_detection.list.qds.text |  | keyword |
-| qualys_vmdr.asset_host_detection.list.qds_factors.name |  | keyword |
-| qualys_vmdr.asset_host_detection.list.qds_factors.text |  | keyword |
-| qualys_vmdr.asset_host_detection.list.qid |  | keyword |
-| qualys_vmdr.asset_host_detection.list.results |  | keyword |
-| qualys_vmdr.asset_host_detection.list.service |  | keyword |
-| qualys_vmdr.asset_host_detection.list.severity |  | long |
-| qualys_vmdr.asset_host_detection.list.ssl |  | keyword |
-| qualys_vmdr.asset_host_detection.list.status |  | keyword |
-| qualys_vmdr.asset_host_detection.list.times.found |  | long |
-| qualys_vmdr.asset_host_detection.list.times.reopened |  | long |
-| qualys_vmdr.asset_host_detection.list.type |  | keyword |
 | qualys_vmdr.asset_host_detection.metadata.azure.attribute.last.error.date |  | date |
 | qualys_vmdr.asset_host_detection.metadata.azure.attribute.last.error.value |  | keyword |
 | qualys_vmdr.asset_host_detection.metadata.azure.attribute.last.status |  | keyword |
@@ -276,6 +273,38 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.tags.id |  | keyword |
 | qualys_vmdr.asset_host_detection.tags.name |  | keyword |
 | qualys_vmdr.asset_host_detection.tracking_method |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.affect.exploitable_config |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.affect.running.kernel |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.affect.running.service |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.asset_cve |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.first.found_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.first.reopened_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.fqdn |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.instance |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.is_disabled |  | boolean |
+| qualys_vmdr.asset_host_detection.vulnerability.is_ignored |  | boolean |
+| qualys_vmdr.asset_host_detection.vulnerability.last.fixed_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.last.found_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.last.processed_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.last.reopened_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.last.test_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.last.update_datetime |  | date |
+| qualys_vmdr.asset_host_detection.vulnerability.port |  | long |
+| qualys_vmdr.asset_host_detection.vulnerability.protocol |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.qds.severity |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.qds.text |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.qds_factors.name |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.qds_factors.text |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.qid |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.results |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.service |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.severity |  | long |
+| qualys_vmdr.asset_host_detection.vulnerability.ssl |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.status |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.times.found |  | long |
+| qualys_vmdr.asset_host_detection.vulnerability.times.reopened |  | long |
+| qualys_vmdr.asset_host_detection.vulnerability.type |  | keyword |
+| qualys_vmdr.asset_host_detection.vulnerability.unique_vuln_id |  | keyword |
 | tags | User defined tags. | keyword |
 
 
@@ -291,11 +320,11 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "24c009cf-e26d-4f8a-b66f-7412425ed0fe",
-        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
+        "ephemeral_id": "2680cdd8-c261-48cd-b70d-b958f911b86a",
+        "id": "339b7770-4966-47a8-bc07-60e4a5c83116",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.12.1"
     },
     "data_stream": {
         "dataset": "qualys_vmdr.knowledge_base",
@@ -303,21 +332,21 @@ An example event for `knowledge_base` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6b293533-5b3c-4cb2-a00c-b2b25ba9edec",
+        "id": "339b7770-4966-47a8-bc07-60e4a5c83116",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.12.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "host"
+            "vulnerability"
         ],
         "dataset": "qualys_vmdr.knowledge_base",
         "id": "11830",
-        "ingested": "2023-08-28T09:54:51Z",
+        "ingested": "2024-03-17T23:42:53Z",
         "kind": "alert",
         "type": [
             "info"
@@ -329,6 +358,10 @@ An example event for `knowledge_base` looks as following:
     "qualys_vmdr": {
         "knowledge_base": {
             "category": "CGI",
+            "cve_list": [
+                "CVE-2022-31629",
+                "CVE-2022-31628"
+            ],
             "discovery": {
                 "remote": 1
             },
@@ -359,7 +392,11 @@ An example event for `knowledge_base` looks as following:
         "category": [
             "CGI"
         ],
-        "severity": "Low"
+        "id": [
+            "CVE-2022-31629",
+            "CVE-2022-31628"
+        ],
+        "severity": "Medium"
     }
 }
 ```
@@ -398,12 +435,12 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.correlation.malware.src.list.info.rating |  | keyword |
 | qualys_vmdr.knowledge_base.correlation.malware.src.list.info.type |  | keyword |
 | qualys_vmdr.knowledge_base.correlation.malware.src.name |  | keyword |
-| qualys_vmdr.knowledge_base.cve_list.id |  | keyword |
-| qualys_vmdr.knowledge_base.cve_list.url |  | keyword |
+| qualys_vmdr.knowledge_base.cve_list |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.access.complexity |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.access.vector |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.authentication |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.base |  | keyword |
+| qualys_vmdr.knowledge_base.cvss.base_obj |  | flattened |
 | qualys_vmdr.knowledge_base.cvss.exploitability |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.impact.availability |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.impact.confidentiality |  | keyword |
@@ -433,6 +470,7 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.discovery.additional_info |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.auth_type_list.value |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.remote |  | long |
+| qualys_vmdr.knowledge_base.error |  | keyword |
 | qualys_vmdr.knowledge_base.id_range |  | keyword |
 | qualys_vmdr.knowledge_base.ids |  | keyword |
 | qualys_vmdr.knowledge_base.is_disabled |  | boolean |

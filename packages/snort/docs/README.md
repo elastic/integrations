@@ -44,7 +44,7 @@ An example event for `log` looks as following:
         "ip": "175.16.199.1"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
@@ -60,7 +60,7 @@ An example event for `log` looks as following:
         "dataset": "snort.log",
         "ingested": "2022-05-09T16:00:09Z",
         "kind": "alert",
-        "original": "Sep  5 16:02:55 dev snort: [1:1000015:0] Pinging... [Classification: Misc activity] [Priority: 3] {ICMP} 10.50.10.88 -\u003e 175.16.199.1",
+        "original": "Sep  5 16:02:55 dev snort: [1:1000015:0] Pinging... [Classification: Misc activity] [Priority: 3] {ICMP} 10.50.10.88 -> 175.16.199.1",
         "severity": 3,
         "timezone": "-05:00"
     },
@@ -112,6 +112,7 @@ An example event for `log` looks as following:
         "snort.log"
     ]
 }
+
 ```
 
 **Exported fields**

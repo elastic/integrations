@@ -3,12 +3,13 @@ description: Ingest pipeline for normalizing CrowdStrike Falcon logs
 processors:
   - set:
       field: ecs.version
-      value: '8.10.0'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
       tag: rename_message_to_event_original
       ignore_missing: true
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: crowdstrike
@@ -252,6 +253,10 @@ processors:
       name: '{{ IngestPipeline "remote_response_session_end" }}'
       tag: pipeline_remote_response_session_end
       if: ctx.crowdstrike?.metadata?.eventType == "RemoteResponseSessionEndEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "scheduled_report_notification_event" }}'
+      tag: pipeline_scheduled_report_notification_event
+      if: ctx.crowdstrike?.metadata?.eventType == "ScheduledReportNotificationEvent"
   - set:
       field: user.email
       copy_from: user.name

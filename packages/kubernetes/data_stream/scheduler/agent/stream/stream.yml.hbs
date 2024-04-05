@@ -9,7 +9,12 @@ period: {{period}}
 bearer_token_file: {{bearer_token_file}}
 ssl.verification_mode: {{ssl.verification_mode}}
 {{/if}}
+
+{{#if condition }}
+condition: ${kubernetes.labels.{{~scheduler_label_key~}} } == '{{scheduler_label_value}}' and {{ condition }}
+{{ else }}
 condition: ${kubernetes.labels.{{~scheduler_label_key~}} } == '{{scheduler_label_value}}'
+{{/if}}
 
 {{#if processors}}
 processors:

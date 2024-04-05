@@ -1,0 +1,316 @@
+- name: logstash.pipeline
+  type: group
+  description: Logstash pipeline metrics
+  fields:
+    - name: name
+      type: keyword
+      description: Logstash Pipeline id/name
+    - name: id
+      type: keyword
+      dimension: true
+      description: Logstash Pipeline hash
+    - name: elasticsearch.cluster.id
+      type: keyword
+      description: Elasticsearch clusters this Logstash pipeline is attached to
+    - name: host
+      description: Information about the host running the pipeline
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Host name of the node running logstash
+        - name: address
+          type: keyword
+          description: address hosting this instance of logstash
+    - name: plugin
+      type: group
+      description: Information about plugins
+      fields:
+        - name: type
+          type: keyword
+          description: Type of the plugin
+        - name: codec
+          type: group
+          description: Information about codec plugins
+          fields:
+            - name: name
+              type: keyword
+              description: Name of codec plugin
+            - name: id
+              type: keyword
+              dimension: true
+              description: Id of codec plugin
+            - name: encode.duration.ms
+              type: long
+              description: amount of time spend encoding events
+              unit: ms
+              metric_type: counter
+            - name: encode.in
+              type: long
+              description: number of events encoded
+              metric_type: counter
+            - name: decode.duration.ms
+              type: long
+              description: amount of time spend decoding events
+              unit: ms
+              metric_type: counter
+            - name: decode.in
+              type: long
+              description: number of events entering the decoder
+              metric_type: counter
+            - name: decode.out
+              type: long
+              metric_type: counter
+              description: number of events exiting the decoder
+        - name: input
+          type: group
+          description: Information about input plugins
+          fields:
+            - name: name
+              type: keyword
+              description: Name of input plugin
+            - name: id
+              type: keyword
+              dimension: true
+              description: Id of input plugin
+            - name: elasticsearch.cluster.id
+              type: keyword
+              description: Elasticsearch clusters this Logstash plugin is attached to
+            - name: time.queue_push_duration.ms
+              type: long
+              metric_type: counter
+              description: amount of time spend pushing events to the queue
+              unit: ms
+            - name: events.out
+              type: long
+              metric_type: counter
+              description: number of events emitted by the input
+            - name: source
+              type: group
+              description: Pipeline Source location
+              fields:
+                - name: column
+                  type: keyword
+                - name: id
+                  type: keyword
+                - name: line
+                  type: long
+                - name: protocol
+                  type: keyword
+            - name: flow
+              type: group
+              description: flow metrics
+              fields:
+                - name: throughput.current
+                  type: scaled_float
+                  metric_type: gauge
+                  description: throughput of this input plugin
+                - name: throughput.last_1_minute
+                  type: scaled_float
+                  metric_type: gauge
+                  description: throughput of this input plugin
+        - name: filter
+          type: group
+          description: Information about filter plugins
+          fields:
+            - name: name
+              type: keyword
+              description: Name of filter plugin
+            - name: id
+              type: keyword
+              dimension: true
+              description: Id of filter plugin
+            - name: elasticsearch.cluster.id
+              type: keyword
+              description: Elasticsearch clusters this Logstash plugin is attached to
+            - name: time.duration.ms
+              type: long
+              metric_type: counter
+              description: amount of time working on events in this plugin
+              unit: ms
+            - name: events.in
+              type: long
+              description: number of events received by the filter
+              metric_type: counter
+            - name: events.out
+              type: long
+              description: number of events emitted by the filter
+              metric_type: counter
+            - name: metrics
+              type: group
+              description: Plugin specific metrics
+              fields:
+                - name: grok
+                  type: group
+                  description: Grok filter plugin specific metrics
+                  fields:
+                    - name: failures
+                      type: long
+                      description: number of grok failures
+                      metric_type: counter
+                    - name: matches
+                      type: long
+                      description: number of grok matches
+                      metric_type: counter
+                - name: dissect
+                  type: group
+                  description: Dissect filter plugin specific metrics
+                  fields:
+                    - name: failures
+                      type: long
+                      description: number of dissect failures
+                      metric_type: counter
+                    - name: matches
+                      type: long
+                      description: number of dissect matches
+                      metric_type: counter
+            - name: source
+              type: group
+              description: Pipeline Source location
+              fields:
+                - name: column
+                  type: keyword
+                - name: id
+                  type: keyword
+                - name: line
+                  type: long
+                - name: protocol
+                  type: keyword
+            - name: flow
+              type: group
+              description: flow metrics
+              fields:
+                - name: worker_millis_per_event.current
+                  type: scaled_float
+                  metric_type: gauge
+                  description: amount of time spent per event for this plugin
+                - name: worker_millis_per_event.last_1_minute
+                  type: scaled_float
+                  metric_type: gauge
+                  description: amount of time spent per event for this plugin
+                - name: worker_utilization.current
+                  type: scaled_float
+                  metric_type: gauge
+                  description: worker utilization for this plugin
+                - name: worker_utilization.last_1_minute
+                  type: scaled_float
+                  metric_type: gauge
+                  description: worker utilization for this plugin
+        - name: output
+          type: group
+          description: Information about filter plugins
+          fields:
+            - name: name
+              type: keyword
+              description: Name of output plugin
+            - name: id
+              type: keyword
+              dimension: true
+              description: Id of output plugin
+            - name: elasticsearch.cluster.id
+              type: keyword
+              description: Elasticsearch clusters this Logstash plugin is attached to
+            - name: time.duration.ms
+              type: long
+              metric_type: counter
+              description: amount of time working on events in this plugin
+              unit: ms
+            - name: events.in
+              type: long
+              metric_type: counter
+              description: number of events received by the output
+            - name: events.out
+              type: long
+              metric_type: counter
+              description: number of events emitted by the output
+            - name: metrics
+              type: group
+              description: Plugin specific metrics
+              fields:
+                - name: elasticsearch
+                  type: group
+                  description: Elasticsearch output plugin specific metrics
+                  fields:
+                    - name: documents
+                      type: group
+                      description: metrics related to documents
+                      fields:
+                        - name: successes
+                          type: long
+                          metric_type: counter
+                        - name: non_retryable_failures
+                          type: long
+                          metric_type: counter
+                    - name: bulk_requests
+                      type: group
+                      description: metrics related to bulk requests
+                      fields:
+                        - name: successes
+                          type: long
+                          metric_type: counter
+                        - name: responses
+                          type: group
+                          description: metrics related to responses from bulk requests
+                          fields:
+                            - name: "200"
+                              type: long
+                              metric_type: counter
+                            - name: "201"
+                              type: long
+                              metric_type: counter
+                            - name: "400"
+                              type: long
+                              metric_type: counter
+                            - name: "401"
+                              type: long
+                              metric_type: counter
+                            - name: "403"
+                              type: long
+                              metric_type: counter
+                            - name: "404"
+                              type: long
+                              metric_type: counter
+                            - name: "409"
+                              type: long
+                              metric_type: counter
+                            - name: "413"
+                              type: long
+                              metric_type: counter
+                            - name: "429"
+                              type: long
+                              metric_type: counter
+                            - name: "500"
+                              type: long
+                              metric_type: counter
+            - name: source
+              type: group
+              description: Pipeline Source location
+              fields:
+                - name: column
+                  type: keyword
+                - name: id
+                  type: keyword
+                - name: line
+                  type: long
+                - name: protocol
+                  type: keyword
+            - name: flow
+              type: group
+              description: flow metrics
+              fields:
+                - name: worker_millis_per_event.current
+                  type: scaled_float
+                  metric_type: gauge
+                  description: amount of time spent per event for this plugin
+                - name: worker_millis_per_event.last_1_minute
+                  type: scaled_float
+                  metric_type: gauge
+                  description: amount of time spent per event for this plugin
+                - name: worker_utilization.current
+                  type: scaled_float
+                  metric_type: gauge
+                  description: worker utilization for this plugin
+                - name: worker_utilization.last_1_minute
+                  type: scaled_float
+                  metric_type: gauge
+                  description: worker utilization for this plugin

@@ -15,6 +15,7 @@ This module has been tested against **Cisco Secure Email Gateway server version 
   4. Set **Log Name** as below for the respective category:
       - AMP Engine Logs -> amp
       - Anti-Spam Logs -> antispam
+      - Antivirus Logs -> antivirus
       - Authentication Logs -> authentication
       - Bounce Logs -> bounces
       - Consolidated Event Logs -> consolidated_event
@@ -28,15 +29,15 @@ This module has been tested against **Cisco Secure Email Gateway server version 
   6. Select **Retrieval Method**.
   7. Click **Submit** and commit the Changes.
 
-## Note 
+## Note
 
 - **Retrieval Method** Supported:
-  - **FTP Push to Remote Server** for the below categories:  
-    AMP Engine Logs, Anti-Spam Logs, Anti-Spam Logs, Authentication Logs, Bounce Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs, System Logs  
-  - **Syslog Push** for the below categories:  
-	  AMP Engine Logs, Anti-Spam Logs, Anti-Spam Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs, System Logs
+  - **FTP Push to Remote Server** for the below categories:
+    AMP Engine Logs, Anti-Spam Logs, Antivirus Logs, Authentication Logs, Bounce Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs and System Logs.
+  - **Syslog Push** for the below categories:
+	  AMP Engine Logs, Anti-Spam Logs, Antivirus Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs and System Logs.
 
-## [Sample Logs](https://www.cisco.com/c/en/us/td/docs/security/ces/user_guide/esa_user_guide_14-0/b_ESA_Admin_Guide_ces_14-0/b_ESA_Admin_Guide_12_1_chapter_0100111.html) 
+## [Sample Logs](https://www.cisco.com/c/en/us/td/docs/security/ces/user_guide/esa_user_guide_14-0/b_ESA_Admin_Guide_ces_14-0/b_ESA_Admin_Guide_12_1_chapter_0100111.html)
 Below are the samples logs of respective category:
 
 ## AMP Engine Logs:
@@ -62,6 +63,28 @@ case antispam - engine (72324) : case-daemon: Initializing Child
 case antispam - engine (15703) : case-daemon: all children killed, exitting
 
 case antispam - engine (15703) : case-daemon: server killed by SIGHUP, shutting down
+```
+## Antivirus Logs
+```
+sophos  antivirus - MID 69391938 - Result 'CLEAN' ()
+
+sophos  antivirus - MID 68431780 0 - Error - 'Encrypted' '0x8004021'
+
+sophos  antivirus - MID 66842418 0 - Virus 'CXmail/Phish-O' 'body.scan/Payment.html' 1 0
+
+sophos  antivirus - MID 66784457 0 - Virus 'CXmail/MalPE-HB' 'body.scan/242426.cab/rockro9046.exe' 1 0
+
+sophos  antivirus - MID 68016096 0 - Virus 'CXmail/MalPE-FL' 'body.scan/redactedFileName.rar/redactedFileName.exe' 1 0
+
+sophos  antivirus - MID 68016096 0 - Virus 'CXmail/MalPE-AC' 'body.scan/redactedFileName.rar' 1 0
+
+sophos  antivirus - MID 66301278 0 - Virus 'Mal/DrodRar-AIC' 'body.scan/anotherFileName.arj' 1 0
+
+sophos  antivirus - MID 67753636 0 - Virus 'Troj/MSIL-TAR' 'body.scan/otherFileName.exe' 1 0
+
+sophos  antivirus - MID 66710307 7 - Limit - 'Max Files Exceeded'
+
+sophos  antivirus - MID 66708787 - timed out on message
 ```
 ## Authentication Logs
 ```
@@ -172,6 +195,44 @@ Internal SMTP system successfully sent a message to example.com with subject 'Wa
 Internal SMTP giving up on message to example.com with subject 'Warning <System> example.com: Your "IronPort Email Encryption" key will expire in under 60...': Unrecoverable error.
 
 Internal SMTP Error: Failed to send message to host 1.128.3.4:000 for recipient example: Unexpected SMTP response "553", expecting code starting with "2", response was ['#5.1.8 Domain of sender address <example.xxx> does not exist'].
+
+MID 68119155 RID [0] Response '2.0.0 OK  1687954632 redactedstring - gsmtp'
+
+MID 68119155 Subject "redacted subject"
+
+MID 68119155 queued for delivery
+
+Message finished MID 68119155 done
+
+MID 68119155 interim verdict using engine: CASE bulk
+
+MID 68119155 interim AV verdict using Sophos CLEAN
+
+MID 68119155 using engine: GRAYMAIL positive
+
+MID 68119155 Outbreak Filters: verdict negative
+
+MID 68119155 using engine: SPF Verdict Cache using cached verdict
+
+MID 68119155 Message-ID '<redacted@redactedMailFrom.com>'
+
+MID 68119155 DMARC: Verification passed
+
+MID 68119155 SPF: mailfrom identity no-reply@redactedMailFrom.com Pass (v=spf1)
+
+MID 68119155 matched all recipients for per-recipient policy DEFAULT in the inbound table
+
+MID 68119155 SDR: Tracker Header : redactedTrackerHeader
+
+MID 68119155 SDR: Domains for which SDR is requested: reverse DNS host: redacted.redactedMailFrom.com, helo: redacted.redactedMailFrom.com, env-from: redactedMailFrom.com, header-from: redactedMailFrom.com, reply-to: redactedMailFrom.com
+
+MID 68119155 SDR: Consolidated Sender Threat Level: Neutral, Threat Category: N/A, Suspected Domain(s) : N/A (other reasons for verdict). Sender Maturity: 30 days (or greater) for domain: redacted.redactedMailFrom.com
+
+MID 68119155 DMARC: Message from domain redactedMailFrom.com, DMARC pass (SPF aligned True, DKIM aligned True)
+
+MID 68119155 DKIM: pass signature verified (d=redactedMailFrom.com s=srsa2048 i=@redactedMailFrom.com)
+
+MID 68119155 AMP file reputation verdict : SKIPPED (no attachment in message)
 ```
 ## Status Logs
 ```

@@ -1,7 +1,6 @@
 {
     "attributes": {
         "description": "Dashboard providing statistics about file type indicators from the Alienvault OTX integration",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -58,13 +57,32 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "ti_otx.threat"
+                                "query": "ti_otx.pulses_subscribed"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "ti_otx.threat"
+                                "data_stream.dataset": "ti_otx.pulses_subscribed"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_ioc_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
+                            "key": "labels.is_ioc_transform_source",
+                            "negate": true,
+                            "type": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "labels.is_ioc_transform_source"
                             }
                         }
                     }
@@ -78,6 +96,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -99,7 +119,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation**\n\n[OTX Overview](/app/dashboards#/view/ti_otx-7da241a0-71f3-11ec-9910-d1ceb8a1734b)  \n**[OTX Files (This Page)](/app/dashboards#/view/ti_otx-83b01770-71f3-11ec-9910-d1ceb8a1734b)**  \n[OTX URLs](/app/dashboards#/view/ti_otx-8957ff80-71f3-11ec-9910-d1ceb8a1734b)  \n\n[Integrations Page](/app/integrations/detail/ti_otx/overview)\n\n\n**Overview**\n\nThis dashboard is an overview of the different threat intelligence indicators with a **threat.indicator.type: file**.\n\nThe dashboard is made to provide general statistics and show the health of your indicators like hash type counters, popular domains, statistics about how many unique indicators are ingested and other relevant information.",
+                            "markdown": "**Navigation**\n\n[OTX Overview](/app/dashboards#/view/ti_otx-7da241a0-71f3-11ec-9910-d1ceb8a1734b)  \n**[OTX Files (This Page)](/app/dashboards#/view/ti_otx-83b01770-71f3-11ec-9910-d1ceb8a1734b)**  \n[OTX URLs](/app/dashboards#/view/ti_otx-8957ff80-71f3-11ec-9910-d1ceb8a1734b)  \n[OTX Domains](/app/dashboards#/view/ti_otx-b8cff1d0-5bc3-11ee-b268-039dec835103)  \n\n[Integrations Page](/app/integrations/detail/ti_otx/overview)\n\n\n**Overview**\n\nThis dashboard is an overview of the different threat intelligence indicators with a **threat.indicator.type: file**.\n\nThe dashboard is made to provide general statistics and show the health of your indicators like hash type counters, popular domains, statistics about how many unique indicators are ingested and other relevant information.",
                             "openLinksInNewTab": false
                         },
                         "title": "Files Navigation Textbox [Logs AbuseCH]",
@@ -116,115 +136,115 @@
                 },
                 "panelIndex": "09ba3dc0-e2e2-4799-b47f-bb919bf290a1",
                 "title": "Files Navigation Textbox [Logs OTX]",
-                "type": "visualization",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-98786f76-dac4-4fc7-9cad-8bfce17bd00d",
+                                "name": "indexpattern-datasource-layer-003978e1-a631-4440-bce2-f36cf564a507",
                                 "type": "index-pattern"
                             }
                         ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-2e2257a0-3b39-11ec-ae50-2fdf1e96c6a6"
-                        },
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
-                                        "98786f76-dac4-4fc7-9cad-8bfce17bd00d": {
+                                        "003978e1-a631-4440-bce2-f36cf564a507": {
                                             "columnOrder": [
-                                                "8622e147-406f-4711-8f68-e2425614106e"
+                                                "d8c11d12-42b8-40d5-94eb-7e820d92a456"
                                             ],
                                             "columns": {
-                                                "8622e147-406f-4711-8f68-e2425614106e": {
+                                                "d8c11d12-42b8-40d5-94eb-7e820d92a456": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Unique File types",
-                                                    "operationType": "unique_count",
+                                                    "label": "Total File Indicators",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
                                                     "scale": "ratio",
-                                                    "sourceField": "threat.indicator.file.type"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "sampling": 1
                                         }
                                     }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "8622e147-406f-4711-8f68-e2425614106e",
-                                "layerId": "98786f76-dac4-4fc7-9cad-8bfce17bd00d",
-                                "layerType": "data"
+                                "color": "#6092C0",
+                                "layerId": "003978e1-a631-4440-bce2-f36cf564a507",
+                                "layerType": "data",
+                                "metricAccessor": "d8c11d12-42b8-40d5-94eb-7e820d92a456"
                             }
                         },
-                        "title": "Unique File Types [Logs AbuseCH]",
+                        "title": "",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 8,
-                    "i": "31ea16d1-7591-42a7-b773-6fca00e5db14",
-                    "w": 6,
+                    "h": 14,
+                    "i": "29daebc2-ed97-4f85-8cdb-16d00475b8ef",
+                    "w": 25,
                     "x": 7,
                     "y": 0
                 },
-                "panelIndex": "31ea16d1-7591-42a7-b773-6fca00e5db14",
-                "title": "Unique File Types [Logs OTX]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "panelIndex": "29daebc2-ed97-4f85-8cdb-16d00475b8ef",
+                "title": "Total File Indicators [Logs OTX]",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-85ad73b3-3b76-49f1-ad20-6256b58918f8",
+                                "name": "indexpattern-datasource-layer-9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
                                 "type": "index-pattern"
                             }
                         ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-28549810-3b39-11ec-ae50-2fdf1e96c6a6"
-                        },
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
-                                        "85ad73b3-3b76-49f1-ad20-6256b58918f8": {
+                                        "9ad53a93-24d4-409e-b9b0-a003ac9b8c4c": {
                                             "columnOrder": [
-                                                "289bd005-bdd2-4f3b-83b9-ad6ae52a9ed3"
+                                                "540b07d6-a6dd-4e61-bc42-67419025e32a"
                                             ],
                                             "columns": {
-                                                "289bd005-bdd2-4f3b-83b9-ad6ae52a9ed3": {
+                                                "540b07d6-a6dd-4e61-bc42-67419025e32a": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Unique SHA1",
                                                     "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "threat.indicator.file.hash.sha1"
                                                 }
@@ -232,173 +252,75 @@
                                             "incompleteColumns": {}
                                         }
                                     }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "289bd005-bdd2-4f3b-83b9-ad6ae52a9ed3",
-                                "layerId": "85ad73b3-3b76-49f1-ad20-6256b58918f8",
-                                "layerType": "data"
+                                "color": "#6092C0",
+                                "layerId": "9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
+                                "layerType": "data",
+                                "metricAccessor": "540b07d6-a6dd-4e61-bc42-67419025e32a"
                             }
                         },
-                        "title": "Unique SHA1 [Logs AbuseCH]",
+                        "title": "",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 8,
-                    "i": "e9b6f0ad-5e6b-44da-923e-dc0d5ccfdfea",
-                    "w": 6,
-                    "x": 13,
+                    "h": 7,
+                    "i": "066d36b4-7b9a-4683-97ad-b0d20a02ad83",
+                    "w": 8,
+                    "x": 32,
                     "y": 0
                 },
-                "panelIndex": "e9b6f0ad-5e6b-44da-923e-dc0d5ccfdfea",
+                "panelIndex": "066d36b4-7b9a-4683-97ad-b0d20a02ad83",
                 "title": "Unique SHA1 [Logs OTX]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-222b3ad0-2e5d-46a0-ae3d-f6a0b15ac2c8",
+                                "name": "indexpattern-datasource-layer-9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
                                 "type": "index-pattern"
                             }
                         ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-4ee4a490-3b37-11ec-ae50-2fdf1e96c6a6"
-                        },
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
-                                        "222b3ad0-2e5d-46a0-ae3d-f6a0b15ac2c8": {
+                                        "9ad53a93-24d4-409e-b9b0-a003ac9b8c4c": {
                                             "columnOrder": [
-                                                "06b603cb-c9fb-493a-9ca4-e6502ca12054",
-                                                "de0e531b-dda7-461f-9783-3ab9267d202e"
+                                                "abcad983-1777-4f33-84b5-31d0d7d65863"
                                             ],
                                             "columns": {
-                                                "06b603cb-c9fb-493a-9ca4-e6502ca12054": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top values of threat.indicator.file.type",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "de0e531b-dda7-461f-9783-3ab9267d202e",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "threat.indicator.file.type"
-                                                },
-                                                "de0e531b-dda7-461f-9783-3ab9267d202e": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "Records"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "groups": [
-                                            "06b603cb-c9fb-493a-9ca4-e6502ca12054"
-                                        ],
-                                        "layerId": "222b3ad0-2e5d-46a0-ae3d-f6a0b15ac2c8",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metric": "de0e531b-dda7-461f-9783-3ab9267d202e",
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent"
-                                    }
-                                ],
-                                "shape": "treemap"
-                            }
-                        },
-                        "title": "File Types [Logs AbuseCH]",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 16,
-                    "i": "5f1d0cf1-c331-4495-99d5-5e80d023c482",
-                    "w": 21,
-                    "x": 22,
-                    "y": 0
-                },
-                "panelIndex": "5f1d0cf1-c331-4495-99d5-5e80d023c482",
-                "title": "File Types [Logs OTX]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-b83c382d-fab9-4e60-a632-475e221cc20c",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-d888e3e0-3b38-11ec-ae50-2fdf1e96c6a6"
-                        },
-                        "state": {
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "b83c382d-fab9-4e60-a632-475e221cc20c": {
-                                            "columnOrder": [
-                                                "eda3c6d9-dacb-4e5e-b977-50104f76e91a"
-                                            ],
-                                            "columns": {
-                                                "eda3c6d9-dacb-4e5e-b977-50104f76e91a": {
+                                                "abcad983-1777-4f33-84b5-31d0d7d65863": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Unique MD5",
                                                     "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "threat.indicator.file.hash.md5"
                                                 }
@@ -406,71 +328,75 @@
                                             "incompleteColumns": {}
                                         }
                                     }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "eda3c6d9-dacb-4e5e-b977-50104f76e91a",
-                                "layerId": "b83c382d-fab9-4e60-a632-475e221cc20c",
-                                "layerType": "data"
+                                "color": "#6092C0",
+                                "layerId": "9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
+                                "layerType": "data",
+                                "metricAccessor": "abcad983-1777-4f33-84b5-31d0d7d65863"
                             }
                         },
-                        "title": "Unique MD5 [Logs AbuseCH]",
+                        "title": "",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 8,
-                    "i": "4d3e11dc-c4cc-4373-bb83-3d39fe6ffa98",
-                    "w": 6,
-                    "x": 7,
-                    "y": 8
+                    "h": 7,
+                    "i": "a3db79fd-5f1a-4cfb-b75b-0a79e4e5d8a7",
+                    "w": 8,
+                    "x": 40,
+                    "y": 0
                 },
-                "panelIndex": "4d3e11dc-c4cc-4373-bb83-3d39fe6ffa98",
+                "panelIndex": "a3db79fd-5f1a-4cfb-b75b-0a79e4e5d8a7",
                 "title": "Unique MD5 [Logs OTX]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-49b7070a-f1d3-46e1-a980-2f6d6d130167",
+                                "name": "indexpattern-datasource-layer-9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
                                 "type": "index-pattern"
                             }
                         ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-5d6111a0-3b39-11ec-ae50-2fdf1e96c6a6"
-                        },
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
-                                        "49b7070a-f1d3-46e1-a980-2f6d6d130167": {
+                                        "9ad53a93-24d4-409e-b9b0-a003ac9b8c4c": {
                                             "columnOrder": [
-                                                "b6c5e221-88ff-490e-bd3e-188b3e0dd1f4"
+                                                "785a5f31-ae36-4230-85f2-2528929e1f41"
                                             ],
                                             "columns": {
-                                                "b6c5e221-88ff-490e-bd3e-188b3e0dd1f4": {
+                                                "785a5f31-ae36-4230-85f2-2528929e1f41": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Unique SHA256",
                                                     "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "threat.indicator.file.hash.sha256"
                                                 }
@@ -478,205 +404,217 @@
                                             "incompleteColumns": {}
                                         }
                                     }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "b6c5e221-88ff-490e-bd3e-188b3e0dd1f4",
-                                "layerId": "49b7070a-f1d3-46e1-a980-2f6d6d130167",
-                                "layerType": "data"
+                                "color": "#6092C0",
+                                "layerId": "9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
+                                "layerType": "data",
+                                "metricAccessor": "785a5f31-ae36-4230-85f2-2528929e1f41"
                             }
                         },
-                        "title": "Unique SHA256 [Logs AbuseCH]",
+                        "title": "",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 8,
-                    "i": "93e32abe-87e3-469e-b7e9-a7ef7dfa2cce",
-                    "w": 6,
-                    "x": 13,
-                    "y": 8
+                    "h": 7,
+                    "i": "517f1167-ffba-4850-8f49-e3a1eac745a4",
+                    "w": 8,
+                    "x": 32,
+                    "y": 7
                 },
-                "panelIndex": "93e32abe-87e3-469e-b7e9-a7ef7dfa2cce",
+                "panelIndex": "517f1167-ffba-4850-8f49-e3a1eac745a4",
                 "title": "Unique SHA256 [Logs OTX]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-118b51de-bd55-4ed6-b916-c939ad73b2c3",
+                                "name": "indexpattern-datasource-layer-9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
                                 "type": "index-pattern"
                             }
                         ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "b8c9d8e0-3bb8-11ec-ae8c-7d00429ad420"
-                        },
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
-                                        "118b51de-bd55-4ed6-b916-c939ad73b2c3": {
+                                        "9ad53a93-24d4-409e-b9b0-a003ac9b8c4c": {
                                             "columnOrder": [
-                                                "1ada77b6-5741-44ff-a00d-4653fca22f84",
-                                                "dcc2a7b9-e44b-4681-ba02-bdea442ca9a5"
+                                                "fac80706-1e0d-4f7d-9ef4-612b6c6b3847"
                                             ],
                                             "columns": {
-                                                "1ada77b6-5741-44ff-a00d-4653fca22f84": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top Countries",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "dcc2a7b9-e44b-4681-ba02-bdea442ca9a5",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "threat.indicator.geo.country_iso_code"
-                                                },
-                                                "dcc2a7b9-e44b-4681-ba02-bdea442ca9a5": {
+                                                "fac80706-1e0d-4f7d-9ef4-612b6c6b3847": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Countries",
-                                                    "operationType": "count",
+                                                    "label": "Unique Imphash",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "threat.indicator.file.pe.imphash"
                                                 }
                                             },
                                             "incompleteColumns": {}
                                         }
                                     }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "groups": [
-                                            "1ada77b6-5741-44ff-a00d-4653fca22f84"
-                                        ],
-                                        "layerId": "118b51de-bd55-4ed6-b916-c939ad73b2c3",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "metric": "dcc2a7b9-e44b-4681-ba02-bdea442ca9a5",
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent"
-                                    }
-                                ],
-                                "shape": "pie"
+                                "color": "#6092C0",
+                                "layerId": "9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
+                                "layerType": "data",
+                                "metricAccessor": "fac80706-1e0d-4f7d-9ef4-612b6c6b3847"
                             }
                         },
-                        "title": "Top Countries [Logs AbuseCH]",
-                        "visualizationType": "lnsPie"
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 19,
-                    "i": "6189e979-9121-4247-9942-fa7a3cc3839c",
-                    "w": 20,
-                    "x": 7,
-                    "y": 16
+                    "h": 7,
+                    "i": "11b2daa2-1bf3-4924-9587-19c3cffc2bc2",
+                    "w": 8,
+                    "x": 40,
+                    "y": 7
                 },
-                "panelIndex": "6189e979-9121-4247-9942-fa7a3cc3839c",
-                "title": "Top Countries [Logs OTX]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "panelIndex": "11b2daa2-1bf3-4924-9587-19c3cffc2bc2",
+                "title": "Unique Imphash [Logs OTX]",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-06d9ac79-2055-437e-892c-de9ee07fe674",
+                                "name": "indexpattern-datasource-layer-da756e02-9b46-41f3-b831-a1ac41772b3a",
                                 "type": "index-pattern"
                             }
                         ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "2d0c0ec0-3bbf-11ec-ae8c-7d00429ad420"
-                        },
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
-                                        "06d9ac79-2055-437e-892c-de9ee07fe674": {
+                                        "da756e02-9b46-41f3-b831-a1ac41772b3a": {
                                             "columnOrder": [
-                                                "35f5321a-27f4-4076-9d1d-d326187f4689",
-                                                "df062557-78a5-4a78-93f1-34583c809bc3"
+                                                "c0edc69b-0a42-46d4-857f-491241b72b03",
+                                                "24b75ffb-e46c-42df-a032-df7c9c87d2c4"
                                             ],
                                             "columns": {
-                                                "35f5321a-27f4-4076-9d1d-d326187f4689": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "File Names",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "df062557-78a5-4a78-93f1-34583c809bc3",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "threat.indicator.file.name"
-                                                },
-                                                "df062557-78a5-4a78-93f1-34583c809bc3": {
+                                                "24b75ffb-e46c-42df-a032-df7c9c87d2c4": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Count",
+                                                    "label": "Total Indicators",
                                                     "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
+                                                },
+                                                "c0edc69b-0a42-46d4-857f-491241b72b03": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "threat.indicator.file.hash.md5 : *"
+                                                                },
+                                                                "label": "MD5"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "threat.indicator.file.hash.sha1 : * "
+                                                                },
+                                                                "label": "SHA1"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "threat.indicator.file.hash.sha256 : * "
+                                                                },
+                                                                "label": "SHA256"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "threat.indicator.file.hash.pehash : * "
+                                                                },
+                                                                "label": "PE HASH"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "threat.indicator.file.pe.imphash : * "
+                                                                },
+                                                                "label": "PE IMPHASH"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "scale": "ordinal"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
                                         }
                                     }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -684,46 +622,45 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "35f5321a-27f4-4076-9d1d-d326187f4689",
+                                        "columnId": "c0edc69b-0a42-46d4-857f-491241b72b03",
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "df062557-78a5-4a78-93f1-34583c809bc3",
+                                        "columnId": "24b75ffb-e46c-42df-a032-df7c9c87d2c4",
                                         "isTransposed": false
                                     }
                                 ],
-                                "layerId": "06d9ac79-2055-437e-892c-de9ee07fe674",
+                                "layerId": "da756e02-9b46-41f3-b831-a1ac41772b3a",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Most popular file names [Logs AbuseCH]",
+                        "title": "",
+                        "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 19,
-                    "i": "b733385b-14f8-4469-b777-86d0139cc56b",
-                    "w": 21,
-                    "x": 27,
-                    "y": 16
+                    "h": 14,
+                    "i": "564cc351-9b4a-4db1-bb41-4ac9425c7837",
+                    "w": 41,
+                    "x": 7,
+                    "y": 14
                 },
-                "panelIndex": "b733385b-14f8-4469-b777-86d0139cc56b",
-                "title": "Most popular file names [Logs OTX]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "panelIndex": "564cc351-9b4a-4db1-bb41-4ac9425c7837",
+                "title": "File Indicators By Type [Logs OTX]",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs OTX] Files",
         "version": 1
     },
-    "coreMigrationVersion": "8.0.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-09-25T17:14:02.800Z",
     "id": "ti_otx-83b01770-71f3-11ec-9910-d1ceb8a1734b",
-    "migrationVersion": {
-        "dashboard": "8.0.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -742,79 +679,55 @@
         },
         {
             "id": "logs-*",
-            "name": "31ea16d1-7591-42a7-b773-6fca00e5db14:indexpattern-datasource-current-indexpattern",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[3].meta.index",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "31ea16d1-7591-42a7-b773-6fca00e5db14:indexpattern-datasource-layer-98786f76-dac4-4fc7-9cad-8bfce17bd00d",
+            "name": "29daebc2-ed97-4f85-8cdb-16d00475b8ef:indexpattern-datasource-layer-003978e1-a631-4440-bce2-f36cf564a507",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "e9b6f0ad-5e6b-44da-923e-dc0d5ccfdfea:indexpattern-datasource-current-indexpattern",
+            "name": "066d36b4-7b9a-4683-97ad-b0d20a02ad83:indexpattern-datasource-layer-9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "e9b6f0ad-5e6b-44da-923e-dc0d5ccfdfea:indexpattern-datasource-layer-85ad73b3-3b76-49f1-ad20-6256b58918f8",
+            "name": "a3db79fd-5f1a-4cfb-b75b-0a79e4e5d8a7:indexpattern-datasource-layer-9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "5f1d0cf1-c331-4495-99d5-5e80d023c482:indexpattern-datasource-current-indexpattern",
+            "name": "517f1167-ffba-4850-8f49-e3a1eac745a4:indexpattern-datasource-layer-9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "5f1d0cf1-c331-4495-99d5-5e80d023c482:indexpattern-datasource-layer-222b3ad0-2e5d-46a0-ae3d-f6a0b15ac2c8",
+            "name": "11b2daa2-1bf3-4924-9587-19c3cffc2bc2:indexpattern-datasource-layer-9ad53a93-24d4-409e-b9b0-a003ac9b8c4c",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "4d3e11dc-c4cc-4373-bb83-3d39fe6ffa98:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "4d3e11dc-c4cc-4373-bb83-3d39fe6ffa98:indexpattern-datasource-layer-b83c382d-fab9-4e60-a632-475e221cc20c",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "93e32abe-87e3-469e-b7e9-a7ef7dfa2cce:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "93e32abe-87e3-469e-b7e9-a7ef7dfa2cce:indexpattern-datasource-layer-49b7070a-f1d3-46e1-a980-2f6d6d130167",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "6189e979-9121-4247-9942-fa7a3cc3839c:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "6189e979-9121-4247-9942-fa7a3cc3839c:indexpattern-datasource-layer-118b51de-bd55-4ed6-b916-c939ad73b2c3",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "b733385b-14f8-4469-b777-86d0139cc56b:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "b733385b-14f8-4469-b777-86d0139cc56b:indexpattern-datasource-layer-06d9ac79-2055-437e-892c-de9ee07fe674",
+            "name": "564cc351-9b4a-4db1-bb41-4ac9425c7837:indexpattern-datasource-layer-da756e02-9b46-41f3-b831-a1ac41772b3a",
             "type": "index-pattern"
         },
         {
             "id": "ti_otx-6bc35230-71fd-11ec-9910-d1ceb8a1734b",
-            "name": "tag-ti_otx-6bc35230-71fd-11ec-9910-d1ceb8a1734b",
+            "name": "tag-ref-ti_otx-6bc35230-71fd-11ec-9910-d1ceb8a1734b",
+            "type": "tag"
+        },
+        {
+            "id": "ti_otx-security-solution-default",
+            "name": "tag-ref-ti_otx-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "ti_otx-security-solution-default",
+            "name": "tag-ref-security-solution-default",
             "type": "tag"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

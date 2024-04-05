@@ -1,0 +1,38 @@
+{
+    "id": "368b52f8-b468-5fc7-9e47-b1b5e040e051",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/storage/blobs/security-recommendations#encryption-in-transit\n2. https://docs.microsoft.com/en-us/cli/azure/storage/account?view=azure-cli-latest#az_storage_account_list\n3. https://docs.microsoft.com/en-us/cli/azure/storage/account?view=azure-cli-latest#az_storage_account_update\n4. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-data-protection#dp-4-encrypt-sensitive-information-in-transit",
+            "id": "368b52f8-b468-5fc7-9e47-b1b5e040e051",
+            "name": "Ensure that 'Secure transfer required' is set to 'Enabled'",
+            "profile_applicability": "* Level 1",
+            "description": "Enable data encryption in transit.",
+            "rationale": "The secure transfer option enhances the security of a storage account by only allowing requests to the storage account by a secure connection.\nFor example, when calling REST APIs to access storage accounts, the connection must use HTTPS.\nAny requests using HTTP will be rejected when 'secure transfer required' is enabled.\nWhen using the Azure files service, connection without encryption will fail, including scenarios using SMB 2.1, SMB 3.0 without encryption, and some flavors of the Linux SMB client.\nBecause Azure storage doesn\u2019t support HTTPS for custom domain names, this option is not applied when using a custom domain name.",
+            "audit": "**From Azure Portal**\n\n1. Go to `Storage Accounts`\n2. For each storage account, go to `Configuration`\n3. Ensure that `Secure transfer required` is set to `Enabled`\n\n**From Azure CLI**\n\nUse the below command to ensure the `Secure transfer required` is enabled for all the `Storage Accounts` by ensuring the output contains `true` for each of the `Storage Accounts`.\n```\naz storage account list --query \"[*].[name,enableHttpsTrafficOnly]\"\n```",
+            "remediation": "**From Azure Portal**\n\n1. Go to `Storage Accounts`\n2. For each storage account, go to `Configuration`\n3. Set `Secure transfer required` to `Enabled`\n\n**From Azure CLI**\n\nUse the below command to enable `Secure transfer required` for a `Storage Account`\n```\naz storage account update --name <storageAccountName> --resource-group <resourceGroupName> --https-only true\n```",
+            "section": "Storage Accounts",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 3.1",
+                "Storage Accounts"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "3.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_3_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

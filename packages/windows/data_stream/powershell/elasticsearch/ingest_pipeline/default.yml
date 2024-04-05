@@ -10,15 +10,37 @@ processors:
       trim_value: "\n\t"
       value_split: "="
       if: ctx?.winlog?.event_id == "800"
-  - kv:
-      description: Split Events 4xx and 600 event data fields.
-      field: winlog.event_data.param3
-      target_field: winlog.event_data
-      field_split: "\n\t"
-      trim_key: "\n\t"
-      trim_value: "\n\t"
-      value_split: "="
-      if: ctx?.winlog?.event_id != "800"
+  - script:
+      description: |-
+        Split Events 4xx and 600 event data fields.
+        Some events can contain multiline values containing also '\n', '\s', and '=' characters,
+        for this reason a simple KV processor is not reliable enough and we need a more specific parsing.
+      lang: painless
+      if: ctx.winlog?.event_id != "800" && ctx.winlog?.event_data?.param3 != null
+      params:
+        field: param3
+      source: |-
+        def p = ctx.winlog?.event_data[params["field"]];
+        // Define the pattern that will match all keys
+        def pat = /(^|(^[\n]?))?\t([^\s\W]+)=/m;
+        def m = pat.matcher(p);
+
+        // we position ourselves in the first matching key
+        m.find();
+        def key = m.group(3).trim();
+        def previousEnd = m.end();
+
+        // while new keys are found, we add everything between one key and the next
+        // as the value, regardless of its contents
+        while(m.find())
+        {
+            ctx.winlog.event_data[key] = p.substring(previousEnd, m.start()).trim();
+            previousEnd = m.end();
+            key = m.group(3).trim();
+        }
+
+        // add remaining value
+        ctx.winlog.event_data[key] = p.substring(previousEnd).trim();
 
   ## ECS and Event fields.
 

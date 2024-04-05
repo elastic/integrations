@@ -1,6 +1,11 @@
 ---
 description: Pipeline for parsing GCP Redis metrics.
 processors:
+  - fingerprint:
+      fields:
+        - gcp.labels
+      target_field: gcp.labels_fingerprint
+      ignore_missing: true
   - rename:
       field: gcp.metrics.clients.blocked.value
       target_field: gcp.redis.clients.blocked.count

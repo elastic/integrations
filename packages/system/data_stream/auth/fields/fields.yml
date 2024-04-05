@@ -56,7 +56,35 @@
           description: The default shell for the new user.
     - name: groupadd
       type: group
+    - name: syslog
+      type: group
+      fields:
+        # To be moved to ecs.yml after ECS version upgrade
+        - name: version
+          type: keyword
 - description: "Operating system version as a raw string."
   ignore_above: 1024
   name: version
   type: keyword
+# To be moved to ecs.yml after ECS version upgrade
+- name: log
+  type: group
+  fields:
+    - name: syslog
+      type: group
+      fields:
+        - name: appname
+          type: keyword
+          description: The device or application that originated the Syslog message.
+        - name: hostname
+          type: keyword
+          description: The hostname, FQDN, or IP of the machine that originally sent the Syslog message.
+        - name: procid
+          type: keyword
+          description: The process name or ID that originated the Syslog message, if available.
+        - name: version
+          type: keyword
+          description: The version of the Syslog protocol specification. Only applicable for RFC 5424 messages.
+    - name: offset
+      type: long
+      description: Log offset

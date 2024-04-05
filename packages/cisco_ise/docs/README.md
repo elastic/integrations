@@ -158,7 +158,7 @@ An example event for `log` looks as following:
         "ip": "81.2.69.144"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "901f4c48-583a-4848-aa7b-89dc8e9c4b76",
@@ -223,6 +223,7 @@ An example event for `log` looks as following:
         "name": "psxvne"
     }
 }
+
 ```
 
 **Exported fields**
@@ -285,7 +286,9 @@ An example event for `log` looks as following:
 | cisco_ise.log.avpair.timezone |  | keyword |
 | cisco_ise.log.called_station.id |  | keyword |
 | cisco_ise.log.calling_station.id |  | keyword |
+| cisco_ise.log.calling_station_id |  | keyword |
 | cisco_ise.log.category.name |  | keyword |
+| cisco_ise.log.cause |  | keyword |
 | cisco_ise.log.cisco_av_pair.coa-push |  | boolean |
 | cisco_ise.log.cisco_av_pair.cts-device-capability |  | keyword |
 | cisco_ise.log.cisco_av_pair.cts-environment-data |  | keyword |
@@ -323,9 +326,11 @@ An example event for `log` looks as following:
 | cisco_ise.log.ep.identity_group |  | keyword |
 | cisco_ise.log.ep.mac.address |  | keyword |
 | cisco_ise.log.error.message |  | keyword |
+| cisco_ise.log.error_message |  | keyword |
 | cisco_ise.log.event.timestamp |  | date |
 | cisco_ise.log.failure.flag |  | boolean |
 | cisco_ise.log.failure.reason |  | keyword |
+| cisco_ise.log.failure_reason |  | keyword |
 | cisco_ise.log.feed_service.feed.name |  | keyword |
 | cisco_ise.log.feed_service.feed.version |  | keyword |
 | cisco_ise.log.feed_service.host |  | keyword |
@@ -362,11 +367,15 @@ An example event for `log` looks as following:
 | cisco_ise.log.nas.port.id |  | keyword |
 | cisco_ise.log.nas.port.number |  | long |
 | cisco_ise.log.nas.port.type |  | keyword |
+| cisco_ise.log.nas_identifier |  | keyword |
+| cisco_ise.log.nas_ip_address |  | keyword |
 | cisco_ise.log.network.device.groups |  | keyword |
 | cisco_ise.log.network.device.name |  | keyword |
 | cisco_ise.log.network.device.profile |  | keyword |
 | cisco_ise.log.network.device.profile_id |  | keyword |
 | cisco_ise.log.network.device.profile_name |  | keyword |
+| cisco_ise.log.network_device_ip |  | ip |
+| cisco_ise.log.network_device_name |  | keyword |
 | cisco_ise.log.object.internal.id |  | keyword |
 | cisco_ise.log.object.name |  | keyword |
 | cisco_ise.log.object.type |  | keyword |
@@ -496,6 +505,7 @@ An example event for `log` looks as following:
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
@@ -550,6 +560,8 @@ An example event for `log` looks as following:
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |

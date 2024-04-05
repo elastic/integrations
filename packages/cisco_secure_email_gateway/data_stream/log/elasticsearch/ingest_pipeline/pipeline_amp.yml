@@ -6,24 +6,24 @@ processors:
   - grok:
       field: cisco_secure_email_gateway.log.message
       patterns:
-        - "^File reputation query initiating. %{GREEDYDATA:_tmp.new_message}$"
-        - "^Response received for file reputation query from (Cloud|Cache). %{GREEDYDATA:_tmp.new_message}$"
-        - "^File Analysis complete. SHA256: %{GREEDYDATA:email.attachments.file.hash.sha256}, Submit Timestamp: %{GREEDYDATA:_tmp.submit.timestamp}, Update Timestamp: %{GREEDYDATA:_tmp.update.timestamp}, Disposition: %{DATA:cisco_secure_email_gateway.log.disposition} Score: %{NUMBER:cisco_secure_email_gateway.log.score:long}, run_id: %{NUMBER:cisco_secure_email_gateway.log.run_id} Details: %{DATA:cisco_secure_email_gateway.log.details} Spyname:\\[%{GREEDYDATA:cisco_secure_email_gateway.log.spy_name}\\]$"
-        - "^(?i)File not uploaded for analysis.\\s+MID = %{NUMBER:email.message_id},? File SHA256\\[%{GREEDYDATA:email.attachments.file.hash.sha256}\\],? File mime\\[%{GREEDYDATA:email.attachments.file.mime_type}\\],? Reason: %{GREEDYDATA:event.reason}$"
-        - "^File analysis upload skipped. SHA256: %{GREEDYDATA:email.attachments.file.hash.sha256},Timestamp\\[%{GREEDYDATA:_tmp.submit.timestamp}\\] details\\[%{GREEDYDATA:_tmp.cisco_secure_email_gateway.log.remaining_details}]$"
-        - "^SHA256: %{GREEDYDATA:email.attachments.file.hash.sha256},Timestamp\\[%{GREEDYDATA:_tmp.submit.timestamp}\\] details\\[%{GREEDYDATA:cisco_secure_email_gateway.log.server_error_details}\\]$"
-        - "^Retrospective verdict received. %{GREEDYDATA:_tmp.new_message}$"
-        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
+        - '^File reputation query initiating. %{GREEDYDATA:_tmp.new_message}$'
+        - '^Response received for file reputation query from (Cloud|Cache). %{GREEDYDATA:_tmp.new_message}$'
+        - '^File Analysis complete. SHA256: %{GREEDYDATA:email.attachments.file.hash.sha256}, Submit Timestamp: %{GREEDYDATA:_tmp.submit.timestamp}, Update Timestamp: %{GREEDYDATA:_tmp.update.timestamp}, Disposition: %{DATA:cisco_secure_email_gateway.log.disposition} Score: %{NUMBER:cisco_secure_email_gateway.log.score:long}, run_id: %{NUMBER:cisco_secure_email_gateway.log.run_id} Details: %{DATA:cisco_secure_email_gateway.log.details} Spyname:\[%{GREEDYDATA:cisco_secure_email_gateway.log.spy_name}\]$'
+        - '^(?i)File not uploaded for analysis.\s+MID = %{NUMBER:email.message_id},? File SHA256\[%{GREEDYDATA:email.attachments.file.hash.sha256}\],? File mime\[%{GREEDYDATA:email.attachments.file.mime_type}\],? Reason: %{GREEDYDATA:event.reason}$'
+        - '^File analysis upload skipped. SHA256: %{GREEDYDATA:email.attachments.file.hash.sha256},Timestamp\[%{GREEDYDATA:_tmp.submit.timestamp}\] details\[%{GREEDYDATA:_tmp.cisco_secure_email_gateway.log.remaining_details}]$'
+        - '^SHA256: %{GREEDYDATA:email.attachments.file.hash.sha256},Timestamp\[%{GREEDYDATA:_tmp.submit.timestamp}\] details\[%{GREEDYDATA:cisco_secure_email_gateway.log.server_error_details}\]$'
+        - '^Retrospective verdict received. %{GREEDYDATA:_tmp.new_message}$'
+        - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
   - kv:
       field: _tmp.new_message
       if: ctx._tmp.new_message != null
-      field_split: ', |,'
-      value_split: ' = | =|: '
+      field_split: ",\\s*(?=[^',]*[=:][^',]*)"
+      value_split: '\s*=\s*|:\s*'
   - grok:
       field: _tmp.cisco_secure_email_gateway.log.remaining_details
       if: ctx._tmp?.cisco_secure_email_gateway?.log?.remaining_details != null
       patterns:
-        - "^File SHA256\\[%{GREEDYDATA:email.attachments.file.hash.sha256}\\] file mime\\[%{GREEDYDATA:email.attachments.file.mime_type}\\], upload priority\\[%{GREEDYDATA:cisco_secure_email_gateway.log.upload.priority}\\] not uploaded, re-tries\\[%{GREEDYDATA:cisco_secure_email_gateway.log.retries:long}\\], backoff\\[%{GREEDYDATA:cisco_secure_email_gateway.log.backoff:long}\\] %{GREEDYDATA:cisco_secure_email_gateway.log.details}$"
+        - '^File SHA256\[%{GREEDYDATA:email.attachments.file.hash.sha256}\] file mime\[%{GREEDYDATA:email.attachments.file.mime_type}\], upload priority\[%{GREEDYDATA:cisco_secure_email_gateway.log.upload.priority}\] not uploaded, re-tries\[%{GREEDYDATA:cisco_secure_email_gateway.log.retries:long}\], backoff\[%{GREEDYDATA:cisco_secure_email_gateway.log.backoff:long}\] %{GREEDYDATA:cisco_secure_email_gateway.log.details}$'
   - rename:
       field: Timestamp
       target_field: _tmp.submit.timestamp
@@ -88,9 +88,13 @@ processors:
       field: Disposition
       target_field: cisco_secure_email_gateway.log.disposition
       ignore_missing: true
+  - convert:
+      field: 'Analysis Score'
+      type: long
+      ignore_missing: true
   - rename:
-      field: 'Reputation Score'
-      target_field: cisco_secure_email_gateway.log.reputation_score
+      field: 'Analysis Score'
+      target_field: cisco_secure_email_gateway.log.score
       ignore_missing: true
   - rename:
       field: sha256
@@ -115,6 +119,10 @@ processors:
   - rename:
       field: Verdict
       target_field: cisco_secure_email_gateway.log.verdict
+      ignore_missing: true
+  - rename:
+      field: verdict_source
+      target_field: cisco_secure_email_gateway.log.verdict_source
       ignore_missing: true
   - gsub:
       field: email.attachments.file.name

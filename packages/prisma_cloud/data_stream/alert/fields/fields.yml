@@ -1,0 +1,464 @@
+- name: prisma_cloud
+  type: group
+  fields:
+    - name: alert
+      type: group
+      fields:
+        - name: additional_info
+          type: group
+          fields:
+            - name: scanner_version
+              type: keyword
+        - name: attribution
+          type: group
+          fields:
+            - name: event_list
+              type: group
+              fields:
+                - name: ts
+                  type: date
+                - name: username
+                  type: keyword
+                - name: value
+                  type: keyword
+            - name: resource
+              type: group
+              fields:
+                - name: created_by
+                  type: keyword
+                - name: created_on
+                  type: date
+        - name: count
+          type: long
+        - name: dismissal
+          type: group
+          fields:
+            - name: duration
+              type: keyword
+            - name: note
+              type: keyword
+            - name: until_ts
+              type: date
+        - name: dismissed_by
+          type: keyword
+        - name: event_occurred
+          type: date
+          description: Timestamp when the event occurred. Set only for Audit Event policies.
+        - name: first_seen
+          type: date
+          description: Timestamp of the first policy violation for the alert resource (i.e. the alert creation timestamp).
+        - name: history
+          type: group
+          fields:
+            - name: modified_by
+              type: keyword
+            - name: modified_on
+              type: date
+            - name: reason
+              type: keyword
+            - name: status
+              type: keyword
+        - name: id
+          type: keyword
+          description: Alert ID.
+        - name: last
+          type: group
+          fields:
+            - name: seen
+              type: date
+              description: Timestamp when alert status was last updated.
+            - name: updated
+              type: date
+              description: Timestamp when alert was last updated. Updates include but are not limited to resource updates, policy updates, alert rule updates, and alert status changes.
+        - name: metadata
+          type: group
+          fields:
+            - name: save_search_id
+              type: keyword
+        - name: policy
+          type: group
+          fields:
+            - name: cloud_type
+              type: keyword
+              description: "Possible values: [ALL, AWS, AZURE, GCP, ALIBABA_CLOUD, OCI, IBM] Cloud type (Required for config policies). Not case-sensitive. Default is ALL."
+            - name: compliance_metadata
+              type: group
+              fields:
+                - name: compliance_id
+                  type: keyword
+                  description: Compliance Section UUID.
+                - name: custom_assigned
+                  type: boolean
+                - name: policy_id
+                  type: keyword
+                - name: requirement
+                  type: group
+                  fields:
+                    - name: description
+                      type: keyword
+                    - name: id
+                      type: keyword
+                    - name: name
+                      type: keyword
+                    - name: view_order
+                      type: keyword
+                - name: section
+                  type: group
+                  fields:
+                    - name: description
+                      type: keyword
+                    - name: id
+                      type: keyword
+                    - name: label
+                      type: keyword
+                    - name: view_order
+                      type: long
+                - name: standard
+                  type: group
+                  fields:
+                    - name: description
+                      type: keyword
+                    - name: id
+                      type: keyword
+                    - name: name
+                      type: keyword
+                - name: system_default
+                  type: boolean
+            - name: created_by
+              type: keyword
+            - name: created_on
+              type: date
+            - name: deleted
+              type: boolean
+            - name: description
+              type: keyword
+            - name: enabled
+              type: boolean
+            - name: finding_types
+              type: keyword
+            - name: id
+              type: keyword
+            - name: labels
+              type: keyword
+            - name: last_modified_by
+              type: keyword
+            - name: last_modified_on
+              type: date
+            - name: name
+              type: keyword
+            - name: recommendation
+              type: keyword
+            - name: remediable
+              type: boolean
+            - name: remediation
+              type: group
+              fields:
+                - name: actions
+                  type: group
+                  fields:
+                    - name: operation
+                      type: keyword
+                    - name: payload
+                      type: keyword
+                - name: cli_script_template
+                  type: keyword
+                - name: description
+                  type: keyword
+            - name: rule
+              type: group
+              fields:
+                - name: api_name
+                  type: keyword
+                - name: cloud
+                  type: group
+                  fields:
+                    - name: account
+                      type: keyword
+                    - name: type
+                      type: keyword
+                - name: criteria
+                  type: keyword
+                  description: Saved search ID that defines the rule criteria.
+                - name: data_criteria
+                  type: group
+                  fields:
+                    - name: classification_result
+                      type: keyword
+                      description: Data policy. Required for DLP rule criteria.
+                    - name: exposure
+                      type: keyword
+                      description: Possible values [private, public, conditional].
+                    - name: extension
+                      type: keyword
+                - name: last_modified_on
+                  type: date
+                - name: name
+                  type: keyword
+                - name: parameters
+                  type: flattened
+                - name: resource
+                  type: group
+                  fields:
+                    - name: id_path
+                      type: keyword
+                    - name: type
+                      type: keyword
+                - name: type
+                  type: keyword
+                  description: Possible values [Config, Network, AuditEvent, DLP, IAM, NetworkConfig] Type of rule or RQL query.
+            - name: severity
+              type: keyword
+              description: Possible values [high, medium, low].
+            - name: system_default
+              type: boolean
+            - name: type
+              type: keyword
+              description: "Possible values: [config, network, audit_event, anomaly, data, iam, workload_vulnerability, workload_incident, waas_event, attack_path] Policy type. Policy type anomaly is read-only."
+            - name: upi
+              type: keyword
+        - name: policy_id
+          type: keyword
+        - name: reason
+          type: keyword
+        - name: resource
+          type: group
+          fields:
+            - name: account
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                - name: value
+                  type: keyword
+            - name: additional_info
+              type: flattened
+              description: Additional info.
+            - name: api_name
+              type: keyword
+            - name: cloud
+              type: group
+              fields:
+                - name: account
+                  type: group
+                  fields:
+                    - name: ancestors
+                      type: keyword
+                    - name: groups
+                      type: keyword
+                    - name: owners
+                      type: keyword
+                - name: service_name
+                  type: keyword
+                - name: type
+                  type: keyword
+            - name: config_json_available
+              type: boolean
+            - name: data
+              type: flattened
+            - name: details_available
+              type: boolean
+            - name: id
+              type: keyword
+            - name: name
+              type: keyword
+            - name: region
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                - name: value
+                  type: keyword
+            - name: rrn
+              type: keyword
+            - name: tags
+              type: flattened
+            - name: ts
+              type: date
+            - name: type
+              type: keyword
+            - name: unified_asset_id
+              type: keyword
+            - name: url
+              type: keyword
+        - name: risk_detail
+          type: group
+          fields:
+            - name: policy_scores
+              type: group
+              fields:
+                - name: cloud_type
+                  type: keyword
+                - name: compliance_metadata
+                  type: group
+                  fields:
+                    - name: compliance
+                      type: group
+                      fields:
+                        - name: id
+                          type: keyword
+                    - name: custom_assigned
+                      type: boolean
+                    - name: policy
+                      type: group
+                      fields:
+                        - name: id
+                          type: keyword
+                    - name: requirement
+                      type: group
+                      fields:
+                        - name: description
+                          type: keyword
+                        - name: id
+                          type: keyword
+                        - name: name
+                          type: keyword
+                    - name: section
+                      type: group
+                      fields:
+                        - name: description
+                          type: keyword
+                        - name: id
+                          type: keyword
+                        - name: label
+                          type: keyword
+                    - name: standard
+                      type: group
+                      fields:
+                        - name: description
+                          type: keyword
+                        - name: id
+                          type: keyword
+                        - name: name
+                          type: keyword
+                - name: created
+                  type: group
+                  fields:
+                    - name: by
+                      type: keyword
+                    - name: "on"
+                      type: date
+                - name: deleted
+                  type: boolean
+                - name: description
+                  type: keyword
+                - name: enabled
+                  type: boolean
+                - name: finding_types
+                  type: keyword
+                - name: labels
+                  type: keyword
+                - name: last_modified
+                  type: group
+                  fields:
+                    - name: by
+                      type: keyword
+                    - name: "on"
+                      type: date
+                - name: name
+                  type: keyword
+                - name: overridden
+                  type: boolean
+                - name: points
+                  type: keyword
+                - name: policy
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: subtypes
+                      type: keyword
+                    - name: type
+                      type: keyword
+                    - name: upi
+                      type: keyword
+                - name: recommendation
+                  type: keyword
+                - name: remediable
+                  type: boolean
+                - name: remediation
+                  type: group
+                  fields:
+                    - name: actions
+                      type: group
+                      fields:
+                        - name: operation
+                          type: keyword
+                        - name: payload
+                          type: keyword
+                    - name: cli_script_template
+                      type: keyword
+                    - name: description
+                      type: keyword
+                    - name: impact
+                      type: keyword
+                - name: restrict_alert_dismissal
+                  type: boolean
+                - name: risk_score
+                  type: group
+                  fields:
+                    - name: max
+                      type: long
+                    - name: value
+                      type: long
+                - name: rule
+                  type: group
+                  fields:
+                    - name: api_name
+                      type: keyword
+                    - name: cloud
+                      type: group
+                      fields:
+                        - name: account
+                          type: keyword
+                        - name: type
+                          type: keyword
+                    - name: criteria
+                      type: keyword
+                    - name: data_criteria
+                      type: group
+                      fields:
+                        - name: classification_result
+                          type: keyword
+                        - name: exposure
+                          type: keyword
+                        - name: extension
+                          type: keyword
+                    - name: last_modified_on
+                      type: date
+                    - name: name
+                      type: keyword
+                    - name: parameters
+                      type: flattened
+                    - name: resource
+                      type: group
+                      fields:
+                        - name: id_path
+                          type: keyword
+                        - name: type
+                          type: keyword
+                    - name: type
+                      type: keyword
+                - name: severity
+                  type: keyword
+                - name: system_default
+                  type: boolean
+            - name: rating
+              type: keyword
+            - name: risk_score
+              type: group
+              fields:
+                - name: max
+                  type: long
+                - name: value
+                  type: long
+            - name: score
+              type: keyword
+        - name: save_search_id
+          type: keyword
+        - name: status
+          type: keyword
+        - name: time
+          type: date
+          description: Timestamp when alert was last reopened for resource update, or the same as firstSeen if there are no status changes.
+        - name: triggered_by
+          type: keyword

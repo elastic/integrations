@@ -90,6 +90,11 @@ This module has been tested against **Cloudflare version v4**.
   | Spectrum Event             | spectrum_event         |
   | Workers Trace Events       | workers_trace          |
 
+
+**Note**:
+- It is possible to ingest data from Cloudflare R2, an S3-compatible storage service, by setting the parameter `Cloudflare R2`. Using non-AWS S3 compatible buckets requires the use of Access Key ID and Secret Access Key for authentication, as well as the endpoint must be set to replace the default API endpoint. Endpoint should be a full URI, tipically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`, that will be used as the API endpoint of the service.
+- This setting can be also used to ingest data from other S3-compatible storage services.
+
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
 2. To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
@@ -127,11 +132,14 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 --header 'Content-Type: application/json' \
 --data-raw '{
     "name":"<public domain>",
-    "destination_conf": "https://<public domain>:<public port>/<dataset path>?header_<secret_header>=<secret_value>",
+    "destination_conf": "https://<public domain>:<public port>/<dataset path>?header_Content-Type=application/json&header_<secret_header>=<secret_value>",
     "dataset": "audit",
     "logpull_options": "fields=RayID,EdgeStartTimestamp&timestamps=rfc3339"
 }'
 ```
+
+**Note**:
+- The destination_conf parameter inside the request data should set the Content-Type header to `application/json`. This is the content type that the HTTP endpoint expects for incoming events.
 - Default port for the HTTP Endpoint is _9560_.
 - When using the same port for more than one dataset, be sure to specify different dataset paths.
 

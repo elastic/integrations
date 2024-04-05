@@ -1,0 +1,38 @@
+{
+    "id": "a3ffdc15-c93b-52a5-8e26-a27103b85bf3",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "This will create administrative overhead with user account and permission management. For further security on these administrative accounts, you may want to consider higher tiers of AAD which support features like Multi Factor Authentication, that will cost more.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/sql-database/sql-database-aad-authentication-configure\n2. https://docs.microsoft.com/en-us/azure/sql-database/sql-database-aad-authentication\n3. https://docs.microsoft.com/en-us/powershell/module/azurerm.sql/get-azurermsqlserveractivedirectoryadministrator?view=azurermps-5.2.0\n4. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-identity-management#im-1-use-centralized-identity-and-authentication-system\n5. https://docs.microsoft.com/en-us/cli/azure/sql/server/ad-admin?view=azure-cli-latest#az_sql_server_ad_admin_list",
+            "id": "a3ffdc15-c93b-52a5-8e26-a27103b85bf3",
+            "name": "Ensure that Azure Active Directory Admin is Configured for SQL Servers",
+            "profile_applicability": "* Level 1",
+            "description": "Use Azure Active Directory Authentication for authentication with SQL Database to manage credentials in a single place.",
+            "rationale": "Azure Active Directory authentication is a mechanism to connect to Microsoft Azure SQL Database and SQL Data Warehouse by using identities in Azure Active Directory (Azure AD).\nWith Azure AD authentication, identities of database users and other Microsoft services can be managed in one central location.\nCentral ID management provides a single place to manage database users and simplifies permission management.\n\n- It provides an alternative to SQL Server authentication.\n- Helps stop the proliferation of user identities across database servers.\n- Allows password rotation in a single place.\n- Customers can manage database permissions using external (AAD) groups.\n- It can eliminate storing passwords by enabling integrated Windows authentication and other forms of authentication supported by Azure Active Directory.\n- Azure AD authentication uses contained database users to authenticate identities at the database level.\n- Azure AD supports token-based authentication for applications connecting to SQL Database.\n- Azure AD authentication supports ADFS (domain federation) or native user/password authentication for a local Azure Active Directory without domain synchronization.\n- Azure AD supports connections from SQL Server Management Studio that use Active Directory Universal Authentication, which includes Multi-Factor Authentication (MFA).\nMFA includes strong authentication with a range of easy verification options \u2014 phone call, text message, smart cards with pin, or mobile app notification.",
+            "audit": "**From Azure Portal**\n\n1. Go to `SQL servers`\n2. For each SQL server, click on `Active Directory admin` under the Settings section\n3. Ensure that a value has been set for `Admin Name` under the `Azure Active Directory admin` section\n\n**From Azure CLI**\n\nTo list SQL Server Admins on a specific server: \n\n```\naz sql server ad-admin list --resource-group <resource-group> --server <server>\n```\n\n**From PowerShell**\n\nPrint a list of all SQL Servers to find which one you want to audit\n\n```\nGet-AzSqlServer\n```\n\nAudit a list of Administrators on a Specific Server\n\n```\nGet-AzSqlServerActiveDirectoryAdministrator -ResourceGroupName <resource group name> -ServerName <server name>\n```\n\nEnsure Output shows `DisplayName` set to `AD account`.",
+            "remediation": "**From Azure Portal**\n\n1. Go to `SQL servers`\n2. For each SQL server, click on `Active Directory admin`\n3. Click on `Set admin`\n4. Select an admin\n5. Click `Save`\n\n**From Azure CLI**\n\n```\naz ad user show --id \n```\n\nFor each Server, set AD Admin\n\n```\naz sql server ad-admin create --resource-group <resource group name> --server <server name> --display-name <display name> --object-id <object id of user>\n```\n\n**From PowerShell**\n\nFor each Server, set AD Admin\n\n```\nSet-AzSqlServerActiveDirectoryAdministrator -ResourceGroupName <resource group name> -ServerName <server name> -DisplayName \"<Display name of AD account to set as DB administrator>\"\n```",
+            "section": "SQL Server - Auditing",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.1.4",
+                "SQL Server - Auditing"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.1.4",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_1_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

@@ -3,6 +3,7 @@ interval: {{interval}}
 request.method: "GET"
 {{#if enable_request_tracer}}
 request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
 {{/if}}
 
 auth.oauth2:
@@ -42,6 +43,13 @@ response.request_body_on_pagination: true
 response.split:
   target: body.data
   fail_on_template_error: true
+
+{{#if ioc_expiration_duration}}
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiration_duration: {{ioc_expiration_duration}}
+{{/if}}
 
 tags:
 {{#if preserve_original_event}}

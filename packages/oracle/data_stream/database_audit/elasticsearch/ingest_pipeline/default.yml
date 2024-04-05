@@ -12,10 +12,10 @@ processors:
       value: event
   - set:
       field: event.category
-      value: database
+      value: [database]
   - set:
       field: event.type
-      value: access
+      value: [access]
   - set:
       field: event.outcome
       value: success
@@ -138,9 +138,13 @@ processors:
       field: tmp_timestamp
       patterns:
         - "%{ISO8601_TIMEZONE:event.timezone}$"
-  - rename:
+  - set:
+      field: user.roles
+      value: ["{{{oracle.database_audit.privilege}}}"]
+      ignore_empty_value: true
+      ignore_failure: true
+  - remove:
       field: oracle.database_audit.privilege
-      target_field: user.roles
       ignore_missing: true
   - rename:
       field: LENGTH

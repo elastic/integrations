@@ -580,7 +580,9 @@ An example event for `login_rest` looks as following:
     "user": {
         "email": "user@elastic.co",
         "id": "0055j000000utlPAAQ",
-        "roles": "Standard"
+        "roles": [
+            "Standard"
+        ]
     },
     "user_agent": {
         "name": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36"
@@ -766,7 +768,9 @@ An example event for `login_stream` looks as following:
     "user": {
         "email": "user@elastic.co",
         "id": "0055j000000utlPAAQ",
-        "roles": "Standard"
+        "roles": [
+            "Standard"
+        ]
     },
     "user_agent": {
         "name": "Unknown",
@@ -942,7 +946,9 @@ An example event for `logout_rest` looks as following:
     ],
     "user": {
         "id": "0055j000000utlPAAQ",
-        "roles": "Standard"
+        "roles": [
+            "Standard"
+        ]
     }
 }
 ```

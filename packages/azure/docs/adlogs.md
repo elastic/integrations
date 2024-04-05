@@ -32,7 +32,7 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 
 `eventhub` :
   _string_
-It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
+This setting expects the name of a single Event Hub (see the [difference between a namespace and an Event Hub](https://docs.elastic.co/integrations/azure#event-hub-namespace-vs-event-hub)). It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -42,7 +42,7 @@ Default value: `$Default`
 
 `connection_string` :
 _string_
-The connection string required to communicate with Event Hubs, steps here https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string.
+The connection string required to communicate with the specified Event Hub, steps here https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string.
 
 A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping the filebeat azure module it can start back up at the spot that it stopped processing messages.
 
@@ -221,14 +221,15 @@ An example event for `signinlogs` looks as following:
 | azure.resource.name | Name | keyword |
 | azure.resource.namespace | Resource type/namespace | keyword |
 | azure.resource.provider | Resource type/namespace | keyword |
+| azure.signinlogs.caller_ip_address | The IP address of the client that made the request. | ip |
 | azure.signinlogs.category | Category | keyword |
 | azure.signinlogs.identity | Identity | keyword |
 | azure.signinlogs.operation_name | The operation name | keyword |
 | azure.signinlogs.operation_version | The operation version | keyword |
 | azure.signinlogs.properties.app_display_name | App display name | keyword |
 | azure.signinlogs.properties.app_id | App ID | keyword |
-| azure.signinlogs.properties.applied_conditional_access_policies | A list of conditional access policies that are triggered by the corresponding sign-in activity. | array |
-| azure.signinlogs.properties.authentication_details | The result of the authentication attempt and additional details on the authentication method. | array |
+| azure.signinlogs.properties.applied_conditional_access_policies | A list of conditional access policies that are triggered by the corresponding sign-in activity. | flattened |
+| azure.signinlogs.properties.authentication_details | The result of the authentication attempt and additional details on the authentication method. | flattened |
 | azure.signinlogs.properties.authentication_processing_details | Additional authentication processing details, such as the agent name in case of PTA/PHS or Server/farm name in case of federated authentication. | flattened |
 | azure.signinlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.signinlogs.properties.authentication_requirement | This holds the highest level of authentication needed through all the sign-in steps, for sign-in to succeed. | keyword |
@@ -252,7 +253,7 @@ An example event for `signinlogs` looks as following:
 | azure.signinlogs.properties.incoming_token_type | Incoming token type. | keyword |
 | azure.signinlogs.properties.is_interactive | Is interactive | boolean |
 | azure.signinlogs.properties.is_tenant_restricted |  | boolean |
-| azure.signinlogs.properties.network_location_details | The network location details including the type of network used and its names. | array |
+| azure.signinlogs.properties.network_location_details | The network location details including the type of network used and its names. | flattened |
 | azure.signinlogs.properties.original_request_id | Original request ID | keyword |
 | azure.signinlogs.properties.processing_time_ms | Processing time in milliseconds | float |
 | azure.signinlogs.properties.resource_display_name | Resource display name | keyword |
@@ -998,6 +999,9 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.operation_version | The operation version | keyword |
 | azure.auditlogs.properties.activity_datetime | Activity timestamp | date |
 | azure.auditlogs.properties.activity_display_name | Activity display name | keyword |
+| azure.auditlogs.properties.additional_details.key | Additional details key | keyword |
+| azure.auditlogs.properties.additional_details.user_agent | User agent name. | keyword |
+| azure.auditlogs.properties.additional_details.value | Additional details value | keyword |
 | azure.auditlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.auditlogs.properties.category | category | keyword |
 | azure.auditlogs.properties.correlation_id | Correlation ID | keyword |

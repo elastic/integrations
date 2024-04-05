@@ -47,6 +47,7 @@ UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package con
 | kibana.delete_from_spaces | The set of space ids that a saved object was removed from. | keyword |
 | kibana.lookup_realm | The Elasticsearch lookup realm which fulfilled a login event. | keyword |
 | kibana.saved_object.id | The id of the saved object associated with this event. | keyword |
+| kibana.saved_object.name | The name of the saved object associated with this event. | keyword |
 | kibana.saved_object.type | The type of the saved object associated with this event. | keyword |
 | kibana.session_id | The ID of the user session associated with this event. Each login attempt results in a unique session id. | keyword |
 | kibana.space_id | The id of the space associated with this event. | keyword |
@@ -558,6 +559,10 @@ Stats data stream uses the stats endpoint of Kibana, which is available in 6.4 b
 | kibana.stats.index | Name of Kibana's internal index | keyword |
 | kibana.stats.kibana.status |  | keyword |
 | kibana.stats.name | Kibana instance name | keyword |
+| kibana.stats.os.cgroup_memory.current_in_bytes |  | long |
+| kibana.stats.os.cgroup_memory.swap_current_in_bytes |  | long |
+| kibana.stats.os.cpuacct.control_group |  | keyword |
+| kibana.stats.os.cpuacct.usage_nanos |  | long |
 | kibana.stats.os.distro |  | keyword |
 | kibana.stats.os.distroRelease |  | keyword |
 | kibana.stats.os.load.15m |  | half_float |
@@ -572,6 +577,8 @@ Stats data stream uses the stats endpoint of Kibana, which is available in 6.4 b
 | kibana.stats.process.event_loop_utilization.active |  | double |
 | kibana.stats.process.event_loop_utilization.idle |  | double |
 | kibana.stats.process.event_loop_utilization.utilization |  | double |
+| kibana.stats.process.memory.array_buffers.bytes |  | long |
+| kibana.stats.process.memory.external.bytes |  | long |
 | kibana.stats.process.memory.heap.size_limit.bytes | Max. old space size allocated to Node.js process, in bytes | long |
 | kibana.stats.process.memory.heap.total.bytes | Total heap allocated to process in bytes | long |
 | kibana.stats.process.memory.heap.uptime.ms | Uptime of process in milliseconds | long |
@@ -693,7 +700,15 @@ An example event for `stats` looks as following:
                     "used_in_bytes": 6930767872
                 },
                 "platform": "linux",
-                "platformRelease": "linux-5.10.124-linuxkit"
+                "platformRelease": "linux-5.10.124-linuxkit",
+                "cpuacct": {
+                    "control_group": "cgroup",
+                    "usage_nanos": 56132224
+                },
+                "cgroup_memory": {
+                    "current_in_bytes": 60869566,
+                    "swap_current_in_bytes": 65374608
+                }
             },
             "process": {
                 "event_loop_delay": {
@@ -713,6 +728,12 @@ An example event for `stats` looks as following:
                     },
                     "resident_set_size": {
                         "bytes": 716869632
+                    },
+                    "array_buffers": {
+                        "bytes": 2197869632
+                    },
+                    "external": {
+                        "bytes": 4890295460
                     }
                 },
                 "uptime": {

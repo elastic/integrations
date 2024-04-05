@@ -1,12 +1,14 @@
 name: profiler_agent
 title: Universal Profiling Agent
-version: 8.9.0
+version: 8.13.2
 categories: ["elastic_stack", "monitoring"]
 description: Fleet-wide, whole-system, continuous profiling with zero instrumentation.
 conditions:
-  kibana.version: ^8.9.0
-  elastic.subscription: basic
-format_version: 1.1.0
+  kibana:
+    version: ^8.13.2
+  elastic:
+    subscription: basic
+format_version: 3.0.2
 icons:
   - size: 48x46
     src: /img/profiler-logo-color-48px.svg
@@ -38,6 +40,7 @@ policy_templates:
             required: true
             show_user: true
             type: text
+            secret: true
           - name: profiler.connect_proxy
             title: Connect proxy
             description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
@@ -53,7 +56,17 @@ policy_templates:
             description: Time interval for which probabilistic profiling will be enabled or disabled. (default 1m0s)
             show_user: true
             type: text
+          - name: profiler.disable_tls
+            title: Disable TLS
+            description: Disable encryption for data in transit. (default false)
+            show_user: true
+            type: bool
+            default: false
     multiple: false
+agent:
+  privileges:
+    root: true
 type: integration
 owner:
   github: elastic/profiling
+  type: elastic

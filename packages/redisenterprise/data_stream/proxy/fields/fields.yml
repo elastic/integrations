@@ -1,12 +1,42 @@
-- name: redisenterprise.proxy
+- name: redisenterprise.proxy.*.counter
+  type: object
+  object_type: double
+  object_type_mapping_type: "*"
+  metric_type: counter
+  description: Proxy metrics.
+
+- name: redisenterprise.proxy.labels
   type: group
-  release: beta
   fields:
-    - name: metrics.listener_*
-      # use pattern for matching to ensure future extensibillity. 
-      type: float
-      description: Proxy prometheus metrics
-    - name: labels.*
-      type: object
-      object_type: keyword
-      description: Label fields
+      - name: bdb
+        type: keyword
+        dimension: true
+        description: Managed database, indicating which database is being referred to.
+      - name: cluster
+        type: keyword
+        dimension: true
+        description: Cluster name.
+      - name: endpoint
+        type: keyword
+        dimension: true
+        description: Endpoint id.
+      - name: instance
+        type: keyword
+        dimension: true
+        description: Host address of cluster's instance expressed in the form of an IP:PORT.
+      - name: job
+        type: keyword
+        dimension: true
+        description: Type of the job.
+      - name: proxy
+        type: keyword
+        dimension: true
+        description: Proxy that is bound to the database..
+      - name: node
+        type: keyword
+        dimension: true
+        description: The node that is being monitored.
+      - name: port
+        type: keyword
+        dimension: true
+        description: The port number to connect to the database.

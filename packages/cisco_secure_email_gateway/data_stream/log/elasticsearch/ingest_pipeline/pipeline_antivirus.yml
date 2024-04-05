@@ -1,0 +1,27 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - grok:
+      field: cisco_secure_email_gateway.log.message
+      tag: grok_antivirus_category_logs
+      patterns:
+        - '^%{WORD:observer.vendor}  antivirus - MID %{NUMBER:email.message_id} - %{WORD:cisco_secure_email_gateway.log.type} ''%{GREEDYDATA:cisco_secure_email_gateway.log.antivirus_result}'' \(\)$'
+        - '^%{WORD:observer.vendor}  antivirus - MID %{NUMBER:email.message_id} %{NUMBER:cisco_secure_email_gateway.log.rank:long} - %{WORD:cisco_secure_email_gateway.log.type} - ''%{GREEDYDATA:cisco_secure_email_gateway.log.antivirus_result}'' ''%{GREEDYDATA:cisco_secure_email_gateway.log.encrypted_hash}''$'
+        - '^%{WORD:observer.vendor}  antivirus - MID %{NUMBER:email.message_id} %{NUMBER:cisco_secure_email_gateway.log.rank:long} - %{WORD:cisco_secure_email_gateway.log.type} ''%{GREEDYDATA:cisco_secure_email_gateway.log.antivirus_result}'' ''body.scan\/%{GREEDYDATA:file.name}'' 1 0$'
+        - '^%{WORD:observer.vendor}  antivirus - MID %{NUMBER:email.message_id} %{NUMBER:cisco_secure_email_gateway.log.rank:long} - %{WORD:cisco_secure_email_gateway.log.type} - ''%{GREEDYDATA:cisco_secure_email_gateway.log.antivirus_result}''$'
+        - '^%{WORD:observer.vendor}  antivirus - MID %{NUMBER:email.message_id} - %{GREEDYDATA:cisco_secure_email_gateway.log.antivirus_result}$'
+        - '^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$'
+  - set:
+      field: event.type
+      if: ctx.cisco_secure_email_gateway?.log?.type == 'Error'
+      value: error
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"

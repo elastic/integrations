@@ -67,7 +67,7 @@ An example event for `alert` looks as following:
         "port": 789
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "cf659b85-d5b7-4b0d-8b9a-4ea2e187d862",
@@ -252,6 +252,7 @@ An example event for `alert` looks as following:
         "name": "User"
     }
 }
+
 ```
 
 **Exported fields**
@@ -271,7 +272,7 @@ An example event for `alert` looks as following:
 | sophos_central.alert.customer_id | The unique identifier of the customer linked with this record. | keyword |
 | sophos_central.alert.data.app_id | App identifier. | keyword |
 | sophos_central.alert.data.certificates | Certificates of alert. | keyword |
-| sophos_central.alert.data.core_remedy.items.descriptior | Descriptor of items. | keyword |
+| sophos_central.alert.data.core_remedy.items.descriptor | Descriptor of items. | keyword |
 | sophos_central.alert.data.core_remedy.items.process_path | Process path of sophos items. | keyword |
 | sophos_central.alert.data.core_remedy.items.result | The following values are allowed: NOT_APPLICABLE, SUCCESS, NOT_FOUND, DELETED, FAILED_TO_DELETE, WHITELISTED, OTHER_ERROR, FAILED_TO_DELETE_SYSTEM_PROTECTED. | keyword |
 | sophos_central.alert.data.core_remedy.items.sophos_pid | Process id of sophos items. | keyword |
@@ -383,7 +384,7 @@ An example event for `event` looks as following:
         "port": 789
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "cf659b85-d5b7-4b0d-8b9a-4ea2e187d862",
@@ -496,6 +497,7 @@ An example event for `event` looks as following:
         "name": "Lightning"
     }
 }
+
 ```
 
 **Exported fields**
