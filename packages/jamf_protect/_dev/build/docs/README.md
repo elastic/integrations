@@ -7,7 +7,7 @@ Then visualize that data in Kibana, create alerts to notify you if something goe
 
 ## Data streams
 
-The Jamf Protect integration collects one type of data stream: alerts, telemetry, and web threat events.
+The Jamf Protect integration collects 4 types of events: alerts, telemetry, web threat events, and web traffic events.
 
 **Alerts** help you keep a record of Alerts and Unified Logs happening on endpoints using Jamf Protect.
 
