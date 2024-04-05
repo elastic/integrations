@@ -21,5 +21,5 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Setup Exchange Server
 
-To collect the SMTP Logs, the logs have to be configured on the exchange Server. To enable it, you can follow this [guide](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/configure-protocol-logging?view=exchserver-2019)
+To collect the SMTP Logs, the logs have to be configured on the exchange Server. To enable it, you can follow this [guide](https://learn.microsoft.com/en-us/exchange/mail-flow/connectors/configure-protocol-logging)
 The other logs are enabled by default, and no further configurations are required
