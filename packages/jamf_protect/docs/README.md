@@ -214,6 +214,7 @@ An example event for `alerts` looks as following:
     }
 }
 ```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -516,6 +517,7 @@ An example event for `telemetry` looks as following:
     }
 }
 ```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -894,6 +896,7 @@ An example event for `web_threat_events` looks as following:
     }
 }
 ```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -1099,6 +1102,7 @@ An example event for `web_traffic_events` looks as following:
     }
 }
 ```
+
 **Exported fields**
 
 | Field | Description | Type |

@@ -78,6 +78,7 @@ This is the `Alerts` dataset.
 ##### Example
 
 {{event "alerts"}}
+
 {{fields "alerts"}}
 
 #### telemetry
@@ -87,6 +88,7 @@ This is the `Telemetry` dataset.
 ##### Example
 
 {{event "telemetry"}}
+
 {{fields "telemetry"}}
 
 #### threats event stream
@@ -96,6 +98,7 @@ This is the `Threats Event Stream` dataset.
 ##### Example
 
 {{event "web_threat_events"}}
+
 {{fields "web_threat_events"}}
 
 #### network traffic stream
@@ -105,4 +108,5 @@ This is the `Network Traffic Stream` dataset.
 ##### Example
 
 {{event "web_traffic_events"}}
+
 {{fields "web_traffic_events"}}
