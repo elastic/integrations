@@ -12,31 +12,75 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "dst_host": "192.168.200.85",
-    "dst_port": "22",
-    "local_time": "2024-04-03 20:59:13.039409",
-    "local_time_adjusted": "2024-04-03 14:59:13.039426",
-    "logdata": {
-        "DF": "",
-        "ID": "18393",
-        "IN": "eth0",
-        "LEN": "60",
-        "MAC": "00:15:5d:c9:15:00:1a:cc:b7:d0:be:bf:08:00",
-        "OUT": "",
-        "PREC": "0x00",
-        "PROTO": "TCP",
-        "RES": "0x00",
-        "SYN": "",
-        "TOS": "0x00",
-        "TTL": "64",
-        "URGP": "0",
-        "WINDOW": "32120"
+    "@timestamp": "2024-04-05T14:37:26.457Z",
+    "destination": {
+        "address": "10.10.10.10",
+        "domain": "OpenCanary1",
+        "ip": "10.10.10.10",
+        "port": 445
     },
-    "logtype": 5001,
-    "node_id": "opencanary-1",
-    "src_host": "192.168.200.70",
-    "src_port": "39702",
-    "utc_time": "2024-04-03 20:59:13.039422"
+    "event": {
+        "action": "flistxattr",
+        "category": [
+            "network",
+            "intrusion_detection"
+        ],
+        "created": "2024-04-05T14:37:26.457Z",
+        "kind": [
+            "alert"
+        ],
+        "original": "{\"dst_host\": \"10.10.10.10\", \"dst_port\": 445, \"local_time\": \"2024-04-05 14:37:26.457226\", \"local_time_adjusted\": \"2024-04-05 07:37:26.457252\", \"logdata\": {\"AUDITACTION\": \"flistxattr\", \"DOMAIN\": \"CONTOSO\", \"FILENAME\": \"/shares/database\", \"LOCALNAME\": \"OpenCanary1\", \"REMOTENAME\": \"Client1\", \"SHARENAME\": \"database\", \"SMBARCH\": \"OSX\", \"SMBVER\": \"SMB3_11\", \"STATUS\": \"ok\", \"USER\": \"jdoe\"}, \"logtype\": 5000, \"node_id\": \"opencanary-1\", \"src_host\": \"192.168.0.10\", \"src_port\": \"-1\", \"utc_time\": \"2024-04-05 14:37:26.457249\"}",
+        "provider": "LOG_SMB_FILE_OPEN",
+        "start": "2024-04-05T14:37:26.457Z",
+        "type": [
+            "connection"
+        ]
+    },
+    "log": {
+        "logger": "LOG_SMB_FILE_OPEN"
+    },
+    "network": {
+        "direction": "internal"
+    },
+    "opencanary": {
+        "node": {
+            "id": "opencanary-1"
+        },
+        "smb": {
+            "filename": "/shares/database",
+            "share_name": "database",
+            "smb_arch": "OSX",
+            "smb_version": "SMB3_11",
+            "status": "ok"
+        }
+    },
+    "related": {
+        "hosts": [
+            "OpenCanary1",
+            "Client1"
+        ],
+        "ip": [
+            "10.10.10.10",
+            "192.168.0.10"
+        ],
+        "user": [
+            "jdoe"
+        ]
+    },
+    "source": {
+        "address": "192.168.0.10",
+        "domain": "Client1",
+        "ip": "192.168.0.10",
+        "port": -1
+    },
+    "tags": [
+        "preserve_original_event",
+        "redact_passwords"
+    ],
+    "user": {
+        "domain": "CONTOSO",
+        "name": "jdoe"
+    }
 }
 ```
 
