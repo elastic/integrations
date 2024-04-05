@@ -194,12 +194,13 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | abusech.malwarebazaar.code_sign.thumbprint_algorithm | Algorithm used to create thumbprint | keyword |
 | abusech.malwarebazaar.code_sign.valid_from | Time at which the certificate is first considered valid. | date |
 | abusech.malwarebazaar.code_sign.valid_to | Time at which the certificate is no longer considered valid. | keyword |
+| abusech.malwarebazaar.deleted_at | The indicator expiration timestamp. | date |
 | abusech.malwarebazaar.dhash_icon | In case the file is a PE executable: dhash of the samples icon | keyword |
+| abusech.malwarebazaar.expiration_duration | The configured expiration duration. | keyword |
 | abusech.malwarebazaar.intelligence.downloads | Number of downloads from MalwareBazaar. | long |
 | abusech.malwarebazaar.intelligence.mail.Generic | Malware seen in generic spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.mail.IT | Malware seen in IT spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.uploads | Number of uploads from MalwareBazaar. | long |
-| abusech.malwarebazaar.tags | A list of tags associated with the queried malware sample. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -244,6 +245,8 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -274,6 +277,7 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.name | The display name indicator in an UI friendly format | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.software.alias | The alias(es) of the software for a set of related intrusion activity that are tracked by a common name in the security community. While not required, you can use a MITRE ATT&CK® associated software description. | keyword |
