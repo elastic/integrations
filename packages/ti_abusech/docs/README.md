@@ -108,6 +108,8 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| abusech.malware.deleted_at | The indicator expiration timestamp. | date |
+| abusech.malware.expiration_duration | The configured expiration duration. | keyword |
 | abusech.malware.signature | Malware familiy. | keyword |
 | abusech.malware.virustotal.link | Link to the Virustotal report. | keyword |
 | abusech.malware.virustotal.percent | AV detection in percent. | float |
@@ -156,6 +158,8 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -172,6 +176,7 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 | threat.indicator.file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | threat.indicator.file.type | File type (file, dir, or symlink). | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.name | The display name indicator in an UI friendly format | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
