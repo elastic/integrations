@@ -557,10 +557,11 @@ processors:
       patterns:
         - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port} duration %{DURATION:_temp_.duration_hms}
       pattern_definitions:
+        USERNAME: "[^@$]*"
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
-        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(%{HOSTNAME}\\)?(?:%{USERNAME})?\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?(?:%{NUMBER}:%{DATA})?))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(%{HOSTNAME}\\)?(?:%{USERNAME})\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?(?:%{NUMBER}:%{DATA})?))
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
   - set:
       if: '["302020"].contains(ctx._temp_.cisco.message_id)'
@@ -1724,8 +1725,8 @@ processors:
         - '%{CISCO_DOMAIN_USER:_temp_.cisco.source_username}\$?\)?%{CISCO_SGT}'
         - '%{CISCO_DOMAIN_USER:_temp_.cisco.source_username}\$?\)?'
       pattern_definitions:
-        CISCO_DOMAIN_USER: (%{CISCO_DOMAIN})?%{CISCO_USER}?
-        CISCO_USER: "[^,$)]+"
+        CISCO_DOMAIN_USER: (%{CISCO_DOMAIN})?%{CISCO_USER}
+        CISCO_USER: "[^,$)]*"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME}\\)?
         CISCO_SGT: (, *(%{CISCO_SGT_TAG}:%{CISCO_SGT_NAME}|%{CISCO_SGT_TAG}))|(%{CISCO_SGT_TAG}:%{CISCO_SGT_NAME})
         CISCO_SGT_TAG: (%{NUMBER:_temp_.cisco.source_user_security_group_tag})
@@ -1763,8 +1764,8 @@ processors:
         - '%{CISCO_DOMAIN_USER:_temp_.cisco.destination_username}\$?\)?%{CISCO_SGT}'
         - '%{CISCO_DOMAIN_USER:_temp_.cisco.destination_username}\$?\)?'
       pattern_definitions:
-        CISCO_DOMAIN_USER: (%{CISCO_DOMAIN})?%{CISCO_USER}?
-        CISCO_USER: "[^,$)]+"
+        CISCO_DOMAIN_USER: (%{CISCO_DOMAIN})?%{CISCO_USER}
+        CISCO_USER: "[^,$)]*"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME}\\)?
         CISCO_SGT: (, *(%{CISCO_SGT_TAG}:%{CISCO_SGT_NAME}|%{CISCO_SGT_TAG}))|(%{CISCO_SGT_TAG}:%{CISCO_SGT_NAME})
         CISCO_SGT_TAG: (%{NUMBER:_temp_.cisco.destination_user_security_group_tag})
