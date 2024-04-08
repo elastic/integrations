@@ -1,0 +1,26 @@
+---
+description: Pipeline for Jamf Protect Telemetry aue_setpriority audit logs.
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'
+  - convert:
+      field: json.arguments.priority
+      target_field: jamf_protect.telemetry.arguments.priority
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.arguments.which
+      target_field: jamf_protect.telemetry.arguments.which
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.arguments.who
+      target_field: jamf_protect.telemetry.arguments.who
+      type: string
+      ignore_missing: true
+      ignore_failure: true
