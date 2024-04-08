@@ -1,6 +1,6 @@
 module github.com/elastic/integrations
 
-go 1.21.0
+go 1.22.0
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
