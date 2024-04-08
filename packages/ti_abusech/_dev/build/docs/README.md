@@ -5,6 +5,7 @@ This integration is for [AbuseCH](https://urlhaus-api.abuse.ch/) logs. It includ
 - `url` dataset: Supports URL based indicators from AbuseCH API.
 - `malware` dataset: Supports Malware based indicators from AbuseCH API.
 - `malwarebazaar` dataset: Supports indicators from the MalwareBazaar from AbuseCH.
+- `threatfox` dataset: Supports indicators from AbuseCH Threat Fox API.
 
 ## Logs
 
