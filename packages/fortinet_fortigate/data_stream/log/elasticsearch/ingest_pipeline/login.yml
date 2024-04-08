@@ -54,12 +54,10 @@ processors:
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     description: "Login from ssh: Failed for philipp from 192.168.0.10 port 38654"
-- grok:
+- dissect:
     field: "message"
-    tag: "login 2"
-    patterns:
-      - "%{DATA:_tmp.user.roles} %{DATA:user.name} login %{WORD:event.outcome} from ssh\\(%{IP:source.ip}\\)(?:.*$)"
-      - "%{DATA:_tmp.user.roles} %{DATA:user.name} login %{WORD:event.outcome} from https\\(%{IP:source.ip}\\)(?:.*$)"
+    tag: "ssh login 2"
+    pattern: "%{_tmp.user.roles} %{user.name} login %{event.outcome} from %{}(%{source.ip}) %{}"
     if: "ctx.message != null && ctx.message.startsWith('Administrator')"
     on_failure:
       - append:
