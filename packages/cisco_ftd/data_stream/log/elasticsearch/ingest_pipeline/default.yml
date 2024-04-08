@@ -1645,7 +1645,11 @@ processors:
   #
   - script:
       lang: painless
-      source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+      source: |-
+        if (ctx.network == null) {
+          ctx.network = [:];
+        }
+        ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes;
       if: ctx.source?.bytes != null && ctx.destination?.bytes != null && ctx.network?.bytes == null
 
   #
