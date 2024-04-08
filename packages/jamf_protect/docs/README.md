@@ -92,7 +92,7 @@ An example event for `alerts` looks as following:
         ],
         "id": "7232d4a4-2289-49ba-a218-215ef3d62ec4",
         "kind": "alert",
-        "module": "Alerts",
+        "module": "jamf_protect",
         "outcome": "success",
         "provider": "Jamf Protect",
         "reason": "Application used deprecated elevation API",
@@ -403,69 +403,6 @@ An example event for `telemetry` looks as following:
         ],
         "os": {
             "version": "Version 14.2.1 (Build 23C71)"
-        }
-    },
-    "jamf_protect": {
-        "telemetry": {
-            "arguments": {
-                "child": {
-                    "pid": 70851
-                }
-            },
-            "dataset": "audit",
-            "exec_args": {
-                "args_compiled": "/usr/bin/profiles,status,-type,enrollment"
-            },
-            "exec_chain_parent": {
-                "uuid": "87F2E500-EDF1-4F12-A489-C5E05B0F523E"
-            },
-            "exec_env": {
-                "env": {
-                    "compiled": "PWD=/,PATH=/usr/bin:/bin:/usr/sbin:/sbin"
-                }
-            },
-            "header": {
-                "event_modifier": "0",
-                "version": "11"
-            },
-            "host_info": {
-                "host": {
-                    "uuid": "AE2FA359-6AB0-5F54-9E4A-39EDCF015C91"
-                }
-            },
-            "identity": {
-                "cd_hash": "a2c787fe5e26ead7c68909e45a75edced4147c68",
-                "signer": {
-                    "id_truncated": "false",
-                    "type": "0"
-                }
-            },
-            "path": [
-                "/usr/bin/profiles",
-                "/usr/bin/profiles"
-            ],
-            "return": {
-                "description": "success"
-            },
-            "subject": {
-                "effective": {
-                    "group": {
-                        "id": "0",
-                        "name": "wheel"
-                    }
-                },
-                "process": {
-                    "name": "/Library/Application Support/Microsoft/EdgeUpdater/118.0.2088.86/EdgeUpdater.app/Contents/MacOS/EdgeUpdater",
-                    "pid": 70848
-                },
-                "session": {
-                    "id": "100016"
-                },
-                "terminal_id": {
-                    "port": 0,
-                    "type": "4"
-                }
-            }
         }
     },
     "process": {
@@ -850,7 +787,7 @@ An example event for `web_threat_events` looks as following:
         ],
         "id": "013b15c9-8f62-4bf1-948a-d82367af2a10",
         "kind": "alert",
-        "module": "Threat Events Stream",
+        "module": "jamf_protect",
         "provider": "Jamf Protect",
         "reason": "Sideloaded App",
         "severity": 6,
@@ -1063,7 +1000,7 @@ An example event for `web_traffic_events` looks as following:
             "network"
         ],
         "kind": "event",
-        "module": "Network Traffic Stream",
+        "module": "jamf_protect",
         "outcome": [
             "success"
         ],
