@@ -1168,20 +1168,24 @@ processors:
       field: event.action
       value: flow_dropped
       if: ctx.panw?.panos?.sub_type == 'drop'
+  - append:
+      field: event.type
+      allow_duplicates: false
+      value:
+        - denied
+        - connection
+      if: ctx.panw?.panos?.sub_type == 'drop'
   - set:
       field: event.action
       value: flow_denied
       if: ctx.panw?.panos?.sub_type == 'deny'
   - append:
       field: event.type
+      allow_duplicates: false
       value:
         - denied
-      if: "['deny', 'drop'].contains(ctx.panw?.panos?.sub_type) && !ctx.event.type?.contains('denied')"
-  - append:
-      field: event.type
-      value:
         - connection
-      if: "['deny', 'drop'].contains(ctx.panw?.panos?.sub_type)"
+      if: ctx.panw?.panos?.sub_type == 'deny'
 
 # event.action for threat and global-protect logs.
   - set:
