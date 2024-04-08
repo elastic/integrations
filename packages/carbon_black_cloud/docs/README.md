@@ -3,11 +3,10 @@
 The VMware Carbon Black Cloud integration collects and parses data from the Carbon Black Cloud REST APIs and AWS S3 bucket.
 
 ## Version 2.0.0+ Update Disclaimer
-According to VMware Carbon Black Cloud [Migration Docs](https://developer.carbonblack.com/reference/carbon-black-cloud/api-migration/#migration-summary)
-`Alerts API (v6)` will be deactivated on July 31, 2024, post which the current alerts data stream will become unusable. To mitigate this and enable a smooth
-transition for our users we have introduced a new data stream named `alert_v7` based on the major `Alerts API (v7)` schema changes and `Data Forwarder 2.0`
-schema changes. This data stream has been tagged as `Beta` and has significant changes and deprecations/additions compared to the original data stream, please 
-consult the official docs [Alerts v7](https://developer.carbonblack.com/reference/carbon-black-cloud/guides/api-migration/alerts-migration) and [Data Forwarder 2.0](https://developer.carbonblack.com/reference/carbon-black-cloud/data-forwarder/schema/latest/alert-2.0.0/) for further info. We want feedback from users on this new data stream and its dashboards. Post July 31, 2024, the old alerts v6 data stream will be deprecated and removed and only this new data stream will exist. 
+Carbon Black Cloud `Alerts API (v6)` [will be deactivated on July 31, 2024](https://developer.carbonblack.com/reference/carbon-black-cloud/api-migration/#migration-summary). After this, the current alert data stream will become unusable. To enable a smooth
+transition we have introduced a new data stream named `alert_v7` based on the major `Alerts API (v7)` schema changes and `Data Forwarder 2.0`
+schema changes. This data stream has been tagged as `Beta` and has significant changes compared to the original data stream, please 
+consult the official docs [Alerts v7](https://developer.carbonblack.com/reference/carbon-black-cloud/guides/api-migration/alerts-migration) and [Data Forwarder 2.0](https://developer.carbonblack.com/reference/carbon-black-cloud/data-forwarder/schema/latest/alert-2.0.0/) for further info. After July 31, 2024, the old alerts v6 data stream will be deprecated and removed and only this new data stream will exist. 
 
 ## Version 1.21+ Update Disclaimer
 Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
@@ -16,14 +15,13 @@ a breaking change while upgrading to version 1.21 and above. A separate SQS queu
 older versions.
 
 ## HTTPJSON vs CEL 
-As of version 2.0.0 a new input type, the CEL input has been introduced. This input is currently marked as [Beta] while the older HTTPJSON input has been
-marked as [Legacy]. The HTTPJSON input will not be iterated upon in the future although we will continue to provide support for it. The CEL input will be our
-main focus of development going forward. You should only use either one as they provide similar functionality.
+Version 2.0.0 introduces the use of the CEL input. This input method is currently marked as [Beta] while the older HTTPJSON input method has been
+marked as [Legacy]. The HTTPJSON input method will not receive enhancement changes.
 
 ## Note (Important)
-1. When it comes to HTTPJSON vs CEL, you should always use either one of them, having both enabled simultaneously can cause unexpected/duplicated results, as they operate on the same data streams.
+1. Do not enable both the HTTPJSON and CEL input methods; having both enabled simultaneously can cause unexpected/duplicated results, as they operate on the same data streams.
 
-2. When using the HTTPJSON input, use either the old alert data stream or the new [Beta] alert_v7 data stream. Do not have these two data streams enabled simultaneously. This only applies when using the HTTPJSON input as the CEL input only supports the latest alert_v7 data stream.
+2. When using the HTTPJSON input, use either the old alert data stream or the new [Beta] alert_v7 data stream. Do not have these two data streams enabled simultaneously.
 
 3. When using the AWS-S3 input, use either the old alert data stream or the new [Beta] alert_v7 data stream that supports the Data Forwarder 2.0 schema.
 
