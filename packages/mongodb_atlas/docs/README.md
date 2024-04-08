@@ -1,0 +1,176 @@
+# MongoDB Atlas Integration
+
+## Overview
+
+[MongoDB Atlas](https://www.mongodb.com/atlas) is a multi-cloud developer data platform. At its core is our fully managed cloud database for modern applications. Atlas is the best way to run MongoDB, the leading non-relational database. MongoDB’s document model is the fastest way to innovate because documents map directly to the objects in your code. As a result, they are much easier and more natural to work with. You can store data of any structure and modify your schema at any time as you add new features to your applications.
+
+Use the MongoDB Atlas integration to:
+
+- Collect Mongod Database logs.
+- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
+- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+
+## Data streams
+
+The MongoDB Atlas integration collects logs.
+
+Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration is `mongod_database`.
+
+Data stream:
+- `mongod_database`: This datastream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
+
+Note:
+- Users can monitor and see the log inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
+
+## Prerequisites
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. 
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
+
+## Setup
+
+### To collect data from MongoDB Atlas, the following parameters from your MongoDB Atlas instance are required:
+
+1. Public Key
+2. Private Key
+3. GroupId
+
+### Steps to obtain Public Key, Private Key and GroupId:
+
+1. Generate programmatic API Keys with project owner permissions using the instructions in the Atlas [documentation](https://www.mongodb.com/docs/atlas/configure-api-access/#create-an-api-key-for-a-project). Then, copy the public key and private key. These serve the same function as a username and API Key respectively.
+2. Enable Database Auditing for the Atlas project for which you want to monitor logs, as described in this Atlas [document](https://www.mongodb.com/docs/atlas/database-auditing/#procedure).
+3. You can find your GroupId(ProjectID) in the Atlas UI. Go to your project, click Settings, and copy the GroupID(ProjectID). You can use the Atlas Admin API or Atlas CLI to find it programmatically. As described in this Atlas [document](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id)
+
+### Enabling the integration in Elastic:
+
+1. In Kibana go to Management > Integrations
+2. In "Search for integrations" search bar, type MongoDB Atlas
+3. Click on the "MongoDB Atlas" integration from the search results.
+4. Click on the "Add MongoDB Atlas" button to add the integration.
+5. Add all the required integration configuration parameters, such as Public Key, Private Key, URL and GroupId.
+6. Save the integration.
+
+## Troubleshooting
+
+- If the user encounters the following error during data ingestion, it is likely due to the data collected through this endpoint covers a long time span. As a result, generating a response may take longer. Additionally, if the `HTTP Client Timeout` parameter is set to a small duration,  a request timeout might happen. However, if the user wishes to avoid this error altogether, it is recommended to adjust the `HTTP Client Timeout` and `Interval` parameters based on the duration of data collection.
+```
+{
+  "error": {
+    "message": "failed eval: net/http: request canceled (Client.Timeout or context cancellation while reading body)"
+  }
+}
+```
+
+## Logs reference
+
+### Mongod Database
+
+This is the `mongod_database` data stream. This datastream collects a running log of events, including entries such as incoming connections, commands run, monitoring deployment, tuning performance and issues encountered.
+
+An example event for `mongod_database` looks as following:
+
+```json
+{
+    "@timestamp": "2024-02-18T14:45:23.512Z",
+    "agent": {
+        "ephemeral_id": "dbad1b64-5ae2-467e-a76a-7d31d2bbc35a",
+        "id": "35b61223-ca83-481f-a4aa-ab5983a75ba8",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb_atlas.mongod_database",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "35b61223-ca83-481f-a4aa-ab5983a75ba8",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network",
+            "database"
+        ],
+        "dataset": "mongodb_atlas.mongod_database",
+        "ingested": "2024-04-05T10:24:59Z",
+        "kind": "event",
+        "module": "mongodb_atlas",
+        "type": [
+            "access",
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": [
+            "192.168.255.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-FF-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "log": {
+        "level": "informational"
+    },
+    "mongodb_atlas": {
+        "mongod_database": {
+            "component": "NETWORK",
+            "hostname": "hostname1",
+            "id": 67890,
+            "message": "Client connection accepted",
+            "tags": [
+                "connection"
+            ],
+            "thread": {
+                "name": "conn123"
+            }
+        }
+    },
+    "tags": [
+        "mongodb_atlas-mongod_database"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| mongodb_atlas.mongod_database.attributes | One or more key-value pairs for additional log attributes. If a log message does not include any additional attributes, the attr object is omitted. | object |
+| mongodb_atlas.mongod_database.component | The component field type indicates the category a logged event is a member of, such as NETWORK or COMMAND. | keyword |
+| mongodb_atlas.mongod_database.hostname | Human-readable label that identifies the host that stores the log files that you want to download. | keyword |
+| mongodb_atlas.mongod_database.id | Unique identifier for the log statement. | long |
+| mongodb_atlas.mongod_database.message | Log output message passed from the server or driver. If necessary, the message is escaped according to the JSON specification. | match_only_text |
+| mongodb_atlas.mongod_database.size | Original size of a log entry if it has been truncated. Only included if the log entry contains at least one truncated attr attribute. | object |
+| mongodb_atlas.mongod_database.tags | Strings representing any tags applicable to the log statement. For example, ["startupWarnings"]. | keyword |
+| mongodb_atlas.mongod_database.thread.name | Name of the thread that caused the log statement. | keyword |
+| mongodb_atlas.mongod_database.truncated | Information about the log message truncation, if applicable. Only included if the log entry contains at least one truncated attr attribute. | object |
+| tags | List of keywords used to tag each event. | keyword |
