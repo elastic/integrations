@@ -1,0 +1,29 @@
+---
+description: Pipeline for processing GPUnifiedLogEvent events.
+processors:
+
+######################
+## ECS Log Mapping ##
+######################
+    - rename:
+        field: jamf_protect.alerts.input.match.event.process
+        target_field: process.name
+        if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUnifiedLogEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.process != null
+    - rename:
+        field: jamf_protect.alerts.input.match.event.processIdentifier
+        target_field: process.pid
+        if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUnifiedLogEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.processIdentifier != null
+    - date:
+        field: jamf_protect.alerts.input.match.event.timestamp
+        target_field: process.start
+        formats: 
+        - UNIX
+        if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUnifiedLogEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.timestamp != null
+
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'
