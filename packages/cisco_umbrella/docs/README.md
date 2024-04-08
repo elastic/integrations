@@ -17,10 +17,10 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-03-21T04:00:10.000Z",
+    "@timestamp": "2024-03-21T02:59:57.000Z",
     "agent": {
-        "ephemeral_id": "ac66254e-f37b-44ff-9266-d4c0b79b40db",
-        "id": "a26821e0-e36a-4513-a137-0df112893aba",
+        "ephemeral_id": "cea58aa4-f29f-4831-a661-79f335d5b1b5",
+        "id": "19117246-f6b7-4f43-8432-4b4ef4b19bf8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -28,27 +28,28 @@ An example event for `log` looks as following:
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-cisco-umbrella-bucket-87011",
-                "name": "elastic-package-cisco-umbrella-bucket-87011"
+                "arn": "arn:aws:s3:::elastic-package-cisco-umbrella-bucket-48027",
+                "name": "elastic-package-cisco-umbrella-bucket-48027"
             },
             "object": {
-                "key": "proxylogs.log"
+                "key": "intrusionlogs.log"
             }
         }
     },
     "cisco": {
         "umbrella": {
-            "categories": "Software/Technology,Computers and Internet",
+            "classification": "A Network Trojan was detected",
+            "gid": "1",
             "identities": [
-                "Branch 1"
+                "HQ"
             ],
-            "identity": "Branch 1",
             "identity_types": [
                 "Network Tunnels"
             ],
-            "isolate_action": "not_isolated",
-            "policy_identity_type": "Network Tunnels",
-            "ruleset_id": "14375104"
+            "message": "MALWARE-CNC Unix.Trojan.Chalubo outbound connection",
+            "severity": "HIGH",
+            "sid": "48282",
+            "signature_list_id": "49994"
         }
     },
     "cloud": {
@@ -61,89 +62,73 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "destination": {
-        "address": "104.110.147.63",
-        "as": {
-            "number": 35994,
-            "organization": {
-                "name": "Akamai Technologies, Inc."
-            }
-        },
-        "ip": "104.110.147.63"
+        "address": "93.123.85.97",
+        "ip": "93.123.85.97",
+        "port": 80
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a26821e0-e36a-4513-a137-0df112893aba",
+        "id": "19117246-f6b7-4f43-8432-4b4ef4b19bf8",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
-        "action": "proxy-request-CONNECT",
+        "action": "ips-Would-Block",
         "agent_id_status": "verified",
-        "category": "network",
+        "category": [
+            "network",
+            "intrusion_detection"
+        ],
         "dataset": "cisco_umbrella.log",
-        "ingested": "2024-04-08T03:51:26Z",
-        "kind": "event",
-        "original": "\"2024-03-21 04:00:10\",\"Branch 1\",\"192.168.20.32\",\"192.168.20.32\",\"104.110.147.63\",\"\",\"ALLOWED\",\"https://products.office.com\",\"\",\"\",\"200\",\"1249\",\"3904\",\"\",\"\",\"Software/Technology,Computers and Internet\",\"\",\"\",\"\",\"\",\"\",\"Network Tunnels\",\"\",\"Branch 1\",\"Network Tunnels\",\"CONNECT\",\"\",\"\",\"\",\"14375104\",\"\",\"\",\"not_isolated\",\"\",\"\",\"\",\"\"",
+        "id": "12345",
+        "ingested": "2024-04-08T23:08:44Z",
+        "kind": "alert",
+        "original": "\"2024-03-21 02:59:57\",\"HQ\",\"Network Tunnels\",\"1\",\"48282\",\"MALWARE-CNC Unix.Trojan.Chalubo outbound connection\",\"49994\",\"HIGH\",\"A Network Trojan was detected\",\"\",\"TCP\",\"12345\",\"192.168.20.20\",\"49376\",\"93.123.85.97\",\"80\",\"Would Block\",\"IDS\",\"49994\",\"C2S\",\"\",\"\",\"\"",
+        "severity": 3,
         "type": [
             "allowed",
-            "connection"
+            "connection",
+            "info"
         ]
-    },
-    "http": {
-        "request": {
-            "bytes": 1249,
-            "method": "CONNECT"
-        },
-        "response": {
-            "bytes": 3904,
-            "status_code": 200
-        }
     },
     "input": {
         "type": "aws-s3"
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-cisco-umbrella-bucket-87011.s3.us-east-1.amazonaws.com/proxylogs.log"
+            "path": "https://elastic-package-cisco-umbrella-bucket-48027.s3.us-east-1.amazonaws.com/intrusionlogs.log"
         },
-        "offset": 0
+        "offset": 530
     },
     "network": {
         "name": [
-            "Branch 1"
-        ]
+            "HQ"
+        ],
+        "protocol": "TCP"
     },
     "observer": {
         "product": "Umbrella",
-        "type": "proxy",
+        "type": "idps",
         "vendor": "Cisco"
     },
     "related": {
         "ip": [
-            "192.168.20.32",
-            "104.110.147.63"
+            "192.168.20.20",
+            "93.123.85.97"
         ]
     },
     "source": {
-        "address": "192.168.20.32",
-        "ip": "192.168.20.32",
-        "nat": {
-            "ip": "192.168.20.32"
-        }
+        "address": "192.168.20.20",
+        "ip": "192.168.20.20",
+        "port": 49376
     },
     "tags": [
         "preserve_original_event",
         "cisco-umbrella",
         "forwarded"
-    ],
-    "url": {
-        "domain": "products.office.com",
-        "original": "https://products.office.com",
-        "path": "",
-        "scheme": "https"
-    }
+    ]
 }
 ```
 
