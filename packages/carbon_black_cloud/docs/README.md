@@ -155,7 +155,6 @@ An example event for `audit` looks as following:
         "carbon_black_cloud-audit"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -633,7 +632,6 @@ An example event for `alert_v7` looks as following:
         "name": "Administrator"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1392,7 +1390,6 @@ An example event for `asset_vulnerability_summary` looks as following:
         "severity": "CRITICAL"
     }
 }
-
 ```
 
 **Exported fields**
