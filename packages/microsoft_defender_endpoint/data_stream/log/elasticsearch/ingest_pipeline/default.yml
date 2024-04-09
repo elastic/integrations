@@ -9,6 +9,11 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field. Helps to maintain compatibility with the Logstash `ecs_compatibility feature`.'
   - json:
       field: event.original
       target_field: json

@@ -1,0 +1,143 @@
+---
+description: Pipeline for Jamf Protect Telemetry app metrics logs.
+processors:
+  - append:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: jamf_protect.telemetry.dataset
+      value: app_metrics
+  - set:
+      field: host.os.type
+      value: macos
+  - append:
+      field: event.category
+      value: process
+  - convert:
+      field: json._event_score
+      type: long
+      target_field: jamf_protect.telemetry.event_score
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.system_performance_metrics.cpu_percentage
+      type: double
+      target_field: jamf_protect.telemetry.system_performance_metrics.cpu_percentage
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.system_performance_metrics.cpu_time_seconds
+      type: double
+      target_field: jamf_protect.telemetry.system_performance_metrics.cpu_time_seconds
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.system_performance_metrics.interrupt_wakeups
+      type: long
+      target_field: jamf_protect.telemetry.system_performance_metrics.interrupt_wakeups
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.system_performance_metrics.platform_idle_wakeups
+      type: long
+      target_field: jamf_protect.telemetry.system_performance_metrics.platform_idle_wakeups
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.system_performance_metrics.resident_memory_size_mb
+      type: double
+      target_field: jamf_protect.telemetry.system_performance_metrics.resident_memory_size.mb
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.system_performance_metrics.virtual_memory_size_mb
+      type: double
+      target_field: jamf_protect.telemetry.system_performance_metrics.virtual_memory_size.mb
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.header.event_name
+      target_field: event.action
+      ignore_missing: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - date:
+      field: json.header.time_seconds_epoch
+      if: ctx.json?.header?.time_seconds_epoch != 0
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.host_info.host_name
+      target_field: host.hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.host_info.host_uuid
+      target_field: jamf_protect.telemetry.host_info.host.uuid
+      ignore_missing: true
+  - rename:
+      field: json.host_info.osversion
+      target_field: host.os.version
+      ignore_missing: true
+  - append:
+      field: host.mac
+      value: '{{{json.host_info.primary_mac_address}}}'
+      if: ctx.json?.host_info?.primary_mac_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - gsub:
+      field: host.mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - rename:
+      field: json.host_info.serial_number
+      target_field: host.id
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.json?.system_performance_metrics?.cpu_percentage != null
+      source: |
+        ctx.host.cpu = new HashMap();
+        ctx.host.cpu.usage = Math.round(ctx.json?.system_performance_metrics?.cpu_percentage *10) / 1000.0;
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

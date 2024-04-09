@@ -67,10 +67,12 @@ processors:
       target_field: url.domain
       ignore_missing: true
   - urldecode:
+      tag: urldecode_httpMessage_path
       field: json.httpMessage.path
       target_field: url.path
       ignore_missing: true
   - urldecode:
+      tag: urldecode_httpMessage_query
       field: json.httpMessage.query
       target_field: url.query
       ignore_missing: true
@@ -83,24 +85,28 @@ processors:
       type: long
       ignore_missing: true
   - urldecode:
+      tag: urldecode_httpMessage_responseHeaders
       field: json.httpMessage.responseHeaders
-      target_field: _tmp.response.headers
       ignore_missing: true
   - kv:
-      field: _tmp.response.headers
+      if: ctx.json?.httpMessage?.responseHeaders != ""
+      tag: kv_httpMessage_responseHeaders
+      field: json.httpMessage.responseHeaders
       target_field: akamai.siem.response.headers
       field_split: '\r\n'
-      value_split: ': '
+      value_split: ':\s*'
       ignore_missing: true
   - urldecode:
+      tag: urldecode_httpMessage_requestHeaders
       field: json.httpMessage.requestHeaders
-      target_field: _tmp.request.headers
       ignore_missing: true
   - kv:
-      field: _tmp.request.headers
+      if: ctx.json?.httpMessage?.requestHeaders != ""
+      tag: kv_httpMessage_requestHeaders
+      field: json.httpMessage.requestHeaders
       target_field: akamai.siem.request.headers
       field_split: '\r\n'
-      value_split: ': '
+      value_split: ':\s*'
       ignore_missing: true
   - script:
       lang: painless
@@ -194,6 +200,7 @@ processors:
       ignore_missing: true
   ## Attack Data
   - urldecode:
+      tag: urldecode_attackData_ruleActions
       field: json.attackData.ruleActions
       target_field: json.attackData.ruleActions
       ignore_missing: true
@@ -203,6 +210,7 @@ processors:
       separator: ';'
       preserve_trailing: true
   - urldecode:
+      tag: urldecode_attackData_ruleData
       field: json.attackData.ruleData
       target_field: json.attackData.ruleData
       ignore_missing: true
@@ -212,6 +220,7 @@ processors:
       separator: ';'
       preserve_trailing: true
   - urldecode:
+      tag: urldecode_attackData_ruleMessages
       field: json.attackData.ruleMessages
       target_field: json.attackData.ruleMessages
       ignore_missing: true
@@ -221,6 +230,7 @@ processors:
       separator: ';'
       preserve_trailing: true
   - urldecode:
+      tag: urldecode_attackData_ruleSelectors
       field: json.attackData.ruleSelectors
       target_field: json.attackData.ruleSelectors
       ignore_missing: true
@@ -230,6 +240,7 @@ processors:
       separator: ';'
       preserve_trailing: true
   - urldecode:
+      tag: urldecode_attackData_ruleTags
       field: json.attackData.ruleTags
       target_field: json.attackData.ruleTags
       ignore_missing: true
@@ -239,6 +250,7 @@ processors:
       separator: ';'
       preserve_trailing: true
   - urldecode:
+      tag: urldecode_attackData_ruleVersions
       field: json.attackData.ruleVersions
       target_field: json.attackData.ruleVersions
       ignore_missing: true
@@ -248,6 +260,7 @@ processors:
       separator: ';'
       preserve_trailing: true
   - urldecode:
+      tag: urldecode_attackData_rules
       field: json.attackData.rules
       target_field: json.attackData.rules
       ignore_missing: true
@@ -259,6 +272,7 @@ processors:
   - script:
       lang: painless
       description: Base64 Decode the json.attackData.rule* fields
+      tag: script_base64_decode_attackData_rule
       source: |
         ArrayList items = new ArrayList(["rules", "ruleActions", "ruleData", "ruleMessages", "ruleTags", "ruleSelectors", "ruleVersions"]);
         ArrayList rules_array = new ArrayList();
@@ -386,18 +400,24 @@ processors:
       type: long
       ignore_missing: true
   - kv:
+      if: ctx.json?.userRiskData?.risk != ""
+      tag: kv_userRiskData_risk
       field: json.userRiskData.risk
       target_field: akamai.siem.user_risk.risk
       field_split: '\|'
       value_split: ':'
       ignore_missing: true
   - kv:
+      if: ctx.json?.userRiskData?.trust != ""
+      tag: kv_userRiskData_trust
       field: json.userRiskData.trust
       target_field: akamai.siem.user_risk.trust
       field_split: '\|'
       value_split: ':'
       ignore_missing: true
   - kv:
+      if: ctx.json?.userRiskData?.general != ""
+      tag: kv_userRiskData_general
       field: json.userRiskData.general
       target_field: akamai.siem.user_risk.general
       field_split: '\|'
@@ -458,4 +478,7 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'

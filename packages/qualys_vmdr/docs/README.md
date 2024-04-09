@@ -320,8 +320,8 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "59f8cd8a-60d4-4773-a9bb-4603e5bbfb75",
-        "id": "b7f7fd67-e199-4daf-b640-92e89c091cc6",
+        "ephemeral_id": "2680cdd8-c261-48cd-b70d-b958f911b86a",
+        "id": "339b7770-4966-47a8-bc07-60e4a5c83116",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.1"
@@ -335,7 +335,7 @@ An example event for `knowledge_base` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b7f7fd67-e199-4daf-b640-92e89c091cc6",
+        "id": "339b7770-4966-47a8-bc07-60e4a5c83116",
         "snapshot": false,
         "version": "8.12.1"
     },
@@ -346,7 +346,7 @@ An example event for `knowledge_base` looks as following:
         ],
         "dataset": "qualys_vmdr.knowledge_base",
         "id": "11830",
-        "ingested": "2024-03-11T21:08:19Z",
+        "ingested": "2024-03-17T23:42:53Z",
         "kind": "alert",
         "type": [
             "info"
@@ -358,6 +358,10 @@ An example event for `knowledge_base` looks as following:
     "qualys_vmdr": {
         "knowledge_base": {
             "category": "CGI",
+            "cve_list": [
+                "CVE-2022-31629",
+                "CVE-2022-31628"
+            ],
             "discovery": {
                 "remote": 1
             },
@@ -387,6 +391,10 @@ An example event for `knowledge_base` looks as following:
     "vulnerability": {
         "category": [
             "CGI"
+        ],
+        "id": [
+            "CVE-2022-31629",
+            "CVE-2022-31628"
         ],
         "severity": "Medium"
     }
@@ -427,8 +435,7 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.correlation.malware.src.list.info.rating |  | keyword |
 | qualys_vmdr.knowledge_base.correlation.malware.src.list.info.type |  | keyword |
 | qualys_vmdr.knowledge_base.correlation.malware.src.name |  | keyword |
-| qualys_vmdr.knowledge_base.cve_list.id |  | keyword |
-| qualys_vmdr.knowledge_base.cve_list.url |  | keyword |
+| qualys_vmdr.knowledge_base.cve_list |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.access.complexity |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.access.vector |  | keyword |
 | qualys_vmdr.knowledge_base.cvss.authentication |  | keyword |
