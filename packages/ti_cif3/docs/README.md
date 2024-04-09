@@ -3,7 +3,7 @@
 This integration connects with the [REST API from the running CIFv3 instance](https://github.com/csirtgadgets/bearded-avenger-deploymentkit/wiki/REST-API) to retrieve indicators.
 
 ## Expiration of Indicators of Compromise (IOCs)
-Indicators are expired after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for source index to facilitate only active indicators be available to the end users. The transform creates a destination index named `logs-ti_cif3_latest.dest_feed*` which only contains active and unexpired indicators. Destination indices are aliased to `logs-ti_cif3_latest.feed`. The indicator match rules and dashboards are updated to show only active indicators.
+Indicators are expired after a certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for a source index to allow only active indicators to be available to the end users. The transform creates a destination index named `logs-ti_cif3_latest.dest_feed*` which only contains active and unexpired indicators. Destination indices are aliased to `logs-ti_cif3_latest.feed`. The indicator match rules and dashboards are updated to show only active indicators.
 
 | Indicator Type    | Indicator Expiration Duration                  |
 |:------------------|:------------------------------------------------|
@@ -119,7 +119,7 @@ CIFv3 `confidence` field values (0..10) are converted to ECS confidence (None, L
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
-| threat.indicator.name | The display name indicator in an UI friendly format | keyword |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
 | threat.indicator.sightings | Number of times this indicator was observed conducting threat activity. | long |
@@ -141,9 +141,9 @@ An example event for `feed` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-08T18:45:15.845Z",
+    "@timestamp": "2024-04-09T05:53:36.990Z",
     "agent": {
-        "ephemeral_id": "d70d2092-67b5-42d3-99cc-1bd3838d7f1b",
+        "ephemeral_id": "0d3e9544-81e2-47b3-a3c7-b2aeaf8256f4",
         "id": "28f0e936-c71c-4f75-8919-506fed4d20e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -174,9 +174,9 @@ An example event for `feed` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2024-04-08T18:45:15.845Z",
+        "created": "2024-04-09T05:53:36.990Z",
         "dataset": "ti_cif3.feed",
-        "ingested": "2024-04-08T18:45:27Z",
+        "ingested": "2024-04-09T05:53:48Z",
         "kind": "enrichment",
         "original": "{\"application\":\"https\",\"asn\":8075,\"asn_desc\":\"microsoft-corp-msn-as-block\",\"cc\":\"br\",\"city\":\"campinas\",\"confidence\":10,\"count\":1,\"firsttime\":\"2022-07-20T20:25:53.000000Z\",\"group\":[\"everyone\"],\"indicator\":\"20.206.75.106\",\"indicator_ipv4\":\"20.206.75.106\",\"itype\":\"ipv4\",\"lasttime\":\"2022-07-20T20:25:53.000000Z\",\"latitude\":-22.9035,\"location\":[-47.0565,-22.9035],\"longitude\":-47.0565,\"portlist\":\"443\",\"protocol\":\"tcp\",\"provider\":\"sslbl.abuse.ch\",\"reference\":\"https://sslbl.abuse.ch/blacklist/sslipblacklist.csv\",\"region\":\"sao paulo\",\"reporttime\":\"2022-07-21T20:33:26.585967Z\",\"tags\":[\"botnet\"],\"timezone\":\"america/sao_paulo\",\"tlp\":\"white\",\"uuid\":\"ac240898-1443-4d7e-a98a-1daed220c162\"}",
         "type": [
