@@ -141,7 +141,7 @@ An example event for `access` looks as following:
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | http.request.headers.\* | The canonical headers of the monitored HTTP request. | object |
-| http.response.headers.\* | The canonical headers of the monitored HTTP request. | object |
+| http.response.headers.\* | The canonical headers of the monitored HTTP response. | object |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | traefik.access.origin.content_size | The content length specified by the origin server, or 0 if unspecified. | long |
@@ -154,18 +154,18 @@ An example event for `access` looks as following:
 | traefik.access.retry_attempts | The amount of attempts the request was retried | long |
 | traefik.access.router.name | The name of the Traefik router | keyword |
 | traefik.access.service.address | The IP:port of the Traefik backend (extracted from ServiceURL) | keyword |
-| traefik.access.service.duration | The name of the Traefik backend | long |
-| traefik.access.service.url.domain |  | keyword |
+| traefik.access.service.duration | The time taken (in nanoseconds) by the origin server ('upstream') to return its response. | long |
+| traefik.access.service.url.domain | Domain of the url | keyword |
 | traefik.access.service.url.force_query | Traefik specific url field | boolean |
-| traefik.access.service.url.fragment |  | keyword |
+| traefik.access.service.url.fragment | The fragment of the url | keyword |
 | traefik.access.service.url.opaque | Traefik specific url field | keyword |
 | traefik.access.service.url.original | Traefik url as used in common log format | keyword |
-| traefik.access.service.url.path |  | keyword |
-| traefik.access.service.url.query |  | keyword |
+| traefik.access.service.url.path | The path of the url | keyword |
+| traefik.access.service.url.query | The query string of the url | keyword |
 | traefik.access.service.url.raw_path | Traefik specific url field | keyword |
 | traefik.access.service.url.raw_query | Traefik specific url field | keyword |
-| traefik.access.service.url.scheme |  | keyword |
-| traefik.access.service.url.username |  | keyword |
+| traefik.access.service.url.scheme | The scheme of the url | keyword |
+| traefik.access.service.url.username | The username of the url | keyword |
 | traefik.access.user_identifier | Is the RFC 1413 identity of the client | keyword |
 
 
