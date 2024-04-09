@@ -100,7 +100,7 @@ The AbuseCH URL data_stream retrieves full list of active threat intelligence in
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.name | The display name indicator in an UI friendly format | keyword |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
@@ -194,7 +194,7 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 | threat.indicator.file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | threat.indicator.file.type | File type (file, dir, or symlink). | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
-| threat.indicator.name | The display name indicator in an UI friendly format | keyword |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
@@ -302,7 +302,7 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.name | The display name indicator in an UI friendly format | keyword |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.software.alias | The alias(es) of the software for a set of related intrusion activity that are tracked by a common name in the security community. While not required, you can use a MITRE ATT&CK® associated software description. | keyword |
@@ -396,7 +396,7 @@ The AbuseCH threatfox data_stream retrieves threat intelligence indicators from 
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.name | The display name indicator in an UI friendly format | keyword |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.port | Identifies a threat indicator as a port number (irrespective of direction). | long |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
