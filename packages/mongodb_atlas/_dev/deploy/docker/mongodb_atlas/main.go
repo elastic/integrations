@@ -48,7 +48,50 @@ func generateDigest(username, realm, password, method, uri, nonce, nc, cnonce, q
 	return fmt.Sprintf("%x", response.Sum(nil))
 }
 
+func digestAuth(w http.ResponseWriter, r *http.Request, realm, nonce, qop string) bool {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		w.Header().Set("WWW-Authenticate", fmt.Sprintf(`Digest realm="%s", qop="%s", nonce="%s"`, realm, qop, nonce))
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return false
+	}
+
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || parts[0] != "Digest" {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return false
+	}
+
+	params := make(map[string]string)
+	for _, param := range strings.Split(parts[1], ",") {
+		kv := strings.SplitN(strings.TrimSpace(param), "=", 2)
+		if len(kv) != 2 {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return false
+		}
+		params[kv[0]] = strings.Trim(kv[1], `"`)
+	}
+
+	calculatedResponse := generateDigest(params["username"], realm, password, r.Method, r.RequestURI, nonce, params["nc"], params["cnonce"], params["qop"])
+
+	if calculatedResponse != params["response"] {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return false
+	}
+
+	return true
+}
+
 func hostHandler(w http.ResponseWriter, r *http.Request) {
+
+	realm := "MyRealm"
+	nonce := "123456"
+	qop := "auth"
+
+	authorized := digestAuth(w, r, realm, nonce, qop)
+	if !authorized {
+		return
+	}
 	// Create the response
 	type Link struct {
 		Rel string `json:"rel"`
@@ -92,35 +135,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	nonce := "123456"
 	qop := "auth"
 
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		w.Header().Set("WWW-Authenticate", fmt.Sprintf(`Digest realm="%s", qop="%s", nonce="%s"`, realm, qop, nonce))
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) != 2 || parts[0] != "Digest" {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
-	}
-
-	params := make(map[string]string)
-	for _, param := range strings.Split(parts[1], ",") {
-		kv := strings.SplitN(strings.TrimSpace(param), "=", 2)
-		if len(kv) != 2 {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
-		params[kv[0]] = strings.Trim(kv[1], `"`)
-	}
-
-	username := params["username"]
-	uri := r.RequestURI
-	response := generateDigest(username, realm, password, r.Method, uri, nonce, params["nc"], params["cnonce"], params["qop"])
-
-	if response != params["response"] {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	authorized := digestAuth(w, r, realm, nonce, qop)
+	if !authorized {
 		return
 	}
 

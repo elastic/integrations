@@ -47,7 +47,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 2. In "Search for integrations" search bar, type MongoDB Atlas
 3. Click on the "MongoDB Atlas" integration from the search results.
 4. Click on the "Add MongoDB Atlas" button to add the integration.
-5. Add all the required integration configuration parameters, such as Public Key, Private Key, URL and GroupId. For Mongod Audit data stream.
+5. Add all the required integration configuration parameters, such as Public Key, Private Key and GroupId.
 6. Save the integration.
 
 Note:
@@ -77,11 +77,11 @@ An example event for `mongod_audit` looks as following:
 {
     "@timestamp": "2023-04-01T12:00:00.000Z",
     "agent": {
-        "ephemeral_id": "d3ebc4ac-0cb3-41a2-90b2-cbd7055d60b8",
-        "id": "6baea824-3495-4407-aac0-d9a0cb99c4f8",
+        "ephemeral_id": "82e5a7ce-c7ad-436f-90f2-a1cefbe22333",
+        "id": "498e0c10-4447-4a56-90f0-ba02c44a01c2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "mongodb_atlas.mongod_audit",
@@ -92,18 +92,19 @@ An example event for `mongod_audit` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6baea824-3495-4407-aac0-d9a0cb99c4f8",
+        "id": "498e0c10-4447-4a56-90f0-ba02c44a01c2",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "event": {
+        "action": "authenticate",
         "agent_id_status": "verified",
         "category": [
             "network",
             "authentication"
         ],
         "dataset": "mongodb_atlas.mongod_audit",
-        "ingested": "2024-04-01T09:36:02Z",
+        "ingested": "2024-04-09T06:13:37Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
@@ -115,12 +116,12 @@ An example event for `mongod_audit` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "829324aac17946dcace17006fa82a2d2",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.255.7"
+            "192.168.245.7"
         ],
         "mac": [
-            "02-42-C0-A8-FF-07"
+            "02-42-C0-A8-F5-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -138,9 +139,6 @@ An example event for `mongod_audit` looks as following:
     },
     "mongodb_atlas": {
         "mongod_audit": {
-            "action": {
-                "type": "authenticate"
-            },
             "hostname": "hostname1",
             "local": {
                 "ip": "127.0.0.1",
@@ -191,16 +189,7 @@ An example event for `mongod_audit` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| mongodb_atlas.mongod_audit.action.type | Action type of Audit Event. | keyword |
 | mongodb_atlas.mongod_audit.hostname | Human-readable label that identifies the host that stores the log files that you want to download. | keyword |
 | mongodb_atlas.mongod_audit.local.ip | A document that contains the IP address of the running instance. | ip |
 | mongodb_atlas.mongod_audit.local.is_system_user | This field indicates whether the user who caused the event was a system user. | boolean |
@@ -216,5 +205,4 @@ An example event for `mongod_audit` looks as following:
 | mongodb_atlas.mongod_audit.user.roles | Array of documents that specify the roles granted to the user. | object |
 | mongodb_atlas.mongod_audit.uuid.binary | Document that contains a universally unique identifier (UUID) for the audit message. | keyword |
 | mongodb_atlas.mongod_audit.uuid.type | The $type field specifies the BSON subtype for the $binary field. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |

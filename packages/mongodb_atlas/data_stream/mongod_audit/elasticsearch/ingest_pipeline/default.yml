@@ -1,6 +1,9 @@
 ---
 description: Pipeline for processing MongoDB Atlas Mongod Audit logs.
 processors:
+  - drop:
+      if: ctx.message == "No data for given time period or host is unreachable"
+      tag: drop_empty_events
   - set:
       field: ecs.version
       value: 8.11.0
@@ -16,13 +19,11 @@ processors:
   - set:
       field: event.type
       value: ["access", "info"]
-  - drop:
-      if: ctx.message == "No data for given time period or host is unreachable"
-      tag: drop_empty_events
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
   - rename:
       field: host_name
       target_field: mongodb_atlas.mongod_audit.hostname
@@ -55,7 +56,7 @@ processors:
       allow_duplicates: false
   - rename:
       field: json.atype
-      target_field: mongodb_atlas.mongod_audit.action.type
+      target_field: event.action
       ignore_missing: true
   - rename:
       field: json.local.port
