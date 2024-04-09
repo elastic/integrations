@@ -167,23 +167,32 @@ An example event for `firewall` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation_id | Correlation ID | keyword |
+| azure.firewall.action | Action taken by the firewall following the match with the network rule | keyword |
+| azure.firewall.action_reason | Reason for the action performed by the firewall | keyword |
 | azure.firewall.category | Category | keyword |
-| azure.firewall.destination_ip | Packet's destination IP address | keyword |
+| azure.firewall.destination_ip | Packet's destination IP address | ip |
 | azure.firewall.destination_port | Packet's destination port | keyword |
 | azure.firewall.dnssec_bool_flag | True if DNS request is using DNSSEC | boolean |
 | azure.firewall.dnssec_buffer_size | Size of the DNSSEC buffer | long |
 | azure.firewall.duration | Duration of the firewall request | keyword |
 | azure.firewall.event_original_uid | UID assigned to the logged event | keyword |
+| azure.firewall.fqdn | Request target address in FQDN (Fully qualified Domain Name) | keyword |
 | azure.firewall.icmp.request.code | ICMP request code | keyword |
 | azure.firewall.identity_name | identity name | keyword |
+| azure.firewall.is_explicit_proxy_request | True if the request is received on an explicit proxy port | boolean |
+| azure.firewall.is_tls_inspected | True if the connection is TLS inspected | boolean |
 | azure.firewall.operation_name | Operation name | keyword |
 | azure.firewall.policy | Name of the policy in which the triggered rule resides | keyword |
 | azure.firewall.protocol | Packet's network protocol. For example: UDP, TCP | keyword |
 | azure.firewall.rule | Name of the triggered rule | keyword |
 | azure.firewall.rule_collection | Name of the rule collection in which the triggered rule resides | keyword |
 | azure.firewall.rule_collection_group | Name of the rule collection group in which the triggered rule resides | keyword |
-| azure.firewall.source_ip | Packet's source IP address | keyword |
+| azure.firewall.source_ip | Packet's source IP address | ip |
 | azure.firewall.source_port | Packet's source port | keyword |
+| azure.firewall.target_url | Request's target address URL | keyword |
+| azure.firewall.translated_ip | Original Destination IP address of the packet | ip |
+| azure.firewall.translated_port | Original Destination port of the packet | keyword |
+| azure.firewall.web_category | Web Category identified for the requested FQDN (Azure Firewall Standard) or URL (Azure Firewall Premium) | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
