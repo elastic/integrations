@@ -38,6 +38,35 @@ so the `period` for `database_account` should be `300s` or multiples of `300s`.
 
 For each individual data stream, you can check the exported fields in the [Metrics reference](#metrics-reference) section.
 
+## Generic or specialized integrations
+
+The Azure Resource Metrics package offers several integrations. Most of them are specialized, only one is generic.
+
+ ### Specialized integrations
+
+These integrations can fully parse the metrics categories they focus on, and usually come with an out-of-the-box dashboard to visualize data.
+Examples of specialized integrations are: Sign-in logs, Audit logs, and Activity logs.
+
+ ### Generic integration
+
+ If the service you want to use does not have a specialized integration, you can enable the option **Collect events from Event Hub**. It ingests any metric category with a basic out-of-the-box parsing of common Azure fields.
+
+ Besides the basic parsing, you have two options to expand its capability:
+
+ * Enable message parsing
+ * Add a custom mapping and pipeline
+
+
+ You can also combine the two options.
+
+ ### Enable message parsing
+
+ In the settings, if you enable the `parse message` option, the integration will leverage the dynamic mapping for you.
+
+ ### Add a custom mapping and pipeline
+
+ Users can use this integration in combination with a custom mapping and pipeline to extend the default actions. Generic integrations should be used only when there isn't a specialized integration supporting the metric category.
+
 ## Requirements
 
 The Elastic Agent fetches metric data from the Azure Monitor API and sends it to dedicated data streams named `azure-monitor.<metricset>-default` in Elasticsearch.
