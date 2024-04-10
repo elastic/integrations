@@ -47,7 +47,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 2. In "Search for integrations" search bar, type MongoDB Atlas
 3. Click on the "MongoDB Atlas" integration from the search results.
 4. Click on the "Add MongoDB Atlas" button to add the integration.
-5. Add all the required integration configuration parameters, such as Public Key, Private Key, URL and GroupId.
+5. Add all the required integration configuration parameters, such as Public Key, Private Key and GroupId.
 6. Save the integration.
 
 ## Troubleshooting

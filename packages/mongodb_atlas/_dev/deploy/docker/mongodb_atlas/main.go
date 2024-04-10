@@ -172,7 +172,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	// Existing handler for serving the compressed file
-
 	http.HandleFunc("/api/atlas/v2/groups/mongodb-group1/clusters/hostname1/logs/mongodb.gz", handler)
 
 	// New handler for returning the hostname
