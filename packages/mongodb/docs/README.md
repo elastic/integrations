@@ -61,7 +61,7 @@ db.createUser(
     }
 )
 ```
-You can use the following command in Mongo shell to authenticate a user against a specific database with the provided username and password (make sure you are using the `admin` db by using `db` command in Mongo shell).
+You can use the following command in Mongo shell to authenticate a user against a specific database with the provided username and password (make sure you are using the `admin` database by using the command `db` in Mongo shell).
 ```
 db.auth(user, pass)
 ```
