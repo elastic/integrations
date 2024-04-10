@@ -6,7 +6,7 @@
 
 Use the MongoDB Atlas integration to:
 
-- Collect Mongod Database logs.
+- Collect MongoDB database logs for comprehensive monitoring and analysis.
 - Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
 - Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
