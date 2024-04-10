@@ -2,13 +2,13 @@
 
 ## Overview
 
-[MongoDB Atlas](https://www.mongodb.com/atlas) is a multi-cloud developer data platform. At its core is our fully managed cloud database for modern applications. Atlas is the best way to run MongoDB, the leading non-relational database. MongoDB’s document model is the fastest way to innovate because documents map directly to the objects in your code. As a result, they are much easier and more natural to work with. You can store data of any structure and modify your schema at any time as you add new features to your applications.
+[MongoDB Atlas](https://www.mongodb.com/atlas), the leading multi-cloud developer data platform, offers the easiest way to run MongoDB, enabling you to work with your code's objects directly through its document-based data model, which allows for flexible schema and easy scalability.
 
 Use the MongoDB Atlas integration to:
 
 - Collect MongoDB database logs for comprehensive monitoring and analysis.
 - Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
-- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+- Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
 
 ## Data streams
 
@@ -38,21 +38,25 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 ### Steps to obtain Public Key, Private Key and GroupId:
 
 1. Generate programmatic API Keys with project owner permissions using the instructions in the Atlas [documentation](https://www.mongodb.com/docs/atlas/configure-api-access/#create-an-api-key-for-a-project). Then, copy the public key and private key. These serve the same function as a username and API Key respectively.
-2. Enable Database Auditing for the Atlas project for which you want to monitor logs, as described in this Atlas [document](https://www.mongodb.com/docs/atlas/database-auditing/#procedure).
-3. You can find your GroupId(ProjectID) in the Atlas UI. Go to your project, click Settings, and copy the GroupID(ProjectID). You can use the Atlas Admin API or Atlas CLI to find it programmatically. As described in this Atlas [document](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id)
+2. Enable Database Auditing for the Atlas project you want to monitor logs. You can follow the instructions provided in this Atlas [document](https://www.mongodb.com/docs/atlas/database-auditing/#procedure).
+3. You can find your Project ID (Group ID) in the Atlas UI. To do this, navigate to your project, click on Settings, and copy the Project ID (Group ID). You can also programmatically find it using the Atlas Admin API or Atlas CLI as described in this Atlas [document](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id).
 
-### Enabling the integration in Elastic:
+### Steps to enable Integration in Elastic
 
 1. In Kibana go to Management > Integrations
 2. In "Search for integrations" search bar, type MongoDB Atlas
 3. Click on the "MongoDB Atlas" integration from the search results.
-4. Click on the "Add MongoDB Atlas" button to add the integration.
-5. Add all the required integration configuration parameters, such as Public Key, Private Key and GroupId.
-6. Save the integration.
+4. To add the integration, click on the "Add MongoDB Atlas" button.
+5. Enter all the necessary configuration parameters, including Public Key, Private Key, and GroupId.
+6. Finally, save the integration.
+
+Note:
+- The `mongod_database` data streams gather historical data spanning the previous 30 minutes.
+- Mongod: Mongod is the primary daemon method for the MongoDB system. It helps in handling the data requests, managing the data access, performing background management operations, and other core database operations.
 
 ## Troubleshooting
 
-- If the user encounters the following error during data ingestion, it is likely due to the data collected through this endpoint covers a long time span. As a result, generating a response may take longer. Additionally, if the `HTTP Client Timeout` parameter is set to a small duration,  a request timeout might happen. However, if the user wishes to avoid this error altogether, it is recommended to adjust the `HTTP Client Timeout` and `Interval` parameters based on the duration of data collection.
+If you encounter an error while ingesting data, it might be due to the data collected over a long time span. Generating a response in such cases may take longer and might cause a request timeout if the `HTTP Client Timeout` parameter is set to a small duration. To avoid this error, it is recommended to adjust the `HTTP Client Timeout` and `Interval` parameters based on the duration of data collection.
 ```
 {
   "error": {
