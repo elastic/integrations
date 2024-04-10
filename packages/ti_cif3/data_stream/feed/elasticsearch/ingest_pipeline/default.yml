@@ -34,15 +34,25 @@ processors:
   - date:
       field: cif3.firsttime
       target_field: threat.indicator.first_seen
+      tag: date-indicator_first_seen
       formats:
         - "ISO8601"
       if: ctx.cif3?.firsttime != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}}'
   - date:
       field: cif3.lasttime
       target_field: threat.indicator.last_seen
+      tag: date-indicator_last_seen
       formats:
         - "ISO8601"
       if: ctx.cif3?.lasttime != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}}'
   - set:
       field: threat.indicator.name
       copy_from: cif3.indicator
@@ -404,7 +414,6 @@ processors:
       ignore_missing: true
   - remove:
       field:
-        - cif3.indicator
         - cif3.confidence
         - cif3.indicator_ipv4
         - cif3.indicator_ipv6
