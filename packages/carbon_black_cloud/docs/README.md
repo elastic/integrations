@@ -3,10 +3,7 @@
 The VMware Carbon Black Cloud integration collects and parses data from the Carbon Black Cloud REST APIs and AWS S3 bucket.
 
 ## Version 2.0.0+ Update Disclaimer
-Carbon Black Cloud `Alerts API (v6)` [will be deactivated on July 31, 2024](https://developer.carbonblack.com/reference/carbon-black-cloud/api-migration/#migration-summary). After this, the current alert data stream will become unusable. To enable a smooth
-transition we have introduced a new data stream named `alert_v7` based on the major `Alerts API (v7)` schema changes and `Data Forwarder 2.0`
-schema changes. This data stream has been tagged as `Beta` and has significant changes compared to the original data stream, please 
-consult the official docs [Alerts v7](https://developer.carbonblack.com/reference/carbon-black-cloud/guides/api-migration/alerts-migration) and [Data Forwarder 2.0](https://developer.carbonblack.com/reference/carbon-black-cloud/data-forwarder/schema/latest/alert-2.0.0/) for further info. After July 31, 2024, the old alerts v6 data stream will be deprecated and removed and only this new data stream will exist. 
+Carbon Black Cloud `Alerts API (v6)` [will be deactivated on July 31, 2024](https://developer.carbonblack.com/reference/carbon-black-cloud/api-migration/#migration-summary). After this, the current alert data stream will become unusable. To enable a smooth transition we have introduced a new data stream named `alert_v7` based on the major `Alerts API (v7)` schema changes and `Data Forwarder 2.0` schema changes. This data stream has significant changes compared to the original data stream and is only available for our new `CEL input` which is currently tagged as `[Beta]`. Please consult the official docs [Alerts v7](https://developer.carbonblack.com/reference/carbon-black-cloud/guides/api-migration/alerts-migration) and [Data Forwarder 2.0](https://developer.carbonblack.com/reference/carbon-black-cloud/data-forwarder/schema/latest/alert-2.0.0/) for further info. After July 31, 2024, the old alerts v6 data stream will be deprecated and removed from the HTTPJSON input and only the new `alert_v7` data stream will exist under the `CEL input`.
 
 ## Version 1.21+ Update Disclaimer
 Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
@@ -16,14 +13,14 @@ older versions.
 
 ## HTTPJSON vs CEL 
 Version 2.0.0 introduces the use of the CEL input. This input method is currently marked as [Beta] while the older HTTPJSON input method has been
-marked as [Legacy]. The HTTPJSON input method will not receive enhancement changes.
+marked as [Legacy]. The HTTPJSON input method will not receive enhancement changes and will not support the new `alert_v7` data stream.
 
 ## Note (Important)
 1. Do not enable both the HTTPJSON and CEL input methods; having both enabled simultaneously can cause unexpected/duplicated results, as they operate on the same data streams.
 
-2. When using the HTTPJSON input, use either the old alert data stream or the new [Beta] alert_v7 data stream. Do not have these two data streams enabled simultaneously.
+2. When using the AWS-S3 input, use either the old alert data stream or the new [Beta] alert_v7 data stream that supports the Data Forwarder 2.0 schema.
 
-3. When using the AWS-S3 input, use either the old alert data stream or the new [Beta] alert_v7 data stream that supports the Data Forwarder 2.0 schema.
+3. The `alert_v7` data stream is supported by our new `Alert V7` dashboards. The old `Alert` dashboards will not reflect the new changes.
 
 
 ## Compatibility
@@ -448,7 +445,7 @@ An example event for `alert_v7` looks as following:
 {
     "@timestamp": "2024-03-13T08:02:36.578Z",
     "agent": {
-        "ephemeral_id": "d35d1328-6c99-423d-a242-fcaf7ab950f9",
+        "ephemeral_id": "9c46ff77-c269-4593-a3d8-efd89fbdca66",
         "id": "db2930ff-774e-4541-bcd4-1a6a1d656167",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -490,17 +487,33 @@ An example event for `alert_v7` looks as following:
             "ml_classification_org_prevalence": "LOW",
             "organization_key": "7DESJ9GN",
             "parent": {
+                "cmdline": "C:\\Windows\\system32\\svchost.exe -k netsvcs -p -s Schedule",
                 "effective_reputation": "TRUSTED_WHITE_LIST",
+                "guid": "7DESJ9GN-0064e5a7-0000077c-00000000-1da5ed7ec07b275",
+                "hash": {
+                    "md5": "145dcf6706eeea5b066885ee17964c09",
+                    "sha256": "f13de58416730d210dab465b242e9c949fb0a0245eef45b07c381f0c6c8a43c3"
+                },
+                "name": "c:\\windows\\system32\\svchost.exe",
+                "pid": 1916,
                 "reputation": "TRUSTED_WHITE_LIST",
                 "username": "NT AUTHORITY\\SYSTEM"
             },
             "policy_applied": "NOT_APPLIED",
             "primary_event_id": "re9M9hp8TbGLqyk6QXqQqA-0",
             "process": {
+                "cmdline": "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -EP Bypass \\\\eip.demo\\sysvol\\EIP.DEMO\\scripts\\Luminol.ps1",
                 "effective_reputation": "TRUSTED_WHITE_LIST",
+                "guid": "7DESJ9GN-0064e5a7-00001434-00000000-1da751c7354ebfe",
+                "hash": {
+                    "md5": "2e5a8590cf6848968fc23de3fa1e25f1",
+                    "sha256": "9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3"
+                },
                 "issuer": [
                     "Microsoft Windows Production PCA 2011"
                 ],
+                "name": "c:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe",
+                "pid": 5172,
                 "publisher": [
                     "Microsoft Windows"
                 ],
@@ -563,7 +576,7 @@ An example event for `alert_v7` looks as following:
         "dataset": "carbon_black_cloud.alert_v7",
         "end": "2024-03-13T08:00:09.894Z",
         "id": "1c6aba68-24cc-41e3-ad8e-4b545a587b55",
-        "ingested": "2024-04-10T07:00:58Z",
+        "ingested": "2024-04-10T09:06:02Z",
         "kind": "alert",
         "original": "{\"alert_notes_present\":false,\"alert_url\":\"defense.conferdeploy.net/alerts?s[c][query_string]=id:1c6aba68-24cc-41e3-ad8e-4b545a587b55\\u0026orgKey=7DESJ9GN\",\"asset_group\":[],\"backend_timestamp\":\"2024-03-13T08:03:29.540Z\",\"backend_update_timestamp\":\"2024-03-13T08:03:29.540Z\",\"childproc_cmdline\":\"\",\"childproc_guid\":\"\",\"childproc_username\":\"\",\"detection_timestamp\":\"2024-03-13T08:02:36.578Z\",\"determination\":{\"change_timestamp\":\"2024-03-13T08:03:29.540Z\",\"changed_by\":\"ALERT_CREATION\",\"changed_by_type\":\"SYSTEM\",\"value\":\"NONE\"},\"device_external_ip\":\"75.98.230.194\",\"device_id\":6612391,\"device_internal_ip\":\"172.16.100.140\",\"device_location\":\"UNKNOWN\",\"device_name\":\"EIP\\\\WW-20002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_policy\":\"default\",\"device_policy_id\":6525,\"device_target_value\":\"MEDIUM\",\"device_uem_id\":\"\",\"device_username\":\"EIP\\\\Administrator\",\"first_event_timestamp\":\"2024-03-13T08:00:09.894Z\",\"id\":\"1c6aba68-24cc-41e3-ad8e-4b545a587b55\",\"ioc_hit\":\"(fileless_scriptload_cmdline:Register-ScheduledTask OR fileless_scriptload_cmdline:New-ScheduledTask OR scriptload_content:Register-ScheduledTask OR scriptload_content:New-ScheduledTask) AND NOT (process_cmdline:windows\\\\\\\\ccm\\\\\\\\systemtemp OR crossproc_name:windows\\\\\\\\ccm\\\\\\\\ccmexec.exe OR (process_publisher:\\\"VMware, Inc.\\\" AND process_publisher_state:FILE_SIGNATURE_STATE_TRUSTED))\",\"ioc_id\":\"d1080521-e617-4e45-94e0-7a145c62c90a\",\"is_updated\":false,\"last_event_timestamp\":\"2024-03-13T08:00:09.894Z\",\"mdr_alert\":false,\"mdr_alert_notes_present\":false,\"mdr_threat_notes_present\":false,\"ml_classification_anomalies\":[],\"ml_classification_final_verdict\":\"NOT_ANOMALOUS\",\"ml_classification_global_prevalence\":\"LOW\",\"ml_classification_org_prevalence\":\"LOW\",\"org_key\":\"7DESJ9GN\",\"parent_cmdline\":\"C:\\\\Windows\\\\system32\\\\svchost.exe -k netsvcs -p -s Schedule\",\"parent_effective_reputation\":\"TRUSTED_WHITE_LIST\",\"parent_guid\":\"7DESJ9GN-0064e5a7-0000077c-00000000-1da5ed7ec07b275\",\"parent_md5\":\"145dcf6706eeea5b066885ee17964c09\",\"parent_name\":\"c:\\\\windows\\\\system32\\\\svchost.exe\",\"parent_pid\":1916,\"parent_reputation\":\"TRUSTED_WHITE_LIST\",\"parent_sha256\":\"f13de58416730d210dab465b242e9c949fb0a0245eef45b07c381f0c6c8a43c3\",\"parent_username\":\"NT AUTHORITY\\\\SYSTEM\",\"policy_applied\":\"NOT_APPLIED\",\"primary_event_id\":\"re9M9hp8TbGLqyk6QXqQqA-0\",\"process_cmdline\":\"\\\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\" -EP Bypass \\\\\\\\eip.demo\\\\sysvol\\\\EIP.DEMO\\\\scripts\\\\Luminol.ps1\",\"process_effective_reputation\":\"TRUSTED_WHITE_LIST\",\"process_guid\":\"7DESJ9GN-0064e5a7-00001434-00000000-1da751c7354ebfe\",\"process_issuer\":[\"Microsoft Windows Production PCA 2011\"],\"process_md5\":\"2e5a8590cf6848968fc23de3fa1e25f1\",\"process_name\":\"c:\\\\windows\\\\system32\\\\windowspowershell\\\\v1.0\\\\powershell.exe\",\"process_pid\":5172,\"process_publisher\":[\"Microsoft Windows\"],\"process_reputation\":\"TRUSTED_WHITE_LIST\",\"process_sha256\":\"9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"reason\":\"Process powershell.exe was detected by the report \\\"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\\\" in watchlist \\\"AMSI Threat Intelligence\\\"\",\"reason_code\":\"c21ca826-573a-3d97-8c1e-93c8471aab7f:8033b29d-81d2-3c47-82d2-f4a7f398b85d\",\"report_description\":\"Newer Powershell versions introduced built-in cmdlets to manage scheduled tasks natively without calling out to typical scheduled task processes like at.exe or schtasks.exe. This detection looks for behaviors related to the fileless execution of scheduled tasks. If you are responding to this alert, be sure to correlate the fileless scriptload events with events typically found in your environment Generally, attackers will create scheduled tasks with binaries that are located in user writable directories like AppData, Temp, or public folders.\",\"report_id\":\"LrKOC7DtQbm4g8w0UFruQg-d1080521-e617-4e45-94e0-7a145c62c90a\",\"report_link\":\"https://attack.mitre.org/techniques/T1053/\",\"report_name\":\"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\",\"report_tags\":[\"execution\",\"privesc\",\"persistence\",\"t1053\",\"windows\",\"amsi\",\"attack\",\"attackframework\"],\"run_state\":\"RAN\",\"sensor_action\":\"ALLOW\",\"severity\":5,\"tags\":null,\"threat_id\":\"C21CA826573A8D974C1E93C8471AAB7F\",\"threat_notes_present\":false,\"type\":\"WATCHLIST\",\"user_update_timestamp\":null,\"watchlists\":[{\"id\":\"Ci7w5B4URg6HN60hatQMQ\",\"name\":\"AMSI Threat Intelligence\"}],\"workflow\":{\"change_timestamp\":\"2024-03-13T08:03:29.540Z\",\"changed_by\":\"ALERT_CREATION\",\"changed_by_type\":\"SYSTEM\",\"closure_reason\":\"NO_REASON\",\"status\":\"OPEN\"}}",
         "reason": "Process powershell.exe was detected by the report \"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\" in watchlist \"AMSI Threat Intelligence\"",
@@ -585,6 +598,7 @@ An example event for `alert_v7` looks as following:
     "process": {
         "command_line": "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -EP Bypass \\\\eip.demo\\sysvol\\EIP.DEMO\\scripts\\Luminol.ps1",
         "entity_id": "7DESJ9GN-0064e5a7-00001434-00000000-1da751c7354ebfe",
+        "executable": "c:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe",
         "hash": {
             "md5": "2e5a8590cf6848968fc23de3fa1e25f1",
             "sha256": "9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3"
@@ -593,16 +607,23 @@ An example event for `alert_v7` looks as following:
         "parent": {
             "command_line": "C:\\Windows\\system32\\svchost.exe -k netsvcs -p -s Schedule",
             "entity_id": "7DESJ9GN-0064e5a7-0000077c-00000000-1da5ed7ec07b275",
+            "executable": "c:\\windows\\system32\\svchost.exe",
             "hash": {
                 "md5": "145dcf6706eeea5b066885ee17964c09",
                 "sha256": "f13de58416730d210dab465b242e9c949fb0a0245eef45b07c381f0c6c8a43c3"
             },
-            "name": "c:\\windows\\system32\\svchost.exe",
+            "name": "svchost.exe",
             "pid": 1916
         },
         "pid": 5172
     },
     "related": {
+        "hash": [
+            "f13de58416730d210dab465b242e9c949fb0a0245eef45b07c381f0c6c8a43c3",
+            "145dcf6706eeea5b066885ee17964c09",
+            "9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3",
+            "2e5a8590cf6848968fc23de3fa1e25f1"
+        ],
         "hosts": [
             "WW-20002",
             "EIP"
