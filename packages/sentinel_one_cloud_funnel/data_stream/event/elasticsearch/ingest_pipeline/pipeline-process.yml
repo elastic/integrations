@@ -6,7 +6,19 @@ processors:
       value: [process]
   - set:
       field: event.type
-      value: [info]
+      value: [start]
+      if: ctx.sentinel_one_cloud_funnel?.event?.meta_event_name == 'PROCESSCREATION'
+  - set:
+      field: event.type
+      value: [end]
+      if: (
+            ctx.sentinel_one_cloud_funnel?.event?.type == 'ProcessExit' || ctx.sentinel_one_cloud_funnel?.event?.type == 'ProcessTermination' ||
+            ctx.sentinel_one_cloud_funnel?.event?.type == 'Process Exit' || ctx.sentinel_one_cloud_funnel?.event?.type == 'Process Termination'
+          )
+  - set:
+      field: event.action
+      copy_from: event.type
+      ignore_empty_value: true
   - rename:
       field: json.k8sCluster.containerId
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.id
@@ -265,6 +277,10 @@ processors:
       field: json.tgt.process.publisher
       target_field: sentinel_one_cloud_funnel.event.tgt.process.publisher
       ignore_missing: true
+  - set:
+      field: process.code_signature.subject_name
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.publisher
+      ignore_empty_value: true
   - rename:
       field: json.tgt.process.reasonSignatureInvalid
       target_field: sentinel_one_cloud_funnel.event.tgt.process.reason_signature_invalid
@@ -284,6 +300,14 @@ processors:
       field: json.tgt.process.signedStatus
       target_field: sentinel_one_cloud_funnel.event.tgt.process.signed_status
       ignore_missing: true
+  - set:
+      field: process.code_signature.exists
+      value: true
+      if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.signed_status == 'signed'
+  - set:
+      field: process.code_signature.exists
+      value: false
+      if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.signed_status != 'signed'
   - date:
       field: json.tgt.process.startTime
       tag: 'date_json_tgt_process_startTime'
@@ -312,6 +336,14 @@ processors:
       field: json.tgt.process.verifiedStatus
       target_field: sentinel_one_cloud_funnel.event.tgt.process.verified_status
       ignore_missing: true
+  - set:
+      field: process.code_signature.trusted
+      value: true
+      if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.verified_status == 'verified'
+  - set:
+      field: process.code_signature.trusted
+      value: false
+      if: ctx.process?.code_signature?.exists == true && ctx.sentinel_one_cloud_funnel?.event?.tgt?.process?.verified_status != 'verified'
   - remove:
       field:
       - process.parent
@@ -326,6 +358,10 @@ processors:
   - set:
       field: process.name
       copy_from: sentinel_one_cloud_funnel.event.tgt.process.name
+      ignore_empty_value: true
+  - set:
+      field: process.executable
+      copy_from: sentinel_one_cloud_funnel.event.tgt.process.image.path
       ignore_empty_value: true
   - convert:
       field: sentinel_one_cloud_funnel.event.tgt.process.pid
