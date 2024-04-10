@@ -1,5 +1,5 @@
 ---
-description: Default pipeline for processing python logs
+description: Default pipeline for processing wms logs
 processors:
   - set:
       field: ecs.version
@@ -22,6 +22,10 @@ processors:
         - ^%{CHAR:first_char}
       pattern_definitions:
         CHAR: .
+  - set:
+      field: ppbgdi.app.system
+      copy_from: kubernetes.namespace_labels.system
+      ignore_empty_value: true
 #   - pipeline:
 #       if: ctx.first_char != '{'
 #       name: '{{ IngestPipeline "default-common" }}'
@@ -33,52 +37,16 @@ processors:
       field:
         - first_char
   - pipeline:
-      description: Layer object pipeline
-      if: ctx?.temp?.ppbgdi?.app?.layer != null
-      name: '{{ IngestPipeline "entity-layer" }}'
-  - set:
-      field: event.outcome
-      value: failure
-      if: "ctx?.event?.severity >= 40"
-  - set:
-      field: event.outcome
-      value: failure
-      if: 'ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code >= 500'
-  - set:
-      field: event.outcome
-      value: success
-      if: 'ctx?.event?.outcome == null && ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code < 500'
-  - set:
-      field: event.outcome
-      value: success
-      if: 'ctx?.event?.outcome == null && ctx?.event?.severity != null && ctx?.event?.severity < 40'
-  - append:
-      field: related.hosts
-      value: '{{ source.domain }}'
-      allow_duplicates: false
-      if: 'ctx?.source?.domain != null'
-  - append:
-      field: related.hosts
-      value: '{{ url.domain }}'
-      allow_duplicates: false
-      if: 'ctx?.url?.domain != null'
-  - append:
-      field: related.hosts
-      value: '{{ http.request.headers.host }}'
-      allow_duplicates: false
-      if: 'ctx?.http?.request?.headers?.host != null'
-  - append:
-      field: related.hosts
-      value: '{{ http.request.headers.x-forwarded-host }}'
-      allow_duplicates: false
-      if: 'ctx?.http?.request?.headers?.host != null'
-#   - remove:
-#       field: temp
-#       ignore_missing: true
+      description: Parse query parameters
+      if: ctx?.url?.query != null && ctx?.url?.query != ""
+      name: '{{ IngestPipeline "query-params" }}'
   - set:
       field: service.environment
       copy_from: kubernetes.namespace_labels.env
       ignore_empty_value: true
+#   - remove:
+#       field: temp
+#       ignore_missing: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null or empty values.

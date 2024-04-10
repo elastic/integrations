@@ -1,0 +1,95 @@
+---
+description: Parse wms query params
+processors:
+  - kv:
+      description: Parse url query parameters to an object
+      field: url.query
+      target_field: temp.query_params
+      field_split: "&"
+      value_split: "="
+  - foreach:
+      description: Lowercase all query parameter keys for easier handling
+      field: temp.query_params
+      processor:
+        lowercase:
+          field: _ingest._key
+      ignore_missing: true
+  - rename:
+      field: temp.query_params.bbox
+      target_field: ppbgdi.app.layer.bbox
+      ignore_missing: true
+  - urldecode:
+      field: ppbgdi.app.layer.bbox
+      ignore_missing: true
+  - dissect:
+      description: Parse epsg code from crs. Raises an error if not starts with EPSG%2F
+      field: temp.query_params.crs
+      pattern: "EPSG%3A%{ppbgdi.app.epsg}"
+      ignore_missing: true
+  - remove:
+      field: temp.query_params.crs
+  - convert:
+      field: ppbgdi.app.epsg
+      type: long
+  - rename:
+      field: temp.query_params.format
+      target_field: ppbgdi.app.layer.extension
+      ignore_missing: true
+  - gsub:
+      description: Strip mime type info from extension
+      field: ppbgdi.app.layer.extension
+      pattern: "image%2F"
+      replacement: ""
+  - rename:
+      field: temp.query_params.height
+      target_field: ppbgdi.app.layer.height
+      ignore_missing: true
+  - convert:
+      field: ppbgdi.app.layer.height
+      type: long
+      ignore_missing: true
+  - split:
+      field: temp.query_params.layers
+      target_field: ppbgdi.app.layer.id
+      separator: ","
+      ignore_missing: true
+  - remove:
+      field: temp.query_params.layers
+      ignore_missing: true
+  - rename:
+      field: temp.query_params.map_resolution
+      target_field: ppbgdi.app.layer.map_resolution
+      ignore_missing: true
+  - convert:
+      field: ppbgdi.app.layer.map_resolution
+      type: long
+      ignore_missing: true
+  - rename:
+      field: temp.query_params.request
+      target_field: ppbgdi.app.layer.request
+      ignore_missing: true
+  - remove:
+      description: This is the equivalent to service.name set by kubernetes.
+      field: temp.query_params.service
+      ignore_missing: true
+  - split:
+      field: temp.query_params.styles
+      target_field: ppbgdi.app.layer.styles
+      separator: ","
+      ignore_missing: true
+  - remove:
+      field: temp.query_params.styles
+      ignore_missing: true
+  - rename:
+      field: temp.query_params.version
+      target_field: ppbgdi.app.api.version
+      ignore_missing: true
+  - rename:
+      field: temp.query_params.width
+      target_field: ppbgdi.app.layer.width
+      ignore_missing: true
+  - convert:
+      field: ppbgdi.app.layer.width
+      type: long
+      ignore_missing: true
+
