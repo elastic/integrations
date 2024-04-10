@@ -448,8 +448,8 @@ An example event for `alert_v7` looks as following:
 {
     "@timestamp": "2024-03-13T08:02:36.578Z",
     "agent": {
-        "ephemeral_id": "aadbe54a-4dbd-4b0e-b4b2-4cee33cfebcd",
-        "id": "012e567a-3c7e-4530-b78e-7ab059e0d155",
+        "ephemeral_id": "d35d1328-6c99-423d-a242-fcaf7ab950f9",
+        "id": "db2930ff-774e-4541-bcd4-1a6a1d656167",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.1"
@@ -490,33 +490,17 @@ An example event for `alert_v7` looks as following:
             "ml_classification_org_prevalence": "LOW",
             "organization_key": "7DESJ9GN",
             "parent": {
-                "cmdline": "C:\\Windows\\system32\\svchost.exe -k netsvcs -p -s Schedule",
                 "effective_reputation": "TRUSTED_WHITE_LIST",
-                "guid": "7DESJ9GN-0064e5a7-0000077c-00000000-1da5ed7ec07b275",
-                "hash": {
-                    "md5": "145dcf6706eeea5b066885ee17964c09",
-                    "sha256": "f13de58416730d210dab465b242e9c949fb0a0245eef45b07c381f0c6c8a43c3"
-                },
-                "name": "c:\\windows\\system32\\svchost.exe",
-                "pid": 1916,
                 "reputation": "TRUSTED_WHITE_LIST",
                 "username": "NT AUTHORITY\\SYSTEM"
             },
             "policy_applied": "NOT_APPLIED",
             "primary_event_id": "re9M9hp8TbGLqyk6QXqQqA-0",
             "process": {
-                "cmdline": "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -EP Bypass \\\\eip.demo\\sysvol\\EIP.DEMO\\scripts\\Luminol.ps1",
                 "effective_reputation": "TRUSTED_WHITE_LIST",
-                "guid": "7DESJ9GN-0064e5a7-00001434-00000000-1da751c7354ebfe",
-                "hash": {
-                    "md5": "2e5a8590cf6848968fc23de3fa1e25f1",
-                    "sha256": "9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3"
-                },
                 "issuer": [
                     "Microsoft Windows Production PCA 2011"
                 ],
-                "name": "c:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe",
-                "pid": 5172,
                 "publisher": [
                     "Microsoft Windows"
                 ],
@@ -570,17 +554,16 @@ An example event for `alert_v7` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "012e567a-3c7e-4530-b78e-7ab059e0d155",
+        "id": "db2930ff-774e-4541-bcd4-1a6a1d656167",
         "snapshot": false,
         "version": "8.12.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-03-28T14:40:51.595Z",
         "dataset": "carbon_black_cloud.alert_v7",
         "end": "2024-03-13T08:00:09.894Z",
         "id": "1c6aba68-24cc-41e3-ad8e-4b545a587b55",
-        "ingested": "2024-03-28T14:41:03Z",
+        "ingested": "2024-04-10T07:00:58Z",
         "kind": "alert",
         "original": "{\"alert_notes_present\":false,\"alert_url\":\"defense.conferdeploy.net/alerts?s[c][query_string]=id:1c6aba68-24cc-41e3-ad8e-4b545a587b55\\u0026orgKey=7DESJ9GN\",\"asset_group\":[],\"backend_timestamp\":\"2024-03-13T08:03:29.540Z\",\"backend_update_timestamp\":\"2024-03-13T08:03:29.540Z\",\"childproc_cmdline\":\"\",\"childproc_guid\":\"\",\"childproc_username\":\"\",\"detection_timestamp\":\"2024-03-13T08:02:36.578Z\",\"determination\":{\"change_timestamp\":\"2024-03-13T08:03:29.540Z\",\"changed_by\":\"ALERT_CREATION\",\"changed_by_type\":\"SYSTEM\",\"value\":\"NONE\"},\"device_external_ip\":\"75.98.230.194\",\"device_id\":6612391,\"device_internal_ip\":\"172.16.100.140\",\"device_location\":\"UNKNOWN\",\"device_name\":\"EIP\\\\WW-20002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_policy\":\"default\",\"device_policy_id\":6525,\"device_target_value\":\"MEDIUM\",\"device_uem_id\":\"\",\"device_username\":\"EIP\\\\Administrator\",\"first_event_timestamp\":\"2024-03-13T08:00:09.894Z\",\"id\":\"1c6aba68-24cc-41e3-ad8e-4b545a587b55\",\"ioc_hit\":\"(fileless_scriptload_cmdline:Register-ScheduledTask OR fileless_scriptload_cmdline:New-ScheduledTask OR scriptload_content:Register-ScheduledTask OR scriptload_content:New-ScheduledTask) AND NOT (process_cmdline:windows\\\\\\\\ccm\\\\\\\\systemtemp OR crossproc_name:windows\\\\\\\\ccm\\\\\\\\ccmexec.exe OR (process_publisher:\\\"VMware, Inc.\\\" AND process_publisher_state:FILE_SIGNATURE_STATE_TRUSTED))\",\"ioc_id\":\"d1080521-e617-4e45-94e0-7a145c62c90a\",\"is_updated\":false,\"last_event_timestamp\":\"2024-03-13T08:00:09.894Z\",\"mdr_alert\":false,\"mdr_alert_notes_present\":false,\"mdr_threat_notes_present\":false,\"ml_classification_anomalies\":[],\"ml_classification_final_verdict\":\"NOT_ANOMALOUS\",\"ml_classification_global_prevalence\":\"LOW\",\"ml_classification_org_prevalence\":\"LOW\",\"org_key\":\"7DESJ9GN\",\"parent_cmdline\":\"C:\\\\Windows\\\\system32\\\\svchost.exe -k netsvcs -p -s Schedule\",\"parent_effective_reputation\":\"TRUSTED_WHITE_LIST\",\"parent_guid\":\"7DESJ9GN-0064e5a7-0000077c-00000000-1da5ed7ec07b275\",\"parent_md5\":\"145dcf6706eeea5b066885ee17964c09\",\"parent_name\":\"c:\\\\windows\\\\system32\\\\svchost.exe\",\"parent_pid\":1916,\"parent_reputation\":\"TRUSTED_WHITE_LIST\",\"parent_sha256\":\"f13de58416730d210dab465b242e9c949fb0a0245eef45b07c381f0c6c8a43c3\",\"parent_username\":\"NT AUTHORITY\\\\SYSTEM\",\"policy_applied\":\"NOT_APPLIED\",\"primary_event_id\":\"re9M9hp8TbGLqyk6QXqQqA-0\",\"process_cmdline\":\"\\\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\" -EP Bypass \\\\\\\\eip.demo\\\\sysvol\\\\EIP.DEMO\\\\scripts\\\\Luminol.ps1\",\"process_effective_reputation\":\"TRUSTED_WHITE_LIST\",\"process_guid\":\"7DESJ9GN-0064e5a7-00001434-00000000-1da751c7354ebfe\",\"process_issuer\":[\"Microsoft Windows Production PCA 2011\"],\"process_md5\":\"2e5a8590cf6848968fc23de3fa1e25f1\",\"process_name\":\"c:\\\\windows\\\\system32\\\\windowspowershell\\\\v1.0\\\\powershell.exe\",\"process_pid\":5172,\"process_publisher\":[\"Microsoft Windows\"],\"process_reputation\":\"TRUSTED_WHITE_LIST\",\"process_sha256\":\"9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"reason\":\"Process powershell.exe was detected by the report \\\"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\\\" in watchlist \\\"AMSI Threat Intelligence\\\"\",\"reason_code\":\"c21ca826-573a-3d97-8c1e-93c8471aab7f:8033b29d-81d2-3c47-82d2-f4a7f398b85d\",\"report_description\":\"Newer Powershell versions introduced built-in cmdlets to manage scheduled tasks natively without calling out to typical scheduled task processes like at.exe or schtasks.exe. This detection looks for behaviors related to the fileless execution of scheduled tasks. If you are responding to this alert, be sure to correlate the fileless scriptload events with events typically found in your environment Generally, attackers will create scheduled tasks with binaries that are located in user writable directories like AppData, Temp, or public folders.\",\"report_id\":\"LrKOC7DtQbm4g8w0UFruQg-d1080521-e617-4e45-94e0-7a145c62c90a\",\"report_link\":\"https://attack.mitre.org/techniques/T1053/\",\"report_name\":\"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\",\"report_tags\":[\"execution\",\"privesc\",\"persistence\",\"t1053\",\"windows\",\"amsi\",\"attack\",\"attackframework\"],\"run_state\":\"RAN\",\"sensor_action\":\"ALLOW\",\"severity\":5,\"tags\":null,\"threat_id\":\"C21CA826573A8D974C1E93C8471AAB7F\",\"threat_notes_present\":false,\"type\":\"WATCHLIST\",\"user_update_timestamp\":null,\"watchlists\":[{\"id\":\"Ci7w5B4URg6HN60hatQMQ\",\"name\":\"AMSI Threat Intelligence\"}],\"workflow\":{\"change_timestamp\":\"2024-03-13T08:03:29.540Z\",\"changed_by\":\"ALERT_CREATION\",\"changed_by_type\":\"SYSTEM\",\"closure_reason\":\"NO_REASON\",\"status\":\"OPEN\"}}",
         "reason": "Process powershell.exe was detected by the report \"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\" in watchlist \"AMSI Threat Intelligence\"",
@@ -597,21 +580,29 @@ An example event for `alert_v7` looks as following:
         }
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "process": {
         "command_line": "\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -EP Bypass \\\\eip.demo\\sysvol\\EIP.DEMO\\scripts\\Luminol.ps1",
         "entity_id": "7DESJ9GN-0064e5a7-00001434-00000000-1da751c7354ebfe",
-        "name": "c:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe",
+        "hash": {
+            "md5": "2e5a8590cf6848968fc23de3fa1e25f1",
+            "sha256": "9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3"
+        },
+        "name": "powershell.exe",
+        "parent": {
+            "command_line": "C:\\Windows\\system32\\svchost.exe -k netsvcs -p -s Schedule",
+            "entity_id": "7DESJ9GN-0064e5a7-0000077c-00000000-1da5ed7ec07b275",
+            "hash": {
+                "md5": "145dcf6706eeea5b066885ee17964c09",
+                "sha256": "f13de58416730d210dab465b242e9c949fb0a0245eef45b07c381f0c6c8a43c3"
+            },
+            "name": "c:\\windows\\system32\\svchost.exe",
+            "pid": 1916
+        },
         "pid": 5172
     },
     "related": {
-        "hash": [
-            "f13de58416730d210dab465b242e9c949fb0a0245eef45b07c381f0c6c8a43c3",
-            "145dcf6706eeea5b066885ee17964c09",
-            "9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3",
-            "2e5a8590cf6848968fc23de3fa1e25f1"
-        ],
         "hosts": [
             "WW-20002",
             "EIP"
@@ -817,8 +808,20 @@ An example event for `alert_v7` looks as following:
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.hash.md5 | MD5 hash. | keyword |
+| process.hash.sha256 | SHA256 hash. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.parent.command_line.text | Multi-field of `process.parent.command_line`. | match_only_text |
+| process.parent.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
+| process.parent.executable | Absolute path to the process executable. | keyword |
+| process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |
+| process.parent.hash.md5 | MD5 hash. | keyword |
+| process.parent.hash.sha256 | SHA256 hash. | keyword |
+| process.parent.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.name.text | Multi-field of `process.parent.name`. | match_only_text |
+| process.parent.pid | Process id. | long |
 | process.pid | Process id. | long |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
