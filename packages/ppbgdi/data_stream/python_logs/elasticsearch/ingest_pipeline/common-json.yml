@@ -20,6 +20,7 @@ processors:
   - convert:
       field: event.severity
       type: long
+      ignore_missing: true
   - convert:
       field: event.duration
       type: float
@@ -95,6 +96,10 @@ processors:
   - uri_parts:
       field: temp.url.original
       remove_if_successful: true
+      ignore_missing: true
+  - rename:
+      field: temp.url.path
+      target_field: url.path
       ignore_missing: true
   - set:
       description: Override event.id with request.id if existing
@@ -188,6 +193,7 @@ processors:
         - temp.time
         - temp.excInfo
       ignore_missing: true
+
 on_failure:
 - append:
     field: error.message
