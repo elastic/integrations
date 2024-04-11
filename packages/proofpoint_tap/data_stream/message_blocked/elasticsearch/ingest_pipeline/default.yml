@@ -438,6 +438,15 @@ processors:
       field: proofpoint_tap.message_blocked.threat_info_map
       processor:
         rename:
+          field: _ingest._value.threatId
+          target_field: _ingest._value.threat.id
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
+  - foreach:
+      field: proofpoint_tap.message_blocked.threat_info_map
+      processor:
+        rename:
           field: _ingest._value.threatStatus
           target_field: _ingest._value.threat.status
           ignore_missing: true
