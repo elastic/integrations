@@ -1,0 +1,21 @@
+---
+description: Pipeline for processing json logs
+processors:
+  - rename:
+      field: message
+      target_field: temp_message
+  - json:
+      field: temp_message
+      add_to_root: true
+  - remove:
+      field: temp_message
+  - script:
+      lang: painless
+      description: This script removes the 'elastic-package-test' tag for cleaner expected log
+      inline: ctx?.tags.removeIf(item -> item == 'elastic-package-test')
+
+on_failure:
+- append:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
+
