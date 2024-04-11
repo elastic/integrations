@@ -2,34 +2,30 @@
 
 ## Overview
 
-[MongoDB Atlas](https://www.mongodb.com/atlas) is a multi-cloud developer data platform. At its core is our fully managed cloud database for modern applications. Atlas is the best way to run MongoDB, the leading non-relational database. MongoDB’s document model is the fastest way to innovate because documents map directly to the objects in your code. As a result, they are much easier and more natural to work with. You can store data of any structure and modify your schema at any time as you add new features to your applications.
+[MongoDB Atlas](https://www.mongodb.com/atlas), the leading multi-cloud developer data platform, offers the easiest way to run MongoDB, enabling you to work with your code's objects directly through its document-based data model, which allows for flexible schema and easy scalability.
 
 Use the MongoDB Atlas integration to:
 
-- Collect Mongod Audit logs and Process metrics.
-- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+- Collect metrics related to process.
+- Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
+- Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
 
 ## Data streams
 
-The MongoDB Atlas integration collects logs and metrics.
-
-Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration is `mongod_audit`.
+The MongoDB Atlas integration collects metrics.
 
 Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration is `process` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
 
 Data streams:
-- `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 
-- `process` : This data stream Collects host Metrics per process for all the hosts of the specified group. Metrics like Measurements for the host, such as CPU usage or number of I/O operations, memory are available on this data stream.
+- `process` : This data stream Collects host Metrics per process for all the hosts of the specified group. Metrics like Measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
 
 Note:
-- Users can monitor and see the log inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
+- Users can monitor and see the metrics inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
 
 ## Prerequisites
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. 
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
+You can store and search your data using Elasticsearch and visualize and manage it with Kibana. We recommend using our hosted Elasticsearch Service on Elastic Cloud or self-managing the Elastic Stack on your own hardware.
 
 ## Setup
 
@@ -42,59 +38,43 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 ### Steps to obtain Public Key, Private Key and GroupId:
 
 1. Generate programmatic API Keys with project owner permissions using the instructions in the Atlas [documentation](https://www.mongodb.com/docs/atlas/configure-api-access/#create-an-api-key-for-a-project). Then, copy the public key and private key. These serve the same function as a username and API Key respectively.
-2. Enable Database Auditing for the Atlas project for which you want to monitor logs, as described in this Atlas [document](https://www.mongodb.com/docs/atlas/database-auditing/#procedure).
-3. You can find your GroupId(ProjectID) in the Atlas UI. Go to your project, click Settings, and copy the GroupID(ProjectID). You can use the Atlas Admin API or Atlas CLI to find it programmatically. As described in this Atlas [document](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id)
+2. You can find your Project ID (Group ID) in the Atlas UI. To do this, navigate to your project, click on Settings, and copy the Project ID (Group ID). You can also programmatically find it using the Atlas Admin API or Atlas CLI as described in this Atlas [document](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id).
+
+### Important terms of MongoDB Atlas API:
+
+1. Granularity: Duration that specifies the interval at which Atlas reports the metrics.
+2. Period: Duration over which Atlas reports the metrics.
+
+Note: Both of above attributes can be set by using `period` in configuration parameters.
 
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations
 2. In "Search for integrations" search bar, type MongoDB Atlas
 3. Click on the "MongoDB Atlas" integration from the search results.
-4. Click on the "Add MongoDB Atlas" button to add the integration.
-5. Add all the required integration configuration parameters, such as Public Key, Private Key and GroupId.
-6. Save the integration.
-
-Note:
-- The `mongod_audit` data stream gathers historical data spanning the previous 30 minutes.
-- Mongod: Mongod is the primary daemon method for the MongoDB system. It helps in handling the data requests, managing the data access, performing background management operations, and other core database operations.
-
-## Troubleshooting
-
-- If the user encounters the following error during data ingestion, it is likely due to the data collected through this endpoint covers a long time span. As a result, generating a response may take longer. Additionally, if the `HTTP Client Timeout` parameter is set to a small duration,  a request timeout might happen. However, if the user wishes to avoid this error altogether, it is recommended to adjust the `HTTP Client Timeout` and `Interval` parameters based on the duration of data collection.
-```
-{
-  "error": {
-    "message": "failed eval: net/http: request canceled (Client.Timeout or context cancellation while reading body)"
-  }
-}
-```
-
-## Logs reference
-
-### Mongod Audit
-
-This is the `mongod_audit` data stream. This data stream allows administrators and users to track system activity for deployments with multiple users and applications.
-
+4. To add the integration, click on the "Add MongoDB Atlas" button.
+5. Enter all the necessary configuration parameters, including Public Key, Private Key, and GroupId.
+6. Finally, save the integration.
 
 ## Metrics reference
 
 ### Process
-This data stream Collects host Metrics per process for all the hosts of the specified group. Metrics like Measurements for the host, such as CPU usage or number of I/O operations, memory are available on this data stream.
+This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
 
 An example event for `process` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-04-01T12:00:00.000Z",
+    "@timestamp": "2024-04-11T12:42:53.267Z",
     "agent": {
-        "ephemeral_id": "8d14f098-5577-476e-8f30-15b792ccf10f",
-        "id": "97f845ab-0826-49c5-8574-b2921ee4e366",
+        "ephemeral_id": "c8ebb866-6d72-471b-9083-6d386219bf61",
+        "id": "926ca6d4-5487-4a8b-b88b-34f188fe8cfb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "data_stream": {
-        "dataset": "mongodb_atlas.mongod_audit",
+        "dataset": "mongodb_atlas.process",
         "namespace": "ep",
         "type": "logs"
     },
@@ -102,22 +82,20 @@ An example event for `process` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "97f845ab-0826-49c5-8574-b2921ee4e366",
+        "id": "926ca6d4-5487-4a8b-b88b-34f188fe8cfb",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "network",
-            "authentication"
+            "process"
         ],
-        "dataset": "mongodb_atlas.mongod_audit",
-        "ingested": "2024-03-11T13:58:12Z",
+        "dataset": "mongodb_atlas.process",
+        "ingested": "2024-04-11T12:43:05Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
-            "access",
             "info"
         ]
     },
@@ -125,12 +103,12 @@ An example event for `process` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "829324aac17946dcace17006fa82a2d2",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.248.7"
+            "192.168.253.4"
         ],
         "mac": [
-            "02-42-C0-A8-F8-07"
+            "02-42-C0-A8-FD-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -147,42 +125,17 @@ An example event for `process` looks as following:
         "type": "cel"
     },
     "mongodb_atlas": {
-        "mongod_audit": {
-            "action": {
-                "type": "authenticate"
-            },
-            "hostname": "hostname1",
-            "local": {
-                "ip": "127.0.0.1",
-                "port": 27017
-            },
-            "remote": {
-                "ip": "192.168.1.100",
-                "port": 54320
-            },
-            "result": "Success",
-            "user": {
-                "names": [
-                    {
-                        "db": "admin",
-                        "user": "auditUser"
-                    }
-                ],
-                "roles": [
-                    {
-                        "db": "admin",
-                        "role": "dbAdmin"
-                    }
-                ]
-            },
-            "uuid": {
-                "binary": "some-unique-identifier",
-                "type": "04"
+        "group_id": "mongodb-group1",
+        "host_id": "hostname1",
+        "process": {
+            "assert": {
+                "regular": 0
             }
-        }
+        },
+        "process_id": "hostname1"
     },
     "tags": [
-        "mongodb_atlas-mongod_audit"
+        "mongodb_atlas-process"
     ]
 }
 ```
@@ -196,17 +149,18 @@ An example event for `process` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
-| mongodb_atlas.group_id | Identifier for the project of the event. | double |  | gauge |
-| mongodb_atlas.process.assert.msg | The average rate of message asserts per second over the selected sample period. These internal server errors have a well-defined text string. Atlas logs stack traces for these. | double |  | gauge |
+| mongodb_atlas.group_id | Identifier for the project of the event. | keyword |  |  |
+| mongodb_atlas.host_id | Unique identifier of the host for the MongoDB process. | keyword |  |  |
+| mongodb_atlas.process.assert.msg | The average rate of message asserts per second over the selected sample period. | double |  | gauge |
 | mongodb_atlas.process.assert.regular | The average rate of regular asserts raised per second over the selected sample period. | double |  | gauge |
-| mongodb_atlas.process.assert.user | The average rate of user asserts per second over the selected sample period. This metric includes asserts that a user generates, such as out of disk space or duplicate key errors. | double |  | gauge |
+| mongodb_atlas.process.assert.user | The average rate of user asserts per second over the selected sample period. | double |  | gauge |
 | mongodb_atlas.process.assert.warning | The average rate of warnings per second over the selected sample period. | double |  | gauge |
 | mongodb_atlas.process.background_flush.avg | Amount of data flushed in the background. | double |  | gauge |
 | mongodb_atlas.process.cache.dirty.bytes | Write - Amount of bytes in the WiredTiger storage engine cache. | double | byte | gauge |
-| mongodb_atlas.process.cache.read.bytes | Read - Amount of bytes in the WiredTiger storage engine cache | double | byte | gauge |
+| mongodb_atlas.process.cache.read.bytes | Read - Amount of bytes in the WiredTiger storage engine cache. | double | byte | gauge |
 | mongodb_atlas.process.cache.used.total.bytes | The total bytes cached in memory for serving reads and writes. | double | byte | gauge |
-| mongodb_atlas.process.cache.write.bytes | The maximum Disk read Latency value over the time period specified by the metric granularity. | double | byte | gauge |
-| mongodb_atlas.process.connections | Displays the total number of active connections to the database deployment. Monitor connections to determine whether the current connection limits are sufficient. If necessary, upgrade the cluster tier. | double |  | gauge |
+| mongodb_atlas.process.cache.write.bytes | The maximum disk read latency value over the period specified by the metric granularity. | double | byte | gauge |
+| mongodb_atlas.process.connections | Displays the total number of active connections to the database deployment. Monitor connections to determine whether the current connection limits are sufficient. | double |  | gauge |
 | mongodb_atlas.process.cpu.children.kernel.max.pct | The maximum amount of CPU time spent by child processes in kernel space. | double | percent | counter |
 | mongodb_atlas.process.cpu.children.kernel.pct | CPU children kernel space for mongodb processes. | double | percent | gauge |
 | mongodb_atlas.process.cpu.children.user.max.pct | The maximum amount of CPU time spent by child processes in user space. | double | percent | counter |
@@ -243,7 +197,7 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.global.lock.current_queue.reader.count | The number of operations that are currently queued and waiting for the read lock. | long |  | gauge |
 | mongodb_atlas.process.global.lock.current_queue.total | The total number of operations queued waiting for the lock (readers + writers) | long |  | gauge |
 | mongodb_atlas.process.global.lock.current_queue.writer.count | The number of operations that are currently queued and waiting for the write lock. | long |  | gauge |
-| mongodb_atlas.process.global.page_fault.exception_thrown | The number of exceptions thrown due to page faults, which occur when a process requests data that is not currently in memory and must be retrieved from disk. | long |  | gauge |
+| mongodb_atlas.process.global.page_fault.exception_thrown | The number of exceptions thrown due to page faults. | long |  | gauge |
 | mongodb_atlas.process.host.page_faults | Measurements on page faults related to the host. | double |  | gauge |
 | mongodb_atlas.process.index.btree.access.count | Number of index btree ACCESSES. | long |  | gauge |
 | mongodb_atlas.process.index.btree.hits.count | Number of index btree HITS. | long |  | gauge |
@@ -259,16 +213,16 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.network.in | Process incoming network throughput, in bytes per second. | double |  | gauge |
 | mongodb_atlas.process.network.out | Process outgoing network throughput, in bytes per second. | double |  | gauge |
 | mongodb_atlas.process.network.request.total | The total number of distinct requests that the process has received. | double |  | counter |
-| mongodb_atlas.process.opcounter.cmd | Database operations rate on a process since the process last started. | double |  | counter |
-| mongodb_atlas.process.opcounter.delete | Database DELETE operations rate on a process since the process last started. | double |  | counter |
-| mongodb_atlas.process.opcounter.getmore | Database GETMORE operations rate on a process since the process last started. | double |  | counter |
-| mongodb_atlas.process.opcounter.insert | Database INSERT operations rate on a process since the process last started. | double |  | counter |
-| mongodb_atlas.process.opcounter.query | Database QUERY operations rate on a process since the process last started. | double |  | counter |
-| mongodb_atlas.process.opcounter.repl.cmd | Database operations rate on secondaries. | double |  | counter |
-| mongodb_atlas.process.opcounter.repl.delete | Database DELETE operations rate on secondaries. | double |  | counter |
-| mongodb_atlas.process.opcounter.repl.insert | Database INSERT operations rate on secondaries. | double |  | counter |
-| mongodb_atlas.process.opcounter.repl.update | Database UPDATE operations rate on secondaries. | double |  | counter |
-| mongodb_atlas.process.opcounter.update | Database UPDATE operations rate on a process since the process last started. | double |  | counter |
+| mongodb_atlas.process.opcounter.cmd | Database operations rate on a process since the process last started. | double |  | gauge |
+| mongodb_atlas.process.opcounter.delete | Database DELETE operations rate on a process since the process last started. | double |  | gauge |
+| mongodb_atlas.process.opcounter.getmore | Database GETMORE operations rate on a process since the process last started. | double |  | gauge |
+| mongodb_atlas.process.opcounter.insert | Database INSERT operations rate on a process since the process last started. | double |  | gauge |
+| mongodb_atlas.process.opcounter.query | Database QUERY operations rate on a process since the process last started. | double |  | gauge |
+| mongodb_atlas.process.opcounter.repl.cmd | Database operations rate on secondaries. | double |  | gauge |
+| mongodb_atlas.process.opcounter.repl.delete | Database DELETE operations rate on secondaries. | double |  | gauge |
+| mongodb_atlas.process.opcounter.repl.insert | Database INSERT operations rate on secondaries. | double |  | gauge |
+| mongodb_atlas.process.opcounter.repl.update | Database UPDATE operations rate on secondaries. | double |  | gauge |
+| mongodb_atlas.process.opcounter.update | Database UPDATE operations rate on a process since the process last started. | double |  | gauge |
 | mongodb_atlas.process.operation.execution.time.cmd.avg.ms | Average execution time in milliseconds per command operation over the selected sample period. | double | ms | gauge |
 | mongodb_atlas.process.operation.execution.time.read.avg.ms | Average execution time in milliseconds per read operation over the selected sample period. | double | ms | gauge |
 | mongodb_atlas.process.operation.execution.time.write.avg.ms | Average execution time in milliseconds per write operation over the selected sample period. | double | ms | gauge |
@@ -278,10 +232,10 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.oplog.rate.gb_per_hour | The rate of change in the size of the oplog in gigabytes per hour. | double |  | gauge |
 | mongodb_atlas.process.oplog.repl_lag.s | The amount of time, typically in seconds, it takes for changes recorded in the oplog on the primary node to be replicated and applied to the secondary node. | double | s | gauge |
 | mongodb_atlas.process.oplog.slave.lag.master.time.s | The difference in time, typically in seconds, between the oplog time on the secondary (slave) node and the time of the latest operation in the oplog on the primary (master) node. | double | s | gauge |
-| mongodb_atlas.process.query.executor.scanned | Average rate per second to scan index items during queries and query-plan evaluations. | double |  | counter |
-| mongodb_atlas.process.query.executor.scanned_objects | Average rate of documents scanned per second during queries and query-plan evaluations. | double |  | counter |
-| mongodb_atlas.process.query.targeting.scanned_objects_per_returned | Ratio of the number of documents scanned to the number of documents returned. | double |  | counter |
-| mongodb_atlas.process.query.targeting.scanned_per_returned | Ratio of the number of index items scanned to the number of documents returned. | double |  | counter |
+| mongodb_atlas.process.query.executor.scanned | Average rate per second to scan index items during queries and query-plan evaluations. | double |  | gauge |
+| mongodb_atlas.process.query.executor.scanned_objects | Average rate of documents scanned per second during queries and query-plan evaluations. | double |  | gauge |
+| mongodb_atlas.process.query.targeting.scanned_objects_per_returned | Ratio of the number of documents scanned to the number of documents returned. | double |  | gauge |
+| mongodb_atlas.process.query.targeting.scanned_per_returned | Ratio of the number of index items scanned to the number of documents returned. | double |  | gauge |
 | mongodb_atlas.process.restart.in_last_hour | Number of times the host restarted within the previous hour. | double |  | gauge |
 | mongodb_atlas.process.swap.usage.free.max.kb | MAX amount of swap space free. | double |  | counter |
 | mongodb_atlas.process.swap.usage.total.free | Total amount of swap space free. | double |  | gauge |
@@ -332,6 +286,6 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.system.normalized.cpu.user.pct | The portion of CPU time spent executing user space processes and running applications. | double | percent | gauge |
 | mongodb_atlas.process.ticket.available.read.count | The number of read tickets available to the WiredTiger storage engine. | long |  | gauge |
 | mongodb_atlas.process.ticket.available.write.count | The number of write tickets available to the WiredTiger storage engine. | long |  | gauge |
-| mongodb_atlas.process_id | Combination of hostname and Internet Assigned Numbers Authority (IANA) port that serves the MongoDB process. | double |  | gauge |
+| mongodb_atlas.process_id | Combination of hostname and Internet Assigned Numbers Authority (IANA) port that serves the MongoDB process. | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 

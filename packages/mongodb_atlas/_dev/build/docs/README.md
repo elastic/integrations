@@ -2,34 +2,30 @@
 
 ## Overview
 
-[MongoDB Atlas](https://www.mongodb.com/atlas) is a multi-cloud developer data platform. At its core is our fully managed cloud database for modern applications. Atlas is the best way to run MongoDB, the leading non-relational database. MongoDB’s document model is the fastest way to innovate because documents map directly to the objects in your code. As a result, they are much easier and more natural to work with. You can store data of any structure and modify your schema at any time as you add new features to your applications.
+[MongoDB Atlas](https://www.mongodb.com/atlas), the leading multi-cloud developer data platform, offers the easiest way to run MongoDB, enabling you to work with your code's objects directly through its document-based data model, which allows for flexible schema and easy scalability.
 
 Use the MongoDB Atlas integration to:
 
-- Collect Mongod Audit logs and Process metrics.
-- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+- Collect metrics related to process.
+- Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
+- Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
 
 ## Data streams
 
-The MongoDB Atlas integration collects logs and metrics.
-
-Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration is `mongod_audit`.
+The MongoDB Atlas integration collects metrics.
 
 Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration is `process` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
 
 Data streams:
-- `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 
-- `process` : This data stream Collects host Metrics per process for all the hosts of the specified group. Metrics like Measurements for the host, such as CPU usage or number of I/O operations, memory are available on this data stream.
+- `process` : This data stream Collects host Metrics per process for all the hosts of the specified group. Metrics like Measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
 
 Note:
-- Users can monitor and see the log inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
+- Users can monitor and see the metrics inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
 
 ## Prerequisites
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. 
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
+You can store and search your data using Elasticsearch and visualize and manage it with Kibana. We recommend using our hosted Elasticsearch Service on Elastic Cloud or self-managing the Elastic Stack on your own hardware.
 
 ## Setup
 
@@ -42,44 +38,28 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 ### Steps to obtain Public Key, Private Key and GroupId:
 
 1. Generate programmatic API Keys with project owner permissions using the instructions in the Atlas [documentation](https://www.mongodb.com/docs/atlas/configure-api-access/#create-an-api-key-for-a-project). Then, copy the public key and private key. These serve the same function as a username and API Key respectively.
-2. Enable Database Auditing for the Atlas project for which you want to monitor logs, as described in this Atlas [document](https://www.mongodb.com/docs/atlas/database-auditing/#procedure).
-3. You can find your GroupId(ProjectID) in the Atlas UI. Go to your project, click Settings, and copy the GroupID(ProjectID). You can use the Atlas Admin API or Atlas CLI to find it programmatically. As described in this Atlas [document](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id)
+2. You can find your Project ID (Group ID) in the Atlas UI. To do this, navigate to your project, click on Settings, and copy the Project ID (Group ID). You can also programmatically find it using the Atlas Admin API or Atlas CLI as described in this Atlas [document](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id).
+
+### Important terms of MongoDB Atlas API:
+
+1. Granularity: Duration that specifies the interval at which Atlas reports the metrics.
+2. Period: Duration over which Atlas reports the metrics.
+
+Note: Both of above attributes can be set by using `period` in configuration parameters.
 
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations
 2. In "Search for integrations" search bar, type MongoDB Atlas
 3. Click on the "MongoDB Atlas" integration from the search results.
-4. Click on the "Add MongoDB Atlas" button to add the integration.
-5. Add all the required integration configuration parameters, such as Public Key, Private Key and GroupId.
-6. Save the integration.
-
-Note:
-- The `mongod_audit` data stream gathers historical data spanning the previous 30 minutes.
-- Mongod: Mongod is the primary daemon method for the MongoDB system. It helps in handling the data requests, managing the data access, performing background management operations, and other core database operations.
-
-## Troubleshooting
-
-- If the user encounters the following error during data ingestion, it is likely due to the data collected through this endpoint covers a long time span. As a result, generating a response may take longer. Additionally, if the `HTTP Client Timeout` parameter is set to a small duration,  a request timeout might happen. However, if the user wishes to avoid this error altogether, it is recommended to adjust the `HTTP Client Timeout` and `Interval` parameters based on the duration of data collection.
-```
-{
-  "error": {
-    "message": "failed eval: net/http: request canceled (Client.Timeout or context cancellation while reading body)"
-  }
-}
-```
-
-## Logs reference
-
-### Mongod Audit
-
-This is the `mongod_audit` data stream. This data stream allows administrators and users to track system activity for deployments with multiple users and applications.
-
+4. To add the integration, click on the "Add MongoDB Atlas" button.
+5. Enter all the necessary configuration parameters, including Public Key, Private Key, and GroupId.
+6. Finally, save the integration.
 
 ## Metrics reference
 
 ### Process
-This data stream Collects host Metrics per process for all the hosts of the specified group. Metrics like Measurements for the host, such as CPU usage or number of I/O operations, memory are available on this data stream.
+This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
 
 {{event "process"}}
 

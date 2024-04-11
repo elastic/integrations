@@ -45,7 +45,7 @@ program: |
                     }
                 }).do_request().as(resp, 
                   bytes(resp.Body).decode_json().as(body, {
-                    "hostlist": body.results.map(e, e.links[0].href + state.query),
+                    "hostlist": body.results.map(e, state.url + "/api/atlas/v2/groups/" + state.groupId + "/processes/" + e.id + state.query),
                     "next": 0,
                     "page_num": body.links.exists_one(res,res.rel=="next") ? (int(state.page_num)+1) : 1
                   })))
