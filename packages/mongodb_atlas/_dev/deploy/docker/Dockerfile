@@ -1,9 +1,6 @@
-FROM golang:1.20
+FROM golang:1.19
 
-WORKDIR /app
+COPY ./test /go
+CMD ["./test"]
 
-COPY ./mongodb_atlas .
-
-RUN go mod download
-
-CMD ["go","run","main.go"]
+HEALTHCHECK --interval=1s --retries=90 CMD curl localhost:7780/api/atlas/v2/groups/mongodb-group1/processes --digest -u admin:MongoDB@123
