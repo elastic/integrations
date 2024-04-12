@@ -16,6 +16,14 @@ This tool is used to enhance your external knowledge of your environment. This i
 ```
 bbot -t elastic.co --strict-scope -f safe passive -c output_modules.json.siem_friendly=true -om json
 ```
+
+You will have to configure the path for the output file within the integration settings. A common and popular path that could work here is:
+
+**Example BBOT Path**
+```
+/home/*/.bbot/scans/*/output.ndjson
+```
+
 BBOT Scanning [Documentation](https://www.blacklanternsecurity.com/bbot/scanning/).
 
 - `bbot` dataset: Made up of the findings found in the BBOT Scans.
