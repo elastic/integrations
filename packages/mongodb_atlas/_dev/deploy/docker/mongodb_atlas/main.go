@@ -1,13 +1,10 @@
 package main
 
 import (
-	"compress/gzip"
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -115,42 +112,6 @@ func hostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func logsHandler(w http.ResponseWriter, r *http.Request) {
-	// Digest Authentication
-	realm := "MyRealm"
-	nonce := "123456"
-	qop := "auth"
-
-	authorized := digestAuth(w, r, realm, nonce, qop)
-	if !authorized {
-		return
-	}
-
-	logFilePath := "data.log"
-
-	// Open the log file
-	logFile, err := os.Open(logFilePath)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error opening log file: %v", err), http.StatusInternalServerError)
-		return
-	}
-	defer logFile.Close()
-
-	// Create a gzip writer for the response
-	w.Header().Set("Content-Type", "application/vnd.atlas.2023-02-01+gzip")
-	w.Header().Set("Content-Disposition", `attachment; filename="mongodb-log.gz"`)
-
-	gzipWriter := gzip.NewWriter(w)
-	defer gzipWriter.Close()
-
-	// Copy the log file content to the gzip writer
-	_, err = io.Copy(gzipWriter, logFile)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error reading log file: %v", err), http.StatusInternalServerError)
-		return
-	}
-}
-
 func metricsHandler(w http.ResponseWriter, r *http.Request) {
 
 	realm := "MyRealm"
@@ -230,10 +191,6 @@ func metricsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// Existing handler for serving the compressed file
-	http.HandleFunc("/api/atlas/v2/groups/mongodb-group1/clusters/hostname1/logs/mongodb-audit-log.gz", logsHandler)
-
-	http.HandleFunc("/api/atlas/v2/groups/mongodb-group1/clusters/hostname1/logs/mongodb.gz", logsHandler)
 
 	// Existing handler for serving the JSON response
 	http.HandleFunc("/api/atlas/v2/groups/mongodb-group1/processes/hostname1/measurements", metricsHandler)
