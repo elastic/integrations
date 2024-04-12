@@ -17,39 +17,36 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-03-21T02:59:57.000Z",
+    "@timestamp": "2024-03-14T18:59:23.000Z",
     "agent": {
-        "ephemeral_id": "cea58aa4-f29f-4831-a661-79f335d5b1b5",
-        "id": "19117246-f6b7-4f43-8432-4b4ef4b19bf8",
+        "ephemeral_id": "e35b09c8-23c2-496b-adf0-0328de4ea63d",
+        "id": "2c5ad0eb-f525-4944-8ec2-2cb048f1147d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.12.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-cisco-umbrella-bucket-48027",
-                "name": "elastic-package-cisco-umbrella-bucket-48027"
+                "arn": "arn:aws:s3:::elastic-package-cisco-umbrella-bucket-33606",
+                "name": "elastic-package-cisco-umbrella-bucket-33606"
             },
             "object": {
-                "key": "intrusionlogs.log"
+                "key": "auditlogs.log"
             }
         }
     },
     "cisco": {
         "umbrella": {
-            "classification": "A Network Trojan was detected",
-            "gid": "1",
-            "identities": [
-                "HQ"
-            ],
-            "identity_types": [
-                "Network Tunnels"
-            ],
-            "message": "MALWARE-CNC Unix.Trojan.Chalubo outbound connection",
-            "severity": "HIGH",
-            "sid": "48282",
-            "signature_list_id": "49994"
+            "audit": {
+                "after": [
+                    "includeAuditLog: 1"
+                ],
+                "after_values": {
+                    "includeAuditLog": "1"
+                },
+                "type": "logexportconfigurations"
+            }
         }
     },
     "cloud": {
@@ -61,36 +58,25 @@ An example event for `log` looks as following:
         "namespace": "ep",
         "type": "logs"
     },
-    "destination": {
-        "address": "93.123.85.97",
-        "ip": "93.123.85.97",
-        "port": 80
-    },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "19117246-f6b7-4f43-8432-4b4ef4b19bf8",
+        "id": "2c5ad0eb-f525-4944-8ec2-2cb048f1147d",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.12.0"
     },
     "event": {
-        "action": "ips-Would-Block",
+        "action": "update",
         "agent_id_status": "verified",
-        "category": [
-            "network",
-            "intrusion_detection"
-        ],
+        "category": "configuration",
         "dataset": "cisco_umbrella.log",
-        "id": "12345",
-        "ingested": "2024-04-08T23:08:44Z",
-        "kind": "alert",
-        "original": "\"2024-03-21 02:59:57\",\"HQ\",\"Network Tunnels\",\"1\",\"48282\",\"MALWARE-CNC Unix.Trojan.Chalubo outbound connection\",\"49994\",\"HIGH\",\"A Network Trojan was detected\",\"\",\"TCP\",\"12345\",\"192.168.20.20\",\"49376\",\"93.123.85.97\",\"80\",\"Would Block\",\"IDS\",\"49994\",\"C2S\",\"\",\"\",\"\"",
-        "severity": 3,
+        "id": "1757843536",
+        "ingested": "2024-04-12T02:04:00Z",
+        "kind": "event",
+        "original": "\"1757843536\",\"2024-03-14 18:59:23\",\"admin@company.com\",\"Administrator\",\"logexportconfigurations\",\"update\",\"81.2.69.144\",\"\",\"includeAuditLog: 1\n\"",
         "type": [
-            "allowed",
-            "connection",
-            "info"
+            "change"
         ]
     },
     "input": {
@@ -98,37 +84,48 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-cisco-umbrella-bucket-48027.s3.us-east-1.amazonaws.com/intrusionlogs.log"
+            "path": "https://elastic-package-cisco-umbrella-bucket-33606.s3.us-east-1.amazonaws.com/auditlogs.log"
         },
-        "offset": 530
-    },
-    "network": {
-        "name": [
-            "HQ"
-        ],
-        "protocol": "TCP"
+        "offset": 529
     },
     "observer": {
         "product": "Umbrella",
-        "type": "idps",
         "vendor": "Cisco"
     },
     "related": {
         "ip": [
-            "192.168.20.20",
-            "93.123.85.97"
+            "81.2.69.144"
+        ],
+        "user": [
+            "Administrator"
         ]
     },
     "source": {
-        "address": "192.168.20.20",
-        "ip": "192.168.20.20",
-        "port": 49376
+        "address": "81.2.69.144",
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.144"
     },
     "tags": [
         "preserve_original_event",
         "cisco-umbrella",
         "forwarded"
-    ]
+    ],
+    "user": {
+        "email": "admin@company.com",
+        "id": "admin@company.com",
+        "name": "Administrator"
+    }
 }
 ```
 
