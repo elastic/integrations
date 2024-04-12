@@ -145,7 +145,9 @@ An example event for `log` looks as following:
 | cisco.umbrella.amp_malware_name | If Malicious, the name of the malware according to AMP. | keyword |
 | cisco.umbrella.amp_score | The score of the malware from AMP. This field is not currently used and will be blank. | keyword |
 | cisco.umbrella.audit.after | The policy or setting after the change was made. | keyword |
+| cisco.umbrella.audit.after_values.\* | The individual values of the policy or setting after the change was made. | object |
 | cisco.umbrella.audit.before | The policy or setting before the change was made. | keyword |
+| cisco.umbrella.audit.before_values.\* | The individual values of the policy or setting before the change was made. | object |
 | cisco.umbrella.audit.type | Where the change was made, such as settings or a policy. | keyword |
 | cisco.umbrella.av_detections | The detection name according to the antivirus engine used in file inspection. | keyword |
 | cisco.umbrella.blocked_categories | The categories that resulted in the destination being blocked. Available in version 4 and above. | keyword |
