@@ -16,7 +16,7 @@ Version 2.0.0 introduces the use of the CEL input. This input method is currentl
 marked as [Legacy]. The HTTPJSON input method will not receive enhancement changes and will not support the new `alert_v7` data stream.
 
 ## Note (Important)
-1. Do not enable both the HTTPJSON and CEL input methods; having both enabled simultaneously can cause unexpected/duplicated results, as they operate on the same data streams.
+1. Do not enable both the HTTPJSON and CEL input methods within a single data stream; having both enabled simultaneously can cause unexpected/duplicated results, as they operate on the same data streams.
 
 2. When using the AWS-S3 input, use either the old alert data stream or the new [Beta] alert_v7 data stream that supports the Data Forwarder 2.0 schema.
 
