@@ -24,8 +24,7 @@ Note:
 
 ## Prerequisites
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. 
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
+You can store and search your data using Elasticsearch and visualize and manage it with Kibana. We recommend using our hosted Elasticsearch Service on Elastic Cloud or self-managing the Elastic Stack on your own hardware.
 
 ## Setup
 

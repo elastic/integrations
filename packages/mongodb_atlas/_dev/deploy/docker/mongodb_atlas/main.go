@@ -18,33 +18,16 @@ const (
 )
 
 func generateDigest(username, realm, password, method, uri, nonce, nc, cnonce, qop string) string {
-	h1 := md5.New()
-	io.WriteString(h1, username)
-	io.WriteString(h1, ":")
-	io.WriteString(h1, realm)
-	io.WriteString(h1, ":")
-	io.WriteString(h1, password)
-	ha1 := fmt.Sprintf("%x", h1.Sum(nil))
+	ha1 := md5.New()
+	fmt.Fprintf(ha1, "%s:%s:%s", username, realm, password)
+	ha1Hex := fmt.Sprintf("%x", ha1.Sum(nil))
 
-	h2 := md5.New()
-	io.WriteString(h2, method)
-	io.WriteString(h2, ":")
-	io.WriteString(h2, uri)
-	ha2 := fmt.Sprintf("%x", h2.Sum(nil))
+	ha2 := md5.New()
+	fmt.Fprintf(ha2, "%s:%s", method, uri)
+	ha2Hex := fmt.Sprintf("%x", ha2.Sum(nil))
 
 	response := md5.New()
-	io.WriteString(response, ha1)
-	io.WriteString(response, ":")
-	io.WriteString(response, nonce)
-	io.WriteString(response, ":")
-	io.WriteString(response, nc)
-	io.WriteString(response, ":")
-	io.WriteString(response, cnonce)
-	io.WriteString(response, ":")
-	io.WriteString(response, qop)
-	io.WriteString(response, ":")
-	io.WriteString(response, ha2)
-
+	fmt.Fprintf(response, "%s:%s:%s:%s:%s:%s", ha1Hex, nonce, nc, cnonce, qop, ha2Hex)
 	return fmt.Sprintf("%x", response.Sum(nil))
 }
 
