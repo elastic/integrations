@@ -608,7 +608,6 @@ An example event for `siem` looks as following:
 | mimecast.credentialTheft | The info about credential theft. | keyword |
 | mimecast.log_type | String to get type of SIEM log. | keyword |
 | mimecast.msgid | The internet message id of the email. | keyword |
-| mimecast.stage | The Mimecast processing stage for the event. | keyword |
 | mimecast.urlCategory | The category of the URL that was clicked. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
