@@ -189,15 +189,15 @@ An example event for `mongod_audit` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| mongodb_atlas.mongod_audit.hostname | Human-readable label that identifies the host that stores the log files that you want to download. | keyword |
-| mongodb_atlas.mongod_audit.local.ip | A document that contains the IP address of the running instance. | ip |
+| mongodb_atlas.mongod_audit.hostname | Hostname that stores the log files that you want to download. | keyword |
+| mongodb_atlas.mongod_audit.local.ip | IP address of the running instance. | ip |
 | mongodb_atlas.mongod_audit.local.is_system_user | This field indicates whether the user who caused the event was a system user. | boolean |
-| mongodb_atlas.mongod_audit.local.port | A document that contains the port number of the running instance. | long |
+| mongodb_atlas.mongod_audit.local.port | Port number of the running instance. | long |
 | mongodb_atlas.mongod_audit.local.unix | Unix that contains the MongoDB socket file path if the client connects through a Unix domain socket. | keyword |
 | mongodb_atlas.mongod_audit.param | Specific details for the event. | object |
-| mongodb_atlas.mongod_audit.remote.ip | A document that contains the IP address of the incoming connection associated with the event. | ip |
-| mongodb_atlas.mongod_audit.remote.is_system_user | This field indicates whether the user who caused the event was a system user. | boolean |
-| mongodb_atlas.mongod_audit.remote.port | A document that contains the port number of the incoming connection associated with the event. | long |
+| mongodb_atlas.mongod_audit.remote.ip | IP address of the incoming connection associated with the event. | ip |
+| mongodb_atlas.mongod_audit.remote.is_system_user | True if the event is caused by a system user, false otherwise. | boolean |
+| mongodb_atlas.mongod_audit.remote.port | Port number of the incoming connection associated with the event. | long |
 | mongodb_atlas.mongod_audit.remote.unix | Unix that contains the MongoDB socket file path if the client connects through a Unix domain socket. | keyword |
 | mongodb_atlas.mongod_audit.result | Error code. | keyword |
 | mongodb_atlas.mongod_audit.user.names | Array of user identification documents. | object |
