@@ -1,0 +1,75 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $agentId := generate "agent.id" }}
+{{- $agentName := generate "agent.name" }}
+{{- $agentEphemeralid := generate "agent.ephemeral_id" }}
+{{- $destinationDomain := generate "destination_domain" }}
+{{- $remoteIp := generate "remote_ip" }}
+{{- $remoteUser := generate "remote_user" }}
+{{- $requestMethod := generate "request_method" }}
+{{- $statusCode := generate "status_code" }}
+{{- $responseBytes := generate "response_bytes" }}
+{{- $domains := generate "domains" }}
+{{- $id := generate "id" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "{{ $agentEphemeralid }}",
+        "id": "{{ $agentId }}",
+        "name": "{{ $agentName }}",
+        "type": "filebeat",
+        "version": "8.5.1"
+    },
+    "data_stream": {
+        "dataset": "nginx.access",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.1"
+    },
+    "elastic_agent": {
+        "id": "{{ $agentId }}",
+        "snapshot": false,
+        "version": "8.5.0"
+    },
+    "message": "{{ $destinationDomain }}{{ $domains }}:80 {{ $remoteIp }} - {{ $remoteUser }} [{{$timestamp | date "02/Jan/2006:15:04:05"}} {{ $timestamp.Format "Z0700" }}] \"{{$requestMethod}} /downloads/product_{{ $id }} HTTP/1.1\" {{ $statusCode }} {{ $responseBytes }} \"http://localhost:8080/\" \"Chef Client/12.0.3 (ruby-2.1.4-p265; ohai-8.0.1; x86_64-linux; +http://opscode.com)\"",    
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "nginx.access",
+        "timezone": "{{ $timestamp.Format "-07:00" }}"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/access.log"
+        },
+        "offset": 0
+    },
+    "tags": [
+        "nginx-access"
+    ]
+}

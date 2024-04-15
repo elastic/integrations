@@ -615,6 +615,7 @@ An example event for `cluster_stats` looks as following:
 | elasticsearch.cluster.stats.indices.shards.count | Total number of shards in cluster. | long | gauge |
 | elasticsearch.cluster.stats.indices.shards.primaries | Total number of primary shards in cluster. | long | gauge |
 | elasticsearch.cluster.stats.indices.store.size.bytes |  | long | gauge |
+| elasticsearch.cluster.stats.indices.store.total_data_set_size.bytes |  | long | gauge |
 | elasticsearch.cluster.stats.indices.total |  | long | gauge |
 | elasticsearch.cluster.stats.license.cluster_needs_tls |  | boolean |  |
 | elasticsearch.cluster.stats.license.expiry_date |  | date |  |
@@ -1004,6 +1005,7 @@ An example event for `index` looks as following:
 | elasticsearch.index.primaries.segments.terms_memory_in_bytes |  | long | gauge |
 | elasticsearch.index.primaries.segments.version_map_memory_in_bytes |  | long | gauge |
 | elasticsearch.index.primaries.store.size_in_bytes |  | long | gauge |
+| elasticsearch.index.primaries.store.total_data_set_size_in_bytes |  | long | gauge |
 | elasticsearch.index.shards.primaries |  | long |  |
 | elasticsearch.index.shards.total |  | long |  |
 | elasticsearch.index.status |  | keyword |  |
@@ -1485,6 +1487,7 @@ An example event for `index_summary` looks as following:
 | elasticsearch.index.summary.primaries.segments.count | Total number of index segments. | long | gauge |
 | elasticsearch.index.summary.primaries.segments.memory.bytes | Total number of memory used by the segments in bytes. | long | gauge |
 | elasticsearch.index.summary.primaries.store.size.bytes | Total size of the index in bytes. | long | gauge |
+| elasticsearch.index.summary.primaries.store.total_data_set_size.bytes | Total size of the index in bytes including backing data for partially mounted indices. | long | gauge |
 | elasticsearch.index.summary.total.bulk.operations.count |  | long | gauge |
 | elasticsearch.index.summary.total.bulk.size.bytes |  | long | gauge |
 | elasticsearch.index.summary.total.bulk.time.avg.bytes |  | long | gauge |
@@ -1500,6 +1503,7 @@ An example event for `index_summary` looks as following:
 | elasticsearch.index.summary.total.segments.count | Total number of index segments. | long | gauge |
 | elasticsearch.index.summary.total.segments.memory.bytes | Total number of memory used by the segments in bytes. | long | gauge |
 | elasticsearch.index.summary.total.store.size.bytes | Total size of the index in bytes. | long | gauge |
+| elasticsearch.index.summary.total.store.total_data_set_size.bytes | Total size of the index in bytes including backing data for partially mounted indices. | long | gauge |
 | elasticsearch.node.id | Node ID | keyword |  |
 | elasticsearch.node.master | Is the node the master node? | boolean |  |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |  |
@@ -2268,6 +2272,7 @@ An example event for `node_stats` looks as following:
 | elasticsearch.node.stats.indices.segments.terms.memory.bytes |  | long | gauge |
 | elasticsearch.node.stats.indices.segments.version_map.memory.bytes |  | long | gauge |
 | elasticsearch.node.stats.indices.store.size.bytes | Total size of the store in bytes. | long | gauge |
+| elasticsearch.node.stats.indices.store.total_data_set_size.bytes | Total size of shards in bytes assigned to this node including backing data for partially mounted indices. | long | gauge |
 | elasticsearch.node.stats.ingest.total.count |  | long | counter |
 | elasticsearch.node.stats.ingest.total.current |  | long | gauge |
 | elasticsearch.node.stats.ingest.total.failed |  | long | counter |

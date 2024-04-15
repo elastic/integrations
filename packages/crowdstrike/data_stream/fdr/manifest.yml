@@ -5,6 +5,7 @@ streams:
     template_path: aws-s3.yml.hbs
     title: Falcon Data Replicator logs
     description: Collect Falcon Data Replicator logs using s3 input
+    enabled: false
     vars:
       - name: access_key_id
         type: text
@@ -12,18 +13,21 @@ streams:
         multi: false
         required: false
         show_user: true
+        secret: false
       - name: secret_access_key
-        type: text
+        type: password
         title: Secret Access Key
         multi: false
         required: false
         show_user: true
+        secret: true
       - name: session_token
-        type: text
+        type: password
         title: Session Token
         multi: false
         required: false
         show_user: true
+        secret: true
       - name: queue_url
         type: text
         title: Queue URL
@@ -64,6 +68,22 @@ streams:
         type: text
         multi: false
         default: 168h
+      - name: metadata_cache_capacity
+        required: true
+        show_user: false
+        title: Metadata cache capacity
+        description: "The maximum amount of metadata objects to cache. Operations that would cause the capacity to be exceeded will result in evictions of the oldest elements. The capacity should not be lower than the number of elements that are expected to be referenced when processing the input as evicted elements are lost. Values at or below zero indicate no limit. \nWARNING: This setting needs to be set only if the amount of metadata elements is known beforehand, otherwise it might lead to enrichment data loss. If you are not sure, leave it untouched.\n"
+        type: text
+        multi: false
+        default: 0
+      - name: metadata_cache_write_interval
+        required: true
+        show_user: false
+        title: Metadata cache write interval
+        description: The interval between periodic cache writes to the backing file. Valid time units are h, m, s, ms, us/µs and ns. The contents are always written out to the backing file when the processor is closed. Default is zero, no periodic writes.
+        type: text
+        multi: false
+        default: 0
       - name: preserve_original_event
         required: true
         show_user: true
@@ -208,6 +228,7 @@ streams:
   - input: logfile
     title: Falcon Data Replicator logs
     description: Collect Falcon Data Replicator logs using a log file
+    enabled: false
     vars:
       - name: paths
         type: text

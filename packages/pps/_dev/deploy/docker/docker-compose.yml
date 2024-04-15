@@ -1,0 +1,18 @@
+version: '2.3'
+services:
+  pps-log-logfile:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  pps-log-tcp:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9037 -p=tcp /sample_logs/log.log
+  pps-log-udp:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9038 -p=udp /sample_logs/log.log

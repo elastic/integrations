@@ -80,16 +80,37 @@ processors:
       target_field: eset_protect.event.hostname
       ignore_missing: true
   - set:
-      field: host.hostname
-      tag: set_host_hostname_from_event_hostname
+      field: host.name
+      tag: set_host_name_from_event_hostname
       copy_from: eset_protect.event.hostname
-      ignore_empty_value: true
+      if: ctx.eset_protect?.event?.hostname?.contains('.') == true
+  - grok:
+      field: eset_protect.event.hostname
+      tag: grok_host_hostname_and_domain_from_event_hostname
+      patterns:
+        - '(%{DATA:host.hostname}\.%{GREEDYDATA:host.domain}|%{GREEDYDATA:host.hostname})'
+      if: ctx.eset_protect?.event?.hostname != null 
+  - set:
+      field: host.name
+      tag: set_host_name_from_host_hostname
+      copy_from: host.hostname
+      if: ctx.host?.hostname != null && ctx.host.name == null
+  - lowercase:
+      field: host.name
+      tag: lowercase_host_name
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_host_name_into_related_hosts
+      value: "{{{host.name}}}"
+      allow_duplicates: false
+      if: ctx.host?.name != null
   - append:
       field: related.hosts
       tag: append_hostname_into_related_hosts
-      value: "{{{eset_protect.event.hostname}}}"
+      value: "{{{host.hostname}}}"
       allow_duplicates: false
-      if: ctx.eset_protect?.event?.hostname != null
+      if: ctx.host?.hostname != null
   - convert:
       field: json.ipv4
       tag: convert_ipv4_to_ip
@@ -193,12 +214,6 @@ processors:
       tag: set_threat_indicator_provider
       value: ESET PROTECT
       if: ctx.eset_protect?.event?.type != null && ['Threat_Event','HipsAggregated_Event','FirewallAggregated_Event','FilteredWebsites_Event','BlockedFiles_Event'].contains(ctx.eset_protect.event.type)
-  - set:
-      field: threat.indicator.file.hash.sha1
-      tag: set_threat_indicator_file_hash_sha1
-      copy_from: json.hash
-      ignore_empty_value: true
-      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || ctx.json?.object_type?.toLowerCase() == 'file'
   - set:
       field: threat.indicator.type
       tag: set_threat_indicator_type
@@ -413,13 +428,33 @@ processors:
       tag: rename_hash
       target_field: eset_protect.event.hash
       ignore_missing: true
+  - set:
+      field: file.hash.sha1
+      tag: set_file_hash_sha1_from_eset_protect_event_hash
+      copy_from: eset_protect.event.hash
+      ignore_empty_value: true
+      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || 'file'.equalsIgnoreCase(ctx.json?.object_type)
+  - lowercase:
+      field: file.hash.sha1
+      tag: lowercase_file_hash_sha1
+      ignore_missing: true
+  - set:
+      field: threat.indicator.file.hash.sha1
+      tag: set_threat_indicator_file_hash_sha1
+      copy_from: file.hash.sha1
+      ignore_empty_value: true
+      if: ctx.eset_protect?.event?.type == 'BlockedFiles_Event' || 'file'.equalsIgnoreCase(ctx.json?.object_type)
   - append:
       field: related.hash
-      tag: append_hash_into_related_hash
+      tag: append_eset_protect_event_hash_into_related_hash
       value: "{{{eset_protect.event.hash}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.hash != null
-  - convert:
+  - lowercase:
+      field: related.hash
+      tag: lowercase_file_hash_sha1
+      ignore_missing: true
+  - convert: 
       field: json.inbound
       tag: convert_inbound_to_boolean
       target_field: eset_protect.event.inbound
@@ -449,11 +484,29 @@ processors:
       tag: rename_object_type
       target_field: eset_protect.event.object_type
       ignore_missing: true
+  - set: 
+      field: file.type
+      value: file
+      tag: set_file_type_file
+      if: ctx.eset_protect?.event?.object_type?.toLowerCase() == 'file'
   - rename:
       field: json.object_uri
       tag: rename_object_uri
       target_field: eset_protect.event.object_uri
       ignore_missing: true
+  - set:
+      field: file.path
+      if: "ctx.eset_protect?.event?.object_uri != null && ctx.eset_protect?.event?.object_type?.toLowerCase() == 'file'"
+      copy_from: eset_protect.event.object_uri
+  - grok: 
+      field: file.path
+      tag: grok_file_path
+      patterns: 
+        - '^(file:///)?%{FILEPATH:file.path}$'
+        - '.*/(?<file.name>.+\.(?<file.extension>.+))$'
+      pattern_definitions:
+        FILEPATH: '(?<file.drive_letter>\w):(?<file.directory>/.*/|/)?(?<file.name>.+(\.(?<file.extension>.+))?)?'
+      if: ctx.file?.path != null && ctx.file?.path != 'script'
   - rename:
       field: json.operation
       tag: rename_operation
@@ -480,8 +533,8 @@ processors:
       ignore_missing: true
       patterns:
         - '^%{GREEDYDATA:json._temp}\\%{DATA:process.name}$'
-        - "^%{GREEDYDATA:json._temp}/%{DATA:process.name}$"
-        - "^%{DATA:process.name}$"
+        - '^%{GREEDYDATA:json._temp}/%{DATA:process.name}$'
+        - '^%{DATA:process.name}$'
       if: ctx.eset_protect?.event?.processname != ''
       on_failure:
         - append:
@@ -752,8 +805,8 @@ processors:
       patterns:
         - '^%{HOSTNAME:user.domain}\\%{USERNAME:user.name}$'
         - '^%{HOSTNAME:user.domain}\\\\%{USERNAME:user.name}$'
-        - "^%{USERNAME:user.name}@%{HOSTNAME:user.domain}$"
-        - "^%{GREEDYDATA:user.name}$"
+        - '^%{USERNAME:user.name}@%{HOSTNAME:user.domain}$'
+        - '^%{GREEDYDATA:user.name}$'
       if: ctx.eset_protect?.event?.username != ''
       on_failure:
         - append:

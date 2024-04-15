@@ -1,0 +1,54 @@
+---
+description: Pipeline for Jamf Protect Telemetry logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_system_performance_metrics" }}'
+      if: ctx.json?.header?.event_name == 'SYSTEM_PERFORMANCE_METRICS'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_audit" }}'
+      if: ctx.json?.header?.event_name != null && ctx.json?.header?.event_name.startsWith('AUE_')
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_bios_firmware_versions" }}'
+      if: ctx.json?.header?.event_name == 'BIOS_FIRMWARE_VERSIONS'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_event" }}'
+      if: "['FILE_COLLECTION_EVENT','PLAINTEXT_LOG_COLLECTION'].contains(ctx.json?.header?.event_name)"
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
