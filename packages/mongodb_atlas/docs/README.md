@@ -18,7 +18,7 @@ Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` 
 
 Data streams:
 
-- `process` : This data stream Collects host Metrics per process for all the hosts of the specified group. Metrics like Measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
+- `process` : This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
@@ -167,13 +167,13 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.cpu.children.user.pct | CPU children user space for mongodb. | double | percent | gauge |
 | mongodb_atlas.process.cpu.kernel.max.pct | The maximum amount of CPU time spent by the MongoDB process itself in kernel space, handling system calls and hardware interrupts. | double | percent | counter |
 | mongodb_atlas.process.cpu.kernel.pct | CPU kernel space for mongodb processes. | double | percent | gauge |
-| mongodb_atlas.process.cpu.normalized.children.kernel.max.pct | MAX Children Kernel CPU usage scaled to a range of 0% to 100% by dividing by the number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.cpu.normalized.children.kernel.max.pct | Max children kernel CPU usage scaled to a range of 0% to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
 | mongodb_atlas.process.cpu.normalized.children.kernel.pct | NORMALIZED CPU children kernel space for mongodb processes. | double | percent | gauge |
-| mongodb_atlas.process.cpu.normalized.children.user.max.pct | MAX Children User CPU usage scaled to a range of 0% to 100% by dividing by the number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.cpu.normalized.children.user.max.pct | Max children user CPU usage scaled to a range of 0% to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
 | mongodb_atlas.process.cpu.normalized.children.user.pct | NORMALIZED CPU children user space for mongodb. | double | percent | gauge |
-| mongodb_atlas.process.cpu.normalized.kernel.max.pct | MAX Kernel CPU usage scaled to a range of 0% to 100% by dividing by the number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.cpu.normalized.kernel.max.pct | Max kernel CPU usage scaled to a range of 0% to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
 | mongodb_atlas.process.cpu.normalized.kernel.pct | NORMALIZED CPU kernel space for mongodb processes. | double | percent | gauge |
-| mongodb_atlas.process.cpu.normalized.user.max.pct | MAX User CPU usage scaled to a range of 0% to 100% by dividing by the number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.cpu.normalized.user.max.pct | Max user CPU usage scaled to a range of 0% to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
 | mongodb_atlas.process.cpu.normalized.user.pct | NORMALIZED CPU user space for mongodb processes. | double | percent | gauge |
 | mongodb_atlas.process.cpu.user.max.pct | The maximum amount of CPU time spent by the MongoDB process itself in user space, executing application code and processing data. | double | percent | counter |
 | mongodb_atlas.process.cpu.user.pct | CPU user space for mongodb processes. | double | percent | gauge |
@@ -181,14 +181,14 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.cursor.timed_out.total | The average rate of cursors that have timed out per second over the selected sample period. | double |  | gauge |
 | mongodb_atlas.process.database.size.total.bytes | The amount of storage space in bytes that your stored data uses. | long | byte | gauge |
 | mongodb_atlas.process.database.storage.total.bytes | Sum total of the compressed on-disk storage space allocated for document storage across all databases. | long | byte | gauge |
-| mongodb_atlas.process.document.deleted | Displays the documents per second deleted. | double |  | gauge |
-| mongodb_atlas.process.document.inserted | Displays the documents per second inserted. | double |  | gauge |
-| mongodb_atlas.process.document.returned | Displays the documents per second returned. | double |  | gauge |
-| mongodb_atlas.process.document.updated | Displays the documents per second updated. | double |  | gauge |
-| mongodb_atlas.process.fts.cpu.kernel.pct | The amount of CPU time spent by the Full-Text Search process in kernel space. | double | percent | gauge |
+| mongodb_atlas.process.document.deleted | Displays the documents deleted per second. | double |  | gauge |
+| mongodb_atlas.process.document.inserted | Displays the documents inserted per second. | double |  | gauge |
+| mongodb_atlas.process.document.returned | Displays the documents returned per second. | double |  | gauge |
+| mongodb_atlas.process.document.updated | Displays the documents updated per second. | double |  | gauge |
+| mongodb_atlas.process.fts.cpu.kernel.pct | The amount of CPU time spent by the Full-Text search process in kernel space. | double | percent | gauge |
 | mongodb_atlas.process.fts.cpu.normalized.kernel.pct | Percentage of time that the CPU spent servicing the operating system calls for the search process. | double | percent | gauge |
 | mongodb_atlas.process.fts.cpu.normalized.user.pct | Percentage of time that the CPU spent servicing user calls for the search process. | double | percent | gauge |
-| mongodb_atlas.process.fts.cpu.user.pct | The amount of CPU time spent by the Full-Text Search process in user space. | double | percent | gauge |
+| mongodb_atlas.process.fts.cpu.user.pct | The amount of CPU time spent by the Full-Text search process in user space. | double | percent | gauge |
 | mongodb_atlas.process.fts.disk.utilization.total.bytes | Total bytes of disk space that search processes use. | long | byte | gauge |
 | mongodb_atlas.process.fts.memory.mapped.total.bytes | Total bytes of mapped memory that search processes occupy. | long | byte | gauge |
 | mongodb_atlas.process.fts.memory.resident.total.bytes | Total bytes of resident memory that search processes occupy. | long | byte | gauge |
@@ -206,12 +206,12 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.journaling.commits.write_lock | Number of journaling COMMIT operations. | long |  | gauge |
 | mongodb_atlas.process.journaling.mb | Average amount of data in megabytes Cloud Manager writes to the recovery log per second meets your specified threshold. | double |  | gauge |
 | mongodb_atlas.process.journaling.write.data_files.mb | The maximum size in megabytes (MB) of data files written by the journaling process. | double |  | gauge |
-| mongodb_atlas.process.memory.computed.mib | Amount of COMPUTED process memory, in mebibytes (MiB). | double |  | gauge |
-| mongodb_atlas.process.memory.mapped.mb | Amount of MAPPED process memory, in megabytes. | double |  | gauge |
-| mongodb_atlas.process.memory.resident.mb | Amount of RESIDENT process memory, in megabytes. | double |  | gauge |
-| mongodb_atlas.process.memory.virtual.mb | Amount of VIRTUAL process memory, in megabytes. | double |  | gauge |
-| mongodb_atlas.process.network.in | Process incoming network throughput, in bytes per second. | double |  | gauge |
-| mongodb_atlas.process.network.out | Process outgoing network throughput, in bytes per second. | double |  | gauge |
+| mongodb_atlas.process.memory.computed.mb | Amount of COMPUTED process memory in megabytes. | double |  | gauge |
+| mongodb_atlas.process.memory.mapped.mb | Amount of MAPPED process memory in megabytes. | double |  | gauge |
+| mongodb_atlas.process.memory.resident.mb | Amount of RESIDENT process memory in megabytes. | double |  | gauge |
+| mongodb_atlas.process.memory.virtual.mb | Amount of VIRTUAL process memory in megabytes. | double |  | gauge |
+| mongodb_atlas.process.network.in | Process incoming network throughput in bytes per second. | double |  | gauge |
+| mongodb_atlas.process.network.out | Process outgoing network throughput in bytes per second. | double |  | gauge |
 | mongodb_atlas.process.network.request.total | The total number of distinct requests that the process has received. | double |  | counter |
 | mongodb_atlas.process.opcounter.cmd | Database operations rate on a process since the process last started. | double |  | gauge |
 | mongodb_atlas.process.opcounter.delete | Database DELETE operations rate on a process since the process last started. | double |  | gauge |
@@ -228,7 +228,7 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.operation.execution.time.write.avg.ms | Average execution time in milliseconds per write operation over the selected sample period. | double | ms | gauge |
 | mongodb_atlas.process.operation.scan_and_order | The total number of queries that return sorted data that cannot perform the sort operation using an index. | double |  | gauge |
 | mongodb_atlas.process.oplog.master.lag.time_diff.s | Lag or delay in replication between the primary node (oplog master) and its secondary nodes. | double | s | gauge |
-| mongodb_atlas.process.oplog.master.time.s | Timestamp of the latest operation entry in the oplog on the primary node. | double | s | gauge |
+| mongodb_atlas.process.oplog.master.time.s | The replication oplog window. The approximate time available in the primary's replication oplog. If a secondary is behind real-time by more than this amount, it cannot catch up and will require a full resync. | double | s | gauge |
 | mongodb_atlas.process.oplog.rate.gb_per_hour | The rate of change in the size of the oplog in gigabytes per hour. | double |  | gauge |
 | mongodb_atlas.process.oplog.repl_lag.s | The amount of time, typically in seconds, it takes for changes recorded in the oplog on the primary node to be replicated and applied to the secondary node. | double | s | gauge |
 | mongodb_atlas.process.oplog.slave.lag.master.time.s | The difference in time, typically in seconds, between the oplog time on the secondary (slave) node and the time of the latest operation in the oplog on the primary (master) node. | double | s | gauge |
@@ -237,52 +237,52 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.query.targeting.scanned_objects_per_returned | Ratio of the number of documents scanned to the number of documents returned. | double |  | gauge |
 | mongodb_atlas.process.query.targeting.scanned_per_returned | Ratio of the number of index items scanned to the number of documents returned. | double |  | gauge |
 | mongodb_atlas.process.restart.in_last_hour | Number of times the host restarted within the previous hour. | double |  | gauge |
-| mongodb_atlas.process.swap.usage.free.max.kb | MAX amount of swap space free. | double |  | counter |
+| mongodb_atlas.process.swap.usage.free.max.kb | Max amount of swap space free. | double |  | counter |
 | mongodb_atlas.process.swap.usage.total.free | Total amount of swap space free. | double |  | gauge |
 | mongodb_atlas.process.swap.usage.total.used | Total amount of swap space in use. | double |  | gauge |
-| mongodb_atlas.process.swap.usage.used.max.kb | MAX amount of swap space in use. | double |  | counter |
-| mongodb_atlas.process.system.cpu.guest.max.pct | MAX amount of CPU time spent running a virtual CPU for guest operating systems. | double | percent | counter |
+| mongodb_atlas.process.swap.usage.used.max.kb | Max amount of swap space in use. | double |  | counter |
+| mongodb_atlas.process.system.cpu.guest.max.pct | Max amount of CPU time spent running a virtual CPU for guest operating systems. | double | percent | counter |
 | mongodb_atlas.process.system.cpu.guest.pct | Tracks CPU time consumed by guest operating systems, like virtual machines, on the host system. | double | percent | gauge |
-| mongodb_atlas.process.system.cpu.iowait.max.pct | MAX amount of CPU time spent waiting for I/O operations to complete. | double | percent | counter |
+| mongodb_atlas.process.system.cpu.iowait.max.pct | Max amount of CPU time spent waiting for I/O operations to complete. | double | percent | counter |
 | mongodb_atlas.process.system.cpu.iowait.pct | The CPU time spent waiting for I/O operations to complete. | double | percent | gauge |
-| mongodb_atlas.process.system.cpu.irq.max.pct | MAX amount of CPU time spent servicing hardware interrupts. | double | percent | counter |
+| mongodb_atlas.process.system.cpu.irq.max.pct | Max amount of CPU time spent servicing hardware interrupts. | double | percent | counter |
 | mongodb_atlas.process.system.cpu.irq.pct | The portion of CPU time spent servicing hardware interrupts. | double | percent | gauge |
-| mongodb_atlas.process.system.cpu.kernel.max.pct | MAX amount of CPU time spent in kernel space, executing system calls and handling hardware interrupts. | double | percent | counter |
+| mongodb_atlas.process.system.cpu.kernel.max.pct | Max amount of CPU time spent in kernel space, executing system calls and handling hardware interrupts. | double | percent | counter |
 | mongodb_atlas.process.system.cpu.kernel.pct | The portion of CPU time spent executing kernel space processes and handling system calls. | double | percent | gauge |
 | mongodb_atlas.process.system.cpu.nice.pct | The portion of CPU time allocated to processes with a 'nice' priority level. | double | percent | gauge |
-| mongodb_atlas.process.system.cpu.softirq.max.pct | MAX amount of CPU time spent servicing soft interrupts, which are interrupts triggered by software. | double | percent | counter |
+| mongodb_atlas.process.system.cpu.softirq.max.pct | Max amount of CPU time spent servicing soft interrupts, which are interrupts triggered by software. | double | percent | counter |
 | mongodb_atlas.process.system.cpu.softirq.pct | The CPU time spent handling software-generated interrupts. | double | percent | gauge |
-| mongodb_atlas.process.system.cpu.steal.max.pct | MAX amount of CPU time 'stolen' by the hypervisor for other virtual machines running on the same physical host. | double | percent | counter |
+| mongodb_atlas.process.system.cpu.steal.max.pct | Max amount of CPU time 'stolen' by the hypervisor for other virtual machines running on the same physical host. | double | percent | counter |
 | mongodb_atlas.process.system.cpu.steal.pct | The amount of CPU time 'stolen' by the hypervisor for other virtual machines running on the same physical host. | double | percent | gauge |
-| mongodb_atlas.process.system.cpu.user.max.pct | MAX amount of CPU time spent in user space, executing user-level processes and applications. | double | percent | counter |
+| mongodb_atlas.process.system.cpu.user.max.pct | Max amount of CPU time spent in user space, executing user-level processes and applications. | double | percent | counter |
 | mongodb_atlas.process.system.cpu.user.pct | The portion of CPU time spent executing user space processes and running applications. | double | percent | gauge |
-| mongodb_atlas.process.system.memory.available.kb | Physical memory available, in kilobytes. | double |  | gauge |
-| mongodb_atlas.process.system.memory.available.max.kb | MAX Physical memory available, in kilobytes. | double |  | counter |
-| mongodb_atlas.process.system.memory.free.kb | Physical memory free, in kilobytes. | double |  | gauge |
-| mongodb_atlas.process.system.memory.free.max.kb | MAX Physical memory free, in kilobytes. | double |  | counter |
+| mongodb_atlas.process.system.memory.available.kb | Physical memory available in kilobytes. | double |  | gauge |
+| mongodb_atlas.process.system.memory.available.max.kb | Max Physical memory available in kilobytes. | double |  | counter |
+| mongodb_atlas.process.system.memory.free.kb | Physical memory free in kilobytes. | double |  | gauge |
+| mongodb_atlas.process.system.memory.free.max.kb | Max Physical memory free in kilobytes. | double |  | counter |
 | mongodb_atlas.process.system.memory.used.kb | Physical memory used in kilobytes. | double |  | gauge |
-| mongodb_atlas.process.system.memory.used.max.kb | MAX Physical memory used, in kilobytes. | double |  | counter |
+| mongodb_atlas.process.system.memory.used.max.kb | Max Physical memory used in kilobytes. | double |  | counter |
 | mongodb_atlas.process.system.network.in | Incoming network throughput in bytes per second. | double |  | gauge |
-| mongodb_atlas.process.system.network.max.in | MAX Incoming network throughput in bytes per second. | double |  | counter |
-| mongodb_atlas.process.system.network.max.out | MAX Outgoing network throughput in bytes per second. | double |  | counter |
+| mongodb_atlas.process.system.network.max.in | Max Incoming network throughput in bytes per second. | double |  | counter |
+| mongodb_atlas.process.system.network.max.out | Max Outgoing network throughput in bytes per second. | double |  | counter |
 | mongodb_atlas.process.system.network.out | Outgoing network throughput in bytes per second. | double |  | gauge |
-| mongodb_atlas.process.system.normalized.cpu.guest.max.pct | MAX Guest CPU usage of processes on the host scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | counter |
-| mongodb_atlas.process.system.normalized.cpu.guest.pct | Guest CPU usage of processes on the host scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | gauge |
-| mongodb_atlas.process.system.normalized.cpu.iowait.max.pct | MAX CPU usage of processes spent waiting for IO operations to complete, scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | counter |
-| mongodb_atlas.process.system.normalized.cpu.iowait.pct | CPU usage of processes spent waiting for IO operations to complete, scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | gauge |
-| mongodb_atlas.process.system.normalized.cpu.irq.max.pct | MAX CPU usage of hardware interrupts, scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.system.normalized.cpu.guest.max.pct | Max Guest CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.system.normalized.cpu.guest.pct | Guest CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | gauge |
+| mongodb_atlas.process.system.normalized.cpu.iowait.max.pct | Max CPU usage of processes spent waiting for IO operations to complete, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.system.normalized.cpu.iowait.pct | CPU usage of processes spent waiting for IO operations to complete, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | gauge |
+| mongodb_atlas.process.system.normalized.cpu.irq.max.pct | Max CPU usage of hardware interrupts, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
 | mongodb_atlas.process.system.normalized.cpu.irq.pct | NORMALIZED irq CPU utilization across various processes for a server | double | percent | gauge |
-| mongodb_atlas.process.system.normalized.cpu.kernel.max.pct | MAX Kernel CPU usage of processes on the host scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | counter |
-| mongodb_atlas.process.system.normalized.cpu.kernel.pct | Kernel CPU usage of processes on the host scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | gauge |
-| mongodb_atlas.process.system.normalized.cpu.nice.max.pct | MAX CPU usage of processes with a positive nice value, scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.system.normalized.cpu.kernel.max.pct | Max kernel CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.system.normalized.cpu.kernel.pct | Kernel CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | gauge |
+| mongodb_atlas.process.system.normalized.cpu.nice.max.pct | Max CPU usage of processes with a positive nice value, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
 | mongodb_atlas.process.system.normalized.cpu.nice.pct | NORMALIZED nice CPU utilization across various processes for a server | double | percent | gauge |
-| mongodb_atlas.process.system.normalized.cpu.softirq.max.pct | MAX CPU usage of software interrupts, scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.system.normalized.cpu.softirq.max.pct | Max CPU usage of software interrupts, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
 | mongodb_atlas.process.system.normalized.cpu.softirq.pct | NORMALIZED softirq CPU utilization across various processes for a server | double | percent | gauge |
-| mongodb_atlas.process.system.normalized.cpu.steal.max.pct | MAX The percentage of time the CPU had something runnable, but the hypervisor chose to run something else, scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | counter |
-| mongodb_atlas.process.system.normalized.cpu.steal.pct | The percentage of time the CPU had something runnable, but the hypervisor chose to run something else, scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | gauge |
-| mongodb_atlas.process.system.normalized.cpu.steal.user.max.pct | MAX User CPU usage of processes on the host scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.system.normalized.cpu.steal.max.pct | Max The percentage of time the CPU had something runnable, but the hypervisor chose to run something else, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.system.normalized.cpu.steal.pct | The percentage of time the CPU had something runnable, but the hypervisor chose to run something else, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | gauge |
+| mongodb_atlas.process.system.normalized.cpu.steal.user.max.pct | Max user CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
 | mongodb_atlas.process.system.normalized.cpu.steal.user.pct | NORMALIZED CPU user space utilization across various processes for a server | double | percent | gauge |
-| mongodb_atlas.process.system.normalized.cpu.user.max.pct | MAX User CPU usage of processes on the host scaled to a range of 0 to 100% by dividing by the number of CPU cores. | double | percent | counter |
+| mongodb_atlas.process.system.normalized.cpu.user.max.pct | Max user CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores. | double | percent | counter |
 | mongodb_atlas.process.system.normalized.cpu.user.pct | The portion of CPU time spent executing user space processes and running applications. | double | percent | gauge |
 | mongodb_atlas.process.ticket.available.read.count | The number of read tickets available to the WiredTiger storage engine. | long |  | gauge |
 | mongodb_atlas.process.ticket.available.write.count | The number of write tickets available to the WiredTiger storage engine. | long |  | gauge |

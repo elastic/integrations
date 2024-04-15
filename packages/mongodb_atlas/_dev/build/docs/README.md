@@ -18,7 +18,7 @@ Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` 
 
 Data streams:
 
-- `process` : This data stream Collects host Metrics per process for all the hosts of the specified group. Metrics like Measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
+- `process` : This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
