@@ -8,6 +8,10 @@ processors:
       copy_from: message
       field: event.original
       ignore_failure: true 
+  - set:
+      field: proces.name
+      copy_from: log.syslog.appname
+      if: ctx.log?.syslog?.appname != null
 
   #
   # The syslog header should have been stripped off, so we need to process the key=value data
@@ -100,11 +104,6 @@ processors:
       field: "ss.fw"
       target_field: "host.name"
       if: ctx.ss?.fw != null
-
-  - rename:
-      field: "ss.service"
-      target_field: "process.name"
-      if: ctx.ss?.service != null
 
   - remove:
       field: ss.id

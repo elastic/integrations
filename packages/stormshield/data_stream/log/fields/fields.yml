@@ -25,7 +25,7 @@
         - name: time
           type: keyword
         - name: tz
-          type: text
+          type: keyword
 
     - name: connection
       type: group
@@ -81,7 +81,7 @@
         - name: time
           type: keyword
         - name: tz
-          type: text
+          type: keyword
 
     - name: filterstat
       type: group
@@ -92,7 +92,7 @@
           type: keyword
         - name: Blocked
           type: keyword
-        - name: Byte(i/o)
+        - name: Byte_input_output
           type: keyword
         - name: ConnMem
           type: keyword
@@ -100,8 +100,13 @@
           type: keyword
         - name: DynamicMem
           type: keyword
-        - name: EtherStateByte(i/o)
-          type: keyword
+        - name: EtherStateByte
+          type: group
+          fields:
+            - name: input
+              type: integer
+            - name: output
+              type: integer
         - name: EtherStateConn
           type: keyword
         - name: EtherStateMem
@@ -120,14 +125,24 @@
           type: keyword
         - name: HostrepScore
           type: keyword
-        - name: ICMPByte(i/o)
-          type: keyword
+        - name: ICMPByte_input_output
+          type: group
+          fields:
+            - name: input
+              type: integer
+            - name: output
+              type: integer
         - name: ICMPMem
           type: keyword
         - name: ICMPPacket
           type: keyword
-        - name: IPStateByte(i/o)
-          type: keyword
+        - name: IPStateByte
+          type: group
+          fields:
+            - name: input
+              type: integer
+            - name: output
+              type: integer
         - name: IPStateConn
           type: keyword
         - name: IPStateConnNatDst
@@ -152,14 +167,24 @@
           type: keyword
         - name: SCTPAssoc
           type: keyword
-        - name: SCTPAssocByte(i/o)
-          type: keyword
+        - name: SCTPAssocByte
+          type: group
+          fields:
+            - name: input
+              type: integer
+            - name: output
+              type: integer
         - name: SCTPAssocPacket
           type: keyword
         - name: SavedEvaluation
           type: keyword
-        - name: TCPByte(i/o)
-          type: keyword
+        - name: TCPByte
+          type: group
+          fields:
+            - name: input
+              type: integer
+            - name: output
+              type: integer
         - name: TCPConn
           type: keyword
         - name: TCPConnNatDst
@@ -182,14 +207,24 @@
           type: keyword
         - name: TLSCertCacheInsert
           type: keyword
-        - name: TLSCertCacheLookup(miss/total)
-          type: keyword
+        - name: TLSCertCacheLookup
+          type: group
+          fields:
+            - name: miss
+              type: integer
+            - name: total
+              type: integer
         - name: TLSCertCachePurgeOp
           type: keyword
         - name: TLSCertCachePurgedNb
           type: keyword
-        - name: UDPByte(i/o)
-          type: keyword
+        - name: UDPByte
+          type: group
+          fields:
+            - name: input
+              type: integer
+            - name: output
+              type: integer
         - name: UDPConn
           type: keyword
         - name: UDPConnNatDst
@@ -230,9 +265,9 @@
           type: group
           fields:
             - name: original
-              type: text
+              type: keyword
             - name: name
-              type: text
+              type: keyword
             - name: incoming_throughput
               type: unsigned_long
             - name: maximum_incoming_throughput
@@ -248,13 +283,64 @@
         - name: Pvm
           type: keyword
         - name: Qid
-          type: array
+          type: group
+          fields:
+            - name: original
+              type: keyword
+            - name: name
+              type: keyword
+            - name: incoming_throughput
+              type: unsigned_long
+            - name: maximum_incoming_throughput
+              type: unsigned_long
+            - name: outgoing_throughput
+              type: unsigned_long
+            - name: maximum_outgoing_throughput
+              type: unsigned_long
+            - name: packets_accepted
+              type: unsigned_long
+            - name: packets_blocked
+              type: unsigned_long
         - name: ipsec
-          type: keyword
+          type: group
+          fields:
+            - name: original
+              type: keyword
+            - name: name
+              type: keyword
+            - name: incoming_throughput
+              type: unsigned_long
+            - name: maximum_incoming_throughput
+              type: unsigned_long
+            - name: outgoing_throughput
+              type: unsigned_long
+            - name: maximum_outgoing_throughput
+              type: unsigned_long
+            - name: packets_accepted
+              type: unsigned_long
+            - name: packets_blocked
+              type: unsigned_long
         - name: mem
           type: keyword
         - name: sslvpn
-          type: array
+          type: group
+          fields:
+            - name: original
+              type: keyword
+            - name: name
+              type: keyword
+            - name: incoming_throughput
+              type: unsigned_long
+            - name: maximum_incoming_throughput
+              type: unsigned_long
+            - name: outgoing_throughput
+              type: unsigned_long
+            - name: maximum_outgoing_throughput
+              type: unsigned_long
+            - name: packets_accepted
+              type: unsigned_long
+            - name: packets_blocked
+              type: unsigned_long
         - name: startime
           type: keyword
         - name: time
@@ -286,7 +372,7 @@
         - name: time
           type: date
         - name: tz
-          type: text
+          type: keyword
 
     - name: routerstat
       type: group
