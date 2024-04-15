@@ -532,7 +532,8 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.upload.priority | Upload priority values are: High - For all selected file types, except PDF file type. Low - For only PDF file types. | keyword |
 | cisco_secure_email_gateway.log.vendor_action |  | keyword |
 | cisco_secure_email_gateway.log.verdict | The file retrospective verdict value is malicious or clean. | keyword |
-| cisco_secure_email_gateway.log.verdict_scale | Verdict is negative or postive. | keyword |
+| cisco_secure_email_gateway.log.verdict_scale | Verdict is negative or positive. | keyword |
+| cisco_secure_email_gateway.log.verdict_source | Verdict source. | keyword |
 | cisco_secure_email_gateway.log.verified |  | keyword |
 | cisco_secure_email_gateway.log.work_queue | This is the number of messages currently in the work queue. | long |
 | cisco_secure_email_gateway.log.zone |  | keyword |

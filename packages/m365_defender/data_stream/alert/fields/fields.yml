@@ -1,0 +1,506 @@
+- name: m365_defender.alert
+  type: group
+  fields:
+    - name: actor_display_name
+      type: keyword
+      description: The adversary or activity group that is associated with this alert.
+    - name: assigned_to
+      type: keyword
+      description: Owner of the alert, or null if no owner is assigned.
+    - name: category
+      type: keyword
+      description: The attack kill-chain category that the alert belongs to. Aligned with the MITRE ATT&CK framework.
+    - name: classification
+      type: keyword
+      description: 'Specifies whether the alert represents a true threat. Possible values are: unknown, falsePositive, truePositive, benignPositive, unknownFutureValue.'
+    - name: comments
+      type: flattened
+      description: Array of comments created by the Security Operations (SecOps) team during the alert management process.
+    - name: created_datetime
+      type: date
+      description: Time when Microsoft 365 Defender created the alert.
+    - name: description
+      type: keyword
+      description: String value describing each alert.
+    - name: detection_source
+      type: keyword
+      description: Detection technology or sensor that identified the notable component or activity.
+    - name: detector_id
+      type: keyword
+      description: The ID of the detector that triggered the alert.
+    - name: determination
+      type: keyword
+      description: 'Specifies the result of the investigation, whether the alert represents a true attack and if so, the nature of the attack. Possible values are: unknown, apt, malware, securityPersonnel, securityTesting, unwantedSoftware, other, multiStagedAttack, compromisedUser, phishing, maliciousUserActivity, clean, insufficientData, confirmedUserActivity, lineOfBusinessApplication, unknownFutureValue.'
+    - name: evidence
+      type: group
+      fields:
+        - name: antispam_direction
+          type: keyword
+          description: 'Direction of the email relative to your network. The possible values are: Inbound, Outbound or Intraorg.'
+        - name: app_id
+          type: keyword
+          description: Unique identifier of the application.
+        - name: attachments_count
+          type: long
+          description: Number of attachments in the email.
+        - name: azure_ad_device_id
+          type: keyword
+          description: A unique identifier assigned to a device by Azure Active Directory (Azure AD) when device is Azure AD-joined.
+        - name: cluster_by
+          type: keyword
+          description: The clustering logic of the emails inside the cluster.
+        - name: cluster_by_value
+          type: keyword
+          description: The value utilized to cluster the similar emails.
+        - name: created_datetime
+          type: date
+          description: The time the evidence was created and added to the alert.
+        - name: defender_av_status
+          type: keyword
+          description: 'State of the Defender AntiMalware engine. The possible values are: notReporting, disabled, notUpdated, updated, unknown, notSupported, unknownFutureValue.'
+        - name: delivery_action
+          type: keyword
+          description: 'Delivery action of the email. The possible values are: Delivered, DeliveredAsSpam, Junked, Blocked, or Replaced.'
+        - name: delivery_location
+          type: keyword
+          description: 'Location where the email was delivered. The possible values are: Inbox, External, JunkFolder, Quarantine, Failed, Dropped, DeletedFolder or Forwarded.'
+        - name: detailed_roles
+          type: keyword
+          description: Detailed roles of the user associated with the event.
+        - name: detection_status
+          type: keyword
+          description: 'The status of the detection.The possible values are: detected, blocked, prevented, unknownFutureValue.'
+        - name: device_dns_name
+          type: keyword
+          description: The fully qualified domain name (FQDN) for the device.
+        - name: display_name
+          type: keyword
+          description: Name of the application.
+        - name: email_count
+          type: long
+          description: Count of emails in the email cluster.
+        - name: file_details
+          type: group
+          fields:
+            - name: issuer
+              type: keyword
+              description: The certificate authority (CA) that issued the certificate.
+            - name: name
+              type: keyword
+              description: The name of the file.
+            - name: odata_type
+              type: keyword
+            - name: path
+              type: keyword
+              description: The file path (location) of the file instance.
+            - name: publisher
+              type: keyword
+              description: The publisher of the file.
+            - name: sha1
+              type: keyword
+              description: The Sha1 cryptographic hash of the file content.
+            - name: sha256
+              type: keyword
+              description: The Sha256 cryptographic hash of the file content.
+            - name: signer
+              type: keyword
+              description: The signer of the signed file.
+            - name: size
+              type: long
+              description: The size of the file in bytes.
+        - name: first_seen_datetime
+          type: date
+          description: The date and time when the device was first seen.
+        - name: health_status
+          type: keyword
+          description: 'The health state of the device.The possible values are: active, inactive, impairedCommunication, noSensorData, noSensorDataImpairedCommunication, unknown, unknownFutureValue.'
+        - name: image_file
+          type: group
+          fields:
+            - name: issuer
+              type: keyword
+              description: The certificate authority (CA) that issued the certificate.
+            - name: name
+              type: keyword
+              description: The name of the file.
+            - name: odata_type
+              type: keyword
+            - name: path
+              type: keyword
+              description: The file path (location) of the file instance.
+            - name: publisher
+              type: keyword
+              description: The publisher of the file.
+            - name: sha1
+              type: keyword
+              description: The Sha1 cryptographic hash of the file content.
+            - name: sha256
+              type: keyword
+              description: The Sha256 cryptographic hash of the file content.
+            - name: signer
+              type: keyword
+              description: The signer of the signed file.
+            - name: size
+              type: long
+              description: The size of the file in bytes.
+        - name: instance_id
+          type: keyword
+          description: Identifier of the instance of the Software as a Service (SaaS) application.
+        - name: instance_name
+          type: keyword
+          description: Name of the instance of the SaaS application.
+        - name: internet_message_id
+          type: keyword
+          description: Public-facing identifier for the email that is set by the sending email system.
+        - name: ip_address
+          type: ip
+          description: The value of the IP Address, can be either in V4 address or V6 address format.
+        - name: ip_interfaces
+          type: ip
+          description: IP Interfaces related to the event.
+        - name: language
+          type: keyword
+          description: Detected language of the email content.
+        - name: logged_on_users
+          type: group
+          fields:
+            - name: account_name
+              type: keyword
+              description: User account name of the logged-on user.
+            - name: domain_name
+              type: keyword
+              description: User account domain of the logged-on user.
+            - name: odata_type
+              type: keyword
+        - name: mde_device_id
+          type: keyword
+          description: A unique identifier assigned to a device by Microsoft Defender for Endpoint.
+        - name: network_message_id
+          type: keyword
+          description: Unique identifier for the email, generated by Microsoft 365.
+        - name: network_message_ids
+          type: keyword
+          description: Unique identifiers for the emails in the cluster, generated by Microsoft 365.
+        - name: object_id
+          type: keyword
+          description: The unique identifier of the application object in Azure AD.
+        - name: odata_type
+          type: keyword
+        - name: onboarding_status
+          type: keyword
+          description: 'The status of the machine onboarding to Microsoft Defender for Endpoint.The possible values are: insufficientInfo, onboarded, canBeOnboarded, unsupported, unknownFutureValue.'
+        - name: os_build
+          type: keyword
+          description: The build version for the operating system the device is running.
+        - name: os_platform
+          type: keyword
+          description: The operating system platform the device is running.
+        - name: p1_sender
+          type: group
+          fields:
+            - name: display_name
+              type: keyword
+              description: The name of the sender.
+            - name: domain_name
+              type: keyword
+              description: Sender domain.
+            - name: email_address
+              type: keyword
+              description: Sender email address.
+            - name: odata_type
+              type: keyword
+        - name: p2_sender
+          type: group
+          fields:
+            - name: display_name
+              type: keyword
+              description: The name of the sender.
+            - name: domain_name
+              type: keyword
+              description: Sender domain.
+            - name: email_address
+              type: keyword
+              description: Sender email address.
+            - name: odata_type
+              type: keyword
+        - name: parent_process
+          type: group
+          fields:
+            - name: creation_datetime
+              type: date
+              description: Date and time when the parent of the process was created.
+            - name: id
+              type: long
+              description: Process ID (PID) of the parent process that spawned the process.
+            - name: image_file
+              type: group
+              fields:
+                - name: issuer
+                  type: keyword
+                  description: The certificate authority (CA) that issued the certificate.
+                - name: name
+                  type: keyword
+                  description: The name of the file.
+                - name: odata_type
+                  type: keyword
+                - name: path
+                  type: keyword
+                  description: The file path (location) of the file instance.
+                - name: publisher
+                  type: keyword
+                  description: The publisher of the file.
+                - name: sha1
+                  type: keyword
+                  description: The Sha1 cryptographic hash of the file content.
+                - name: sha256
+                  type: keyword
+                  description: The Sha256 cryptographic hash of the file content.
+                - name: signer
+                  type: keyword
+                  description: The signer of the signed file.
+                - name: size
+                  type: long
+                  description: The size of the file in bytes.
+        - name: primary_address
+          type: keyword
+          description: The primary email address of the mailbox.
+        - name: process
+          type: group
+          fields:
+            - name: command_line
+              type: keyword
+              description: Command line used to create the new process.
+            - name: creation_datetime
+              type: date
+              description: Date and time the process was created.
+            - name: id
+              type: long
+              description: Process ID (PID) of the newly created process.
+        - name: publisher
+          type: keyword
+          description: The name of the application publisher.
+        - name: query
+          type: keyword
+          description: The query used to identify the email cluster.
+        - name: rbac_group
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The ID of the role-based access control (RBAC) device group.
+            - name: name
+              type: keyword
+              description: The name of the RBAC device group.
+        - name: received_datetime
+          type: date
+          description: Date and time when the email was received.
+        - name: recipient_email_address
+          type: keyword
+          description: Email address of the recipient, or email address of the recipient after distribution list expansion.
+        - name: registry_hive
+          type: keyword
+          description: Registry hive of the key that the recorded action was applied to.
+        - name: registry_key
+          type: keyword
+          description: Registry key that the recorded action was applied to.
+        - name: registry_value
+          type: keyword
+          description: Data of the registry value that the recorded action was applied to.
+        - name: registry_value_name
+          type: keyword
+          description: Name of the registry value that the recorded action was applied to.
+        - name: registry_value_type
+          type: keyword
+          description: Data type, such as binary or string, of the registry value that the recorded action was applied to.
+        - name: remediation_status
+          type: keyword
+          description: 'Status of the remediation action taken. The possible values are: none, remediated, prevented, blocked, notFound, active, pendingApproval, declined, notRemediated, running, unknownFutureValue.'
+        - name: remediation_status_details
+          type: keyword
+          description: Details about the remediation status.
+        - name: risk_score
+          type: keyword
+          description: 'Risk score as evaluated by Microsoft Defender for Endpoint. The possible values are: none, informational, low, medium, high, unknownFutureValue.'
+        - name: roles
+          type: keyword
+          description: The role/s that an evidence entity represents in an alert, e.g., an IP address that is associated with an attacker will have the evidence role "Attacker".
+        - name: saas_app_id
+          type: keyword
+          description: The identifier of the SaaS application.
+        - name: security_group_id
+          type: keyword
+          description: Unique identifier of the security group.
+        - name: sender_ip
+          type: ip
+          description: IP address of the last detected mail server that relayed the message.
+        - name: subject
+          type: keyword
+          description: Subject of the email.
+        - name: tags
+          type: keyword
+          description: Array of custom tags associated with an evidence instance, for example to denote a group of devices, high value assets, etc.
+        - name: threat_detection_methods
+          type: keyword
+          description: Collection of methods used to detect malware, phishing, or other threats found in the email.
+        - name: threats
+          type: keyword
+          description: Collection of detection names for malware or other threats found.
+        - name: type
+          type: keyword
+        - name: url
+          type: keyword
+          description: The Unique Resource Locator (URL).
+        - name: url_count
+          type: long
+          description: Number of embedded URLs in the email.
+        - name: urls
+          type: keyword
+          description: Collection of the URLs contained in this email.
+        - name: urn
+          type: keyword
+          description: Uniform resource name (URN) of the automated investigation where the cluster was identified.
+        - name: user_account
+          type: group
+          fields:
+            - name: account_name
+              type: keyword
+              description: The user account's displayed name.
+            - name: azure_ad_user_id
+              type: keyword
+              description: The user object identifier in Azure AD.
+            - name: domain_name
+              type: keyword
+              description: The name of the Active Directory domain of which the user is a member.
+            - name: odata_type
+              type: keyword
+            - name: user_principal_name
+              type: keyword
+              description: The user principal name of the account in Azure AD.
+            - name: user_sid
+              type: keyword
+              description: The local security identifier of the user account.
+        - name: verdict
+          type: keyword
+          description: 'The decision reached by automated investigation. The possible values are: unknown, suspicious, malicious, noThreatsFound, unknownFutureValue.'
+        - name: version
+          type: keyword
+          description: The version of the operating system platform.
+        - name: vm_metadata
+          type: group
+          fields:
+            - name: cloud_provider
+              type: keyword
+              description: 'The cloud provider hosting the virtual machine. The possible values are: unknown, azure, unknownFutureValue.'
+            - name: odata_type
+              type: keyword
+            - name: resource_id
+              type: keyword
+              description: Unique identifier of the Azure resource.
+            - name: subscription_id
+              type: keyword
+              description: Unique identifier of the Azure subscription the customer tenant belongs to.
+            - name: vm_id
+              type: keyword
+              description: Unique identifier of the virtual machine instance.
+    - name: first_activity_datetime
+      type: date
+      description: The earliest activity associated with the alert.
+    - name: id
+      type: keyword
+      description: Unique identifier to represent the alert resource.
+    - name: incident_id
+      type: keyword
+      description: Unique identifier to represent the incident this alert resource is associated with.
+    - name: incident_web_url
+      type: group
+      description: URL for the incident page in the Microsoft 365 Defender portal.
+      fields:
+        - name: domain
+          type: keyword
+        - name: extension
+          type: keyword
+        - name: fragment
+          type: keyword
+        - name: full
+          type: keyword
+        - name: original
+          type: keyword
+        - name: password
+          type: keyword
+        - name: path
+          type: keyword
+        - name: port
+          type: long
+        - name: query
+          type: keyword
+        - name: scheme
+          type: keyword
+        - name: username
+          type: keyword
+    - name: last_activity_datetime
+      type: date
+      description: The oldest activity associated with the alert.
+    - name: last_update_datetime
+      type: date
+      description: Time when the alert was last updated at Microsoft 365 Defender.
+    - name: mitre_techniques
+      type: keyword
+      description: The attack techniques, as aligned with the MITRE ATT&CK framework.
+    - name: odata_type
+      type: keyword
+    - name: provider_alert_id
+      type: keyword
+      description: The ID of the alert as it appears in the security provider product that generated the alert.
+    - name: recommended_actions
+      type: keyword
+      description: Recommended response and remediation actions to take in the event this alert was generated.
+    - name: resolved_datetime
+      type: date
+      description: Time when the alert was resolved.
+    - name: service_source
+      type: keyword
+      description: 'The service or product that created this alert. Possible values are: microsoftDefenderForEndpoint, microsoftDefenderForIdentity, microsoftCloudAppSecurity, microsoftDefenderForOffice365, microsoft365Defender, aadIdentityProtection, appGovernance, dataLossPrevention.'
+    - name: severity
+      type: keyword
+      description: 'Indicates the possible impact on assets. The higher the severity the bigger the impact. Typically higher severity items require the most immediate attention. Possible values are: unknown, informational, low, medium, high, unknownFutureValue.'
+    - name: status
+      type: keyword
+      description: 'The status of the alert. Possible values are: new, inProgress, resolved, unknownFutureValue.'
+    - name: tenant_id
+      type: keyword
+      description: The Azure Active Directory tenant the alert was created in.
+    - name: threat_display_name
+      type: keyword
+      description: The threat associated with this alert.
+    - name: threat_family_name
+      type: keyword
+      description: Threat family associated with this alert.
+    - name: title
+      type: keyword
+      description: Brief identifying string value describing the alert.
+    - name: web_url
+      type: group
+      description: URL for the alert page in the Microsoft 365 Defender portal.
+      fields:
+        - name: domain
+          type: keyword
+        - name: extension
+          type: keyword
+        - name: fragment
+          type: keyword
+        - name: full
+          type: keyword
+        - name: original
+          type: keyword
+        - name: password
+          type: keyword
+        - name: path
+          type: keyword
+        - name: port
+          type: long
+        - name: query
+          type: keyword
+        - name: scheme
+          type: keyword
+        - name: username
+          type: keyword

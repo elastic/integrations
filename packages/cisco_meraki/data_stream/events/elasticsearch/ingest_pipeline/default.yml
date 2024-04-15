@@ -1,6 +1,8 @@
 ---
 description: Pipeline for processing Cisco Meraki events
 processors:
+- drop:
+    if: ctx.json?.sharedSecret != null && ctx.json.sharedSecret != '' && ctx._conf?.secret != ctx.json.sharedSecret
 - set:
     field: ecs.version
     value: '8.11.0'
@@ -15,7 +17,7 @@ processors:
 - append:
     field: observer.mac
     value: '{{{_tmp.observer.mac}}}'
-    if: ctx?._tmp?.observer?.mac != null
+    if: ctx._tmp?.observer?.mac != null
 - set:
     field: observer.name
     copy_from: json.deviceName
@@ -267,10 +269,11 @@ processors:
       - cisco_meraki.event.alertType
       - cisco_meraki.event.alertLevel
       - _tmp
+      - _conf
     ignore_missing: true
 - remove:
     field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
     ignore_failure: true
     ignore_missing: true
 - script:

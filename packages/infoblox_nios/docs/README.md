@@ -231,7 +231,6 @@ An example event for `log` looks as following:
         "name": "user"
     }
 }
-
 ```
 
 **Exported fields**
@@ -242,7 +241,6 @@ An example event for `log` looks as following:
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
 | client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
-| client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
 | client.geo.country_iso_code | Country ISO code. | keyword |
@@ -346,6 +344,13 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dns.failed_message |  | text |
 | infoblox_nios.log.dns.header_flags |  | keyword |
 | infoblox_nios.log.dns.message |  | text |
+| infoblox_nios.log.dns.rpz.action |  | keyword |
+| infoblox_nios.log.dns.rpz.domain |  | keyword |
+| infoblox_nios.log.dns.rpz.domain_rewrite |  | keyword |
+| infoblox_nios.log.dns.rpz.query_class |  | keyword |
+| infoblox_nios.log.dns.rpz.query_class_rewrite |  | keyword |
+| infoblox_nios.log.dns.rpz.rule_type |  | keyword |
+| infoblox_nios.log.dns.rpz.type |  | keyword |
 | infoblox_nios.log.dns.version |  | text |
 | infoblox_nios.log.dns.view_name |  | text |
 | infoblox_nios.log.service_name |  | keyword |

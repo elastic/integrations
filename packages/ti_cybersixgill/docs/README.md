@@ -8,6 +8,12 @@ This integration connects with the commercial [Cybersixgill Darkfeed](https://ww
 
 The Cybersixgill Darkfeed integration collects threat intelligence from the Darkfeed TAXII service available using the credentials provided from Cybersixgill.
 
+#### Expiration of Indicators of Compromise (IOCs)
+The ingested IOCs are expired after the duration configured by `IOC Expiration Duration` integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates destination indices named `logs-ti_cybersixgill_latest.dest_threat-*` which only contains active and unexpired IOCs. The latest destination index also has an alias named `logs-ti_cybersixgill_latest.threat`. When querying for active indicators or setting up indicator match rules, only use the latest destination indices or the alias to avoid false positives from expired IOCs. Dashboards are also pointing to the latest destination indices containing active IOC. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source datastream `.ds-logs-ti_cybersixgill.threat-*` indices.
+
+#### ILM Policy
+To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_cybersixgill.threat-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_cybersixgill.threat-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -27,6 +33,8 @@ The Cybersixgill Darkfeed integration collects threat intelligence from the Dark
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
 | cybersixgill.actor | The related actor for the indicator. | keyword |
+| cybersixgill.deleted_at | The timestamp when indicator is (or will be) expired. | date |
+| cybersixgill.expiration_duration | The configured expiration duration. | keyword |
 | cybersixgill.feedname | Name of the Threat Intel feed. | keyword |
 | cybersixgill.mitre.description | The mitre description of the indicator | keyword |
 | cybersixgill.title | The title of the indicator. | keyword |
@@ -67,6 +75,8 @@ The Cybersixgill Darkfeed integration collects threat intelligence from the Dark
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
@@ -79,6 +89,7 @@ The Cybersixgill Darkfeed integration collects threat intelligence from the Dark
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.name | The display name indicator in an UI friendly format | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
@@ -102,14 +113,16 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2021-12-07T13:58:01.596Z",
     "agent": {
-        "ephemeral_id": "a7e7cf45-534a-4104-b3c3-9b30d6ebeeb9",
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "ephemeral_id": "5b99e697-c059-40e4-9097-eb5a21a371c6",
+        "id": "49b0da18-7d53-4b44-9bda-940341f4fb0f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.1"
+        "version": "8.12.1"
     },
     "cybersixgill": {
         "actor": "vaedzy",
+        "deleted_at": "2021-12-17T13:58:01.596Z",
+        "expiration_duration": "10d",
         "feedname": "dark_web_hashes",
         "mitre": {
             "description": "Mitre attack tactics and technique reference"
@@ -129,18 +142,18 @@ An example event for `threat` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "id": "49b0da18-7d53-4b44-9bda-940341f4fb0f",
         "snapshot": false,
-        "version": "8.9.1"
+        "version": "8.12.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-08-28T14:48:23.885Z",
+        "created": "2024-03-15T19:20:27.045Z",
         "dataset": "ti_cybersixgill.threat",
-        "ingested": "2023-08-28T14:48:24Z",
+        "ingested": "2024-03-15T19:20:27Z",
         "kind": "enrichment",
         "original": "{\"confidence\":70,\"created\":\"2021-12-07T13:58:01.596Z\",\"description\":\"Hash attributed to malware that was discovered in the dark and deep web\",\"extensions\":{\"extension-definition--3de9ff00-174d-4d41-87c9-05a27a7e117c\":{\"extension_type\":\"toplevel-property-extension\"}},\"external_references\":[{\"positive_rate\":\"medium\",\"source_name\":\"VirusTotal\",\"url\":\"https://virustotal.com/#/file/7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\"},{\"description\":\"Mitre attack tactics and technique reference\",\"mitre_attack_tactic\":\"Build Capabilities\",\"mitre_attack_tactic_id\":\"TA0024\",\"mitre_attack_tactic_url\":\"https://attack.mitre.org/tactics/TA0024/\",\"source_name\":\"mitre-attack\"}],\"id\":\"indicator--302dab0f-64dc-42f5-b99e-702b28c1aaa9\",\"indicator_types\":[\"malicious-activity\"],\"lang\":\"en\",\"modified\":\"2021-12-07T13:58:01.596Z\",\"name\":\"4d0f21919d623bd1631ee15ca7429f28;5ce39ef0700b64bd0c71b55caf64ae45d8400965;7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\",\"pattern\":\"[file:hashes.MD5 = '4d0f21919d623bd1631ee15ca7429f28' OR file:hashes.'SHA-1' = '5ce39ef0700b64bd0c71b55caf64ae45d8400965' OR file:hashes.'SHA-256' = '7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d']\",\"pattern_type\":\"stix\",\"sixgill_actor\":\"vaedzy\",\"sixgill_confidence\":70,\"sixgill_feedid\":\"darkfeed_012\",\"sixgill_feedname\":\"dark_web_hashes\",\"sixgill_post_virustotallink\":\"https://virustotal.com/#/file/7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\",\"sixgill_postid\":\"c0c9a0085fb5281cfb40a0ddb62e1d2c6a53eb7a\",\"sixgill_posttitle\":\"[病毒样本] #Trickbot (2021-12-07)\",\"sixgill_severity\":70,\"sixgill_source\":\"forum_kafan\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2021-12-07T02:55:17Z\"}",
         "severity": 70,
@@ -167,6 +180,7 @@ An example event for `threat` looks as following:
             },
             "first_seen": "2021-12-07T02:55:17.000Z",
             "last_seen": "2021-12-07T13:58:01.596Z",
+            "name": "7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d",
             "provider": "forum_kafan",
             "reference": "https://portal.cybersixgill.com/#/search?q=_id:c0c9a0085fb5281cfb40a0ddb62e1d2c6a53eb7a",
             "type": "file"
@@ -184,5 +198,4 @@ An example event for `threat` looks as following:
         }
     }
 }
-
 ```
