@@ -191,7 +191,7 @@ An example event for `mongod_audit` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | mongodb_atlas.mongod_audit.hostname | Hostname that stores the log files that you want to download. | keyword |
 | mongodb_atlas.mongod_audit.local.ip | IP address of the running instance. | ip |
-| mongodb_atlas.mongod_audit.local.is_system_user | This field indicates whether the user who caused the event was a system user. | boolean |
+| mongodb_atlas.mongod_audit.local.is_system_user | True if the event is caused by a system user, false otherwise. | boolean |
 | mongodb_atlas.mongod_audit.local.port | Port number of the running instance. | long |
 | mongodb_atlas.mongod_audit.local.unix | Unix that contains the MongoDB socket file path if the client connects through a Unix domain socket. | keyword |
 | mongodb_atlas.mongod_audit.param | Specific details for the event. | object |
