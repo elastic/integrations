@@ -1,0 +1,105 @@
+---
+description: Pipeline for Stormshield monitor Logs.
+# API Docs: https://documentation.stormshield.eu/SNS/v4/en/Content/Description_of_Audit_logs/Specific_fields-monitor.htm
+# security
+# system
+# CPU
+# Pvm
+# EthernetXX
+# VlanXX
+# QidXX
+# WifiXX
+# wldev0
+# sslvpnX
+# ipsecXX
+# aggXX
+processors:
+
+  - set:
+      field: process.name
+      value: "monitord"
+
+  - rename:
+      target_field: stormshield.logtype
+      field: ss.logtype
+
+  - rename:
+      field: ss
+      target_field: stormshield.monitor
+
+  - rename:
+      field: stormshield.monitor.CPU
+      target_field: stormshield.monitor.CPU_
+
+  - set:
+      field: event.kind
+      value: "metric"
+
+
+  #
+  # The syslog header should have been stripped off, so we need to process the key=value data
+  # We will be using painless here, because it is the best option we have.
+  - script:
+      tag: expand_ethernet
+      description: Expands the EthernetXX field.
+      lang: painless
+      source: >-
+        void expand_(Map mapper, String fieldName, String base, def availableFields, boolean skipOriginal, boolean flatten) {
+            def obj = new HashMap();
+
+            if (! skipOriginal) {
+                obj["original"] = fieldName;
+            }
+            String field = mapper[fieldName];
+            String[] fields = field.splitOnToken(",");
+
+            // availableFields and fields should have the same length
+            for (int i = 0; i < availableFields.length; ++i) {
+                obj[availableFields[i]] = fields[i];
+            }
+            if (flatten) {
+                mapper[base] = obj;
+            } else {
+                if (! mapper.containsKey(base)) {
+                    mapper[base] = new ArrayList();
+                }
+                mapper[base].add(obj);
+            }
+        }
+        def monitor = ctx.stormshield.monitor;
+        def availableFields = [
+            "name",
+            "incoming_throughput",
+            "maximum_incoming_throughput",
+            "outgoing_throughput",
+            "maximum_outgoing_throughput",
+            "packets_accepted",
+            "packets_blocked"
+        ];
+        def fields = [
+            "Ethernet",
+            "Vlan",
+            "Qid",
+            "Wifi",
+            "sslvpn",
+            "ipsec",
+            "agg"
+        ];
+        def cpu = ["user_time", "kernel_time", "system_disruption"];
+        expand_(monitor, "CPU_", "CPU", cpu, /* skipOriginal = */ true, /* flatten = */ true);
+        monitor.remove("CPU_");
+        for (field_base in fields) {
+            for (int i = 0;; i++) {
+                String baseName = field_base;
+                String eth = baseName + Integer.toString(i);
+
+                // if this does not exist, then we break
+                if (! monitor.containsKey(eth)) {
+                    break;
+                }
+
+                expand_(monitor, eth, field_base, availableFields, false /* skipOriginal */, false /* flatten */);
+                monitor.remove(eth);
+            }
+        }
+

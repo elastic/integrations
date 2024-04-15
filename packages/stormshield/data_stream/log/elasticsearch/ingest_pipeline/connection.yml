@@ -1,0 +1,26 @@
+---
+description: Pipeline for Stormshield filterstat Logs.
+# API Docs: https://documentation.stormshield.eu/SNS/v4/en/Content/Description_of_Audit_logs/Specific_fields-filterstat.htm
+processors:
+  - rename:
+      target_field: stormshield.logtype
+      field: ss.logtype
+
+  - rename:
+      field: ss
+      target_field: stormshield.connection
+
+  - set:
+      copy_from: "stormshield.connection.user"
+      field: user.name
+      if: ctx.stormshield?.connection?.user != null
+
+  - set:
+      copy_from: "stormshield.connection.domain"
+      field: "user.domain"
+      if: ctx.stormshield?.connection?.domain != null
+
+  - set:
+      copy_from: "stormshield.connection.action"
+      field: "event.action"
+      if: ctx.stormshield?.connection?.action != null

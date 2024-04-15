@@ -1,0 +1,35 @@
+---
+description: Pipeline for Stormshield filterstat Logs.
+# API Docs: https://documentation.stormshield.eu/SNS/v4/en/Content/Description_of_Audit_logs/Specific_fields-filterstat.htm
+processors:
+  - rename:
+      field: ss.logtype
+      target_field: stormshield.logtype
+
+  - rename:
+      field: "ss"
+      target_field: stormshield.authstat
+
+  - set:
+      field: "user.name"
+      copy_from: stormshield.authstat.user
+      if: ctx.stormshield?.authstat?.user != null
+
+  - set:
+      field: source.ip
+      copy_from: stormshield.authstat.src
+      if: ctx.stormshield?.authstat?.src != null
+
+  - set:
+      field: user.domain
+      copy_from: stormshield.authstat.domain
+      if: ctx.stormshield?.authstat?.domain != null
+
+  - set:
+      field: process.name
+      value: "authd"
+
+  - set:
+      field: source.address
+      copy_from: "source.ip"
+      if: ctx.source?.ip != null

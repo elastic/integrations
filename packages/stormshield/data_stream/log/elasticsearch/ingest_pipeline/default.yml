@@ -17,7 +17,7 @@ processors:
       description: Parse key/value pairs from message.
       lang: painless
       source: >-
-        ctx["stormshield"] = new HashMap();
+        ctx["ss"] = new HashMap();
 
         def kvStart = 0;
         def kvSplit = 0;
@@ -40,16 +40,22 @@ processors:
             if (kvStart != kvSplit) {
               def key = ctx["message"].substring(kvStart, kvSplit);
               def value = ctx["message"].substring(kvSplit + 1, i).replace("\"", "");
-              ctx["stormshield"][key] = value;
+              ctx["ss"][key] = value;
             }
 
             kvStart = i + 1;
             kvSplit = i + 1;
+          } else if (i == n - 1) {
+            if (kvStart != kvSplit) {
+              def key = ctx["message"].substring(kvStart, kvSplit);
+              def value = ctx["message"].substring(kvSplit + 1, i).replace("\"", "");
+              ctx["ss"][key] = value;
+            }
           }
         }
 
   - grok:
-      field: stormshield.tz
+      field: ss.tz
       patterns:
         - "(?:%{OFFSET:_temp_.tz_offset})(?:%{HOUR:_temp_.tz_hour}):?(?:%{MINUTE:_temp_.tz_minute})"
       pattern_definitions:
@@ -63,17 +69,16 @@ processors:
       if: ctx._temp_?.tz_hour != null
 
   - rename:
-      field: "stormshield.msg"
+      field: "ss.msg"
       target_field: "event.log.msg"
-      if: ctx.stormshield?.msg != null
+      if: ctx.ss?.msg != null
 
   - date:
-      field: stormshield.startime
+      field: ss.startime
       target_field: "event.created"
       formats:
         - "yyyy-MM-dd HH:mm:ss"
       timezone: "{{{event.timezone}}}"
-      if: ctx.event?.timezone != null && ctx.stormshield?.startime != null
       on_failure:
         - remove:
             field: event.created
@@ -92,24 +97,57 @@ processors:
             value: "{{{_ingest.on_failure_message}}}"
 
   - rename:
-      field: "stormshield.fw"
+      field: "ss.fw"
       target_field: "host.name"
-      if: ctx.stormshield?.fw != null
+      if: ctx.ss?.fw != null
 
   - rename:
-      field: "stormshield.service"
+      field: "ss.service"
       target_field: "process.name"
-      if: ctx.stormshield?.service != null
+      if: ctx.ss?.service != null
 
   - remove:
-      field: stormshield.id
-      if: ctx.stormshield?.id == "firewall"
+      field: ss.id
+      if: ctx.ss?.id == "firewall"
 
-  - set:
-      field: event.kind
-      value: "metric"
-      if: ctx.stormshield?.CPU != null && ctx.stormshield?.mem != null
-  
+
+  ## Separate Pipelines
+  - pipeline:
+      if: ctx.ss?.logtype == 'alarm'
+      name: '{{ IngestPipeline "alarm" }}'
+
+  - pipeline:
+      if: ctx.ss?.logtype == 'authstat'
+      name: '{{ IngestPipeline "authstat" }}'
+
+  - pipeline:
+      if: ctx.ss?.logtype == 'connection'
+      name: '{{ IngestPipeline "connection" }}'
+
+  - pipeline:
+      if: ctx.ss?.logtype == 'filterstat'
+      name: '{{ IngestPipeline "filterstat" }}'
+
+  - pipeline:
+      if: ctx.ss?.logtype == 'system'
+      name: '{{ IngestPipeline "system" }}'
+
+  - pipeline:
+      if: ctx.ss?.logtype == 'monitor'
+      name: '{{ IngestPipeline "monitor" }}'
+
+  ## filter/alarm/connection/plugin
+  ## pvm
+  ## server
+  ## vpn
+  ## monitor
+  ## smtp/pop3/ftp/web/ssl
+  ## auth
+  ## xvpm
+  ## sandboxing
+  ## count
+  ## routerstat
+
   - remove:
       field: _temp_
       ignore_missing: true
