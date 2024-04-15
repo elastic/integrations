@@ -1,0 +1,61 @@
+---
+description: Default pipeline for processing wms logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - pipeline:
+      description: Pipeline used to create fields for elastic-package tests
+      if: ctx?.tags != null && ctx?.tags.contains('elastic-package-test')
+      name: '{{ IngestPipeline "elastic-package-test" }}'
+  - gsub:
+      description: Remove trailing slash from url for easier parsing and aggregating
+      field: url.path
+      pattern: "/$"
+      replacement: ""
+  - pipeline:
+      description: Parse url path
+      if: ctx?.url?.path != null && ctx?.url?.path != ""
+      name: '{{ IngestPipeline "url-path" }}'
+  - set:
+      field: service.environment
+      copy_from: kubernetes.namespace_labels.env
+      ignore_empty_value: true
+  - set:
+      field: ppbgdi.app.system
+      copy_from: kubernetes.namespace_labels.system
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null or empty values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
+
+
+on_failure:
+- append:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
