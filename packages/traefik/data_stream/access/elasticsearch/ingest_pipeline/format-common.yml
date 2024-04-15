@@ -7,6 +7,11 @@ processors:
     pattern: '%{source.address} %{traefik.access.user_identifier} %{user.name} [%{traefik.access.time}]
       "%{http.request.method} %{url.original} HTTP/%{http.version}" %{http.response.status_code}
       %{traefik.access.message}'
+- remove:
+    description: Remove http.response.status_code it is not available ('-')
+    field:
+      http.response.status_code
+    if: ctx.http?.response?.status_code != null && ctx.http?.response?.status_code == '-'
 - grok:
     field: traefik.access.message
     patterns:
@@ -25,9 +30,6 @@ processors:
     - dd/MMM/yyyy:H:m:s Z
 - remove:
     field: traefik.access.time
-- convert:
-    field: http.response.status_code
-    type: long
 - grok:
     field: source.address
     patterns:

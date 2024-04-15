@@ -92,9 +92,11 @@ processors:
       field: temp.ClientAddr
       target_field: source.address
       ignore_missing: true
-  - dissect:
+  - grok:
+      description: IPv6 '[]' notation must be removed to avoid ip field mapping errors.
       field: source.address
-      pattern: "%{source.ip}:%{source.port}"
+      patterns:
+        - '^\\[?%{IP:source.ip}\\]?:%{POSINT:source.port}$'
       ignore_missing: true
       ignore_failure: true
   - convert:
