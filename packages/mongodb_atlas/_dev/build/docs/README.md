@@ -6,7 +6,7 @@
 
 Use the MongoDB Atlas integration to:
 
-- Collect MongoDB database logs and process metrics for comprehensive monitoring and analysis.
+- Collect MongoDB audit, database logs and process metrics for comprehensive monitoring and analysis.
 - Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
 - Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
 
@@ -14,17 +14,19 @@ Use the MongoDB Atlas integration to:
 
 The MongoDB Atlas integration collects logs and metrics.
 
-Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration is `mongod_database`.
+Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration are `mongod_audit` and `mongod_database`.
 
 Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration is `process` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
 
 Data stream:
+- `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
+
 - `mongod_database`: This datastream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
 
 - `process` : This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
 
 Note:
-- Users can monitor and see the log and metrics inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
+- Users can monitor and see the logs and metrics inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
 
 ## Prerequisites
 
@@ -32,19 +34,19 @@ You can store and search your data using Elasticsearch and visualize and manage 
 
 ## Setup
 
-### To collect data from MongoDB Atlas, the following parameters from your MongoDB Atlas instance are required:
+### To collect data from MongoDB Atlas, the following parameters from your MongoDB Atlas instance are required
 
 1. Public Key
 2. Private Key
 3. GroupId
 
-### Steps to obtain Public Key, Private Key and GroupId:
+### Steps to obtain Public Key, Private Key and GroupId
 
 1. Generate programmatic API keys with project owner permissions by following the instructions in the Atlas [documentation](https://www.mongodb.com/docs/atlas/configure-api-access/#create-an-api-key-for-a-project). Then, copy the public and private keys which function as a username and API key respectively.
 2. Enable Database Auditing for the Atlas project you want to monitor logs. You can follow the instructions provided in this Atlas [document](https://www.mongodb.com/docs/atlas/database-auditing/#procedure).
 3. You can find your Project ID (Group ID) in the Atlas UI. To do this, navigate to your project, click on Settings, and copy the Project ID (Group ID). You can also programmatically find it using the Atlas Admin API or Atlas CLI as described in this Atlas [document](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id).
 
-### Important terms of MongoDB Atlas API:
+### Important terms of MongoDB Atlas API
 
 1. Granularity: Duration that specifies the interval at which Atlas reports the metrics.
 2. Period: Duration over which Atlas reports the metrics.
@@ -61,7 +63,7 @@ Note: Both of above attributes can be set by using `period` in configuration par
 6. Finally, save the integration.
 
 Note:
-- The `mongod_database` data streams gather historical data spanning the previous 30 minutes.
+- The `mongod_audit` and `mongod_database` data streams gathers historical data spanning the previous 30 minutes.
 - Mongod: Mongod is the primary daemon method for the MongoDB system. It helps in handling the data requests, managing the data access, performing background management operations, and other core database operations.
 
 ## Troubleshooting
@@ -76,6 +78,14 @@ If you encounter an error while ingesting data, it might be due to the data coll
 ```
 
 ## Logs reference
+
+### Mongod Audit
+
+This is the `mongod_audit` data stream. This data stream allows administrators and users to track system activity for deployments with multiple users and applications.
+
+{{event "mongod_audit"}}
+
+{{fields "mongod_audit"}}
 
 ### Mongod Database
 
