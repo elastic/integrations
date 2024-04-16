@@ -31,14 +31,32 @@ processors:
   #####################
   # Threat ECS Fields #
   #####################
-  - rename:
+  - date:
       field: cif3.firsttime
       target_field: threat.indicator.first_seen
-      ignore_missing: true
-  - rename:
+      tag: date-indicator_first_seen
+      formats:
+        - "ISO8601"
+      if: ctx.cif3?.firsttime != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}}'
+  - date:
       field: cif3.lasttime
       target_field: threat.indicator.last_seen
-      ignore_missing: true
+      tag: date-indicator_last_seen
+      formats:
+        - "ISO8601"
+      if: ctx.cif3?.lasttime != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}}'
+  - set:
+      field: threat.indicator.name
+      copy_from: cif3.indicator
+      if: ctx.cif3?.indicator != null
   - rename:
       field: cif3.reporttime
       target_field: threat.indicator.modified_at
@@ -69,21 +87,21 @@ processors:
   - set:
       field: threat.indicator.type
       value: file
-      if: "['md5', 'sha1', 'sha256', 'sha512', 'ssdeep'].contains(ctx.cif3?.itype) && !ctx.cif3?.tags.contains('ja3')"
+      if: "ctx.cif3?.tags?.contains('ja3') != true && ['md5', 'sha1', 'sha256', 'sha512', 'ssdeep'].contains(ctx.cif3?.itype)"
   - rename:
       field: cif3.indicator
       target_field: threat.indicator.tls.client.ja3
       ignore_missing: true
-      if: "ctx.cif3?.itype == 'md5' && ctx.cif3?.tags.contains('ja3')"
+      if: "ctx.cif3?.itype == 'md5' && ctx.cif3?.tags?.contains('ja3') == true"
   - rename:
       field: cif3.indicator
       target_field: threat.indicator.file.pe.imphash
       ignore_missing: true
-      if: "ctx.cif3?.itype == 'md5' && ctx.cif3?.tags.contains('imphash')"
+      if: "ctx.cif3?.itype == 'md5' && ctx.cif3?.tags?.contains('imphash') == true"
   - append:
       field: related.hash
       value: "{{{ threat.indicator.file.hash.pe.imphash }}}"
-      if: ctx?.threat?.indicator?.file?.pe?.imphash != null
+      if: ctx.threat?.indicator?.file?.pe?.imphash != null
   - rename:
       field: cif3.indicator
       target_field: _tmp.hashvalue
@@ -124,13 +142,13 @@ processors:
       field: cif3.indicator
       target_field: threat.indicator.network.cidr
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat.indicator.type) && (ctx.cif3?.indicator_ipv4_mask != null || ctx.cif3?.indicator_ipv6_mask != null)"
+      if: "(ctx.cif3?.indicator_ipv4_mask != null || ctx.cif3?.indicator_ipv6_mask != null) && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - convert:
       field: cif3.indicator
       type: ip
       target_field: threat.indicator.ip
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat.indicator.type) && ctx.cif3?.indicator_ipv4_mask == null && ctx.cif3?.indicator_ipv6_mask == null"
+      if: "ctx.cif3?.indicator_ipv4_mask == null && ctx.cif3?.indicator_ipv6_mask == null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - append:
       field: related.ip
       value: "{{{ threat.indicator.ip }}}"
@@ -139,37 +157,37 @@ processors:
       field: cif3.cc
       target_field: threat.indicator.geo.country_iso_code
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat.indicator.type) && ctx.cif3?.cc != null"
+      if: "ctx.cif3?.cc != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.asn
       target_field: threat.indicator.as.number
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat.indicator.type) && ctx.cif3?.asn != null"
+      if: "ctx.cif3?.asn != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.asn_desc
       target_field: threat.indicator.as.organization.name
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat.indicator.type) && ctx.cif3?.asn_desc != null"
+      if: "ctx.cif3?.asn_desc != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.latitude
       target_field: threat.indicator.geo.location.lat
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat.indicator.type) && ctx.cif3?.latitude != null"
+      if: "ctx.cif3?.latitude != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.longitude
       target_field: threat.indicator.geo.location.lon
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat.indicator.type) && ctx.cif3?.longitude != null"
+      if: "ctx.cif3?.longitude != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.region
       target_field: threat.indicator.geo.region_name
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat.indicator.type) && ctx.cif3?.region != null"
+      if: "ctx.cif3?.region != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - rename:
       field: cif3.timezone
       target_field: threat.indicator.geo.timezone
       ignore_missing: true
-      if: "ctx.threat?.indicator?.type != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat.indicator.type) && ctx.cif3?.timezone != null"
+      if: "ctx.cif3?.timezone != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
 
   ## URL indicator operations
   - set:
@@ -225,7 +243,7 @@ processors:
   - append:
       field: related.hosts
       value: "{{{ threat.indicator.url.domain }}}"
-      if: ctx?.threat?.indicator?.url?.domain != null
+      if: ctx.threat?.indicator?.url?.domain != null
 
   ######################
   #     Confidence     #
@@ -281,14 +299,86 @@ processors:
       # sometimes contains a range like 1000-1002 or CSVs like 10,22,52
       ignore_failure: true
       if:  ctx.cif3?.port != null
-
-  ######################
-  # Cleanup processors #
-  ######################
   - set:
       field: threat.indicator.type
       value: unknown
       if: ctx.threat?.indicator?.type == null
+
+  ###################
+  # IOC Expiration  #
+  ###################
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: ctx.cif3?.deleted_at == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
+      description: Indicator Expiration is done after - `45d` for IP, `90d` for domain, `365d` for URL, Hash. For all other indicators after `_conf.ioc_expiration_duration` (default 730d) since their lasttime. This script adds a default `cif3.deleted_at` field to allow indicator expiration.
+      source: >
+        ZonedDateTime _tmp_deleted_at;
+        ZonedDateTime _tmp_lasttime_at;
+        if (ctx.threat.indicator.last_seen != null) {
+            _tmp_lasttime_at = ZonedDateTime.parse(ctx.threat.indicator.last_seen);
+        }
+        else {
+            _tmp_lasttime_at = ZonedDateTime.parse(ctx.threat.indicator.first_seen);
+        }
+        if (ctx.threat.indicator.type == 'ipv4-addr' || ctx.threat.indicator.type == 'ipv6-addr') {
+            _tmp_deleted_at = _tmp_lasttime_at.plusDays(45L);
+            ctx.cif3.expiration_duration = "45d";
+        } else if (ctx.threat.indicator.type == 'domain-name') {
+            _tmp_deleted_at = _tmp_lasttime_at.plusDays(90L);
+            ctx.cif3.expiration_duration = "90d";
+        } else if (ctx.threat.indicator.type == 'url' || ctx.threat.indicator.type == 'file') {
+            _tmp_deleted_at = _tmp_lasttime_at.plusDays(365L);
+            ctx.cif3.expiration_duration = "365d";
+        } else {
+            def dur = ctx._conf.ioc_expiration_duration;
+            ctx.cif3.expiration_duration = ctx._conf.ioc_expiration_duration;
+            if (dur instanceof String){
+                String time_unit = dur.substring(dur.length() -  1, dur.length());
+                String time_value = dur.substring(0, dur.length() - 1);
+                if (time_unit == 'd') {
+                    _tmp_deleted_at = _tmp_lasttime_at.plusDays(Long.parseLong(time_value));
+                } else if (time_unit == 'h') {
+                    _tmp_deleted_at = _tmp_lasttime_at.plusHours(Long.parseLong(time_value));
+                } else if (time_unit == 'm') {
+                    _tmp_deleted_at = _tmp_lasttime_at.plusMinutes(Long.parseLong(time_value));
+                } else {
+                    _tmp_deleted_at = _tmp_lasttime_at.plusDays(90L);
+                    if (ctx.error == null) {
+                    ctx.error = new HashMap();
+                    }
+                    if (ctx.error.message == null) {
+                    ctx.error.message = new ArrayList();
+                    }
+                    ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
+                }
+            }
+        }
+        ctx.cif3.deleted_at = _tmp_deleted_at;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: cif3.deleted_at
+      tag: date_deleted_at
+      target_field: cif3.deleted_at
+      formats:
+        - ISO8601
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: cif3.expiration_duration
+      if: ctx.cif3?.expiration_duration == null
+
+  ######################
+  # Cleanup processors #
+  ######################
   - script:
       lang: painless
       if: ctx.cif3 != null
@@ -319,12 +409,11 @@ processors:
       if: "ctx.cif3?.rdata == ''"
   - remove:
       field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags?.contains('preserve_original_event') != true"
       ignore_failure: true
       ignore_missing: true
   - remove:
       field:
-        - cif3.indicator
         - cif3.confidence
         - cif3.indicator_ipv4
         - cif3.indicator_ipv6
@@ -336,8 +425,11 @@ processors:
         - cif3.region
         - cif3.tags
         - cif3.tlp
+        - cif3.firsttime
+        - cif3.lasttime
         - message
         - _tmp
+        - _conf
       ignore_missing: true
       if: ctx.threat?.indicator?.type != null
 on_failure:
