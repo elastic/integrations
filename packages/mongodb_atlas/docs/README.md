@@ -287,5 +287,4 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.ticket.available.read.count | The number of read tickets available to the WiredTiger storage engine. | long |  | gauge |
 | mongodb_atlas.process.ticket.available.write.count | The number of write tickets available to the WiredTiger storage engine. | long |  | gauge |
 | mongodb_atlas.process_id | Combination of hostname and Internet Assigned Numbers Authority (IANA) port that serves the MongoDB process. | keyword |  |  |
-| tags | List of keywords used to tag each event. | keyword |  |  |
 
