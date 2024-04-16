@@ -27,6 +27,10 @@ processors:
       field: stormshield.monitor.CPU
       target_field: stormshield.monitor.CPU_
 
+  - rename:
+      field: stormshield.monitor.ipsec
+      target_field: stormshield.monitor.ipsec_native
+
   - set:
       field: event.kind
       value: "metric"
@@ -84,6 +88,9 @@ processors:
         def cpu = ["user_time", "kernel_time", "system_disruption"];
         expand_(monitor, "CPU_", "CPU", cpu, /* skipOriginal = */ true, /* flatten = */ true);
         monitor.remove("CPU_");
+        expand_(monitor, "ipsec_native", "ipsec", availableFields, /* skipOriginal = */ true, /* flatten = */ false);
+        monitor.remove("ipsec_native");
+        monitor["ipsec"][0]["native"] = true;
         for (field_base in fields) {
             for (int i = 0;; i++) {
                 String baseName = field_base;

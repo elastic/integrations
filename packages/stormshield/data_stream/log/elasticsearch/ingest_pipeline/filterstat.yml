@@ -9,3 +9,51 @@ processors:
   - rename:
       field: ss
       target_field: stormshield.filterstat
+
+  #
+  # The syslog header should have been stripped off, so we need to process the key=value data
+  # We will be using painless here, because it is the best option we have.
+  - script:
+      tag: expand_invalid_names
+      description: Expands the fields with parentheses in their names.
+      lang: painless
+      source: >-
+        void expand_(Map mapper, String fieldName, String base, def availableFields) {
+            def obj = new HashMap();
+
+            String field = mapper[fieldName];
+            String[] fields = field.splitOnToken("/");
+
+            // availableFields and fields should have the same length
+            for (int i = 0; i < availableFields.length; ++i) {
+                obj[availableFields[i]] = fields[i];
+            }
+            mapper[base] = obj;
+        }
+        def monitor = ctx.stormshield.filterstat;
+        def availableFields = [
+            "in_count",
+            "out_count"
+        ];
+        def fields = [
+            "Byte(i/o)",
+            "EtherStateByte(i/o)",
+            "ICMPByte(i/o)",
+            "IPStateByte(i/o)",
+            "SCTPAssocByte(i/o)",
+            "TCPByte(i/o)",
+            "UDPByte(i/o)"
+        ];
+        def tlscert = ["miss_count", "total"];
+        def tlscertname = "TLSCertCacheLookup(miss/total)";
+        expand_(monitor, tlscertname, "TLSCertCacheLookup", tlscert);
+        monitor.remove(tlscertname);
+        for (field_base in fields) {
+            String baseName = field_base.substring(0, field_base.indexOf("("));
+            if (monitor.containsKey(field_base)) {
+                expand_(monitor, field_base, baseName, availableFields);
+                monitor.remove(field_base);
+            }
+
+        }
+

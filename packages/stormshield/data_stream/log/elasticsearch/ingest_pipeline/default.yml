@@ -9,7 +9,7 @@ processors:
       field: event.original
       ignore_failure: true 
   - set:
-      field: proces.name
+      field: process.name
       copy_from: log.syslog.appname
       if: ctx.log?.syslog?.appname != null
 
@@ -116,6 +116,10 @@ processors:
       name: '{{ IngestPipeline "alarm" }}'
 
   - pipeline:
+      if: ctx.ss?.logtype == 'auth'
+      name: '{{ IngestPipeline "auth" }}'
+
+  - pipeline:
       if: ctx.ss?.logtype == 'authstat'
       name: '{{ IngestPipeline "authstat" }}'
 
@@ -124,28 +128,41 @@ processors:
       name: '{{ IngestPipeline "connection" }}'
 
   - pipeline:
+      if: ctx.ss?.logtype == 'count'
+      name: '{{ IngestPipeline "count" }}'
+
+  - pipeline:
+      if: ctx.ss?.logtype == 'filter'
+      name: '{{ IngestPipeline "filter" }}'
+
+  - pipeline:
       if: ctx.ss?.logtype == 'filterstat'
       name: '{{ IngestPipeline "filterstat" }}'
+
+  - pipeline:
+      if: ctx.ss?.logtype == 'monitor'
+      name: '{{ IngestPipeline "monitor" }}'
+
+  - pipeline:
+      if: ctx.ss?.logtype == 'plugin'
+      name: '{{ IngestPipeline "plugin" }}'
+
+  - pipeline:
+      if: ctx.ss?.logtype == 'pvm'
+      name: '{{ IngestPipeline "pvm" }}'
+
+  - pipeline:
+      if: ctx.ss?.logtype == 'server'
+      name: '{{ IngestPipeline "server" }}'
 
   - pipeline:
       if: ctx.ss?.logtype == 'system'
       name: '{{ IngestPipeline "system" }}'
 
   - pipeline:
-      if: ctx.ss?.logtype == 'monitor'
-      name: '{{ IngestPipeline "monitor" }}'
+      if: ctx.ss?.logtype == 'vpn'
+      name: '{{ IngestPipeline "vpn" }}'
 
-  ## filter/alarm/connection/plugin
-  ## pvm
-  ## server
-  ## vpn
-  ## monitor
-  ## smtp/pop3/ftp/web/ssl
-  ## auth
-  ## xvpm
-  ## sandboxing
-  ## count
-  ## routerstat
 
   - remove:
       field: _temp_
