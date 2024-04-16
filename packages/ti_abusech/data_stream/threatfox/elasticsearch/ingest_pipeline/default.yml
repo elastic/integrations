@@ -174,7 +174,7 @@ processors:
   - script:
       lang: painless
       tag: script-default-deleted_at
-      if: ctx.abusech?.threatfox?.deleted_at == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
+      if: ctx.abusech?.threatfox?.deleted_at == null && ctx._conf?.ioc_expiration_duration != null && (ctx._conf.ioc_expiration_duration instanceof String) && ctx._conf.ioc_expiration_duration != ''
       description: Indicator Expiration is done after `_conf.ioc_expiration_duration` (default 90d) since the indicator's last_seen time (if not present, then since first_seen). This script adds a default `abusech.threatfox.deleted_at` field to allow indicator expiration.
       source: >
         def dur = ctx._conf.ioc_expiration_duration;
@@ -186,27 +186,25 @@ processors:
         else {
           _tmp_updated_at = ZonedDateTime.parse(ctx.threat.indicator.first_seen);
         }
-        if (dur instanceof String){
-          String time_unit = dur.substring(dur.length() -  1, dur.length());
-          String time_value = dur.substring(0, dur.length() - 1);
-          if (time_unit == 'd') {
-            _tmp_deleted_at = _tmp_updated_at.plusDays(Long.parseLong(time_value));
-          } else if (time_unit == 'h') {
-            _tmp_deleted_at = _tmp_updated_at.plusHours(Long.parseLong(time_value));
-          } else if (time_unit == 'm') {
-            _tmp_deleted_at = _tmp_updated_at.plusMinutes(Long.parseLong(time_value));
-          } else {
-            _tmp_deleted_at = _tmp_updated_at.plusDays(90L);
-            if (ctx.error == null) {
-              ctx.error = new HashMap();
-            }
-            if (ctx.error.message == null) {
-              ctx.error.message = new ArrayList();
-            }
-            ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
+        String time_unit = dur.substring(dur.length() -  1, dur.length());
+        String time_value = dur.substring(0, dur.length() - 1);
+        if (time_unit == 'd') {
+          _tmp_deleted_at = _tmp_updated_at.plusDays(Long.parseLong(time_value));
+        } else if (time_unit == 'h') {
+          _tmp_deleted_at = _tmp_updated_at.plusHours(Long.parseLong(time_value));
+        } else if (time_unit == 'm') {
+          _tmp_deleted_at = _tmp_updated_at.plusMinutes(Long.parseLong(time_value));
+        } else {
+          _tmp_deleted_at = _tmp_updated_at.plusDays(90L);
+          if (ctx.error == null) {
+            ctx.error = new HashMap();
           }
-          ctx.abusech.threatfox.deleted_at = _tmp_deleted_at;
+          if (ctx.error.message == null) {
+            ctx.error.message = new ArrayList();
+          }
+          ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
         }
+        ctx.abusech.threatfox.deleted_at = _tmp_deleted_at;
       on_failure:
         - append:
             field: error.message

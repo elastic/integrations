@@ -1,6 +1,6 @@
 # AbuseCH integration
 
-This integration is for [AbuseCH](https://urlhaus-api.abuse.ch/) logs. It includes the following datasets for retrieving indicators from the AbuseCH API:
+This integration is for [AbuseCH](https://urlhaus.abuse.ch/) logs. It includes the following datasets for retrieving indicators from the AbuseCH API:
 
 - `url` dataset: Supports URL based indicators from AbuseCH API.
 - `malware` dataset: Supports Malware based indicators from AbuseCH API.
@@ -25,7 +25,7 @@ To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_abus
 
 ### URL
 
-The AbuseCH URL data_stream retrieves full list of active threat intelligence indicators every interval from the Active Indicators URL API endpoint `https://urlhaus.abuse.ch/downloads/json/`.
+The AbuseCH URL data_stream retrieves full list of active threat intelligence indicators every interval from the Active Indicators URL database dump `https://urlhaus.abuse.ch/downloads/json/`.
 
 {{fields "url"}}
 
