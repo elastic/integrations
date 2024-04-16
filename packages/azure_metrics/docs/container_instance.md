@@ -6,11 +6,11 @@ Additional azure API calls will be executed in order to retrieve information reg
 
 ## Requirements
 
- Before you start, check the [Authentication and costs](https://docs.elastic.co/integrations/azure_metrics#authentication-and-costs) both for Azure and Elastic.
+Before you start, check the [Authentication and costs](https://docs.elastic.co/integrations/azure_metrics#authentication-and-costs) both for Azure and Elastic.
 
 ## Setup
 
- Follow these [step-by-step instructions](https://docs.elastic.co/integrations/azure_metrics#setup) on how to set up an Azure metrics integration.
+Follow these [step-by-step instructions](https://docs.elastic.co/integrations/azure_metrics#setup) on how to set up an Azure metrics integration.
 
 ## Data stream specific configuration notes
 
@@ -90,3 +90,4 @@ The primary aggregation value will be retrieved for all the metrics contained in
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | service.address | Service address | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+
