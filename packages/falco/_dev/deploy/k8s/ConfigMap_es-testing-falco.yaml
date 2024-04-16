@@ -1,0 +1,117 @@
+---
+apiVersion: v1
+data:
+  falco.yaml: |-
+    base_syscalls:
+      custom_set: []
+      repair: false
+    buffered_outputs: false
+    engine:
+      kind: modern_ebpf
+      modern_ebpf:
+        buf_size_preset: 4
+        cpus_for_each_buffer: 2
+        drop_failed_exit: false
+    file_output:
+      enabled: false
+      filename: ./events.txt
+      keep_alive: false
+    grpc:
+      bind_address: unix:///run/falco/falco.sock
+      enabled: false
+      threadiness: 0
+    grpc_output:
+      enabled: false
+    http_output:
+      ca_bundle: ""
+      ca_cert: ""
+      ca_path: /etc/falco/certs/
+      client_cert: /etc/falco/certs/client/client.crt
+      client_key: /etc/falco/certs/client/client.key
+      compress_uploads: false
+      echo: false
+      enabled: true
+      insecure: false
+      keep_alive: false
+      mtls: false
+      url: http://es-testing-falcosidekick:2801
+      user_agent: falcosecurity/falco
+    json_include_output_property: true
+    json_include_tags_property: true
+    json_output: true
+    libs_logger:
+      enabled: false
+      severity: debug
+    load_plugins: []
+    log_level: info
+    log_stderr: true
+    log_syslog: true
+    metrics:
+      convert_memory_to_mb: true
+      enabled: false
+      include_empty_values: false
+      interval: 1h
+      kernel_event_counters_enabled: true
+      libbpf_stats_enabled: true
+      output_rule: true
+      resource_utilization_enabled: true
+      state_counters_enabled: true
+    output_timeout: 2000
+    outputs:
+      max_burst: 1000
+      rate: 0
+    outputs_queue:
+      capacity: 0
+    plugins:
+    - init_config: null
+      library_path: libk8saudit.so
+      name: k8saudit
+      open_params: http://:9765/k8s-audit
+    - library_path: libcloudtrail.so
+      name: cloudtrail
+    - init_config: ""
+      library_path: libjson.so
+      name: json
+    priority: debug
+    program_output:
+      enabled: false
+      keep_alive: false
+      program: 'jq ''{text: .output}'' | curl -d @- -X POST https://hooks.slack.com/services/XXX'
+    rule_matching: first
+    rules_file:
+    - /etc/falco/falco_rules.yaml
+    - /etc/falco/falco_rules.local.yaml
+    - /etc/falco/rules.d
+    stdout_output:
+      enabled: true
+    syscall_event_drops:
+      actions:
+      - log
+      - alert
+      max_burst: 1
+      rate: 0.03333
+      simulate_drops: false
+      threshold: 0.1
+    syscall_event_timeouts:
+      max_consecutives: 1000
+    syslog_output:
+      enabled: true
+    time_format_iso_8601: false
+    watch_config_files: true
+    webserver:
+      enabled: true
+      k8s_healthz_endpoint: /healthz
+      listen_port: 8765
+      ssl_certificate: /etc/falco/falco.pem
+      ssl_enabled: false
+      threadiness: 0
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/instance: es-testing
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: falco
+    app.kubernetes.io/version: 0.37.1
+    helm.sh/chart: falco-4.2.5
+  name: es-testing-falco
+  namespace: kube-system

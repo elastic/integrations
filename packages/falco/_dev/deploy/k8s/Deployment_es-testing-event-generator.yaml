@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: es-testing
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: event-generator
+    app.kubernetes.io/part-of: event-generator
+    app.kubernetes.io/version: 0.10.0
+    helm.sh/chart: event-generator-0.3.3
+  name: es-testing-event-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: es-testing
+      app.kubernetes.io/name: event-generator
+      app.kubernetes.io/part-of: event-generator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: es-testing
+        app.kubernetes.io/name: event-generator
+        app.kubernetes.io/part-of: event-generator
+    spec:
+      containers:
+        - command:
+            - /bin/event-generator
+            - run
+            - ^syscall
+            - --loop
+          env:
+            - name: FALCO_EVENT_GENERATOR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          image: falcosecurity/event-generator:latest
+          imagePullPolicy: IfNotPresent
+          name: event-generator
+          securityContext: {}
+      securityContext: {}
+      serviceAccountName: es-testing-event-generator

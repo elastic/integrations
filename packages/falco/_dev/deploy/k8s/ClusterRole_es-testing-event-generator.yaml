@@ -1,0 +1,57 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/instance: es-testing
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: event-generator
+    app.kubernetes.io/part-of: event-generator
+    app.kubernetes.io/version: 0.10.0
+    helm.sh/chart: event-generator-0.3.3
+  name: es-testing-event-generator
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - services
+      - serviceaccounts
+      - pods
+    verbs:
+      - list
+      - get
+      - create
+      - delete
+  - apiGroups:
+      - apps
+      - extensions
+    resources:
+      - deployments
+    verbs:
+      - list
+      - get
+      - create
+      - delete
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+      - rolebindings
+    verbs:
+      - get
+      - list
+      - create
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - pods/exec
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - '*'
+    verbs:
+      - get

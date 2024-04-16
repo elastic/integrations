@@ -1,0 +1,19 @@
+protocol.tcp:
+  host: "{{syslog_host}}:{{syslog_port}}"
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+processors:
+- add_locale: ~
+- script:
+    lang: painless
+    source: |
+        def now = new Date();
+        ctx['event.created'] = now;
+{{#if processors}}
+{{processors}}
+{{/if}}

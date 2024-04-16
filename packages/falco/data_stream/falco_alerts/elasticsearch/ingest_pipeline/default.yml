@@ -1,0 +1,1365 @@
+---
+description: Pipeline for mapping Falco fields to ECS / Falco-namespaced fields
+processors:
+- set:
+    field: data_stream.dataset
+    value: 'falco.falco_alerts'
+- set:
+    field: event.dataset
+    value: 'falco.falco_alerts'
+- set:
+    field: data_stream.type
+    value: 'logs'
+- set:
+    field: ecs.version
+    value: '8.11.0'
+- set:
+    field: event.module
+    value: 'falco'
+- set:
+    field: observer.product
+    value: 'falco'
+- set:
+    field: observer.type
+    value: 'sensor'
+- set:
+    field: observer.vendor
+    value: 'sysdig'
+- set:
+    field: event.kind
+    value: 'alert'
+- script:
+    lang: painless
+    tag: 'evt.category'
+    source: |
+        def allowedValues = [
+            'api',
+            'authentication',
+            'configuration',
+            'database',
+            'driver',
+            'email',
+            'file',
+            'host',
+            'iam',
+            'intrusion_detection',
+            'library',
+            'malware',
+            'network',
+            'package',
+            'process',
+            'registry',
+            'session',
+            'threat',
+            'vulnerability',
+            'web'
+        ];
+
+        if (ctx['evt'] != null && ctx['evt.category'] != null) {
+            def inputCategory = ctx['evt.category'];
+            def lowercaseCategory = inputCategory.toLowerCase();
+            if (allowedValues.contains(lowercaseCategory)) {
+                ctx['event.category'] = [inputCategory];
+            } else if (inputCategory == 'time' || inputCategory == 'scheduler') {
+                ctx['event.category'] = ['configuration'];
+            } else if (inputCategory == 'system' || inputCategory == 'memory' || inputCategory == 'sleep' || inputCategory == 'wait' || inputCategory == 'internal') {
+                ctx['event.category'] = ['host'];
+            } else if (inputCategory == 'ipc' || inputCategory == 'net' || inputCategory == 'signal') {
+                ctx['event.category'] = ['network'];
+            } else if (inputCategory == 'processing' || inputCategory == 'process' || inputCategory == 'io_read' || inputCategory == 'io_write' || inputCategory == 'io_other') {
+                ctx['event.category'] = ['process'];
+            } else if (inputCategory == 'user') {
+                ctx['event.category'] = ['session'];
+            } else {
+                ctx['event.category'] = ['process'];
+            }
+        } else {
+            ctx['event.category'] = ['process'];
+        }
+- script:
+    lang: painless
+    tag: 'evt.type'
+    source: |
+        def allowedValues = [
+            'access',
+            'admin', 
+            'allowed',
+            'change',
+            'connection',
+            'creation',
+            'deletion',
+            'denied',
+            'end',
+            'error',
+            'group',
+            'indicator',
+            'info',
+            'installation',
+            'protocol',
+            'start',
+            'user'
+        ];
+
+        if (ctx['evt'] != null && ctx['evt.type'] != null) {
+            def inputType = ctx['evt.type'];
+            def lowercaseType = inputType.toLowerCase();
+            if (allowedValues.contains(lowercaseType)) {
+                ctx['event.type'] = [inputType];
+            } else if (inputType == 'faccessat' || inputType == 'faccessat2' || inputType == 'fsopen' || inputType == 'name_to_handle_at' || inputType == 'nfsservctl' || inputType == 'open' || inputType == 'open_by_handle_at' || inputType == 'open_tree' || inputType == 'openat' || inputType == 'openat2' || inputType == 'pciconfig_read' || inputType == 'pidfd_open' || inputType == 'read' || inputType == 'readahead' || inputType == 'readdir' || inputType == 'readlink' || inputType == 'readlinkat' || inputType == 'readv' || inputType == 's390_pci_mmio_read' || inputType == 'uselib' || inputType == 'vm86old' || inputType == 'vm86') {
+                ctx['event.type'] = ['access'];
+            } else if (inputType == 'bdflush' || inputType == 'membarrier' || inputType == 'ptrace' || inputType == 'reboot' || inputType == 'restart_syscall') {
+                ctx['event.type'] = ['admin'];
+            } else if (inputType == 'fallocate' || inputType == 'finit_module') {
+                ctx['event.type'] = ['allowed'];
+            } else if (inputType == 'llseek' || inputType == 'sysctl' || inputType == 'acct' || inputType == 'adjtimex' || inputType == 'alarm' || inputType == 'arch_prctl' || inputType == 'bind' || inputType == 'bpf' || inputType == 'brk' || inputType == 'capset' || inputType == 'chdir' || inputType == 'chmod' || inputType == 'chown' || inputType == 'chown32' || inputType == 'chroot' || inputType == 'clock_adjtime' || inputType == 'clock_nanosleep' || inputType == 'clock_settime' || inputType == 'close' || inputType == 'close_range' || inputType == 'epoll_ctl' || inputType == 'fchdir' || inputType == 'fchmod' || inputType == 'fchmodat' || inputType == 'fchown' || inputType == 'fchown32' || inputType == 'fchownat' || inputType == 'fcntl' || inputType == 'fcntl64' || inputType == 'flock' || inputType == 'free_hugepages' || inputType == 'fsetxattr' || inputType == 'fsconfig' || inputType == 'ftruncate' || inputType == 'ftruncate64' || inputType == 'futimesat' || inputType == 'io_setup' || inputType == 'io_uring_setup' || inputType == 'ioctl' || inputType == 'ioperm' || inputType == 'iopl' || inputType == 'ioprio_set' || inputType == 'keyctl' || inputType == 'landlock_restrict_self' || inputType == 'lchown' || inputType == 'lchown32' || inputType == 'madvise' || inputType == 'mbind' || inputType == 'memory_ordering' || inputType == 'migrate_pages' || inputType == 'mlock' || inputType == 'mlock2' || inputType == 'mlockall' || inputType == 'mmap' || inputType == 'mmap2' || inputType == 'modify_ldt' || inputType == 'move_mount' || inputType == 'move_pages' || inputType == 'mprotect' || inputType == 'mq_getsetattr' || inputType == 'mremap' || inputType == 'msgctl' || inputType == 'munlock' || inputType == 'munlockall' || inputType == 'munmap' || inputType == 'nanosleep' || inputType == 'nice' || inputType == 'old_adjtimex' || inputType == 'pause' || inputType == 'pciconfig_write' || inputType == 'personality' || inputType == 'perfctr' || inputType == 'perfmonctl' || inputType == 'pivot_root' || inputType == 'pkey_alloc' || inputType == 'pkey_free' || inputType == 'pkey_mprotect' || inputType == 'prctl' || inputType == 'prlimit64' || inputType == 'process_madvise' || inputType == 'process_vm_writev' || inputType == 'pwrite64' || inputType == 'pwritev' || inputType == 'pwritev2' || inputType == 'quotactl' || inputType == 'quotactl_fd' || inputType == 'rename' || inputType == 'renameat' || inputType == 'renameat2' || inputType == 'rseq' || inputType == 'rt_sigaction' || inputType == 'rt_sigpending' || inputType == 'rt_sigprocmask' || inputType == 'rt_sigqueueinfo' || inputType == 'rt_sigreturn' || inputType == 'rtas' || inputType == 's390_pci_mmio_write' || inputType == 's390_guarded_storage' || inputType == 'sched_setaffinity' || inputType == 'sched_setattr' || inputType == 'sched_setparam' || inputType == 'sched_setscheduler' || inputType == 'seccomp' || inputType == 'semctl' || inputType == 'semop' || inputType == 'semtimedop' || inputType == 'set_mempolicy' || inputType == 'set_robust_list' || inputType == 'set_thread_area' || inputType == 'set_tid_address' || inputType == 'set_tls' || inputType == 'set_domainname' || inputType == 'set_fsgid' || inputType == 'setfsgid32' || inputType == 'setfsuid' || inputType == 'setfsuid32' || inputType == 'setgid' || inputType == 'setgid32' || inputType == 'sethae' || inputType == 'sethostimer' || inputType == 'setitimer' || inputType == 'setns' || inputType == 'setpgid' || inputType == 'setpgrp' || inputType == 'setpriority' || inputType == 'setregid' || inputType == 'setregid32' || inputType == 'setresgid' || inputType == 'setresgid32' || inputType == 'setresuid' || inputType == 'setresuid32' || inputType == 'setreuid' || inputType == 'setreuid32' || inputType == 'setrlimit' || inputType == 'setsid' || inputType == 'setsockopt' || inputType == 'settimeofday' || inputType == 'setuid' || inputType == 'setuid32' || inputType == 'setup' || inputType == 'setxattr' || inputType == 'shmat'  || inputType == 'shmctl' || inputType == 'shmdt' || inputType == 'sigaction' || inputType == 'sigaltstack' || inputType == 'subpage_prot' || inputType == 'swapcontext' || inputType == 'switch_endian' || inputType == 'sys_debug_setcontext' || inputType == 'timer_settime' || inputType == 'timerfd_settime' || inputType == 'truncate' || inputType == 'truncate64' || inputType == 'umask' || inputType == 'utime' || inputType == 'utimesat' || inputType == 'utimes' || inputType == 'write' || inputType == 'writev' || inputType == 'xtensa') {
+                ctx['event.type'] = ['change'];
+            } else if (inputType == 'accept' || inputType == 'accept4' || inputType == 'connect' || inputType == 'mq_timedreceive' || inputType == 'mq_timedsend' || inputType == 'msgrcv' || inputType == 'msgsnd' || inputType == 'pidfd_send_signal' || inputType == 'recv' || inputType == 'recvfrom' || inputType == 'recvmsg' || inputType == 'recvmmsg' || inputType == 'rt_sigqueueinfo' || inputType == 'rt_tgsigqueueinfo' || inputType == 'send' || inputType == 'sendfile' || inputType == 'sendfile64' || inputType == 'sendmmsg' || inputType == 'sendmsg' || inputType == 'sendto' || inputType == 'signal' || inputType == 'signalfd' || inputType == 'signalfd4' || inputType == 'socket' || inputType == 'socketcall' || inputType == 'socketpair' || inputType == 'syscall') {
+                ctx['event.type'] = ['connection'];
+            } else if (inputType == 'add_key' || inputType == 'clone' || inputType == 'clone2' || inputType == 'clone3' || inputType == 'copy_file_range' || inputType == 'creat' || inputType == 'create_module' || inputType == 'dup' || inputType == 'dup2' || inputType == 'dup3' || inputType == 'epoll_create' || inputType == 'epoll_create1' || inputType == 'eventfd' || inputType == 'eventfd2' || inputType == 'fdatasync' || inputType == 'fork' || inputType == 'fsmount' || inputType == 'fsync' || inputType == 'init_module' || inputType == 'inotify_add_watch' || inputType == 'inotify_init' || inputType == 'inotify_init1' || inputType == 'kexec_file_load' || inputType == 'kexec_load' || inputType == 'landlock_add_rule' || inputType == 'landlock_create_ruleset' || inputType == 'link' || inputType == 'linkat' || inputType == 'memfd_create' || inputType == 'memfd_secret' || inputType == 'mkdir' || inputType == 'mkdirat' || inputType == 'mknod' || inputType == 'mknodat' || inputType == 'mount' || inputType == 'mq_notify' || inputType == 'mq_open' || inputType == 'msync' || inputType == 'pidfd_getfd' || inputType == 'pipe' || inputType == 'pipe2' || inputType == 'remap_file_pages' || inputType == 'splice' || inputType == 'spu_create' || inputType == 'symlink' || inputType == 'symlinkat' || inputType == 'sync' || inputType == 'sync_file_range' || inputType == 'sync_file_range2' || inputType == 'syncfs' || inputType == 'tee' || inputType == 'timer_create' || inputType == 'timerfd_create' || inputType == 'vfork' || inputType == 'vmsplice') {
+                ctx['event.type'] = ['creation'];
+            } else if (inputType == 'cacheflush' || inputType == 'delete_module' || inputType == 'fremovexattr' || inputType == 'inotify_rm_watch' || inputType == 'io_destroy' || inputType == 'lremovexattr' || inputType == 'mq_unlink' || inputType == 'oldumount' || inputType == 'removexattr' || inputType == 'riscv_flush_icache' || inputType == 'rmdir' || inputType == 'spill' || inputType == 'timer_delete' || inputType == 'umount' || inputType == 'unlink' || inputType == 'unlinkat' || inputType == 'unshare') {
+                ctx['event.type'] = ['deletion'];
+            } else if (inputType == 'exit' || inputType == 'exit_group' || inputType == 'io_cancel' || inputType == 'kill' || inputType == 'shutdown'  || inputType == 'swapoff' || inputType == 'tgkill' || inputType == 'tkill' || inputType == 'vhangup') {
+                ctx['event.type'] = ['end'];
+            } else if (inputType == 'fanotify_init' || inputType == 'fanotify_mark' || inputType == 'setgroups' || inputType == 'setgroups32') {
+                ctx['event.type'] = ['group'];
+            } else if (inputType == 'alloc_hugepages' || inputType == 'capget' || inputType == 'clock_getres' || inputType == 'clock_gettime' || inputType == 'epoll_pwait' || inputType == 'epoll_pwait2' || inputType == 'epoll_wait' || inputType == 'fadvise64' || inputType == 'fadvise64_64' || inputType == 'fgetxattr' || inputType == 'flistxattr' || inputType == 'fspick' || inputType == 'fstat' || inputType == 'fstat64' || inputType == 'fstatat64' || inputType == 'fstatfs' || inputType == 'fstatfs64' || inputType == 'futex' || inputType == 'get_kernel_syms' || inputType == 'get_mempolicy' || inputType == 'get_robust_list' || inputType == 'get_thread_area' || inputType == 'get_tls' || inputType == 'getcpu' || inputType == 'getcwd' || inputType == 'getdents' || inputType == 'getdents64' || inputType == 'getdomainname' || inputType == 'getdtablesize' || inputType == 'getegid' || inputType == 'getegid32' || inputType == 'geteuid' || inputType == 'geteuid32' || inputType == 'getgid' || inputType == 'getgid32' || inputType == 'getgroups' || inputType == 'getgroups32' || inputType == 'gethostname' || inputType == 'getitimer' || inputType == 'getpeername' || inputType == 'getpagesize' || inputType == 'getpgid' || inputType == 'getpgrp' || inputType == 'getpid' || inputType == 'getppid' || inputType == 'getpriority' || inputType == 'getrandom' || inputType == 'getresgid' || inputType == 'getresgid32' || inputType == 'getresuid' || inputType == 'getresuid32' || inputType == 'getrlimit' || inputType == 'getrusage' || inputType == 'getsid' || inputType == 'getsockname' || inputType == 'getsockopt' || inputType == 'gettid' || inputType == 'gettimeofday' || inputType == 'getuid' || inputType == 'getuid32' || inputType == 'getunwind' || inputType == 'getxattr' || inputType == 'getxgid' || inputType == 'getxpid' || inputType == 'getxuid' || inputType == 'io_getevents' || inputType == 'io_pgetevents' || inputType == 'io_submit' || inputType == 'io_uring_register' || inputType == 'ioprio_get' || inputType == 'kcmp' || inputType == 'kern_features' || inputType == 'lgetxattr' || inputType == 'listen' || inputType == 'listxattr' || inputType == 'llistxattr' || inputType == 'lookup_dcookie' || inputType == 'lstat' || inputType == 'lstat64' || inputType == 'mincore' || inputType == 'msgget' || inputType == 'newfstatat' || inputType == 'old_getrlimit' || inputType == 'old_fstat' || inputType == 'oldlstat' || inputType == 'oldolduname' || inputType == 'oldstat' || inputType == 'olduname' || inputType == 'or1k_atomic' || inputType == 'pciconfig_iobase' || inputType == 'poll' || inputType == 'ppoll' || inputType == 'pread64' || inputType == 'preadv' || inputType == 'preadv2' || inputType == 'process_vm_readv' || inputType == 'pselect6' || inputType == 'query_module' || inputType == 'request_key' || inputType == 'rt_sigsuspend' || inputType == 'rt_sigtimedwait' || inputType == 's390_runtime_instr' || inputType == 's390_sthyi' || inputType == 'sched_get_affinity' || inputType == 'sched_get_priority_max' || inputType == 'sched_get_priority_min' || inputType == 'sched_getaffinity' || inputType == 'sched_getattr' || inputType == 'sched_getparam' || inputType == 'sched_getscheduler' || inputType == 'sched_rr_get_interval' || inputType == 'sched_yield' || inputType == 'select' || inputType == 'semget' || inputType == 'sgetmask' || inputType == 'shmget' || inputType == 'sigpending' || inputType == 'sigprocmask' || inputType == 'sigreturn' || inputType == 'sigsuspend' || inputType == 'ssetmask' || inputType == 'stat' || inputType == 'stat64' || inputType == 'statfs' || inputType == 'statfs64' || inputType == 'statx' || inputType == 'stime' || inputType == 'sysfs' || inputType == 'sysinfo' || inputType == 'syslog' || inputType == 'sysmips' || inputType == 'time' || inputType == 'timer_getoverrun' || inputType == 'timer_gettime' || inputType == 'timerfd_gettime' || inputType == 'times' || inputType == 'ugetrlimit' || inputType == 'uname' || inputType == 'ustat' || inputType == 'wait' || inputType == 'wait4' || inputType == 'waitid' || inputType == 'waitpid') {
+                ctx['event.type'] = ['info'];
+            } else if (inputType == 'utrap_install') {
+                ctx['event.type'] = ['installation'];
+            } else if (inputType == 'ipc') {
+                ctx['event.type'] = ['protocol'];
+            } else if (inputType == 'execve' || inputType == 'execveat' || inputType == 'execv' || inputType == 'io_uring_enter' || inputType == 'perf_event_open' || inputType == 'spu_run' || inputType == 'swapon') {
+                ctx['event.type'] = ['start'];
+            } else if (inputType == 'userfaultfd' || inputType == 'usr26' || inputType == 'usr32') {
+                ctx['event.type'] = ['user'];
+            } else {
+                ctx['event.type'] = ['info'];
+            }
+        } else {
+            ctx['event.type'] = ['info'];
+        }
+- script:
+    lang: painless
+    tag: 'evt.res'
+    source: |
+        if (ctx['evt'] == null || (ctx['evt'] != null && (ctx['evt.res'] == null || ctx['evt.res'] != 'SUCCESS'))) {
+            ctx['event.outcome'] = ctx['evt.failed'] == true ? 'failure' : 'unknown';
+        } else {
+            ctx['event.outcome'] = 'success';
+        }
+- script:
+    lang: painless
+    tag: 'evt.ingested'
+    source: |
+        def now = new Date();
+        ctx['event.ingested'] = now;
+- script:
+    lang: painless
+    tag: 'threat.technique.id'
+    source: |
+        def mitreRegex = /T\d{4}/;
+        if (ctx['tags'] != null) {
+            for (int i = 0; i < ctx['tags'].length; i++) {
+                def tag = ctx.tags[i];
+                def matcher = mitreRegex.matcher(tag);
+                if (matcher.find()) {
+                    ctx['threat.technique.id'] = matcher.group();
+                    break;
+                }
+            }
+        } else {
+            ctx['threat.technique.id'] = ['null'];
+        }
+- set:
+    field: event.original
+    copy_from: output
+    ignore_empty_value: true
+- set:
+    field: event.severity
+    copy_from: priority
+    ignore_empty_value: true
+- set:
+    field: rule.name
+    copy_from: rule
+    ignore_empty_value: true
+- set:
+    field: tags
+    copy_from: tags
+    ignore_empty_value: true
+- set:
+    field: event.sequence
+    copy_from: evt.num
+    ignore_empty_value: true
+- set:
+    field: '@timestamp'
+    copy_from: evt.time
+    ignore_empty_value: true
+- set:
+    field: event.start
+    copy_from: evt.time
+    ignore_empty_value: true
+- set:
+    field: event.provider
+    copy_from: evt.source
+    ignore_empty_value: true
+- set:
+    field: observer.hostname
+    copy_from: evt.hostname
+    ignore_empty_value: true
+- set:
+    field: related.hosts
+    copy_from: evt.hostname
+    ignore_empty_value: true
+- set:
+    field: process.executable
+    copy_from: proc.exepath
+    ignore_empty_value: true
+- script:
+    lang: painless
+    tag: 'file.path'
+    source: |
+        if (ctx['fd.type'] == 'file' || ctx['fd.type'] == 'directory') {
+            ctx['file.path'] = ctx['fd.name'];
+        }
+- script:
+    lang: painless
+    tag: 'file.type'
+    source: |
+        if (ctx['fd.type'] == 'file' || ctx['fd.type'] == 'directory') {
+            ctx['file.type'] = ctx['fd.type'];
+        }
+- set:
+    field: process.parent.executable
+    copy_from: proc.pexepath
+    ignore_empty_value: true
+- set:
+    field: process.name
+    copy_from: proc.name
+    ignore_empty_value: true
+- set:
+    field: process.parent.name
+    copy_from: proc.pname
+    ignore_empty_value: true
+- set:
+    field: process.args
+    value: ['{{proc.exepath}}{{proc.args}}']
+- set:
+    field: process.command_line
+    copy_from: proc.cmdline
+    ignore_empty_value: true
+- set:
+    field: process.parent.command_line
+    copy_from: proc.pcmdline
+    ignore_empty_value: true
+- set:
+    field: process.args_count
+    copy_from: proc.cmdnargs
+    ignore_empty_value: true
+- set:
+    field: process.env_vars
+    value: ['{{proc.env}}']
+    ignore_empty_value: true
+- set:
+    field: process.working_directory
+    copy_from: proc.cwd
+    ignore_empty_value: true
+- set:
+    field: process.pid
+    copy_from: proc.pid
+    ignore_empty_value: true
+- set:
+    field: process.parent.pid
+    copy_from: proc.ppid
+    ignore_empty_value: true
+- set:
+    field: process.vpid
+    copy_from: proc.vpid
+    ignore_empty_value: true
+- set:
+    field: process.parent.vpid
+    copy_from: proc.pvpid
+    ignore_empty_value: true
+- set:
+    field: process.session_leader.pid
+    copy_from: proc.sid
+    ignore_empty_value: true
+- set:
+    field: process.session_leader.name
+    copy_from: proc.sname
+    ignore_empty_value: true
+- set:
+    field: process.session_leader.executable
+    copy_from: proc.sid.exepath
+    ignore_empty_value: true
+- set:
+    field: process.group_leader.vpid
+    copy_from: proc.vpgid
+    ignore_empty_value: true
+- set:
+    field: process.group_leader.name
+    copy_from: proc.vpgid.name
+    ignore_empty_value: true
+- set:
+    field: process.group_leader.name
+    copy_from: proc.vpgid.name
+    ignore_empty_value: true
+- set:
+    field: process.group_leader.executable
+    copy_from: proc.vpgid.exepath
+    ignore_empty_value: true
+- set:
+    field: process.uptime
+    copy_from: proc.duration
+    ignore_empty_value: true
+- set:
+    field: process.parent.uptime
+    copy_from: proc.ppid.duration
+    ignore_empty_value: true
+- set:
+    field: process.start
+    copy_from: proc.pid.ts
+    ignore_empty_value: true
+- set:
+    field: process.parent.start
+    copy_from: proc.ppid.ts
+    ignore_empty_value: true
+- set:
+    field: process.session_leader.same_as_process
+    copy_from: proc.is_sid_leader
+    ignore_empty_value: true
+- set:
+    field: process.group_leader.same_as_process
+    copy_from: proc.is_vpgid_leader
+    ignore_empty_value: true
+- set:
+    field: process.thread.capabilities.permitted
+    copy_from: thread.cap_permitted
+    ignore_empty_value: true
+- set:
+    field: process.thread.capabilities.effective
+    copy_from: thread.cap_effective
+    ignore_empty_value: true
+- set:
+    field: process.thread.id
+    copy_from: thread.tid
+    ignore_empty_value: true
+- set:
+    field: process.user.id
+    copy_from: user.uid
+    ignore_empty_value: true
+- set:
+    field: process.user.name
+    copy_from: user.name
+    ignore_empty_value: true
+- set:
+    field: process.group.id
+    copy_from: group.gid
+    ignore_empty_value: true
+- set:
+    field: process.group.name
+    copy_from: group.name
+    ignore_empty_value: true
+- set:
+    field: container.id
+    copy_from: container.id
+    ignore_empty_value: true
+- set:
+    field: container.name
+    copy_from: container.name
+    ignore_empty_value: true
+- set:
+    field: container.image.name
+    copy_from: container.image
+    ignore_empty_value: true
+- set:
+    field: container.runtime
+    copy_from: container.type
+    ignore_empty_value: true
+- set:
+    field: container.security_context.privileged
+    copy_from: container.privileged
+    ignore_empty_value: true
+- set:
+    field: container.image.hash.all
+    copy_from: container.image.digest
+    ignore_empty_value: true
+- set:
+    field: host.ip
+    value: ['{{container.ip}}']
+    ignore_empty_value: true
+- set:
+    field: file.directory
+    copy_from: fd.directory
+    ignore_empty_value: true
+- set:
+    field: file.name
+    copy_from: fd.filename
+    ignore_empty_value: true
+- set:
+    field: client.ip
+    copy_from: fd.cip
+    ignore_empty_value: true
+- set:
+    field: client.address
+    copy_from: fd.cip
+    ignore_empty_value: true
+- set:
+    field: server.ip
+    copy_from: fd.sip
+    ignore_empty_value: true
+- set:
+    field: server.address
+    copy_from: fd.sip
+    ignore_empty_value: true
+- set:
+    field: source.ip
+    copy_from: fd.lip
+    ignore_empty_value: true
+- set:
+    field: source.address
+    copy_from: fd.lip
+    ignore_empty_value: true
+- set:
+    field: destination.ip
+    copy_from: fd.rip
+    ignore_empty_value: true
+- set:
+    field: destination.address
+    copy_from: fd.rip
+    ignore_empty_value: true
+- set:
+    field: client.port
+    copy_from: fd.cport
+    ignore_empty_value: true
+- set:
+    field: server.port
+    copy_from: fd.sport
+    ignore_empty_value: true
+- set:
+    field: source.port
+    copy_from: fd.lport
+    ignore_empty_value: true
+- set:
+    field: destination.port
+    copy_from: fd.rport
+    ignore_empty_value: true
+- set:
+    field: client.domain
+    copy_from: fd.cip.name
+    ignore_empty_value: true
+- set:
+    field: server.domain
+    copy_from: fd.sip.name
+    ignore_empty_value: true
+- set:
+    field: source.domain
+    copy_from: fd.lip.name
+    ignore_empty_value: true
+- set:
+    field: destination.domain
+    copy_from: fd.rip.name
+    ignore_empty_value: true
+- set:
+    field: file.inode
+    copy_from: fd.ino
+    ignore_empty_value: true
+- set:
+    field: log.syslog.facility.name
+    copy_from: syslog.facility.str
+    ignore_empty_value: true
+- set:
+    field: log.syslog.facility.code
+    copy_from: syslog.facility
+    ignore_empty_value: true
+- set:
+    field: log.syslog.severity.name
+    copy_from: syslog.severity.str
+    ignore_empty_value: true
+- set:
+    field: log.syslog.severity.code
+    copy_from: syslog.severity
+    ignore_empty_value: true
+- set:
+    field: orchestrator.namespace
+    copy_from: k8s.ns.name
+    ignore_empty_value: true
+- set:
+    field: orchestrator.resource.name
+    copy_from: k8s.pod.name
+    ignore_empty_value: true
+- set:
+    field: orchestrator.resource.id
+    copy_from: k8s.pod.uid
+    ignore_empty_value: true
+- set:
+    field: orchestrator.resource.label
+    copy_from: k8s.pod.labels
+    ignore_empty_value: true
+- set:
+    field: orchestrator.resource.ip
+    copy_from: k8s.pod.ip
+    ignore_empty_value: true
+- set:
+    field: orchestrator.resource.type
+    value: 'pod'
+    if: ctx.containsKey('k8s.pod.name')
+- set:
+    field: orchestrator.type
+    value: 'kubernetes'
+    if: ctx.containsKey('k8s.pod.name')
+- set:
+    field: output
+    copy_from: output
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: priority
+    copy_from: priority
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: rule
+    copy_from: rule
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: evt.num
+    copy_from: evt.num
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: evt.time
+    copy_from: evt.time
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: evt.source
+    copy_from: evt.source
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: evt.hostname
+    copy_from: evt.hostname
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.exepath
+    copy_from: proc.exepath
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.pexepath
+    copy_from: proc.pexepath
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.name
+    copy_from: proc.name
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.pname
+    copy_from: proc.pname
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.cmdline
+    copy_from: proc.cmdline
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.pcmdline
+    copy_from: proc.pcmdline
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.cmdnargs
+    copy_from: proc.cmdnargs
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.env
+    copy_from: proc.env
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.cwd
+    copy_from: proc.cwd
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.pid
+    copy_from: proc.pid
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.ppid
+    copy_from: proc.ppid
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.vpid
+    copy_from: proc.vpid
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.pvpid
+    copy_from: proc.pvpid
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.sid
+    copy_from: proc.sid
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.sname
+    copy_from: proc.sname
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.sid.exepath
+    copy_from: proc.sid.exepath
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.vpgid
+    copy_from: proc.vpgid
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.vpgid.name
+    copy_from: proc.vpgid.name
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.duration
+    copy_from: proc.duration
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.ppid.duration
+    copy_from: proc.ppid.duration
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.pid.ts
+    copy_from: proc.pid.ts
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.pid.ts
+    copy_from: proc.pid.ts
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.is_sid_leader
+    copy_from: proc.is_sid_leader
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: proc.is_vpgid_leader
+    copy_from: proc.is_vpgid_leader
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: thread.cap_permitted
+    copy_from: thread.cap_permitted
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: thread.cap_effective
+    copy_from: thread.cap_effective
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: thread.tid
+    copy_from: thread.tid
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: user.uid
+    copy_from: user.uid
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: user.name
+    copy_from: user.name
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: group.id
+    copy_from: group.id
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: group.name
+    copy_from: group.name
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: container.id
+    copy_from: container.id
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: container.name
+    copy_from: container.name
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: container.image
+    copy_from: container.image
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: container.type
+    copy_from: container.type
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: container.privileged
+    copy_from: container.privileged
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: container.image.digest
+    copy_from: container.image.digest
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: container.ip
+    copy_from: container.ip
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.directory
+    copy_from: fd.directory
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.filename
+    copy_from: fd.filename
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.cip
+    copy_from: fd.cip
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.sip
+    copy_from: fd.sip
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.lip
+    copy_from: fd.lip
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.rip
+    copy_from: fd.rip
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.cport
+    copy_from: fd.cport
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.sport
+    copy_from: fd.sport
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.lport
+    copy_from: fd.lport
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.rport
+    copy_from: fd.rport
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.cip.name
+    copy_from: fd.cip.name
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.sip.name
+    copy_from: fd.sip.name
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.lip.name
+    copy_from: fd.lip.name
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.rip.name
+    copy_from: fd.rip.name
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: fd.ino
+    copy_from: fd.ino
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: syslog.facility.str
+    copy_from: syslog.facility.str
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: syslog.facility
+    copy_from: syslog.facility
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: syslog.severity.str
+    copy_from: syslog.severity.str
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: syslog.severity
+    copy_from: syslog.severity
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: k8s.ns.name
+    copy_from: k8s.ns.name
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: k8s.pod.name
+    copy_from: k8s.pod.name
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: k8s.pod.uid
+    copy_from: k8s.pod.uid
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: k8s.pod.labels
+    copy_from: k8s.pod.labels
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- set:
+    field: k8s.pod.ip
+    copy_from: k8s.pod.ip
+    ignore_empty_value: true
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
+- remove:
+    field: ['output','priority','rule','evt.num','evt.time','evt.source','evt.hostname','proc.exepath','proc.pexepath','proc.name','proc.pname','proc.cmdline','proc.pcmdline','proc.cmdnargs','proc.env','proc.cwd','proc.pid','proc.ppid','proc.vpid','proc.pvpid','proc.sid','proc.sname','proc.sid.exepath','proc.vpgid','proc.vpgid.name','proc.vpgid.exepath','proc.duration','proct.ppid.duration','proc.pid.ts','proc.ppid.ts','proc.is_sid_leader','proc.is_vpgid_leader','thread.cap_permitted','thread.cap_effective','thread.tid','user.uid','user.name','group.gid','group.name','container.id','container.name','container.image','container.type','container.privileged','container.image.digest','container.ip','fd.directory','fd.filename','fd.cip','fd.sip','fd.lip','fd.rip','fd.cport','fd.sport','fd.lport','fd.rport','fd.cip.name','fd.sip.name','fd.lip.name','fd.rip.name','fd.ino','syslog.facility.str','syslog.facility','syslog.severity.str','syslog.severity','k8s.ns.name','k8s.pod.name','k8s.pod.uid','k8s.pod.labels','k8s.pod.ip']
+    if: ctx['tags'] == null || !(ctx['tags'].contains('preserve_falco_fields'))
+    ignore_missing: true
+- set:
+    field: Falco.evt.pluginname #This is the start of Falco fields
+    copy_from: evt.pluginname
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.plugininfo
+    copy_from: evt.plugininfo
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.is_async
+    copy_from: evt.is_async
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.asynctype
+    copy_from: evt.asynctype
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.latency
+    copy_from: evt.latency
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.deltatime
+    copy_from: evt.deltatime
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.dir
+    copy_from: evt.dir
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.args
+    copy_from: evt.args
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.info
+    copy_from: evt.info
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.buffer
+    copy_from: evt.buffer
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.buflen
+    copy_from: evt.buflen
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.res
+    copy_from: evt.res
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.rawres
+    copy_from: evt.rawres
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.failed
+    copy_from: evt.failed
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.is_io
+    copy_from: evt.is_io
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.is_io_read
+    copy_from: evt.is_io_read
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.is_io_write
+    copy_from: evt.is_io_write
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.io_dir
+    copy_from: evt.io_dir
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.is_wait
+    copy_from: evt.is_wait
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.wait_latency
+    copy_from: evt.wait_latency
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.is_syslog
+    copy_from: evt.is_syslog
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.count.error
+    copy_from: evt.count.error
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.count.error_file
+    copy_from: evt.count.error.file
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.count.error_net
+    copy_from: evt.count.error.net
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.count.error_memory
+    copy_from: evt.count.error.memory
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.count.error_other
+    copy_from: evt.count.error.other
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.count.exit
+    copy_from: evt.count.exit
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.abspath
+    copy_from: evt.abspath
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.abspath_src
+    copy_from: evt.abspath_src
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.abspath_dst
+    copy_from: evt.abspath_dst
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.is_open_read
+    copy_from: evt.is_open_read
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.is_open_write
+    copy_from: evt.is_open_write
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.is_open_exec
+    copy_from: evt.is_open_exec
+    ignore_empty_value: true
+- set:
+    field: Falco.evt.is_open_create
+    copy_from: evt.is_open_create
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.exe
+    copy_from: proc.exe
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.pexe
+    copy_from: proc.pexe
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.cmdlenargs
+    copy_from: proc.cmdlenargs
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.exeline
+    copy_from: proc.exeline
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.loginshellid
+    copy_from: proc.loginshellid
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.tty
+    copy_from: proc.tty
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.sid.exe
+    copy_from: proc.sid.exe
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.vpgid.exe
+    copy_from: proc.vpgid.exe
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.is_exe_writable
+    copy_from: proc.is_exe_writable
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.is_exe_upper_layer
+    copy_from: proc.is_exe_upper_layer
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.is_exe_from_memfd
+    copy_from: proc.is_exe_from_memfd
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.exe_ino
+    copy_from: proc.exe_ino
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.exe_ino_ctime
+    copy_from: proc.exe_ino.ctime
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.exe_ino_mtime
+    copy_from: proc.exe_ino.mtime
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.exe_ino_ctime_duration_proc_start
+    copy_from: proc.exe_ino.ctime_duration_proc_start
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.exe_ino_ctime_duration_pidns_start
+    copy_from: proc.exe_ino.ctime_duration_pidns_start
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.pidns_init_start_ts
+    copy_from: proc.pidns_init_start_ts
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.thread.cap_inheritable
+    copy_from: thread.cap_inheritable
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.is_container_healthcheck
+    copy_from: proc.is_container_healthcheck
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.is_container_liveness_probe
+    copy_from: proc.is_container_liveness_probe
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.is_container_readiness_probe
+    copy_from: proc.is_container_readiness_probe
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.fdopencount
+    copy_from: proc.fdopencount
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.fdopenlimit
+    copy_from: proc.fdopenlimit
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.fdusage
+    copy_from: proc.fdusage
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.vmsize
+    copy_from: proc.vmsize
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.vmrss
+    copy_from: proc.vmrss
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.vmswap
+    copy_from: proc.vmswap
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.pfmajor
+    copy_from: thread.pfmajor
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.pfminor
+    copy_from: thread.pfminor
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.ismain
+    copy_from: thread.ismain
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.vtid
+    copy_from: thread.vtid
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.exectime
+    copy_from: thread.exectime
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.totalexectime
+    copy_from: thread.totalexectime
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.cgroups
+    copy_from: thread.cgroups
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.nthreads
+    copy_from: proc.nthreads
+    ignore_empty_value: true
+- set:
+    field: Falco.proc.nchilds
+    copy_from: proc.nchilds
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.cpu
+    copy_from: thread.cpu
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.cpu_user
+    copy_from: thread.cpu.user
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.cpu_system
+    copy_from: thread.cpu.system
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.vmsize
+    copy_from: thread.vmsize
+    ignore_empty_value: true
+- set:
+    field: Falco.thread.vmrss
+    copy_from: thread.vmrss
+    ignore_empty_value: true
+- set:
+    field: Falco.user.homedir
+    copy_from: user.homedir
+    ignore_empty_value: true
+- set:
+    field: Falco.user.shell
+    copy_from: user.shell
+    ignore_empty_value: true
+- set:
+    field: Falco.user.loginuid
+    copy_from: user.loginuid
+    ignore_empty_value: true
+- set:
+    field: Falco.user.loginname
+    copy_from: user.loginname
+    ignore_empty_value: true
+- set:
+    field: Falco.container.image.full_id
+    copy_from: container.full_id
+    ignore_empty_value: true
+- set:
+    field: Falco.container.image.id
+    copy_from: container.image.id
+    ignore_empty_value: true
+- script:
+    lang: painless
+    tag: 'container.mounts'
+    source: |
+        if (ctx['container'] != null && ctx['container.mounts'] != null) {
+            def mountsString = ctx['container.mounts'];
+            def mountItems = mountsString.split(' ');
+            
+            def mountsList = [];
+            for (int i = 0; i < mountItems.length; i++) {
+                def mountItem = mountItems[i];
+                def parts = mountItem.split(':');
+                def mountRecord = [:];
+                mountRecord.source = parts && parts.length > 0 ? parts[0] : null;
+                mountRecord.dest = parts && parts.length > 1 ? parts[1] : null;
+                mountRecord.mode = parts && parts.length > 2 ? parts[2] : null;
+                mountRecord.rdrw = parts && parts.length > 3 ? parts[3] : null;
+                mountRecord.propagation = parts && parts.length > 4 ? parts[4] : null;
+                mountsList.add(mountRecord);
+            }
+            ctx['Falco.container.mounts'] = mountsList;
+        } else {
+            ctx['Falco.container.mounts'] = null;
+        }
+- set:
+    field: Falco.container.image.repository
+    copy_from: container.image.repository
+    ignore_empty_value: true
+- set:
+    field: Falco.container.healthcheck
+    copy_from: container.healthcheck
+    ignore_empty_value: true
+- set:
+    field: Falco.container.liveness_probe
+    copy_from: container.liveness_probe
+    ignore_empty_value: true
+- set:
+    field: Falco.container.readiness_probe
+    copy_from: container.readiness_probe
+    ignore_empty_value: true
+- set:
+    field: Falco.container.start_ts
+    copy_from: container.start_ts
+    ignore_empty_value: true
+- set:
+    field: Falco.container.duration
+    copy_from: container.duration
+    ignore_empty_value: true
+- set:
+    field: Falco.container.cni_json
+    copy_from: container.cni_json
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.num
+    copy_from: fd.num
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.type
+    copy_from: fd.type
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.typechar
+    copy_from: fd.typechar
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.name
+    copy_from: fd.name
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.I4proto
+    copy_from: fd.I4proto
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.sockfamily
+    copy_from: fd.sockfamily
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.is_server
+    copy_from: fd.is_server
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.uid
+    copy_from: fd.uid
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.containername
+    copy_from: fd.containername
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.containerdirectory
+    copy_from: fd.containerdirectory
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.cproto
+    copy_from: fd.cproto
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.sproto
+    copy_from: fd.sproto
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.lproto
+    copy_from: fd.lproto
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.rproto
+    copy_from: fd.rproto
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.connected
+    copy_from: fd.connected
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.name_changed
+    copy_from: fd.name_changed
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.dev
+    copy_from: fd.dev
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.dev_major
+    copy_from: fd.dev_major
+    ignore_empty_value: true
+- set:
+    field: Falco.fd.dev_minor
+    copy_from: fd.dev_minor
+    ignore_empty_value: true
+- set:
+    field: Falco.fs.path.name
+    copy_from: fs.path.name
+    ignore_empty_value: true
+- set:
+    field: Falco.fs.path.source
+    copy_from: fs.path.source
+    ignore_empty_value: true
+- set:
+    field: Falco.fs.path.target
+    copy_from: fs.path.target
+    ignore_empty_value: true
+- set:
+    field: Falco.fdlist.names
+    copy_from: fdlist.names
+    ignore_empty_value: true
+- set:
+    field: Falco.fdlist.cips
+    copy_from: fdlist.cips
+    ignore_empty_value: true
+- set:
+    field: Falco.fdlist.sips
+    copy_from: fdlist.sips
+    ignore_empty_value: true
+- set:
+    field: Falco.fdlist.cports
+    copy_from: fdlist.cports
+    ignore_empty_value: true
+- set:
+    field: Falco.fdlist.sports
+    copy_from: fdlist.sports
+    ignore_empty_value: true
+- set:
+    field: Falco.k8s.pod.sandbox_id
+    copy_from: k8s.pod.sandbox_id
+    ignore_empty_value: true
+- set:
+    field: Falco.k8s.pod.full_sandbox_id
+    copy_from: k8s.pod.full_sandbox_id
+    ignore_empty_value: true
+- set:
+    field: Falco.k8s.pod.cni_json
+    copy_from: k8s.pod.cni_json
+    ignore_empty_value: true
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
+- set:
+    field: error.failed_processor_type
+    value: '{{_ingest.on_failure_processor_type }}'
+- set:
+    field: error.failed_processor_tag
+    value: '{{_ingest.on_failure_processor_tag }}'
