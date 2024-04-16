@@ -6,11 +6,11 @@ Additional azure API calls will be executed in order to retrieve information reg
 
 ## Requirements
 
- Before you start, check the [Authentication and costs](https://docs.elastic.co/integrations/azure_metrics#authentication-and-costs) both for Azure and Elastic.
+Before you start, check the [Authentication and costs](https://docs.elastic.co/integrations/azure_metrics#authentication-and-costs) both for Azure and Elastic.
 
 ## Setup
 
- Follow these [step-by-step instructions](https://docs.elastic.co/integrations/azure_metrics#setup) on how to set up an Azure metrics integration.
+Follow these [step-by-step instructions](https://docs.elastic.co/integrations/azure_metrics#setup) on how to set up an Azure metrics integration.
 
 ## Data stream specific configuration notes
 
