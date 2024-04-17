@@ -15,7 +15,6 @@ Before you start, check the [Authentication and costs](https://docs.elastic.co/i
 
 Follow these [step-by-step instructions](https://docs.elastic.co/integrations/azure_metrics#setup) on how to set up an Azure metrics integration.
 
-
 ## Data stream specific configuration notes
 
 `Period`:: (_string_) Reporting interval. Metrics will have a timegrain of 5 minutes, so the `Period` configuration option  for `monitor` should have a value of `300s` or multiple of `300s`for relevant results.
@@ -25,26 +24,25 @@ Follow these [step-by-step instructions](https://docs.elastic.co/integrations/az
 `resource_id`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format `/subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}`.
   Should return a list of resources.
 
-Users might have large number of resources they would like to gather metrics from. In order to reduce verbosity, they will have
- the options of entering a resource group and filtering by resource type, or type in a “resource_query” where they can filter resources inside their subscription.
-Source for the resource API’s:
-https://docs.microsoft.com/en-us/rest/api/resources/resources/list
-https://docs.microsoft.com/en-us/rest/api/resources/resources/listbyresourcegroup
+You can gather metrics from a large number of resources. To reduce verbosity, you can enter a resource group and filter by resource type, or type in a “resource_query” where you can filter resources inside your subscription.
+Check the following resources API:
+- [Resources - List](https://docs.microsoft.com/en-us/rest/api/resources/resources/list)
+- [Resources - List By Resource Group](https://docs.microsoft.com/en-us/rest/api/resources/resources/listbyresourcegroup)
 
 `resource_group`:: (_[]string_) Using the resource_type configuration option as a filter is required for the resource groups entered. This option should return a list resources we want to apply our metric configuration options on.
 
 `resource_type`:: (_string_) As mentioned above this will be a filter option for the resource group api, will check for all resources under the specified group that are the type under this configuration.
 
-`resource_query`:: (_string_) Should contain a filter entered by the user, the output will be a list of resources
+`resource_query`:: (_string_) Should contain a filter entered by the user, the output will be a list of resources.
 
 
 ## Resource metric configurations
 
-`metrics`:: List of different metrics to collect information
+`metrics`:: List of different metrics to collect information.
 
 `namespace`:: (_string_) Namespaces are a way to categorize or group similar metrics together. By using namespaces, users can achieve isolation between groups of metrics that might collect different insights or performance indicators.
 
-`name`:: (_[]string_) Name of the metrics that's being reported. Usually, the name is descriptive enough to help identify what's measured. A list of metric names can be entered as well
+`name`:: (_[]string_) Name of the metrics that's being reported. Usually, the name is descriptive enough to help identify what's measured. A list of metric names can be entered as well.
 
 `aggregations`:: (_[]string_) List of supported aggregations.
 Azure Monitor stores all metrics at one-minute granularity intervals. During a given minute, a metric might need to be sampled several times or it might need to be measured for many discrete events.
