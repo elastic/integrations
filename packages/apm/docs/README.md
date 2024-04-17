@@ -191,6 +191,7 @@ See [APM data streams](https://ela.st/apm-data-streams) for more information.
 | transaction.message.routing_key | The message routing key | keyword |  |
 | transaction.name | Generic designation of a transaction in the scope of a single service (eg. 'GET /users/:id'). | keyword |  |
 | transaction.name.text | Multi-field of `transaction.name`. | text |  |
+| transaction.profiler_stack_trace_ids | Counted keyword of universal profiling stacktraces IDs captured by the profiler for this transaction. | counted_keyword |  |
 | transaction.representative_count | The approximate number of transactions represented, based on the inverse sampling rate. | scaled_float |  |
 | transaction.result | The result of the transaction. HTTP status code for HTTP-related transactions. | keyword |  |
 | transaction.sampled | Transactions that are 'sampled' will include all available information. Transactions that are not sampled will not have spans or context. | boolean |  |

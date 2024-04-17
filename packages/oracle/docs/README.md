@@ -62,13 +62,23 @@ Then, Metricbeat can be launched.
 
 ### Oracle DSN Configuration
 
-The supported configuration takes one of the forms
-- `oracle://<user>:<password>@<connection_string>`
-- `<user>:<password>@<connection_string>`
+The following two configuration formats are supported:
+```
+oracle://<user>:<password>@<connection_string>
+user="<user>" password="<password>" connectString="<connection_string>" sysdba=<true|false>
+```
 
-Examples of supported configurations are as below:
-- `oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
-- `sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
+Example values are:
+```
+oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1
+user="sys" password="Oradoc_db1" connectString="0.0.0.0:1521/ORCLCDB.localdomain" sysdba=true
+```
+
+In the first, URL-based format, special characters should be URL encoded.
+
+In the seoncd, logfmt-encoded DSN format, if the password contains a backslash
+character (`\`), it must be escaped with another backslash. For example, if the
+password is `my\_password`, it must be written as `my\\_password`.
 
 ## Compatibility
 
@@ -311,6 +321,12 @@ An example event for `database_audit` looks as following:
 
 Tablespace metrics describes the tablespace usage metrics of all types of tablespaces in the oracle database.
 
+To collect the Tablespace metrics, Oracle integration relies on a specific set of views. Make sure that the user configured within the Oracle DSN configuration has `READ` access permissions to the following views:
+ 
+- `SYS.DBA_DATA_FILES`
+- `SYS.DBA_TEMP_FILES`
+- `DBA_FREE_SPACE`
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -466,7 +482,11 @@ An example event for `tablespace` looks as following:
 
 ### Sysmetrics 
 
-The system metrics value captured for the most current time interval for the long duration (60-seconds) are mentioned below
+The system metrics value captured for the most current time interval for the long duration (60-seconds) are listed in the following table. 
+
+To collect the Sysmetrics metrics, Oracle integration relies on a specific set of views. Make sure that the user configured within the Oracle DSN configuration has `READ` access permissions to the following view:
+
+- `V$SYSMETRIC`
 
 **Exported fields**
 
@@ -909,6 +929,11 @@ An example event for `sysmetric` looks as following:
 
 A Program Global Area (PGA) is a memory region that contains data and control information for a server process. It is nonshared memory created by Oracle Database when a server process is started. Access to the PGA is exclusive to the server process. Metrics concerning Program Global Area (PGA) memory are mentioned below.
 
+To collect the Memory metrics, Oracle integration relies on a specific set of views. Make sure that the user configured within the Oracle DSN configuration has `READ` access permissions to the following views:
+
+- `V$SGASTAT`
+- `V$PGASTAT`
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -1053,6 +1078,10 @@ An example event for `memory` looks as following:
 ### System Statistics Metrics 
 
 The System Global Area (SGA) is a group of shared memory structures that contain data and control information for one Oracle Database instance. Metrics concerning System Global Area (SGA) memory are mentioned below.
+
+To collect the System Statistics metrics, Oracle integration relies on a specific set of views. Make sure that the user configured within the Oracle DSN configuration has `READ` access permissions to the following view:
+
+- `V$SYSSTAT`
 
 **Exported fields**
 
@@ -1330,6 +1359,16 @@ An example event for `system_statistics` looks as following:
 ### Performance Metrics
 
 Performance metrics give an overview of where time is spent in the system and enable comparisons of wait times across the system.
+
+To collect the Performance metrics, Oracle integration relies on a specific set of views. Make sure that the user configured within the Oracle DSN configuration has `READ` access permissions to the following views:
+
+- `V$BUFFER_POOL_STATISTICS`
+- `V$SESSTAT`
+- `V$SYSSTAT`
+- `V$LIBRARYCACHE`
+- `DBA_JOBS`
+- `GV$SESSION`
+- `V$SYSTEM_WAIT_CLASS`
 
 **Exported fields**
 

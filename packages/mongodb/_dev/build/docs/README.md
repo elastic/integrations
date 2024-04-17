@@ -2,6 +2,35 @@
 
 This integration is used to fetch logs and metrics from [MongoDB](https://www.mongodb.com/).
 
+## Configuration Notes
+
+When configuring the `hosts` option, MongoDB URIs must adhere to the following formats:
+
+- Simple: `mongodb://[user:pass@]host[:port][?options]`
+- Complex: `mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]`
+
+Examples of URIs can vary from simple to complex:
+
+- Simple: `localhost`
+- Complex: `mongodb://myuser:mypass@localhost:40001", "otherhost:40001`
+
+Additional supported URI examples include:
+
+- Replica set: `mongodb://localhost:27017,localhost:27022,localhost:27023/?replicaSet=dbrs`
+- Direct connection: `mongodb://localhost:27017/?directConnection=true`
+
+When using the `directConnection=true` parameter in the connection URI, all operations are executed on the specified host. It's important to explicitly include `directConnection=true` in the URI as it won't be automatically added.
+
+- Authentication: `mongodb://username:password@host:port/authSource=$external?authMechanism=PLAIN`
+
+When specifying `authMechanism` as PLAIN, it indicates the use of the PLAIN authentication mechanism, which is commonly associated with LDAP.
+
+`authSource` can be used to specify the name of the database that has the collection with the user credentials.
+
+In MongoDB, `authSource=$external` is a special authentication database used for authenticating users externally, such as via LDAP.
+
+The username and password can either be included in the URI or set using the respective configuration options. If included in the URI, these credentials take precedence over any configured username and password configuration options.
+
 ## Compatibility
 
 The `log` dataset is tested with logs from versions v3.2.11 and v4.4.4 in
@@ -27,6 +56,10 @@ db.createUser(
         roles: ["clusterMonitor"]
     }
 )
+```
+You can use the following command in Mongo shell to authenticate a user against a specific database with the provided username and password (make sure you are using the `admin` db by using `db` command in Mongo shell).
+```
+db.auth(user, pass)
 ```
 
 You can use the following command in Mongo shell to grant the role to an 

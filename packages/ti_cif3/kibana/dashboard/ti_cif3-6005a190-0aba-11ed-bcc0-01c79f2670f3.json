@@ -1,7 +1,6 @@
 {
     "attributes": {
         "description": "Dashboard providing statistics about FQDN type indicators from the Collective Intelligence Framework v3 integration",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -46,6 +45,28 @@
                                 "data_stream.dataset": "ti_cif3.feed"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_ioc_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "labels.is_ioc_transform_source",
+                            "negate": true,
+                            "params": {
+                                "query": "true"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "labels.is_ioc_transform_source": "true"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -57,6 +78,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -96,8 +119,7 @@
                 },
                 "panelIndex": "4c3ed6e1-8b4e-4eab-8d84-70ed4f506216",
                 "title": "Files Navigation Textbox [Logs CIFv3]",
-                "type": "visualization",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -116,7 +138,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "c94400ee-a135-4a99-9693-5879d29f7aad": {
                                             "columnOrder": [
@@ -154,7 +176,7 @@
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -168,8 +190,7 @@
                 },
                 "panelIndex": "02f1732b-a981-4fba-8b27-b944f2f3c98c",
                 "title": "Unique Domains [Logs CIFv3]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -188,7 +209,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "09bca2c1-c599-4575-be8a-a416589c7082": {
                                             "columnOrder": [
@@ -247,7 +268,9 @@
                                     }
                                 ],
                                 "layerId": "09bca2c1-c599-4575-be8a-a416589c7082",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
                             }
                         },
                         "title": "",
@@ -266,19 +289,17 @@
                 },
                 "panelIndex": "c2db10e8-0e7e-4199-b787-48e14bd2e2fe",
                 "title": "Sample of Domains [Logs CIFv3]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs CIFv3] FQDNs",
         "version": 1
     },
-    "coreMigrationVersion": "8.0.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-08T18:38:36.375Z",
     "id": "ti_cif3-6005a190-0aba-11ed-bcc0-01c79f2670f3",
-    "migrationVersion": {
-        "dashboard": "8.0.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -288,6 +309,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         },
         {
@@ -312,9 +338,15 @@
         },
         {
             "id": "ti_cif3-ec8c3e30-0c59-11ed-9b65-435777f1d8a1",
-            "name": "tag-ti_cif3-ec8c3e30-0c59-11ed-9b65-435777f1d8a1",
+            "name": "tag-ref-ti_cif3-ec8c3e30-0c59-11ed-9b65-435777f1d8a1",
+            "type": "tag"
+        },
+        {
+            "id": "ti_cif3-security-solution-default",
+            "name": "tag-ref-security-solution-default",
             "type": "tag"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

@@ -13,17 +13,34 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
-  - date:
-      field: json.create_time
-      if: ctx.json?.create_time != null && ctx.json.create_time != ''
-      formats:
-        - ISO8601
+  - set:
+      field: _temp_.device_timestamp
+      copy_from: json.device_timestamp
       on_failure:
         - remove:
-            field: json.create_time
+            field: json.device_timestamp
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.device_timestamp
+      if: ctx.json?.device_timestamp != null && ctx.json.device_timestamp != ''
+      formats:
+        - ISO8601
+        - 'yyyy-MM-dd HH:mm:ss Z z'
+        - 'yyyy-MM-dd HH:mm:ss.S Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SS Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SSS Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SSSS Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SSSSS Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SSSSSS Z z'
+        - 'yyyy-MM-dd HH:mm:ss.SSSSSSS Z z'
+      on_failure:
+        - remove:
+            field: json.device_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.action
       target_field: event.action
@@ -62,7 +79,6 @@ processors:
       if: ctx.json?.netconn_inbound == false
   - convert:
       field: json.remote_port
-      target_field: source.port
       type: long
       ignore_missing: true
       on_failure:
@@ -70,10 +86,9 @@ processors:
             field: json.remote_port
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.remote_ip
-      target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -81,7 +96,54 @@ processors:
             field: json.remote_ip
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.local_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.local_port
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.local_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.local_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      source: |
+        // These allocations may be futile, but will be cleaned up in the postamble.
+        if (ctx.client == null) {
+          ctx.client = new HashMap();
+        }
+        if (ctx.source == null) {
+          ctx.source = new HashMap();
+        }
+        if (ctx.destination == null) {
+          ctx.destination = new HashMap();
+        }
+        // Nulls inserted into the document will be cleaned up in the postamble.
+        ctx.client.ip = ctx.json.local_ip;
+        ctx.client.port = ctx.json.local_port;
+        if (ctx.json?.netconn_inbound == true) {
+          ctx.destination.ip = ctx.json?.local_ip;
+          ctx.destination.port = ctx.json?.local_port;
+          ctx.source.ip = ctx.json?.remote_ip;
+          ctx.source.port = ctx.json?.remote_port;
+        } else {
+          ctx.source.ip = ctx.json?.local_ip;
+          ctx.source.port = ctx.json?.local_port;
+          ctx.destination.ip = ctx.json?.remote_ip;
+          ctx.destination.port = ctx.json?.remote_port;
+        }     
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
@@ -92,28 +154,6 @@ processors:
       field: json.netconn_domain
       target_field: source.address
       ignore_missing: true
-  - convert:
-      field: json.local_port
-      target_field: client.port
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.local_port
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.local_ip
-      target_field: client.ip
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.local_ip
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{client.ip}}}'
@@ -194,7 +234,7 @@ processors:
             field: json.process_pid
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.parent_cmdline
       target_field: process.parent.command_line
@@ -217,7 +257,7 @@ processors:
             field: json.parent_pid
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.regmod_name
       target_field: registry.path
@@ -294,9 +334,19 @@ processors:
       field: json.backend_timestamp
       target_field: carbon_black_cloud.endpoint_event.backend.timestamp
       ignore_missing: true
+  - set:
+      field: carbon_black_cloud.endpoint_event.device.timestamp
+      copy_from: _temp_.device_timestamp
+      ignore_empty_value: true
+      on_failure:
+        - remove:
+            field: carbon_black_cloud.endpoint_event.device.timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.device_timestamp
-      target_field: carbon_black_cloud.endpoint_event.device.timestamp
+      field: json.create_time
+      target_field: carbon_black_cloud.endpoint_event.create_time
       ignore_missing: true
   - rename:
       field: json.device_os
@@ -320,7 +370,7 @@ processors:
             field: json.process_duration
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.process_publisher
       processor:
@@ -348,7 +398,7 @@ processors:
             field: json.process_terminated
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.process_username
       target_field: carbon_black_cloud.endpoint_event.process.username
@@ -398,7 +448,7 @@ processors:
             field: json.crossproc_target
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.crossproc_reputation
       target_field: carbon_black_cloud.endpoint_event.crossproc.reputation
@@ -521,7 +571,7 @@ processors:
             field: json.modload_count
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.modload_publisher
       processor:
@@ -554,7 +604,7 @@ processors:
             field: json.netconn_proxy_ip
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{carbon_black_cloud.endpoint_event.netconn.proxy.ip}}}'
@@ -580,7 +630,7 @@ processors:
             field: json.childproc_pid
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.childproc_publisher
       processor:
@@ -656,7 +706,7 @@ processors:
             field: json.scriptload_count
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.scriptload_hash_md5
       target_field: carbon_black_cloud.endpoint_event.scriptload.hash.md5
@@ -695,7 +745,7 @@ processors:
             field: json.device_internal_ip
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: host.ip
       value: '{{{carbon_black_cloud.endpoint_event.device.internal_ip}}}'
@@ -718,7 +768,7 @@ processors:
             field: json.device_external_ip
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.schema
       target_field: carbon_black_cloud.endpoint_event.schema
@@ -729,7 +779,7 @@ processors:
             field: json.schema
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: host.ip
       value: '{{{carbon_black_cloud.endpoint_event.device.external_ip}}}'
@@ -775,6 +825,8 @@ processors:
         - json.device_external_ip
         - json.device_internal_ip
         - json.netconn_proxy_ip
+        - json.device_timestamp
+        - _temp_
       ignore_missing: true
   - script:
       description: Adds all the remaining fields in fields under carbon_black_cloud.endpoint_event.
@@ -838,4 +890,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

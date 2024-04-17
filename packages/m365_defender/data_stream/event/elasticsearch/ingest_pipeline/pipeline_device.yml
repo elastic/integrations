@@ -920,21 +920,53 @@ processors:
       target_field: m365_defender.event.previous.registry_value_name
       tag: rename_json_properties_PreviousRegistryValueName
       ignore_missing: true
+  - convert:
+      field: json.properties.FileOriginIP
+      type: ip
+      tag: convert_file_origin_ip
+      if: ctx.json?.properties?.FileOriginIP != null
+      on_failure:
+        - remove:
+            field: json.properties.FileOriginIP
   - rename:
       field: json.properties.FileOriginIP
       target_field: m365_defender.event.file.origin_ip
       tag: rename_json_properties_FileOriginIp
       ignore_missing: true
+  - convert:
+      field: json.properties.RemoteIP
+      type: ip
+      tag: convert_remote_ip
+      if: ctx.json?.properties?.RemoteIP != null
+      on_failure:
+        - remove:
+            field: json.properties.RemoteIP
   - rename:
       field: json.properties.RemoteIP
       target_field: m365_defender.event.remote.ip
       tag: rename_json_properties_RemoteIP
       ignore_missing: true
+  - convert:
+      field: json.properties.LocalIP
+      type: ip
+      tag: convert_local_ip
+      if: ctx.json?.properties?.LocalIP != null
+      on_failure:
+        - remove:
+            field: json.properties.LocalIP
   - rename:
       field: json.properties.LocalIP
       target_field: m365_defender.event.local.ip
       tag: rename_json_properties_LocalIP
       ignore_missing: true
+  - convert:
+      field: json.properties.RequestSourceIP
+      type: ip
+      tag: convert_request_source_ip
+      if: ctx.json?.properties?.RequestSourceIP != null
+      on_failure:
+        - remove:
+            field: json.properties.RequestSourceIP
   - rename:
       field: json.properties.RequestSourceIP
       target_field: m365_defender.event.request.source_ip
@@ -955,6 +987,14 @@ processors:
       target_field: m365_defender.event.local.port
       tag: rename_json_properties_LocalPort
       ignore_missing: true
+  - convert:
+      field: json.properties.PublicIP
+      type: ip
+      tag: convert_public_ip
+      if: ctx.json?.properties?.PublicIP != null
+      on_failure:
+        - remove:
+            field: json.properties.PublicIP
   - rename:
       field: json.properties.PublicIP
       target_field: m365_defender.event.public_ip.value
@@ -1704,18 +1744,17 @@ processors:
         def commandLine = ctx.process.command_line;
         commandLine = commandLine.trim();
         if (commandLine != "") {
-        ctx.process.command_line = commandLine;
-    
-        def args = new ArrayList();
-        for (def v : / /.split(commandLine)) {
-            if (v != "") {
-                args.add(v);
-            }
-        }
-        if (args.length > 0) {
-            ctx.process.args = args;
-            ctx.process.args_count = args.length;
-        }
+          ctx.process.command_line = commandLine;
+          def args = new ArrayList();
+          for (def v : / /.split(commandLine)) {
+              if (v != "") {
+                  args.add(v);
+              }
+          }
+          if (args.length > 0) {
+              ctx.process.args = args;
+              ctx.process.args_count = args.length;
+          }
         }
   - script:
       description: Splits up the command line to populate more parent processor fields.
@@ -1726,18 +1765,17 @@ processors:
         def commandLine = ctx.process.parent.command_line;
         commandLine = commandLine.trim();
         if (commandLine != "") {
-        ctx.process.parent.command_line = commandLine;
-    
-        def args = new ArrayList();
-        for (def v : / /.split(commandLine)) {
-            if (v != "") {
-                args.add(v);
-            }
-        }
-        if (args.length > 0) {
-            ctx.process.parent.args = args;
-            ctx.process.parent.args_count = args.length;
-        }
+          ctx.process.parent.command_line = commandLine;
+          def args = new ArrayList();
+          for (def v : / /.split(commandLine)) {
+              if (v != "") {
+                  args.add(v);
+              }
+          }
+          if (args.length > 0) {
+              ctx.process.parent.args = args;
+              ctx.process.parent.args_count = args.length;
+          }
         }
 
   # Geo mapping
