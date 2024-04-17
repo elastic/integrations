@@ -18,26 +18,22 @@ auth.oauth2:
 {{/if}}
 url: {{instance_url}}
 event_monitoring_method:
-  {{#if event_log_file}}
   event_log_file:
-    enabled: true
+    enabled: {{#if event_log_file}}true{{#else}}false{{/if}}
     interval: {{elf_period}}
     query:
-      default: "SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if initial_interval}}LogDate > [[ formatTime(parseDuration(-{{initial_interval}})), "2006-01-02T15:04:05+0700") ]] AND{{/if}} Interval = '{{log_file_interval}}' AND EventType = 'Login' ORDER BY LogDate ASC NULLS FIRST"
-      value: "SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = '{{log_file_interval}}' AND EventType = 'Login' AND CreatedDate > [[ .cursor.event_log_file.last_event_time ]] ORDER BY LogDate ASC NULLS FIRST"
+      default: SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if initial_interval}}LogDate > [[ (formatTime (now.Add (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z0700") ]] AND{{/if}} Interval = '{{log_file_interval}}' AND EventType = 'Login' ORDER BY LogDate ASC NULLS FIRST
+      value: SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = '{{log_file_interval}}' AND EventType = 'Login' AND CreatedDate > [[ .cursor.event_log_file.last_event_time ]] ORDER BY LogDate ASC NULLS FIRST
     cursor:
       field: "CreatedDate"
-  {{/if}}
-  {{#if object}}
   object:
-    enabled: true
+    enabled: {{#if object}}true{{#else}}false{{/if}}
     interval: {{real_time_period}}
     query:
-      default: "SELECT FIELDS(STANDARD) FROM LoginEvent{{#if initial_interval}} WHERE EventDate > [[ formatTime(parseDuration(-{{initial_interval}})), "2006-01-02T15:04:05+0700") ]]{{/if}}"
-      value: "SELECT FIELDS(STANDARD) FROM LoginEvent WHERE EventDate > [[ .cursor.object.first_event_time ]]"
+      default: SELECT FIELDS(STANDARD) FROM LoginEvent{{#if initial_interval}} WHERE EventDate > [[ (formatTime (now.Add (parseDuration "-{{ .initial_interval }}")) "2006-01-02T15:04:05.000Z0700") ]]{{/if}}
+      value: SELECT FIELDS(STANDARD) FROM LoginEvent WHERE EventDate > [[ .cursor.object.first_event_time ]]
     cursor:
       field: "EventDate"
-  {{/if}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
