@@ -127,7 +127,7 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | abusech.malware.deleted_at | The indicator expiration timestamp. | date |
-| abusech.malware.expiration_duration | The configured expiration duration. | keyword |
+| abusech.malware.ioc_expiration_duration | The configured expiration duration. | keyword |
 | abusech.malware.signature | Malware familiy. | keyword |
 | abusech.malware.virustotal.link | Link to the Virustotal report. | keyword |
 | abusech.malware.virustotal.percent | AV detection in percent. | float |
@@ -221,11 +221,11 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | abusech.malwarebazaar.code_sign.valid_to | Time at which the certificate is no longer considered valid. | keyword |
 | abusech.malwarebazaar.deleted_at | The indicator expiration timestamp. | date |
 | abusech.malwarebazaar.dhash_icon | In case the file is a PE executable: dhash of the samples icon | keyword |
-| abusech.malwarebazaar.expiration_duration | The configured expiration duration. | keyword |
 | abusech.malwarebazaar.intelligence.downloads | Number of downloads from MalwareBazaar. | long |
 | abusech.malwarebazaar.intelligence.mail.Generic | Malware seen in generic spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.mail.IT | Malware seen in IT spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.uploads | Number of uploads from MalwareBazaar. | long |
+| abusech.malwarebazaar.ioc_expiration_duration | The configured expiration duration. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -319,7 +319,7 @@ The AbuseCH threatfox data_stream retrieves threat intelligence indicators from 
 | @timestamp | Event timestamp. | date |
 | abusech.threatfox.confidence_level | Confidence level between 0-100 | long |
 | abusech.threatfox.deleted_at | The indicator expiration timestamp. | date |
-| abusech.threatfox.expiration_duration | The configured expiration duration. | keyword |
+| abusech.threatfox.ioc_expiration_duration | The configured expiration duration. | keyword |
 | abusech.threatfox.malware | The malware associated with the IOC | keyword |
 | abusech.threatfox.tags | A list of tags associated with the queried malware sample. | keyword |
 | abusech.threatfox.threat_type | The type of threat | keyword |
