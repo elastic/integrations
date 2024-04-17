@@ -4,8 +4,8 @@ The Azure Monitor feature collects and aggregates logs and metrics from a variet
 
 The azure monitor metrics are numerical values that describe some aspect of a system at a particular point in time. They are collected at regular intervals and are identified with a timestamp, a name, a value, and one or more defining labels.
 
-The Azure Resource Metrics will periodically retrieve the azure monitor metrics using the Azure REST APIs as MetricList.
-Additional azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
+The Azure Resource Metrics will periodically retrieve the Azure Monitor metrics using the Azure REST APIs as MetricList.
+Additional Azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
 
 ## Requirements
 
