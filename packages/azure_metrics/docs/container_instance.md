@@ -1,7 +1,7 @@
 # Azure Container Instance Integration
 
-The Azure Container Instance data stream collects and aggregates storage account related metrics from azure container instance type resources where it can be used for analysis, visualization, and alerting.
-The Azure Container Instance will periodically retrieve the azure monitor metrics using the Azure REST APIs as MetricList.
+The Azure Container Instance data stream collects and aggregates storage account related metrics from Azure Container Instance type resources where it can be used for analysis, visualization, and alerting.
+The Azure Container Instance will periodically retrieve the Azure Monitor metrics using the Azure REST APIs as MetricList.
 Additional azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
 
 ## Requirements
