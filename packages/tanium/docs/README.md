@@ -1027,6 +1027,8 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.handles | Process handles. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.md5 | MD5 keyword. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.pid | Process id. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.start_time | Start time. | date |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.tanium_unique_id | Tanium unique id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.domain | User domain. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.id | User id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.name | User name. | keyword |
@@ -1041,6 +1043,7 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.start_time | Start time. | date |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.tanium_unique_id | Tanium unique id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.domain | User domain. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.group_id | User group id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.id | User id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.name | User name. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.event.file_create.path | Path of file. | keyword |
@@ -1057,6 +1060,7 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.modification_time | Modification time of file. | date |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.path | Path of file. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.size_bytes | File size in bytes. | long |
+| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.instance_hash | Instance hash. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.timestamp | Timestamp. | date |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.verb | Verb. | long |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.intel_intra_ids.id | Array of intel intra id. | keyword |

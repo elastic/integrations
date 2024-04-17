@@ -1,0 +1,18 @@
+---
+description: Pipeline for Jamf Protect Telemetry aue_fork audit logs.
+processors:
+  - rename:
+      field: json.exec_chain_parent.uuid
+      target_field: jamf_protect.telemetry.exec_chain_parent.uuid
+      ignore_missing: true
+  - convert:
+      field: json.arguments.child_PID
+      target_field: jamf_protect.telemetry.arguments.child.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'

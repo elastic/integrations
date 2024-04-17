@@ -28,14 +28,14 @@ steps:
       - step: "check"
         allow_failure: false
 
-  - label: "Check integrations local stacks - Stack Version v8.13"
+  - label: "Check integrations local stacks - Stack Version v8.14"
     trigger: "integrations"
     build:
       env:
         SERVERLESS: "false"
         SKIP_PUBLISHING: "true"
         FORCE_CHECK_ALL: "true"
-        STACK_VERSION: 8.13.0-SNAPSHOT
+        STACK_VERSION: 8.14.0-SNAPSHOT
         PUBLISH_COVERAGE_REPORTS: "true"
     depends_on:
       - step: "check"
@@ -57,6 +57,13 @@ steps:
     build:
       env:
         SERVERLESS_PROJECT: security
+    depends_on:
+      - step: "check"
+        allow_failure: false
+
+  - label: ":package: Publish missing packages"
+    key: "trigger-integrations-publish"
+    trigger: "integrations-publish"
     depends_on:
       - step: "check"
         allow_failure: false
