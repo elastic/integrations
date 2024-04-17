@@ -23,12 +23,21 @@ program: |
       }
     })
     .do_request()
-    .as(resp, resp.Body.mime("application/zip").File[0].Data.as(data, bytes(data).decode_json().as(body, {
-      "events": body.map(id, {
-        "message": body[id][0].with({"id": id}).encode_json()
-      }),
-      "url": state.url
-    })))
+    .as(resp, resp.Body.mime("application/zip").File.as(file, file.size() > 0 ? 
+      file[0].Data.as(data, bytes(data).decode_json().as(body, {
+        "events": body.map(id, body[id].size() > 0 ? 
+          {"message": body[id][0].with({"id": id}).encode_json()}
+        :
+          {"message": ""}
+        ),
+        "url": state.url
+      }))
+    :
+      {
+        "events": [],
+        "url": state.url
+      }
+    ))
 
 fields_under_root: true
 fields:
