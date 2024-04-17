@@ -36,10 +36,10 @@ The AbuseCH URL data_stream retrieves full list of active threat intelligence in
 | abusech.url.blacklists.surbl | If the indicator is listed on the surbl blacklist. | keyword |
 | abusech.url.deleted_at | The timestamp when the indicator is (will be) deleted. | date |
 | abusech.url.id | The ID of the indicator. | keyword |
-| abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false) | boolean |
+| abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false). | boolean |
 | abusech.url.last_online | Last timestamp when the URL has been serving malware. | date |
 | abusech.url.reporter | The Twitter handle of the reporter that has reported this malware URL (or anonymous). | keyword |
-| abusech.url.tags | A list of tags associated with the queried malware URL | keyword |
+| abusech.url.tags | A list of tags associated with the queried malware URL. | keyword |
 | abusech.url.threat | The threat corresponding to this malware URL. | keyword |
 | abusech.url.url_status | The current status of the URL. Possible values are: online, offline and unknown. | keyword |
 | abusech.url.urlhaus_reference | Link to URLhaus entry. | keyword |
@@ -128,10 +128,10 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 | @timestamp | Event timestamp. | date |
 | abusech.malware.deleted_at | The indicator expiration timestamp. | date |
 | abusech.malware.ioc_expiration_duration | The configured expiration duration. | keyword |
-| abusech.malware.signature | Malware familiy. | keyword |
+| abusech.malware.signature | Malware family. | keyword |
 | abusech.malware.virustotal.link | Link to the Virustotal report. | keyword |
 | abusech.malware.virustotal.percent | AV detection in percent. | float |
-| abusech.malware.virustotal.result | AV detection ration. | keyword |
+| abusech.malware.virustotal.result | AV detection ratio. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -210,17 +210,17 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | @timestamp | Event timestamp. | date |
 | abusech.malwarebazaar.anonymous | Identifies if the sample was submitted anonymously. | long |
 | abusech.malwarebazaar.code_sign.algorithm | Algorithm used to generate the public key. | keyword |
-| abusech.malwarebazaar.code_sign.cscb_listed | Whether the certificate is present on the Code Signing Certificate Blocklist (CSCB) | boolean |
-| abusech.malwarebazaar.code_sign.cscb_reason | Why the certificate is present on the Code Signing Certificate Blocklist (CSCB) | keyword |
+| abusech.malwarebazaar.code_sign.cscb_listed | Whether the certificate is present on the Code Signing Certificate Blocklist (CSCB). | boolean |
+| abusech.malwarebazaar.code_sign.cscb_reason | Why the certificate is present on the Code Signing Certificate Blocklist (CSCB). | keyword |
 | abusech.malwarebazaar.code_sign.issuer_cn | Common name (CN) of issuing certificate authority. | keyword |
 | abusech.malwarebazaar.code_sign.serial_number | Unique serial number issued by the certificate authority. | keyword |
 | abusech.malwarebazaar.code_sign.subject_cn | Common name (CN) of subject. | keyword |
-| abusech.malwarebazaar.code_sign.thumbprint | Hash of certificate | keyword |
-| abusech.malwarebazaar.code_sign.thumbprint_algorithm | Algorithm used to create thumbprint | keyword |
+| abusech.malwarebazaar.code_sign.thumbprint | Hash of certificate. | keyword |
+| abusech.malwarebazaar.code_sign.thumbprint_algorithm | Algorithm used to create thumbprint. | keyword |
 | abusech.malwarebazaar.code_sign.valid_from | Time at which the certificate is first considered valid. | date |
 | abusech.malwarebazaar.code_sign.valid_to | Time at which the certificate is no longer considered valid. | keyword |
 | abusech.malwarebazaar.deleted_at | The indicator expiration timestamp. | date |
-| abusech.malwarebazaar.dhash_icon | In case the file is a PE executable: dhash of the samples icon | keyword |
+| abusech.malwarebazaar.dhash_icon | In case the file is a PE executable: dhash of the samples icon. | keyword |
 | abusech.malwarebazaar.intelligence.downloads | Number of downloads from MalwareBazaar. | long |
 | abusech.malwarebazaar.intelligence.mail.Generic | Malware seen in generic spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.mail.IT | Malware seen in IT spam traffic. | keyword |
@@ -317,13 +317,13 @@ The AbuseCH threatfox data_stream retrieves threat intelligence indicators from 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| abusech.threatfox.confidence_level | Confidence level between 0-100 | long |
+| abusech.threatfox.confidence_level | Confidence level between 0-100. | long |
 | abusech.threatfox.deleted_at | The indicator expiration timestamp. | date |
 | abusech.threatfox.ioc_expiration_duration | The configured expiration duration. | keyword |
-| abusech.threatfox.malware | The malware associated with the IOC | keyword |
+| abusech.threatfox.malware | The malware associated with the IOC. | keyword |
 | abusech.threatfox.tags | A list of tags associated with the queried malware sample. | keyword |
-| abusech.threatfox.threat_type | The type of threat | keyword |
-| abusech.threatfox.threat_type_desc | The threat descsription | keyword |
+| abusech.threatfox.threat_type | The type of threat. | keyword |
+| abusech.threatfox.threat_type_desc | The threat descsription. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |

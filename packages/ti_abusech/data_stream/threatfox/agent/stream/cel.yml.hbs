@@ -16,8 +16,10 @@ resource.timeout: {{http_client_timeout}}
 resource.url: {{url}}
 state:
   initial_interval: "{{initial_interval}}"
+redact:
+  fields: ~
 program: |
-    request("POST", state.url, '{ "query": "get_iocs", "days": ' + ((has(state.cursor) && has(state.cursor.days)) ? state.cursor.days : state.initial_interval) + ' }' 
+    request("POST", state.url, '{ "query": "get_iocs", "days": ' + state.?cursor.days.orValue(state.initial_interval) + ' }' 
     ).with({
         "Header":{
           "Content-Type": ["application/json"],
@@ -34,9 +36,6 @@ program: |
         "url": state.url
       })
     ))
-
-redact:
-  fields: ~
 
 {{#if ioc_expiration_duration}}
 fields_under_root: true
