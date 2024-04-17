@@ -19,6 +19,7 @@ Access logs collects the Apache access logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| apache.access.identity | The user identity associated with the event, as determined by RFC 1413 identd protocol on the client's machine. | keyword |
 | apache.access.remote_addresses | An array of remote addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. | keyword |
 | apache.access.ssl.cipher | SSL cipher name. - name: nginx.access | keyword |
 | apache.access.ssl.protocol | SSL protocol version. | keyword |
