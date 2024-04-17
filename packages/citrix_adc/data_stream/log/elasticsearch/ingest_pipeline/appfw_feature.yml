@@ -1,0 +1,178 @@
+---
+description: Pipeline for Citrix Native messages of APPFW feature.
+processors:
+  - grok:
+      description: Extract fields from message of APPFW feature.
+      tag: grok_appfw_feature
+      field: citrix.extended.message
+      patterns:
+        - '^XML%{SPACE}Mismatched%{SPACE}content-type%{SPACE}in%{SPACE}HTTP%{SPACE}header%{SPACE}detected%{SPACE}=%{SPACE}\"%{GREEDYDATA:citrix_adc.log.content_type_mismatch}\"\.$'
+        - '^Disallow%{SPACE}Deny%{SPACE}URL%{SPACE}for%{SPACE}rule%{SPACE}pattern%{SPACE}=%{SPACE}\"%{GREEDYDATA:citrix_adc.log.url}\"\.$'
+        - '^Unknown%{SPACE}content-type%{SPACE}header%{SPACE}value%{SPACE}=%{SPACE}\"%{GREEDYDATA:citrix_adc.log.unknown_content_type}\"\.$'
+        - "^parsing%{SPACE}referer%{SPACE}header%{SPACE}\\'%{GREEDYDATA:citrix_adc.log.referer_header}\\'%{SPACE}failed$"
+        - '^URL%{SPACE}length\(%{NUMBER:citrix_adc.log.url_length:int}\)%{SPACE}is%{SPACE}greater%{SPACE}than%{SPACE}maximum%{SPACE}allowed\(%{NUMBER:citrix_adc.log.max_allowed.url_length:int}\)\.$'
+        - '^Cookie%{SPACE}header%{SPACE}length\(%{NUMBER:citrix_adc.log.cookie_header_length:int}\)%{SPACE}is%{SPACE}greater%{SPACE}than%{SPACE}maximum%{SPACE}allowed\(%{NUMBER:citrix_adc.log.max_allowed.cookie_header_length:int}\)\.$'
+        - '^Header\(Referer\)%{SPACE}length\(%{NUMBER:citrix_adc.log.header_length:int}\)%{SPACE}is%{SPACE}greater%{SPACE}than%{SPACE}maximum%{SPACE}allowed\(%{NUMBER:citrix_adc.log.max_allowed.header_length:int}\)\.$'
+        - '^Query%{SPACE}string%{SPACE}length\(%{NUMBER:citrix_adc.log.query_string_length:int}\)%{SPACE}is%{SPACE}greater%{SPACE}than%{SPACE}maximum%{SPACE}allowed\(%{NUMBER:citrix_adc.log.max_allowed.query_string_length:int}\)\.$'
+        - '^Total%{SPACE}HTTP%{SPACE}header%{SPACE}length\(%{NUMBER:citrix_adc.log.total_http_header_length:int}\)%{SPACE}is%{SPACE}greater%{SPACE}than%{SPACE}maximum%{SPACE}allowed\(%{NUMBER:citrix_adc.log.max_allowed.total_http_header_length:int}\)\.$'
+        - '^Profile%{SPACE}:%{SPACE}%{GREEDYDATA:citrix_adc.log.profile}$'
+        - '^Field%{SPACE}Type%{SPACE}:%{SPACE}%{GREEDYDATA:citrix_adc.log.field_type}$'
+        - '^Field%{SPACE}Name%{SPACE}:%{SPACE}%{GREEDYDATA:citrix_adc.log.field_name}$'
+        - '^Content%{SPACE}length%{SPACE}is%{SPACE}too%{SPACE}large\(%{NUMBER:citrix_adc.log.content_length_bytes:long}%{SPACE}Bytes\).%{SPACE}Memory%{SPACE}Allocation%{SPACE}failed.$'
+        - '^Signature%{SPACE}id%{SPACE}%{NUMBER:citrix_adc.log.signature_id:int}%{SPACE}contains%{SPACE}no%{SPACE}fast%{SPACE}match%{SPACE}pattern$'
+        - '^Appfw%{SPACE}maximum%{SPACE}session%{SPACE}Limit%{SPACE}reached%{SPACE}for%{SPACE}PEID%{SPACE}%{NUMBER:citrix_adc.log.peid:int}$'
+        - '^APPFW%{SPACE}RFC%{SPACE}Profile:%{SPACE}%{GREEDYDATA:citrix_adc.log.appfw_rfc_profile}$'
+        - '^New%{SPACE}signature%{SPACE}available%{SPACE}:%{SPACE}RuleID%{SPACE}=%{SPACE}%{NUMBER:citrix_adc.log.rule_id:int}$'
+        - '^Learned%{SPACE}rule%{SPACE}will%{SPACE}be%{SPACE}auto-deployed%{SPACE}after%{SPACE}%{NUMBER:citrix_adc.log.auto_deploy_mins:int}mins.%{SPACE}ViolType%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.violation_type}.%{SPACE}Profile%{SPACE}:%{SPACE}%{GREEDYDATA:citrix_adc.log.profile}$'
+        - '^Rest%{SPACE}Validation%{SPACE}relaxation%{SPACE}rule%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.rule}%{SPACE}hit%{SPACE}at%{SPACE}url%{SPACE}:%{SPACE}%{GREEDYDATA:citrix_adc.log.url}$'
+        - '^gRPC%{SPACE}Validation%{SPACE}relaxation%{SPACE}rule%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.rule}%{SPACE}hit%{SPACE}at%{SPACE}url%{SPACE}:%{SPACE}%{GREEDYDATA:citrix_adc.log.url}$'
+        - '%{GREEDYDATA:citrix_adc.log.message}'
+      ignore_failure: true
+  - set:
+      field: http.request.referrer
+      tag: set_http_request_referrer_from_referer_header
+      copy_from: citrix_adc.log.referer_header
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.rule_id
+      tag: convert_rule_id_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_rule_id
+      copy_from: citrix_adc.log.rule_id
+      ignore_empty_value: true
+  - set:
+      field: url.original
+      tag: set_url_original_from_url
+      copy_from: citrix_adc.log.url
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.peid
+      tag: convert_peid_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.signature_id
+      tag: convert_signature_id_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.url_length
+      tag: convert_url_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.max_allowed.url_length
+      tag: convert_max_allowed_url_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.cookie_header_length
+      tag: convert_cookie_header_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.max_allowed.cookie_header_length
+      tag: convert_max_allowed_cookie_header_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.header_length
+      tag: convert_header_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.max_allowed.header_length
+      tag: convert_max_allowed_header_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.query_string_length
+      tag: convert_query_string_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.max_allowed.query_string_length
+      tag: convert_max_allowed_query_string_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.total_http_header_length
+      tag: convert_total_http_header_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.max_allowed.total_http_header_length
+      tag: convert_max_allowed_total_http_header_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.content_length_bytes
+      tag: convert_content_length_bytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

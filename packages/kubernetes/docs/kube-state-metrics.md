@@ -1121,6 +1121,8 @@ An example event for `state_namespace` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
+| kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.state_namespace.created.sec | Epoch seconds since the namespace was created. | double | s | gauge |
 | kubernetes.state_namespace.status.active | Whether the namespace is active (true or false). | boolean |  |  |
