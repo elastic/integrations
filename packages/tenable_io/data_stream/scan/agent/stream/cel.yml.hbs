@@ -22,40 +22,39 @@ redact:
     - secret_key
 program: |
   request("GET", state.url + "/scans").with({
-      "Header":{
-          "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
-          "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/2.9.0)"]
-        }
-    }).do_request().as(resp,
-      resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body, {
-          "events": (has(body.scans) && body.scans.size() > 0 ?
+    "Header":{
+      "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+      "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
+    }
+  }).do_request().as(resp,
+    resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body, {
+        "events": (
+          has(body.scans) && body.scans.size() > 0 ?
             (
               body.scans.map(e, {
                 "message": e.encode_json()
               })
             )
           :
-            (
-              [{"message": body}]
-            )
-          ),
-          "access_key": state.access_key,
-          "secret_key": state.secret_key
-        })
-      :
-        {
-          "events": [{
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": string(resp.Body)
-            }
-          }],
-          "access_key": state.access_key,
-          "secret_key": state.secret_key
-        }
-      )
+            [{"message": body}]
+        ),
+        "access_key": state.access_key,
+        "secret_key": state.secret_key
+      })
+    :
+      {
+        "events": [{
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": string(resp.Body)
+          }
+        }],
+        "access_key": state.access_key,
+        "secret_key": state.secret_key
+      }
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

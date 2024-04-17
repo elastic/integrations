@@ -25,92 +25,83 @@ redact:
     - secret_key
 program: |
   request("GET", state.url + "/plugins/plugin?last_updated=" + (
-      has(state.want_more) && !state.want_more
-      ?
-        (
-          has(state.cursor) && has(state.cursor.last_update_time) && state.cursor.last_update_time != null
-          ?
-            string((state.cursor.last_update_time)).split("T")[0]
+    has(state.want_more) && !state.want_more ?
+      (
+        has(state.?cursor.last_update_time) && state.cursor.last_update_time != null ?
+          string(state.cursor.last_update_time).split("T")[0]
+        :
+          "1970-01-01"
+      )
+    :
+      (
+        has(state.?cursor.first_update_time) && state.cursor.first_update_time != null ?
+          string((state.cursor.first_update_time)).split("T")[0]
+        :
+          ""
+      )
+    ) + "&page=" + string(state.next_page) + "&size=" + string(state.batch_size)
+  ).with({
+    "Header":{
+      "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+      "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
+    }
+  }).do_request().as(resp,
+    resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body, {
+        "events": (
+          has(body.?data.plugin_details) && body.data.plugin_details.size() > 0 ?
+            body.data.plugin_details.map(e, {
+              "message": e.encode_json()
+            })
           :
-            "1970-01-01"
-        )
-      :
-        (
-          has(state.cursor) && has(state.cursor.first_update_time) && state.cursor.first_update_time != null
-          ?
-            string((state.cursor.first_update_time)).split("T")[0]
-          :
-            ""
-        )) + "&page=" + string(state.next_page) + "&size=" + string(state.batch_size)
-        ).with({
-            "Header":{
-            "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
-            "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/2.9.0)"]
-          }
-        }).do_request().as(resp,
-          resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body, {
-            "events": (has(body.data.plugin_details) && body.data.plugin_details.size() > 0 ?
+            [{"message": body}]
+        ),
+        "cursor": {
+          "last_update_time": (
+            has(body.?data.plugin_details) && body.data.plugin_details.size() > 0 ?
               (
-                body.data.plugin_details.map(e,{
-                  "message": e.encode_json()
-                })
+                has(state.?cursor.last_update_time) && state.want_more ?
+                  state.cursor.last_update_time
+                :
+                  now
               )
             :
+              state.?cursor.last_update_time.orValue(null)
+          ),
+          "first_update_time": (
+            has(state.?cursor.first_update_time) && state.cursor.first_update_time != null && has(body.data.plugin_details) && body.data.plugin_details.size() > 0 ?
               (
-                [{"message": body}]
-              )
-            ),
-            "cursor": {
-              "last_update_time": (
-                  has(body.data.plugin_details) && body.data.plugin_details.size() > 0
-                  ?
-                    (
-                      has(state.cursor) && has(state.cursor.last_update_time) && state.want_more
-                      ?
-                        state.cursor.last_update_time
-                      :
-                        now
-                    )
-                  :
-                    has(state.cursor) && has(state.cursor.last_update_time)
-                    ?
-                      state.cursor.last_update_time
-                    :
-                      null
-              ),
-              "first_update_time": (
-                has(state.cursor) && has(state.cursor.first_update_time) && state.cursor.first_update_time != null && has(body.data.plugin_details) && body.data.plugin_details.size() > 0
-                ?
-                  (
-                    body.size == int(state.batch_size) && state.want_more ? state.cursor.first_update_time : state.cursor.last_update_time
-                  )
+                body.size == int(state.batch_size) && state.want_more ?
+                  state.cursor.first_update_time
                 :
-                  "1970-01-01T00:00:00Z"
-              ),
-            },
-            "next_page": body.size == int(state.batch_size) ? int(state.next_page)+1 : 1,
-            "want_more": body.size == int(state.batch_size),
-            "access_key": state.access_key,
-            "secret_key": state.secret_key,
-            "batch_size": state.batch_size
-        })
-      :
-        {
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": string(resp.Body)
-              },
-            },
-            "want_more": false,
-            "next_page": 1,
-            "batch_size": state.batch_size,
-            "access_key": state.access_key,
-            "secret_key": state.secret_key
-          }
-      )
+                  state.cursor.last_update_time
+              )
+            :
+              "1970-01-01T00:00:00Z"
+          ),
+        },
+        "next_page": body.size == int(state.batch_size) ? int(state.next_page)+1 : 1,
+        "want_more": body.size == int(state.batch_size),
+        "access_key": state.access_key,
+        "secret_key": state.secret_key,
+        "batch_size": state.batch_size
+    })
+  :
+    {
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": string(resp.Body)
+        },
+      },
+      "want_more": false,
+      "next_page": 1,
+      "batch_size": state.batch_size,
+      "access_key": state.access_key,
+      "secret_key": state.secret_key
+    }
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

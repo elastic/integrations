@@ -19,35 +19,44 @@ state:
   chunk_status: "QUEUED"
   batch_size: {{batch_size}}
   initial_interval: {{initial_interval}}
+  export_status_timeout: {{export_status_timeout}}
 redact:
   fields:
     - access_key
     - secret_key
 program: |
-  (has(state.want_more) && state.want_more ? state : state.with({
-      "request_time":(
-        has(state.cursor) && has(state.cursor.last_event_ts) && state.cursor.last_event_ts != null
-        ?
+  (
+    has(state.want_more) && state.want_more ? state : state.with({
+      "request_time": (
+        state.?cursor.last_event_ts.orValue(null) != null ?
           state.cursor.last_event_ts
         :
           int(now - duration(state.initial_interval))
       )
     }).as(state, state.with(
-      post_request(state.url + "/assets/export", "application/json",
-        '''{"chunk_size": ''' + state.batch_size.encode_json() + ''',"filters": {"updated_at": ''' + state.request_time.encode_json() + '''}}'''
-    ).with({
+      post_request(
+        state.url + "/assets/export", "application/json",
+        '{"chunk_size":' + state.batch_size.encode_json() + ',"filters":{"updated_at": ' + state.request_time.encode_json() + '}}'
+      ).with({
         "Header":{
-            "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
-            "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/2.9.0)"]
+          "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+          "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
         }
-    }).do_request().as(resp,
-      resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body, {
-          "worklist": body,
-          "cursor": {
-            "last_event_ts": int(now)
-          }})
-      :
+      }).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          {
+            "worklist": bytes(resp.Body).decode_json(),
+            "export_job_start_time": int(now),
+            "export_status_timeout": state.export_status_timeout,
+            "time_value": string(state.export_status_timeout).has_suffix("s") ? string(state.export_status_timeout).split("s")[0]
+              : string(state.export_status_timeout).has_suffix("h") ? string(int(string(state.export_status_timeout).split("h")[0]) * 3600)
+              : string(state.export_status_timeout).has_suffix("m") ? string(int(string(state.export_status_timeout).split("m")[0]) * 60)
+              : "43200",
+            "cursor": {
+              "last_event_ts": int(now)
+            }
+          }
+        :
           {
             "response_error": {
               "error": {
@@ -57,169 +66,174 @@ program: |
               },
             },
             "want_more": false,
-            "worklist": {}
+            "worklist": {},
+            "export_status_timeout": state.export_status_timeout,
+            "export_job_start_time": int(now),
+            "time_value": "43200"
           }
       )
-    ))).as(state, has(state.worklist) && has(state.worklist.export_uuid) && has(state.chunk_status) && state.chunk_status.compare("FINISHED") != 0 ?
-          request("GET",
-                    state.url +"/assets/export/" + state.worklist.export_uuid + "/status"
-          ).with({
-            "Header":{
-              "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
-              "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/2.9.0)"]
-            }
-          }).do_request().as(response,
-            response.StatusCode == 200 ?
-                bytes(response.Body).decode_json().as(inner_body, {
-                "want_more": (string(inner_body.status).compare("FINISHED") != 0) || size(inner_body.chunks_available) > 0,
-                "chunk_status": string(inner_body.status).compare("FINISHED") == 0 && size(inner_body.chunks_available) == 0 ? "QUEUED" : inner_body.status,
-                "worklist": state.worklist,
-                "chunks": inner_body.chunks_available,
-                "url": state.url,
-                "next": 0,
-                "access_key": state.access_key,
-                "secret_key": state.secret_key,
-                "initial_interval": state.initial_interval,
-                "batch_size": state.batch_size,
-                "cursor": {
-                  "last_event_ts": (
-                    has(state.cursor) && has(state.cursor.last_event_ts)
-                    ?
-                      state.cursor.last_event_ts
-                    :
-                      int(now)
-                  )
-                }
-              })
-          :
-              {
-                "response_error": {
-                  "error": {
-                    "code": string(response.StatusCode),
-                    "id": string(response.Status),
-                    "message": string(response.Body)
-                  },
-                },
-                "url": state.url,
-                "want_more": false,
-                "chunks": [],
-                "chunk_status": "QUEUED",
-                "worklist": {},
-                "next": 0,
-                "access_key": state.access_key,
-                "secret_key": state.secret_key,
-                "initial_interval": state.initial_interval,
-                "batch_size": state.batch_size,
-              }
-          )
-        :
-          {
+    ))
+  ).as(state,
+    has(state.?worklist.export_uuid) && state.?chunk_status.orValue("") != "FINISHED" ?
+      request("GET",
+        state.url +"/assets/export/" + state.worklist.export_uuid + "/status"
+      ).with({
+        "Header":{
+          "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+          "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
+        }
+      }).do_request().as(response,
+        response.StatusCode == 200 ?
+          bytes(response.Body).decode_json().as(inner_body, {
+            "export_job_start_time": state.export_job_start_time,
+            "export_status_timeout": state.export_status_timeout,
+            "time_value": state.time_value,
+            "want_more": (inner_body.?status.orValue("") != "FINISHED" || size(inner_body.chunks_available) > 0) && int(now) - int(state.export_job_start_time) <= int(state.time_value),
+            "chunk_status": inner_body.?status.orValue("") == "FINISHED" && size(inner_body.chunks_available) == 0 ? "QUEUED" : inner_body.status,
+            "worklist": state.worklist,
+            "chunks": inner_body.chunks_available,
             "url": state.url,
-            "want_more": state.want_more,
-            "chunks": has(state.chunks) ? state.chunks : [],
-            "chunk_status": state.chunk_status,
-            "worklist": has(state.worklist) ? state.worklist : {},
-            "next": has(state.next) ? state.next : 0,
+            "next": 0,
             "access_key": state.access_key,
             "secret_key": state.secret_key,
             "initial_interval": state.initial_interval,
             "batch_size": state.batch_size,
-            "response_error": has(state.response_error) ? state.response_error : {},
             "cursor": {
-              "last_event_ts": (
-                has(state.cursor) && has(state.cursor.last_event_ts)
-                ?
-                  state.cursor.last_event_ts
-                :
-                  int(now)
-              )
+              "last_event_ts": state.?cursor.last_event_ts.orValue(int(now))
             }
+          })
+        :
+          {
+            "response_error": {
+              "error": {
+                "code": string(response.StatusCode),
+                "id": string(response.Status),
+                "message": string(response.Body)
+              },
+            },
+            "url": state.url,
+            "export_job_start_time": state.export_job_start_time,
+            "export_status_timeout": state.export_status_timeout,
+            "want_more": false,
+            "chunks": [],
+            "chunk_status": "QUEUED",
+            "worklist": {},
+            "next": 0,
+            "access_key": state.access_key,
+            "secret_key": state.secret_key,
+            "initial_interval": state.initial_interval,
+            "batch_size": state.batch_size,
+            "time_value": state.time_value
           }
-        ).as(state, has(state.worklist) && has(state.worklist.export_uuid) && has(state.chunk_status) && state.chunk_status.compare("FINISHED") == 0 && size(state.chunks) > 0 ?
-            request("GET",
-              state.url +"/assets/export/" + state.worklist.export_uuid + "/chunks/" + string(state.chunks[state.next])
-              ).with({
-                "Header":{
-                  "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
-                  "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/2.9.0)"]
-                }
-              }).do_request().as(response1,
-                response1.StatusCode == 200 ?
-                    bytes(response1.Body).decode_json().as(second_chain_body, {
-                    "events": (second_chain_body != null && size(second_chain_body) > 0 ?
-                      (
-                        second_chain_body.map(e,{
-                            "message": e.encode_json()
-                          })
-                      )
-                    :
-                        [{}]
-                    ),
-                    "want_more": (int(state.next)+1) < size(state.chunks),
-                    "worklist": (int(state.next)+1) < size(state.chunks) ? state.worklist : {},
-                    "next": (int(state.next)+1) < size(state.chunks) ? (int(state.next)+1) : 0,
-                    "chunk_status": ((int(state.next)+1) < size(state.chunks)) || (second_chain_body == null) ? state.chunk_status : "QUEUED",
-                    "access_key": state.access_key,
-                    "secret_key": state.secret_key,
-                    "initial_interval": state.initial_interval,
-                    "batch_size": state.batch_size,
-                    "chunks": (int(state.next)+1) < size(state.chunks) ? state.chunks : [],
-                    "url": state.url,
-                    "cursor": {
-                      "last_event_ts": (
-                        has(state.cursor) && has(state.cursor.last_event_ts)
-                        ?
-                          state.cursor.last_event_ts
-                        :
-                          int(now)
-                      )
-                    }
-                })
-              :
-                  {
-                    "events": {
-                      "error": {
-                        "code": string(response1.StatusCode),
-                        "id": string(response1.Status),
-                        "message": string(response1.Body)
-                      },
-                    },
-                    "url": state.url,
-                    "want_more": false,
-                    "chunks": [],
-                    "chunk_status": "QUEUED",
-                    "worklist": {},
-                    "next": 0,
-                    "access_key": state.access_key,
-                    "secret_key": state.secret_key,
-                    "initial_interval": state.initial_interval,
-                    "batch_size": state.batch_size,
-                  }
-            )
-          :
-            {
-              "events": has(state.response_error) && state.response_error != null ? state.response_error : [{}],
-              "url": state.url,
-              "chunks": has(state.chunks) ? state.chunks : [],
-              "chunk_status": state.chunk_status,
-              "want_more": state.want_more,
-              "worklist": has(state.worklist) ? state.worklist : {},
-              "next": has(state.next) ? state.next : 0,
-              "access_key": state.access_key,
-              "secret_key": state.secret_key,
-              "initial_interval": state.initial_interval,
-              "batch_size": state.batch_size,
-              "cursor": {
-                "last_event_ts": (
-                  has(state.cursor) && has(state.cursor.last_event_ts)
-                  ?
-                    state.cursor.last_event_ts
-                  :
-                    int(now)
-                )
-              }
+      )
+    :
+      {
+        "url": state.url,
+        "export_job_start_time": state.export_job_start_time,
+        "export_status_timeout": state.export_status_timeout,
+        "want_more": state.want_more,
+        "chunks": has(state.chunks) ? state.chunks : [],
+        "chunk_status": state.chunk_status,
+        "worklist": has(state.worklist) ? state.worklist : {},
+        "next": has(state.next) ? state.next : 0,
+        "access_key": state.access_key,
+        "secret_key": state.secret_key,
+        "initial_interval": state.initial_interval,
+        "batch_size": state.batch_size,
+        "export_job_start_time": state.export_job_start_time,
+        "response_error": has(state.response_error) ? state.response_error : {},
+        "time_value": state.time_value,
+        "cursor": {
+          "last_event_ts": (
+            has(state.cursor) && has(state.cursor.last_event_ts)
+            ?
+              state.cursor.last_event_ts
+            :
+              int(now)
+          )
+        }
+      }
+  ).as(state,
+    has(state.?worklist.export_uuid) && state.?chunk_status.orValue("") == "FINISHED" && size(state.chunks) > 0 ?
+      request("GET",
+        state.url +"/assets/export/" + state.worklist.export_uuid + "/chunks/" + string(state.chunks[state.next])
+      ).with({
+        "Header":{
+          "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+          "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
+        }
+      }).do_request().as(response1,
+        response1.StatusCode == 200 ?
+          bytes(response1.Body).decode_json().as(second_chain_body, {
+            "events": (second_chain_body != null && size(second_chain_body) > 0 ?
+              second_chain_body.map(e,{
+                "message": e.encode_json()
+              })
+            :
+              [{}]
+            ),
+            "time_value": state.time_value,
+            "export_job_start_time": state.export_job_start_time,
+            "export_status_timeout": state.export_status_timeout,
+            "want_more": (int(state.next)+1) < size(state.chunks),
+            "worklist": (int(state.next)+1) < size(state.chunks) ? state.worklist : {},
+            "next": (int(state.next)+1) < size(state.chunks) ? (int(state.next)+1) : 0,
+            "chunk_status": ((int(state.next)+1) < size(state.chunks)) || (second_chain_body == null) ? state.chunk_status : "QUEUED",
+            "access_key": state.access_key,
+            "secret_key": state.secret_key,
+            "initial_interval": state.initial_interval,
+            "batch_size": state.batch_size,
+            "chunks": (int(state.next)+1) < size(state.chunks) ? state.chunks : [],
+            "url": state.url,
+            "cursor": {
+              "last_event_ts": state.?cursor.last_event_ts.orValue(int(now))
             }
-        )
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(response1.StatusCode),
+                "id": string(response1.Status),
+                "message": string(response1.Body)
+              },
+            },
+            "url": state.url,
+            "export_job_start_time": state.export_job_start_time,
+            "export_status_timeout": state.export_status_timeout,
+            "want_more": false,
+            "chunks": [],
+            "chunk_status": "QUEUED",
+            "worklist": {},
+            "next": 0,
+            "access_key": state.access_key,
+            "secret_key": state.secret_key,
+            "initial_interval": state.initial_interval,
+            "batch_size": state.batch_size,
+            "time_value": state.time_value
+          }
+      )
+    :
+      {
+        "events": state.?response_error.orValue(null) != null ? state.response_error : [{}],
+        "export_job_start_time": state.export_job_start_time,
+        "export_status_timeout": state.export_status_timeout,
+        "url": state.url,
+        "time_value": state.time_value,
+        "chunks": state.?chunks.orValue([]),
+        "chunk_status": state.chunk_status,
+        "want_more": state.want_more,
+        "worklist": state.?worklist.orValue({}),
+        "next": state.?next.orValue(0),
+        "access_key": state.access_key,
+        "secret_key": state.secret_key,
+        "initial_interval": state.initial_interval,
+        "batch_size": state.batch_size,
+        "cursor": {
+          "last_event_ts": state.?cursor.last_event_ts.orValue(int(now))
+        }
+      }
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
