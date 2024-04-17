@@ -20,13 +20,12 @@ program: |
     request("POST", state.url, '{ "query": "get_iocs", "days": ' + ((has(state.cursor) && has(state.cursor.days)) ? state.cursor.days : state.initial_interval) + ' }' 
     ).with({
         "Header":{
-            "Content-Type": ["application/json"],
+          "Content-Type": ["application/json"],
         }
     }).as(req, req.do_request().as(resp, 
-      bytes(resp.Body).decode_json().as(body, 
-      {
+      bytes(resp.Body).decode_json().as(body, {
         "events": body.data.map(ind, {
-            "message": ind.encode_json()
+          "message": ind.encode_json()
         }),
         "cursor": {
           "days": "1"
