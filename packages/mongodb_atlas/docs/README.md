@@ -325,14 +325,14 @@ An example event for `mongod_database` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | mongodb_atlas.mongod_database.attributes | One or more key-value pairs for additional log attributes. If a log message does not include any additional attributes, the attr object is omitted. | object |
-| mongodb_atlas.mongod_database.component | The component field type indicates the category a logged event is a member of, such as NETWORK or COMMAND. | keyword |
-| mongodb_atlas.mongod_database.hostname | Human-readable label that identifies the host that stores the log files that you want to download. | keyword |
-| mongodb_atlas.mongod_database.id | Unique identifier for the log statement. | long |
-| mongodb_atlas.mongod_database.message | Log output message passed from the server or driver. If necessary, the message is escaped according to the JSON specification. | match_only_text |
-| mongodb_atlas.mongod_database.size | Original size of a log entry if it has been truncated. Only included if the log entry contains at least one truncated attr attribute. | object |
-| mongodb_atlas.mongod_database.tags | Strings representing any tags applicable to the log statement. For example, ["startupWarnings"]. | keyword |
-| mongodb_atlas.mongod_database.thread.name | Name of the thread that caused the log statement. | keyword |
-| mongodb_atlas.mongod_database.truncated | Information about the log message truncation, if applicable. Only included if the log entry contains at least one truncated attr attribute. | object |
+| mongodb_atlas.mongod_database.component | The component field indicates the category to which a logged event belongs, such as NETWORK or COMMAND. | keyword |
+| mongodb_atlas.mongod_database.hostname | A human-readable label that identifies the host that stores the log files you want to download. | keyword |
+| mongodb_atlas.mongod_database.id | The unique identifier for the log statement. | long |
+| mongodb_atlas.mongod_database.message | The log output message passed from the server or driver. If necessary, the message is escaped according to the JSON specification. | match_only_text |
+| mongodb_atlas.mongod_database.size | The original size of a log entry if it has been truncated. Only included if the log entry contains at least one truncated attr attribute. | object |
+| mongodb_atlas.mongod_database.tags | Strings representing any tags applicable to the log statement, for example, ["startupWarnings"]. | keyword |
+| mongodb_atlas.mongod_database.thread.name | The name of the thread that caused the log statement. | keyword |
+| mongodb_atlas.mongod_database.truncated | Information about log message truncation, if applicable. Only included if the log entry contains at least one truncated attr attribute. | object |
 
 
 ## Metrics reference
