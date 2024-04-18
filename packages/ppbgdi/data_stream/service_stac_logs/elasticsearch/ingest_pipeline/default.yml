@@ -11,15 +11,14 @@ processors:
       description: Pipeline used to create fields for elastic-package tests
       if: ctx?.tags != null && ctx?.tags.contains('elastic-package-test')
       name: '{{ IngestPipeline "elastic-package-test" }}'
-  - gsub:
-      description: Remove trailing slash from url for easier parsing and aggregating
-      field: url.path
-      pattern: "/$"
-      replacement: ""
   - pipeline:
-      description: Parse url path
+      description: Process url path
       if: ctx?.url?.path != null && ctx?.url?.path != ""
       name: '{{ IngestPipeline "url-path" }}'
+  - pipeline:
+      description: Process url query
+      if: ctx?.url?.query != null && ctx?.url?.query != ""
+      name: '{{ IngestPipeline "url-query" }}'
   - set:
       field: service.environment
       copy_from: kubernetes.namespace_labels.env
@@ -28,6 +27,11 @@ processors:
       field: ppbgdi.app.system
       copy_from: kubernetes.namespace_labels.system
       ignore_empty_value: true
+  - set:
+      description: Set the epsg field to the default (wgs-84) value if not set
+      field: ppbgdi.app.epsg
+      value: 4326
+      if: ctx?.ppbgdi?.app?.epsg == null
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null or empty values.

@@ -1,0 +1,59 @@
+---
+description: Pipeline for processing service STAC url query string
+processors:
+  - kv:
+      description: Parse url query parameters to an object
+      field: url.query
+      target_field: temp.query_params
+      field_split: "&"
+      value_split: "="
+  - foreach:
+      description: Lowercase all query parameter keys for easier handling
+      field: temp.query_params
+      processor:
+        lowercase:
+          field: _ingest._key
+      ignore_missing: true
+  - rename:
+      field: temp.query_params.bbox
+      target_field: ppbgdi.app.query_params.bbox
+      ignore_missing: true
+  - split:
+      field: temp.query_params.collections
+      target_field: ppbgdi.app.query_params.colection_ids
+      separator: ","
+      ignore_missing: true
+  - remove:
+      field: temp.query_params.collections
+      ignore_missing: true
+  - rename:
+      field: temp.query_params.datetime
+      target_field: ppbgdi.app.query_params.datetime
+      ignore_missing: true
+  - split:
+      field: temp.query_params.ids
+      target_field: ppbgdi.app.query_params.feature_ids
+      separator: ","
+      ignore_missing: true
+  - remove:
+      field: temp.query_params.ids
+      ignore_missing: true
+  - rename:
+      field: temp.query_params.limit
+      target_field: ppbgdi.app.query_params.limit
+      ignore_missing: true
+  - convert:
+      field: ppbgdi.app.query_params.limit
+      type: long
+      ignore_missing: true
+  - rename:
+      field: temp.query_params.status
+      target_field: ppbgdi.app.query_params.status
+      ignore_missing: true
+
+on_failure:
+- append:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
+
+

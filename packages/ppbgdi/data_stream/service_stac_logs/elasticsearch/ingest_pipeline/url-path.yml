@@ -1,6 +1,11 @@
 ---
 description: Pipeline for processing service STAC url path
 processors:
+  - gsub:
+      description: Remove trailing slash from url for easier parsing and aggregating
+      field: url.path
+      pattern: "/$"
+      replacement: ""
   - grok:
       field: url.path
       pattern_definitions:
@@ -8,6 +13,7 @@ processors:
         STAC_ADMIN_ENDPOINT: "(?<ppbgdi.app.stac.endpoint>admin)"
         STAC_COLLECTIONS_ENDPOINT: "(?<ppbgdi.app.stac.endpoint>collections)"
         STAC_CONFORMANCE_ENDPOINT: "(?<ppbgdi.app.stac.endpoint>conformance)"
+        STAC_SEARCH_ENDPOINT: "(?<ppbgdi.app.stac.endpoint>search)"
         STAC_COLLECTION: "/(?<ppbgdi.app.stac.collection_id>[^/]+)"
         STAC_FEATURE: "/(?<ppbgdi.app.stac.feature_id>[^/]+)"
         STAC_ASSET: "/(?<ppbgdi.app.stac.asset_id>[^/]+)"
@@ -18,8 +24,14 @@ processors:
         - '^/api/stac/%{STAC_VERSION}/?$'
         - '^/api/stac/%{STAC_VERSION}/%{STAC_CONFORMANCE_ENDPOINT}/?$'
         - '^/api/stac/%{STAC_VERSION}/%{STAC_COLLECTIONS_ENDPOINT}(%{STAC_COLLECTION}(/items%{STAC_FEATURE}?(/assets%{STAC_ASSET}?(/uploads%{STAC_UPLOAD_ID}?(%{STAC_UPLOAD_OPTION})?)?)?)?)?$'
+        - '^/api/stac/%{STAC_VERSION}/%{STAC_SEARCH_ENDPOINT}$'
         - '^/api/stac/%{STAC_ADMIN_ENDPOINT}'
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+on_failure:
+- append:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
