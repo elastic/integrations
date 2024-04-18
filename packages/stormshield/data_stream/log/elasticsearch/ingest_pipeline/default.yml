@@ -100,69 +100,166 @@ processors:
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
 
-  - rename:
-      field: "ss.fw"
-      target_field: "host.name"
+  - set:
+      copy_from: "ss.fw"
+      field: "host.name"
       if: ctx.ss?.fw != null
 
-  - remove:
-      field: ss.id
-      if: ctx.ss?.id == "firewall"
 
+  #
+  # The syslog header should have been stripped off, so we need to process the key=value data
+  # We will be using painless here, because it is the best option we have.
+  - script:
+      tag: expand_dynamic_fields
+      description: Expands the EthernetXX field.
+      lang: painless
+      source: >-
+        void expand_(Map mapper, String token, String fieldName, String base, def availableFields, boolean skipOriginal, boolean flatten) {
+            def obj = new HashMap();
 
-  ## Separate Pipelines
-  - pipeline:
-      if: ctx.ss?.logtype == 'alarm'
-      name: '{{ IngestPipeline "alarm" }}'
+            if (! skipOriginal) {
+                obj["original"] = fieldName;
+            }
+            String field = mapper[fieldName];
+            String[] fields = field.splitOnToken(token);
 
-  - pipeline:
-      if: ctx.ss?.logtype == 'auth'
-      name: '{{ IngestPipeline "auth" }}'
+            // availableFields and fields should have the same length
+            for (int i = 0; i < availableFields.length; ++i) {
+                obj[availableFields[i]] = fields[i];
+            }
+            if (flatten) {
+                mapper[base] = obj;
+            } else {
+                if (! mapper.containsKey(base)) {
+                    mapper[base] = new ArrayList();
+                }
+                mapper[base].add(obj);
+            }
+        }
+        void handleMove(Map context, String namespace) {
+            if (context.containsKey("ss") && ! context.containsKey("stormshield")) {
+                context["stormshield"] = new HashMap();
+                context["stormshield"]["logtype"] = context["ss"]["logtype"];
+                context["ss"].remove("logtype");
+            }
 
-  - pipeline:
-      if: ctx.ss?.logtype == 'authstat'
-      name: '{{ IngestPipeline "authstat" }}'
+            context["stormshield"][namespace] = context["ss"];
+            context.remove("ss");
+        }
+        void rename_field(Map mapper, String orig, String newName) {
+            if (mapper.containsKey(orig)) {
+                mapper[newName] = mapper[orig];
+                mapper.remove(orig);
+            }
+        }
+        void renameNumberedDynamicFields(Map mapper, String fieldBase, def availableFields) {
+            for (int i = 0;; i++) {
+                String baseName = fieldBase;
+                String eth = baseName + Integer.toString(i);
 
-  - pipeline:
-      if: ctx.ss?.logtype == 'connection'
-      name: '{{ IngestPipeline "connection" }}'
+                // if this does not exist, then we break
+                if (! mapper.containsKey(eth)) {
+                    break;
+                }
 
-  - pipeline:
-      if: ctx.ss?.logtype == 'count'
-      name: '{{ IngestPipeline "count" }}'
+                expand_(mapper, ",", eth, fieldBase, availableFields, /* skipOriginal = */ false, /* flatten = */ false);
+                mapper.remove(eth);
+            }
+        }
 
-  - pipeline:
-      if: ctx.ss?.logtype == 'filter'
-      name: '{{ IngestPipeline "filter" }}'
+        handleMove(ctx, ctx.ss.logtype);
 
-  - pipeline:
-      if: ctx.ss?.logtype == 'filterstat'
-      name: '{{ IngestPipeline "filterstat" }}'
+        if (ctx.stormshield.logtype == "monitor") {
+            def monitor = ctx.stormshield.monitor;
+            rename_field(monitor, "CPU", "CPU_");
+            rename_field(monitor, "ipsec", "ipsec_native");
 
-  - pipeline:
-      if: ctx.ss?.logtype == 'monitor'
-      name: '{{ IngestPipeline "monitor" }}'
+            def availableFields = [
+                "name",
+                "incoming_throughput",
+                "maximum_incoming_throughput",
+                "outgoing_throughput",
+                "maximum_outgoing_throughput",
+                "packets_accepted",
+                "packets_blocked"
+            ];
+            def fields = [
+                "Ethernet",
+                "Vlan",
+                "Qid",
+                "Wifi",
+                "sslvpn",
+                "ipsec",
+                "agg"
+            ];
+            def cpu = ["user_time", "kernel_time", "system_disruption"];
+            expand_(monitor, ",", "CPU_", "CPU", cpu, /* skipOriginal = */ true, /* flatten = */ true);
+            monitor.remove("CPU_");
+            expand_(monitor, ",", "ipsec_native", "ipsec", availableFields, /* skipOriginal = */ true, /* flatten = */ false);
+            monitor.remove("ipsec_native");
+            monitor["ipsec"][0]["native"] = true;
+            for (field_base in fields) {
+                renameNumberedDynamicFields(monitor, field_base, availableFields);
+            }
+        } else if (ctx.stormshield.logtype == "count") {
+          def mapper = ctx.stormshield.count;
+          // RuleX:Y
+          // Split the name
+          // Rule, category, rule_number
+          def toRemove = new ArrayList();
+          for (def entry : ctx.stormshield.count.entrySet()) {
+            // if this starts with "Rule"
+            String key = entry.getKey();
+            if (key.startsWith("Rule") && key.contains(":")){
+              int colon = key.indexOf(":");
+              String category = key.substring(4, colon);
+              String rule_number = key.substring(colon + 1);
 
-  - pipeline:
-      if: ctx.ss?.logtype == 'plugin'
-      name: '{{ IngestPipeline "plugin" }}'
+              if (! mapper.containsKey("Rule")) {
+                mapper["Rule"] = new ArrayList();
+              }
+              def rule = new HashMap();
+              rule["category"] = category;
+              rule["rule_number"] = rule_number;
+              rule["byte_count"] = entry.getValue();
+              mapper["Rule"].add(rule);
+              toRemove.add(key);
+            }
+          }
 
-  - pipeline:
-      if: ctx.ss?.logtype == 'pvm'
-      name: '{{ IngestPipeline "pvm" }}'
+          for (def entry : toRemove) {
+            if (mapper.containsKey(entry)) {
+              mapper.remove(entry);
+            }
+          }
+        } else if (ctx.stormshield.logtype == "filterstat") {
 
-  - pipeline:
-      if: ctx.ss?.logtype == 'server'
-      name: '{{ IngestPipeline "server" }}'
-
-  - pipeline:
-      if: ctx.ss?.logtype == 'system'
-      name: '{{ IngestPipeline "system" }}'
-
-  - pipeline:
-      if: ctx.ss?.logtype == 'vpn'
-      name: '{{ IngestPipeline "vpn" }}'
-
+          def monitor = ctx.stormshield.filterstat;
+          def availableFields = [
+              "in_count",
+              "out_count"
+          ];
+          def fields = [
+              "Byte(i/o)",
+              "EtherStateByte(i/o)",
+              "ICMPByte(i/o)",
+              "IPStateByte(i/o)",
+              "SCTPAssocByte(i/o)",
+              "TCPByte(i/o)",
+              "UDPByte(i/o)"
+          ];
+          def tlscert = ["miss_count", "total"];
+          def tlscertname = "TLSCertCacheLookup(miss/total)";
+          expand_(monitor, "/", tlscertname, "TLSCertCacheLookup", tlscert, /* skipOriginal = */ true, /* flatten = */ true);
+          monitor.remove(tlscertname);
+          for (field_base in fields) {
+              String baseName = field_base.substring(0, field_base.indexOf("("));
+              if (monitor.containsKey(field_base)) {
+                  expand_(monitor, "/", field_base, baseName, availableFields, /* skipOriginal = */ true, /* flatten = */ true);
+                  monitor.remove(field_base);
+              }
+          }
+        }
 
   - remove:
       field: _temp_
