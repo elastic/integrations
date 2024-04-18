@@ -1,14 +1,10 @@
 # BBOT integration
 
-Please read this page in it's entirety as this integration requires some setup.
+This integration is for [BBOT](https://www.blacklanternsecurity.com/bbot/) an ASM (Attack Surface Management) OSINT (Open Source Inteligence) Tool. This integration takes the BLS (Black Lantern Security)'s BBOT tool and mapps the finding data to ECS(Elastic Common Schema).
 
-This integration is for [BBOT](https://www.blacklanternsecurity.com/bbot/), an Attack Surface Management (ASM) Open Source Inteligence (OSINT) Tool. BBOT itself stands for Bighuge BLS OSINT Tool (BBOT).
+BBOT itself stands for (Bighuge BLS OSINT Tool). This tool is used to enhance your external knowledge of your environment. This is done through the integration of many tools into BBOT providing a overview of your attack surface. Here is [how it works](https://www.blacklanternsecurity.com/bbot/how_it_works/)
 
-This integration requires the external use of BBOT! You will have to download and run the tool apart from this integration. Once your scan is complete, this integration will ingest the results into Elastic.
-
-This tool is used to enhance your external knowledge of your environment. This is done through the integration of many tools into BBOT providing a overview of your attack surface. Here is [how it works](https://www.blacklanternsecurity.com/bbot/how_it_works/).
-
-**Important Note** - You will have to provide the following parameter in your BBOT scan for your output.ndjson to be formatted correctly.
+**Important Note** - You will have to provide the following paramiter in your BBOT scan for your output.json to be formatted correctly
 ```
 -c output_modules.json.siem_friendly=true
 ```
@@ -16,21 +12,15 @@ This tool is used to enhance your external knowledge of your environment. This i
 ```
 bbot -t elastic.co --strict-scope -f safe passive -c output_modules.json.siem_friendly=true -om json
 ```
-
-You will have to configure the path for the output file within the integration settings. A common and popular path that could work here is:
-
-**Example BBOT Path**
-```
-/home/*/.bbot/scans/*/output.ndjson
-```
-
-BBOT Scanning [Documentation](https://www.blacklanternsecurity.com/bbot/scanning/).
+BBOT Scanning [Documentation](https://www.blacklanternsecurity.com/bbot/scanning/)
 
 - `bbot` dataset: Made up of the findings found in the BBOT Scans.
 
 ## Logs
 
 ### ASM Findings
+
+This is related BBOT data pertinant for your Attack Surface Management. Specificaly the findings in the output.ndjson file are being pulled!
 
 An example event for `asm_intel` looks as following:
 
@@ -107,7 +97,6 @@ An example event for `asm_intel` looks as following:
         ]
     }
 }
-
 ```
 
 **Exported fields**
@@ -115,60 +104,61 @@ An example event for `asm_intel` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| bbot.data.asn.asn | autonomous system number | keyword |
-| bbot.data.asn.country | asn country | keyword |
-| bbot.data.asn.description | description of the asn | keyword |
-| bbot.data.asn.name | name discovered for the asn | keyword |
-| bbot.data.asn.subnet |  | keyword |
-| bbot.data.azure_tenant.domains | domain of the azure tenant | keyword |
-| bbot.data.azure_tenant.tenant-id | id of the azure tenant | keyword |
-| bbot.data.azure_tenant.tenant-names | associated names of the azure tenants discovered | keyword |
-| bbot.data.code_repository.url | url of the code repository | keyword |
-| bbot.data.dns_name | dns name found | keyword |
-| bbot.data.email_address | email address found | keyword |
-| bbot.data.finding.description | description of the finding | keyword |
-| bbot.data.finding.host | host finding was discovered on | keyword |
-| bbot.data.finding.url | url finding was discovered on | keyword |
-| bbot.data.open_tcp_port | open tcp port discovered | keyword |
-| bbot.data.org_stub | the org stub | keyword |
-| bbot.data.protocol.banner |  | keyword |
-| bbot.data.protocol.host | host related to protocol | keyword |
-| bbot.data.protocol.port | port of the protocol | integer |
-| bbot.data.protocol.protocol | the protocol | keyword |
-| bbot.data.scan | name of the scan | keyword |
-| bbot.data.social.platform | social platform discovered | keyword |
-| bbot.data.social.profile_name | social platform username | keyword |
-| bbot.data.social.url | url of the social finding | keyword |
-| bbot.data.storage_bucket.name | name of the storage bucket | keyword |
-| bbot.data.storage_bucket.url | url of the storage bucket | keyword |
-| bbot.data.technology.host | host where technology was discovered | keyword |
-| bbot.data.technology.technology | technology that was discovered | keyword |
-| bbot.data.technology.url | url of the discovered technology | keyword |
-| bbot.data.url | url of the data finding | keyword |
-| bbot.data.vulnerability.description | description of the vulnerabiltiy | keyword |
-| bbot.data.vulnerability.host | host vulnerability was discovered on | keyword |
-| bbot.data.vulnerability.url | url of the vulnerability | keyword |
-| bbot.data.waf.host | host of the waf | keyword |
-| bbot.data.waf.info | waf information | keyword |
-| bbot.data.waf.url | url of the waf | keyword |
-| bbot.data.waf.waf | waf data | keyword |
-| bbot.data.webscreenshot.filename | name of the webscreenshot file | keyword |
-| bbot.data.webscreenshot.url | url of the webscreenshot | keyword |
-| bbot.id | unique id for each finding | keyword |
-| bbot.module | module that discovered the finding | keyword |
-| bbot.module_sequence | module sequence that discovered the finding | keyword |
-| bbot.resolved_hosts | large list of hosts discovered per finding, this field can hold numerous values | keyword |
-| bbot.scan | scan document, this finding is it's own document and contains data about the scan | keyword |
-| bbot.scope_distance | scope distance of the scan. this is set at runtime of bbot | integer |
+| bbot.data.ASN.asn |  | keyword |
+| bbot.data.ASN.country |  | keyword |
+| bbot.data.ASN.description |  | keyword |
+| bbot.data.ASN.name |  | keyword |
+| bbot.data.ASN.subnet |  | keyword |
+| bbot.data.AZURE_TENANT.domains |  | keyword |
+| bbot.data.AZURE_TENANT.tenant-id |  | keyword |
+| bbot.data.AZURE_TENANT.tenant-names |  | keyword |
+| bbot.data.CODE_REPOSITORY.url |  | keyword |
+| bbot.data.DNS_NAME |  | keyword |
+| bbot.data.EMAIL_ADDRESS |  | keyword |
+| bbot.data.FINDING.description |  | keyword |
+| bbot.data.FINDING.host |  | keyword |
+| bbot.data.FINDING.url |  | keyword |
+| bbot.data.OPEN_TCP_PORT |  | keyword |
+| bbot.data.ORG_STUB |  | keyword |
+| bbot.data.PROTOCOL.banner |  | keyword |
+| bbot.data.PROTOCOL.host |  | keyword |
+| bbot.data.PROTOCOL.port |  | integer |
+| bbot.data.PROTOCOL.protocol |  | keyword |
+| bbot.data.SCAN |  | keyword |
+| bbot.data.SOCIAL.platform |  | keyword |
+| bbot.data.SOCIAL.profile_name |  | keyword |
+| bbot.data.SOCIAL.url |  | keyword |
+| bbot.data.STORAGE_BUCKET.name |  | keyword |
+| bbot.data.STORAGE_BUCKET.url |  | keyword |
+| bbot.data.TECHNOLOGY.host |  | keyword |
+| bbot.data.TECHNOLOGY.technology |  | keyword |
+| bbot.data.TECHNOLOGY.url |  | keyword |
+| bbot.data.URL |  | keyword |
+| bbot.data.VULNERABILITY.description |  | keyword |
+| bbot.data.VULNERABILITY.host |  | keyword |
+| bbot.data.VULNERABILITY.url |  | keyword |
+| bbot.data.WAF.WAF |  | keyword |
+| bbot.data.WAF.host |  | keyword |
+| bbot.data.WAF.info |  | keyword |
+| bbot.data.WAF.url |  | keyword |
+| bbot.data.WEBSCREENSHOT.filename |  | keyword |
+| bbot.data.WEBSCREENSHOT.url |  | keyword |
+| bbot.id |  | keyword |
+| bbot.module |  | keyword |
+| bbot.module_sequence |  | keyword |
+| bbot.resolved_hosts |  | keyword |
+| bbot.scan |  | keyword |
+| bbot.scope_distance |  | integer |
 | bbot.source |  | keyword |
 | bbot.tags |  | keyword |
 | bbot.timestamp |  | date |
 | bbot.type |  | keyword |
-| bbot.web_spider_distance | how far the web spider crawled to discover the finding | integer |
+| bbot.web_spider_distance |  | integer |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | host.ip | Host ip addresses. | ip |
