@@ -511,7 +511,7 @@ processors:
       field: "message"
       description: "302020"
       patterns:
-        - "Built %{NOTSPACE:network.direction} %{NOTSPACE:network.protocol} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_DST}\\) )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_SRC}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
+        - "Built %{NOTSPACE:network.direction} %{NOTSPACE:network.type} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_DST}\\) )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_SRC}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
@@ -955,17 +955,17 @@ processors:
       if: "ctx._temp_.cisco.message_id == '434002'"
       tag: parse_434002
       field: "message"
-      pattern: "SFR requested to drop %{network.protocol} packet from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
+      pattern: "SFR requested to drop %{network.transport} packet from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '434004'"
       tag: parse_434004
       field: "message"
-      pattern: "SFR requested ASA to bypass further packet redirection and process %{network.protocol} flow from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} locally"
+      pattern: "SFR requested ASA to bypass further packet redirection and process %{network.transport} flow from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} locally"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '110002'"
       tag: parse_110002
       field: "message"
-      pattern: "%{event.reason} for %{network.protocol} from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{destination.address}/%{destination.port}"
+      pattern: "%{event.reason} for %{network.transport} from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{destination.address}/%{destination.port}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '419002'"
       tag: parse_419002
@@ -1013,7 +1013,7 @@ processors:
   - set:
       if: '["419002"].contains(ctx._temp_.cisco.message_id)'
       tag: parse_419002
-      field: "network.protocol"
+      field: "network.transport"
       value: "tcp"
 
   #
