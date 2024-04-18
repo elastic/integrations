@@ -110,19 +110,31 @@ processors:
       field: json.uuid.$type
       target_field: mongodb_atlas.mongod_audit.uuid.type
       ignore_missing: true
+  - convert:
+      field: json.result
+      type: string
+      ignore_missing: true
   - script:
-      description: Provide information of the error code.
       lang: painless
-      ignore_failure: true
+      description: Maps error codes to descriptive values
+      tag: informative_error_code
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      params:
+        error_codes:
+          "0": "Success"
+          "13": "Unauthorized to perform the operation"
+          "18": "Authentication Failed"
+          "26": "Namespace Not Found"
+          "276": "Index build aborted"
+          "334": "Unauthorized to perform the operation"
       source: |
-        Map m = new HashMap();
-        m.put(0, "Success");
-        m.put(13, "Unauthorized to perform the operation");
-        m.put(18, "Authentication Failed");
-        m.put(26, "Namespace Not Found");
-        m.put(276, "Index build aborted");
-        m.put(334, "Unauthorized to perform the operation");
-        ctx.mongodb_atlas.mongod_audit.result = m.get(ctx.json.result);
+          String value = ctx.json?.result;
+          if (value != null) {
+            ctx.mongodb_atlas.mongod_audit.result = params.error_codes.getOrDefault(value, null);
+          }
   - script:
       lang: painless
       source: |-
@@ -139,7 +151,7 @@ processors:
           return false;
         }
         drop(ctx);
-      description: Drops null/empty values recursively.
+      description: Drops null and empty values recursively from the Elasticsearch document context.
   - remove:
       field:
         - event.original
@@ -149,6 +161,7 @@ processors:
       field:
         - json
       ignore_missing: true
+      description: Removes temporary fields.
   - set:
       field: event.kind
       value: pipeline_error

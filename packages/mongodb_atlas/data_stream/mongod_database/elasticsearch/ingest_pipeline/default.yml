@@ -46,26 +46,28 @@ processors:
             value: '{{ _ingest.on_failure_message }}'
   - script:
       lang: painless
-      description: Provides descriptive value to the field.
+      description: Maps log severity levels to descriptive values
       tag: informative_log_level
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      params:
+        severity_levels:
+          F: fatal
+          E: error
+          W: warning
+          I: informational
+          D1: debug 1
+          D2: debug 2
+          D3: debug 3
+          D4: debug 4
+          D5: debug 5
       source: |
-        Map m = new HashMap();
-        m.put("F", "fatal");
-        m.put("E", "error");
-        m.put("W", "warning");
-        m.put("I", "informational");
-        m.put("D1", "debug 1");
-        m.put("D2", "debug 2");
-        m.put("D3", "debug 3");
-        m.put("D4", "debug 4");
-        m.put("D5", "debug 5");
-        if (m.get(ctx.json?.s) != null) {
-          ctx.severity = m.get(ctx.json.s);
-        }
+          String value = ctx.json?.s;
+          if (value != null) {
+            ctx.severity = params.severity_levels.getOrDefault(value, null);
+          }
   - rename:
       field: severity
       target_field: log.level
@@ -114,7 +116,7 @@ processors:
           return false;
         }
         drop(ctx);
-      description: Drops null/empty values recursively.
+      description: Drops null and empty values recursively from the Elasticsearch document context.
   - remove:
       field:
         - event.original
@@ -125,6 +127,7 @@ processors:
       field:
         - json
       ignore_missing: true
+      description: Removes temporary fields.
   - set:
       field: event.kind
       value: pipeline_error
