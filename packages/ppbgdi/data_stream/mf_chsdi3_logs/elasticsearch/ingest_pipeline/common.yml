@@ -1,0 +1,14 @@
+---
+description: Default pipeline for processing mf-chsdi3 logs
+processors:
+  - dissect:
+      field: event.original
+      pattern: "[%{@timestamp}] [%{log.level}] [pid/tid %{process.pid}/%{process.thread.id}] [%{log.logger}] [ID %{event.id}] %{message}"
+  - convert:
+      field: process.pid
+      type: long
+      ignore_missing: true
+  - convert:
+      field: process.thread.id
+      type: long
+      ignore_missing: true

@@ -1,10 +1,25 @@
 ---
-description: Pipeline for processing sample logs
+description: Default pipeline for processing mf-chsdi3 logs
 processors:
-- set:
-    field: sample_field
-    value: "1"
-on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - pipeline:
+      description: Pipeline used to create fields for elastic-package tests
+      if: ctx?.tags != null && ctx?.tags.contains('elastic-package-test')
+      name: '{{ IngestPipeline "elastic-package-test" }}'
+  - grok:
+      field: event.original
+      patterns:
+        - ^%{CHAR:first_char}
+      pattern_definitions:
+        CHAR: .
+  - pipeline:
+      if: ctx.first_char != '{'
+      name: '{{ IngestPipeline "common" }}'
+  - remove:
+      field:
+        - first_char
