@@ -1,0 +1,16 @@
+---
+description: Pipeline for processing service STAC url query string
+processors:
+  - kv:
+      description: Parse url query parameters to an object
+      field: url.query
+      target_field: bgdi.app.query_params
+      field_split: "&"
+      value_split: "="
+  - foreach:
+      description: Lowercase all query parameter keys for easier handling
+      field: bgdi.app.query_params
+      processor:
+        lowercase:
+          field: _ingest._key
+      ignore_missing: true
