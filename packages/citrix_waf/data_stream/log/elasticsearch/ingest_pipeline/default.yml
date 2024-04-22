@@ -12,8 +12,9 @@ processors:
   - grok:
       description: Extract header details and message from log line.
       field: event.original
+      tag: grok_default
       patterns:
-        - '^%{SYSLOG_TIMESTAMP} %{LEVEL} %{IP:client.ip:ip} %{GREEDYDATA:citrix.detail}'
+        - '^(<%{NUMBER:_tmp.detail_number}> |(%{SYSLOG_TIMESTAMP} %{LEVEL} %{IP:client.ip:ip} ))%{GREEDYDATA:citrix.detail}'
         - '^%{GREEDYDATA:citrix.detail}'
       pattern_definitions:
         LEVEL: '<?%{IDENT:citrix.facility:keyword}\.%{IDENT:citrix.priority:keyword}>?'
@@ -157,4 +158,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"

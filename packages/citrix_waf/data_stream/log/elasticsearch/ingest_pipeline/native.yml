@@ -7,6 +7,7 @@ processors:
   - grok:
       description: Extract native header and message.
       field: citrix.detail
+      tag: grok_native_message_extraction
       patterns:
         - '^%{HEADER} : %{GREEDYDATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
         - '^%{HEADER} : %{GREEDYDATA:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}'
@@ -15,6 +16,7 @@ processors:
         NATIVE_TIMESTAMP: '(?:%{MONTHNUM}/%{MONTHDAY}/%{YEAR}|%{YEAR}/%{MONTHNUM}/%{MONTHDAY}):%{HOUR}:%{MINUTE}:%{SECOND}'
   - grok:
       description: Parse out details.
+      tag: grok_native_details
       field: _tmp.details
       patterns:
         - '^%{DEFAULT:_tmp.default}?%{WORD:citrix.device_event_class_id} %{GREEDYDATA:citrix.name} %{INT:event.id} %{INT:event.severity}$'
@@ -24,10 +26,15 @@ processors:
       field: citrix.default_class
       value: true
       if: ctx._tmp?.default == 'default ' # The trailing space is intended.
+  - set:
+      # add back the original <NUMBER> as this was removed from detail at the default pipeline
+      field: citrix.detail
+      value: '<{{{ _tmp.detail_number }}}> {{{ citrix.detail }}}'
+      if: ctx._tmp?.detail_number != null
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
