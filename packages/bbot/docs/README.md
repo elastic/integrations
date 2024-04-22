@@ -38,14 +38,13 @@ An example event for `asm_intel` looks as following:
 {
     "@timestamp": "2024-02-29T01:41:47.779Z",
     "agent": {
-        "ephemeral_id": "9406cda5-43d3-4994-b1cd-4ca6e138cf4e",
-        "id": "1d6e3c0c-c4ec-45f9-a9f1-cba233147f9a",
+        "ephemeral_id": "8ff8221f-4846-4f02-b12b-773332430bab",
+        "id": "bcb4b946-41b8-4916-9308-849b3bf23f46",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.2"
     },
     "bbot": {
-        "data": {},
         "id": "DNS_NAME:f57ba0828becd7bf94faa616db081ed06f31bd3d",
         "module": "TARGET",
         "module_sequence": "TARGET",
@@ -70,14 +69,14 @@ An example event for `asm_intel` looks as following:
         "version": "8.12.0"
     },
     "elastic_agent": {
-        "id": "1d6e3c0c-c4ec-45f9-a9f1-cba233147f9a",
+        "id": "bcb4b946-41b8-4916-9308-849b3bf23f46",
         "snapshot": false,
         "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "bbot.asm_intel",
-        "ingested": "2024-03-21T18:48:38Z",
+        "ingested": "2024-04-22T19:10:49Z",
         "kind": "asset"
     },
     "host": {
@@ -99,7 +98,8 @@ An example event for `asm_intel` looks as following:
         ]
     },
     "tags": [
-        "forwarded"
+        "forwarded",
+        "bbot"
     ],
     "url": {
         "domain": [
@@ -107,7 +107,6 @@ An example event for `asm_intel` looks as following:
         ]
     }
 }
-
 ```
 
 **Exported fields**
