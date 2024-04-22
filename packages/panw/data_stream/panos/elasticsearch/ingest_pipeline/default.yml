@@ -104,24 +104,26 @@ processors:
       field: _temp_.srcuser
       ignore_missing: true
       patterns:
-        - '^%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
-        - '^%{HOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
-        - '^%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}$'
+        - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
+        - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
+        - '^%{USERNAME:source.user.name}@%{PATRUNKATEDHOSTNAME:source.user.domain}$'
         - '^%{USERNAME:source.user.name}$'
       pattern_definitions:
-        USERNAME: '[ a-zA-Z0-9._-]+[$]?'
+        USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
+        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
       if: ctx._temp_?.srcuser != null
 
   - grok:
       field: _temp_.dstuser
       ignore_missing: true
       patterns:
-        - '^%{HOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
-        - '^%{HOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
-        - '^%{USERNAME:destination.user.name}@%{HOSTNAME:destination.user.domain}$'
+        - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
+        - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
+        - '^%{USERNAME:destination.user.name}@%{PATRUNKATEDHOSTNAME:destination.user.domain}$'
         - '^%{USERNAME:destination.user.name}$'
       pattern_definitions:
-        USERNAME: '[ a-zA-Z0-9._-]+[$]?'
+        USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
+        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
       if: ctx._temp_?.dstuser != null
 
   - set:
@@ -1168,6 +1170,7 @@ processors:
       if: ctx.panw?.panos?.sub_type == 'drop'
   - append:
       field: event.type
+      allow_duplicates: false
       value:
         - denied
         - connection
@@ -1178,6 +1181,7 @@ processors:
       if: ctx.panw?.panos?.sub_type == 'deny'
   - append:
       field: event.type
+      allow_duplicates: false
       value:
         - denied
         - connection
@@ -1510,6 +1514,11 @@ processors:
       allow_duplicates: false
       value: '{{{destination.user.name}}}'
       if: ctx.destination?.user?.name != null
+  - append:
+      field: related.user
+      allow_duplicates: false
+      value: '{{{panw.panos.admin}}}'
+      if: ctx.panw?.panos?.admin != null
   - append:
       field: related.hash
       allow_duplicates: false

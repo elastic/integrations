@@ -1,16 +1,31 @@
 # AbuseCH integration
 
-This integration is for [AbuseCH](https://urlhaus-api.abuse.ch/) logs. It includes the following datasets for retrieving logs from the AbuseCH API:
+This integration is for [AbuseCH](https://urlhaus.abuse.ch/) logs. It includes the following datasets for retrieving indicators from the AbuseCH API:
 
 - `url` dataset: Supports URL based indicators from AbuseCH API.
 - `malware` dataset: Supports Malware based indicators from AbuseCH API.
 - `malwarebazaar` dataset: Supports indicators from the MalwareBazaar from AbuseCH.
+- `threatfox` dataset: Supports indicators from AbuseCH Threat Fox API.
+
+## Expiration of Indicators of Compromise (IOCs)
+All AbuseCH datasets now support indicator expiration. For `URL` dataset, a full list of active indicators are ingested every interval. For other datasets namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the indicators are expired after duration `IOC Expiration Duration` configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to facilitate only active indicators be available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired indicators. The indiator match rules and dashboards are updated to list only active indicators.
+Destinations indices are aliased to `logs-ti_abusech_latest.<datastream_name>`.
+
+| Source Datastream                  | Destination Index Pattern                        | Destination Alias                       |
+|:-----------------------------------|:-------------------------------------------------|-----------------------------------------|
+| `logs-ti_abusech.url-*`            | `logs-ti_abusech_latest.dest_url-*`              | `logs-ti_abusech_latest.url`            |
+| `logs-ti_abusech.malware-*`        | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`        |
+| `logs-ti_abusech.malwarebazaar-*`  | `logs-ti_abusech_latest.dest_malwarebazaar-*`    | `logs-ti_abusech_latest.malwarebazaar`  |
+| `logs-ti_abusech.threatfox-*`      | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`      |
+
+### ILM Policy
+To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_abusech.<datastream_name>-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_abusech.<datastream_name>-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
 
 ## Logs
 
 ### URL
 
-The AbuseCH URL data_stream retrieves threat intelligence indicators from the URL API endpoint `https://urlhaus-api.abuse.ch/v1/urls/recent/`.
+The AbuseCH URL data_stream retrieves full list of active threat intelligence indicators every interval from the Active Indicators URL database dump `https://urlhaus.abuse.ch/downloads/json/`.
 
 **Exported fields**
 
@@ -19,10 +34,12 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | @timestamp | Event timestamp. | date |
 | abusech.url.blacklists.spamhaus_dbl | If the indicator is listed on the spamhaus blacklist. | keyword |
 | abusech.url.blacklists.surbl | If the indicator is listed on the surbl blacklist. | keyword |
+| abusech.url.deleted_at | The timestamp when the indicator is (will be) deleted. | date |
 | abusech.url.id | The ID of the indicator. | keyword |
-| abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false) | boolean |
+| abusech.url.larted | Indicates whether the malware URL has been reported to the hosting provider (true or false). | boolean |
+| abusech.url.last_online | Last timestamp when the URL has been serving malware. | date |
 | abusech.url.reporter | The Twitter handle of the reporter that has reported this malware URL (or anonymous). | keyword |
-| abusech.url.tags | A list of tags associated with the queried malware URL | keyword |
+| abusech.url.tags | A list of tags associated with the queried malware URL. | keyword |
 | abusech.url.threat | The threat corresponding to this malware URL. | keyword |
 | abusech.url.url_status | The current status of the URL. Possible values are: online, offline and unknown. | keyword |
 | abusech.url.urlhaus_reference | Link to URLhaus entry. | keyword |
@@ -70,6 +87,9 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.interval | User-configured value for `Interval` setting. This is used in calculation of indicator expiration time. | keyword |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -79,11 +99,14 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| threat.indicator.url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
 | threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
 | threat.indicator.url.full.text | Multi-field of `threat.indicator.url.full`. | match_only_text |
 | threat.indicator.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
@@ -94,6 +117,8 @@ The AbuseCH URL data_stream retrieves threat intelligence indicators from the UR
 | threat.indicator.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 
 
+### Malware
+
 The AbuseCH malware data_stream retrieves threat intelligence indicators from the payload API endpoint `https://urlhaus-api.abuse.ch/v1/payloads/recent/`.
 
 **Exported fields**
@@ -101,10 +126,12 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| abusech.malware.signature | Malware familiy. | keyword |
+| abusech.malware.deleted_at | The indicator expiration timestamp. | date |
+| abusech.malware.ioc_expiration_duration | The configured expiration duration. | keyword |
+| abusech.malware.signature | Malware family. | keyword |
 | abusech.malware.virustotal.link | Link to the Virustotal report. | keyword |
 | abusech.malware.virustotal.percent | AV detection in percent. | float |
-| abusech.malware.virustotal.result | AV detection ration. | keyword |
+| abusech.malware.virustotal.result | AV detection ratio. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -149,6 +176,8 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -165,9 +194,12 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 | threat.indicator.file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | threat.indicator.file.type | File type (file, dir, or symlink). | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 
+
+### MalwareBazaar
 
 The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators from the MalwareBazaar API endpoint `https://mb-api.abuse.ch/api/v1/`.
 
@@ -178,21 +210,22 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | @timestamp | Event timestamp. | date |
 | abusech.malwarebazaar.anonymous | Identifies if the sample was submitted anonymously. | long |
 | abusech.malwarebazaar.code_sign.algorithm | Algorithm used to generate the public key. | keyword |
-| abusech.malwarebazaar.code_sign.cscb_listed | Whether the certificate is present on the Code Signing Certificate Blocklist (CSCB) | boolean |
-| abusech.malwarebazaar.code_sign.cscb_reason | Why the certificate is present on the Code Signing Certificate Blocklist (CSCB) | keyword |
+| abusech.malwarebazaar.code_sign.cscb_listed | Whether the certificate is present on the Code Signing Certificate Blocklist (CSCB). | boolean |
+| abusech.malwarebazaar.code_sign.cscb_reason | Why the certificate is present on the Code Signing Certificate Blocklist (CSCB). | keyword |
 | abusech.malwarebazaar.code_sign.issuer_cn | Common name (CN) of issuing certificate authority. | keyword |
 | abusech.malwarebazaar.code_sign.serial_number | Unique serial number issued by the certificate authority. | keyword |
 | abusech.malwarebazaar.code_sign.subject_cn | Common name (CN) of subject. | keyword |
-| abusech.malwarebazaar.code_sign.thumbprint | Hash of certificate | keyword |
-| abusech.malwarebazaar.code_sign.thumbprint_algorithm | Algorithm used to create thumbprint | keyword |
+| abusech.malwarebazaar.code_sign.thumbprint | Hash of certificate. | keyword |
+| abusech.malwarebazaar.code_sign.thumbprint_algorithm | Algorithm used to create thumbprint. | keyword |
 | abusech.malwarebazaar.code_sign.valid_from | Time at which the certificate is first considered valid. | date |
 | abusech.malwarebazaar.code_sign.valid_to | Time at which the certificate is no longer considered valid. | keyword |
-| abusech.malwarebazaar.dhash_icon | In case the file is a PE executable: dhash of the samples icon | keyword |
+| abusech.malwarebazaar.deleted_at | The indicator expiration timestamp. | date |
+| abusech.malwarebazaar.dhash_icon | In case the file is a PE executable: dhash of the samples icon. | keyword |
 | abusech.malwarebazaar.intelligence.downloads | Number of downloads from MalwareBazaar. | long |
 | abusech.malwarebazaar.intelligence.mail.Generic | Malware seen in generic spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.mail.IT | Malware seen in IT spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.uploads | Number of uploads from MalwareBazaar. | long |
-| abusech.malwarebazaar.tags | A list of tags associated with the queried malware sample. | keyword |
+| abusech.malwarebazaar.ioc_expiration_duration | The configured expiration duration. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -237,6 +270,8 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -267,10 +302,13 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.software.alias | The alias(es) of the software for a set of related intrusion activity that are tracked by a common name in the security community. While not required, you can use a MITRE ATT&CK® associated software description. | keyword |
 
+
+### Threat Fox
 
 The AbuseCH threatfox data_stream retrieves threat intelligence indicators from the Threat Fox API endpoint `https://threatfox-api.abuse.ch/api/v1/`.
 
@@ -279,11 +317,13 @@ The AbuseCH threatfox data_stream retrieves threat intelligence indicators from 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| abusech.threatfox.confidence_level | Confidence level between 0-100 | long |
-| abusech.threatfox.malware | The malware associated with the IOC | keyword |
+| abusech.threatfox.confidence_level | Confidence level between 0-100. | long |
+| abusech.threatfox.deleted_at | The indicator expiration timestamp. | date |
+| abusech.threatfox.ioc_expiration_duration | The configured expiration duration. | keyword |
+| abusech.threatfox.malware | The malware associated with the IOC. | keyword |
 | abusech.threatfox.tags | A list of tags associated with the queried malware sample. | keyword |
-| abusech.threatfox.threat_type | The type of threat | keyword |
-| abusech.threatfox.threat_type_desc | The threat descsription | keyword |
+| abusech.threatfox.threat_type | The type of threat. | keyword |
+| abusech.threatfox.threat_type_desc | The threat descsription. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -328,6 +368,8 @@ The AbuseCH threatfox data_stream retrieves threat intelligence indicators from 
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -354,6 +396,7 @@ The AbuseCH threatfox data_stream retrieves threat intelligence indicators from 
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.port | Identifies a threat indicator as a port number (irrespective of direction). | long |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
