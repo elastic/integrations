@@ -171,7 +171,12 @@ processors:
       field: message
       tag: dissect_gsp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{igmp.type}), %{source.packets} packet"
-      if: "['IPACCESSLOGSP', 'ACCESSLOGSP'].contains(ctx.event?.code)"
+      if: "ctx.event?.code == 'IPACCESSLOGSP'"
+  - dissect:
+      field: message
+      tag: dissect_gsp
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.type} %{source.address} %{} %{destination.address}, %{source.packets} packet"
+      if: "ctx.event?.code == 'ACCESSLOGSP'"
   - dissect:
       field: message
       tag: dissect_gnp
