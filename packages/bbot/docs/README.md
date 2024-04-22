@@ -1,10 +1,10 @@
 # BBOT integration
 
-Please read this page in it's entirety as this integration requires some setup.
+Please read this page in its entirety as this integration requires some setup.
 
 This integration is for [BBOT](https://www.blacklanternsecurity.com/bbot/), an Attack Surface Management (ASM) Open Source Inteligence (OSINT) Tool. BBOT itself stands for Bighuge BLS OSINT Tool (BBOT).
 
-This integration requires the external use of BBOT! You will have to download and run the tool apart from this integration. Once your scan is complete, this integration will ingest the results into Elastic.
+This integration requires the external use of BBOT. You will have to download and run the tool apart from this integration. Once your scan is complete, this integration will ingest the results into Elastic.
 
 This tool is used to enhance your external knowledge of your environment. This is done through the integration of many tools into BBOT providing a overview of your attack surface. Here is [how it works](https://www.blacklanternsecurity.com/bbot/how_it_works/).
 
@@ -21,7 +21,7 @@ You will have to configure the path for the output file within the integration s
 
 **Example BBOT Path**
 ```
-/home/*/.bbot/scans/*/output.ndjson
+/home/<user>/.bbot/scans/*/output.ndjson
 ```
 
 BBOT Scanning [Documentation](https://www.blacklanternsecurity.com/bbot/scanning/).
@@ -115,56 +115,56 @@ An example event for `asm_intel` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| bbot.data.asn.asn | autonomous system number | keyword |
-| bbot.data.asn.country | asn country | keyword |
-| bbot.data.asn.description | description of the asn | keyword |
-| bbot.data.asn.name | name discovered for the asn | keyword |
-| bbot.data.asn.subnet |  | keyword |
-| bbot.data.azure_tenant.domains | domain of the azure tenant | keyword |
-| bbot.data.azure_tenant.tenant-id | id of the azure tenant | keyword |
-| bbot.data.azure_tenant.tenant-names | associated names of the azure tenants discovered | keyword |
-| bbot.data.code_repository.url | url of the code repository | keyword |
-| bbot.data.dns_name | dns name found | keyword |
-| bbot.data.email_address | email address found | keyword |
-| bbot.data.finding.description | description of the finding | keyword |
-| bbot.data.finding.host | host finding was discovered on | keyword |
-| bbot.data.finding.url | url finding was discovered on | keyword |
-| bbot.data.open_tcp_port | open tcp port discovered | keyword |
-| bbot.data.org_stub | the org stub | keyword |
-| bbot.data.protocol.banner |  | keyword |
-| bbot.data.protocol.host | host related to protocol | keyword |
-| bbot.data.protocol.port | port of the protocol | integer |
-| bbot.data.protocol.protocol | the protocol | keyword |
-| bbot.data.scan | name of the scan | keyword |
-| bbot.data.social.platform | social platform discovered | keyword |
-| bbot.data.social.profile_name | social platform username | keyword |
-| bbot.data.social.url | url of the social finding | keyword |
-| bbot.data.storage_bucket.name | name of the storage bucket | keyword |
-| bbot.data.storage_bucket.url | url of the storage bucket | keyword |
-| bbot.data.technology.host | host where technology was discovered | keyword |
-| bbot.data.technology.technology | technology that was discovered | keyword |
-| bbot.data.technology.url | url of the discovered technology | keyword |
-| bbot.data.url | url of the data finding | keyword |
-| bbot.data.vulnerability.description | description of the vulnerabiltiy | keyword |
-| bbot.data.vulnerability.host | host vulnerability was discovered on | keyword |
-| bbot.data.vulnerability.url | url of the vulnerability | keyword |
-| bbot.data.waf.host | host of the waf | keyword |
-| bbot.data.waf.info | waf information | keyword |
-| bbot.data.waf.url | url of the waf | keyword |
-| bbot.data.waf.waf | waf data | keyword |
-| bbot.data.webscreenshot.filename | name of the webscreenshot file | keyword |
-| bbot.data.webscreenshot.url | url of the webscreenshot | keyword |
-| bbot.id | unique id for each finding | keyword |
-| bbot.module | module that discovered the finding | keyword |
-| bbot.module_sequence | module sequence that discovered the finding | keyword |
-| bbot.resolved_hosts | large list of hosts discovered per finding, this field can hold numerous values | keyword |
-| bbot.scan | scan document, this finding is it's own document and contains data about the scan | keyword |
-| bbot.scope_distance | scope distance of the scan. this is set at runtime of bbot | integer |
+| bbot.data.asn.asn | Autonomous system number. | keyword |
+| bbot.data.asn.country | ASN country. | keyword |
+| bbot.data.asn.description | Description of the asn. | keyword |
+| bbot.data.asn.name | Name discovered for the asn. | keyword |
+| bbot.data.asn.subnet | Subnet discovered for the asn. | keyword |
+| bbot.data.azure_tenant.domains | Domain of the azure tenant. | keyword |
+| bbot.data.azure_tenant.tenant-id | ID of the azure tenant. | keyword |
+| bbot.data.azure_tenant.tenant-names | Associated names of the azure tenants discovered. | keyword |
+| bbot.data.code_repository.url | URL of the code repository. | keyword |
+| bbot.data.dns_name | DNS name found. | keyword |
+| bbot.data.email_address | Email address found. | keyword |
+| bbot.data.finding.description | Description of the finding. | keyword |
+| bbot.data.finding.host | Host finding was discovered on. | keyword |
+| bbot.data.finding.url | URL finding was discovered on. | keyword |
+| bbot.data.open_tcp_port | Open tcp port discovered. | keyword |
+| bbot.data.org_stub | The org stub. | keyword |
+| bbot.data.protocol.banner | Banner related findings. | keyword |
+| bbot.data.protocol.host | Host related to protocol. | keyword |
+| bbot.data.protocol.port | Port of the protocol. | integer |
+| bbot.data.protocol.protocol | The protocol. | keyword |
+| bbot.data.scan | Name of the scan. | keyword |
+| bbot.data.social.platform | Social platform discovered. | keyword |
+| bbot.data.social.profile_name | Social platform username. | keyword |
+| bbot.data.social.url | URL of the social finding. | keyword |
+| bbot.data.storage_bucket.name | Name of the storage bucket. | keyword |
+| bbot.data.storage_bucket.url | URL of the storage bucket. | keyword |
+| bbot.data.technology.host | Host where technology was discovered. | keyword |
+| bbot.data.technology.technology | Technology that was discovered. | keyword |
+| bbot.data.technology.url | URL of the discovered technology. | keyword |
+| bbot.data.url | URL of the data finding. | keyword |
+| bbot.data.vulnerability.description | Description of the vulnerabiltiy. | keyword |
+| bbot.data.vulnerability.host | Host vulnerability was discovered on. | keyword |
+| bbot.data.vulnerability.url | URL of the vulnerability. | keyword |
+| bbot.data.waf.host | Host of the WAF. | keyword |
+| bbot.data.waf.info | WAF information. | keyword |
+| bbot.data.waf.url | URL of the WAF. | keyword |
+| bbot.data.waf.waf | WAF data. | keyword |
+| bbot.data.webscreenshot.filename | Name of the webscreenshot file. | keyword |
+| bbot.data.webscreenshot.url | URL of the webscreenshot. | keyword |
+| bbot.id | Unique id for each finding. | keyword |
+| bbot.module | Module that discovered the finding. | keyword |
+| bbot.module_sequence | Module sequence that discovered the finding. | keyword |
+| bbot.resolved_hosts | Large list of hosts discovered per finding, this field can hold numerous values. | keyword |
+| bbot.scan | Scan document, this finding is it's own document and contains data about the scan. | keyword |
+| bbot.scope_distance | Scope distance of the scan. this is set at runtime of bbot. | integer |
 | bbot.source |  | keyword |
 | bbot.tags |  | keyword |
 | bbot.timestamp |  | date |
 | bbot.type |  | keyword |
-| bbot.web_spider_distance | how far the web spider crawled to discover the finding | integer |
+| bbot.web_spider_distance | How far the web spider crawled to discover the finding. | integer |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
