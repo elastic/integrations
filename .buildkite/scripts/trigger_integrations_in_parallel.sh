@@ -53,6 +53,7 @@ for package in ${PACKAGE_LIST}; do
       agents:
         provider: gcp
       env:
+        ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT: "true"
         STACK_VERSION: "${STACK_VERSION}"
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
         SERVERLESS: "false"
