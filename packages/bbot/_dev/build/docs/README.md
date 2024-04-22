@@ -21,7 +21,7 @@ You will have to configure the path for the output file within the integration s
 
 **Example BBOT Path**
 ```
-/home/*/.bbot/scans/*/output.ndjson
+/home/<user>/.bbot/scans/*/output.ndjson
 ```
 
 BBOT Scanning [Documentation](https://www.blacklanternsecurity.com/bbot/scanning/).
