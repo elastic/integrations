@@ -223,6 +223,45 @@
         - name: user
           type: keyword
           description: 'ID of the user (when the authentication phase has ended). String of characters in UTF-8 format. Example: John.smith May be displayed anonymously depending on the administrator''s access privileges. Available from: SNS v1.0.0.'
+    - name: authstat
+      type: group
+      fields:
+        - name: auth
+          type: keyword
+          description: tbd
+        - name: authcaptive
+          type: keyword
+          description: tbd
+        - name: authconsole
+          type: keyword
+          description: tbd
+        - name: authipsec
+          type: keyword
+          description: tbd
+        - name: authsslvpn
+          type: keyword
+          description: tbd
+        - name: authtotp
+          type: keyword
+          description: tbd
+        - name: authwebadmin
+          type: keyword
+          description: tbd
+        - name: fw
+          type: keyword
+          description: 'firewall''s ID This is the name entered by the administrator or, by default, its serial number. String of characters in UTF-8 format.  Example: firewall_name or V50XXXXXXXXXXXX Available from: SNS v1.0.0.'
+        - name: id
+          type: keyword
+          description: Type of product.  This field constantly has the value firewall for logs on the Firewall.
+        - name: startime
+          type: keyword
+          description: 'Local time at the beginning of the logged event (time configured on the Firewall). String in YYYY-MM-DD HH:MM:SS format. Available from: SNS v1.0.0.'
+        - name: time
+          type: keyword
+          description: 'Local time at which the log was recorded in the log file (time configured on the Firewall). String in YYYY-MM-DD HH:MM:SS format. Available from: SNS v1.0.0.'
+        - name: tz
+          type: keyword
+          description: 'Time difference between the Firewalls time and GMT. This depends on the time zone used. String in +HHMM or -HHMM format. Available from: SNS v1.0.0.'
     - name: connection
       type: group
       fields:
@@ -557,6 +596,9 @@
         - name: Accepted
           type: keyword
           description: 'Number of packets corresponding to the application of Pass rules. Example: Accepted=2430.'
+        - name: AssocMem
+          type: keyword
+          description: The memory used for ...
         - name: Blocked
           type: keyword
           description: 'Number of packets corresponding to the application of Block rules. Example: Blocked=1254.'
@@ -576,6 +618,9 @@
         - name: DtrackMem
           type: keyword
           description: Percentage of memory used for data tracking (TCP/UDP packets). Value from 0 to 100.
+        - name: DTrackMem
+          type: keyword
+          description: The memory used for ...
         - name: DynamicMem
           type: keyword
           description: Percentage of the ASQs dynamic memory in use. Value from 0 to 100.
@@ -592,6 +637,9 @@
         - name: EtherStateConn
           type: keyword
           description: 'Number of stateful statuses for Ethernet exchanges without IP layer. Digital format. Example: EtherStateConn=0 Available from: SNS v4.0.0.'
+        - name: EtherStateMem
+          type: keyword
+          description: The memory used for ...
         - name: EtherStatePacket
           type: keyword
           description: 'Number of packets for Ethernet traffic without IP layer. Digital format. Example: EtherStatePacket=128 Available from: SNS v4.0.0.'
@@ -636,8 +684,15 @@
           type: keyword
           description: Type of product.  This field constantly has the value firewall for logs on the Firewall.
         - name: IPStateByte
-          type: keyword
+          type: group
           description: Number of bytes exchanged for pseudo-connections. This value includes incoming and outgoing bytes.
+          fields:
+            - name: in_count
+              description: Number of bytes that have passed through the firewall (incoming)
+              type: unsigned_long
+            - name: out_count
+              description: Number of bytes that have passed through the firewall (outgoing)
+              type: unsigned_long
         - name: IPStateConn
           type: keyword
           description: 'Number of active pseudo-connections relating to protocols other than TCP, UDP or ICMP (e.g.: GRE).'
@@ -712,6 +767,12 @@
         - name: TCPConnNatSrc
           type: keyword
           description: Number of TCP connections with a translated source.
+        - name: TCPConnNoNatDst
+          type: keyword
+          description: Number of TCP connections with a translated destination.
+        - name: TCPConnNoNatSrc
+          type: keyword
+          description: Number of TCP connections with a translated source.
         - name: TCPPacket
           type: keyword
           description: Number of TCP packets that have passed through the Firewall.
@@ -769,6 +830,12 @@
           type: keyword
           description: Number of UDP connections with a translated destination.
         - name: UDPConnNatSrc
+          type: keyword
+          description: Number of UDP connections with a translated source.
+        - name: UDPConnNoNatDst
+          type: keyword
+          description: Number of UDP connections with a translated destination.
+        - name: UDPConnNoNatSrc
           type: keyword
           description: Number of UDP connections with a translated source.
         - name: UDPPacket
@@ -901,6 +968,9 @@
             - name: name
               description: Name of the interface
               type: keyword
+            - name: original
+              description: Original name of this field
+              type: keyword
             - name: incoming_throughput
               description: Incoming throughput (bits/second)
               type: unsigned_long
@@ -920,14 +990,27 @@
               description: Number of packets blocked
               type: unsigned_long
         - name: CPU
-          type: keyword
+          type: group
           description: 'Firewalls CPU consumption:  Time allocated to the management of user processes, Time consumed by the kernel, Time allocated to system disruptions.  Format: 3 numeric values separated by commas.  Example: CPU=1,0,2'
+          fields:
+            - name: user_time
+              description: Time allocated to the management of user processes
+              type: unsigned_long
+            - name: kernel_time
+              description: Time consumed by the kernel
+              type: unsigned_long
+            - name: system_disruption
+              description: Time allocated to system disruptions
+              type: unsigned_long
         - name: Ethernet
           type: group
           description: 'Indicators of bandwidth used for each of the active network interfaces:   name of the interface. String of characters in UTF-8 format. incoming throughput (bits/second), maximum incoming throughput for a given period (bits/second), outgoing throughput (bits/second), maximum outgoing throughput for a given period (bits/second), number of packets accepted, number of packets blocked,  Format: 7 values separated by commas.  Example: "in,61515,128648,788241,1890520,2130,21"'
           fields:
             - name: name
               description: Name of the interface
+              type: keyword
+            - name: original
+              description: Original name of this field
               type: keyword
             - name: incoming_throughput
               description: Incoming throughput (bits/second)
@@ -953,9 +1036,37 @@
         - name: id
           type: keyword
           description: Type of product.  This field constantly has the value firewall for logs on the Firewall.
-        - name: ipsecXX
-          type: keyword
+        - name: ipsec
+          type: group
           description: 'Indicators of bandwidth used by IPSec interfaces:   name of the interface. String of characters in UTF-8 format. incoming throughput (bits/second), maximum incoming throughput for a given period (bits/second), outgoing throughput (bits/second), maximum outgoing throughput for a given period (bits/second), number of packets accepted, number of packets blocked,  ipsec represents traffic associated with the native IPSec interface (non virtual). ipsec1, ipsec2, etc. represent traffic associated with the virtual IPSec interfaces defined on the firewall.  Format: 7 values separated by commas.  Example: "Primary_VTI,61515,128648,788241,1890520,2130,21"'
+          fields:
+            - name: name
+              description: Name of the interface
+              type: keyword
+            - name: original
+              description: Original name of this field
+              type: keyword
+            - name: incoming_throughput
+              description: Incoming throughput (bits/second)
+              type: unsigned_long
+            - name: maximum_incoming_throughput
+              description: Maximum incoming throughput for a given period (bits/second)
+              type: unsigned_long
+            - name: outgoing_throughput
+              description: Outgoing throughput (bits/second)
+              type: unsigned_long
+            - name: maximum_outgoing_throughput
+              description: Maximum outgoing throughput for a given period (bits/second)
+              type: unsigned_long
+            - name: packets_accepted
+              description: Number of packets accepted
+              type: unsigned_long
+            - name: packets_blocked
+              description: Number of packets blocked
+              type: unsigned_long
+        - name: mem
+          type: keyword
+          description: tbd
         - name: Pvm
           type: keyword
           description: 'All indicators regarding vulnerability management:  Total number of vulnerabilities detected, number of vulnerabilities that can be exploited remotely, number of vulnerabilities requiring the installation of a server on the vulnerable host in order to be exploited, number of vulnerabilities classified as critical, number of vulnerabilities classified as minor, number of vulnerabilities classified as major, number of vulnerabilities that have a bug fix, total amount of information (all levels), number of minor data, number of major data, number of hosts for which PVM has gathered information,  Format: 11 numeric values separated by commas. Example: 0,0,0,0,0,0,0,2,0,0,2'
@@ -965,6 +1076,9 @@
           fields:
             - name: name
               description: Name of the interface
+              type: keyword
+            - name: original
+              description: Original name of this field
               type: keyword
             - name: incoming_throughput
               description: Incoming throughput (bits/second)
@@ -987,27 +1101,15 @@
         - name: security
           type: keyword
           description: Indicator of the Firewalls security status. This value is used by the fleet management tool (Stormshield Network Unified Manager) to provide information on the security status (minor, major alarms, etc). Decimal format representing a percentage.
-        - name: sslvpnX
-          type: keyword
-          description: 'Indicators of bandwidth used by SSL VPN traffic. :   name of the interface. String of characters in UTF-8 format. incoming throughput (bits/second), maximum incoming throughput for a given period (bits/second), outgoing throughput (bits/second), maximum outgoing throughput for a given period (bits/second), number of packets accepted, number of packets blocked,  sslvpn0 represents TCP-based SSL VPN traffic. sslvpn1 represents UDP-based SSL VPN traffic.  Format: 7 values separated by commas.  Example: "sslvpn_udp,61515,128648,788241,1890520,2130,21"'
-        - name: startime
-          type: keyword
-          description: 'Local time at the beginning of the logged event (time configured on the Firewall). String in YYYY-MM-DD HH:MM:SS format. Available from: SNS v1.0.0.'
-        - name: system
-          type: keyword
-          description: Indicator of the Firewalls system status.  This value is used by the fleet management tool (Stormshield Network Unified Manager) to provide information on the system status (available RAM, CPU use, bandwidth, interfaces, fullness of audit logs, etc). Decimal format representing a percentage.
-        - name: time
-          type: keyword
-          description: 'Local time at which the log was recorded in the log file (time configured on the Firewall). String in YYYY-MM-DD HH:MM:SS format. Available from: SNS v1.0.0.'
-        - name: tz
-          type: keyword
-          description: 'Time difference between the Firewalls time and GMT. This depends on the time zone used. String in +HHMM or -HHMM format. Available from: SNS v1.0.0.'
-        - name: Vlan
+        - name: sslvpn
           type: group
-          description: 'Indicators of bandwidth used for each of the VLANs defined:   name of the VLAN. String of characters in UTF-8 format. incoming throughput (bits/second), maximum incoming throughput for a given period (bits/second), outgoing throughput (bits/second), maximum outgoing throughput for a given period (bits/second), number of packets accepted, number of packets blocked,  Format: 7 values separated by commas. Example: "Vlan_Servers,61515,128648,788241,1890520"'
+          description: 'Indicators of bandwidth used by SSL VPN traffic. :   name of the interface. String of characters in UTF-8 format. incoming throughput (bits/second), maximum incoming throughput for a given period (bits/second), outgoing throughput (bits/second), maximum outgoing throughput for a given period (bits/second), number of packets accepted, number of packets blocked,  sslvpn0 represents TCP-based SSL VPN traffic. sslvpn1 represents UDP-based SSL VPN traffic.  Format: 7 values separated by commas.  Example: "sslvpn_udp,61515,128648,788241,1890520,2130,21"'
           fields:
             - name: name
               description: Name of the interface
+              type: keyword
+            - name: original
+              description: Original name of this field
               type: keyword
             - name: incoming_throughput
               description: Incoming throughput (bits/second)
@@ -1027,9 +1129,74 @@
             - name: packets_blocked
               description: Number of packets blocked
               type: unsigned_long
-        - name: WifiXX
+        - name: startime
           type: keyword
+          description: 'Local time at the beginning of the logged event (time configured on the Firewall). String in YYYY-MM-DD HH:MM:SS format. Available from: SNS v1.0.0.'
+        - name: system
+          type: keyword
+          description: Indicator of the Firewalls system status.  This value is used by the fleet management tool (Stormshield Network Unified Manager) to provide information on the system status (available RAM, CPU use, bandwidth, interfaces, fullness of audit logs, etc). Decimal format representing a percentage.
+        - name: time
+          type: keyword
+          description: 'Local time at which the log was recorded in the log file (time configured on the Firewall). String in YYYY-MM-DD HH:MM:SS format. Available from: SNS v1.0.0.'
+        - name: tz
+          type: keyword
+          description: 'Time difference between the Firewalls time and GMT. This depends on the time zone used. String in +HHMM or -HHMM format. Available from: SNS v1.0.0.'
+        - name: Vlan
+          type: group
+          description: 'Indicators of bandwidth used for each of the VLANs defined:   name of the VLAN. String of characters in UTF-8 format. incoming throughput (bits/second), maximum incoming throughput for a given period (bits/second), outgoing throughput (bits/second), maximum outgoing throughput for a given period (bits/second), number of packets accepted, number of packets blocked,  Format: 7 values separated by commas. Example: "Vlan_Servers,61515,128648,788241,1890520"'
+          fields:
+            - name: name
+              description: Name of the interface
+              type: keyword
+            - name: original
+              description: Original name of this field
+              type: keyword
+            - name: incoming_throughput
+              description: Incoming throughput (bits/second)
+              type: unsigned_long
+            - name: maximum_incoming_throughput
+              description: Maximum incoming throughput for a given period (bits/second)
+              type: unsigned_long
+            - name: outgoing_throughput
+              description: Outgoing throughput (bits/second)
+              type: unsigned_long
+            - name: maximum_outgoing_throughput
+              description: Maximum outgoing throughput for a given period (bits/second)
+              type: unsigned_long
+            - name: packets_accepted
+              description: Number of packets accepted
+              type: unsigned_long
+            - name: packets_blocked
+              description: Number of packets blocked
+              type: unsigned_long
+        - name: Wifi
+          type: group
           description: 'Concerns only firewalls equipped with Wi-Fi antennas (W models). Indicators of bandwidth used for each active Wi-Fi access points:   name of the access point. String of characters in UTF-8 format. incoming throughput (bits/second), maximum incoming throughput for a given period (bits/second), outgoing throughput (bits/second), maximum outgoing throughput for a given period (bits/second), number of packets accepted, number of packets blocked,  Format: 7 values separated by commas.  Example: "Public_WiFi,61515,128648,788241,1890520,2130,21"'
+          fields:
+            - name: name
+              description: Name of the interface
+              type: keyword
+            - name: original
+              description: Original name of this field
+              type: keyword
+            - name: incoming_throughput
+              description: Incoming throughput (bits/second)
+              type: unsigned_long
+            - name: maximum_incoming_throughput
+              description: Maximum incoming throughput for a given period (bits/second)
+              type: unsigned_long
+            - name: outgoing_throughput
+              description: Outgoing throughput (bits/second)
+              type: unsigned_long
+            - name: maximum_outgoing_throughput
+              description: Maximum outgoing throughput for a given period (bits/second)
+              type: unsigned_long
+            - name: packets_accepted
+              description: Number of packets accepted
+              type: unsigned_long
+            - name: packets_blocked
+              description: Number of packets blocked
+              type: unsigned_long
         - name: wldev0
           type: keyword
           description: 'Concerns only firewalls equipped with Wi-Fi antennas (W models). Indicators of bandwidth used for each physical interface that supports the firewall''s Wi-Fi access points:   name of the interface. String of characters in UTF-8 format. incoming throughput (bits/second), maximum incoming throughput for a given period (bits/second), outgoing throughput (bits/second), maximum outgoing throughput for a given period (bits/second), number of packets accepted, number of packets blocked,  Format: 7 values separated by commas.  Example: "Physic_WiFi,61515,128648,788241,1890520,2130,21"'
