@@ -1,6 +1,6 @@
 # Azure Container Registry Integration
 
-The Azure Container Registry data stream collects and aggregates storage account related metrics from azure container registry type resources where it can be used for analysis, visualization, and alerting.
+The Azure Container Registry data stream collects and aggregates container registry related metrics from azure container registry type resources where it can be used for analysis, visualization, and alerting.
 The Azure Container Registry will periodically retrieve the azure monitor metrics using the Azure REST APIs as MetricList.
 Additional azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
 
