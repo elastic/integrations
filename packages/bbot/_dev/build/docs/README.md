@@ -1,6 +1,6 @@
 # BBOT integration
 
-Please read this page in it's entirety as this integration requires some setup.
+Please read this page in its entirety as this integration requires some setup.
 
 This integration is for [BBOT](https://www.blacklanternsecurity.com/bbot/), an Attack Surface Management (ASM) Open Source Inteligence (OSINT) Tool. BBOT itself stands for Bighuge BLS OSINT Tool (BBOT).
 
