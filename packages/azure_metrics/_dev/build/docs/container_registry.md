@@ -1,12 +1,12 @@
 # Azure Container Registry Integration
 
-The Azure Container Registry data stream collects and aggregates container registry related metrics from azure container registry type resources where it can be used for analysis, visualization, and alerting.
-The Azure Container Registry will periodically retrieve the azure monitor metrics using the Azure REST APIs as MetricList.
-Additional azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
+The Azure Container Registry data stream collects and aggregates container registry related metrics from Azure Container Registry type resources where it can be used for analysis, visualization, and alerting.
+The Azure Container Registry will periodically retrieve the Azure Monitor metrics using the Azure REST APIs as MetricList.
+Additional Azure API calls will be executed to retrieve information regarding the resources targeted by the user.
 
 ## Requirements
 
-Before you start, check the [Authentication and costs](https://docs.elastic.co/integrations/azure_metrics#authentication-and-costs) both for Azure and Elastic.
+Before you start, check the [Authentication and costs](https://docs.elastic.co/integrations/azure_metrics#authentication-and-costs) section.
 
 ## Setup
 

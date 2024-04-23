@@ -2,14 +2,14 @@
 
 The Azure Monitor feature collects and aggregates logs and metrics from a variety of sources into a common data platform where it can be used for analysis, visualization, and alerting.
 
-The azure monitor metrics are numerical values that describe some aspect of a system at a particular point in time. They are collected at regular intervals and are identified with a timestamp, a name, a value, and one or more defining labels.
+The Azure Monitor metrics are numerical values that describe some aspect of a system at a particular point in time. They are collected at regular intervals and are identified with a timestamp, a name, a value, and one or more defining labels.
 
 The Azure Resource Metrics will periodically retrieve the Azure Monitor metrics using the Azure REST APIs as MetricList.
-Additional Azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
+Additional Azure API calls will be executed to retrieve information regarding the resources targeted by the user.
 
 ## Requirements
 
-Before you start, check the [Authentication and costs](https://docs.elastic.co/integrations/azure_metrics#authentication-and-costs) both for Azure and Elastic.
+Before you start, check the [Authentication and costs](https://docs.elastic.co/integrations/azure_metrics#authentication-and-costs) section.
 
 ## Setup
 
@@ -34,7 +34,6 @@ Check the following resources API:
 `resource_type`:: (_string_) As mentioned above this will be a filter option for the resource group api, will check for all resources under the specified group that are the type under this configuration.
 
 `resource_query`:: (_string_) Should contain a filter entered by the user, the output will be a list of resources.
-
 
 ## Resource metric configurations
 
