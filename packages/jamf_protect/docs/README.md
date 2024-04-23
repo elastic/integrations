@@ -94,9 +94,9 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-19T12:50:22.591Z",
+    "@timestamp": "2024-04-19T12:55:19.579Z",
     "agent": {
-        "ephemeral_id": "4a7c3c2b-0029-4f0d-9bdc-80d266c7ba76",
+        "ephemeral_id": "e9ff0cd2-da30-4b88-8c02-3c742600253b",
         "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -124,7 +124,7 @@ An example event for `alerts` looks as following:
         ],
         "dataset": "jamf_protect.alerts",
         "id": "6bdb0697-6d07-47bc-a37d-6c3348a5d953",
-        "ingested": "2024-04-19T12:50:32Z",
+        "ingested": "2024-04-19T12:55:29Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Application that uses custom url handler created",
@@ -440,7 +440,7 @@ An example event for `telemetry` looks as following:
 {
     "@timestamp": "2024-02-06T16:01:34.442Z",
     "agent": {
-        "ephemeral_id": "aa25a637-bf67-49b7-b350-f0d831dba9dc",
+        "ephemeral_id": "c0273e96-e566-41ea-b88a-d62f6e35de9b",
         "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -470,7 +470,7 @@ An example event for `telemetry` looks as following:
         ],
         "code": "43190",
         "dataset": "jamf_protect.telemetry",
-        "ingested": "2024-04-19T12:51:23Z",
+        "ingested": "2024-04-19T12:56:22Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -924,6 +924,19 @@ An example event for `web_threat_events` looks as following:
 
 ```json
 {
+    "@timestamp": "2024-04-19T12:57:06.969Z",
+    "agent": {
+        "ephemeral_id": "d1ccdf45-ff3e-495e-82b0-6995594ff3c8",
+        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.12.2"
+    },
+    "data_stream": {
+        "dataset": "jamf_protect.web_threat_events",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "destination": {
         "address": "ip",
         "domain": "host",
@@ -932,14 +945,21 @@ An example event for `web_threat_events` looks as following:
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "snapshot": false,
+        "version": "8.12.2"
+    },
     "event": {
         "action": "Detected",
+        "agent_id_status": "verified",
         "category": [
             "host"
         ],
+        "dataset": "jamf_protect.web_threat_events",
         "id": "013b15c9-8f62-4bf1-948a-d82367af2a10",
+        "ingested": "2024-04-19T12:57:17Z",
         "kind": "alert",
-        "module": "jamf_protect",
         "provider": "Jamf Protect",
         "reason": "Sideloaded App",
         "severity": 6,
@@ -963,8 +983,9 @@ An example event for `web_threat_events` looks as following:
             "full": "IOS 11.2.5"
         }
     },
-    "jamf_protect": {},
-    "message": "{\"event\":{\"metadata\":{\"schemaVersion\":\"1.0\",\"vendor\":\"Jamf\",\"product\":\"Threat Events Stream\"},\"timestamp\":\"2020-01-30T17:47:41.767Z\",\"alertId\":\"013b15c9-8f62-4bf1-948a-d82367af2a10\",\"account\":{\"customerId\":\"fb4567b6-4ee2-3c4c-abb9-4c78ec463b25\",\"parentId\":\"7c302632-7ac4-4234-8ada-11d76feb3730\",\"name\":\"Customer\"},\"device\":{\"deviceId\":\"09f81436-de17-441e-a631-0461252c629b\",\"os\":\"IOS 11.2.5\",\"deviceName\":\"Apple iPhone 11 (11.2.5)\",\"userDeviceName\":\"Apple iPhone 11\",\"externalId\":\"5087dc0e-876c-4b0e-95ea-5b543476e0c4\"},\"eventType\":{\"id\":213,\"description\":\"Sideloaded App\",\"name\":\"SIDE_LOADED_APP_IN_INVENTORY\"},\"app\":{\"id\":\"com.apple.iBooks\",\"name\":\"Books\",\"version\":\"1.1\",\"sha1\":\"16336078972773bc6c8cef69d722c8c093ba727ddc5bb31eb2\",\"sha256\":\"16336078978a306dc23b67dae9df18bc2a0205e3ff0cbf97c46e76fd670f93fd142d7042\"},\"destination\":{\"name\":\"host\",\"ip\":\"ip\",\"port\":80},\"source\":{\"ip\":\"1.2.3.4\",\"port\":3025},\"location\":\"gb\",\"accessPoint\":\"AccessPoint\",\"accessPointBssid\":\"c6:9f:db:b1:73:5a\",\"severity\":6,\"user\":{\"email\":\"user@mail.com\",\"name\":\"John Doe\"},\"eventUrl\":\"https://radar.wandera.com/security/events/detail/013b15c9-8f62-4bf1-948a-d82367af2a10.SIDE_LOADED_APP_IN_INVENTORY?createdUtcMs=1580406461767\",\"action\":\"Detected\"}}",
+    "input": {
+        "type": "http_endpoint"
+    },
     "observer": {
         "product": "Jamf Protect",
         "vendor": "Jamf"
@@ -979,6 +1000,10 @@ An example event for `web_threat_events` looks as following:
     "source": {
         "port": 3025
     },
+    "tags": [
+        "forwarded",
+        "jamf_protect-web-threat-events"
+    ],
     "user": {
         "email": "user@mail.com",
         "name": "John Doe"
@@ -1162,6 +1187,19 @@ An example event for `web_traffic_events` looks as following:
 
 ```json
 {
+    "@timestamp": "2024-04-19T12:58:00.612Z",
+    "agent": {
+        "ephemeral_id": "b05c81dc-f43d-4634-88c7-f4302f4dc354",
+        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.12.2"
+    },
+    "data_stream": {
+        "dataset": "jamf_protect.web_traffic_events",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "dns": {
         "answers": {
             "ttl": 101,
@@ -1177,14 +1215,21 @@ An example event for `web_traffic_events` looks as following:
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "snapshot": false,
+        "version": "8.12.2"
+    },
     "event": {
         "action": "DNS Lookup",
+        "agent_id_status": "verified",
         "category": [
             "host",
             "network"
         ],
+        "dataset": "jamf_protect.web_traffic_events",
+        "ingested": "2024-04-19T12:58:10Z",
         "kind": "event",
-        "module": "jamf_protect",
         "outcome": [
             "success"
         ],
@@ -1203,10 +1248,12 @@ An example event for `web_traffic_events` looks as following:
             ]
         }
     },
+    "input": {
+        "type": "http_endpoint"
+    },
     "interface": {
         "name": "WIFI"
     },
-    "jamf_protect": {},
     "observer": {
         "product": "Jamf Protect",
         "vendor": "Jamf"
@@ -1217,8 +1264,12 @@ An example event for `web_traffic_events` looks as following:
     "rule": {
         "name": "DNS Lookup"
     },
+    "tags": [
+        "forwarded",
+        "jamf_protect-web-traffic-events"
+    ],
     "user": {
-        "email": "user@acme.com",
+        "email": "hjilling@icloud.com",
         "name": "07a5a2ae-16de-4767-831e-0ea8b7c3abe4"
     }
 }
