@@ -162,8 +162,8 @@ with_docker() {
     fi
     echo "deb [arch=${architecture} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${ubuntu_codename} stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt-get update
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce=${debian_version}"
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce-cli=${debian_version}"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce=${debian_version}"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce-cli=${debian_version}"
     sudo systemctl start docker
 
     echo "- Installed docker client version:"
