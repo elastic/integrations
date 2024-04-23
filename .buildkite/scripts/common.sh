@@ -814,10 +814,16 @@ run_tests_package() {
         fi
     fi
 
-    echo "--- [${package}] test installation"
-    if ! install_package "${package}" ; then
-        return 1
+    if ! is_serverless ; then
+        # Just run install command on non serverless projects,
+        # "elastic-paackage test asset" command already installs the package via upload API
+        # as it does "elastic-package install" command
+        echo "--- [${package}] test installation"
+        if ! install_package "${package}" ; then
+            return 1
+        fi
     fi
+
     echo "--- [${package}] run test suites"
     if is_serverless; then
         if ! test_package_in_serverless "${package}" ; then
