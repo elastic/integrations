@@ -13,7 +13,28 @@ processors:
     field: orchestrator.cluster.id
     copy_from: cluster_id
     description: 'Backward compatibility cloudbeat version < 8.8'
+    ignore_empty_value: true
     if: ctx.orchestrator?.cluster?.id == null
+- set:
+    field: cloud.account.id
+    value: 'azure'
+    description: 'Sets placeholder value for azure account id when it is not available'
+    if: (ctx.cloud?.account?.id == null || ctx.cloud?.account?.id == '') && ctx.cloud?.provider == 'azure'
+- set:
+    field: cloud.account.id
+    value: 'gcp'
+    description: 'Sets placeholder value for gcp account id when it is not available'
+    if: (ctx.cloud?.account?.id == null || ctx.cloud?.account?.id == '' ) && ctx.cloud?.provider == 'gcp'
+- set:
+    field: cloud.account.id
+    value: 'aws'
+    description: 'Sets placeholder value for aws account id when it is not available'
+    if: (ctx.cloud?.account?.id == null || ctx.cloud?.account?.id == '' ) && ctx.cloud?.provider == 'aws'
+- remove:
+    field: cloud.account.name
+    ignore_missing: true
+    description: 'Removes cloud.account.name when it is empty'
+    if: ctx.cloud?.account?.name == ''
 on_failure:
   - set:
       field: event.kind
