@@ -165,6 +165,11 @@ with_docker() {
     sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce=${debian_version}"
     sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce-cli=${debian_version}"
     sudo systemctl start docker
+
+    echo "- Installed docker client version:"
+    docker version -f json  | jq -r '.Client.Version'
+    echo "- Installed docker server version:"
+    docker version -f json  | jq -r '.Server.Version'
 }
 
 with_docker_compose_plugin() {
