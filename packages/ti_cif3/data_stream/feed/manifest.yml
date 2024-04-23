@@ -1,5 +1,6 @@
 title: "CIFv3 Feed"
 type: logs
+ilm_policy: logs-ti_cif3.feed-default_policy
 streams:
   - input: httpjson
     template_path: httpjson.yml.hbs
@@ -69,6 +70,15 @@ streams:
       #  default: |-
       #    #tlp: white
       #  description: "Optional REST API Feed filters supported by [CIFv3](https://github.com/csirtgadgets/bearded-avenger/blob/master/cif/httpd/common.py#L7-L9)."
+      - name: ioc_expiration_duration
+        type: text
+        title: IOC Expiration Duration
+        multi: false
+        required: true
+        show_user: true
+        default: "730d"
+        description: >-
+          Enforces all IOCs to expire after this duration since their report time indicated in the feed. Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units) in days, hours, or minutes (e.g 90d)
       - name: ssl
         type: yaml
         title: SSL
