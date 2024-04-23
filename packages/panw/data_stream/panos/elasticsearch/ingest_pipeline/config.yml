@@ -4,7 +4,25 @@ description: Pipeline for PanOS Config Logs.
 processors:
   - csv:
       field: message
+      target_fields:
+        - panw.panos.host.ip
+        - panw.panos.virtual_sys
+        - panw.panos.cmd
+        - panw.panos.admin
+        - panw.panos.client_type
+        - panw.panos.result
+        - panw.panos.path
+        - _temp_.check_field
+  - convert:
+      field: _temp_.check_field
+      type: long
+      ignore_missing: true
       ignore_failure: true
+  - csv:
+      field: message
+      trim: true
+      tag: panw.panos.config_parse_custom
+      if: "!(ctx._temp_?.check_field instanceof Number)"
       target_fields:
         - panw.panos.host.ip
         - panw.panos.virtual_sys
@@ -25,7 +43,33 @@ processors:
         - panw.panos.device_name
         - panw.panos.device_group_id
         - panw.panos.comment
-
+        - _temp_.future_use1
+        - _temp_.high_res_timestamp
+  - csv:
+      field: message
+      trim: true
+      tag: panw.panos.config_parse_standard
+      if: "ctx._temp_?.check_field instanceof Number"
+      target_fields:
+        - panw.panos.host.ip
+        - panw.panos.virtual_sys
+        - panw.panos.cmd
+        - panw.panos.admin
+        - panw.panos.client_type
+        - panw.panos.result
+        - panw.panos.path
+        - panw.panos.sequence_number
+        - panw.panos.action_flags
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - panw.panos.device_name
+        - panw.panos.device_group_id
+        - panw.panos.comment
+        - _temp_.future_use1
+        - _temp_.high_res_timestamp
   - script:
       description: Set Event Action.
       lang: painless
