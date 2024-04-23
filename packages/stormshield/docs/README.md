@@ -19,24 +19,10 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
+The SNS integration ingests logs via a UDP/syslog parser, so the SNS appliance needs to be configured to send syslogs to a listening Agent. This is configured in the `CONFIGURATION` tab, in the `NOTIFICATIONS` / `LOGS-SYSLOG-IPFIX` section.
+
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
-
-* how to setup SNS to send syslog (with RFC) to where the Agent is running
-
-* test out adding the integration, and then setup stormshield to send syslogs to it
-
-* copy some cisco asa config variables into this integration
-
-<!-- Additional set up instructions -->
-
-<!-- If applicable -->
-<!-- ## Logs reference -->
-
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
 
 <!-- Optional -->
 <!-- #### Example
@@ -834,3 +820,4 @@ The `log` dataset collects SNS logs.
 | stormshield.xvpn.tz | Time difference between the Firewalls time and GMT. This depends on the time zone used. String in +HHMM or -HHMM format. Available from: SNS v1.0.0. | keyword |
 | stormshield.xvpn.user | Name of the user accessing SSL VPN. String of characters in UTF-8 format. Example: john.smith May be displayed anonymously depending on the administrator's access privileges. Available from: SNS v1.0.0. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+
