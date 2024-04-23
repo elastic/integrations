@@ -75,12 +75,16 @@ policy_templates:
         type: image/png
   - name: pod
     title: Pod Metrics
-    description: Collect metrics for pod with Elastic Agent. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics.
+    description: Collect pod related metrics with Elastic Agent. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics.
     data_streams:
       - pod
       - state_pod
       - state_cronjob
       - state_job
+      - state_daemonset
+      - state_deployment
+      - state_replicaset
+      - state_statefulset
     inputs:
       - type: kubernetes/metrics
         title: Pod Metrics
@@ -175,17 +179,13 @@ policy_templates:
     description: Collect other general Cluster metrics with Elastic Agent. It includes metrics from Kube-state-metrics and also system metrics from Kubelet.
     data_streams:
       - system
-      - state_daemonset
-      - state_deployment
       - state_namespace
-      - state_replicaset
       - state_resourcequota
       - state_service
-      - state_statefulset
     inputs:
       - type: kubernetes/metrics
         title: Cluster Resource Metrics
-        description: Collecting metrics from kube-state-metrics (deployment, daemonset, namespace, replicaset, resourcequota, service, statefulset) and Kubelet (system)
+        description: Collecting metrics from kube-state-metrics (namespace, resourcequota, service) and Kubelet (system)
         input_group: metrics
         vars:
           - name: condition
