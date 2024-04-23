@@ -68,7 +68,7 @@ program: |
       ).as(req, req.URL.parse_url().as(url, req.with({
           "Header": {
               "Authorization": ["TC "+ string(state.access_id) + ":" +
-                  bytes(url.Path + (url.RawQuery == "" ? "" : "?") + url.RawQuery + ":GET:" + string(int(now))).hmac("sha256", bytes(state.secret_key)).base64()
+                  bytes(url.Path + (url.RawQuery == "" ? "" : "?") + url.RawQuery + ":" + req.Method + ":" + string(int(now))).hmac("sha256", bytes(state.secret_key)).base64()
               ],
               "Timestamp": [string(int(now))],
           }
