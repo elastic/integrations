@@ -1,6 +1,10 @@
 # Jamf Protect
 
-The Jamf Protect integration collects and parses data received from [Jamf Protect](https://learn.jamf.com/bundle/jamf-protect-documentation/page/About_Jamf_Protect.html) using a HTTP endpoint.
+The Jamf Protect integration collects and parses data received from [Jamf Protect](https://learn.jamf.com/bundle/jamf-protect-documentation/page/About_Jamf_Protect.html) using the following methods.
+
+- HTTP Endpoint mode - Jamf Protect streams logs directly to an HTTP endpoint hosted by your Elastic Agent.
+- AWS S3 polling mode - Jamf Protect forwards data to S3 and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
+- AWS S3 SQS mode - Jamf Protect writes data to S3, S3 pushes a new object notification to SQS, Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple Agents can be used in this mode.
 
 Use the Jamf Protect integration to collect logs from your machines.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
@@ -26,11 +30,11 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 To use this integration, you will also need to:
 - Enable the integration in Elastic
-- Configure Jamf Protect (macOS Security) to send logs to the Elastic Agent (Custom HTTP Endpoint Logs)
-    - Remote Alert Collection Endpoints
-    - Unified Logs Collection Endpoints
-    - Telemetry Collection Endpoints
-- Configure Jamf Protect (Jamf Security Cloud) to send logs to the Elastic Agent (Custom HTTP Endpoint Logs)
+- Configure Jamf Protect (macOS Security) to send logs to AWS S3 or the Elastic Agent (HTTP Endpoint)
+    - Alerts
+    - Unified Logs
+    - Telemetry
+- Configure Jamf Protect (Jamf Security Cloud) to send logs to AWS S3 or the Elastic Agent (HTTP Endpoint)
     - Threat Event Stream 
     - Network Traffic Stream
 
@@ -39,9 +43,9 @@ To use this integration, you will also need to:
 
 For step-by-step instructions on how to set up an new integration in Elastic, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
-When setting up the integration, you will choose to collect logs via HTTP Endpoint.
+When setting up the integration, you will choose to collect logs via either S3 or HTTP Endpoint.
 
-### Configure Jamf Protect
+### Configure Jamf Protect using HTTP Endpoint
 
 After validating settings, you can configure Jamf Protect to send events to Elastic.
 For more information on configuring Jamf Protect, see 
@@ -65,6 +69,15 @@ Then, depending on which events you want to send to Elastic, configure one or mu
 
 **Network Traffic Stream**:
 - In the Server hostname or IP field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
+
+
+### Configure Jamf Protect using AWS S3
+
+After validating settings, you can configure Jamf Protect to send events to AWS S3.
+For more information on configuring Jamf Protect, see 
+- [Creating an Action Configuration](https://learn.jamf.com/bundle/jamf-protect-documentation/page/Creating_an_Action_Configuration.html)
+- [Enabling Data Forwarding to AWS S3](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Data_Forwarding_to_a_Third_Party_Storage_Solution.html#ariaid-title2)
+- [Configure Threat Event Stream](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Configuring_the_Threat_Events_Stream_to_Send_Events_to_AWS_S3.html)
 
 
 **Copyright (c) 2024, Jamf Software, LLC.  All rights reserved.**
