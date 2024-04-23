@@ -42,7 +42,7 @@ processors:
         CISCO_PRIORITY_MSGCOUNT: '<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT:cisco.ios.message_count})?(?:: )?'
         CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
         CISCO_UPTIME: '[0-9a-zA-Z]+'
-        CISCO_HOSTNAME: '[a-zA-Z][0-9a-zA-Z-]{0,61}[0-9a-zA-Z]?'
+        CISCO_HOSTNAME: '[a-zA-Z][0-9a-zA-Z_-]{0,61}[0-9a-zA-Z]?'
         CISCO_TZ: '[a-zA-Z]{1,4}'
   - grok:
       field: _temp_.message
@@ -79,7 +79,7 @@ processors:
         _conf.tz_offset as before. If tz_offset is not set, it will default to
         UTC as before.
       if:
-      source: >-
+      source: |-
           if (ctx._temp_?.tz != null && ctx._conf?.tz_map != null) {
             for (def item : ctx._conf.tz_map) {
               if (item.tz_short == ctx._temp_.tz) {
@@ -88,12 +88,11 @@ processors:
               }
             }
           }
+          if (ctx._conf?.tz_offset != null) {
+            ctx.event.timezone = ctx._conf.tz_offset;
+          }
           if (ctx.event?.timezone == null) {
-            if (ctx._conf?.tz_offset != null) {
-              ctx.event.timezone = ctx._conf.tz_offset;
-            } else {
-              ctx.event.timezone = "UTC";
-            }
+            ctx.event.timezone = 'UTC';
           }
   - date:
       if: ctx?._temp_.cisco_timestamp != null
@@ -172,7 +171,12 @@ processors:
       field: message
       tag: dissect_gsp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{igmp.type}), %{source.packets} packet"
-      if: "['IPACCESSLOGSP', 'ACCESSLOGSP'].contains(ctx.event?.code)"
+      if: "ctx.event?.code == 'IPACCESSLOGSP'"
+  - dissect:
+      field: message
+      tag: dissect_sp
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.type} %{source.address} %{} %{destination.address}, %{source.packets} packet"
+      if: "ctx.event?.code == 'ACCESSLOGSP'"
   - dissect:
       field: message
       tag: dissect_gnp
@@ -192,7 +196,7 @@ processors:
       field: message
       tag: grok_badauth
       patterns:
-        - '^No MD5 digest from %{DATA:source.address}(\(%{INT:source.port}\)|\:%{INT:source.port}) to %{DATA:destination.address}(\(%{INT:destination.port}\)|\:%{INT:destination.port})(?: \(RST\) ((tableid - %{DATA:cisco.ios.tableid})|(%{GREEDYDATA:_temp_.rst})))?$'
+        - '^(?:No|Invalid) MD5 digest from %{DATA:source.address}(\(%{INT:source.port}\)|\:%{INT:source.port}) to %{DATA:destination.address}(\(%{INT:destination.port}\)|\:%{INT:destination.port})(?:(?: \(RST\))? (?:tableid - %{DATA:cisco.ios.tableid}|%{GREEDYDATA:_temp_.rst}))?$'
       ignore_missing: true
       if: ctx.event?.code == 'BADAUTH'
   - grok:

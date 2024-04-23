@@ -8,10 +8,11 @@ processors:
       description: Extract native header and message.
       field: citrix.detail
       patterns:
+        - '^%{HEADER} : %{GREEDYDATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
         - '^%{HEADER} : %{GREEDYDATA:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}'
       pattern_definitions:
-        HEADER: '%{NATIVE_TIMESTAMP:_tmp.timestamp_native} %{WORD:event.timezone} %{SYSLOGHOST:citrix.host} %{INT}-PPE-%{INT}'
-        NATIVE_TIMESTAMP: '%{MONTHNUM}/%{MONTHDAY}/%{YEAR}:%{HOUR}:%{MINUTE}:%{SECOND}'
+        HEADER: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} %{WORD:event.timezone} (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
+        NATIVE_TIMESTAMP: '(?:%{MONTHNUM}/%{MONTHDAY}/%{YEAR}|%{YEAR}/%{MONTHNUM}/%{MONTHDAY}):%{HOUR}:%{MINUTE}:%{SECOND}'
   - grok:
       description: Parse out details.
       field: _tmp.details
