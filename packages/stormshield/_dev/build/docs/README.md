@@ -24,38 +24,8 @@ The SNS integration ingests logs via a UDP/syslog parser, so the SNS appliance n
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
-
-<!-- If applicable -->
-<!-- ## Metrics reference -->
-
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
-
 ### Log
 
-The `log` dataset collects SNS logs.
+The `log` dataset collects SNS syslog logs.
 
 {{fields "log"}}
