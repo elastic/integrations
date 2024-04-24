@@ -7,7 +7,7 @@ Use the Stormshield SNS integration to ingest syslog data into your Elasticsearc
 
 ## Data streams
 
-The Stormshield SNS integration collects one type of data streams: logs.
+The Stormshield SNS integration collects syslog messages, ideally through a UDP filebeat input.
 
 **Logs** help you keep a record of events happening in your firewalls.
 Log data streams collected by the SNS integration include syslogs and more. See more details in the [Logs](#logs-reference).
@@ -24,8 +24,10 @@ The SNS integration ingests logs via a UDP/syslog parser, so the SNS appliance n
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-### Log
+## Log
 
 The `log` dataset collects SNS syslog logs.
 
-{{fields "log"}}
+{{ event "log" }}
+
+{{ fields "log" }}
