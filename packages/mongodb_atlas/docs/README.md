@@ -343,10 +343,10 @@ An example event for `hardware` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-23T10:19:51.491Z",
+    "@timestamp": "2024-04-24T07:36:16.449Z",
     "agent": {
-        "ephemeral_id": "7338f691-ac0e-4136-89f2-879bd3088921",
-        "id": "98caddbc-b105-407a-9bd3-48c443b90ec2",
+        "ephemeral_id": "1998d9c0-3d6f-4f52-b342-826fc26ce89c",
+        "id": "d4d946c7-17c9-4ce6-b388-89e75a08f407",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -360,7 +360,7 @@ An example event for `hardware` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "98caddbc-b105-407a-9bd3-48c443b90ec2",
+        "id": "d4d946c7-17c9-4ce6-b388-89e75a08f407",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -370,12 +370,15 @@ An example event for `hardware` looks as following:
             "driver"
         ],
         "dataset": "mongodb_atlas.hardware",
-        "ingested": "2024-04-23T10:20:03Z",
+        "ingested": "2024-04-24T07:36:26Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
             "info"
         ]
+    },
+    "group": {
+        "id": "mongodb-group1"
     },
     "host": {
         "architecture": "x86_64",
@@ -383,16 +386,16 @@ An example event for `hardware` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.243.7"
+            "192.168.248.7"
         ],
         "mac": [
-            "02-42-C0-A8-F3-07"
+            "02-42-C0-A8-F8-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.99.1.el7.x86_64",
+            "kernel": "3.10.0-1160.114.2.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -438,8 +441,8 @@ An example event for `hardware` looks as following:
 | mongodb_atlas.hardware.fts.process.memory.virtual.bytes | Total bytes of virtual memory that search processes occupy. | long | byte | counter |
 | mongodb_atlas.hardware.fts.process.normalized.cpu.kernel.pct | Percentage of time that the CPU spent servicing operating system calls for the search process. | double | percent | gauge |
 | mongodb_atlas.hardware.fts.process.normalized.cpu.user.pct | Percentage of time that the CPU spent servicing user calls for the search process. | double | percent | gauge |
-| mongodb_atlas.hardware.jvm.memory.available.mb | Total amount of available memory in the JVM heap. | long |  | counter |
-| mongodb_atlas.hardware.jvm.memory.used.mb | Amount of memory that the JVM heap is currently using. | long |  | gauge |
+| mongodb_atlas.hardware.jvm.memory.heap.available.mb | Total amount of available memory in the JVM heap. | long |  | counter |
+| mongodb_atlas.hardware.jvm.memory.heap.used.mb | Amount of memory that the JVM heap is currently using. | long |  | gauge |
 | mongodb_atlas.hardware.page_faults | Average rate of page faults on this process per second over the selected sample period. | double |  | gauge |
 | mongodb_atlas.process_id | Combination of hostname and Internet Assigned Numbers Authority (IANA) port that serves the MongoDB process. | keyword |  |  |
 
@@ -451,10 +454,10 @@ An example event for `process` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-11T12:42:53.267Z",
+    "@timestamp": "2024-04-24T07:37:36.486Z",
     "agent": {
-        "ephemeral_id": "c8ebb866-6d72-471b-9083-6d386219bf61",
-        "id": "926ca6d4-5487-4a8b-b88b-34f188fe8cfb",
+        "ephemeral_id": "1998d9c0-3d6f-4f52-b342-826fc26ce89c",
+        "id": "d4d946c7-17c9-4ce6-b388-89e75a08f407",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -468,7 +471,7 @@ An example event for `process` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "926ca6d4-5487-4a8b-b88b-34f188fe8cfb",
+        "id": "d4d946c7-17c9-4ce6-b388-89e75a08f407",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -478,12 +481,15 @@ An example event for `process` looks as following:
             "process"
         ],
         "dataset": "mongodb_atlas.process",
-        "ingested": "2024-04-11T12:43:05Z",
+        "ingested": "2024-04-24T07:37:46Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
             "info"
         ]
+    },
+    "group": {
+        "id": "mongodb-group1"
     },
     "host": {
         "architecture": "x86_64",
@@ -491,16 +497,16 @@ An example event for `process` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.253.4"
+            "192.168.248.7"
         ],
         "mac": [
-            "02-42-C0-A8-FD-04"
+            "02-42-C0-A8-F8-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "kernel": "3.10.0-1160.114.2.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
