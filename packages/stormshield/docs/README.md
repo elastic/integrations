@@ -843,6 +843,7 @@ An example event for `log` looks as following:
 | stormshield.monitor.ipsec.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | unsigned_long |
 | stormshield.monitor.ipsec.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | unsigned_long |
 | stormshield.monitor.ipsec.name | Name of the interface | keyword |
+| stormshield.monitor.ipsec.native | Indication that these statistics are from the native IPSec interface | boolean |
 | stormshield.monitor.ipsec.original | Original name of this field | keyword |
 | stormshield.monitor.ipsec.outgoing_throughput | Outgoing throughput (bits/second) | unsigned_long |
 | stormshield.monitor.ipsec.packets_accepted | Number of packets accepted | unsigned_long |
