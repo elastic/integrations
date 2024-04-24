@@ -1,0 +1,91 @@
+---
+description: Pipeline for Jamf Protect Telemetry aue_bind and aue_connect audit logs.
+processors:
+  - convert:
+      field: json.socket_inet.addr
+      target_field: jamf_protect.telemetry.socket.inet.addr
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.arguments.fd
+      target_field: jamf_protect.telemetry.arguments.fd
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.socket_inet.family
+      target_field: json.inet_family
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.socket_inet.id
+      target_field: jamf_protect.telemetry.socket.inet.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.socket_inet.ip_address
+      target_field: server.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.socket_inet.ip_address
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{server.ip}}}'
+      if: ctx.server?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.socket_inet.port
+      target_field: server.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      description: Dynamically map Socket Address Families.
+      lang: painless
+      if: ctx.json?.inet_family != null
+      source: |
+        Map map = new HashMap();
+        map.put('0', 'AF_UNSPEC');
+        map.put('1', 'AF_LOCAL');
+        map.put('AF_LOCAL', 'AF_UNIX');
+        map.put('2', 'AF_INET');
+        map.put('3', 'AF_ImapPLINK');
+        map.put('4', 'AF_PUP');
+        map.put('5', 'AF_CHAOS');
+        map.put('6', 'AF_NS');
+        map.put('7', 'AF_ISO');
+        map.put('AF_ISO', 'AF_OSI');
+        map.put('8', 'AF_ECmapA');
+        map.put('9', 'AF_DATAKIT');
+        map.put('10', 'AF_CCITT');
+        map.put('11', 'AF_SNA');
+        map.put('12', 'AF_DECnet');
+        map.put('13', 'AF_DLI');
+        map.put('14', 'AF_LAT');
+        map.put('15', 'AF_HYLINK');
+        map.put('16', 'AF_APPLETALK');
+        map.put('17', 'AF_ROUTE');
+        map.put('18', 'AF_LINK');
+        map.put('19', 'pseudo_AF_XTP');
+        map.put('20', 'AF_COIP');
+        map.put('21', 'AF_CNT');
+        map.put('22', 'pseudo_AF_RTIP');
+        map.put('23', 'AF_IPX');
+        map.put('24', 'AF_SIP');
+        map.put('25', 'pseudo_AF_PIP');
+        ctx.jamf_protect.telemetry.socket.inet.family = map.get(ctx.json.inet_family);
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'

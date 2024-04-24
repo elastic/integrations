@@ -1,0 +1,493 @@
+- name: carbon_black_cloud.alert
+  type: group
+  fields:
+    - name: category
+      type: keyword
+      description: The category of the alert.
+    - name: version
+      type: keyword
+      description: The version of the schema being emitted.
+    - name: url
+      type: keyword
+      description: Link to the alerts page for this alert. Does not vary by alert type.
+    - name: backend_timestamp
+      type: date
+      description: Timestamp when the alert was first detected by the Carbon Black Cloud backend, it is a ISO 8601 UTC timestamp.
+    - name: backend_update_timestamp
+      type: date
+      description: The last time the alert was updated in Carbon Black Cloud, it is a ISO 8601 UTC timestamp.
+    - name: user_update_timestamp
+      type: date
+      description: Timestamp of the last property of an alert changed by a user, such as the alert workflow or determination, it is a ISO 8601 UTC timestamp.
+    - name: additional_events_present
+      type: boolean
+      description: Indicator to let API and forwarder users know that they should look up other associated events related to this alert.
+    - name: alert_notes_present
+      type: boolean
+      description: Indicates if notes are associated with the alert.
+    - name: threat_notes_present
+      type: boolean
+      description: Indicates if notes are associated with the threat_id.
+    - name: organization_key
+      type: keyword
+      description: The unique identifier for the organization associated with the alert.
+    - name: org_feature_entitlement
+      type: keyword
+      description: The feature entitlement of the organization.
+    - name: policy_applied
+      type: keyword
+      description: Whether a policy was applied.
+    - name: product_id
+      type: keyword
+      description: The hexadecimal id of the USB device's product.
+    - name: product_name
+      type: keyword
+      description: The name of the USB device's vendor.
+    - name: reason
+      type: keyword
+      description: A spoken language written explanation of the what and why the alert occurred and any action taken.
+    - name: reason_code
+      type: keyword
+      description: Shorthand enum for the full-text reason.
+    - name: run_state
+      type: keyword
+      description: Whether the threat in the alert ran.
+    - name: sensor_action
+      type: keyword
+      description: The action taken by the sensor, according to the rule of the policy.
+    - name: serial_number
+      type: keyword
+      description: The serial number of the USB device.
+    - name: status
+      type: keyword
+      description: status of alert.
+    - name: tags
+      type: keyword
+      description: Tags associated with the alert.
+    - name: primary_event_id
+      type: keyword
+      description: ID of the primary event in the alert.
+    - name: threat_id
+      type: keyword
+      description: The identifier of a threat which this alert belongs. Threats are comprised of a combination of factors that can be repeated across devices.
+    - name: threat_name
+      type: keyword
+      description: Name of the threat.
+    - name: threat_category
+      type: keyword
+      description: Categories of threats which we were able to take action on.
+    - name: type
+      type: keyword
+      description: Type of alert.
+    - name: vendor_id
+      type: keyword
+      description: The hexadecimal id of the USB device's vendor.
+    - name: vendor_name
+      type: keyword
+      description: The name of the USB device's vendor.
+    - name: ttps
+      type: keyword
+      description: Other potential malicious activities involved in a threat.
+    - name: is_updated
+      type: boolean
+      description: Set to true if this is an updated copy of the alert initiated by the Carbon Black Cloud backend.
+    - name: attack_tactic
+      type: keyword
+      description: S tactic from the MITRE ATT&CK framework.
+    - name: attack_technique
+      type: keyword
+      description: Technique from the MITRE ATT&CK framework.
+    # ml_classification fields
+    - name: ml_classification_final_verdict
+      type: keyword
+      description: Final verdict of the alert, based on the ML models that were used to make the prediction.
+    - name: ml_classification_global_prevalence
+      type: keyword
+      description: Categories (low/medium/high) used to describe the prevalence of alerts across all regional organizations.
+    - name: ml_classification_org_prevalence
+      type: keyword
+      description: TCategories (low/medium/high) used to describe the prevalence of alerts within an organization.
+    - name: ml_classification_anomalies
+      type: keyword
+      description: An list of anomalies detected by the machine learning classification.
+    # rule fields
+    - name: rule_id
+      type: keyword
+      description: ID of the rule that triggered an alert.
+    - name: rule_category_id
+      type: keyword
+      description: ID representing the category of the rule_id for certain alert types.
+    - name: rule_config_id
+      type: keyword
+      description: ID of the rule configuration that triggered an alert.
+    - name: rule_config_name
+      type: keyword
+      description: Name of the rule configuration that triggered an alert.
+    - name: rule_config_type
+      type: keyword
+      description: Type of the rule configuration that triggered an alert.
+    - name: tms_rule_id
+      type: keyword
+      description: Threat intrusion detection id.
+    # container runtime fields
+    - name: k8s_cluster
+      type: keyword
+      description: The Kubernetes cluster associated with the event.
+    - name: k8s_namespace
+      type: keyword
+      description: The Kubernetes namespace associated with the event.
+    - name: k8s_kind
+      type: keyword
+      description: The type of Kubernetes resource associated with the event (e.g., Pod, DaemonSet).
+    - name: k8s_workload_name
+      type: keyword
+      description: The name of the Kubernetes workload associated with the event.
+    - name: k8s_pod_name
+      type: keyword
+      description: The name of the Kubernetes pod associated with the event.
+    - name: k8s_policy_id
+      type: keyword
+      description: The unique identifier of the Kubernetes policy associated with the event.
+    - name: k8s_policy
+      type: keyword
+      description: The name of the Kubernetes policy associated with the event.
+    - name: k8s_rule_id
+      type: keyword
+      description: The unique identifier of the Kubernetes rule associated with the event.
+    - name: k8s_rule
+      type: keyword
+      description: The name of the Kubernetes rule associated with the event.
+    - name: connection_type
+      type: keyword
+      description: The type of network connection (e.g., EGRESS, INGRESS).
+    - name: egress_group_id
+      type: keyword
+      description: The unique identifier of the egress group associated with the event.
+    - name: egress_group_name
+      type: keyword
+      description: The name of the egress group associated with the event.
+    - name: ip_reputation
+      type: integer
+      description: The reputation score of the IP address associated with the event.
+    - name: remote_is_private
+      type: boolean
+      description: Indicates whether the remote IP address is private or not.
+    # device fields
+    - name: device
+      type: group
+      fields:
+        - name: location
+          type: keyword
+          description: Whether the device was on or off premises when the alert started, based on the current IP address and the device’s registered DNS domain suffix.
+        - name: os
+          type: keyword
+          description: OS of the device.
+        - name: policy_id
+          type: integer
+          description: The identifier for the device policy associated with the device at the time of the alert.
+        - name: policy
+          type: keyword
+          description: The name of the device policy associated with the device at the time of the alert.
+        - name: target_value
+          type: keyword
+          description: Target value assigned to the device, set from the policy.
+        - name: external_ip
+          type: keyword
+          description: IP address of the endpoint according to the Carbon Black Cloud; can differ from device_internal_ip due to network proxy or NAT.
+        - name: internal_ip
+          type: keyword
+          description: IP address of the endpoint reported by the sensor.
+        - name: uem_id
+          type: keyword
+          description: Device correlation with WS1/EUC, required for our Workspace ONE Intelligence integration to function.
+    # ioc fields
+    - name: ioc
+      type: group
+      fields:
+        - name: field
+          type: keyword
+          description: The field the indicator of comprise (IOC) hit contains.
+        - name: hit
+          type: keyword
+          description: IOC field value or IOC query that matches.
+        - name: id
+          type: keyword
+          description: The identifier of the IOC that cause the hit.
+    # report fields
+    - name: report
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The identifier of the report that contains the IOC.
+        - name: name
+          type: keyword
+          description: The name of the report that contains the IOC.
+        - name: description
+          type: keyword
+          description: Description of the IOC report associated with the alert.
+        - name: link
+          type: keyword
+          description: Link of reports that contained the IOC that caused a hit.
+        - name: tags
+          type: keyword
+          description: Tags associated with the IOC report.
+    # parent process fields
+    - name: parent
+      type: group
+      description: Fields related to the parent information.
+      fields:
+        - name: hash
+          type: group
+          description: Hash values associated with the parent process.
+          fields:
+            - name: sha256
+              type: keyword
+              description: SHA-256 hash of the parent process.
+            - name: md5
+              type: keyword
+              description: MD5 hash of the parent process.
+        - name: pid
+          type: long
+          description: PID of the parent process that has fired the alert.
+        - name: guid
+          type: keyword
+          description: Guid of the parent process that has fired the alert.
+        - name: name
+          type: keyword
+          description: Filesystem path of the parent process binary.
+        - name: cmdline
+          type: keyword
+          description: Command line executed by the parent process.
+        - name: username
+          type: keyword
+          description: User context in which the parent process was executed.
+        - name: effective_reputation
+          type: keyword
+          description: Effective reputation of the parent hash.
+        - name: reputation
+          type: keyword
+          description: Reputation of the parent process; applied when event is processed by the Carbon Black Cloud.
+    # process fields
+    - name: process
+      type: group
+      description: Fields related to the actor process information.
+      fields:
+        - name: hash
+          type: group
+          description: Hash values associated with the process.
+          fields:
+            - name: sha256
+              type: keyword
+              description: SHA-256 hash of the process.
+            - name: md5
+              type: keyword
+              description: MD5 hash of the process.
+        - name: pid
+          type: long
+          description: PID of the process that has fired the alert.
+        - name: guid
+          type: keyword
+          description: Guid of the process that has fired the alert.
+        - name: name
+          type: keyword
+          description: Filesystem path of the actor process binary.
+        - name: cmdline
+          type: keyword
+          description: Command line executed by the actor process.
+        - name: username
+          type: keyword
+          description: User context in which the actor process was executed.
+        - name: effective_reputation
+          type: keyword
+          description: Effective reputation of the actor hash.
+        - name: reputation
+          type: keyword
+          description: Reputation of the actor process; applied when event is processed by the Carbon Black Cloud.
+        - name: issuer
+          type: keyword
+          description: The certificate authority associated with the process's certificate.
+        - name: publisher
+          type: keyword
+          description: Publisher name on the certificate used to sign the Windows or macOS process binary.
+    # child process fields
+    - name: childproc
+      type: group
+      description: Fields related to the child process information.
+      fields:
+        - name: hash
+          type: group
+          description: Hash values associated with the child process.
+          fields:
+            - name: sha256
+              type: keyword
+              description: SHA-256 hash of the child process.
+            - name: md5
+              type: keyword
+              description: MD5 hash of the child process.
+        - name: guid
+          type: keyword
+          description: Guid of the child process that has fired the alert.
+        - name: name
+          type: keyword
+          description: Filesystem path of the child process binary.
+        - name: cmdline
+          type: keyword
+          description: Command line executed by the child process.
+        - name: username
+          type: keyword
+          description: User context in which the child process was executed.
+        - name: effective_reputation
+          type: keyword
+          description: Effective reputation of the child process hash.
+    # blocked process fields
+    - name: blocked_process
+      type: group
+      description: Fields related to the blocked process information.
+      fields:
+        - name: hash
+          type: group
+          description: Hash values associated with the child process.
+          fields:
+            - name: sha256
+              type: keyword
+              description: SHA-256 hash of the child process binary; for any process terminated by the sensor.
+            - name: md5
+              type: keyword
+              description: MD5 hash of the child process binary; for any process terminated by the sensor.
+        - name: name
+          type: keyword
+          description: Tokenized file path of the files blocked by sensor action.
+        - name: effective_reputation
+          type: keyword
+          description: Effective reputation of the blocked file or process; applied by the sensor at the time the block occurred.
+    # watchlist fields
+    - name: watchlists
+      type: group
+      description: List of watchlists associated with an alert.
+      fields:
+        - name: id
+          type: keyword
+          description: Identifier of the watchlist.
+        - name: name
+          type: keyword
+          description: Name of the watchlist.
+    # determination fields
+    - name: determination
+      type: group
+      description: Fields related to alert determination
+      fields:
+        - name: change_timestamp
+          type: date
+          description: Timestamp of the determination change
+        - name: value
+          type: keyword
+          description: Value of the determination
+        - name: changed_by_type
+          type: keyword
+          description: Type of entity that changed the determination
+        - name: changed_by
+          type: keyword
+          description: Entity that changed the determination
+    # workflow fields
+    - name: workflow
+      type: group
+      description: Tracking system for alerts as they are triaged and resolved.
+      fields:
+        - name: changed_by
+          type: keyword
+          description: The name of process which changed the workflow.
+        - name: changed_by_type
+          type: keyword
+          description: The type of user who changed the workflow.
+        - name: changed_by_autoclose_rule_id
+          type: keyword
+          description: The rule id that auto closed the workflow.
+        - name: change_timestamp
+          type: date
+          description: The last change/update time of workflow.
+        - name: closure_reason
+          type: keyword
+          description: Reason for which the workflow was closed.
+        - name: status
+          type: keyword
+          description: The status of the workflow.
+    # mdr fields
+    - name: mdr
+      type: group
+      description: Fields related to MDR.
+      fields:
+        - name: alert
+          type: boolean
+          description: Is the alert eligible for review by Carbon Black MDR Analysts.
+        - name: alert_notes_present
+          type: boolean
+          description: Customer visible notes at the alert level that were added by a MDR analyst.
+        - name: threat_notes_present
+          type: boolean
+          description: Customer visible notes at the threat level that were added by a MDR analyst.
+        - name: determination
+          type: group
+          description: MDR updatable classification of the alert.
+          fields:
+            - name: change_timestamp
+              type: date
+              description: When the last MDR classification change occurred, it is a ISO 8601 UTC timestamp.
+            - name: value
+              type: keyword
+              description: A record that identifies the whether the alert was determined to represent a likely or unlikely threat.
+        - name: workflow
+          type: group
+          description: MDR-updatable workflow of the alert.
+          fields:
+            - name: change_timestamp
+              type: date
+              description: WWhen the last MDR status change occurred, it is a ISO 8601 UTC timestamp.
+            - name: is_assigned
+              type: boolean
+              description: If the workflow is assigned or not.
+            - name: status
+              type: boolean
+              description: Primary value used to capture status change during MD Analyst's alert triage.
+        - name: classification
+          type: group
+          description: MDR-updatable classification of the alert.
+          fields:
+            - name: change_timestamp
+              type: date
+              description: WWhen the last MDR classification change occurred, it is a ISO 8601 UTC timestamp.
+    # network connection fields
+    - name: netconn
+      type: group
+      description: Fields related to network connections
+      fields:
+        - name: remote_port
+          type: integer
+          description: TCP or UDP port used by the remote side of the network connection; same as netconn_port and event_network_remote_port.
+        - name: local_port
+          type: integer
+          description: TCP or UDP port used by the local side of the network connection.
+        - name: protocol
+          type: keyword
+          description: Network protocol of the network connection.
+        - name: remote_domain
+          type: keyword
+          description: Domain name (FQDN) associated with the remote end of the network connection.
+        - name: remote_ip
+          type: ip
+          description: IP address of the remote side of the network connection.
+        - name: local_ip
+          type: ip
+          description: IP address of the local side of the network connection.
+        - name: remote_ipv4
+          type: ip
+          description: IPv4 address of the remote side of the network connection.
+        - name: local_ipv4
+          type: ip
+          description: IPv4 address of the local side of the network connection.
+        - name: remote_ipv6
+          type: ip
+          description: IPv6 address of the remote side of the network connection.
+        - name: local_ipv6
+          type: ip
+          description: IPv6 address of the local side of the network connection.
