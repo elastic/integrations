@@ -755,6 +755,19 @@ build_zip_package() {
     return 0
 }
 
+skip_installation_step() {
+    local package=$1
+    if ! is_serverless ; then
+        return 1
+    fi
+
+    if [[ "$package" == "security_detection_engine" ]]; then
+        return 0
+    fi
+
+    return 1
+}
+
 install_package() {
     local package=$1
     echo "Install package: ${package}"
@@ -814,10 +827,7 @@ run_tests_package() {
         fi
     fi
 
-    if ! is_serverless ; then
-        # Just run install command on non serverless projects,
-        # "elastic-paackage test asset" command already installs the package via upload API
-        # as it does "elastic-package install" command
+    if ! skip_installation_step "${package}" ; then
         echo "--- [${package}] test installation"
         if ! install_package "${package}" ; then
             return 1
