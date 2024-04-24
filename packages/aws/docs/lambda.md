@@ -131,7 +131,8 @@ An example event for `lambda` looks as following:
 | aws.lambda.metrics.DestinationDeliveryFailures.avg | For asynchronous invocation, the number of times Lambda attempts to send an event to a destination but fails. | double | gauge |
 | aws.lambda.metrics.Duration.avg | The amount of time that your function code spends processing an event. | double | gauge |
 | aws.lambda.metrics.Errors.avg | The number of invocations that result in a function error. | double | gauge |
-| aws.lambda.metrics.Invocations.avg | The number of times your function code is executed, including successful executions and executions that result in a function error. | double | gauge |
+| aws.lambda.metrics.Invocations.avg | The average number of times your function code is executed, including successful executions and executions that result in a function error. | double | gauge |
+| aws.lambda.metrics.Invocations.sum | The total number of times your function code is executed, including successful executions and executions that result in a function error. | double | gauge |
 | aws.lambda.metrics.IteratorAge.avg | For event source mappings that read from streams, the age of the last record in the event. | double | gauge |
 | aws.lambda.metrics.ProvisionedConcurrencyInvocations.sum | The number of times your function code is executed on provisioned concurrency. | long | gauge |
 | aws.lambda.metrics.ProvisionedConcurrencySpilloverInvocations.sum | The number of times your function code is executed on standard concurrency when all provisioned concurrency is in use. | long | gauge |
