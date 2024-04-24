@@ -451,7 +451,7 @@ An example event for `panos` looks as following:
 | panw.panos.error_message | A string showing that error that has occurred in any event. | keyword |
 | panw.panos.event.action | A string showing the action of the event. | keyword |
 | panw.panos.event.code | A string showing the identification code for the event. | keyword |
-| panw.panos.event.id | A string showing the name of the event | keyword |
+| panw.panos.event.id | A string showing the name of the event. | keyword |
 | panw.panos.event.outcome | A string showing the outcome of the event. | keyword |
 | panw.panos.event.reason | A string that shows the reason for the quarantine. | keyword |
 | panw.panos.event.result | Result of the authentication attempt. | keyword |
