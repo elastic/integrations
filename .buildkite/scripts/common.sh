@@ -309,7 +309,6 @@ create_kind_cluster() {
     kind create cluster --config "${WORKSPACE}/kind-config.yaml" --image "kindest/node:${K8S_VERSION}"
 }
 
-
 delete_kind_cluster() {
     echo "--- Delete kind cluster"
     kind delete cluster || true
@@ -409,7 +408,6 @@ is_package_excluded() {
     fi
     return 1
 }
-
 
 is_supported_capability() {
     if [ "${SERVERLESS_PROJECT}" == "" ]; then
