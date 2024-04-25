@@ -2271,6 +2271,7 @@ An example event for `node_stats` looks as following:
 | elasticsearch.node.stats.indices.segments.term_vectors.memory.bytes |  | long | gauge |
 | elasticsearch.node.stats.indices.segments.terms.memory.bytes |  | long | gauge |
 | elasticsearch.node.stats.indices.segments.version_map.memory.bytes |  | long | gauge |
+| elasticsearch.node.stats.indices.shard_stats.total_count |  | long |  |
 | elasticsearch.node.stats.indices.store.size.bytes | Total size of the store in bytes. | long | gauge |
 | elasticsearch.node.stats.indices.store.total_data_set_size.bytes | Total size of shards in bytes assigned to this node including backing data for partially mounted indices. | long | gauge |
 | elasticsearch.node.stats.ingest.total.count |  | long | counter |
