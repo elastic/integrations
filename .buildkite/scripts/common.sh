@@ -877,6 +877,10 @@ upload_safe_logs_from_package() {
     fi
 
     local package=$1
+    local retry_count="${BUILDKITE_RETRY_COUNT:-"0"}"
+    if [[ "${retry_count}" -ne 0 ]]; then
+        package="${package}_retry_${retry_count}"
+    fi
     local build_directory=$2
 
     local parent_folder="insecure-logs"
