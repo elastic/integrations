@@ -1,0 +1,278 @@
+---
+description: Pipeline to process teleport audit logs
+processors:
+- set:
+    field: ecs.version
+    tag: set_ecs_version
+    value: 8.11.0
+- rename:
+    field: message
+    target_field: event.original
+    tag: rename_message
+    ignore_missing: true
+    if: ctx.event?.original == null
+- json:
+    field: event.original
+    tag: json_decoding
+    target_field: teleport.audit
+- rename:
+    field: teleport.audit.event
+    target_field: event.action
+    ignore_missing: true
+- rename:
+    field: teleport.audit.uid
+    target_field: event.id
+    ignore_missing: true
+- rename:
+    field: teleport.audit.code
+    target_field: event.code
+    ignore_missing: true
+- date:
+    field: teleport.audit.time
+    target_field: event.created
+    formats:
+    - ISO8601
+    ignore_failure: true
+- rename:
+    field: teleport.audit.user
+    target_field: user.name
+    ignore_missing: true
+- rename:
+    field: teleport.audit.user_agent
+    target_field: user_agent.original
+    ignore_missing: true
+- rename:
+    field: teleport.audit.addr.remote
+    target_field: client.address
+    ignore_missing: true
+- rename:
+    field: teleport.audit.identity.client_ip
+    target_field: client.ip
+    ignore_missing: true
+- rename:
+    field: teleport.audit.identity.route_to_database.protocol
+    target_field: network.protocol
+    ignore_missing: true
+- rename:
+    field: teleport.audit.identity.route_to_database.username
+    target_field: server.user.name
+    ignore_missing: true
+- rename:
+    field: teleport.audit.server_hostname
+    target_field: server.domain
+    ignore_missing: true
+- rename:
+    field: teleport.audit.proto
+    target_field: network.transport
+    ignore_missing: true
+- rename:
+    field: teleport.audit.tx
+    target_field: client.bytes
+    ignore_missing: true
+- rename:
+    field: teleport.audit.rx
+    target_field: server.bytes
+    ignore_missing: true
+- date:
+    field: teleport.audit.session_start
+    target_field: event.start
+    formats:
+    - ISO8601
+    ignore_failure: true
+- date:
+    field: teleport.audit.session_stop
+    target_field: event.end
+    formats:
+    - ISO8601
+    ignore_failure: true
+- rename:
+    field: teleport.audit.server_addr
+    target_field: server.address
+    ignore_missing: true
+- rename:
+    field: teleport.audit.url
+    target_field: url.full
+    ignore_missing: true
+- rename:
+    field: teleport.audit.roles
+    target_field: user.roles
+    ignore_missing: true
+- geoip:
+    field: client.ip
+    target_field: client.geo
+    ignore_missing: true
+- geoip:
+    ignore_missing: true
+    database_file: GeoLite2-ASN.mmdb
+    field: client.ip
+    target_field: client.as
+    properties:
+    - asn
+    - organization_name
+- rename:
+    field: client.as.asn
+    target_field: client.as.number
+    ignore_missing: true
+- rename:
+    field: client.as.organization_name
+    target_field: client.as.organization.name
+    ignore_missing: true
+- geoip:
+    field: server.ip
+    target_field: server.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: server.ip
+    target_field: server.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: server.as.asn
+    target_field: server.as.number
+    ignore_missing: true
+- rename:
+    field: server.as.organization_name
+    target_field: server.as.organization.name
+    ignore_missing: true
+- script:
+    description: Drops null/empty values recursively.
+    lang: painless
+    source: "boolean dropEmptyFields(Object object) {\n  if (object == null || object\
+      \ == \"\") {\n    return true;\n  } else if (object instanceof Map) {\n    ((Map)\
+      \ object).values().removeIf(value -> dropEmptyFields(value));\n    return (((Map)\
+      \ object).size() == 0);\n  } else if (object instanceof List) {\n    ((List)\
+      \ object).removeIf(value -> dropEmptyFields(value));\n    return (((List) object).length\
+      \ == 0);\n  }\n  return false;\n}\ndropEmptyFields(ctx);\n"
+- append:
+    field: event.type
+    value:
+    - start
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'user.login' && ctx.teleport?.audit?.success
+      == true
+- append:
+    field: event.category
+    value:
+    - authentication
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'user.login'
+- append:
+    field: event.type
+    value:
+    - creation
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'cert.create'
+- append:
+    field: event.category
+    value:
+    - iam
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'cert.create'
+- append:
+    field: event.type
+    value:
+    - start
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'session.start'
+- append:
+    field: event.category
+    value:
+    - session
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'session.start'
+- append:
+    field: event.type
+    value:
+    - info
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'session.leave'
+- append:
+    field: event.category
+    value:
+    - session
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'session.leave'
+- append:
+    field: event.type
+    value:
+    - info
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'session.data'
+- append:
+    field: event.category
+    value:
+    - session
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'session.data'
+- append:
+    field: event.type
+    value:
+    - end
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'session.end'
+- append:
+    field: event.category
+    value:
+    - session
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'session.end'
+- append:
+    field: event.type
+    value:
+    - info
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'session.upload'
+- append:
+    field: event.category
+    value:
+    - session
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'session.upload'
+- append:
+    field: event.type
+    value:
+    - creation
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'role.created'
+- append:
+    field: event.category
+    value:
+    - iam
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'role.created'
+- append:
+    field: event.type
+    value:
+    - creation
+    - user
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'user.create'
+- append:
+    field: event.category
+    value:
+    - iam
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'user.create'
+- append:
+    field: event.type
+    value:
+    - error
+    allow_duplicates: false
+    if: ctx.teleport?.audit?.event == 'user.login' && ctx.teleport?.audit?.success
+      == false
+- remove:
+    field: event.original
+    if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
+    ignore_failure: true
+    ignore_missing: true
+on_failure:
+- append:
+    field: error.message
+    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+      in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- set:
+    field: event.kind
+    value: pipeline_error
