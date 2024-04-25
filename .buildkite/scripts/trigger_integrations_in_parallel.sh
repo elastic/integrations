@@ -52,6 +52,7 @@ for package in ${PACKAGE_LIST}; do
       command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
       agents:
         provider: gcp
+        machineType: "n1-standard-8"
       env:
         ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT: "true"
         STACK_VERSION: "${STACK_VERSION}"
