@@ -2,15 +2,16 @@
 
 Stormshield Network Security (SNS) firewalls are a stable and efficient security solution to protect corporate networks from cyberattacks. Real-time protection (intrusion prevention and detection, application control, antivirus, etc.), control and supervision (URL filtering, IP geolocation, vulnerability detection, etc.) and content filtering (antispam, antispyware, antiphishing, etc.) all guarantee secure communications. All Stormshield Network Security firewalls are based on the same firmware, and with their core features, Stormshield Network Security firewalls give you comprehensive security and high performance network protection.
 
-Use the Stormshield SNS integration to ingest syslog data into your Elasticsearch cluster, then visualize that data in Kibana. Create alerts to notify you if something goes wrong.
+Use the Stormshield SNS integration to ingest log data into Elastic Security and leverage the data for threat detection, incident response, and visualization.
 
 
 ## Data streams
 
-The Stormshield SNS integration collects syslog messages, ideally through a UDP filebeat input.
+The Stormshield SNS integration collects audit, traffic, and connection (including NAT) logs. Available log types are available here: https://documentation.stormshield.eu/SNS/v4/en/Content/Description_of_Audit_logs/Configure_logs.htm .
+
 
 **Logs** help you keep a record of events happening in your firewalls.
-Log data streams collected by the SNS integration include syslogs and more. See more details in the [Logs](#logs-reference).
+The SNS integration handles activity logs and firewall (filter and NAT) logs. See more details in the [Logs](#logs-reference).
 
 ## Requirements
 
