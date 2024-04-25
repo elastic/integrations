@@ -153,12 +153,14 @@ processors:
       copy_from: activedirectory.user.name
       ignore_empty_value: true
   - gsub:
+      tag: gsub_user_dn
       field: activedirectory.user.distinguished_name
       pattern: '^.*?DC='
       replacement: ''
       target_field: user.domain
       if: ctx.activedirectory?.user?.distinguished_name != null
   - gsub:
+      tag: gsub_user_domain
       field: user.domain
       pattern: ',DC='
       replacement: '.'
