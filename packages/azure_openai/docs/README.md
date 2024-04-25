@@ -92,9 +92,14 @@ An example event for `logs` looks as following:
                 "response_length": 113,
                 "response_time": 638481757795877942
             },
-            "resource_id": "/SUBSCRIPTIONS/12CABCB4-86E8-404F-A3D2-1DC9982F45CA/RESOURCEGROUPS/OBS-OPENAI-SERVICE-RS/PROVIDERS/MICROSOFT.COGNITIVESERVICES/ACCOUNTS/OBS-OPENAI-TEST-01",
             "result_signature": "200",
             "tenant": "eastus"
+        },
+        "resource": {
+            "group": "OBS-OPENAI-SERVICE-RS",
+            "id": "/SUBSCRIPTIONS/12CABCB4-86E8-404F-A3D2-1DC9982F45CA/RESOURCEGROUPS/OBS-OPENAI-SERVICE-RS/PROVIDERS/MICROSOFT.COGNITIVESERVICES/ACCOUNTS/OBS-OPENAI-TEST-01",
+            "name": "OBS-OPENAI-TEST-01",
+            "provider": "MICROSOFT.COGNITIVESERVICES/ACCOUNTS"
         }
     },
     "cloud": {
