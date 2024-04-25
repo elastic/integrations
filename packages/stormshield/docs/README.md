@@ -32,442 +32,171 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "_index": ".ds-logs-stormshield.log-stormshield-2024.04.18-000001",
-    "_id": "A93BD48BBden0L_pXoyx",
-    "_version": 1,
-    "_score": 0,
-    "_source": {
-        "agent": {
-            "name": "ubuntu",
-            "id": "adb095de-7fdf-448d-a89c-a43cc4e3b5cb",
-            "type": "filebeat",
-            "ephemeral_id": "5891695a-5cfb-40b5-8812-c237c02d400d",
-            "version": "8.11.4"
+    "agent": {
+        "name": "ubuntu",
+        "id": "adb095de-7fdf-448d-a89c-a43cc4e3b5cb",
+        "type": "filebeat",
+        "ephemeral_id": "5891695a-5cfb-40b5-8812-c237c02d400d",
+        "version": "8.11.4"
+    },
+    "process": {
+        "name": "serverd"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.197.134:14720"
         },
-        "process": {
-            "name": "serverd"
-        },
-        "log": {
-            "source": {
-                "address": "192.168.197.134:14720"
+        "syslog": {
+            "severity": {
+                "code": 5,
+                "name": "Notice"
             },
-            "syslog": {
-                "severity": {
-                    "code": 5,
-                    "name": "Notice"
-                },
-                "hostname": "stormy-1",
-                "appname": "serverd",
-                "priority": 133,
-                "facility": {
-                    "code": 16,
-                    "name": "local0"
-                },
-                "version": "1"
-            }
-        },
-        "elastic_agent": {
-            "id": "adb095de-7fdf-448d-a89c-a43cc4e3b5cb",
-            "version": "8.11.4",
-            "snapshot": false
-        },
-        "tags": [
-            "forwarded"
-        ],
-        "input": {
-            "type": "udp"
-        },
-        "@timestamp": "2024-04-24T10:58:00.000Z",
-        "ecs": {
-            "version": "8.11.0"
-        },
-        "data_stream": {
-            "namespace": "stormshield",
-            "type": "logs",
-            "dataset": "stormshield.log"
-        },
-        "stormshield": {
-            "logtype": "monitor",
-            "monitor": {
-                "startime": "2024-04-24 10:58:00",
-                "tz": "+0000",
-                "Pvm": "0,0,0,0,0,0,0,0,0,0,0",
-                "CPU": {
-                    "kernel_time": "0",
-                    "system_disruption": "0",
-                    "user_time": "1"
-                },
-                "sslvpn": [
-                    {
-                        "original": "sslvpn0",
-                        "packets_blocked": "0",
-                        "name": "sslvpn",
-                        "incoming_throughput": "0",
-                        "maximum_outgoing_throughput": "0",
-                        "outgoing_throughput": "0",
-                        "packets_accepted": "0",
-                        "maximum_incoming_throughput": "0"
-                    },
-                    {
-                        "original": "sslvpn1",
-                        "packets_blocked": "0",
-                        "name": "sslvpn_udp",
-                        "incoming_throughput": "0",
-                        "maximum_outgoing_throughput": "0",
-                        "outgoing_throughput": "0",
-                        "packets_accepted": "0",
-                        "maximum_incoming_throughput": "0"
-                    }
-                ],
-                "Qid": [
-                    {
-                        "original": "Qid0",
-                        "packets_blocked": "0",
-                        "name": "BYPASS_out",
-                        "incoming_throughput": "0",
-                        "maximum_outgoing_throughput": "0",
-                        "outgoing_throughput": "0",
-                        "packets_accepted": "70",
-                        "maximum_incoming_throughput": "15656"
-                    },
-                    {
-                        "original": "Qid1",
-                        "packets_blocked": "0",
-                        "name": "BYPASS_segment0",
-                        "incoming_throughput": "0",
-                        "maximum_outgoing_throughput": "0",
-                        "outgoing_throughput": "0",
-                        "packets_accepted": "0",
-                        "maximum_incoming_throughput": "0"
-                    },
-                    {
-                        "original": "Qid2",
-                        "packets_blocked": "0",
-                        "name": "BYPASS_ipsec",
-                        "incoming_throughput": "0",
-                        "maximum_outgoing_throughput": "0",
-                        "outgoing_throughput": "0",
-                        "packets_accepted": "0",
-                        "maximum_incoming_throughput": "0"
-                    }
-                ],
-                "fw": "stormy-1",
-                "security": "0",
-                "system": "0",
-                "mem": "0,0,0,0,0,0,15,0",
-                "ipsec": [
-                    {
-                        "packets_blocked": "0",
-                        "native": true,
-                        "name": "ipsec",
-                        "incoming_throughput": "0",
-                        "maximum_outgoing_throughput": "0",
-                        "outgoing_throughput": "0",
-                        "packets_accepted": "0",
-                        "maximum_incoming_throughput": "0"
-                    }
-                ],
-                "Ethernet": [
-                    {
-                        "original": "Ethernet0",
-                        "packets_blocked": "0",
-                        "name": "out",
-                        "incoming_throughput": "91",
-                        "maximum_outgoing_throughput": "536",
-                        "outgoing_throughput": "188",
-                        "packets_accepted": "62",
-                        "maximum_incoming_throughput": "456"
-                    },
-                    {
-                        "original": "Ethernet1",
-                        "packets_blocked": "0",
-                        "name": "segment0",
-                        "incoming_throughput": "0",
-                        "maximum_outgoing_throughput": "0",
-                        "outgoing_throughput": "0",
-                        "packets_accepted": "0",
-                        "maximum_incoming_throughput": "0"
-                    }
-                ],
-                "id": "firewall",
-                "time": "2024-04-24 10:58:00"
-            }
-        },
-        "host": {
-            "name": "stormy-1"
-        },
-        "event": {
-            "agent_id_status": "verified",
-            "ingested": "2024-04-24T10:58:02Z",
-            "timezone": "+00:00",
-            "created": "2024-04-24T10:58:00.000Z",
-            "dataset": "stormshield.log"
+            "hostname": "stormy-1",
+            "appname": "serverd",
+            "priority": 133,
+            "facility": {
+                "code": 16,
+                "name": "local0"
+            },
+            "version": "1"
         }
     },
-    "fields": {
-        "stormshield.monitor.Qid.original": [
-            "Qid0",
-            "Qid1",
-            "Qid2"
-        ],
-        "stormshield.monitor.fw": [
-            "stormy-1"
-        ],
-        "stormshield.monitor.startime": [
-            "2024-04-24 10:58:00"
-        ],
-        "elastic_agent.version": [
-            "8.11.4"
-        ],
-        "stormshield.monitor.ipsec.maximum_outgoing_throughput": [
-            0
-        ],
-        "process.name.text": [
-            "serverd"
-        ],
-        "stormshield.monitor.ipsec.native": [
-            true
-        ],
-        "stormshield.monitor.security": [
-            "0"
-        ],
-        "log.syslog.facility.name": [
-            "local0"
-        ],
-        "stormshield.monitor.Ethernet.packets_blocked": [
-            0,
-            0
-        ],
-        "stormshield.logtype": [
-            "monitor"
-        ],
-        "log.syslog.severity.name": [
-            "Notice"
-        ],
-        "agent.name": [
-            "ubuntu"
-        ],
-        "host.name": [
-            "stormy-1"
-        ],
-        "event.agent_id_status": [
-            "verified"
-        ],
-        "stormshield.monitor.ipsec.name": [
-            "ipsec"
-        ],
-        "log.syslog.severity.code": [
-            5
-        ],
-        "stormshield.monitor.Qid.maximum_outgoing_throughput": [
-            0,
-            0,
-            0
-        ],
-        "stormshield.monitor.sslvpn.maximum_incoming_throughput": [
-            0,
-            0
-        ],
-        "stormshield.monitor.sslvpn.name": [
-            "sslvpn",
-            "sslvpn_udp"
-        ],
-        "input.type": [
-            "udp"
-        ],
-        "data_stream.type": [
-            "logs"
-        ],
-        "stormshield.monitor.Qid.maximum_incoming_throughput": [
-            15656,
-            0,
-            0
-        ],
-        "stormshield.monitor.sslvpn.packets_blocked": [
-            0,
-            0
-        ],
-        "tags": [
-            "forwarded"
-        ],
-        "process.name": [
-            "serverd"
-        ],
-        "agent.id": [
-            "adb095de-7fdf-448d-a89c-a43cc4e3b5cb"
-        ],
-        "stormshield.monitor.tz": [
-            "+0000"
-        ],
-        "ecs.version": [
-            "8.11.0"
-        ],
-        "stormshield.monitor.ipsec.outgoing_throughput": [
-            0
-        ],
-        "stormshield.monitor.sslvpn.outgoing_throughput": [
-            0,
-            0
-        ],
-        "log.source.address": [
-            "192.168.197.134:14720"
-        ],
-        "event.created": [
-            "2024-04-24T10:58:00.000Z"
-        ],
-        "stormshield.monitor.Qid.packets_blocked": [
-            0,
-            0,
-            0
-        ],
-        "agent.version": [
-            "8.11.4"
-        ],
-        "stormshield.monitor.CPU.kernel_time": [
-            0
-        ],
-        "stormshield.monitor.time": [
-            "2024-04-24 10:58:00"
-        ],
-        "log.syslog.hostname": [
-            "stormy-1"
-        ],
-        "log.syslog.appname": [
-            "serverd"
-        ],
-        "stormshield.monitor.id": [
-            "firewall"
-        ],
-        "stormshield.monitor.Ethernet.outgoing_throughput": [
-            188,
-            0
-        ],
-        "stormshield.monitor.sslvpn.incoming_throughput": [
-            0,
-            0
-        ],
-        "stormshield.monitor.CPU.system_disruption": [
-            0
-        ],
-        "agent.type": [
-            "filebeat"
-        ],
-        "stormshield.monitor.sslvpn.original": [
-            "sslvpn0",
-            "sslvpn1"
-        ],
-        "stormshield.monitor.Ethernet.original": [
-            "Ethernet0",
-            "Ethernet1"
-        ],
-        "stormshield.monitor.ipsec.packets_accepted": [
-            0
-        ],
-        "stormshield.monitor.Ethernet.maximum_incoming_throughput": [
-            456,
-            0
-        ],
-        "elastic_agent.snapshot": [
-            false
-        ],
-        "log.syslog.priority": [
-            133
-        ],
-        "stormshield.monitor.Qid.incoming_throughput": [
-            0,
-            0,
-            0
-        ],
-        "stormshield.monitor.system": [
-            "0"
-        ],
-        "stormshield.monitor.sslvpn.maximum_outgoing_throughput": [
-            0,
-            0
-        ],
-        "event.timezone": [
-            "+00:00"
-        ],
-        "stormshield.monitor.ipsec.incoming_throughput": [
-            0
-        ],
-        "log.syslog.version": [
-            "1"
-        ],
-        "stormshield.monitor.Qid.name": [
-            "BYPASS_out",
-            "BYPASS_segment0",
-            "BYPASS_ipsec"
-        ],
-        "stormshield.monitor.Ethernet.maximum_outgoing_throughput": [
-            536,
-            0
-        ],
-        "stormshield.monitor.sslvpn.packets_accepted": [
-            0,
-            0
-        ],
-        "elastic_agent.id": [
-            "adb095de-7fdf-448d-a89c-a43cc4e3b5cb"
-        ],
-        "stormshield.monitor.mem": [
-            "0,0,0,0,0,0,15,0"
-        ],
-        "data_stream.namespace": [
-            "stormshield"
-        ],
-        "stormshield.monitor.Pvm": [
-            "0,0,0,0,0,0,0,0,0,0,0"
-        ],
-        "stormshield.monitor.CPU.user_time": [
-            1
-        ],
-        "stormshield.monitor.ipsec.packets_blocked": [
-            0
-        ],
-        "stormshield.monitor.Ethernet.incoming_throughput": [
-            91,
-            0
-        ],
-        "stormshield.monitor.Qid.packets_accepted": [
-            70,
-            0,
-            0
-        ],
-        "stormshield.monitor.Ethernet.name": [
-            "out",
-            "segment0"
-        ],
-        "event.ingested": [
-            "2024-04-24T10:58:02.000Z"
-        ],
-        "@timestamp": [
-            "2024-04-24T10:58:00.000Z"
-        ],
-        "stormshield.monitor.Qid.outgoing_throughput": [
-            0,
-            0,
-            0
-        ],
-        "stormshield.monitor.ipsec.maximum_incoming_throughput": [
-            0
-        ],
-        "data_stream.dataset": [
-            "stormshield.log"
-        ],
-        "stormshield.monitor.Ethernet.packets_accepted": [
-            62,
-            0
-        ],
-        "agent.ephemeral_id": [
-            "5891695a-5cfb-40b5-8812-c237c02d400d"
-        ],
-        "event.dataset": [
-            "stormshield.log"
-        ],
-        "log.syslog.facility.code": [
-            16
-        ]
+    "elastic_agent": {
+        "id": "adb095de-7fdf-448d-a89c-a43cc4e3b5cb",
+        "version": "8.11.4",
+        "snapshot": false
+    },
+    "tags": [
+        "forwarded"
+    ],
+    "input": {
+        "type": "udp"
+    },
+    "@timestamp": "2024-04-24T10:58:00.000Z",
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "data_stream": {
+        "namespace": "stormshield",
+        "type": "logs",
+        "dataset": "stormshield.log"
+    },
+    "stormshield": {
+        "logtype": "monitor",
+        "monitor": {
+            "startime": "2024-04-24 10:58:00",
+            "tz": "+0000",
+            "Pvm": "0,0,0,0,0,0,0,0,0,0,0",
+            "CPU": {
+                "kernel_time": "0",
+                "system_disruption": "0",
+                "user_time": "1"
+            },
+            "sslvpn": [
+                {
+                    "original": "sslvpn0",
+                    "packets_blocked": "0",
+                    "name": "sslvpn",
+                    "incoming_throughput": "0",
+                    "maximum_outgoing_throughput": "0",
+                    "outgoing_throughput": "0",
+                    "packets_accepted": "0",
+                    "maximum_incoming_throughput": "0"
+                },
+                {
+                    "original": "sslvpn1",
+                    "packets_blocked": "0",
+                    "name": "sslvpn_udp",
+                    "incoming_throughput": "0",
+                    "maximum_outgoing_throughput": "0",
+                    "outgoing_throughput": "0",
+                    "packets_accepted": "0",
+                    "maximum_incoming_throughput": "0"
+                }
+            ],
+            "Qid": [
+                {
+                    "original": "Qid0",
+                    "packets_blocked": "0",
+                    "name": "BYPASS_out",
+                    "incoming_throughput": "0",
+                    "maximum_outgoing_throughput": "0",
+                    "outgoing_throughput": "0",
+                    "packets_accepted": "70",
+                    "maximum_incoming_throughput": "15656"
+                },
+                {
+                    "original": "Qid1",
+                    "packets_blocked": "0",
+                    "name": "BYPASS_segment0",
+                    "incoming_throughput": "0",
+                    "maximum_outgoing_throughput": "0",
+                    "outgoing_throughput": "0",
+                    "packets_accepted": "0",
+                    "maximum_incoming_throughput": "0"
+                },
+                {
+                    "original": "Qid2",
+                    "packets_blocked": "0",
+                    "name": "BYPASS_ipsec",
+                    "incoming_throughput": "0",
+                    "maximum_outgoing_throughput": "0",
+                    "outgoing_throughput": "0",
+                    "packets_accepted": "0",
+                    "maximum_incoming_throughput": "0"
+                }
+            ],
+            "fw": "stormy-1",
+            "security": "0",
+            "system": "0",
+            "mem": "0,0,0,0,0,0,15,0",
+            "ipsec": [
+                {
+                    "packets_blocked": "0",
+                    "native": true,
+                    "name": "ipsec",
+                    "incoming_throughput": "0",
+                    "maximum_outgoing_throughput": "0",
+                    "outgoing_throughput": "0",
+                    "packets_accepted": "0",
+                    "maximum_incoming_throughput": "0"
+                }
+            ],
+            "Ethernet": [
+                {
+                    "original": "Ethernet0",
+                    "packets_blocked": "0",
+                    "name": "out",
+                    "incoming_throughput": "91",
+                    "maximum_outgoing_throughput": "536",
+                    "outgoing_throughput": "188",
+                    "packets_accepted": "62",
+                    "maximum_incoming_throughput": "456"
+                },
+                {
+                    "original": "Ethernet1",
+                    "packets_blocked": "0",
+                    "name": "segment0",
+                    "incoming_throughput": "0",
+                    "maximum_outgoing_throughput": "0",
+                    "outgoing_throughput": "0",
+                    "packets_accepted": "0",
+                    "maximum_incoming_throughput": "0"
+                }
+            ],
+            "id": "firewall",
+            "time": "2024-04-24 10:58:00"
+        }
+    },
+    "host": {
+        "name": "stormy-1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-04-24T10:58:02Z",
+        "timezone": "+00:00",
+        "created": "2024-04-24T10:58:00.000Z",
+        "dataset": "stormshield.log"
     }
 }
 
