@@ -24,113 +24,101 @@ redact:
     - username
     - password
 program: |
-  (
-      state.with(
-        post_request(
-          state.url + "/login.html",
-          "application/x-www-form-urlencoded",
-          "username="+ state.username.replace("@", "%40", -1) + "&password=" + state.password.replace("@", "%40", -1)
-        ).do_request().as(resp, (
-              resp.Request.URL.contains("error") ?
-                ""
-              :
-                resp.Request.Response.Request.Response.Header["Set-Cookie"].filter(e, e.contains("JSESSIONID")).size() > 0 ?
-                  (resp.Request.Response.Request.Response.Header["Set-Cookie"].filter(e, e.contains("JSESSIONID"))[0].split(";").filter(e, e.contains("JSESSIONID")).size() > 0 ?
-                    resp.Request.Response.Request.Response.Header["Set-Cookie"].filter(e, e.contains("JSESSIONID"))[0].split(";").filter(e, e.contains("JSESSIONID"))[0]
-                  :
-                    ""
-                  )
-                :
-                  ""
-            )).as(body, {
-            "cookie": body,
-        })
-      ).as(cookie_obj, (
-          has(cookie_obj.cookie) && cookie_obj.cookie.contains("JSESSIONID") ?
-            (post_request(
-              state.url + "/rest/visualsearch/query/simple",
-              "application/json",
-                {
-                  "queryPath": [
-                    {
-                      "requestedType": "MalopProcess",
-                      "timeRange": {
-                        "startFeatureId": "malopLastUpdateTime",
-                        "endFeatureId": "malopLastUpdateTime",
-                        "startTime":
-                          (
-                            has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-                              state.cursor.last_timestamp
-                            :
-                            int(now() - duration(state.initial_interval)) * 1000
-                          ),
-                        "endTime": int(now) * 1000,
-                      },
-                      "result": "true"
-                    }
-                  ],
-                  "totalResultLimit": state.batch,
-                  "perGroupLimit": 100,
-                  "perFeatureLimit": 100,
-                  "templateContext": "MALOP"
-                }.encode_json()
-            ).with({"Header": {"Cookie": [cookie_obj.cookie], "Content-Type": ["application/json"]}
-            }).do_request().as(resp,
-              resp.StatusCode == 200 ?
-                bytes(resp.Body).decode_json().as(body, {
-                  "events": (has(body.data) && has(body.data.resultIdToElementDataMap) ?
-                      (
-                        body.data.resultIdToElementDataMap.size() > 0 ?
-                          (
-                            body.data.resultIdToElementDataMap.map(e,{
-                              "message": [body.data.resultIdToElementDataMap[e].encode_json(), body.data.suspicionsMap.encode_json(), body.data.evidenceMap.encode_json()]
-                            })
-                          )
-                        :
-                          [{}]
-                      )
-                    :
-                      (
-                        [{}]
-                      )
-                    ),
-                  "cursor": {
-                    "last_timestamp": (
-                      has(body.data) && has(body.data.resultIdToElementDataMap) && body.data.resultIdToElementDataMap.size() > 0 ?
-                        int(body.data.resultIdToElementDataMap.map(e, int(body.data.resultIdToElementDataMap[e].simpleValues.malopLastUpdateTime.values[0])).max())
-                      :
-                        has(state.cursor) && has(state.cursor.last_timestamp) ?
-                          state.cursor.last_timestamp
-                        :
-                          int(now - duration(state.initial_interval)) * 1000
-                    )
-                  },
-                  "username": state.username,
-                  "password": state.password,
-                  "initial_interval": state.initial_interval,
-                  "batch": state.batch
-                })
-              :
-                {
-                  "events": [{
-                    "error": {
-                      "code": string(resp.StatusCode),
-                      "id": string(resp.Status),
-                      "message": string(resp.Body)
-                    }
-                  }],
-                  "username": state.username,
-                  "password": state.password,
-                  "initial_interval": state.initial_interval,
-                  "batch": state.batch
-                }
-              )
-            )
-          :
-            ({"events": []})
-        )
+  post_request(
+    state.url + "/login.html",
+    "application/x-www-form-urlencoded",
+    {"username":[state.username],"password":[state.password]}.format_query()
+  ).do_request().as(resp, resp.Request.URL.contains("error") ? "" :
+      resp.Request.Response.Request.Response.Header["Set-Cookie"].filter(e, e.contains("JSESSIONID")).as(sess, sess.size() > 0 ?
+          sess[0].split(";").as(sub, sub.filter(e, e.contains("JSESSIONID")).size() > 0 ?
+              sub[0]
+            :
+              ""
+          )
+        :
+          ""
       )
-    )
+  ).as(cookie, cookie == "" ? {"events": []} :
+      post_request(
+        state.url + "/rest/visualsearch/query/simple",
+        "application/json",
+          {
+            "queryPath": [
+              {
+                "requestedType": "MalopProcess",
+                "timeRange": {
+                  "startFeatureId": "malopLastUpdateTime",
+                  "endFeatureId": "malopLastUpdateTime",
+                  "startTime":
+                    (
+                      state.?cursor.last_timestamp.orValue(null) != null ?
+                        state.cursor.last_timestamp
+                      :
+                      int(now - duration(state.initial_interval)) * 1000
+                    ),
+                  "endTime": int(now) * 1000,
+                },
+                "result": "true",
+              }
+            ],
+            "totalResultLimit": state.batch,
+            "perGroupLimit": 100,
+            "perFeatureLimit": 100,
+            "templateContext": "MALOP",
+          }.encode_json()
+      ).with({
+        "Header": {
+          "Cookie": [cookie],
+          "Content-Type": ["application/json"],
+        },
+      }).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body, {
+          "events": !has(body.?data.resultIdToElementDataMap) ? [{}] :
+          (
+            body.data.resultIdToElementDataMap.size() == 0 ? [{}] :
+            (
+              body.data.resultIdToElementDataMap.map(e, {
+                "message": [
+                  body.data.resultIdToElementDataMap[e].encode_json(),
+                  body.data.suspicionsMap.encode_json(),
+                  body.data.evidenceMap.encode_json(),
+                ],
+              })
+            )
+          ),
+          "cursor": {
+            "last_timestamp": (
+              has(body.?data.resultIdToElementDataMap) && body.data.resultIdToElementDataMap.size() > 0 ?
+                int(body.data.resultIdToElementDataMap.map(e, int(body.data.resultIdToElementDataMap[e].simpleValues.malopLastUpdateTime.values[0])).max())
+              :
+                has(state.?cursor.last_timestamp) ?
+                  state.cursor.last_timestamp
+                :
+                  int(now - duration(state.initial_interval)) * 1000
+            )
+          },
+          "username": state.username,
+          "password": state.password,
+          "initial_interval": state.initial_interval,
+          "batch": state.batch,
+        })
+      :
+        {
+          "events": [{
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": string(resp.Body),
+            }
+          }],
+          "username": state.username,
+          "password": state.password,
+          "initial_interval": state.initial_interval,
+          "batch": state.batch,
+        }
+      )
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

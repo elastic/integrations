@@ -2308,7 +2308,7 @@ An example event for `malware` looks as following:
 | cybereason.malware.reference.element_type |  | keyword |
 | cybereason.malware.reference.guid |  | keyword |
 | cybereason.malware.scheduler_scan |  | boolean |
-| cybereason.malware.score |  | long |
+| cybereason.malware.score |  | double |
 | cybereason.malware.status | The detection status of the malware. This should match the Anti-Malware settings you specified for your Cybereason platform. | keyword |
 | cybereason.malware.timestamp | The time (in epoch) when the Cybereason platform detected this malware. | date |
 | cybereason.malware.type | The type of malware as classified by the Cybereason platform. | keyword |
