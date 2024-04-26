@@ -64,10 +64,12 @@ build_packages() {
 
         local package_zip="${name}-${version}.zip"
 
+        if [[ "${package_zip}" != "elastic_package_registry-0.2.0.zip" ]]; then
         if is_already_published "${package_zip}" ; then
             echo "Skipping. ${package_zip} already published"
             popd > /dev/null
             continue
+        fi
         fi
 
         echo "Build package as zip: ${package}"
@@ -97,6 +99,7 @@ with_yq
 with_go
 use_elastic_package
 
+echo "--- Testing on PR"
 echo "--- Build packages"
 
 if [[ "$BUILDKITE_RETRY_COUNT" != "0" ]]; then
@@ -115,10 +118,10 @@ cd "${WORKSPACE}" || exit 1
 mkdir -p "${ARTIFACTS_FOLDER}"
 cp "${BUILD_PACKAGES_FOLDER}"/*.zip "${ARTIFACTS_FOLDER}"/
 
-if [ "${DRY_RUN}" == "true" ]; then
-    echo "DRY_RUN enabled. Publish packages steps skipped."
-    exit 0
-fi
+# if [ "${DRY_RUN}" == "true" ]; then
+#     echo "DRY_RUN enabled. Publish packages steps skipped."
+#     exit 0
+# fi
 
 # triggering dynamically the steps for signing and publishing
 # allow us to check whether or not this group of steps needs to be run in one script
@@ -148,7 +151,7 @@ steps:
         env:
           SIGNING_STEP_KEY: "sign-service"
           ARTIFACTS_FOLDER: "packageArtifacts"
-          DRY_RUN: "${DRY_RUN}"
+          DRY_RUN: "true"
         agents:
           image: "${LINUX_AGENT_IMAGE}"
           cpu: "8"
