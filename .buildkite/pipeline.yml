@@ -23,48 +23,46 @@ steps:
   - label: ":white_check_mark: Check go sources"
     key: "check"
     command: ".buildkite/scripts/check_sources.sh"
-    env:
-      FOO: "${FOO:-value}"
     agents:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "4G"
 
-  # - label: "Trigger integrations"
-  #   key: "test-integrations"
-  #   command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
-  #   env:
-  #     UPLOAD_SAFE_LOGS: 1
-  #   depends_on:
-  #     - step: "check"
-  #       allow_failure: false
+  - label: "Trigger integrations"
+    key: "test-integrations"
+    command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
+    env:
+      UPLOAD_SAFE_LOGS: 1
+    depends_on:
+      - step: "check"
+        allow_failure: false
 
-  # - wait: ~
-  #   continue_on_failure: true
+  - wait: ~
+    continue_on_failure: true
 
-  # - label: "Publish benchmarks"
-  #   key: publish-benchmarks
-  #   command: ".buildkite/scripts/process_benchmarks.sh"
-  #   env:
-  #     BENCHMARK_THRESHOLD: 15
-  #   agents:
-  #     image: "${LINUX_AGENT_IMAGE}"
-  #     cpu: "8"
-  #     memory: "4G"
+  - label: "Publish benchmarks"
+    key: publish-benchmarks
+    command: ".buildkite/scripts/process_benchmarks.sh"
+    env:
+      BENCHMARK_THRESHOLD: 15
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
 
-  # - label: ":sonarqube: Continuous Code Inspection"
-  #   env:
-  #     VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
-  #   agents:
-  #     image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
-  #   command: ".buildkite/scripts/run_sonar_scanner.sh"
-  #   artifact_paths:
-  #     - build/test-coverage/coverage_merged.xml
+  - label: ":sonarqube: Continuous Code Inspection"
+    env:
+      VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
+    agents:
+      image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
+    command: ".buildkite/scripts/run_sonar_scanner.sh"
+    artifact_paths:
+      - build/test-coverage/coverage_merged.xml
 
-  # - label: ":junit: Junit annotate"
-  #   plugins:
-  #     - junit-annotate#v2.4.1:
-  #         artifacts: "build/test-results/*.xml"
-  #         failed-download-exit-code: 0 # Not fail the build in case there are no XML files
-  #   agents:
-  #     provider: "gcp"  # junit plugin requires docker
+  - label: ":junit: Junit annotate"
+    plugins:
+      - junit-annotate#v2.4.1:
+          artifacts: "build/test-results/*.xml"
+          failed-download-exit-code: 0 # Not fail the build in case there are no XML files
+    agents:
+      provider: "gcp"  # junit plugin requires docker
