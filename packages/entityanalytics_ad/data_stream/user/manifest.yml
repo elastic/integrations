@@ -1,0 +1,85 @@
+title: Collect User Identities logs from Active Directory
+type: logs
+streams:
+  - input: entity-analytics
+    title: User Identities logs
+    description: Collect User Identities logs from Active Directory.
+    template_path: entity-analytics.yml.hbs
+    vars:
+      - name: ad_base_dn
+        type: text
+        title: Active Directory Base DN
+        multi: false
+        required: true
+        show_user: true
+        description: The Base DN for the Active Directory.
+      - name: ad_url
+        type: text
+        title: Active Directory URL
+        multi: false
+        required: true
+        show_user: true
+        description: The URL for the Active Directory server including the appropriate LDAP scheme.
+      - name: ad_user
+        type: text
+        title: Active Directory User
+        multi: false
+        required: true
+        show_user: true
+        description: The Active Directory user name.
+      - name: ad_password
+        type: password
+        title: Active Directory User Password
+        multi: false
+        required: true
+        show_user: true
+        description: The Active Directory user's password, used for authentication.
+        secret: true
+      - name: sync_interval
+        type: text
+        title: Sync Interval
+        description: How often full synchronizations should occur. Must be greater than Update Interval. Expected value is a duration string (15m, 1h, 1m30, etc), defaults to 24h. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: update_interval
+        type: text
+        title: Update Interval
+        description: How often incremental updates should occur. Must be less than Sync Interval. Expected value is a duration string (15m, 1h, 1m30, etc), defaults to 15m. Supported units for this parameter are h/m/s.
+        default: 15m
+        multi: false
+        required: true
+        show_user: true
+      - name: id
+        type: text
+        title: Input ID
+        description: Identity Source. Which will be added to every event as a label.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - entityanalytics_ad-user
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve entityanalytics_ad.user fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
