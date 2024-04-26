@@ -63,11 +63,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-02-07T16:43:53.000Z",
     "agent": {
-        "ephemeral_id": "91cd5dfa-317b-4703-978a-b833a6f2b714",
-        "id": "56df57b5-55fe-47f5-a382-b9a4b1918ce6",
+        "ephemeral_id": "50dde7f7-f3a3-4597-9ce3-fd6c21fbe6df",
+        "id": "a6ce2e4c-5271-405f-acc5-cb378534481d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.12.1"
     },
     "client": {
         "address": "213.97.47.133",
@@ -82,9 +82,9 @@ An example event for `audit` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "56df57b5-55fe-47f5-a382-b9a4b1918ce6",
+        "id": "a6ce2e4c-5271-405f-acc5-cb378534481d",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.12.1"
     },
     "event": {
         "action": "PageViewed",
@@ -95,9 +95,9 @@ An example event for `audit` looks as following:
         "code": "SharePoint",
         "dataset": "o365.audit",
         "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
-        "ingested": "2023-11-06T19:08:33Z",
+        "ingested": "2024-04-01T12:10:04Z",
         "kind": "event",
-        "original": "{Site=d5180cfc-3479-44d6-b410-8c985ac894e3, ObjectId=https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx, ItemType=Page, UserKey=i:0h.f|membership|1003200096971f55@live.com, OrganizationId=b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd, Operation=PageViewed, ClientIP=213.97.47.133, Workload=OneDrive, EventSource=SharePoint, RecordType=4, Version=1, WebId=8c5c94bb-8396-470c-87d7-8999f440cd30, UserId=asr@testsiem.onmicrosoft.com, CreationTime=2020-02-07T16:43:53, UserAgent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0, CustomUniqueId=true, CorrelationId=622b339f-4000-a000-f25f-92b3478c7a25, Id=99d005e6-a4c6-46fd-117c-08d7abeceab5, UserType=0, ListItemUniqueId=59a8433d-9bb8-cfef-6edc-4c0fc8b86875}",
+        "original": "{Site=d5180cfc-3479-44d6-b410-8c985ac894e3, ObjectId=https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx, UserKey=i:0h.f|membership|1003200096971f55@live.com, ItemType=Page, OrganizationId=b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd, Operation=PageViewed, ClientIP=213.97.47.133, Workload=OneDrive, EventSource=SharePoint, RecordType=4, Version=1, UserId=asr@testsiem.onmicrosoft.com, WebId=8c5c94bb-8396-470c-87d7-8999f440cd30, CreationTime=2020-02-07T16:43:53, UserAgent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0, CustomUniqueId=true, Id=99d005e6-a4c6-46fd-117c-08d7abeceab5, CorrelationId=622b339f-4000-a000-f25f-92b3478c7a25, ListItemUniqueId=59a8433d-9bb8-cfef-6edc-4c0fc8b86875, UserType=0}",
         "outcome": "success",
         "provider": "OneDrive",
         "type": [
@@ -171,7 +171,6 @@ An example event for `audit` looks as following:
         "version": "72.0."
     }
 }
-
 ```
 
 **Exported fields**
@@ -246,6 +245,7 @@ An example event for `audit` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| o365.audit.Activity |  | keyword |
 | o365.audit.Actor.ID |  | keyword |
 | o365.audit.Actor.Type |  | keyword |
 | o365.audit.ActorContextId |  | keyword |
@@ -339,6 +339,7 @@ An example event for `audit` looks as following:
 | o365.audit.EventSource |  | keyword |
 | o365.audit.ExceptionInfo.\* |  | object |
 | o365.audit.ExchangeMetaData.\* |  | object |
+| o365.audit.Experience |  | keyword |
 | o365.audit.ExtendedProperties.\* |  | object |
 | o365.audit.ExternalAccess |  | boolean |
 | o365.audit.FileSizeBytes |  | long |
@@ -367,8 +368,12 @@ An example event for `audit` looks as following:
 | o365.audit.ModifiedProperties.\*.\* |  | object |
 | o365.audit.Name |  | keyword |
 | o365.audit.NewValue |  | keyword |
+| o365.audit.ObjectDisplayName |  | keyword |
 | o365.audit.ObjectId |  | keyword |
+| o365.audit.ObjectType |  | keyword |
 | o365.audit.Operation |  | keyword |
+| o365.audit.OperationId |  | keyword |
+| o365.audit.OperationProperties |  | object |
 | o365.audit.OrganizationId |  | keyword |
 | o365.audit.OrganizationName |  | keyword |
 | o365.audit.OriginatingServer |  | keyword |
@@ -377,6 +382,7 @@ An example event for `audit` looks as following:
 | o365.audit.PolicyDetails |  | flattened |
 | o365.audit.PolicyId |  | keyword |
 | o365.audit.RecordType |  | keyword |
+| o365.audit.RequestId |  | keyword |
 | o365.audit.ResultStatus |  | keyword |
 | o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |
 | o365.audit.SessionId |  | keyword |
@@ -397,6 +403,7 @@ An example event for `audit` looks as following:
 | o365.audit.TargetUserOrGroupType |  | keyword |
 | o365.audit.TeamGuid |  | keyword |
 | o365.audit.TeamName |  | keyword |
+| o365.audit.Timestamp |  | keyword |
 | o365.audit.UniqueSharingId |  | keyword |
 | o365.audit.UserAgent |  | keyword |
 | o365.audit.UserId |  | keyword |
@@ -405,6 +412,8 @@ An example event for `audit` looks as following:
 | o365.audit.Version |  | keyword |
 | o365.audit.WebId |  | keyword |
 | o365.audit.Workload |  | keyword |
+| o365.audit.WorkspaceId |  | keyword |
+| o365.audit.WorkspaceName |  | keyword |
 | o365.audit.YammerNetworkId |  | keyword |
 | organization.id | Unique identifier for the organization. | keyword |
 | organization.name | Organization name. | keyword |

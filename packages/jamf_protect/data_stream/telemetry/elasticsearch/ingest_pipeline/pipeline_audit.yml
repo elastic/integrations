@@ -1,0 +1,357 @@
+---
+description: Pipeline for Jamf Protect Telemetry audit logs.
+processors:
+  - set:
+      field: jamf_protect.telemetry.dataset
+      value: audit
+  - convert:
+      field: json._event_score
+      target_field: jamf_protect.telemetry.event_score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.header.event_id
+      target_field: event.code
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.header.event_modifier
+      target_field: jamf_protect.telemetry.header.event_modifier
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.header.event_name
+      target_field: event.action
+      ignore_missing: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.json?.header?.time_seconds_epoch != 0
+      source: |
+        ctx.json.time_milliseconds = (long)ctx.json?.header?.time_seconds_epoch * 1000 + (long)ctx.json?.header?.time_milliseconds_offset;
+  - date:
+      field: json.time_milliseconds
+      if: ctx.json?.time_milliseconds != 0
+      formats:
+        - UNIX_MS
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.header.version
+      target_field: jamf_protect.telemetry.header.version
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.host_info.host_name
+      target_field: host.hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.host_info.host_uuid
+      target_field: jamf_protect.telemetry.host_info.host.uuid
+      ignore_missing: true
+  - rename:
+      field: json.host_info.osversion
+      target_field: host.os.version
+      ignore_missing: true
+  - append:
+      field: host.mac
+      value: '{{{json.host_info.primary_mac_address}}}'
+      if: ctx.json?.host_info?.primary_mac_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - gsub:
+      field: host.mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - rename:
+      field: json.host_info.serial_number
+      target_field: host.id
+      ignore_missing: true
+  - rename:
+      field: json.return.description
+      target_field: jamf_protect.telemetry.return.description
+      ignore_missing: true
+  - convert:
+      field: json.return.error
+      target_field: error.code
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.outcome
+      value: 'success'
+      if: ctx.error?.code == '0'
+  - set:
+      field: event.outcome
+      value: 'failure'
+      if: ctx.error?.code != '0'
+  - convert:
+      field: json.return.return_value
+      target_field: process.exit_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.subject.audit_id
+      target_field: process.real_user.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.subject.audit_user_name
+      target_field: process.real_user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{process.real_user.name}}}'
+      if: ctx.process?.real_user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: user.name
+      value: '{{{json.subject.audit_user_name}}}'
+      if: ctx.json?.subject?.audit_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.subject.effective_group_id
+      target_field: jamf_protect.telemetry.subject.effective.group.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.subject.effective_group_name
+      target_field: jamf_protect.telemetry.subject.effective.group.name
+      ignore_missing: true
+  - convert:
+      field: json.subject.effective_user_id
+      target_field: process.user.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: user.name
+      value: '{{{json.subject.effective_user_name}}}'
+      if: ctx.json?.subject?.effective_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{json.subject.effective_user_name}}}'
+      if: ctx.json?.subject?.effective_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.subject.effective_user_name
+      target_field: process.user.name
+      ignore_missing: true
+  - convert:
+      field: json.subject.group_id
+      target_field: process.real_group.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.subject.group_name
+      target_field: process.real_group.name
+      ignore_missing: true
+  - rename:
+      field: json.subject.process_hash
+      target_field: process.hash.sha1
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{process.hash.sha1}}}'
+      if: ctx.process?.hash?.sha1 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.subject.process_id
+      target_field: jamf_protect.telemetry.subject.process.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.subject.process_name
+      target_field: jamf_protect.telemetry.subject.process.name
+      ignore_missing: true
+  - convert:
+      field: json.subject.session_id
+      target_field: jamf_protect.telemetry.subject.session.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.subject.terminal_id.addr
+      target_field: jamf_protect.telemetry.subject.terminal_id.addr
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.subject.terminal_id.ip_address
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.subject.terminal_id.ip_address
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      value: '{{{json.subject.terminal_id.ip_address}}}'
+      if: ctx.json?.subject?.terminal_id?.ip_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{json.subject.terminal_id.ip_address}}}'
+      if: ctx.json?.subject?.terminal_id?.ip_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.subject.terminal_id.port
+      target_field: jamf_protect.telemetry.subject.terminal_id.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.subject.terminal_id.type
+      target_field: jamf_protect.telemetry.subject.terminal_id.type
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.subject.user_id
+      target_field: user.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: user.name
+      value: '{{{json.subject.user_name}}}'
+      if: ctx.json?.subject?.user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{json.subject.user_name}}}'
+      if: ctx.json?.subject?.user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: authentication
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_accept" }}'
+      if: ctx.event?.action == 'aue_accept'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_auth" }}'
+      if: '["aue_auth_user", "aue_ssauthorize", "aue_ssauthmech"].contains(ctx.event?.action)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_bind_and_aue_connect" }}'
+      if: '["aue_bind", "aue_connect"].contains(ctx.event?.action)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_chdir" }}'
+      if: ctx.event?.action == 'aue_chdir'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_chroot" }}'
+      if: ctx.event?.action == 'aue_chroot'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_execve" }}'
+      if: ctx.event?.action == 'aue_execve'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_exit" }}'
+      if: ctx.event?.action == 'aue_exit'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_kill" }}'
+      if: ctx.event?.action == 'aue_kill'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_mount" }}'
+      if: ctx.event?.action == 'aue_mount'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_posix_spawn" }}'
+      if: ctx.event?.action == 'aue_posix_spawn'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_remove_from_group_and_aue_mac_set_proc" }}'
+      if: '["aue_remove_from_group", "aue_mac_set_proc"].contains(ctx.event?.action)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_session" }}'
+      if: '["aue_session_end", "aue_session_update", "aue_session_close", "aue_session_start"].contains(ctx.event?.action)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_arguments" }}'
+      if: '["aue_setsockopt", "aue_shutdown"].contains(ctx.event?.action)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_ssauthint" }}'
+      if: ctx.event?.action == 'aue_ssauthint'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_tasknameforpid" }}'
+      if: ctx.event?.action == 'aue_tasknameforpid'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_unmount" }}'
+      if: ctx.event?.action == 'aue_unmount'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_fork" }}'
+      if: ctx.event?.action == 'aue_fork'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'
+      if: '["aue_getauid", "aue_lw_login", "aue_settimeofday"].contains(ctx.event?.action)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_listen" }}'
+      if: ctx.event?.action == 'aue_listen'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_logout" }}'
+      if: ctx.event?.action == 'aue_logout'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_pidfortask" }}'
+      if: ctx.event?.action == 'aue_pidfortask'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_setpriority" }}'
+      if: ctx.event?.action == 'aue_setpriority'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_socketpair" }}'
+      if: ctx.event?.action == 'aue_socketpair'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_taskforpid" }}'
+      if: ctx.event?.action == 'aue_taskforpid'
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

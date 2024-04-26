@@ -1,0 +1,11 @@
+---
+description: Pipeline for Jamf Protect Telemetry aue_remove_from_group and aue_mac_set_proc audit logs.
+processors:
+  - rename:
+      field: json.texts
+      target_field: jamf_protect.telemetry.texts
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'

@@ -4115,6 +4115,74 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - script:
+      description: Flatten arrays of arrays.
+      tag: flatten_array
+      lang: painless
+      source: |
+        def flatten(def aa) {
+          if (!(aa instanceof List)) {
+            if (aa instanceof String) {
+              return aa;
+            }
+            return null;
+          }
+          if (aa.length == 1) {
+            // Ensure lexical ordering is consistent between single array optimisation and full set extraction.
+            Collections.sort(aa[0]);
+            return aa[0];
+          }
+          def set = new HashSet();
+          for (def a: aa) {
+            for (def e: a) {
+              set.add(e);
+            }
+          }
+          def list = new ArrayList();
+          for (def e: set) {
+            list.add(e);
+          }
+          Collections.sort(list);
+          return list;
+        }
+
+        if (ctx.prisma_cloud?.host?.all_compliance?.data != null) {
+          for (int i; i < ctx.prisma_cloud.host.all_compliance.data.length; i++) {
+            ctx.prisma_cloud.host.all_compliance.data[i].templates = flatten(ctx.prisma_cloud.host.all_compliance.data[i].templates);
+          }
+        }
+        if (ctx.prisma_cloud?.host?.compliance_issues?.data != null) {
+          for (int i; i < ctx.prisma_cloud.host.compliance_issues.data.length; i++) {
+            ctx.prisma_cloud.host.compliance_issues.data[i].templates = flatten(ctx.prisma_cloud.host.compliance_issues.data[i].templates);
+          }
+        }
+        if (ctx.prisma_cloud?.host?.history != null) {
+          for (int i; i < ctx.prisma_cloud.host.history.length; i++) {
+            if (ctx.prisma_cloud.host.history[i].vulnerabilities == null) {
+              continue;
+            }
+            for (int j; j < ctx.prisma_cloud.host.history[i].vulnerabilities.length; j++) {
+              ctx.prisma_cloud.host.history[i].vulnerabilities[j].templates = flatten(ctx.prisma_cloud.host.history[i].vulnerabilities[j].templates);
+            }
+          }
+        }
+        if (ctx.prisma_cloud?.host?.image?.history != null) {
+          for (int i; i < ctx.prisma_cloud.host.image.history.length; i++) {
+            if (ctx.prisma_cloud.host.image.history[i].vulnerabilities == null) {
+              continue;
+            }
+            for (int j; j < ctx.prisma_cloud.host.image.history[i].vulnerabilities.length; j++) {
+              ctx.prisma_cloud.host.image.history[i].vulnerabilities[j].templates = flatten(ctx.prisma_cloud.host.image.history[i].vulnerabilities[j].templates);
+            }
+          }
+        }
+        if (ctx.prisma_cloud?.host?.vulnerabilities?.data != null) {
+          for (int i; i < ctx.prisma_cloud.host.vulnerabilities.data.length; i++) {
+            ctx.prisma_cloud.host.vulnerabilities.data[i].templates = flatten(ctx.prisma_cloud.host.vulnerabilities.data[i].templates);
+          }
+        }
+
   - remove:
       field:
         - json

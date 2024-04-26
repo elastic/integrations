@@ -1,0 +1,63 @@
+- name: mongodb_atlas.mongod_audit
+  type: group
+  fields:
+    - name: hostname
+      type: keyword
+      description: Hostname that stores the log files that you want to download.
+    - name: local
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: IP address of the running instance.
+        - name: is_system_user
+          type: boolean
+          description: True if the event is caused by a system user, false otherwise.
+        - name: port
+          type: long
+          description: Port number of the running instance.
+        - name: unix
+          type: keyword
+          description: Unix that contains the MongoDB socket file path if the client connects through a Unix domain socket.
+    - name: param
+      type: object
+      object_type: keyword
+      description: Specific details for the event.
+    - name: remote
+      type: group
+      fields:
+        - name: is_system_user
+          type: boolean
+          description: True if the event is caused by a system user, false otherwise.
+        - name: ip
+          type: ip
+          description: IP address of the incoming connection associated with the event.
+        - name: port
+          type: long
+          description: Port number of the incoming connection associated with the event.
+        - name: unix
+          type: keyword
+          description: Unix that contains the MongoDB socket file path if the client connects through a Unix domain socket.
+    - name: result
+      type: keyword
+      description: Error code.
+    - name: user
+      type: group
+      fields:
+        - name: names
+          type: object
+          object_type: keyword
+          description: Array of user identification documents.
+        - name: roles
+          type: object
+          object_type: keyword
+          description: Array of documents that specify the roles granted to the user.
+    - name: uuid
+      type: group
+      fields:
+        - name: binary
+          type: keyword
+          description: Document that contains a universally unique identifier (UUID) for the audit message.
+        - name: type
+          type: keyword
+          description: The $type field specifies the BSON subtype for the $binary field.
