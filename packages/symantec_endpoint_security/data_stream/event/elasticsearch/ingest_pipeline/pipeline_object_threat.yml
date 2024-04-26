@@ -1,0 +1,284 @@
+---
+description: Pipeline for processing threat object.
+processors:
+  - foreach:
+      field: ses.threat.classification_ids
+      if: ctx.ses?.threat?.classification_ids instanceof List
+      tag: foreach_
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_threat_classification_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: vulnerability.id
+      tag: append_vulnerability_id_from_threat_cve_uid
+      value: '{{{ses.threat.cve_uid}}}'
+      allow_duplicates: false
+      if: ctx.ses?.threat?.cve_uid != null
+  - convert:
+      field: ses.threat.id
+      tag: convert_threat_id_to_long
+      type: long
+      if: ctx.ses?.threat?.id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.threat.id
+            ignore_missing: true
+  - append:
+      field: threat.indicator.name
+      tag: append_threat_indicator_name_from_threat_name
+      value: '{{{ses.threat.name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.threat?.name != null
+  - append:
+      field: threat.indicator.provider
+      tag: append_threat_indicator_provider_from_threat_provider
+      value: '{{{ses.threat.provider}}}'
+      allow_duplicates: false
+      if: ctx.ses?.threat?.provider != null
+  - convert:
+      field: ses.threat.risk_id
+      tag: convert_threat_risk_id_to_string
+      type: string
+      if: ctx.ses?.threat?.risk_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.threat.risk_id
+            ignore_missing: true
+  - script:
+      description: Add value for threat risk based on threat risk id.
+      tag: script_to_add_threat_risk_value
+      if: ctx.ses?.threat?.risk_id != null
+      params:
+        '0': Unknown
+        '100': Bad
+        '200': Somewhat Bad
+        '300': Neutral
+        '400': Somewhat Good
+        '500': Untrusted
+      lang: painless
+      source: >-
+        def obj = ctx.ses.threat.risk_id;
+        
+        if (params.containsKey(obj.toString())) {
+          def type = params.get(obj.toString());
+          ctx.ses.threat.risk_value = type
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.threat.sub_id
+      tag: convert_threat_sub_id_to_string
+      type: string
+      if: ctx.ses?.threat?.sub_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.threat.sub_id
+            ignore_missing: true
+  - convert:
+      field: ses.threat.type_id
+      tag: convert_threat_type_id_to_string
+      type: string
+      if: ctx.ses?.threat?.type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.threat.type_id
+            ignore_missing: true
+  - script:
+      description: Add value for threat type based on threat type id.
+      tag: script_to_add_threat_type_value
+      if: ctx.ses?.threat?.type_id != null
+      params:
+        '1': Malware
+        '2': Behavioral
+        '3': Potentially Unwanted Applications
+        '4': Exploit (PEP)
+        '5': Heuristic
+        '6': Security Risk
+      lang: painless
+      source: >-
+        def obj = ctx.ses.threat.type_id;
+        
+        if (params.containsKey(obj.toString())) {
+          def type = params.get(obj.toString());
+          ctx.ses.threat.type_value = type
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.threats
+      if: ctx.ses?.threats instanceof List
+      tag: foreach_threats_classification_ids
+      processor:
+        foreach:
+          field: _ingest._value.classification_ids
+          tag: foreach_convert_threats_classification_ids
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_threats_classification_ids_to_string
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.threats
+      if: ctx.ses?.threats instanceof List
+      tag: foreach_threats_cve_uid
+      processor:
+        append:
+          field: vulnerability.id
+          tag: append_threats_cve_uid_into_vulnerability_id
+          value: '{{{_ingest._value.cve_uid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.threats
+      if: ctx.ses?.threats instanceof List
+      tag: foreach_threats_id
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_threats_id_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.threats
+      if: ctx.ses?.threats instanceof List
+      tag: foreach_threats_name
+      processor:
+        append:
+          field: threat.indicator.name
+          tag: append_threats_name_into_threat_indicator_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.threats
+      if: ctx.ses?.threats instanceof List
+      tag: foreach_threats_provider
+      processor:
+        append:
+          field: threat.indicator.provider
+          tag: append_threats_provider_into_threat_indicator_provider
+          value: '{{{_ingest._value.provider}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.threats
+      if: ctx.ses?.threats instanceof List
+      tag: foreach_threats_risk_id
+      processor:
+        convert:
+          field: _ingest._value.risk_id
+          tag: convert_threats_risk_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.risk_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.threats
+      if: ctx.ses?.threats instanceof List
+      tag: foreach_threats_sub_id
+      processor:
+        convert:
+          field: _ingest._value.sub_id
+          tag: convert_threats_sub_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.sub_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.threats
+      if: ctx.ses?.threats instanceof List
+      tag: foreach_threats_type_id
+      processor:
+        convert:
+          field: _ingest._value.type_id
+          tag: convert_threats_type_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.type_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.threats
+      if: ctx.ses?.threats instanceof List
+      tag: foreach_remove_custom_duplicate_fields_from_ses_threats
+      processor:
+        remove:
+          field:
+            - _ingest._value.name
+            - _ingest._value.provider
+            - _ingest._value.cve_uid
+          tag: remove_custom_duplicate_fields_from_ses_threats
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - ses.threat.cve_uid
+        - ses.threat.name
+        - ses.threat.provider
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
