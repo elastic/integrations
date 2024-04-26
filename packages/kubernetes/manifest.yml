@@ -1,7 +1,7 @@
 format_version: 3.1.2
 name: kubernetes
 title: Kubernetes
-version: 1.60.0
+version: 1.61.0
 description: Collect logs and metrics from Kubernetes clusters with Elastic Agent.
 type: integration
 categories:
@@ -22,19 +22,38 @@ icons:
     size: 32x32
     type: image/svg+xml
 policy_templates:
-  - name: kubelet
-    title: Kubelet Metrics
-    description: Collect metrics from Kubernetes Kubelet API with Elastic Agent.
+  - name: container-logs
+    title: Container Logs
+    description: Collect container related logs and audit logs from Kubernetes clusters with Elastic Agent.
     data_streams:
+      - audit_logs
+      - container_logs
+    inputs:
+      - type: filestream
+        title: Container logs
+        description: Collecting Kubernetes container and audit logs
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat_kubernetes_overview.png
+        title: Metricbeat Kubernetes Overview
+        size: 1896x961
+        type: image/png
+  - name: container
+    title: Container Metrics
+    description: Collect metrics for containers with Elastic Agent. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics.
+    data_streams:
+      - container_logs
+      - audit_logs
       - container
-      - node
-      - pod
-      - system
-      - volume
+      - state_container
     inputs:
       - type: kubernetes/metrics
-        title: Collect Kubernetes metrics from Kubelet API
-        description: Collecting Node, Pod, Container, Volume and System metrics from Kubelet
+        title: Container Metrics
+        description: Collecting Container metrics from Kubelet and kube-state-metrics
         input_group: metrics
         vars:
           - name: condition
@@ -56,29 +75,119 @@ policy_templates:
         title: Metricbeat Kubernetes Overview
         size: 1896x961
         type: image/png
-  - name: kube-state-metrics
-    title: Kube-state-metrics
-    description: Collect container metrics from Kubernetes Kube-state-metrics with Elastic Agent.
+  - name: pod
+    title: Pod Metrics
+    description: Collect pod related metrics with Elastic Agent. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics.
     data_streams:
-      - state_container
+      - pod
+      - state_pod
       - state_cronjob
+      - state_job
       - state_daemonset
       - state_deployment
-      - state_job
-      - state_namespace
+      - state_replicaset
+      - state_statefulset
+    inputs:
+      - type: kubernetes/metrics
+        title: Pod Metrics
+        description: Collecting Pod metrics from Kubelet and kube-state-metrics
+        input_group: metrics
+        vars:
+          - name: condition
+            title: Condition
+            description: |
+              Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+              Note: This condition value will be appended to the individual metric condition values by an "and" clause if defined.
+            type: text
+            multi: false
+            required: false
+            show_user: false
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat_kubernetes_overview.png
+        title: Metricbeat Kubernetes Overview
+        size: 1896x961
+        type: image/png
+  - name: node
+    title: Node Metrics
+    description: Collect metrics for node with Elastic Agent. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics.
+    data_streams:
+      - node
       - state_node
+    inputs:
+      - type: kubernetes/metrics
+        title: Node Metrics
+        description: Collecting Node metrics from Kubelet and kube-state-metrics
+        input_group: metrics
+        vars:
+          - name: condition
+            title: Condition
+            description: |
+              Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+              Note: This condition value will be appended to the individual metric condition values by an "and" clause if defined.
+            type: text
+            multi: false
+            required: false
+            show_user: false
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat_kubernetes_overview.png
+        title: Metricbeat Kubernetes Overview
+        size: 1896x961
+        type: image/png
+  - name: volume
+    title: Volume Metrics
+    description: Collect metrics for node with Elastic Agent. It includes metrics from Kubernetes Kubelet API and from Kube-state-metrics.
+    data_streams:
+      - volume
       - state_persistentvolume
       - state_persistentvolumeclaim
-      - state_pod
-      - state_replicaset
-      - state_resourcequota
-      - state_service
-      - state_statefulset
       - state_storageclass
     inputs:
       - type: kubernetes/metrics
-        title: Collect Kubernetes metrics from kube-state-metrics
-        description: Collecting metrics from kube-state-metrics (container, cronjob, deployment, daemonset, namespace, node, persistentvolume, persistentvolumeclaim, pod, replicaset, resourcequota, service, statefulset, storageclass)
+        title: Volume Metrics
+        description: Collecting Volume metrics from Kubelet and kube-state-metrics
+        input_group: metrics
+        vars:
+          - name: condition
+            title: Condition
+            description: |
+              Condition to filter when to collect this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+              Note: This condition value will be appended to the individual metric condition values by an "and" clause if defined.
+            type: text
+            multi: false
+            required: false
+            show_user: false
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat_kubernetes_overview.png
+        title: Metricbeat Kubernetes Overview
+        size: 1896x961
+        type: image/png
+  - name: cluster-metrics
+    title: Cluster Resource  metrics
+    description: Collect other general Cluster metrics with Elastic Agent. It includes metrics from Kube-state-metrics and also system metrics from Kubelet.
+    data_streams:
+      - system
+      - state_namespace
+      - state_resourcequota
+      - state_service
+    inputs:
+      - type: kubernetes/metrics
+        title: Cluster Resource Metrics
+        description: Collecting metrics from kube-state-metrics (namespace, resourcequota, service) and Kubelet (system)
         input_group: metrics
         vars:
           - name: condition
@@ -105,7 +214,7 @@ policy_templates:
       - apiserver
     inputs:
       - type: kubernetes/metrics
-        title: Collect Kubernetes metrics from Kubernetes API Server
+        title: Kubernetes API Server Metrics
         description: Collecting metrics from Kubernetes API Server
         input_group: metrics
     icons:
@@ -125,7 +234,7 @@ policy_templates:
       - proxy
     inputs:
       - type: kubernetes/metrics
-        title: Collect Kubernetes metrics from Kubernetes Proxy
+        title: Kubernetes Proxy Metrics
         description: Collecting metrics from Kubernetes Proxy
         input_group: metrics
     icons:
@@ -138,14 +247,34 @@ policy_templates:
         title: Metricbeat Kubernetes Proxy
         size: 1854x920
         type: image/png
+  - name: events
+    title: Kubernetes Event Metrics
+    description: Collect events related metrics from Kubernetes API server with Elastic Agent.
+    data_streams:
+      - event
+    inputs:
+      - type: kubernetes/metrics
+        title: Kubernetes Event Metrics
+        description: Collecting events from Kubernetes API Server
+        input_group: metrics
+    icons:
+      - src: /img/logo_kubernetes.svg
+        title: Logo Kubernetes
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat_kubernetes_overview.png
+        title: Metricbeat Kubernetes Overview
+        size: 1896x961
+        type: image/png
   - name: kube-scheduler
     title: Kube-scheduler Metrics
-    description: Collect metrics from Kubernetes Scheduler with Elastic Agent.
+    description: Kubernetes Scheduler Metrics
     data_streams:
       - scheduler
     inputs:
       - type: kubernetes/metrics
-        title: Collect Kubernetes metrics from Kubernetes Scheduler
+        title: Kubernetes Scheduler Metrics
         description: Collecting metrics from Kubernetes Scheduler
         input_group: metrics
     icons:
@@ -165,7 +294,7 @@ policy_templates:
       - controllermanager
     inputs:
       - type: kubernetes/metrics
-        title: Collect Kubernetes metrics from Kubernetes controller-manager
+        title: Kube-controller-manager Metrics
         description: Collecting metrics from Kubernetes controller-manager
         input_group: metrics
     icons:
@@ -176,64 +305,6 @@ policy_templates:
     screenshots:
       - src: /img/metricbeat-kubernetes-controllermanager.png
         title: Metricbeat Kubernetes Controller Manager
-        size: 1896x961
-        type: image/png
-  - name: events
-    title: Kubernetes Event Metrics
-    description: Collect events related metrics from Kubernetes API server with Elastic Agent.
-    data_streams:
-      - event
-    inputs:
-      - type: kubernetes/metrics
-        title: Collect Kubernetes events from Kubernetes API Server
-        description: Collecting events from Kubernetes API Server
-        input_group: metrics
-    icons:
-      - src: /img/logo_kubernetes.svg
-        title: Logo Kubernetes
-        size: 32x32
-        type: image/svg+xml
-    screenshots:
-      - src: /img/metricbeat_kubernetes_overview.png
-        title: Metricbeat Kubernetes Overview
-        size: 1896x961
-        type: image/png
-  - name: container-logs
-    title: Kubernetes Container Logs
-    description: Collect container related logs from Kubernetes clusters with Elastic Agent.
-    data_streams:
-      - container_logs
-    inputs:
-      - type: filestream
-        title: Collect Kubernetes container logs
-        description: Collect Kubernetes container logs
-    icons:
-      - src: /img/logo_kubernetes.svg
-        title: Logo Kubernetes
-        size: 32x32
-        type: image/svg+xml
-    screenshots:
-      - src: /img/metricbeat_kubernetes_overview.png
-        title: Metricbeat Kubernetes Overview
-        size: 1896x961
-        type: image/png
-  - name: audit-logs
-    title: Kubernetes Audit Logs
-    description: Collect audit logs from Kubernetes nodes with Elastic Agent.
-    data_streams:
-      - audit_logs
-    inputs:
-      - type: filestream
-        title: Collect Kubernetes audit logs
-        description: Collect Kubernetes audit logs
-    icons:
-      - src: /img/logo_kubernetes.svg
-        title: Logo Kubernetes
-        size: 32x32
-        type: image/svg+xml
-    screenshots:
-      - src: /img/metricbeat_kubernetes_overview.png
-        title: Metricbeat Kubernetes Overview
         size: 1896x961
         type: image/png
 owner:
