@@ -29,66 +29,41 @@ steps:
       cpu: "8"
       memory: "4G"
 
-  # - label: ":package: Build packages"
-  #   key: "build-packages"
-  #   command: ".buildkite/scripts/build_packages.sh"
-  #   agents:
-  #     image: "${LINUX_AGENT_IMAGE}"
-  #     cpu: "8"
-  #     memory: "8G"
-  #   env:
-  #     ARTIFACTS_FOLDER: "artifacts-to-sign"
-  #     DRY_RUN: "false"
-  #   depends_on:
-  #     - step: "check"
-  #       allow_failure: false
-  #   artifact_paths:
-  #     - artifacts-to-sign/*.zip
-  - label: ":package: test pipeline"
-    key: test-build-package
-    trigger: "integrations-publish"
-    build:
-      env:
-        DRY_RUN: "true"
-        BUILDKITE_REFSPEC: "refs/pull/${BUILDKITE_PULL_REQUEST}/merge"
-        BUILDKITE_COMMIT: "${BUILDKITE_COMMIT}"
+  - label: "Trigger integrations"
+    key: "test-integrations"
+    command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
+    env:
+      UPLOAD_SAFE_LOGS: 1
+    depends_on:
+      - step: "check"
+        allow_failure: false
 
+  - wait: ~
+    continue_on_failure: true
 
-  # - label: "Trigger integrations"
-  #   key: "test-integrations"
-  #   command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
-  #   env:
-  #     UPLOAD_SAFE_LOGS: 1
-  #   depends_on:
-  #     - step: "check"
-  #       allow_failure: false
-  # 
-  #   - wait: ~
-  #     continue_on_failure: true
-  # 
-  #   - label: "Publish benchmarks"
-  #     key: publish-benchmarks
-  #     command: ".buildkite/scripts/process_benchmarks.sh"
-  #     env:
-  #       BENCHMARK_THRESHOLD: 15
-  #     agents:
-  #       image: "${LINUX_AGENT_IMAGE}"
-  #       cpu: "8"
-  #       memory: "4G"
-  # 
-  #   - label: ":sonarqube: Continuous Code Inspection"
-  #     env:
-  #       VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
-  #     agents:
-  #       image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
-  #     command: ".buildkite/scripts/run_sonar_scanner.sh"
-  #     artifact_paths:
-  #       - build/test-coverage/coverage_merged.xml
-  # 
-  #   - label: ":junit: Junit annotate"
-  #     plugins:
-  #       - junit-annotate#v2.4.1:
-  #           artifacts: "build/test-results/*.xml"
-  #           failed-download-exit-code: 0 # Not fail the build in case there are no XML files
-  #     agents:
-  #       provider: "gcp"  # junit plugin requires docker
+  - label: "Publish benchmarks"
+    key: publish-benchmarks
+    command: ".buildkite/scripts/process_benchmarks.sh"
+    env:
+      BENCHMARK_THRESHOLD: 15
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
+
+  - label: ":sonarqube: Continuous Code Inspection"
+    env:
+      VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
+    agents:
+      image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
+    command: ".buildkite/scripts/run_sonar_scanner.sh"
+    artifact_paths:
+      - build/test-coverage/coverage_merged.xml
+
+  - label: ":junit: Junit annotate"
+    plugins:
+      - junit-annotate#v2.4.1:
+          artifacts: "build/test-results/*.xml"
+          failed-download-exit-code: 0 # Not fail the build in case there are no XML files
+    agents:
+      provider: "gcp"  # junit plugin requires docker
