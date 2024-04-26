@@ -197,6 +197,11 @@ processors:
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+  - remove:
+      field: apache.access.identity
+      if: ctx.apache.access.identity == "-"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
