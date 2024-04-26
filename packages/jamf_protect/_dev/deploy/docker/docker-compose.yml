@@ -1,0 +1,34 @@
+version: "2.3"
+services:
+  jamf-protect-alerts-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9551/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/alerts.log
+  jamf-protect-telemetry-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9550/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/telemetry.log
+  jamf-protect-webthreats-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9552/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/webthreats.log
+  jamf-protect-webtraffic-http-endpoint:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9553/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/webtraffic.log
