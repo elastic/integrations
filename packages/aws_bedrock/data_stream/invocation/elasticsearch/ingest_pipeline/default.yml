@@ -80,6 +80,15 @@ processors:
       target_field: llm.request.content
       type: string
       ignore_missing: true
+  - fingerprint:
+      fields: [llm.request.content]
+      target_field: aws_bedrock.invocation.input.inputBodyJson_massive_hash
+      if: ctx.llm?.request?.content instanceof String && ctx.llm.request.content.length() > 32766
+  - remove:
+      field:
+        - aws_bedrock.invocation.input.inputBodyJson
+        - llm.request.content
+      if: ctx.aws_bedrock?.invocation?.input?.inputBodyJson_massive_hash != null
   - convert:
       field: aws_bedrock.invocation.output.outputBodyJson
       target_field: llm.response.content
@@ -104,7 +113,7 @@ processors:
         drop(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:

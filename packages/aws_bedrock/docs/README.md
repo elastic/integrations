@@ -44,6 +44,7 @@ list log events from the specified log group.
 | aws_bedrock.invocation.imageVariationParams.text |  | keyword |
 | aws_bedrock.invocation.images |  | keyword |
 | aws_bedrock.invocation.input.inputBodyJson |  | flattened |
+| aws_bedrock.invocation.input.inputBodyJson_massive_hash |  | keyword |
 | aws_bedrock.invocation.input.inputBodyS3Path |  | keyword |
 | aws_bedrock.invocation.input.inputContentType |  | keyword |
 | aws_bedrock.invocation.input.inputTokenCount | TODO | long |
