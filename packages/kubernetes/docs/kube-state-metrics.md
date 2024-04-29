@@ -198,9 +198,10 @@ An example event for `state_container` looks as following:
 | kubernetes.container.memory.limit.bytes | Container memory limit in bytes | long | byte | gauge |
 | kubernetes.container.memory.request.bytes | Container requested memory in bytes | long | byte | gauge |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.container.status.last_terminated_reason | The last reason the container was in terminated state (Completed, ContainerCannotRun, Error or OOMKilled). | keyword |  |  |
 | kubernetes.container.status.phase | Container phase (running, waiting, terminated) | keyword |  |  |
 | kubernetes.container.status.ready | Container ready status | boolean |  |  |
-| kubernetes.container.status.reason | Waiting (ContainerCreating, CrashLoopBackoff, ErrImagePull, ImagePullBackoff) or termination (Completed, ContainerCannotRun, Error, OOMKilled) reason. | keyword |  |  |
+| kubernetes.container.status.reason | The reason the container is currently in waiting (ContainerCreating, CrashLoopBackoff, ErrImagePull, ImagePullBackoff) or terminated (Completed, ContainerCannotRun, Error, OOMKilled) state. | keyword |  |  |
 | kubernetes.container.status.restarts | Container restarts count | integer |  | counter |
 | kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |  |
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
