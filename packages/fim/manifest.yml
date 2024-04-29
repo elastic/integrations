@@ -1,7 +1,7 @@
 format_version: "3.0.0"
 name: fim
 title: "File Integrity Monitoring"
-version: "1.14.1"
+version: "1.15.1"
 description: "The File Integrity Monitoring integration reports filesystem changes in real time."
 type: integration
 categories:
@@ -72,6 +72,24 @@ vars:
     required: false
     default:
       - sha1
+  - name: backend
+    type: select
+    title: File Event Source
+    description: |
+      Forces a particular event source for file events on Linux. `fsnotify` does not provide
+      user information.
+    options:
+      - text: auto
+        value: auto
+      - text: ebpf
+        value: ebpf
+      - text: fsnotify
+        value: fsnotify
+      - text: kprobes
+        value: kprobes
+    show_user: true
+    required: false
+    default: auto
   - name: max_file_size
     type: text
     title: File size limit
@@ -135,6 +153,9 @@ vars:
       Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
       This executes in the agent before the logs are parsed.
       See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+agent:
+  privileges:
+    root: true
 owner:
   github: elastic/sec-linux-platform
   type: elastic

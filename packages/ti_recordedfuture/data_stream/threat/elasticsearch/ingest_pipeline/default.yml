@@ -192,6 +192,10 @@ processors:
         - set:
             field: threat.indicator.url.original
             copy_from: json.Name
+  - set:
+      field: threat.indicator.url.full
+      copy_from: json.Name
+      if: 'ctx.threat?.indicator?.type == "url"'
 
 #
 # Domain indicators (threat.indicator.type=domain)
@@ -233,6 +237,10 @@ processors:
   - rename:
       field: json
       target_field: recordedfuture
+  - rename:
+      target_field: recordedfuture.list
+      field: _conf.list
+      if: ctx._conf?.list != null
 
 #
 # Cleanup
@@ -249,6 +257,7 @@ processors:
         - recordedfuture.Name
         - recordedfuture.Risk
         - _temp_
+        - _conf
       ignore_missing: true
 on_failure:
   - set:

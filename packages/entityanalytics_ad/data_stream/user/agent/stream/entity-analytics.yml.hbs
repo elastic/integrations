@@ -1,0 +1,22 @@
+provider: activedirectory
+sync_interval: {{sync_interval}}
+update_interval: {{update_interval}}
+ad_base_dn: {{ad_base_dn}}
+ad_url: {{ad_url}}
+ad_user: {{ad_user}}
+ad_password: {{ad_password}}
+tags:
+  - users-entities
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
