@@ -1027,6 +1027,7 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.properties.target_resources.\*.modified_properties.\*.old_value | Old value | keyword |
 | azure.auditlogs.properties.target_resources.\*.type | Type | keyword |
 | azure.auditlogs.properties.target_resources.\*.user_principal_name | User principal name | keyword |
+| azure.auditlogs.result_description | Result description | keyword |
 | azure.auditlogs.result_signature | Result signature | keyword |
 | azure.auditlogs.tenant_id | Tenant ID | keyword |
 | azure.correlation_id | Correlation ID | keyword |
