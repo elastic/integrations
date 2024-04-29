@@ -38,13 +38,17 @@ processors:
     ignore_missing: true
 - date:
     field: gitlab_ce.production.time
-    target_field: event.end
+    target_field: "@timestamp"
     formats:
     - yyyy-MM-dd'T'HH:mm:ss.SSSX
-    ignore_failure: true
+    if: ctx.gitlab_ce.production.time != null
 - rename:
     field: gitlab_ce.production.pid
     target_field: process.pid
+    ignore_missing: true
+- rename:
+    field: gitlab_ce.production.worker_id
+    target_field: process.name
     ignore_missing: true
 - rename:
     field: gitlab_ce.production.correlation_id
@@ -54,6 +58,12 @@ processors:
     field: gitlab_ce.production.duration_s
     target_field: event.duration
     ignore_missing: true
+- script:
+    description: Convert event.duration from seconds to nanoseconds.
+    if: ctx.event?.duration != null
+    lang: painless
+    source:
+      ctx.event['duration'] = ctx.event.duration * 1e9;
 - rename:
     field: gitlab_ce.production.meta.remote_ip
     target_field: source.ip
@@ -61,6 +71,10 @@ processors:
 - rename:
     field: gitlab_ce.production.user_id
     target_field: source.user.id
+    ignore_missing: true
+- convert:
+    field: source.user.id
+    type: string
     ignore_missing: true
 - rename:
     field: gitlab_ce.production.username
@@ -70,6 +84,22 @@ processors:
     field: gitlab_ce.production.ua
     target_field: user_agent.original
     ignore_missing: true
+- script:
+    lang: painless
+    description: Move the object `params.value` to subfield `params.value.json` to avoid conflicts with the string `params.value`.
+    source: |
+        List paramList = new ArrayList();
+        for (param in ctx.gitlab_ce.production.params) {
+            if (param.value instanceof String) {
+                paramList.add(param);
+            } else {
+                Map objParam = new HashMap();
+                objParam.put("key",param.key);
+                objParam.put("value_json",param.value);
+                paramList.add(objParam);
+            }
+        }
+        ctx.gitlab_ce.production.params = paramList;
 - geoip:
     field: source.ip
     tag: geoip_source_ip
@@ -118,16 +148,6 @@ processors:
     tag: rename_destination_as_organization_name
     target_field: destination.as.organization.name
     ignore_missing: true
-- script:
-    description: Drops null/empty values recursively.
-    tag: script_drop_null_empty_values
-    lang: painless
-    source: "boolean dropEmptyFields(Object object) {\n  if (object == null || object\
-      \ == \"\") {\n    return true;\n  } else if (object instanceof Map) {\n    ((Map)\
-      \ object).values().removeIf(value -> dropEmptyFields(value));\n    return (((Map)\
-      \ object).size() == 0);\n  } else if (object instanceof List) {\n    ((List)\
-      \ object).removeIf(value -> dropEmptyFields(value));\n    return (((List) object).length\
-      \ == 0);\n  }\n  return false;\n}\ndropEmptyFields(ctx);\n"
 - append:
     field: event.type
     value:
@@ -136,25 +156,19 @@ processors:
 - append:
     field: event.category
     value:
-    - web
+    - database
     allow_duplicates: false
     if: ctx.url?.path == '/-/metrics'
 - append:
-    field: event.type
-    value:
-    - access
-    allow_duplicates: false
-    if: ctx.http?.response?.status_code == 200
-- append:
     field: event.category
     value:
-    - web
+    - database
     allow_duplicates: false
     if: ctx.url?.path == '/dashboard/activity'
 - append:
     field: event.category
     value:
-    - web
+    - database
     allow_duplicates: false
     if: ctx.url?.path == '/api/graphql'
 - append:
@@ -170,12 +184,6 @@ processors:
     allow_duplicates: false
     if: ctx.url?.path == '/users/sign_in'
 - append:
-    field: event.type
-    value:
-    - start
-    allow_duplicates: false
-    if: ctx.url?.path == '/users/sign_in'
-- append:
     field: event.category
     value:
     - web
@@ -184,7 +192,7 @@ processors:
 - append:
     field: event.category
     value:
-    - web
+    - database
     allow_duplicates: false
     if: ctx.url?.path == '/dashboard/groups'
 - remove:
@@ -193,6 +201,16 @@ processors:
     if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
     ignore_failure: true
     ignore_missing: true
+- script:
+    description: Drops null/empty values recursively.
+    tag: script_drop_null_empty_values
+    lang: painless
+    source: "boolean dropEmptyFields(Object object) {\n  if (object == null || object\
+      \ == \"\") {\n    return true;\n  } else if (object instanceof Map) {\n    ((Map)\
+      \ object).values().removeIf(value -> dropEmptyFields(value));\n    return (((Map)\
+      \ object).size() == 0);\n  } else if (object instanceof List) {\n    ((List)\
+      \ object).removeIf(value -> dropEmptyFields(value));\n    return (((List) object).length\
+      \ == 0);\n  }\n  return false;\n}\ndropEmptyFields(ctx);\n"
 on_failure:
 - append:
     field: error.message
