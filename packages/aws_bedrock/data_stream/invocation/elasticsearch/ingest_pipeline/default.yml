@@ -20,7 +20,7 @@ processors:
       ignore_missing: true
   - json:
       field: event.original
-      target_field: aws.bedrock
+      target_field: aws_bedrock.invocation
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -28,28 +28,28 @@ processors:
       field: cloud.service.name
       value: bedrock
   - date:
-      field: aws.bedrock.timestamp
+      field: aws_bedrock.invocation.timestamp
       target_field: "@timestamp"
       ignore_failure: true
       formats:
         - ISO8601
   - remove:
-      field: aws.bedrock.timestamp
+      field: aws_bedrock.invocation.timestamp
       ignore_missing: true
   - rename:
-      field: aws.bedrock.operation
+      field: aws_bedrock.invocation.operation
       target_field: event.action
       ignore_missing: true
   - rename:
-      field: aws.bedrock.identity.arn
+      field: aws_bedrock.invocation.identity.arn
       target_field: user.id
       ignore_missing: true
   - rename:
-      field: aws.bedrock.accountId
+      field: aws_bedrock.invocation.accountId
       target_field: cloud.account.id
       ignore_missing: true
   - rename:
-      field: aws.bedrock.region
+      field: aws_bedrock.invocation.region
       target_field: cloud.region
       ignore_missing: true
 
@@ -57,31 +57,31 @@ processors:
 # Proposed LLM fields
 ######
   - set:
-      if: ctx.aws?.bedrock?.input?.inputTokenCount != null
+      if: ctx.aws_bedrock?.invocation?.input?.inputTokenCount != null
       field: llm.request.token_count
-      copy_from: aws.bedrock.input.inputTokenCount
+      copy_from: aws_bedrock.invocation.input.inputTokenCount
       ignore_failure: true
   - set:
-      if: ctx.aws?.bedrock?.output?.outputTokenCount != null
+      if: ctx.aws_bedrock?.invocation?.output?.outputTokenCount != null
       field: llm.response.token_count
-      copy_from: aws.bedrock.output.outputTokenCount
+      copy_from: aws_bedrock.invocation.output.outputTokenCount
       ignore_failure: true
   - set:
-      if: ctx.aws?.bedrock?.modelId != null
+      if: ctx.aws_bedrock?.invocation?.modelId != null
       field: llm.model.id
-      copy_from: aws.bedrock.modelId
+      copy_from: aws_bedrock.invocation.modelId
       ignore_failure: true
   - set:
-      if: ctx.aws?.bedrock?.requestId != null
+      if: ctx.aws_bedrock?.invocation?.requestId != null
       field: llm.request.id
-      copy_from: aws.bedrock.requestId
+      copy_from: aws_bedrock.invocation.requestId
   - convert:
-      field: aws.bedrock.input.inputBodyJson
+      field: aws_bedrock.invocation.input.inputBodyJson
       target_field: llm.request.content
       type: string
       ignore_missing: true
   - convert:
-      field: aws.bedrock.output.outputBodyJson
+      field: aws_bedrock.invocation.output.outputBodyJson
       target_field: llm.response.content
       type: string
       ignore_missing: true
