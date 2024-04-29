@@ -1,5 +1,4 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
-
 env:
   SETUP_GVM_VERSION: "v0.5.2"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
@@ -28,22 +27,6 @@ steps:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "4G"
-
-  - label: ":package: Build packages"
-    key: "build-packages"
-    command: ".buildkite/scripts/build_packages.sh"
-    agents:
-      image: "${LINUX_AGENT_IMAGE}"
-      cpu: "8"
-      memory: "8G"
-    env:
-      ARTIFACTS_FOLDER: "artifacts-to-sign"
-      DRY_RUN: "false"
-    depends_on:
-      - step: "check"
-        allow_failure: false
-    artifact_paths:
-      - artifacts-to-sign/*.zip
 
   - label: "Trigger integrations"
     key: "test-integrations"
