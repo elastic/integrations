@@ -109,8 +109,8 @@ processors:
         - '^%{USERNAME:source.user.name}@%{PATRUNKATEDHOSTNAME:source.user.domain}$'
         - '^%{USERNAME:source.user.name}$'
       pattern_definitions:
-        USERNAME: '[ a-zA-Z0-9.:_-]+[$]?'
-        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b))'
+        USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
+        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
       if: ctx._temp_?.srcuser != null
 
   - grok:
@@ -122,8 +122,8 @@ processors:
         - '^%{USERNAME:destination.user.name}@%{PATRUNKATEDHOSTNAME:destination.user.domain}$'
         - '^%{USERNAME:destination.user.name}$'
       pattern_definitions:
-        USERNAME: '[ a-zA-Z0-9.:_-]+[$]?'
-        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*(\.?|\b))'
+        USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
+        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
       if: ctx._temp_?.dstuser != null
 
   - set:
@@ -1170,6 +1170,7 @@ processors:
       if: ctx.panw?.panos?.sub_type == 'drop'
   - append:
       field: event.type
+      allow_duplicates: false
       value:
         - denied
         - connection
@@ -1180,6 +1181,7 @@ processors:
       if: ctx.panw?.panos?.sub_type == 'deny'
   - append:
       field: event.type
+      allow_duplicates: false
       value:
         - denied
         - connection
