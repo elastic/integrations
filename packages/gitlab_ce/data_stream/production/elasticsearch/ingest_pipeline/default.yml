@@ -108,7 +108,7 @@ processors:
     ignore_missing: true
 - script:
     lang: painless
-    description: Move the object `params.value` to subfield `params.value.json` to avoid conflicts with the string `params.value`.
+    description: Move the object `params.value` to `params.value_json` to avoid conflicts with the string `params.value`.
     source: |
         List paramList = new ArrayList();
         for (param in ctx.gitlab_ce.production.params) {
@@ -210,7 +210,7 @@ processors:
     value:
     - web
     allow_duplicates: false
-    if: ctx.url?.path == '/search/opensearch.xml'
+    if: ctx.url?.path.contains("/search/")
 - append:
     field: event.category
     value:
