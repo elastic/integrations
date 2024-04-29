@@ -1,23 +1,21 @@
 # gitlab_ce Integration
 
-This integration is for ingesting data from [gitlab_ce](https://example.com/).
+This integration is for ingesting logs from [Gitlab Community Edition](https://gitlab.com/rluna-gitlab/gitlab-ce).
 
 - `production`: Collect logs for Rails controller requests received from GitLab.
 
-See [Link to docs](https://example.com/docs) for more information.
+See [Link to docs](https://docs.gitlab.com/ee/administration/logs/) for more information.
 
 ## Compatibility
 
-Insert compatibility information here. This could for example be which versions of the product it was tested with.
-
-## Setup
-
-Insert how to configure the vendor side of the integration here, for example how to configure the API, create a syslog remote destination etc.
+The Gitlab Community Edition module is currently tested on Linux and Mac with the community edition, version 16.8.5-ce.0.
 
 ## Logs
 
 ### production
 
-Insert a description of the data stream here.
+Collect logs for Rails controller requests received from GitLab. Check out the [Gitlab production log docs](https://docs.gitlab.com/ee/administration/logs/#production_jsonlog) for more information.
 
 {{fields "production"}}
+
+{{event "production"}}
