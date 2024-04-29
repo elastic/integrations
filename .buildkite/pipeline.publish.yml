@@ -1,14 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
 env:
   SETUP_GVM_VERSION: "v0.5.2"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
   DOCKER_COMPOSE_VERSION: "v2.24.1"
   DOCKER_VERSION: "false"
-  KIND_VERSION: 'v0.20.0'
-  K8S_VERSION: 'v1.28.0'
   YQ_VERSION: 'v4.35.2'
   JQ_VERSION: '1.7'
-  GH_CLI_VERSION: "2.29.0"
   # Elastic package settings
   # Manage docker output/logs
   ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI: "true"
@@ -20,6 +18,7 @@ env:
   ELASTIC_PACKAGE_LINKS_FILE_PATH: "links_table.yml"
   # Disable comparison of results in pipeline tests to avoid errors related to GeoIP fields
   ELASTIC_PACKAGE_SERVERLESS_PIPELINE_TEST_DISABLE_COMPARE_RESULTS: "true"
+  NOTIFY_TO: "ecosystem-team@elastic.co"
 
 steps:
   - label: ":white_check_mark: Check go sources"
@@ -30,32 +29,23 @@ steps:
       cpu: "8"
       memory: "4G"
 
-  - label: "Trigger integrations"
-    key: "test-integrations"
-    command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
-    env:
-      UPLOAD_SAFE_LOGS: 1
-    depends_on:
-      - step: "check"
-        allow_failure: false
-
-  - wait: ~
-    continue_on_failure: true
-
-  - label: "Publish benchmarks"
-    key: publish-benchmarks
-    command: ".buildkite/scripts/process_benchmarks.sh"
-    env:
-      BENCHMARK_THRESHOLD: 15
+  - label: ":package: Build packages"
+    key: "build-packages"
+    command: ".buildkite/scripts/build_packages.sh"
     agents:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
-      memory: "4G"
+      memory: "8G"
+    env:
+      ARTIFACTS_FOLDER: "artifacts-to-sign"
+      # by default it will publish packages
+      DRY_RUN: "${DRY_RUN:-false}"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+    artifact_paths:
+      - artifacts-to-sign/*.zip
 
-  - label: ":junit: Junit annotate"
-    plugins:
-      - junit-annotate#v2.4.1:
-          artifacts: "build/test-results/*.xml"
-          failed-download-exit-code: 0 # Not fail the build in case there are no XML files
-    agents:
-      provider: "gcp"  # junit plugin requires docker
+notify:
+  - email: "$NOTIFY_TO"
+    if: "build.state == 'failed' && build.env('BUILDKITE_PULL_REQUEST') == 'false'"
