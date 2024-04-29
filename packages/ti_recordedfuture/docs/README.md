@@ -23,13 +23,13 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-03-29T13:00:04.736Z",
+    "@timestamp": "2024-04-29T13:22:35.326Z",
     "agent": {
-        "ephemeral_id": "fe05693b-59ec-47c6-9d5e-b0ef7c71ee65",
-        "id": "bc94f76a-cdb2-4211-9412-c5d6c5711711",
+        "ephemeral_id": "8b6df1e2-9c94-40c3-b5f8-e09238b868da",
+        "id": "c4046867-b40e-4edd-b9cf-1968be890bc1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.12.2"
     },
     "data_stream": {
         "dataset": "ti_recordedfuture.threat",
@@ -40,9 +40,9 @@ An example event for `threat` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bc94f76a-cdb2-4211-9412-c5d6c5711711",
+        "id": "c4046867-b40e-4edd-b9cf-1968be890bc1",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -50,9 +50,9 @@ An example event for `threat` looks as following:
             "threat"
         ],
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2024-03-29T13:00:14Z",
+        "ingested": "2024-04-29T13:22:45Z",
         "kind": "enrichment",
-        "risk_score": 75,
+        "risk_score": 87,
         "timezone": "+00:00",
         "type": [
             "indicator"
@@ -63,45 +63,60 @@ An example event for `threat` looks as following:
     },
     "log": {
         "file": {
-            "path": "/tmp/service_logs/rf_file_default.csv"
+            "path": "/tmp/service_logs/rf_url_default.csv"
         },
-        "offset": 57
+        "offset": 45
     },
     "recordedfuture": {
         "evidence_details": [
             {
-                "Criticality": 2,
-                "CriticalityLabel": "Suspicious",
-                "EvidenceString": "2 sightings on 1 source: PolySwarm. Most recent link (Mar 23, 2024): https://polyswarm.network/scan/results/file/63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f",
-                "MitigationString": "",
-                "Name": "linkedToMalware",
-                "Rule": "Linked to Malware",
-                "SightingsCount": 2,
-                "Sources": [
-                    "source:doLlw5"
+                "criticality": 1,
+                "criticality_label": "Unusual",
+                "evidence_string": "66 sightings on 22 sources including: Ars Technica, fook.news, urdupresss.com, HackDig Posts, apple.news. Most recent link (Jul 20, 2021): https://techsecuritenews.com/solarwinds-pirates-utilisent-nouvelle-faille-zero-day-attaques/",
+                "mitigation_string": "",
+                "name": "defangedURL",
+                "rule": "Historically Reported as a Defanged URL",
+                "sources": [
+                    "Ctq",
+                    "idn:fook.news",
+                    "idn:urdupresss.com",
+                    "POs2u-",
+                    "idn:apple.news",
+                    "idn:cryptoinfoos.com.ng",
+                    "g9rk5F",
+                    "idn:thewindowsupdate.com",
+                    "idn:nationalcybersecuritynews.today",
+                    "gBDK5G",
+                    "idn:microsoft.com",
+                    "idn:techsecuritenews.com",
+                    "idn:mblogs.info",
+                    "J6UzbO",
+                    "idn:viralamo.com",
+                    "idn:sellorbuyhomefast.com",
+                    "idn:crazyboy.tech",
+                    "idn:times24h.com",
+                    "idn:buzzfeeg.com",
+                    "idn:dsmenders.com",
+                    "WroSbs",
+                    "idn:vzonetvgh.com"
                 ],
-                "SourcesCount": 1,
-                "Timestamp": "2024-03-23T17:10:20.642Z"
+                "timestamp": "2021-07-20T00:00:00.000Z"
             },
             {
-                "Criticality": 3,
-                "CriticalityLabel": "Malicious",
-                "EvidenceString": "3 sightings on 3 sources: Polyswarm Sandbox Analysis, Recorded Future Triage Malware Analysis, PolySwarm. Most recent link (Mar 23, 2024): https://polyswarm.network/scan/results/file/63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f",
-                "MitigationString": "",
-                "Name": "positiveMalwareVerdict",
-                "Rule": "Positive Malware Verdict",
-                "SightingsCount": 3,
-                "Sources": [
-                    "source:hzRhwZ",
-                    "source:ndy5_2",
-                    "source:doLlw5"
+                "criticality": 3,
+                "criticality_label": "Malicious",
+                "evidence_string": "1 sighting on 1 source: Insikt Group. 1 report: SolarWinds Fixes Critical Vulnerability in Serv-U Managed File Transfer and Secure FTP Products. Most recent link (Jul 10, 2021): https://app.recordedfuture.com/live/sc/1GnDrn8zigTd",
+                "mitigation_string": "",
+                "name": "recentAnalystNote",
+                "rule": "Recently Reported by Insikt Group",
+                "sources": [
+                    "VKz42X"
                 ],
-                "SourcesCount": 3,
-                "Timestamp": "2024-03-23T16:36:02.000Z"
+                "timestamp": "2021-07-10T00:00:00.000Z"
             }
         ],
-        "name": "63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f",
-        "risk_string": "2/17"
+        "name": "http://144.34.179.162/a",
+        "risk_string": "2/24"
     },
     "tags": [
         "forwarded",
@@ -112,17 +127,24 @@ An example event for `threat` looks as following:
             "name": "Recorded Future"
         },
         "indicator": {
-            "file": {
-                "hash": {
-                    "sha256": "63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f"
-                }
-            },
             "provider": [
-                "PolySwarm",
-                "Polyswarm Sandbox Analysis",
-                "Recorded Future Triage Malware Analysis"
+                "Ars Technica",
+                "fook.news",
+                "urdupresss.com",
+                "HackDig Posts",
+                "apple.news",
+                "Insikt Group"
             ],
-            "type": "file"
+            "scanner_stats": 0,
+            "sightings": 0,
+            "type": "url",
+            "url": {
+                "domain": "144.34.179.162",
+                "full": "http://144.34.179.162/a",
+                "original": "http://144.34.179.162/a",
+                "path": "/a",
+                "scheme": "http"
+            }
         }
     }
 }
@@ -184,7 +206,16 @@ An example event for `threat` looks as following:
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| recordedfuture.evidence_details | List of sightings used as evidence for this indicator. | flattened |
+| recordedfuture.evidence_details.criticality |  | double |
+| recordedfuture.evidence_details.criticality_label |  | keyword |
+| recordedfuture.evidence_details.evidence_string |  | keyword |
+| recordedfuture.evidence_details.mitigation_string |  | keyword |
+| recordedfuture.evidence_details.name |  | keyword |
+| recordedfuture.evidence_details.rule |  | keyword |
+| recordedfuture.evidence_details.sightings_count |  | integer |
+| recordedfuture.evidence_details.sources |  | keyword |
+| recordedfuture.evidence_details.sources_count |  | integer |
+| recordedfuture.evidence_details.timestamp |  | date |
 | recordedfuture.list | User-configured risklist. | keyword |
 | recordedfuture.name | Indicator value. | keyword |
 | recordedfuture.risk_string | Details of risk rules observed. | keyword |
@@ -206,6 +237,8 @@ An example event for `threat` looks as following:
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
+| threat.indicator.scanner_stats | Count of AV/EDR vendors that successfully detected malicious file or URL. | long |
+| threat.indicator.sightings | Number of times this indicator was observed conducting threat activity. | long |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
