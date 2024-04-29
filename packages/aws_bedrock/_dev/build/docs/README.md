@@ -22,4 +22,4 @@ When collecting logs from CloudWatch is enabled, users can retrieve logs from
 all log streams in a specific log group. `filterLogEvents` AWS API is used to 
 list log events from the specified log group.
 
-{{fields "bedrock"}}
+{{fields "invocation"}}
