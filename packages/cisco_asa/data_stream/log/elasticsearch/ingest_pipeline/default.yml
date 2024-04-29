@@ -2108,16 +2108,61 @@ processors:
       ignore_missing: true
   # ECS categorization
   - script:
+      tag: script_ecs_outcome_categorization
+      lang: painless
+      description: >-
+        Sets the ECS event categorization fields for given message type and outcome.
+        The top-level keys are the Cisco message IDs, which will match against
+        'event.code' in the document. The next level of keys are outcome values,
+        which match against '_temp_.outcome' in the document. The final level of
+        keys are ECS event fields.
+      params:
+        "106100":
+          denied:
+            type: [ connection, denied ]
+            outcome: success
+            action: firewall-rule
+          permitted:
+            type: [ connection, allowed ]
+            outcome: success
+            action: firewall-rule
+          est-allowed:
+            type: [ connection, allowed ]
+            outcome: success
+            action: firewall-rule
+        "106102":
+          denied:
+            type: [ connection, denied ]
+            outcome: success
+            action: firewall-rule
+          permitted:
+            type: [ connection, allowed ]
+            outcome: success
+            action: firewall-rule
+        "111004":
+          failed:
+            category: [ configuration ]
+            type: [ info ]
+            outcome: failure
+            action: configuration
+          ok:
+            category: [ configuration ]
+            type: [ change ]
+            outcome: success
+            action: configuration
+      source: >-
+        if (ctx.event.code == null || !params.containsKey(ctx.event.code) || ctx._temp_?.outcome == null) {
+          return;
+        }
+        params.get(ctx.event.code).get(ctx._temp_.outcome).forEach((k, v) -> ctx.event[k] = v);
+
+  - script:
       tag: script_ecs_categorization
       lang: painless
       description: >-
-        This script will set the ECS event categorization fields for each
-        message type. If a message wrote to _temp_.outcome, the value of this
-        field will be used to conditionally set the ECS event fields.
-        The top-level keys are the Cisco message IDs. The next level of keys are
-        either the ECS event fields or in the case of _temp_.outcome being set,
-        the possible values of _temp_.outcome. In the latter case, the keys
-        contained within will be the ECS event fields.
+        This script will set the ECS event categorization fields for a given
+        message type. The top-level keys are the Cisco message IDs. The next
+        level of keys are ECS event fields.
       params:
         "106001":
           type: [ connection, denied ]
@@ -2183,28 +2228,6 @@ processors:
           type: [ connection, denied ]
           outcome: success
           action: firewall-rule
-        "106100":
-          denied:
-            type: [ connection, denied ]
-            outcome: success
-            action: firewall-rule
-          permitted:
-            type: [ connection, allowed ]
-            outcome: success
-            action: firewall-rule
-          est-allowed:
-            type: [ connection, allowed ]
-            outcome: success
-            action: firewall-rule
-        "106102":
-          denied:
-            type: [ connection, denied ]
-            outcome: success
-            action: firewall-rule
-          permitted:
-            type: [ connection, allowed ]
-            outcome: success
-            action: firewall-rule
         "106103":
           type: [ connection, denied ]
           outcome: success
@@ -2213,17 +2236,6 @@ processors:
           type: [ connection, info ]
           outcome: failure
           action: firewall-rule
-        "111004":
-          failed:
-            category: [ configuration ]
-            type: [ info ]
-            outcome: failure
-            action: configuration
-          ok:
-            category: [ configuration ]
-            type: [ change ]
-            outcome: success
-            action: configuration
         "111009":
           category: [ configuration ]
           type: [ info ]
@@ -2493,18 +2505,19 @@ processors:
         "502103":
           category: [ iam ]
           type: [ user, change ]
+          outcome: success
           action: privilege-level-changed
         "507003":
           type: [ connection, end ]
           action: flow-termination
         "602303":
           type: [ connection, start ]
-          action: sa-created
           outcome: success
+          action: sa-created
         "602304":
           type: [ connection, end ]
           outcome: success
-          action: deleted
+          action: sa-deleted
         "605004":
           category: [ authentication, network ]
           type: [ denied, info ]
@@ -2623,18 +2636,14 @@ processors:
           outcome: success
           action: flow-offload-started
         "805002":
-          type: [ connection, start ]
+          type: [ connection, end ]
           outcome: success
           action: flow-offload-ended
       source: >-
         if (ctx.event.code == null || !params.containsKey(ctx.event.code)) {
           return;
         }
-        if (ctx._temp_?.outcome == null) {
-          params.get(ctx.event.code).forEach((k, v) -> ctx.event[k] = v);
-        } else {
-          params.get(ctx.event.code).get(ctx._temp_.outcome).forEach((k, v) -> ctx.event[k] = v);
-        }
+        params.get(ctx.event.code).forEach((k, v) -> ctx.event[k] = v);
 
   # Malware event kind is classified as alert when sha_disposition is "Malware", "Custom Detection" not for other cases.
   - set:
