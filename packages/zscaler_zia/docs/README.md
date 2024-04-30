@@ -767,6 +767,7 @@ An example event for `web` looks as following:
             "TestMachine35"
         ],
         "ip": [
+            "203.0.113.5",
             "1.128.3.4"
         ],
         "user": [
@@ -780,8 +781,9 @@ An example event for `web` looks as following:
     },
     "source": {
         "nat": {
-            "ip": "1.128.3.4"
-        }
+            "ip": "203.0.113.5"
+        },
+        "ip": "192.168.1.35"
     },
     "tags": [
         "forwarded",
