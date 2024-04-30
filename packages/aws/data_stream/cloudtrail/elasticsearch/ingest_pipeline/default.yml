@@ -234,6 +234,34 @@ processors:
       field: json.readOnly
       target_field: aws.cloudtrail.read_only
       ignore_failure: true
+
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.ARN
+          target_field: _ingest._value.arn
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.accountId
+          target_field: _ingest._value.account_id
+          ignore_missing: true
+  - foreach:
+      field: json.resources
+      if: ctx.json?.resources instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.type
+          target_field: _ingest._value.type
+          ignore_missing: true
   - rename:
       field: json.resources
       target_field: aws.cloudtrail.resources
