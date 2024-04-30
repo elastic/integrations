@@ -8,7 +8,7 @@ Use the Cybereason integration to collect and parse data from the REST APIs. The
 
 ## Compatibility
 
-This module has been tested against the latest Cybereason On-Prem version **23.2**.
+This module has been tested against the latest Cybereason On-Premises version **23.2**.
 
 ## Data streams
 
@@ -26,7 +26,7 @@ The Cybereason integration collects six types of logs: Logon Session, Malop Conn
 
 **[Suspicions Process]()** - This data stream provides detailed information about processes that are suspected or deemed malicious within the endpoint detection and response (EDR) system.
 
-**NOTE**: Suspicions Process has the same endpoint as the first three data streams, we have added a filter - hasSuspicions : true and some customfields to get the logs related to suspicions.
+**NOTE**: Suspicions Process has the same endpoint as the first three data streams, we have added a filter - `hasSuspicions : true` and some custom fields to get the logs related to suspicions.
 
 ## Requirements
 
@@ -58,7 +58,7 @@ The minimum **kibana.version** required is **8.12.0**.
 
 ### To collect logs through REST API, follow the below steps:
 
-- Visit the [link](https://www.cybereason.com/platform/bundles) to deploy a Cybereason instance in your environment.
+- Visit [this page](https://www.cybereason.com/platform/bundles) to deploy a Cybereason instance in your environment.
 - Once deployed, you'll obtain the parameters such as host, port, username and password for configuring Cybereason integration within your Elasticsearch environment.
 
 ### Enabling the integration in Elastic:

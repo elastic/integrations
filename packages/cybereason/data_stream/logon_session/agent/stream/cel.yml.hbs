@@ -25,7 +25,7 @@ redact:
     - password
 program: |
   post_request(
-    state.url + "/login.html",
+    state.url.trim_right("/") + "/login.html",
     "application/x-www-form-urlencoded",
     {"username":[state.username],"password":[state.password]}.format_query()
   ).do_request().as(resp, resp.Request.URL.contains("error") ? "" :
@@ -40,7 +40,7 @@ program: |
       )
   ).as(cookie, cookie == "" ? {"events": []} :
       post_request(
-        state.url + "/rest/visualsearch/query/simple",
+        state.url.trim_right("/") + "/rest/visualsearch/query/simple",
         "application/json",
           {
             "queryPath": [
@@ -51,13 +51,8 @@ program: |
                     "facetName": "creationTime",
                     "filterType": "Between",
                     "values": [
-                      (
-                        state.?cursor.last_timestamp.orValue(null) != null ?
-                          state.cursor.last_timestamp
-                        :
-                        int(now - duration(state.initial_interval)) * 1000
-                      ),
-                      int(now) * 1000
+                      state.?cursor.last_timestamp.orValue(int(now - duration(state.initial_interval)) * 1000),
+                      int(now) * 1000,
                     ]
                   }
                 ],
@@ -102,7 +97,12 @@ program: |
             )
           ),
           "cursor": {
-            "last_timestamp": int(now) * 1000,
+            "last_timestamp": (
+              has(body.?data.resultIdToElementDataMap) && body.data.resultIdToElementDataMap.size() > 0 ?
+                int(now) * 1000
+              :
+                state.?cursor.last_timestamp.orValue(int(now) * 1000)
+            ),
           },
           "username": state.username,
           "password": state.password,
