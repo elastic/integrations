@@ -51,9 +51,36 @@ processors:
     field: gitlab_ce.api.host
     target_field: url.domain
     ignore_missing: true
+- dot_expander:
+    path: gitlab_ce.api
+    field: meta.caller_id
+- dot_expander:
+    path: gitlab_ce.api
+    field: meta.client_id
+- dot_expander:
+    path: gitlab_ce.api
+    field: meta.feature_category
+- dot_expander:
+    path: gitlab_ce.api
+    field: meta.remote_ip
+- dot_expander:
+    path: gitlab_ce.api
+    field: meta.user
+- dot_expander:
+    path: gitlab_ce.api
+    field: meta.user_id
 - rename:
+    field: gitlab_ce.api.meta.caller_id
+    target_field: event.provider
+    ignore_missing: true
+- split:
     field: gitlab_ce.api.remote_ip
-    target_field: client.address
+    if: ctx.gitlab_ce?.api?.remote_ip != null && ctx.gitlab_ce?.api?.remote_ip != ''
+    tag: 'split_ips'
+    target_field: source.ip
+    separator: ', '
+- remove:
+    field: gitlab_ce.api.remote_ip
     ignore_missing: true
 - rename:
     field: gitlab_ce.api.ua
@@ -66,6 +93,10 @@ processors:
 - rename:
     field: gitlab_ce.api.user_id
     target_field: user.id
+    ignore_missing: true
+- convert:
+    field: user.id
+    type: string
     ignore_missing: true
 - rename:
     field: gitlab_ce.api.username
@@ -95,16 +126,6 @@ processors:
     tag: rename_client_as_organization_name
     target_field: client.as.organization.name
     ignore_missing: true
-- script:
-    description: Drops null/empty values recursively.
-    tag: script_drop_null_empty_values
-    lang: painless
-    source: "boolean dropEmptyFields(Object object) {\n  if (object == null || object\
-      \ == \"\") {\n    return true;\n  } else if (object instanceof Map) {\n    ((Map)\
-      \ object).values().removeIf(value -> dropEmptyFields(value));\n    return (((Map)\
-      \ object).size() == 0);\n  } else if (object instanceof List) {\n    ((List)\
-      \ object).removeIf(value -> dropEmptyFields(value));\n    return (((List) object).length\
-      \ == 0);\n  }\n  return false;\n}\ndropEmptyFields(ctx);\n"
 - append:
     field: event.category
     value:
@@ -122,43 +143,12 @@ processors:
     allow_duplicates: false
     if: ctx.gitlab_ce?.api?.db_count != null && ctx.gitlab_ce?.api?.db_count > 0
 - append:
-    field: event.category
-    value:
-    - web
-    allow_duplicates: false
-    if: ctx.http?.response?.status_code != null
-- append:
-    field: event.type
-    value:
-    - access
-    allow_duplicates: false
-    if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >=
-      200 && ctx.http.response.status_code <= 299
-- append:
     field: event.type
     value:
     - error
     allow_duplicates: false
     if: ctx.http?.response?.status_code != null && (ctx.http.response.status_code
       < 200 || ctx.http.response.status_code >= 400)
-- append:
-    field: event.category
-    value:
-    - iam
-    allow_duplicates: false
-    if: ctx.user?.name != null
-- append:
-    field: event.type
-    value:
-    - user
-    allow_duplicates: false
-    if: ctx.user?.name != null
-- append:
-    field: event.category
-    value:
-    - configuration
-    allow_duplicates: false
-    if: ctx.gitlab_ce?.api?.meta?.feature_category != null
 - append:
     field: event.kind
     value:
@@ -171,6 +161,16 @@ processors:
     if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
     ignore_failure: true
     ignore_missing: true
+- script:
+    description: Drops null/empty values recursively.
+    tag: script_drop_null_empty_values
+    lang: painless
+    source: "boolean dropEmptyFields(Object object) {\n  if (object == null || object\
+      \ == \"\") {\n    return true;\n  } else if (object instanceof Map) {\n    ((Map)\
+      \ object).values().removeIf(value -> dropEmptyFields(value));\n    return (((Map)\
+      \ object).size() == 0);\n  } else if (object instanceof List) {\n    ((List)\
+      \ object).removeIf(value -> dropEmptyFields(value));\n    return (((List) object).length\
+      \ == 0);\n  }\n  return false;\n}\ndropEmptyFields(ctx);\n"
 on_failure:
 - append:
     field: error.message

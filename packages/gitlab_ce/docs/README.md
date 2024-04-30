@@ -94,12 +94,17 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | gitlab_ce.production.meta.user |  | keyword |
 | gitlab_ce.production.meta.user_id |  | long |
 | gitlab_ce.production.params.key |  | keyword |
-| gitlab_ce.production.params.param_value |  | keyword |
 | gitlab_ce.production.params.value |  | keyword |
+| gitlab_ce.production.params.value_json.email |  | keyword |
+| gitlab_ce.production.params.value_json.first_name |  | keyword |
+| gitlab_ce.production.params.value_json.last_name |  | keyword |
 | gitlab_ce.production.params.value_json.operationName |  | keyword |
+| gitlab_ce.production.params.value_json.password |  | keyword |
 | gitlab_ce.production.params.value_json.query |  | keyword |
+| gitlab_ce.production.params.value_json.username |  | keyword |
 | gitlab_ce.production.params.value_json.variables |  | keyword |
 | gitlab_ce.production.queue_duration_s |  | long |
+| gitlab_ce.production.rate_limiting_gates |  | keyword |
 | gitlab_ce.production.redis_allowed_cross_slot_calls |  | long |
 | gitlab_ce.production.redis_cache_calls |  | long |
 | gitlab_ce.production.redis_cache_duration_s |  | long |
@@ -114,12 +119,28 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | gitlab_ce.production.redis_feature_flag_duration_s |  | long |
 | gitlab_ce.production.redis_feature_flag_read_bytes |  | long |
 | gitlab_ce.production.redis_feature_flag_write_bytes |  | long |
+| gitlab_ce.production.redis_queues_calls |  | long |
+| gitlab_ce.production.redis_queues_duration_s |  | long |
+| gitlab_ce.production.redis_queues_metadata_calls |  | long |
+| gitlab_ce.production.redis_queues_metadata_duration_s |  | long |
+| gitlab_ce.production.redis_queues_metadata_read_bytes |  | long |
+| gitlab_ce.production.redis_queues_metadata_write_bytes |  | long |
+| gitlab_ce.production.redis_queues_read_bytes |  | long |
+| gitlab_ce.production.redis_queues_write_bytes |  | long |
+| gitlab_ce.production.redis_rate_limiting_calls |  | long |
+| gitlab_ce.production.redis_rate_limiting_duration_s |  | long |
+| gitlab_ce.production.redis_rate_limiting_read_bytes |  | long |
+| gitlab_ce.production.redis_rate_limiting_write_bytes |  | long |
 | gitlab_ce.production.redis_read_bytes |  | long |
 | gitlab_ce.production.redis_sessions_allowed_cross_slot_calls |  | long |
 | gitlab_ce.production.redis_sessions_calls |  | long |
 | gitlab_ce.production.redis_sessions_duration_s |  | long |
 | gitlab_ce.production.redis_sessions_read_bytes |  | long |
 | gitlab_ce.production.redis_sessions_write_bytes |  | long |
+| gitlab_ce.production.redis_shared_state_calls |  | long |
+| gitlab_ce.production.redis_shared_state_duration_s |  | long |
+| gitlab_ce.production.redis_shared_state_read_bytes |  | long |
+| gitlab_ce.production.redis_shared_state_write_bytes |  | long |
 | gitlab_ce.production.redis_write_bytes |  | long |
 | gitlab_ce.production.remote_ip |  | keyword |
 | gitlab_ce.production.request_urgency |  | keyword |
@@ -147,7 +168,7 @@ An example event for `production` looks as following:
 {
     "@timestamp": "2024-04-03T20:44:09.068Z",
     "agent": {
-        "ephemeral_id": "3d82c161-bdd3-4ce3-a329-510d0149f125",
+        "ephemeral_id": "c16f86f9-cd02-475a-928a-eccc6730cf91",
         "id": "95056c50-6076-4e1c-833d-03bbacd506e4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -172,7 +193,7 @@ An example event for `production` looks as following:
         "dataset": "gitlab_ce.production",
         "duration": 24200000,
         "id": "0bb7a10d-8da7-4499-8759-99ebe323f4b1",
-        "ingested": "2024-04-29T17:17:10Z",
+        "ingested": "2024-04-29T22:33:28Z",
         "original": "{\"method\":\"GET\",\"path\":\"/\",\"format\":\"html\",\"controller\":\"RootController\",\"action\":\"index\",\"status\":302,\"location\":\"http://example.org/users/sign_in\",\"time\":\"2024-04-03T20:44:09.068Z\",\"params\":[],\"correlation_id\":\"0bb7a10d-8da7-4499-8759-99ebe323f4b1\",\"meta.caller_id\":\"RootController#index\",\"meta.feature_category\":\"groups_and_projects\",\"meta.client_id\":\"ip/\",\"request_urgency\":\"low\",\"target_duration_s\":5,\"redis_calls\":26,\"redis_duration_s\":0.005135,\"redis_read_bytes\":26,\"redis_write_bytes\":4284,\"redis_feature_flag_calls\":26,\"redis_feature_flag_duration_s\":0.005135,\"redis_feature_flag_read_bytes\":26,\"redis_feature_flag_write_bytes\":4284,\"db_count\":13,\"db_write_count\":0,\"db_cached_count\":0,\"db_txn_count\":0,\"db_replica_txn_count\":0,\"db_primary_txn_count\":0,\"db_main_txn_count\":0,\"db_ci_txn_count\":0,\"db_main_replica_txn_count\":0,\"db_ci_replica_txn_count\":0,\"db_replica_count\":0,\"db_primary_count\":13,\"db_main_count\":13,\"db_ci_count\":0,\"db_main_replica_count\":0,\"db_ci_replica_count\":0,\"db_replica_cached_count\":0,\"db_primary_cached_count\":0,\"db_main_cached_count\":0,\"db_ci_cached_count\":0,\"db_main_replica_cached_count\":0,\"db_ci_replica_cached_count\":0,\"db_replica_wal_count\":0,\"db_primary_wal_count\":0,\"db_main_wal_count\":0,\"db_ci_wal_count\":0,\"db_main_replica_wal_count\":0,\"db_ci_replica_wal_count\":0,\"db_replica_wal_cached_count\":0,\"db_primary_wal_cached_count\":0,\"db_main_wal_cached_count\":0,\"db_ci_wal_cached_count\":0,\"db_main_replica_wal_cached_count\":0,\"db_ci_replica_wal_cached_count\":0,\"db_replica_txn_duration_s\":0.0,\"db_primary_txn_duration_s\":0.0,\"db_main_txn_duration_s\":0.0,\"db_ci_txn_duration_s\":0.0,\"db_main_replica_txn_duration_s\":0.0,\"db_ci_replica_txn_duration_s\":0.0,\"db_replica_duration_s\":0.0,\"db_primary_duration_s\":0.01,\"db_main_duration_s\":0.01,\"db_ci_duration_s\":0.0,\"db_main_replica_duration_s\":0.0,\"db_ci_replica_duration_s\":0.0,\"cpu_s\":0.047579,\"mem_objects\":32870,\"mem_bytes\":2376584,\"mem_mallocs\":11255,\"mem_total_bytes\":3691384,\"pid\":857,\"worker_id\":\"puma_master\",\"rate_limiting_gates\":[],\"db_duration_s\":0.00158,\"view_duration_s\":0.0,\"duration_s\":0.0242}",
         "provider": "RootController#index",
         "type": [
@@ -231,7 +252,6 @@ An example event for `production` looks as following:
             "db_txn_count": 0,
             "db_write_count": 0,
             "format": "html",
-            "location": "http://example.org/users/sign_in",
             "mem_bytes": 2376584,
             "mem_mallocs": 11255,
             "mem_objects": 32870,
@@ -268,7 +288,7 @@ An example event for `production` looks as following:
     "log": {
         "file": {
             "device_id": "113",
-            "inode": "119418895",
+            "inode": "119461162",
             "path": "/tmp/service_logs/test-gitlab-ce-production.log"
         },
         "offset": 9771
@@ -283,6 +303,7 @@ An example event for `production` looks as following:
         "gitlab_ce-production"
     ],
     "url": {
+        "full": "http://example.org/users/sign_in",
         "path": "/"
     }
 }

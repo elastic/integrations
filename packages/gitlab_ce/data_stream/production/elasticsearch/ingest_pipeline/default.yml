@@ -28,6 +28,10 @@ processors:
     field: gitlab_ce.production.path
     target_field: url.path
     ignore_missing: true
+- rename:
+    field: gitlab_ce.production.location
+    target_field: url.full
+    ignore_missing: true
 - dot_expander:
     path: gitlab_ce.production
     field: meta.caller_id
@@ -60,7 +64,7 @@ processors:
     ignore_missing: true
 - date:
     field: gitlab_ce.production.time
-    target_field: "@timestamp"
+    target_field: '@timestamp'
     formats:
     - yyyy-MM-dd'T'HH:mm:ss.SSSX
     if: ctx.gitlab_ce.production.time != null
@@ -87,20 +91,20 @@ processors:
     source:
       ctx.event['duration'] = ctx.event.duration * 1e9;
 - rename:
-    field: gitlab_ce.production.meta.remote_ip
+    field: gitlab_ce.production.remote_ip
     target_field: source.ip
     ignore_missing: true
 - rename:
     field: gitlab_ce.production.user_id
-    target_field: source.user.id
+    target_field: user.id
     ignore_missing: true
 - convert:
-    field: source.user.id
+    field: user.id
     type: string
     ignore_missing: true
 - rename:
     field: gitlab_ce.production.username
-    target_field: source.user.name
+    target_field: user.name
     ignore_missing: true
 - rename:
     field: gitlab_ce.production.ua
