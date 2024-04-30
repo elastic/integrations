@@ -72,11 +72,11 @@ processors:
   # Remarshal the request and response.
   - set:
       description: Prepare destination for request JSON.
-      field: llm.request.content
+      field: gen_ai.request.content
       value: ""
   - set:
       description: Prepare destination for response JSON.
-      field: llm.response.content
+      field: gen_ai.response.content
       value: ""
   - script:
       description: Convert bodies back to JSON.
@@ -118,26 +118,26 @@ processors:
           }
           return val.toString();
         }
-        ctx.llm.request.content = json(ctx.aws_bedrock?.invocation?.input?.inputBodyJson);
-        ctx.llm.response.content = json(ctx.aws_bedrock?.invocation?.output?.outputBodyJson);
+        ctx.gen_ai.request.content = json(ctx.aws_bedrock?.invocation?.input?.inputBodyJson);
+        ctx.gen_ai.response.content = json(ctx.aws_bedrock?.invocation?.output?.outputBodyJson);
   - script:
       description: Remove massive input bodies.
-      if: ctx.llm?.request?.content instanceof String && ctx.llm.request.content.length() > 32766
+      if: ctx.gen_ai?.request?.content instanceof String && ctx.gen_ai.request.content.length() > 32766
       lang: painless
       source: |
-        ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.llm.request.content.sha1();
-        ctx.aws_bedrock.invocation.input.input_body_json_massive_length = ctx.llm.request.content.length();
+        ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.gen_ai.request.content.sha1();
+        ctx.aws_bedrock.invocation.input.input_body_json_massive_length = ctx.gen_ai.request.content.length();
         ctx.aws_bedrock.invocation.input.remove("inputBodyJson");
-        ctx.llm.request.remove("content");
+        ctx.gen_ai.request.remove("content");
   - script:
       description: Remove massive output bodies.
-      if: ctx.llm?.response?.content instanceof String && ctx.llm.response.content.length() > 32766
+      if: ctx.gen_ai?.response?.content instanceof String && ctx.gen_ai.response.content.length() > 32766
       lang: painless
       source: |
-        ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.llm.response.content.sha1();
-        ctx.aws_bedrock.invocation.output.output_body_json_massive_length = ctx.llm.response.content.length();
+        ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.gen_ai.response.content.sha1();
+        ctx.aws_bedrock.invocation.output.output_body_json_massive_length = ctx.gen_ai.response.content.length();
         ctx.aws_bedrock.invocation.output.remove("outputBodyJson");
-        ctx.llm.response.remove("content");
+        ctx.gen_ai.response.remove("content");
 
   # This must come after the JSON remarshal to ensure that the text there is recorded
   # verbatim, mod field ordering.
@@ -210,22 +210,22 @@ processors:
 
   - set:
       if: ctx.aws_bedrock?.invocation?.input?.input_token_count != null
-      field: llm.request.token_count
+      field: gen_ai.usage.prompt_tokens
       copy_from: aws_bedrock.invocation.input.input_token_count
       ignore_failure: true
   - set:
       if: ctx.aws_bedrock?.invocation?.output?.output_token_count != null
-      field: llm.response.token_count
+      field: gen_ai.usage.completion_tokens
       copy_from: aws_bedrock.invocation.output.output_token_count
       ignore_failure: true
   - set:
       if: ctx.aws_bedrock?.invocation?.model_id != null
-      field: llm.model.id
+      field: gen_ai.model.id
       copy_from: aws_bedrock.invocation.model_id
       ignore_failure: true
   - set:
       if: ctx.aws_bedrock?.invocation?.request_id != null
-      field: llm.request.id
+      field: gen_ai.request.id
       copy_from: aws_bedrock.invocation.request_id
 
   - script:
