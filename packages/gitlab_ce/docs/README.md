@@ -142,7 +142,7 @@ An example event for `api` looks as following:
 {
     "@timestamp": "2024-04-29T17:06:12.231Z",
     "agent": {
-        "ephemeral_id": "ac248c8a-2a83-4f9f-849c-6be51038cc9f",
+        "ephemeral_id": "038ebfed-69a2-4ab2-953c-66330e1c429e",
         "id": "95056c50-6076-4e1c-833d-03bbacd506e4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -164,16 +164,15 @@ An example event for `api` looks as following:
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "api",
-            "web"
+            "api"
         ],
         "dataset": "gitlab_ce.api",
         "duration": 19690,
-        "ingested": "2024-04-29T22:32:42Z",
+        "ingested": "2024-04-30T19:11:30Z",
         "original": "{\"time\":\"2024-04-29T17:06:12.231Z\",\"severity\":\"INFO\",\"duration_s\":0.01969,\"db_duration_s\":0.0,\"view_duration_s\":0.01969,\"status\":200,\"method\":\"GET\",\"path\":\"/api/v4/geo/proxy\",\"params\":[],\"host\":\"localhost\",\"remote_ip\":\"127.0.0.1\",\"ua\":\"Go-http-client/1.1\",\"route\":\"/api/:version/geo/proxy\",\"db_count\":0,\"db_write_count\":0,\"db_cached_count\":0,\"db_txn_count\":0,\"db_replica_txn_count\":0,\"db_primary_txn_count\":0,\"db_main_txn_count\":0,\"db_ci_txn_count\":0,\"db_main_replica_txn_count\":0,\"db_ci_replica_txn_count\":0,\"db_replica_count\":0,\"db_primary_count\":0,\"db_main_count\":0,\"db_ci_count\":0,\"db_main_replica_count\":0,\"db_ci_replica_count\":0,\"db_replica_cached_count\":0,\"db_primary_cached_count\":0,\"db_main_cached_count\":0,\"db_ci_cached_count\":0,\"db_main_replica_cached_count\":0,\"db_ci_replica_cached_count\":0,\"db_replica_wal_count\":0,\"db_primary_wal_count\":0,\"db_main_wal_count\":0,\"db_ci_wal_count\":0,\"db_main_replica_wal_count\":0,\"db_ci_replica_wal_count\":0,\"db_replica_wal_cached_count\":0,\"db_primary_wal_cached_count\":0,\"db_main_wal_cached_count\":0,\"db_ci_wal_cached_count\":0,\"db_main_replica_wal_cached_count\":0,\"db_ci_replica_wal_cached_count\":0,\"db_replica_txn_duration_s\":0.0,\"db_primary_txn_duration_s\":0.0,\"db_main_txn_duration_s\":0.0,\"db_ci_txn_duration_s\":0.0,\"db_main_replica_txn_duration_s\":0.0,\"db_ci_replica_txn_duration_s\":0.0,\"db_replica_duration_s\":0.0,\"db_primary_duration_s\":0.0,\"db_main_duration_s\":0.0,\"db_ci_duration_s\":0.0,\"db_main_replica_duration_s\":0.0,\"db_ci_replica_duration_s\":0.0,\"cpu_s\":0.063617,\"mem_objects\":13367,\"mem_bytes\":1633512,\"mem_mallocs\":7711,\"mem_total_bytes\":2168192,\"pid\":1067,\"worker_id\":\"puma_4\",\"rate_limiting_gates\":[],\"correlation_id\":\"7ff5f562-f16f-4a93-b2ac-f771c81b0495\",\"meta.caller_id\":\"GET /api/:version/geo/proxy\",\"meta.remote_ip\":\"127.0.0.1\",\"meta.feature_category\":\"geo_replication\",\"meta.client_id\":\"ip/127.0.0.1\",\"request_urgency\":\"low\",\"target_duration_s\":5}",
+        "provider": "GET /api/:version/geo/proxy",
         "type": [
-            "info",
-            "access"
+            "info"
         ]
     },
     "gitlab_ce": {
@@ -232,10 +231,11 @@ An example event for `api` looks as following:
             "mem_mallocs": 7711,
             "mem_objects": 13367,
             "mem_total_bytes": 2168192,
-            "meta.caller_id": "GET /api/:version/geo/proxy",
-            "meta.client_id": "ip/127.0.0.1",
-            "meta.feature_category": "geo_replication",
-            "meta.remote_ip": "127.0.0.1",
+            "meta": {
+                "client_id": "ip/127.0.0.1",
+                "feature_category": "geo_replication",
+                "remote_ip": "127.0.0.1"
+            },
             "request_urgency": "low",
             "route": "/api/:version/geo/proxy",
             "target_duration_s": 5,
@@ -258,7 +258,7 @@ An example event for `api` looks as following:
     "log": {
         "file": {
             "device_id": "113",
-            "inode": "119460987",
+            "inode": "119521572",
             "path": "/tmp/service_logs/test-gitlab-ce-api.log"
         },
         "level": "INFO",
@@ -356,6 +356,9 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | gitlab_ce.production.graphql.complexity |  | long |
 | gitlab_ce.production.graphql.depth |  | long |
 | gitlab_ce.production.graphql.operation_name |  | keyword |
+| gitlab_ce.production.graphql.used_deprecated_fields |  | keyword |
+| gitlab_ce.production.graphql.used_fields |  | keyword |
+| gitlab_ce.production.graphql.variables |  | keyword |
 | gitlab_ce.production.location |  | keyword |
 | gitlab_ce.production.mem_bytes |  | long |
 | gitlab_ce.production.mem_mallocs |  | long |
@@ -373,9 +376,11 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | gitlab_ce.production.params.value_json.email |  | keyword |
 | gitlab_ce.production.params.value_json.first_name |  | keyword |
 | gitlab_ce.production.params.value_json.last_name |  | keyword |
+| gitlab_ce.production.params.value_json.login |  | keyword |
 | gitlab_ce.production.params.value_json.operationName |  | keyword |
 | gitlab_ce.production.params.value_json.password |  | keyword |
 | gitlab_ce.production.params.value_json.query |  | keyword |
+| gitlab_ce.production.params.value_json.remember_me |  | keyword |
 | gitlab_ce.production.params.value_json.username |  | keyword |
 | gitlab_ce.production.params.value_json.variables |  | keyword |
 | gitlab_ce.production.queue_duration_s |  | long |
@@ -443,7 +448,7 @@ An example event for `production` looks as following:
 {
     "@timestamp": "2024-04-03T20:44:09.068Z",
     "agent": {
-        "ephemeral_id": "c16f86f9-cd02-475a-928a-eccc6730cf91",
+        "ephemeral_id": "2ace8861-75e1-40f8-b074-03eb7b961811",
         "id": "95056c50-6076-4e1c-833d-03bbacd506e4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -468,7 +473,7 @@ An example event for `production` looks as following:
         "dataset": "gitlab_ce.production",
         "duration": 24200000,
         "id": "0bb7a10d-8da7-4499-8759-99ebe323f4b1",
-        "ingested": "2024-04-29T22:33:28Z",
+        "ingested": "2024-04-30T19:12:22Z",
         "original": "{\"method\":\"GET\",\"path\":\"/\",\"format\":\"html\",\"controller\":\"RootController\",\"action\":\"index\",\"status\":302,\"location\":\"http://example.org/users/sign_in\",\"time\":\"2024-04-03T20:44:09.068Z\",\"params\":[],\"correlation_id\":\"0bb7a10d-8da7-4499-8759-99ebe323f4b1\",\"meta.caller_id\":\"RootController#index\",\"meta.feature_category\":\"groups_and_projects\",\"meta.client_id\":\"ip/\",\"request_urgency\":\"low\",\"target_duration_s\":5,\"redis_calls\":26,\"redis_duration_s\":0.005135,\"redis_read_bytes\":26,\"redis_write_bytes\":4284,\"redis_feature_flag_calls\":26,\"redis_feature_flag_duration_s\":0.005135,\"redis_feature_flag_read_bytes\":26,\"redis_feature_flag_write_bytes\":4284,\"db_count\":13,\"db_write_count\":0,\"db_cached_count\":0,\"db_txn_count\":0,\"db_replica_txn_count\":0,\"db_primary_txn_count\":0,\"db_main_txn_count\":0,\"db_ci_txn_count\":0,\"db_main_replica_txn_count\":0,\"db_ci_replica_txn_count\":0,\"db_replica_count\":0,\"db_primary_count\":13,\"db_main_count\":13,\"db_ci_count\":0,\"db_main_replica_count\":0,\"db_ci_replica_count\":0,\"db_replica_cached_count\":0,\"db_primary_cached_count\":0,\"db_main_cached_count\":0,\"db_ci_cached_count\":0,\"db_main_replica_cached_count\":0,\"db_ci_replica_cached_count\":0,\"db_replica_wal_count\":0,\"db_primary_wal_count\":0,\"db_main_wal_count\":0,\"db_ci_wal_count\":0,\"db_main_replica_wal_count\":0,\"db_ci_replica_wal_count\":0,\"db_replica_wal_cached_count\":0,\"db_primary_wal_cached_count\":0,\"db_main_wal_cached_count\":0,\"db_ci_wal_cached_count\":0,\"db_main_replica_wal_cached_count\":0,\"db_ci_replica_wal_cached_count\":0,\"db_replica_txn_duration_s\":0.0,\"db_primary_txn_duration_s\":0.0,\"db_main_txn_duration_s\":0.0,\"db_ci_txn_duration_s\":0.0,\"db_main_replica_txn_duration_s\":0.0,\"db_ci_replica_txn_duration_s\":0.0,\"db_replica_duration_s\":0.0,\"db_primary_duration_s\":0.01,\"db_main_duration_s\":0.01,\"db_ci_duration_s\":0.0,\"db_main_replica_duration_s\":0.0,\"db_ci_replica_duration_s\":0.0,\"cpu_s\":0.047579,\"mem_objects\":32870,\"mem_bytes\":2376584,\"mem_mallocs\":11255,\"mem_total_bytes\":3691384,\"pid\":857,\"worker_id\":\"puma_master\",\"rate_limiting_gates\":[],\"db_duration_s\":0.00158,\"view_duration_s\":0.0,\"duration_s\":0.0242}",
         "provider": "RootController#index",
         "type": [
@@ -563,7 +568,7 @@ An example event for `production` looks as following:
     "log": {
         "file": {
             "device_id": "113",
-            "inode": "119461162",
+            "inode": "119521725",
             "path": "/tmp/service_logs/test-gitlab-ce-production.log"
         },
         "offset": 9771
