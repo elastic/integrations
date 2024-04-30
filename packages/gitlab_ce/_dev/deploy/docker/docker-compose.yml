@@ -1,6 +1,12 @@
 version: "2.3"
-services:
+services: 
   gitlab-ce-production-filestream:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  gitlab-ce-api-filestream:
     image: alpine
     volumes:
       - ./sample_logs:/sample_logs:ro
