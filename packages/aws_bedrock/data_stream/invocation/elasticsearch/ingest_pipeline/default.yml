@@ -53,6 +53,19 @@ processors:
       target_field: cloud.region
       ignore_missing: true
 
+  - script:
+      description: Remove massive artifact blobs.
+      if: ctx.aws_bedrock?.invocation?.artifacts instanceof List
+      lang: painless
+      source: |
+        for (int i = 0; i < ctx.aws_bedrock.invocation.artifacts.length; i++) {
+          if (ctx.aws_bedrock.invocation.artifacts[i].base64 instanceof String && ctx.aws_bedrock.invocation.artifacts[i].base64.length() > 32766) {
+            ctx.aws_bedrock.invocation.artifacts[i].base64_massive_hash = ctx.aws_bedrock.invocation.artifacts[i].base64.sha1();
+            ctx.aws_bedrock.invocation.artifacts[i].base64_massive_length = ctx.aws_bedrock.invocation.artifacts[i].base64.length();
+            ctx.aws_bedrock.invocation.artifacts[i].remove("base64");
+          }
+        }
+
 ######
 # Proposed LLM fields
 ######
@@ -80,15 +93,15 @@ processors:
       target_field: llm.request.content
       type: string
       ignore_missing: true
-  - fingerprint:
-      fields: [llm.request.content]
-      target_field: aws_bedrock.invocation.input.inputBodyJson_massive_hash
+  - script:
+      description: Remove massive input bodies.
       if: ctx.llm?.request?.content instanceof String && ctx.llm.request.content.length() > 32766
-  - remove:
-      field:
-        - aws_bedrock.invocation.input.inputBodyJson
-        - llm.request.content
-      if: ctx.aws_bedrock?.invocation?.input?.inputBodyJson_massive_hash != null
+      lang: painless
+      source: |
+        ctx.aws_bedrock.invocation.input.inputBodyJson_massive_hash = ctx.llm.request.content.sha1();
+        ctx.aws_bedrock.invocation.input.inputBodyJson_massive_length = ctx.llm.request.content.length();
+        ctx.aws_bedrock.invocation.input.remove("inputBodyJson");
+        ctx.llm.request.remove("content");
   - convert:
       field: aws_bedrock.invocation.output.outputBodyJson
       target_field: llm.response.content

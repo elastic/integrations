@@ -31,7 +31,7 @@ list log events from the specified log group.
 | aws.s3.bucket.arn | ARN of the S3 bucket that this log retrieved from. | keyword |
 | aws.s3.bucket.name | Name of the S3 bucket that this log retrieved from. | keyword |
 | aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
-| aws_bedrock.invocation.artifacts |  | keyword |
+| aws_bedrock.invocation.artifacts |  | flattened |
 | aws_bedrock.invocation.error |  | keyword |
 | aws_bedrock.invocation.errorCode |  | keyword |
 | aws_bedrock.invocation.imageGenerationConfig.cfgScale |  | double |
@@ -45,6 +45,7 @@ list log events from the specified log group.
 | aws_bedrock.invocation.images |  | keyword |
 | aws_bedrock.invocation.input.inputBodyJson |  | flattened |
 | aws_bedrock.invocation.input.inputBodyJson_massive_hash |  | keyword |
+| aws_bedrock.invocation.input.inputBodyJson_massive_length |  | long |
 | aws_bedrock.invocation.input.inputBodyS3Path |  | keyword |
 | aws_bedrock.invocation.input.inputContentType |  | keyword |
 | aws_bedrock.invocation.input.inputTokenCount | TODO | long |
