@@ -22,8 +22,8 @@ event_monitoring_method:
     enabled: true
     interval: {{period}}
     query:
-      default: SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if initial_interval}}LogDate > [[ (formatTime (now.Add (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z0700") ]] AND{{/if}} Interval = '{{log_file_interval}}' AND (EventType = 'ApexCallout' OR EventType = 'ApexExecution' OR EventType = 'ApexRestApi' OR EventType = 'ApexSoap' OR EventType = 'ApexTrigger' OR EventType = 'ExternalCustomApexCallout') ORDER BY LogDate ASC NULLS FIRST
-      value: SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = '{{log_file_interval}}' AND CreatedDate > [[ .cursor.event_log_file.last_event_time ]] AND (EventType = 'ApexCallout' OR EventType = 'ApexExecution' OR EventType = 'ApexRestApi' OR EventType = 'ApexSoap' OR EventType = 'ApexTrigger' OR EventType = 'ExternalCustomApexCallout') ORDER BY LogDate ASC NULLS FIRST
+      default: SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if initial_interval}}LogDate > [[ (formatTime (now.Add (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z0700") ]] AND {{/if}}{{#if log_file_interval}}Interval = '{{log_file_interval}}' AND {{/if}}(EventType = 'ApexCallout' OR EventType = 'ApexExecution' OR EventType = 'ApexRestApi' OR EventType = 'ApexSoap' OR EventType = 'ApexTrigger' OR EventType = 'ExternalCustomApexCallout') ORDER BY LogDate ASC NULLS FIRST
+      value: SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if log_file_interval}}Interval = '{{log_file_interval}}' AND {{/if}}CreatedDate > [[ .cursor.event_log_file.last_event_time ]] AND (EventType = 'ApexCallout' OR EventType = 'ApexExecution' OR EventType = 'ApexRestApi' OR EventType = 'ApexSoap' OR EventType = 'ApexTrigger' OR EventType = 'ExternalCustomApexCallout') ORDER BY LogDate ASC NULLS FIRST
     cursor:
       field: "CreatedDate"
 tags:
