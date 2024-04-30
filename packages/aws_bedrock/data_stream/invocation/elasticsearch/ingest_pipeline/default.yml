@@ -69,44 +69,165 @@ processors:
 ######
 # Proposed LLM fields
 ######
+  # Remarshal the request and response.
   - set:
-      if: ctx.aws_bedrock?.invocation?.input?.inputTokenCount != null
-      field: llm.request.token_count
-      copy_from: aws_bedrock.invocation.input.inputTokenCount
-      ignore_failure: true
+      description: Prepare destination for request JSON.
+      field: llm.request.content
+      value: ""
   - set:
-      if: ctx.aws_bedrock?.invocation?.output?.outputTokenCount != null
-      field: llm.response.token_count
-      copy_from: aws_bedrock.invocation.output.outputTokenCount
-      ignore_failure: true
-  - set:
-      if: ctx.aws_bedrock?.invocation?.modelId != null
-      field: llm.model.id
-      copy_from: aws_bedrock.invocation.modelId
-      ignore_failure: true
-  - set:
-      if: ctx.aws_bedrock?.invocation?.requestId != null
-      field: llm.request.id
-      copy_from: aws_bedrock.invocation.requestId
-  - convert:
-      field: aws_bedrock.invocation.input.inputBodyJson
-      target_field: llm.request.content
-      type: string
-      ignore_missing: true
+      description: Prepare destination for response JSON.
+      field: llm.response.content
+      value: ""
+  - script:
+      description: Convert bodies back to JSON.
+      tag: remarshal_bodies
+      lang: painless
+      source: |
+        String json(def val) {
+          if (val == null) {
+            return null;
+          }
+          if (val instanceof Map) {
+            String out = '{';
+            List keyList = new ArrayList(val.keySet());
+            Collections.sort(keyList);
+            for (int i=0; i < keyList.length; i++){
+              if (i != 0) {
+                out += ',';
+              }
+              String key = keyList[i];
+              out += '"' +  key + '"';
+              if (val[key] instanceof String){
+                out += ':"' + val[key] + '"';
+              } else {
+                out += ':' + json(val[key]);
+              }
+            }
+            return out + '}';
+          } else if (val instanceof ArrayList) {
+            String out = '[';
+            for (int i = 0; i < val.length; i++){
+              if (i != 0) {
+                  out += ',';
+              }
+              out = out + json(val[i]);
+            }
+            return out + ']';
+          } else if (val instanceof String) {
+            return '"' + val + '"'; // This may not be valid JSON depending on code points in val. TODO: Add escape helper.
+          }
+          return val.toString();
+        }
+        ctx.llm.request.content = json(ctx.aws_bedrock?.invocation?.input?.inputBodyJson);
+        ctx.llm.response.content = json(ctx.aws_bedrock?.invocation?.output?.outputBodyJson);
   - script:
       description: Remove massive input bodies.
       if: ctx.llm?.request?.content instanceof String && ctx.llm.request.content.length() > 32766
       lang: painless
       source: |
-        ctx.aws_bedrock.invocation.input.inputBodyJson_massive_hash = ctx.llm.request.content.sha1();
-        ctx.aws_bedrock.invocation.input.inputBodyJson_massive_length = ctx.llm.request.content.length();
+        ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.llm.request.content.sha1();
+        ctx.aws_bedrock.invocation.input.input_body_json_massive_length = ctx.llm.request.content.length();
         ctx.aws_bedrock.invocation.input.remove("inputBodyJson");
         ctx.llm.request.remove("content");
-  - convert:
-      field: aws_bedrock.invocation.output.outputBodyJson
-      target_field: llm.response.content
-      type: string
-      ignore_missing: true
+  - script:
+      description: Remove massive output bodies.
+      if: ctx.llm?.response?.content instanceof String && ctx.llm.response.content.length() > 32766
+      lang: painless
+      source: |
+        ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.llm.response.content.sha1();
+        ctx.aws_bedrock.invocation.output.output_body_json_massive_length = ctx.llm.response.content.length();
+        ctx.aws_bedrock.invocation.output.remove("outputBodyJson");
+        ctx.llm.response.remove("content");
+
+  # This must come after the JSON remarshal to ensure that the text there is recorded
+  # verbatim, mod field ordering.
+  - script:
+      lang: painless
+      description: Rename the fields under the aws_bedrock objects.
+      params:
+        "modelId": "model_id"
+        "inputBodyJson": "input_body_json"
+        "inputContentType": "input_content_type"
+        "inputTokenCount": "input_token_count"
+        "outputBodyJson": "output_body_json"
+        "outputContentType": "output_content_type"
+        "outputTokenCount": "output_token_count"
+        "requestId": "request_id"
+        "schemaType": "schema_type"
+        "schemaVersion": "schema_version"
+        "errorCode": "error_code"
+        "imageGenerationConfig": "image_generation_config"
+        "cfgScale": "cfg_scale"
+        "numberOfImages": "number_of_images"
+        "imageVariationParams": "image_variation_params"
+        "inputBodyS3Path": "input_body_s3_path"
+        "outputBodyS3Path": "output_body_s3_path"
+        "taskType": "task_type"
+        "artifacts": "artifacts"
+        "finishReason": "finish_reason"
+        "amazon-bedrock-invocationMetrics": "amazon_bedrock_invocation_metrics"
+        "firstByteLatency": "first_byte_latency"
+        "invocationLatency": "invocation_latency"
+      tag: painless_to_rename_fields_under_aws_bedrock_groups
+      source: |
+        def renameKeys(Map src, Map keyMap) {
+          def dst = new HashMap();
+          for (def entry: src.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                dst[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = updatedList;
+              } else {
+                dst[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = value;
+              } else {
+                dst[key] = value;
+              }
+            }
+          }
+          return dst;
+        }
+
+        ctx.aws_bedrock = renameKeys(ctx.aws_bedrock, params)
+
+  - set:
+      if: ctx.aws_bedrock?.invocation?.input?.input_token_count != null
+      field: llm.request.token_count
+      copy_from: aws_bedrock.invocation.input.input_token_count
+      ignore_failure: true
+  - set:
+      if: ctx.aws_bedrock?.invocation?.output?.output_token_count != null
+      field: llm.response.token_count
+      copy_from: aws_bedrock.invocation.output.output_token_count
+      ignore_failure: true
+  - set:
+      if: ctx.aws_bedrock?.invocation?.model_id != null
+      field: llm.model.id
+      copy_from: aws_bedrock.invocation.model_id
+      ignore_failure: true
+  - set:
+      if: ctx.aws_bedrock?.invocation?.request_id != null
+      field: llm.request.id
+      copy_from: aws_bedrock.invocation.request_id
+
   - script:
       description: Drops null/empty values recursively
       lang: painless

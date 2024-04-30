@@ -33,32 +33,32 @@ list log events from the specified log group.
 | aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
 | aws_bedrock.invocation.artifacts |  | flattened |
 | aws_bedrock.invocation.error |  | keyword |
-| aws_bedrock.invocation.errorCode |  | keyword |
-| aws_bedrock.invocation.imageGenerationConfig.cfgScale |  | double |
-| aws_bedrock.invocation.imageGenerationConfig.height |  | long |
-| aws_bedrock.invocation.imageGenerationConfig.numberOfImages |  | long |
-| aws_bedrock.invocation.imageGenerationConfig.quality |  | keyword |
-| aws_bedrock.invocation.imageGenerationConfig.seed |  | long |
-| aws_bedrock.invocation.imageGenerationConfig.width |  | long |
-| aws_bedrock.invocation.imageVariationParams.images |  | keyword |
-| aws_bedrock.invocation.imageVariationParams.text |  | keyword |
+| aws_bedrock.invocation.error_code |  | keyword |
+| aws_bedrock.invocation.image_generation_config.cfg_scale |  | double |
+| aws_bedrock.invocation.image_generation_config.height |  | long |
+| aws_bedrock.invocation.image_generation_config.number_of_images |  | long |
+| aws_bedrock.invocation.image_generation_config.quality |  | keyword |
+| aws_bedrock.invocation.image_generation_config.seed |  | long |
+| aws_bedrock.invocation.image_generation_config.width |  | long |
+| aws_bedrock.invocation.image_variation_params.images |  | keyword |
+| aws_bedrock.invocation.image_variation_params.text |  | keyword |
 | aws_bedrock.invocation.images |  | keyword |
-| aws_bedrock.invocation.input.inputBodyJson |  | flattened |
-| aws_bedrock.invocation.input.inputBodyJson_massive_hash |  | keyword |
-| aws_bedrock.invocation.input.inputBodyJson_massive_length |  | long |
-| aws_bedrock.invocation.input.inputBodyS3Path |  | keyword |
-| aws_bedrock.invocation.input.inputContentType |  | keyword |
-| aws_bedrock.invocation.input.inputTokenCount | TODO | long |
-| aws_bedrock.invocation.modelId |  | keyword |
-| aws_bedrock.invocation.output.outputBodyJson |  | flattened |
-| aws_bedrock.invocation.output.outputBodyS3Path |  | keyword |
-| aws_bedrock.invocation.output.outputContentType |  | keyword |
-| aws_bedrock.invocation.output.outputTokenCount |  | long |
-| aws_bedrock.invocation.requestId |  | keyword |
+| aws_bedrock.invocation.input.input_body_json |  | flattened |
+| aws_bedrock.invocation.input.input_body_json_massive_hash |  | keyword |
+| aws_bedrock.invocation.input.input_body_json_massive_length |  | long |
+| aws_bedrock.invocation.input.input_body_s3_path |  | keyword |
+| aws_bedrock.invocation.input.input_content_type |  | keyword |
+| aws_bedrock.invocation.input.input_token_count | todo | long |
+| aws_bedrock.invocation.model_id |  | keyword |
+| aws_bedrock.invocation.output.output_body_json |  | flattened |
+| aws_bedrock.invocation.output.output_body_s3_path |  | keyword |
+| aws_bedrock.invocation.output.output_content_type |  | keyword |
+| aws_bedrock.invocation.output.output_token_count |  | long |
+| aws_bedrock.invocation.request_id |  | keyword |
 | aws_bedrock.invocation.result |  | keyword |
-| aws_bedrock.invocation.schemaType |  | keyword |
-| aws_bedrock.invocation.schemaVersion |  | keyword |
-| aws_bedrock.invocation.taskType |  | keyword |
+| aws_bedrock.invocation.schema_type |  | keyword |
+| aws_bedrock.invocation.schema_version |  | keyword |
+| aws_bedrock.invocation.task_type |  | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
