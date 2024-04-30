@@ -35,17 +35,20 @@ processors:
     type: long
 - script:
     lang: painless
-    source: ctx.envoyproxy.upstream_service_time = Math.round(Double.parseDouble(ctx.upstream_service_time) * params.scale)
+    source: ctx.envoyproxy.log.upstream_service_time = Math.round(Double.parseDouble(ctx.upstream_service_time) * params.scale)
     params:
       scale: 1000000
     if: ctx.upstream_service_time != null && ctx.upstream_service_time != '-'
 - set:
-    field: envoyproxy.proxy_type
+    field: envoyproxy.log.proxy_type
     value: http
 - set:
     field: url.domain
-    value: '{{envoyproxy.authority}}'
+    value: '{{envoyproxy.log.authority}}'
     ignore_empty_value: true
+- registered_domain:
+    field: url.domain
+    target_field: url
 - user_agent:
     field: user_agent.original
     ignore_missing: true
@@ -58,6 +61,9 @@ processors:
     field: network.protocol
     value: http
 on_failure:
-- set:
-    field: error.message
-    value: 'pipeline-http: {{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

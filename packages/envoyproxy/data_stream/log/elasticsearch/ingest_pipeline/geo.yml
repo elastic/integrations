@@ -1,8 +1,6 @@
 ---
 description: Pipeline for adding geolocation and autonomous system info.
-
 processors:
-  # IP Geolocation Lookup
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -11,8 +9,6 @@ processors:
       field: destination.ip
       target_field: destination.geo
       ignore_missing: true
-
-  # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -45,8 +41,10 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
-
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

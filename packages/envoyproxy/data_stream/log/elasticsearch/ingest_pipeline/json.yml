@@ -20,8 +20,11 @@ processors:
     field:
     - json
 - pipeline:
-    name: '{{ IngestPipeline "pipeline-plaintext" }}'
+    name: '{{ IngestPipeline "plaintext"}}'
 on_failure:
-- set:
-    field: error.message
-    value: 'pipeline-json: {{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

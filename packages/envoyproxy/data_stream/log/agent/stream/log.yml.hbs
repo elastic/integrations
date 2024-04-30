@@ -2,10 +2,14 @@ paths:
 {{#each paths as |path i|}}
   - {{path}}
 {{/each}}
-tags: {{tags}}
-publisher_pipeline.disable_host: {{nList tags forwarded"}}
-processors:
-  - add_fields:
-      target: ''
-      fields:
-        ecs.version: 1.12.0
+exclude_files: ['\.gz$']
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}

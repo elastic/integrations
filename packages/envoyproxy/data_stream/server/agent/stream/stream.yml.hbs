@@ -1,6 +1,68 @@
 metricsets: ["server"]
-hosts:
-{{#each hosts}}
-  - {{this}}
-{{/each}}
-period: {{period}}
+host: {{host}}
+port: {{port}}
+statsd.mappings:
+  - metric: 'cluster.<service_name>.assignment_stale'
+    labels:
+      - attr: service_name
+        field: service_name
+    value:
+      field: 'cluster.<service_name>.assignment_stale'
+  - metric: 'cluster.<service_name>.assignment_timeout_received'
+    labels:
+      - attr: service_name
+        field: service_name
+    value:
+      field: 'cluster.<service_name>.assignment_timeout_received'
+  - metric: 'cluster.<service_name>.assignment_use_cached'
+    labels:
+      - attr: service_name
+        field: service_name
+    value:
+      field: assignment_use_cached
+  - metric: 'cluster.<service_name>.bind_errors'
+    labels:
+      - attr: service_name
+        field: service_name
+    value:
+      field: bind_errors
+  - metric: 'cluster.<service_name>.circuit_breakers.<circuit_type>.cx_open'
+    labels:
+      - attr: service_name
+        field: service_name
+      - attr: circuit_type
+        field: circuit_type
+    value:
+      field: circuit_breakers.<circuit_type>.cx_open
+  - metric: 'cluster.<service_name>.circuit_breakers.<circuit_type>.cx_pool_open'
+    labels:
+      - attr: service_name
+        field: service_name
+      - attr: circuit_type
+        field: circuit_type
+    value:
+      field: circuit_breakers.<circuit_type>.cx_pool_open
+  - metric: 'cluster.<service_name>.circuit_breakers.<circuit_type>.rq_open'
+    labels:
+      - attr: service_name
+        field: service_name
+      - attr: circuit_type
+        field: circuit_type
+    value:
+      field: circuit_breakers.<circuit_type>.rq_open
+  - metric: 'cluster.<service_name>.circuit_breakers.<circuit_type>.rq_pending_open'
+    labels:
+      - attr: service_name
+        field: service_name
+      - attr: circuit_type
+        field: circuit_type
+    value:
+      field: circuit_breakers.<circuit_type>.rq_pending_open
+  - metric: 'cluster.<service_name>.circuit_breakers.<circuit_type>.rq_retry_open'
+    labels:
+      - attr: service_name
+        field: service_name
+      - attr: circuit_type
+        field: circuit_type
+    value:
+      field: circuit_breakers.<circuit_type>.rq_retry_open
