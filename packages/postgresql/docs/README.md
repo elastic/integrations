@@ -150,10 +150,10 @@ An example event for `activity` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-24T06:26:51.999Z",
+    "@timestamp": "2024-04-30T09:14:50.873Z",
     "agent": {
-        "ephemeral_id": "e9d8c03d-5838-42ee-af7c-40e7d5368818",
-        "id": "05db9964-0467-486c-a837-4b9ce09ab97d",
+        "ephemeral_id": "f065ed3c-78fb-41da-9fe6-88ab3ff0f088",
+        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.13.0"
@@ -170,15 +170,15 @@ An example event for `activity` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "05db9964-0467-486c-a837-4b9ce09ab97d",
+        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.activity",
-        "duration": 8577935,
-        "ingested": "2024-04-24T06:27:03Z",
+        "duration": 6165334,
+        "ingested": "2024-04-30T09:15:02Z",
         "module": "postgresql"
     },
     "host": {
@@ -186,8 +186,8 @@ An example event for `activity` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": "192.168.241.5",
-        "mac": "02-42-C0-A8-F1-05",
+        "ip": "192.168.251.4",
+        "mac": "02-42-C0-A8-FB-04",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -206,11 +206,11 @@ An example event for `activity` looks as following:
     "postgresql": {
         "activity": {
             "application_name": "",
-            "backend_start": "2024-04-24T06:26:52.001Z",
+            "backend_start": "2024-04-30T09:14:50.875Z",
             "client": {
-                "address": "192.168.241.5",
+                "address": "192.168.251.4",
                 "hostname": "",
-                "port": 60578
+                "port": 49266
             },
             "database": {
                 "name": "postgres",
@@ -219,10 +219,10 @@ An example event for `activity` looks as following:
             "pid": 113,
             "query": "SELECT * FROM pg_stat_activity",
             "query_id": "W/d3kCHhA8b/M4YpzDBJHlJM7xU=",
-            "query_start": "2024-04-24T06:26:52.004Z",
+            "query_start": "2024-04-30T09:14:50.877Z",
             "state": "active",
-            "state_change": "2024-04-24T06:26:52.004Z",
-            "transaction_start": "2024-04-24T06:26:52.004Z",
+            "state_change": "2024-04-30T09:14:50.877Z",
+            "transaction_start": "2024-04-30T09:14:50.877Z",
             "user": {
                 "id": 10,
                 "name": "postgres"
@@ -259,7 +259,7 @@ An example event for `activity` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| database.oid | OID of the database that this event is related to. | long |
+| database.oid | OID of the database that this event is related to. | alias |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
@@ -467,10 +467,10 @@ An example event for `database` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-24T06:48:47.589Z",
+    "@timestamp": "2024-04-30T09:16:46.265Z",
     "agent": {
-        "ephemeral_id": "5dbd2efb-e396-4af1-855d-d43c98fa70c8",
-        "id": "05db9964-0467-486c-a837-4b9ce09ab97d",
+        "ephemeral_id": "2ce5850f-ce2a-4871-9676-9a92871bbec3",
+        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.13.0"
@@ -480,22 +480,19 @@ An example event for `database` looks as following:
         "namespace": "ep",
         "type": "metrics"
     },
-    "database": {
-        "oid": 12379
-    },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "05db9964-0467-486c-a837-4b9ce09ab97d",
+        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.database",
-        "duration": 19461816,
-        "ingested": "2024-04-24T06:48:59Z",
+        "duration": 15741389,
+        "ingested": "2024-04-30T09:16:58Z",
         "module": "postgresql"
     },
     "host": {
@@ -503,8 +500,8 @@ An example event for `database` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": "192.168.241.5",
-        "mac": "02-42-C0-A8-F1-05",
+        "ip": "192.168.251.4",
+        "mac": "02-42-C0-A8-FB-04",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -546,7 +543,7 @@ An example event for `database` looks as following:
                 "returned": 1719,
                 "updated": 3
             },
-            "stats_reset": "2024-04-24T06:48:23.508Z",
+            "stats_reset": "2024-04-30T09:16:22.908Z",
             "temporary": {
                 "bytes": 0,
                 "files": 0
@@ -586,7 +583,7 @@ An example event for `database` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| database.oid | OID of the database that this event is related to. | long |  |
+| database.oid | OID of the database that this event is related to. | alias |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error.message | Error message. | match_only_text |  |
 | event.dataset | Event dataset | constant_keyword |  |
@@ -639,10 +636,10 @@ An example event for `statement` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-24T06:51:22.434Z",
+    "@timestamp": "2024-04-30T09:17:42.181Z",
     "agent": {
-        "ephemeral_id": "f9619b0e-2f5e-4410-a8a9-19589f565779",
-        "id": "05db9964-0467-486c-a837-4b9ce09ab97d",
+        "ephemeral_id": "0bad7d4e-66f6-408c-9ae4-f6f4daddb7ab",
+        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.13.0"
@@ -659,15 +656,15 @@ An example event for `statement` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "05db9964-0467-486c-a837-4b9ce09ab97d",
+        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.statement",
-        "duration": 4883445,
-        "ingested": "2024-04-24T06:51:34Z",
+        "duration": 5544043,
+        "ingested": "2024-04-30T09:17:54Z",
         "module": "postgresql"
     },
     "host": {
@@ -675,8 +672,8 @@ An example event for `statement` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": "192.168.241.5",
-        "mac": "02-42-C0-A8-F1-05",
+        "ip": "192.168.251.4",
+        "mac": "02-42-C0-A8-FB-04",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -722,19 +719,19 @@ An example event for `statement` looks as following:
                 "text": "SELECT d.datname as \"Name\",\n       pg_catalog.pg_get_userbyid(d.datdba) as \"Owner\",\n       pg_catalog.pg_encoding_to_char(d.encoding) as \"Encoding\",\n       d.datcollate as \"Collate\",\n       d.datctype as \"Ctype\",\n       pg_catalog.array_to_string(d.datacl, ?) AS \"Access privileges\"\nFROM pg_catalog.pg_database d\nORDER BY 1;",
                 "time": {
                     "max": {
-                        "ms": 0.132
+                        "ms": 0.107
                     },
                     "mean": {
                         "ms": 0
                     },
                     "min": {
-                        "ms": 0.084
+                        "ms": 0.096
                     },
                     "stddev": {
                         "ms": 0
                     },
                     "total": {
-                        "ms": 0.216
+                        "ms": 0.203
                     }
                 }
             },
@@ -772,7 +769,7 @@ An example event for `statement` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| database.oid | OID of the database that this event is related to. | long |  |
+| database.oid | OID of the database that this event is related to. | alias |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error.message | Error message. | match_only_text |  |
 | event.dataset | Event dataset | constant_keyword |  |
