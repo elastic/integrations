@@ -60,7 +60,7 @@
       type: keyword
 - name: gen_ai.request.content
   type: text
-  description: The full text of the user's request to the LLM.
+  description: The full text of the user's request to the gen_ai.
 - name: gen_ai.usage.prompt_tokens
   type: integer
   description: Number of tokens in the user's request.
@@ -70,12 +70,24 @@
 - name: gen_ai.usage.completion_tokens
   type: integer
   description: Number of tokens in the LLM's response.
+- name: gen_ai.user.id
+  type: keyword
+  description: Unique identifier for the user.
+- name: gen_ai.user.rn
+  type: keyword
+  description: Unique resource name for the user.
 - name: gen_ai.request.id
   type: keyword
   description: Unique identifier for the LLM request.
 - name: gen_ai.response.id
   type: keyword
   description: Unique identifier for the LLM response.
+- name: gen_ai.response.error_code
+  type: keyword
+  description: Error code returned in the LLM response.
+- name: gen_ai.response.stop_reason
+  type: keyword
+  description: Reason the LLM response stopped.
 - name: gen_ai.request.timestamp
   type: date
   description: Timestamp when the request was made.
@@ -100,6 +112,9 @@
 - name: gen_ai.model.description
   type: keyword
   description: Description of the LLM model.
+- name: gen_ai.model.instructions
+  type: text
+  description: Custom instructions for the LLM model.
 - name: gen_ai.model.parameters
   type: keyword
   description: Parameters used to confirm the LLM model.
@@ -127,48 +142,60 @@
 - name: gen_ai.security.refusal_score
   type: float
   description: Measures similarity to known LLM refusal responses.
-- name: gen_ai.sentiment.score
+- name: gen_ai.policy.name
+  type: keyword
+  description: Name of the specific policy that was triggered.
+- name: gen_ai.policy.violation
+  type: boolean
+  description: Specifies if a security policy was violated.
+- name: gen_ai.policy.action
+  type: keyword
+  description: Action taken due to a policy violation, such as blocking, alerting, or modifying the content.
+- name: gen_ai.policy.match_detail
+  type: nested
+  description: Details about what specifically triggered the policy, including matched words, phrases, or patterns.
+- name: gen_ai.policy.confidence
   type: float
-  description: Sentiment analysis score.
-- name: gen_ai.sentiment.toxicity_score
-  type: float
-  description: Toxicity analysis score.
-- name: gen_ai.security.risk_score
+  description: Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria.
+- name: gen_ai.threat.risk_score
   type: float
   description: Numerical score indicating the potential risk associated with the response.
-- name: gen_ai.security.threat_type
+- name: gen_ai.threat.type
   type: keyword
   description: Type of threat detected in the LLM interaction.
-- name: gen_ai.security.threat_detected
+- name: gen_ai.threat.detected
   type: boolean
   description: Whether a security threat was detected.
-- name: gen_ai.security.threat_category
+- name: gen_ai.threat.category
   type: keyword
   description: Category of the detected security threat.
-- name: gen_ai.security.threat_description
+- name: gen_ai.threat.description
   type: text
   description: Description of the detected security threat.
-- name: gen_ai.security.threat_action
+- name: gen_ai.threat.action
   type: keyword
   description: Recommended action to mitigate the detected security threat.
-- name: gen_ai.security.threat_source
+- name: gen_ai.threat.source
   type: keyword
   description: Source of the detected security threat.
-- name: gen_ai.security.threat_signature
+- name: gen_ai.threat.signature
   type: keyword
   description: Signature of the detected security threat.
-- name: gen_ai.response.compliance.violation
-  type: keyword
-  description: Compliance violation code identified in the interaction.
-- name: gen_ai.response.filter.triggerer
-  type: keyword
-  description: Filters triggered during the processing of the response.
-- name: gen_ai.request.filter.triggerer
-  type: keyword
-  description: Filters triggered during the processing of the request.
-- name: gen_ai.security.yara.matches
+- name: gen_ai.threat.yara_matches
   type: nested
   description: Stores results from YARA scans including rule matches and categories.
+- name: gen_ai.compliance.violation_detected
+  type: boolean
+  description: Indicates if any compliance violation was detected during the interaction.
+- name: gen_ai.compliance.violation_code
+  type: keyword
+  description: Code identifying the specific compliance rule that was violated.
+- name: gen_ai.compliance.response_triggered
+  type: keyword
+  description: Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks.
+- name: gen_ai.compliance.request_triggered
+  type: keyword
+  description: Lists compliance-related filters that were triggered during the processing of the request, such as data privacy filters or regulatory compliance checks.
 - name: gen_ai.owasp.id
   type: keyword
   description: Identifier for the OWASP risk addressed.
@@ -187,10 +214,16 @@
 - name: gen_ai.analysis.action_recommended
   type: keyword
   description: Recommended actions based on the analysis.
-- name: gen_ai.content.inappropriate
+- name: gen_ai.sentiment.score
+  type: float
+  description: Sentiment analysis score.
+- name: gen_ai.sentiment.toxicity_score
+  type: float
+  description: Toxicity analysis score.
+- name: gen_ai.sentiment.content_inappropriate
   type: boolean
   description: Whether the content was flagged as inappropriate or sensitive.
-- name: gen_ai.content.categories
+- name: gen_ai.sentiment.content_categories
   type: keyword
   description: Categories of content identified as sensitive or requiring moderation.
 - name: gen_ai.performance.response_time

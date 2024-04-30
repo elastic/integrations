@@ -79,6 +79,65 @@ list log events from the specified log group.
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| gen_ai.analysis.action_recommended | Recommended actions based on the analysis. | keyword |
+| gen_ai.analysis.findings | Detailed findings from security tools. | nested |
+| gen_ai.analysis.function | Name of the security or analysis function used. | keyword |
+| gen_ai.analysis.tool_names | Name of the security or analysis tools used. | keyword |
+| gen_ai.compliance.request_triggered | Lists compliance-related filters that were triggered during the processing of the request, such as data privacy filters or regulatory compliance checks. | keyword |
+| gen_ai.compliance.response_triggered | Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks. | keyword |
+| gen_ai.compliance.violation_code | Code identifying the specific compliance rule that was violated. | keyword |
+| gen_ai.compliance.violation_detected | Indicates if any compliance violation was detected during the interaction. | boolean |
+| gen_ai.model.description | Description of the LLM model. | keyword |
+| gen_ai.model.id | Unique identifier for the LLM model. | keyword |
+| gen_ai.model.instructions | Custom instructions for the LLM model. | text |
+| gen_ai.model.name | Name of the LLM model used to generate the response. | keyword |
+| gen_ai.model.parameters | Parameters used to confirm the LLM model. | keyword |
+| gen_ai.model.role | Role of the LLM model in the interaction. | keyword |
+| gen_ai.model.type | Type of LLM model. | keyword |
+| gen_ai.model.version | Version of the LLM model used to generate the response. | keyword |
+| gen_ai.owasp.description | Description of the OWASP risk triggered. | text |
+| gen_ai.owasp.id | Identifier for the OWASP risk addressed. | keyword |
+| gen_ai.performance.request_size | Size of the request payload in bytes. | long |
+| gen_ai.performance.response_size | Size of the response payload in bytes. | long |
+| gen_ai.performance.response_time | Time taken by the LLM to generate a response in milliseconds. | long |
+| gen_ai.policy.action | Action taken due to a policy violation, such as blocking, alerting, or modifying the content. | keyword |
+| gen_ai.policy.confidence | Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria. | float |
+| gen_ai.policy.match_detail | Details about what specifically triggered the policy, including matched words, phrases, or patterns. | nested |
+| gen_ai.policy.name | Name of the specific policy that was triggered. | keyword |
+| gen_ai.policy.violation | Specifies if a security policy was violated. | boolean |
+| gen_ai.request.content | The full text of the user's request to the gen_ai. | text |
+| gen_ai.request.id | Unique identifier for the LLM request. | keyword |
+| gen_ai.request.timestamp | Timestamp when the request was made. | date |
+| gen_ai.response.content | The full text of the LLM's response. | text |
+| gen_ai.response.error_code | Error code returned in the LLM response. | keyword |
+| gen_ai.response.id | Unique identifier for the LLM response. | keyword |
+| gen_ai.response.stop_reason | Reason the LLM response stopped. | keyword |
+| gen_ai.response.timestamp | Timestamp when the response was received. | date |
+| gen_ai.security.hallucination_consistency | Consistency check between multiple responses. | float |
+| gen_ai.security.jailbreak_score | Measures similarity to known jailbreak attempts. | float |
+| gen_ai.security.prompt_injection_score | Measures similarity to known prompt injection attacks. | float |
+| gen_ai.security.refusal_score | Measures similarity to known LLM refusal responses. | float |
+| gen_ai.security.regex_pattern_count | Counts occurrences of strings matching user-defined regex patterns. | integer |
+| gen_ai.sentiment.content_categories | Categories of content identified as sensitive or requiring moderation. | keyword |
+| gen_ai.sentiment.content_inappropriate | Whether the content was flagged as inappropriate or sensitive. | boolean |
+| gen_ai.sentiment.score | Sentiment analysis score. | float |
+| gen_ai.sentiment.toxicity_score | Toxicity analysis score. | float |
+| gen_ai.text.complexity_score | Evaluates the complexity of the text. | float |
+| gen_ai.text.readability_score | Measures the readability level of the text. | float |
+| gen_ai.text.similarity_score | Measures the similarity between the prompt and response. | float |
+| gen_ai.threat.action | Recommended action to mitigate the detected security threat. | keyword |
+| gen_ai.threat.category | Category of the detected security threat. | keyword |
+| gen_ai.threat.description | Description of the detected security threat. | text |
+| gen_ai.threat.detected | Whether a security threat was detected. | boolean |
+| gen_ai.threat.risk_score | Numerical score indicating the potential risk associated with the response. | float |
+| gen_ai.threat.signature | Signature of the detected security threat. | keyword |
+| gen_ai.threat.source | Source of the detected security threat. | keyword |
+| gen_ai.threat.type | Type of threat detected in the LLM interaction. | keyword |
+| gen_ai.threat.yara_matches | Stores results from YARA scans including rule matches and categories. | nested |
+| gen_ai.usage.completion_tokens | Number of tokens in the LLM's response. | integer |
+| gen_ai.usage.prompt_tokens | Number of tokens in the user's request. | integer |
+| gen_ai.user.id | Unique identifier for the user. | keyword |
+| gen_ai.user.rn | Unique resource name for the user. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -97,54 +156,6 @@ list log events from the specified log group.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| llm.analysis.action_recommended | Recommended actions based on the analysis. | keyword |
-| llm.analysis.findings | Detailed findings from security tools. | nested |
-| llm.analysis.function | Name of the security or analysis function used. | keyword |
-| llm.analysis.tool_names | Name of the security or analysis tools used. | keyword |
-| llm.content.categories | Categories of content identified as sensitive or requiring moderation. | keyword |
-| llm.content.inappropriate | Whether the content was flagged as inappropriate or sensitive. | boolean |
-| llm.model.description | Description of the LLM model. | keyword |
-| llm.model.id | Unique identifier for the LLM model. | keyword |
-| llm.model.name | Name of the LLM model used to generate the response. | keyword |
-| llm.model.parameters | Parameters used to confirm the LLM model. | keyword |
-| llm.model.role | Role of the LLM model in the interaction. | keyword |
-| llm.model.type | Type of LLM model. | keyword |
-| llm.model.version | Version of the LLM model used to generate the response. | keyword |
-| llm.owasp.description | Description of the OWASP risk triggered. | text |
-| llm.owasp.id | Identifier for the OWASP risk addressed. | keyword |
-| llm.performance.request_size | Size of the request payload in bytes. | long |
-| llm.performance.response_size | Size of the response payload in bytes. | long |
-| llm.performance.response_time | Time taken by the LLM to generate a response in milliseconds. | long |
-| llm.request.content | The full text of the user's request to the LLM. | text |
-| llm.request.filter.triggerer | Filters triggered during the processing of the request. | keyword |
-| llm.request.id | Unique identifier for the LLM request. | keyword |
-| llm.request.timestamp | Timestamp when the request was made. | date |
-| llm.request.token_count | Number of tokens in the user's request. | integer |
-| llm.response.compliance.violation | Compliance violation code identified in the interaction. | keyword |
-| llm.response.content | The full text of the LLM's response. | text |
-| llm.response.filter.triggerer | Filters triggered during the processing of the response. | keyword |
-| llm.response.id | Unique identifier for the LLM response. | keyword |
-| llm.response.timestamp | Timestamp when the response was received. | date |
-| llm.response.token_count | Number of tokens in the LLM's response. | integer |
-| llm.security.hallucination_consistency | Consistency check between multiple responses. | float |
-| llm.security.jailbreak_score | Measures similarity to known jailbreak attempts. | float |
-| llm.security.prompt_injection_score | Measures similarity to known prompt injection attacks. | float |
-| llm.security.refusal_score | Measures similarity to known LLM refusal responses. | float |
-| llm.security.regex_pattern_count | Counts occurrences of strings matching user-defined regex patterns. | integer |
-| llm.security.risk_score | Numerical score indicating the potential risk associated with the response. | float |
-| llm.security.threat_action | Recommended action to mitigate the detected security threat. | keyword |
-| llm.security.threat_category | Category of the detected security threat. | keyword |
-| llm.security.threat_description | Description of the detected security threat. | text |
-| llm.security.threat_detected | Whether a security threat was detected. | boolean |
-| llm.security.threat_signature | Signature of the detected security threat. | keyword |
-| llm.security.threat_source | Source of the detected security threat. | keyword |
-| llm.security.threat_type | Type of threat detected in the LLM interaction. | keyword |
-| llm.security.yara.matches | Stores results from YARA scans including rule matches and categories. | nested |
-| llm.sentiment.score | Sentiment analysis score. | float |
-| llm.sentiment.toxicity_score | Toxicity analysis score. | float |
-| llm.text.complexity_score | Evaluates the complexity of the text. | float |
-| llm.text.readability_score | Measures the readability level of the text. | float |
-| llm.text.similarity_score | Measures the similarity between the prompt and response. | float |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
