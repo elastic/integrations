@@ -12,6 +12,10 @@ See [Link to docs](https://docs.gitlab.com/ee/administration/logs/) for more inf
 
 The Gitlab Community Edition module is currently tested on Linux and Mac with the community edition, version 16.8.5-ce.0.
 
+## Setup
+
+Refer to the Gitlab documentation for the specific filepath(s) for your instance type. Both are provided as default in the configuration setup, but only one will be needed for use. See [API](https://docs.gitlab.com/ee/administration/logs/#api_jsonlog) and [Production](https://docs.gitlab.com/ee/administration/logs/#production_jsonlog). 
+
 ## Logs
 
 ### api
