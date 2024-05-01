@@ -83,6 +83,7 @@ list log events from the specified log group.
 | gen_ai.analysis.findings | Detailed findings from security tools. | nested |
 | gen_ai.analysis.function | Name of the security or analysis function used. | keyword |
 | gen_ai.analysis.tool_names | Name of the security or analysis tools used. | keyword |
+| gen_ai.completion | The full text of the LLM's response. | text |
 | gen_ai.compliance.request_triggered | Lists compliance-related filters that were triggered during the processing of the request, such as data privacy filters or regulatory compliance checks. | keyword |
 | gen_ai.compliance.response_triggered | Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks. | keyword |
 | gen_ai.compliance.violation_code | Code identifying the specific compliance rule that was violated. | keyword |
@@ -105,10 +106,9 @@ list log events from the specified log group.
 | gen_ai.policy.match_detail | Details about what specifically triggered the policy, including matched words, phrases, or patterns. | nested |
 | gen_ai.policy.name | Name of the specific policy that was triggered. | keyword |
 | gen_ai.policy.violation | Specifies if a security policy was violated. | boolean |
-| gen_ai.request.content | The full text of the user's request to the gen_ai. | text |
+| gen_ai.prompt | The full text of the user's request to the gen_ai. | text |
 | gen_ai.request.id | Unique identifier for the LLM request. | keyword |
 | gen_ai.request.timestamp | Timestamp when the request was made. | date |
-| gen_ai.response.content | The full text of the LLM's response. | text |
 | gen_ai.response.error_code | Error code returned in the LLM response. | keyword |
 | gen_ai.response.id | Unique identifier for the LLM response. | keyword |
 | gen_ai.response.stop_reason | Reason the LLM response stopped. | keyword |

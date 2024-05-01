@@ -72,11 +72,11 @@ processors:
   # Remarshal the request and response.
   - set:
       description: Prepare destination for request JSON.
-      field: gen_ai.request.content
+      field: gen_ai.prompt
       value: ""
   - set:
       description: Prepare destination for response JSON.
-      field: gen_ai.response.content
+      field: gen_ai.completion
       value: ""
   - set:
       description: Prepare destination for request size.
@@ -126,29 +126,29 @@ processors:
           }
           return val.toString();
         }
-        ctx.gen_ai.request.content = json(ctx.aws_bedrock?.invocation?.input?.inputBodyJson);
-        ctx.gen_ai.response.content = json(ctx.aws_bedrock?.invocation?.output?.outputBodyJson);
+        ctx.gen_ai.prompt = json(ctx.aws_bedrock?.invocation?.input?.inputBodyJson);
+        ctx.gen_ai.completion = json(ctx.aws_bedrock?.invocation?.output?.outputBodyJson);
   - script:
       description: Remove massive input bodies and keep request perf stats.
-      if: ctx.gen_ai?.request?.content instanceof String
+      if: ctx.gen_ai?.prompt instanceof String
       lang: painless
       source: |
-        ctx.gen_ai.performance.request_size = ctx.gen_ai.request.content.length();
-        if (ctx.gen_ai.request.content.length() > 32766) {
-          ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.gen_ai.request.content.sha1();
+        ctx.gen_ai.performance.request_size = ctx.gen_ai.prompt.length();
+        if (ctx.gen_ai.prompt.length() > 32766) {
+          ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.gen_ai.prompt.sha1();
           ctx.aws_bedrock.invocation.input.remove("inputBodyJson");
-          ctx.gen_ai.request.remove("content");
+          ctx.gen_ai.remove("prompt");
         }
   - script:
       description: Remove massive output bodies and keep response perf stats.
-      if: ctx.gen_ai?.response?.content instanceof String
+      if: ctx.gen_ai?.completion instanceof String
       lang: painless
       source: |
-        ctx.gen_ai.performance.response_size = ctx.gen_ai.response.content.length();
-        if (ctx.gen_ai.response.content.length() > 32766) {
-          ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.gen_ai.response.content.sha1();
+        ctx.gen_ai.performance.response_size = ctx.gen_ai.completion.length();
+        if (ctx.gen_ai.completion.length() > 32766) {
+          ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.gen_ai.completion.sha1();
           ctx.aws_bedrock.invocation.output.remove("outputBodyJson");
-          ctx.gen_ai.response.remove("content");
+          ctx.gen_ai.remove("completion");
         }
 
   # This must come after the JSON remarshal to ensure that the text there is recorded
@@ -352,8 +352,15 @@ processors:
         }
         drop(ctx);
   - remove:
+      field:
+        - aws_bedrock.invocation.input.input_body_json
+        - aws_bedrock.invocation.output.output_body_json
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
       field: event.original
-      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:
