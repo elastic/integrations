@@ -70,6 +70,11 @@ processors:
       field: http.response.headers.content-type
       target_field: http.response.mime_type
       ignore_missing: true
+  - rename:
+      field: log.file.path
+      target_field: temp.log_file_path
+      ignore_missing: true
+      description: Temporarily save container log file path for later use
   - remove:
       field: log
       ignore_missing: true
@@ -79,6 +84,11 @@ processors:
       field: temp.log
       target_field: log
       ignore_missing: true
+  - rename:
+      field: temp.log_file_path
+      target_field: log.file.path
+      ignore_missing: true
+      if: 'ctx?.temp?.log?.file?.path == null'
   - lowercase:
       field: log.level
       ignore_missing: true
