@@ -2171,7 +2171,9 @@
                                             "columnOrder": [
                                                 "0a3d2e1f-e2f5-4001-b02b-927904b0ab94",
                                                 "6093c949-5f5d-4c72-baba-5a84ce2f1a9b",
-                                                "c37367a6-4c26-4f3f-86eb-10db67933171"
+                                                "c37367a6-4c26-4f3f-86eb-10db67933171",
+                                                "c37367a6-4c26-4f3f-86eb-10db67933171X1",
+                                                "c37367a6-4c26-4f3f-86eb-10db67933171X0"
                                             ],
                                             "columns": {
                                                 "0a3d2e1f-e2f5-4001-b02b-927904b0ab94": {
@@ -2186,10 +2188,10 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "c37367a6-4c26-4f3f-86eb-10db67933171",
-                                                            "type": "column"
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
                                                         },
-                                                        "orderDirection": "desc",
+                                                        "orderDirection": "asc",
                                                         "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
@@ -2215,18 +2217,65 @@
                                                 "c37367a6-4c26-4f3f-86eb-10db67933171": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Queue usage",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "average(monitoring.metrics.libbeat.pipeline.queue.filled.pct.events, kql='')*100",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "c37367a6-4c26-4f3f-86eb-10db67933171X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "c37367a6-4c26-4f3f-86eb-10db67933171X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
                                                         "query": ""
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Queue depth",
-                                                    "operationType": "max",
+                                                    "label": "Part of Queue usage",
+                                                    "operationType": "average",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "monitoring.metrics.libbeat.pipeline.queue.filled.pct.events"
+                                                },
+                                                "c37367a6-4c26-4f3f-86eb-10db67933171X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Queue usage",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "c37367a6-4c26-4f3f-86eb-10db67933171X0",
+                                                                100
+                                                            ],
+                                                            "location": {
+                                                                "max": 80,
+                                                                "min": 0
+                                                            },
+                                                            "name": "multiply",
+                                                            "text": "average(monitoring.metrics.libbeat.pipeline.queue.filled.pct.events, kql='')*100",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "c37367a6-4c26-4f3f-86eb-10db67933171X0"
+                                                    ],
+                                                    "scale": "ratio"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -2340,7 +2389,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-04-30T15:39:45.578Z",
+    "created_at": "2024-05-01T20:29:40.958Z",
     "id": "elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395",
     "managed": false,
     "references": [
