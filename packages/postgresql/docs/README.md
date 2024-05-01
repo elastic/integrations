@@ -467,10 +467,10 @@ An example event for `database` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-30T09:16:46.265Z",
+    "@timestamp": "2024-05-01T09:58:10.541Z",
     "agent": {
-        "ephemeral_id": "2ce5850f-ce2a-4871-9676-9a92871bbec3",
-        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
+        "ephemeral_id": "f01bc762-745d-4991-8e9e-72d8b06d0460",
+        "id": "de455097-cace-48cd-b1db-e2dda1bf1ecd",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.13.0"
@@ -480,19 +480,22 @@ An example event for `database` looks as following:
         "namespace": "ep",
         "type": "metrics"
     },
+    "database": {
+        "oid": 12379
+    },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
+        "id": "de455097-cace-48cd-b1db-e2dda1bf1ecd",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.database",
-        "duration": 15741389,
-        "ingested": "2024-04-30T09:16:58Z",
+        "duration": 17453448,
+        "ingested": "2024-05-01T09:58:22Z",
         "module": "postgresql"
     },
     "host": {
@@ -500,8 +503,8 @@ An example event for `database` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": "192.168.251.4",
-        "mac": "02-42-C0-A8-FB-04",
+        "ip": "192.168.241.7",
+        "mac": "02-42-C0-A8-F1-07",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -543,7 +546,7 @@ An example event for `database` looks as following:
                 "returned": 1719,
                 "updated": 3
             },
-            "stats_reset": "2024-04-30T09:16:22.908Z",
+            "stats_reset": "2024-05-01T09:57:46.179Z",
             "temporary": {
                 "bytes": 0,
                 "files": 0
