@@ -234,33 +234,20 @@ processors:
       field: json.readOnly
       target_field: aws.cloudtrail.read_only
       ignore_failure: true
-  - foreach:
-      field: json.resources
-      if: ctx.json?.resources instanceof List
-      ignore_failure: true
-      processor:
-        append:
-          field: aws.cloudtrail.resources.arn
-          value: '{{{_ingest._value.ARN}}}'
-          allow_duplicates: false
-  - foreach:
-      field: json.resources
-      if: ctx.json?.resources instanceof List
-      ignore_failure: true
-      processor:
-        append:
-          field: aws.cloudtrail.resources.account_id
-          value: '{{{_ingest._value.accountId}}}'
-          allow_duplicates: false
-  - foreach:
-      field: json.resources
-      if: ctx.json?.resources instanceof List
-      ignore_failure: true
-      processor:
-        append:
-          field: aws.cloudtrail.resources.type
-          value: '{{{_ingest._value.type}}}'
-          allow_duplicates: false
+  - script:
+      lang: painless
+      source: >
+        if (ctx.json?.resources instanceof List) {
+          for (int i = 0; i < ctx.json.resources.size(); i++) {
+            if (ctx.json.resources[i].containsKey('ARN')) {
+              ctx.json.resources[i].arn = ctx.json.resources[i].remove('ARN');
+            }
+            if (ctx.json.resources[i].containsKey('accountId')) {
+              ctx.json.resources[i].account_id = ctx.json.resources[i].remove('accountId');
+            }
+            // No need for renaming 'type' as it would be the same.
+          }
+        }
   - rename:
       field: json.resources
       target_field: aws.cloudtrail.resources
