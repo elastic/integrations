@@ -1,6 +1,6 @@
 # Azure Network Watcher VNet
 
-[VNet](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview) flow logs in Azure Network Watcher track IP traffic in virtual networks, sending data to Azure Storage for analysis. This information can be exported to various tools like SIEM solutions or IDS. Unlike NSG flow logs, VNet flow logs offer enhanced monitoring capabilities. They are crucial for understanding network activity, identifying connections, and monitoring open ports. Flow logs serve as the primary source for optimizing resources, ensuring compliance, and detecting intrusions in cloud environments, catering to both startups and enterprises.
+[VNet](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview) flow logs in Azure Network Watcher track IP traffic in virtual networks, sending data to Azure Storage for analysis. Unlike NSG flow logs, VNet flow logs offer enhanced monitoring capabilities. They are crucial for understanding network activity, identifying connections, and monitoring open ports. Flow logs serve as the primary source for optimizing resources, ensuring compliance, and detecting intrusions in cloud environments, catering to both startups and enterprises.
 
 ## Data streams
 
@@ -42,6 +42,8 @@ The minimum **Kibana version** required is **8.12.0**.
 4. Under key1, find the Key value. Click On the Copy button to copy the **account key**. Same way you can copy the **storage account name** shown above keys.
 5. Go to **Containers** under **Data storage** in your storage account to copy the **container name**.
 
+**Note**:  Enable virtual network flow logs using the steps provided in [reference](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-portal).
+
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations.
@@ -68,8 +70,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-09-14T09:00:52.562Z",
     "agent": {
-        "ephemeral_id": "da7d1177-fe10-44f3-b86c-e04f04934ea1",
-        "id": "71355b80-0d54-4a86-94dc-712d08b2cf9d",
+        "ephemeral_id": "21a6a640-db1c-41f2-bc9f-a1828a392fbc",
+        "id": "8a466644-c7b0-4c90-86c2-8a2cf6d98148",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -646,10 +648,10 @@ An example event for `log` looks as following:
         ]
     },
     "ecs": {
-        "version": "8.12.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "71355b80-0d54-4a86-94dc-712d08b2cf9d",
+        "id": "8a466644-c7b0-4c90-86c2-8a2cf6d98148",
         "snapshot": false,
         "version": "8.12.0"
     },
@@ -659,7 +661,7 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "azure_network_watcher_vnet.log",
-        "ingested": "2024-04-18T12:33:38Z",
+        "ingested": "2024-05-01T08:54:01Z",
         "kind": "event",
         "type": [
             "info"

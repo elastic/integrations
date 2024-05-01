@@ -1,6 +1,6 @@
 # Azure Network Watcher VNet
 
-[VNet](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview) flow logs in Azure Network Watcher track IP traffic in virtual networks, sending data to Azure Storage for analysis. This information can be exported to various tools like SIEM solutions or IDS. Unlike NSG flow logs, VNet flow logs offer enhanced monitoring capabilities. They are crucial for understanding network activity, identifying connections, and monitoring open ports. Flow logs serve as the primary source for optimizing resources, ensuring compliance, and detecting intrusions in cloud environments, catering to both startups and enterprises.
+[VNet](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview) flow logs in Azure Network Watcher track IP traffic in virtual networks, sending data to Azure Storage for analysis. Unlike NSG flow logs, VNet flow logs offer enhanced monitoring capabilities. They are crucial for understanding network activity, identifying connections, and monitoring open ports. Flow logs serve as the primary source for optimizing resources, ensuring compliance, and detecting intrusions in cloud environments, catering to both startups and enterprises.
 
 ## Data streams
 
@@ -41,6 +41,8 @@ The minimum **Kibana version** required is **8.12.0**.
 3. Click On **Show** keys to show your **access keys** and **connection strings** and to enable buttons to copy the values.
 4. Under key1, find the Key value. Click On the Copy button to copy the **account key**. Same way you can copy the **storage account name** shown above keys.
 5. Go to **Containers** under **Data storage** in your storage account to copy the **container name**.
+
+**Note**:  Enable virtual network flow logs using the steps provided in [reference](https://learn.microsoft.com/en-us/azure/network-watcher/vnet-flow-logs-portal).
 
 ### Enabling the integration in Elastic:
 
