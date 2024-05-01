@@ -1013,6 +1013,7 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.properties.initiated_by.user.displayName | Display name | keyword |
 | azure.auditlogs.properties.initiated_by.user.id | ID | keyword |
 | azure.auditlogs.properties.initiated_by.user.ipAddress | ip Address | keyword |
+| azure.auditlogs.properties.initiated_by.user.roles | User roles | keyword |
 | azure.auditlogs.properties.initiated_by.user.userPrincipalName | User principal name | keyword |
 | azure.auditlogs.properties.logged_by_service | Logged by service | keyword |
 | azure.auditlogs.properties.operation_type | Operation type | keyword |
@@ -1026,6 +1027,7 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.properties.target_resources.\*.modified_properties.\*.old_value | Old value | keyword |
 | azure.auditlogs.properties.target_resources.\*.type | Type | keyword |
 | azure.auditlogs.properties.target_resources.\*.user_principal_name | User principal name | keyword |
+| azure.auditlogs.result_description | Result description | keyword |
 | azure.auditlogs.result_signature | Result signature | keyword |
 | azure.auditlogs.tenant_id | Tenant ID | keyword |
 | azure.correlation_id | Correlation ID | keyword |
