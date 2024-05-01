@@ -1,9 +1,11 @@
 ---
 description: Default pipeline for processing mf-chsdi3 logs
 processors:
-  - dissect:
+  - grok:
       field: event.original
-      pattern: "[%{@timestamp}] [%{log.level}] [pid/tid %{process.pid}/%{process.thread.id}] [%{log.logger}] [ID %{event.id}] %{message}"
+      patterns:
+        - "^\\[%{TIMESTAMP_ISO8601:@timestamp}\\] \\[%{DATA:log.level}\\] \\[pid/tid %{POSINT:process.pid}/%{POSINT:process.thread.id}\\] \\[%{DATA:log.logger}\\] \\[ID %{NOTSPACE:event.id}\\] %{GREEDYDATA:message}"
+        - "^\\[%{TIMESTAMP_ISO8601:@timestamp}\\] \\[%{DATA:log.level}\\] \\[pid/tid %{POSINT:process.pid}/%{POSINT:process.thread.id}\\] \\[%{DATA:log.logger}\\] \\[ID %{NOTSPACE:event.id} %{GREEDYDATA:message}"
   - convert:
       field: process.pid
       type: long
@@ -12,3 +14,8 @@ processors:
       field: process.thread.id
       type: long
       ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
