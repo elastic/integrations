@@ -325,7 +325,12 @@ processors:
           Collections.sort(ctx.gen_ai.threat.category);
         }
   - set:
-      # If we didn't fail above, we succeeded.
+      if: ctx.gen_ai?.response?.error_code != null
+      field: event.outcome
+      value: failure
+      override: true
+  - set:
+      # If we didn't fail above in either the guardrails check or the response code check, we succeeded.
       field: event.outcome
       value: success
       override: false
