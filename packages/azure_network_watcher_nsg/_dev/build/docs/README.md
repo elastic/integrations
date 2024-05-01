@@ -42,6 +42,8 @@ The minimum **Kibana version** required is **8.12.0**.
 4. Under key1, find the Key value. Click on the Copy button to copy the **account key**. Same way you can copy the **storage account name** shown above keys.
 5. Go to **Containers** under **Data storage** in your storage account to copy the **container name**.
 
+**Note**:  Enable virtual network flow logs using the steps provided in [reference](https://learn.microsoft.com/en-us/azure/network-watcher/nsg-flow-logs-portal).
+
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations.

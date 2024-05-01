@@ -42,6 +42,8 @@ The minimum **Kibana version** required is **8.12.0**.
 4. Under key1, find the Key value. Click on the Copy button to copy the **account key**. Same way you can copy the **storage account name** shown above keys.
 5. Go to **Containers** under **Data storage** in your storage account to copy the **container name**.
 
+**Note**:  Enable virtual network flow logs using the steps provided in [reference](https://learn.microsoft.com/en-us/azure/network-watcher/nsg-flow-logs-portal).
+
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations.
@@ -68,8 +70,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-11-13T12:00:35.389Z",
     "agent": {
-        "ephemeral_id": "824cd299-63f6-47a2-b90b-19f1da7b7757",
-        "id": "dac787fb-5f6a-484a-b53f-b98b3ffa90de",
+        "ephemeral_id": "abbf681d-09ba-4a9a-9e24-be8dc3400bc0",
+        "id": "8a466644-c7b0-4c90-86c2-8a2cf6d98148",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -208,7 +210,7 @@ An example event for `log` looks as following:
                                             "ip": "13.67.143.115",
                                             "port": 443
                                         },
-                                        "flow_state": "Continue",
+                                        "flow_state": "Continuing",
                                         "packets": {
                                             "received": 24,
                                             "sent": 30
@@ -295,10 +297,10 @@ An example event for `log` looks as following:
         ]
     },
     "ecs": {
-        "version": "8.12.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dac787fb-5f6a-484a-b53f-b98b3ffa90de",
+        "id": "8a466644-c7b0-4c90-86c2-8a2cf6d98148",
         "snapshot": false,
         "version": "8.12.0"
     },
@@ -308,7 +310,7 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "azure_network_watcher_nsg.log",
-        "ingested": "2024-04-18T09:01:24Z",
+        "ingested": "2024-05-01T11:31:28Z",
         "kind": "event",
         "type": [
             "info"
@@ -325,8 +327,8 @@ An example event for `log` looks as following:
     },
     "network": {
         "direction": [
-            "inbound",
-            "outbound"
+            "outbound",
+            "inbound"
         ],
         "transport": [
             "udp",
