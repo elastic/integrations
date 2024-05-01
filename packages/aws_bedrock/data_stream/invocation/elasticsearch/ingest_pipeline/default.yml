@@ -363,6 +363,12 @@ processors:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
+  - script:
+      description: Remove massive event.original if it was wanted.
+      if: ctx.event?.original instanceof String && ctx.event.original.length() > 32766
+      lang: painless
+      source: |
+        ctx.event.original = 'sha1-'+ctx.event.original.sha1()+':'+ctx.event.original.length().toString();
 on_failure:
   - set:
       field: error.message
