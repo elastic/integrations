@@ -78,6 +78,14 @@ processors:
       description: Prepare destination for response JSON.
       field: gen_ai.response.content
       value: ""
+  - set:
+      description: Prepare destination for request size.
+      field: gen_ai.performance.request_size
+      value: 0
+  - set:
+      description: Prepare destination for response size.
+      field: gen_ai.performance.response_size
+      value: 0
   - script:
       description: Convert bodies back to JSON.
       tag: remarshal_bodies
@@ -121,23 +129,27 @@ processors:
         ctx.gen_ai.request.content = json(ctx.aws_bedrock?.invocation?.input?.inputBodyJson);
         ctx.gen_ai.response.content = json(ctx.aws_bedrock?.invocation?.output?.outputBodyJson);
   - script:
-      description: Remove massive input bodies.
-      if: ctx.gen_ai?.request?.content instanceof String && ctx.gen_ai.request.content.length() > 32766
+      description: Remove massive input bodies and keep request perf stats.
+      if: ctx.gen_ai?.request?.content instanceof String
       lang: painless
       source: |
-        ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.gen_ai.request.content.sha1();
-        ctx.aws_bedrock.invocation.input.input_body_json_massive_length = ctx.gen_ai.request.content.length();
-        ctx.aws_bedrock.invocation.input.remove("inputBodyJson");
-        ctx.gen_ai.request.remove("content");
+        ctx.gen_ai.performance.request_size = ctx.gen_ai.request.content.length();
+        if (ctx.gen_ai.request.content.length() > 32766) {
+          ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.gen_ai.request.content.sha1();
+          ctx.aws_bedrock.invocation.input.remove("inputBodyJson");
+          ctx.gen_ai.request.remove("content");
+        }
   - script:
-      description: Remove massive output bodies.
-      if: ctx.gen_ai?.response?.content instanceof String && ctx.gen_ai.response.content.length() > 32766
+      description: Remove massive output bodies and keep response perf stats.
+      if: ctx.gen_ai?.response?.content instanceof String
       lang: painless
       source: |
-        ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.gen_ai.response.content.sha1();
-        ctx.aws_bedrock.invocation.output.output_body_json_massive_length = ctx.gen_ai.response.content.length();
-        ctx.aws_bedrock.invocation.output.remove("outputBodyJson");
-        ctx.gen_ai.response.remove("content");
+        ctx.gen_ai.performance.response_size = ctx.gen_ai.response.content.length();
+        if (ctx.gen_ai.response.content.length() > 32766) {
+          ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.gen_ai.response.content.sha1();
+          ctx.aws_bedrock.invocation.output.remove("outputBodyJson");
+          ctx.gen_ai.response.remove("content");
+        }
 
   # This must come after the JSON remarshal to ensure that the text there is recorded
   # verbatim, mod field ordering.
@@ -168,6 +180,15 @@ processors:
         "amazon-bedrock-invocationMetrics": "amazon_bedrock_invocation_metrics"
         "firstByteLatency": "first_byte_latency"
         "invocationLatency": "invocation_latency"
+        "amazon-bedrock-guardrailAction": "amazon_bedrock_guardrail_action"
+        "amazon-bedrock-trace": "amazon_bedrock_trace"
+        "contentPolicy": "content_policy"
+        "wordPolicy": "word_policy"
+        "topicPolicy": "topic_policy"
+        "customWords": "custom_words"
+        "sensitiveInformationPolicy": "sensitive_information_policy"
+        "piiEntities": "pii_entities"
+        "normalizeIndex": "normalize_index"
       tag: painless_to_rename_fields_under_aws_bedrock_groups
       source: |
         def renameKeys(Map src, Map keyMap) {
@@ -227,7 +248,87 @@ processors:
       if: ctx.aws_bedrock?.invocation?.request_id != null
       field: gen_ai.request.id
       copy_from: aws_bedrock.invocation.request_id
-
+      ignore_failure: true
+  - set:
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.id != null'
+      field: gen_ai.response.id
+      copy_from: aws_bedrock.invocation.output.output_body_json.id
+      ignore_failure: true
+  - script:
+      tag: get_response_id
+      if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
+      lang: painless
+      source: |
+        for (def e: ctx.aws_bedrock.invocation.output.output_body_json) {
+          if (e.message?.id != null) {
+            if (ctx.gen_ai == null) {
+              ctx.gen_ai = new HashMap();
+            }
+            if (ctx.gen_ai.response == null) {
+              ctx.gen_ai.response = new HashMap();
+            }
+            ctx.gen_ai.response.id = e.message?.id;
+            break;
+          }
+        }
+  - set:
+      if: ctx.user?.id != null
+      field: gen_ai.user.id
+      copy_from: user.id
+  - set:
+      if: ctx.aws_bedrock?.invocation?.error_code != null
+      field: gen_ai.response.error_code
+      copy_from: aws_bedrock.invocation.error_code
+      ignore_failure: true
+  - script:
+      tag: get_guardrail_details
+      if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
+      lang: painless
+      source: |
+        if (!(ctx.aws_bedrock.invocation.output.output_body_json instanceof List)) {
+          return;
+        }
+        def policies = new HashSet();
+        for (def e: ctx.aws_bedrock.invocation.output.output_body_json) {
+          if (e.amazon_bedrock_guardrail_action == 'INTERVENED') {
+            if (ctx.gen_ai == null) {
+              ctx.gen_ai = new HashMap();
+            }
+            if (ctx.gen_ai.threat == null) {
+              ctx.gen_ai.threat = new HashMap();
+            }
+            ctx.gen_ai.threat.detected = true;
+            ctx.event.outcome = 'failure';
+            if (!(e.amazon_bedrock_trace?.guardrail?.input instanceof HashMap)) {
+              continue;
+            }
+            for (def o: e.amazon_bedrock_trace.guardrail.input.entrySet()) {
+              for (def i: o.getValue().entrySet()) {
+                String policy_name = i.getKey();
+                policies.add(policy_name);
+                for (def p: i.getValue().entrySet()) {
+                  for (def c: p.getValue()) {
+                    if (c.type != null) {
+                      policies.add(policy_name+":"+c.type);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (policies.size() != 0) {
+          ctx.gen_ai.threat.category = new ArrayList();
+          for (def e: policies) {
+            ctx.gen_ai.threat.category.add(e);
+          }
+          Collections.sort(ctx.gen_ai.threat.category);
+        }
+  - set:
+      # If we didn't fail above, we succeeded.
+      field: event.outcome
+      value: success
+      override: false
   - script:
       description: Drops null/empty values recursively
       lang: painless
