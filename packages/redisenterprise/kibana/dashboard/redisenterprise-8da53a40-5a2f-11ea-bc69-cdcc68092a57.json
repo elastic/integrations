@@ -9,7 +9,43 @@
         "description": "Overview of Redis Enterprise dashboard",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "redisenterprise.node",
+                                "redisenterprise.proxy"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "redisenterprise.node"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "redisenterprise.proxy"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -1570,12 +1606,17 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.1",
-    "created_at": "2024-04-30T07:54:57.485Z",
+    "created_at": "2024-04-30T12:24:59.564Z",
     "id": "redisenterprise-8da53a40-5a2f-11ea-bc69-cdcc68092a57",
     "migrationVersion": {
         "dashboard": "8.7.0"
     },
     "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "metrics-*",
             "name": "d6d82aa8-b6f2-467e-a20c-8a88e5065c2a:indexpattern-datasource-layer-574877b7-6844-40a1-85be-71d18aff873b",
