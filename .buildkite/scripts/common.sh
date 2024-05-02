@@ -309,7 +309,6 @@ create_kind_cluster() {
     kind create cluster --config "${WORKSPACE}/kind-config.yaml" --image "kindest/node:${K8S_VERSION}"
 }
 
-
 delete_kind_cluster() {
     echo "--- Delete kind cluster"
     kind delete cluster || true
@@ -409,7 +408,6 @@ is_package_excluded() {
     fi
     return 1
 }
-
 
 is_supported_capability() {
     if [ "${SERVERLESS_PROJECT}" == "" ]; then
@@ -755,6 +753,19 @@ build_zip_package() {
     return 0
 }
 
+skip_installation_step() {
+    local package=$1
+    if ! is_serverless ; then
+        return 1
+    fi
+
+    if [[ "$package" == "security_detection_engine" ]]; then
+        return 0
+    fi
+
+    return 1
+}
+
 install_package() {
     local package=$1
     echo "Install package: ${package}"
@@ -814,10 +825,13 @@ run_tests_package() {
         fi
     fi
 
-    echo "--- [${package}] test installation"
-    if ! install_package "${package}" ; then
-        return 1
+    if ! skip_installation_step "${package}" ; then
+        echo "--- [${package}] test installation"
+        if ! install_package "${package}" ; then
+            return 1
+        fi
     fi
+
     echo "--- [${package}] run test suites"
     if is_serverless; then
         if ! test_package_in_serverless "${package}" ; then
@@ -877,6 +891,10 @@ upload_safe_logs_from_package() {
     fi
 
     local package=$1
+    local retry_count="${BUILDKITE_RETRY_COUNT:-"0"}"
+    if [[ "${retry_count}" -ne 0 ]]; then
+        package="${package}_retry_${retry_count}"
+    fi
     local build_directory=$2
 
     local parent_folder="insecure-logs"
