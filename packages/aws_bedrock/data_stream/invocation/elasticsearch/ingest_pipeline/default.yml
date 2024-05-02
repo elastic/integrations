@@ -134,28 +134,6 @@ processors:
         }
         ctx.gen_ai.prompt = json(ctx.aws_bedrock?.invocation?.input?.inputBodyJson);
         ctx.gen_ai.completion = json(ctx.aws_bedrock?.invocation?.output?.outputBodyJson);
-  - script:
-      description: Remove massive input bodies and keep request perf stats.
-      if: ctx.gen_ai?.prompt instanceof String
-      lang: painless
-      source: |
-        ctx.gen_ai.performance.request_size = ctx.gen_ai.prompt.length();
-        if (ctx.gen_ai.prompt.length() > 32766) {
-          ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.gen_ai.prompt.sha1();
-          ctx.aws_bedrock.invocation.input.remove("inputBodyJson");
-          ctx.gen_ai.remove("prompt");
-        }
-  - script:
-      description: Remove massive output bodies and keep response perf stats.
-      if: ctx.gen_ai?.completion instanceof String
-      lang: painless
-      source: |
-        ctx.gen_ai.performance.response_size = ctx.gen_ai.completion.length();
-        if (ctx.gen_ai.completion.length() > 32766) {
-          ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.gen_ai.completion.sha1();
-          ctx.aws_bedrock.invocation.output.remove("outputBodyJson");
-          ctx.gen_ai.remove("completion");
-        }
 
   # This must come after the JSON remarshal to ensure that the text there is recorded
   # verbatim, mod field ordering.
@@ -243,7 +221,7 @@ processors:
       copy_from: aws_bedrock.invocation.model_id
       ignore_failure: true
   - script:
-      tag: get_response_id
+      tag: get_response_id_type_and_version
       if: ctx.aws_bedrock?.invocation?.input?.input_body_json != null && ctx.gen_ai?.request?.model?.id instanceof String && ctx.gen_ai.request.model.id.contains('.')
       lang: painless
       source: |
@@ -452,6 +430,31 @@ processors:
       field: event.outcome
       value: success
       override: false
+
+  # Remove massive fields only after the fields have been used.
+  - script:
+      description: Remove massive input bodies and keep request perf stats.
+      if: ctx.gen_ai?.prompt instanceof String
+      lang: painless
+      source: |
+        ctx.gen_ai.performance.request_size = ctx.gen_ai.prompt.length();
+        if (ctx.gen_ai.prompt.length() > 32766) {
+          ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.gen_ai.prompt.sha1();
+          ctx.aws_bedrock.invocation.input.remove("input_body_json");
+          ctx.gen_ai.remove("prompt");
+        }
+  - script:
+      description: Remove massive output bodies and keep response perf stats.
+      if: ctx.gen_ai?.completion instanceof String
+      lang: painless
+      source: |
+        ctx.gen_ai.performance.response_size = ctx.gen_ai.completion.length();
+        if (ctx.gen_ai.completion.length() > 32766) {
+          ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.gen_ai.completion.sha1();
+          ctx.aws_bedrock.invocation.output.remove("output_body_json");
+          ctx.gen_ai.remove("completion");
+        }
+
   - script:
       description: Drops null/empty values recursively
       lang: painless
