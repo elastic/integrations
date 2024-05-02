@@ -14,6 +14,8 @@ processors:
       if: ctx.log?.syslog?.appname != null
 
   #
+  # Extract the key=value pairs into nested objects
+  #
   # The syslog header should have been stripped off, so we need to process the key=value data
   # We will be using painless here, because it is the best option we have.
   - script:
@@ -40,7 +42,7 @@ processors:
           if (c == (char)'=') {
             kvSplit = i;
           }
-          if (c == (char)' ') {
+          if (c == (char)' ' || (i == n - 1)) {
             if (kvStart != kvSplit) {
               def key = ctx["message"].substring(kvStart, kvSplit);
               def value = ctx["message"].substring(kvSplit + 1, i).replace("\"", "");
@@ -49,12 +51,6 @@ processors:
 
             kvStart = i + 1;
             kvSplit = i + 1;
-          } else if (i == n - 1) {
-            if (kvStart != kvSplit) {
-              def key = ctx["message"].substring(kvStart, kvSplit);
-              def value = ctx["message"].substring(kvSplit + 1, i).replace("\"", "");
-              ctx["ss"][key] = value;
-            }
           }
         }
 
@@ -105,7 +101,14 @@ processors:
       field: "host.name"
       if: ctx.ss?.fw != null
 
+  - set:
+      copy_from: "ss.logtype"
+      field: "stormshield.logtype"
+      if: ctx.ss?.logtype != null
 
+  - pipeline:
+      name: '{{ IngestPipeline "filterstat" }}'
+      if: ctx.stormshield.logtype == 'filterstat'
   #
   # The syslog header should have been stripped off, so we need to process the key=value data
   # We will be using painless here, because it is the best option we have.
@@ -137,8 +140,7 @@ processors:
             }
         }
         void handleMove(Map context, String namespace) {
-            if (context.containsKey("ss") && ! context.containsKey("stormshield")) {
-                context["stormshield"] = new HashMap();
+            if (context.containsKey("ss")) {
                 context["stormshield"]["logtype"] = context["ss"]["logtype"];
                 context["ss"].remove("logtype");
             }
@@ -231,33 +233,6 @@ processors:
             if (mapper.containsKey(entry)) {
               mapper.remove(entry);
             }
-          }
-        } else if (ctx.stormshield.logtype == "filterstat") {
-
-          def monitor = ctx.stormshield.filterstat;
-          def availableFields = [
-              "in_count",
-              "out_count"
-          ];
-          def fields = [
-              "Byte(i/o)",
-              "EtherStateByte(i/o)",
-              "ICMPByte(i/o)",
-              "IPStateByte(i/o)",
-              "SCTPAssocByte(i/o)",
-              "TCPByte(i/o)",
-              "UDPByte(i/o)"
-          ];
-          def tlscert = ["miss_count", "total"];
-          def tlscertname = "TLSCertCacheLookup(miss/total)";
-          expand_(monitor, "/", tlscertname, "TLSCertCacheLookup", tlscert, /* skipOriginal = */ true, /* flatten = */ true);
-          monitor.remove(tlscertname);
-          for (field_base in fields) {
-              String baseName = field_base.substring(0, field_base.indexOf("("));
-              if (monitor.containsKey(field_base)) {
-                  expand_(monitor, "/", field_base, baseName, availableFields, /* skipOriginal = */ true, /* flatten = */ true);
-                  monitor.remove(field_base);
-              }
           }
         }
 

@@ -1,0 +1,59 @@
+---
+description: Pipeline for processing monitor logs from Stormshield appliances.
+processors:
+  - script:
+      tag: script_process_devices
+      lang: painless
+      description: Process device stat fields.
+      params:
+        devices:
+          - agg
+          - ipsec
+          - sslvpn
+          - Wifi
+          - Qid
+          - Vlan
+          - Ethernet
+        stats:
+          - name
+          - incoming_throughput
+          - maximum_incoming_throughput
+          - outgoing_throughput
+          - maximum_outgoing_throughput
+          - packets_accepted
+          - packets_blocked
+      source: >-
+        def deviceStats = [:];
+        ctx.stormshield.forEach((k, v) -> {
+          params.devices.forEach(d -> {
+            if (k.startsWith(d)) {
+              deviceStats[k] = v;
+            }
+        
+            return true;
+          });
+        });
+        
+        if (deviceStats.isEmpty()) {
+          return;
+        }
+        ctx.stormshield.device_stats = [:];
+        for (entry in deviceStats.entrySet()) {
+          ctx.stormshield.device_stats[entry.getKey()] = [:];
+          def values = entry.getValue().splitOnToken(',', 7);
+          for (int i = 0; i < values.length; ++i) {
+            if (i == 0) {
+              ctx.stormshield.device_stats[entry.getKey()][params.stats[i]] = values[i];
+            } else {
+              ctx.stormshield.device_stats[entry.getKey()][params.stats[i]] = Long.parseLong(values[i]);        
+            }
+          }
+          ctx.stormshield.remove(entry.getKey());
+        }
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
