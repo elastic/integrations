@@ -69,6 +69,9 @@ processors:
 ######
 # Proposed LLM fields
 ######
+  - set:
+      field: gen_ai.response.timestamp
+      copy_from: '@timestamp'
   # Remarshal the request and response.
   - set:
       description: Prepare destination for request JSON.
@@ -271,6 +274,24 @@ processors:
             break;
           }
         }
+  - script:
+      tag: get_response_time
+      if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
+      lang: painless
+      source: |
+        for (int i = ctx.aws_bedrock.invocation.output.output_body_json.length-1; i >= 0; i--) {
+          def e = ctx.aws_bedrock.invocation.output.output_body_json[i];
+          if (e.amazon_bedrock_invocation_metrics?.invocation_latency != null) {
+            if (ctx.gen_ai == null) {
+              ctx.gen_ai = new HashMap();
+            }
+            if (ctx.gen_ai.performance == null) {
+              ctx.gen_ai.performance = new HashMap();
+            }
+            ctx.gen_ai.performance.response_time = e.amazon_bedrock_invocation_metrics.invocation_latency;
+            break;
+          }
+        }
   - set:
       if: ctx.user?.id != null
       field: gen_ai.user.id
@@ -288,16 +309,23 @@ processors:
         if (!(ctx.aws_bedrock.invocation.output.output_body_json instanceof List)) {
           return;
         }
+        def actions = new HashSet();
         def policies = new HashSet();
+        def confidences = new HashSet();
+        def violations = new HashSet();
+        def matches = new HashSet();
         for (def e: ctx.aws_bedrock.invocation.output.output_body_json) {
           if (e.amazon_bedrock_guardrail_action == 'INTERVENED') {
             if (ctx.gen_ai == null) {
               ctx.gen_ai = new HashMap();
             }
-            if (ctx.gen_ai.threat == null) {
-              ctx.gen_ai.threat = new HashMap();
+            if (ctx.gen_ai.policy == null) {
+              ctx.gen_ai.policy = new HashMap();
             }
-            ctx.gen_ai.threat.detected = true;
+            if (ctx.gen_ai.compliance == null) {
+              ctx.gen_ai.compliance = new HashMap();
+            }
+            ctx.gen_ai.compliance.violation_detected = true;
             ctx.event.outcome = 'failure';
             if (!(e.amazon_bedrock_trace?.guardrail?.input instanceof HashMap)) {
               continue;
@@ -308,8 +336,15 @@ processors:
                 policies.add(policy_name);
                 for (def p: i.getValue().entrySet()) {
                   for (def c: p.getValue()) {
+                    actions.add(c.action);
+                    if (policy_name == 'word_policy') {
+                      matches.add(c);
+                    }
                     if (c.type != null) {
-                      policies.add(policy_name+":"+c.type);
+                      if (policy_name == 'content_policy') {
+                        violations.add(c.type);
+                        confidences.add(c.confidence);
+                      }
                     }
                   }
                 }
@@ -317,12 +352,41 @@ processors:
             }
           }
         }
-        if (policies.size() != 0) {
-          ctx.gen_ai.threat.category = new ArrayList();
-          for (def e: policies) {
-            ctx.gen_ai.threat.category.add(e);
+        if (actions.size() != 0) {
+          ctx.gen_ai.policy.action = new ArrayList();
+          for (def e: actions) {
+            ctx.gen_ai.policy.action.add(e);
           }
-          Collections.sort(ctx.gen_ai.threat.category);
+          Collections.sort(ctx.gen_ai.policy.action);
+        }
+        if (violations.size() != 0) {
+          ctx.gen_ai.compliance.violation_code = new ArrayList();
+          for (def e: violations) {
+            ctx.gen_ai.compliance.violation_code.add(e);
+          }
+          Collections.sort(ctx.gen_ai.compliance.violation_code);
+        }
+        if (matches.size() != 0) {
+          def match_details = new ArrayList();
+          for (def e: matches) {
+            match_details.add(e);
+          }
+          Collections.sort(match_details);
+          ctx.gen_ai.policy.match_detail = match_details;
+        }
+        if (confidences.size() != 0) {
+          ctx.gen_ai.policy.confidence = new ArrayList();
+          for (def e: confidences) {
+            ctx.gen_ai.policy.confidence.add(e);
+          }
+          Collections.sort(ctx.gen_ai.policy.confidence);
+        }
+        if (policies.size() != 0) {
+          ctx.gen_ai.policy.name = new ArrayList();
+          for (def e: policies) {
+            ctx.gen_ai.policy.name.add(e);
+          }
+          Collections.sort(ctx.gen_ai.policy.name);
         }
   - set:
       if: ctx.gen_ai?.response?.error_code != null
