@@ -233,14 +233,45 @@ processors:
         ctx.aws_bedrock = renameKeys(ctx.aws_bedrock, params)
 
   - set:
-      if: ctx.aws_bedrock?.invocation?.input?.input_token_count != null
-      field: gen_ai.usage.prompt_tokens
-      copy_from: aws_bedrock.invocation.input.input_token_count
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.anthropic_version != null
+      field: gen_ai.request.model_version
+      copy_from: aws_bedrock.invocation.input.input_body_json.anthropic_version
       ignore_failure: true
-  - set:
+  - convert:
+      if: ctx.aws_bedrock?.invocation?.input?.input_token_count != null
+      field: aws_bedrock.invocation.input.input_token_count
+      target_field: gen_ai.usage.prompt_tokens
+      type: long
+      ignore_failure: true
+  - convert:
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.top_k != null
+      field: aws_bedrock.invocation.input.input_body_json.top_k
+      target_field: gen_ai.request.top_k
+      type: float
+      ignore_failure: true
+  - convert:
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.top_p != null
+      field: aws_bedrock.invocation.input.input_body_json.top_p
+      target_field: gen_ai.request.top_p
+      type: float
+      ignore_failure: true
+  - convert:
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.temperature != null
+      field: aws_bedrock.invocation.input.input_body_json.temperature
+      target_field: gen_ai.request.temperature
+      type: float
+      ignore_failure: true
+  - convert:
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.max_tokens != null
+      field: aws_bedrock.invocation.input.input_body_json.max_tokens
+      target_field: gen_ai.request.max_tokens
+      type: long
+      ignore_failure: true
+  - convert:
       if: ctx.aws_bedrock?.invocation?.output?.output_token_count != null
-      field: gen_ai.usage.completion_tokens
-      copy_from: aws_bedrock.invocation.output.output_token_count
+      field: aws_bedrock.invocation.output.output_token_count
+      target_field: gen_ai.usage.completion_tokens
+      type: long
       ignore_failure: true
   - set:
       if: ctx.aws_bedrock?.invocation?.model_id != null
