@@ -627,7 +627,7 @@ An example event for `panos` looks as following:
 | panw.panos.tunnel_fragment | Number of packets the firewall dropped because of fragmentation errors. | long |
 | panw.panos.tunnel_inspection_rule | Name of the tunnel inspection rule matching the cleartext tunnel traffic. | keyword |
 | panw.panos.tunnel_type | Type of tunnel, such as GRE or IPSec or SSLVPN. | keyword |
-| panw.panos.type | Specifies the type of log; values are HIP-MATCH, CONFIG, GLOBALPROTECT, THREAT, TRAFFIC, USERID, AUTHENTICATION, CORRELATION, DECRYPTION, GTP, IPTAG, SCTP, SYSTEM. | keyword |
+| panw.panos.type | Specifies the type of log; values are HIP-MATCH, CONFIG, GLOBALPROTECT, THREAT, TRAFFIC, USERID, AUTHENTICATION, CORRELATION, DECRYPTION, GTP, IPTAG, SCTP, SYSTEM, AUDIT. | keyword |
 | panw.panos.ugflags | Displays whether the user group that was found during user group mapping. Supported values are: User Group Found—Indicates whether the user could be mapped to a group.Duplicate User—Indicates whether duplicate users were found in a user group. Displays N/A if no user group is found. | keyword |
 | panw.panos.unknown_protocol | Number of packets the firewall dropped because the packet contains an unknown protocol, as enabled in the Tunnel Inspection policy rule (Drop packet if unknown protocol inside tunnel). | long |
 | panw.panos.url.category | For URL Subtype, it is the URL Category; For WildFire subtype, it is the verdict on the file and is either ‘malware’, ‘phishing’, ‘grayware’, or ‘benign’; For other subtypes, the value is ‘any’. | keyword |
