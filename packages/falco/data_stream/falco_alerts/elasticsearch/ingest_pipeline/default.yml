@@ -1,21 +1,9 @@
 ---
-description: Pipeline for mapping Falco fields to ECS / Falco-namespaced fields
+description: Pipeline for mapping falco fields to ECS / falco-namespaced fields
 processors:
-- set:
-    field: data_stream.dataset
-    value: 'falco.falco_alerts'
-- set:
-    field: event.dataset
-    value: 'falco.falco_alerts'
 - set:
     field: data_stream.type
     value: 'logs'
-- set:
-    field: ecs.version
-    value: '8.11.0'
-- set:
-    field: event.module
-    value: 'falco'
 - set:
     field: observer.product
     value: 'falco'
@@ -30,7 +18,7 @@ processors:
     value: 'alert'
 - script:
     lang: painless
-    tag: 'evt.category'
+    tag: 'painless_map_event_category'
     source: |
         def allowedValues = [
             'api',
@@ -78,7 +66,7 @@ processors:
         }
 - script:
     lang: painless
-    tag: 'evt.type'
+    tag: 'painless_map_event_tag'
     source: |
         def allowedValues = [
             'access',
@@ -139,24 +127,24 @@ processors:
         } else {
             ctx['event.type'] = ['info'];
         }
+- set:
+    field: event.outcome
+    value: success
+    if: ctx.evt?.res != null && ctx.evt.res == 'SUCCESS'
+    tag: set_event_outcome_success
+- set:
+    field: event.outcome
+    value: failure
+    if: ctx.evt?.res != null && ctx.evt.res != 'SUCCESS' && ctx.evt.failed != null && ctx.evt.failed == true
+    tag: set_event_outcome_failure
+- set:
+    field: event.ingested
+    value: "{{{_ingest.timestamp}}}"
+    ignore_empty_value: true
+    ignore_failure: true
 - script:
     lang: painless
-    tag: 'evt.res'
-    source: |
-        if (ctx['evt'] == null || (ctx['evt'] != null && (ctx['evt.res'] == null || ctx['evt.res'] != 'SUCCESS'))) {
-            ctx['event.outcome'] = ctx['evt.failed'] == true ? 'failure' : 'unknown';
-        } else {
-            ctx['event.outcome'] = 'success';
-        }
-- script:
-    lang: painless
-    tag: 'evt.ingested'
-    source: |
-        def now = new Date();
-        ctx['event.ingested'] = now;
-- script:
-    lang: painless
-    tag: 'threat.technique.id'
+    tag: 'painless_set_threat_technique_id'
     source: |
         def mitreRegex = /T\d{4}/;
         if (ctx['tags'] != null) {
@@ -175,6 +163,7 @@ processors:
     field: event.original
     copy_from: output
     ignore_empty_value: true
+    if: ctx['tags'] == null || !(ctx['tags'].contains('preserve_original_event'))
 - set:
     field: event.severity
     copy_from: priority
@@ -182,10 +171,6 @@ processors:
 - set:
     field: rule.name
     copy_from: rule
-    ignore_empty_value: true
-- set:
-    field: tags
-    copy_from: tags
     ignore_empty_value: true
 - set:
     field: event.sequence
@@ -215,20 +200,16 @@ processors:
     field: process.executable
     copy_from: proc.exepath
     ignore_empty_value: true
-- script:
-    lang: painless
-    tag: 'file.path'
-    source: |
-        if (ctx['fd.type'] == 'file' || ctx['fd.type'] == 'directory') {
-            ctx['file.path'] = ctx['fd.name'];
-        }
-- script:
-    lang: painless
-    tag: 'file.type'
-    source: |
-        if (ctx['fd.type'] == 'file' || ctx['fd.type'] == 'directory') {
-            ctx['file.type'] = ctx['fd.type'];
-        }
+- set:
+    field: file.path
+    value: '{{fd.name}}'
+    if: ctx.fd?.type != null && (ctx.fd.type == 'file' || ctx.fd.type == 'directory')
+    tag: 'painless_set_file_path'
+- set:
+    field: file.type
+    value: '{{fd.type}}'
+    if: ctx.fd?.type != null && (ctx.fd.type == 'file' || ctx.fd.type == 'directory')
+    tag: 'painless_set_file_path'
 - set:
     field: process.parent.executable
     copy_from: proc.pexepath
@@ -396,38 +377,54 @@ processors:
     field: file.name
     copy_from: fd.filename
     ignore_empty_value: true
-- set:
-    field: client.ip
-    copy_from: fd.cip
-    ignore_empty_value: true
-- set:
-    field: client.address
-    copy_from: fd.cip
-    ignore_empty_value: true
-- set:
-    field: server.ip
-    copy_from: fd.sip
-    ignore_empty_value: true
-- set:
-    field: server.address
-    copy_from: fd.sip
-    ignore_empty_value: true
-- set:
-    field: source.ip
-    copy_from: fd.lip
-    ignore_empty_value: true
-- set:
-    field: source.address
-    copy_from: fd.lip
-    ignore_empty_value: true
-- set:
-    field: destination.ip
-    copy_from: fd.rip
-    ignore_empty_value: true
-- set:
-    field: destination.address
-    copy_from: fd.rip
-    ignore_empty_value: true
+- convert:
+    field: fd.cip
+    target_field: client.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: fd.cip
+    target_field: client.address
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: fd.sip
+    target_field: server.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: fd.sip
+    target_field: server.address
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: fd.lip
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: fd.lip
+    target_field: source.address
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: fd.rip
+    target_field: destination.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: fd.rip
+    target_field: destination.address
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
 - set:
     field: client.port
     copy_from: fd.cport
@@ -496,10 +493,12 @@ processors:
     field: orchestrator.resource.label
     copy_from: k8s.pod.labels
     ignore_empty_value: true
-- set:
-    field: orchestrator.resource.ip
-    copy_from: k8s.pod.ip
-    ignore_empty_value: true
+- convert:
+    field: k8s.pod.ip
+    target_field: orchestrator.resource.ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
 - set:
     field: orchestrator.resource.type
     value: 'pod'
@@ -509,677 +508,596 @@ processors:
     value: 'kubernetes'
     if: ctx.containsKey('k8s.pod.name')
 - set:
+    target_field: falco.output
     field: output
-    copy_from: output
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.priority
     field: priority
-    copy_from: priority
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.rule
     field: rule
-    copy_from: rule
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.evt.num
     field: evt.num
-    copy_from: evt.num
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.evt.time
     field: evt.time
-    copy_from: evt.time
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.evt.source
     field: evt.source
-    copy_from: evt.source
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.evt.hostname
     field: evt.hostname
-    copy_from: evt.hostname
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.exepath
     field: proc.exepath
-    copy_from: proc.exepath
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.pexepath
     field: proc.pexepath
-    copy_from: proc.pexepath
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.name
     field: proc.name
-    copy_from: proc.name
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.pname
     field: proc.pname
-    copy_from: proc.pname
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.cmdline
     field: proc.cmdline
-    copy_from: proc.cmdline
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.pcmdline
     field: proc.pcmdline
-    copy_from: proc.pcmdline
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.cmdnargs
     field: proc.cmdnargs
-    copy_from: proc.cmdnargs
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.env
     field: proc.env
-    copy_from: proc.env
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.cwd
     field: proc.cwd
-    copy_from: proc.cwd
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.pid
     field: proc.pid
-    copy_from: proc.pid
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.ppid
     field: proc.ppid
-    copy_from: proc.ppid
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.vpid
     field: proc.vpid
-    copy_from: proc.vpid
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
 - set:
+    target_field: falco.proc.pvpid
     field: proc.pvpid
-    copy_from: proc.pvpid
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.proc.sid
     field: proc.sid
-    copy_from: proc.sid
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.proc.sname
     field: proc.sname
-    copy_from: proc.sname
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.proc.sid.exepath
     field: proc.sid.exepath
-    copy_from: proc.sid.exepath
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.proc.vpgid
     field: proc.vpgid
-    copy_from: proc.vpgid
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.proc.vpgid.name
     field: proc.vpgid.name
-    copy_from: proc.vpgid.name
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.proc.duration
     field: proc.duration
-    copy_from: proc.duration
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.proc.ppid.duration
     field: proc.ppid.duration
-    copy_from: proc.ppid.duration
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.proc.pid.ts
     field: proc.pid.ts
-    copy_from: proc.pid.ts
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.proc.pid.ts
     field: proc.pid.ts
-    copy_from: proc.pid.ts
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.proc.is_sid_leader
     field: proc.is_sid_leader
-    copy_from: proc.is_sid_leader
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.proc.is_vpgid_leader
     field: proc.is_vpgid_leader
-    copy_from: proc.is_vpgid_leader
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.thread.cap_permitted
     field: thread.cap_permitted
-    copy_from: thread.cap_permitted
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.thread.cap_effective
     field: thread.cap_effective
-    copy_from: thread.cap_effective
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.thread.tid
     field: thread.tid
-    copy_from: thread.tid
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.user.uid
     field: user.uid
-    copy_from: user.uid
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.user.name
     field: user.name
-    copy_from: user.name
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.group.id
     field: group.id
-    copy_from: group.id
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.group.name
     field: group.name
-    copy_from: group.name
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
-    field: container.id
-    copy_from: container.id
-    ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
-    field: container.name
-    copy_from: container.name
-    ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.container.image
     field: container.image
-    copy_from: container.image
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.container.type
     field: container.type
-    copy_from: container.type
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.container.privileged
     field: container.privileged
-    copy_from: container.privileged
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.container.image.digest
     field: container.image.digest
-    copy_from: container.image.digest
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.container.ip
     field: container.ip
-    copy_from: container.ip
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.directory
     field: fd.directory
-    copy_from: fd.directory
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.filename
     field: fd.filename
-    copy_from: fd.filename
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.cip
     field: fd.cip
-    copy_from: fd.cip
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.sip
     field: fd.sip
-    copy_from: fd.sip
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.lip
     field: fd.lip
-    copy_from: fd.lip
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.rip
     field: fd.rip
-    copy_from: fd.rip
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.cport
     field: fd.cport
-    copy_from: fd.cport
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.sport
     field: fd.sport
-    copy_from: fd.sport
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.lport
     field: fd.lport
-    copy_from: fd.lport
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.rport
     field: fd.rport
-    copy_from: fd.rport
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.cip.name
     field: fd.cip.name
-    copy_from: fd.cip.name
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.sip.name
     field: fd.sip.name
-    copy_from: fd.sip.name
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.lip.name
     field: fd.lip.name
-    copy_from: fd.lip.name
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.rip.name
     field: fd.rip.name
-    copy_from: fd.rip.name
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.fd.ino
     field: fd.ino
-    copy_from: fd.ino
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.syslog.facility.str
     field: syslog.facility.str
-    copy_from: syslog.facility.str
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.syslog.facility
     field: syslog.facility
-    copy_from: syslog.facility
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.syslog.severity.str
     field: syslog.severity.str
-    copy_from: syslog.severity.str
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.syslog.severity
     field: syslog.severity
-    copy_from: syslog.severity
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.k8s.ns.name
     field: k8s.ns.name
-    copy_from: k8s.ns.name
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: k8s.pod.name
     field: k8s.pod.name
-    copy_from: k8s.pod.name
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.k8s.pod.uid
     field: k8s.pod.uid
-    copy_from: k8s.pod.uid
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.k8s.pod.labels
     field: k8s.pod.labels
-    copy_from: k8s.pod.labels
     ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- set:
+- rename:
+    target_field: falco.k8s.pod.ip
     field: k8s.pod.ip
-    copy_from: k8s.pod.ip
-    ignore_empty_value: true
-    if: ctx['tags'] != null && ctx['tags'].contains('preserve_falco_fields')
-- remove:
-    field: ['output','priority','rule','evt.num','evt.time','evt.source','evt.hostname','proc.exepath','proc.pexepath','proc.name','proc.pname','proc.cmdline','proc.pcmdline','proc.cmdnargs','proc.env','proc.cwd','proc.pid','proc.ppid','proc.vpid','proc.pvpid','proc.sid','proc.sname','proc.sid.exepath','proc.vpgid','proc.vpgid.name','proc.vpgid.exepath','proc.duration','proct.ppid.duration','proc.pid.ts','proc.ppid.ts','proc.is_sid_leader','proc.is_vpgid_leader','thread.cap_permitted','thread.cap_effective','thread.tid','user.uid','user.name','group.gid','group.name','container.id','container.name','container.image','container.type','container.privileged','container.image.digest','container.ip','fd.directory','fd.filename','fd.cip','fd.sip','fd.lip','fd.rip','fd.cport','fd.sport','fd.lport','fd.rport','fd.cip.name','fd.sip.name','fd.lip.name','fd.rip.name','fd.ino','syslog.facility.str','syslog.facility','syslog.severity.str','syslog.severity','k8s.ns.name','k8s.pod.name','k8s.pod.uid','k8s.pod.labels','k8s.pod.ip']
-    if: ctx['tags'] == null || !(ctx['tags'].contains('preserve_falco_fields'))
-    ignore_missing: true
-- set:
-    field: Falco.evt.pluginname #This is the start of Falco fields
-    copy_from: evt.pluginname
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.plugininfo
-    copy_from: evt.plugininfo
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.is_async
-    copy_from: evt.is_async
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.asynctype
-    copy_from: evt.asynctype
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.latency
-    copy_from: evt.latency
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.deltatime
-    copy_from: evt.deltatime
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.dir
-    copy_from: evt.dir
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.args
-    copy_from: evt.args
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.info
-    copy_from: evt.info
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.buffer
-    copy_from: evt.buffer
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.buflen
-    copy_from: evt.buflen
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.res
-    copy_from: evt.res
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.rawres
-    copy_from: evt.rawres
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.failed
-    copy_from: evt.failed
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.is_io
-    copy_from: evt.is_io
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.is_io_read
-    copy_from: evt.is_io_read
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.is_io_write
-    copy_from: evt.is_io_write
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.io_dir
-    copy_from: evt.io_dir
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.is_wait
-    copy_from: evt.is_wait
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.wait_latency
-    copy_from: evt.wait_latency
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.is_syslog
-    copy_from: evt.is_syslog
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.count.error
-    copy_from: evt.count.error
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.count.error_file
-    copy_from: evt.count.error.file
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.count.error_net
-    copy_from: evt.count.error.net
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.count.error_memory
-    copy_from: evt.count.error.memory
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.count.error_other
-    copy_from: evt.count.error.other
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.count.exit
-    copy_from: evt.count.exit
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.abspath
-    copy_from: evt.abspath
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.abspath_src
-    copy_from: evt.abspath_src
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.abspath_dst
-    copy_from: evt.abspath_dst
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.is_open_read
-    copy_from: evt.is_open_read
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.is_open_write
-    copy_from: evt.is_open_write
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.is_open_exec
-    copy_from: evt.is_open_exec
-    ignore_empty_value: true
-- set:
-    field: Falco.evt.is_open_create
-    copy_from: evt.is_open_create
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.exe
-    copy_from: proc.exe
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.pexe
-    copy_from: proc.pexe
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.cmdlenargs
-    copy_from: proc.cmdlenargs
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.exeline
-    copy_from: proc.exeline
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.loginshellid
-    copy_from: proc.loginshellid
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.tty
-    copy_from: proc.tty
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.sid.exe
-    copy_from: proc.sid.exe
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.vpgid.exe
-    copy_from: proc.vpgid.exe
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.is_exe_writable
-    copy_from: proc.is_exe_writable
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.is_exe_upper_layer
-    copy_from: proc.is_exe_upper_layer
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.is_exe_from_memfd
-    copy_from: proc.is_exe_from_memfd
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.exe_ino
-    copy_from: proc.exe_ino
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.exe_ino_ctime
-    copy_from: proc.exe_ino.ctime
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.exe_ino_mtime
-    copy_from: proc.exe_ino.mtime
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.exe_ino_ctime_duration_proc_start
-    copy_from: proc.exe_ino.ctime_duration_proc_start
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.exe_ino_ctime_duration_pidns_start
-    copy_from: proc.exe_ino.ctime_duration_pidns_start
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.pidns_init_start_ts
-    copy_from: proc.pidns_init_start_ts
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.thread.cap_inheritable
-    copy_from: thread.cap_inheritable
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.is_container_healthcheck
-    copy_from: proc.is_container_healthcheck
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.is_container_liveness_probe
-    copy_from: proc.is_container_liveness_probe
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.is_container_readiness_probe
-    copy_from: proc.is_container_readiness_probe
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.fdopencount
-    copy_from: proc.fdopencount
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.fdopenlimit
-    copy_from: proc.fdopenlimit
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.fdusage
-    copy_from: proc.fdusage
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.vmsize
-    copy_from: proc.vmsize
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.vmrss
-    copy_from: proc.vmrss
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.vmswap
-    copy_from: proc.vmswap
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.pfmajor
-    copy_from: thread.pfmajor
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.pfminor
-    copy_from: thread.pfminor
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.ismain
-    copy_from: thread.ismain
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.vtid
-    copy_from: thread.vtid
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.exectime
-    copy_from: thread.exectime
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.totalexectime
-    copy_from: thread.totalexectime
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.cgroups
-    copy_from: thread.cgroups
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.nthreads
-    copy_from: proc.nthreads
-    ignore_empty_value: true
-- set:
-    field: Falco.proc.nchilds
-    copy_from: proc.nchilds
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.cpu
-    copy_from: thread.cpu
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.cpu_user
-    copy_from: thread.cpu.user
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.cpu_system
-    copy_from: thread.cpu.system
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.vmsize
-    copy_from: thread.vmsize
-    ignore_empty_value: true
-- set:
-    field: Falco.thread.vmrss
-    copy_from: thread.vmrss
-    ignore_empty_value: true
-- set:
-    field: Falco.user.homedir
-    copy_from: user.homedir
-    ignore_empty_value: true
-- set:
-    field: Falco.user.shell
-    copy_from: user.shell
-    ignore_empty_value: true
-- set:
-    field: Falco.user.loginuid
-    copy_from: user.loginuid
-    ignore_empty_value: true
-- set:
-    field: Falco.user.loginname
-    copy_from: user.loginname
-    ignore_empty_value: true
-- set:
-    field: Falco.container.image.full_id
-    copy_from: container.full_id
-    ignore_empty_value: true
-- set:
-    field: Falco.container.image.id
-    copy_from: container.image.id
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.pluginname
+    field: evt.pluginname
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.plugininfo
+    field: evt.plugininfo
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.is_async
+    field: evt.is_async
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.asynctype
+    field: evt.asynctype
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.latency
+    field: evt.latency
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.deltatime
+    field: evt.deltatime
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.dir
+    field: evt.dir
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.args
+    field: evt.args
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.info
+    field: evt.info
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.buffer
+    field: evt.buffer
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.buflen
+    field: evt.buflen
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.res
+    field: evt.res
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.rawres
+    field: evt.rawres
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.failed
+    field: evt.failed
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.is_io
+    field: evt.is_io
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.is_io_read
+    field: evt.is_io_read
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.is_io_write
+    field: evt.is_io_write
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.io_dir
+    field: evt.io_dir
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.is_wait
+    field: evt.is_wait
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.wait_latency
+    field: evt.wait_latency
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.is_syslog
+    field: evt.is_syslog
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.count.error
+    field: evt.count.error
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.count.error_file
+    field: evt.count.error.file
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.count.error_net
+    field: evt.count.error.net
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.count.error_memory
+    field: evt.count.error.memory
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.count.error_other
+    field: evt.count.error.other
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.count.exit
+    field: evt.count.exit
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.abspath
+    field: evt.abspath
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.abspath_src
+    field: evt.abspath_src
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.abspath_dst
+    field: evt.abspath_dst
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.is_open_read
+    field: evt.is_open_read
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.is_open_write
+    field: evt.is_open_write
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.is_open_exec
+    field: evt.is_open_exec
+    ignore_empty_value: true
+- rename:
+    target_field: falco.evt.is_open_create
+    field: evt.is_open_create
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.exe
+    field: proc.exe
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.pexe
+    field: proc.pexe
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.cmdlenargs
+    field: proc.cmdlenargs
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.exeline
+    field: proc.exeline
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.loginshellid
+    field: proc.loginshellid
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.tty
+    field: proc.tty
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.sid.exe
+    field: proc.sid.exe
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.vpgid.exe
+    field: proc.vpgid.exe
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.is_exe_writable
+    field: proc.is_exe_writable
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.is_exe_upper_layer
+    field: proc.is_exe_upper_layer
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.is_exe_from_memfd
+    field: proc.is_exe_from_memfd
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.exe_ino
+    field: proc.exe_ino
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.exe_ino_ctime
+    field: proc.exe_ino.ctime
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.exe_ino_mtime
+    field: proc.exe_ino.mtime
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.exe_ino_ctime_duration_proc_start
+    field: proc.exe_ino.ctime_duration_proc_start
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.exe_ino_ctime_duration_pidns_start
+    field: proc.exe_ino.ctime_duration_pidns_start
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.pidns_init_start_ts
+    field: proc.pidns_init_start_ts
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.thread.cap_inheritable
+    field: thread.cap_inheritable
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.is_container_healthcheck
+    field: proc.is_container_healthcheck
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.is_container_liveness_probe
+    field: proc.is_container_liveness_probe
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.is_container_readiness_probe
+    field: proc.is_container_readiness_probe
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.fdopencount
+    field: proc.fdopencount
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.fdopenlimit
+    field: proc.fdopenlimit
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.fdusage
+    field: proc.fdusage
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.vmsize
+    field: proc.vmsize
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.vmrss
+    field: proc.vmrss
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.vmswap
+    field: proc.vmswap
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.pfmajor
+    field: thread.pfmajor
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.pfminor
+    field: thread.pfminor
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.ismain
+    field: thread.ismain
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.vtid
+    field: thread.vtid
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.exectime
+    field: thread.exectime
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.totalexectime
+    field: thread.totalexectime
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.cgroups
+    field: thread.cgroups
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.nthreads
+    field: proc.nthreads
+    ignore_empty_value: true
+- rename:
+    target_field: falco.proc.nchilds
+    field: proc.nchilds
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.cpu
+    field: thread.cpu
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.cpu_user
+    field: thread.cpu.user
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.cpu_system
+    field: thread.cpu.system
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.vmsize
+    field: thread.vmsize
+    ignore_empty_value: true
+- rename:
+    target_field: falco.thread.vmrss
+    field: thread.vmrss
+    ignore_empty_value: true
+- rename:
+    target_field: falco.user.homedir
+    field: user.homedir
+    ignore_empty_value: true
+- rename:
+    target_field: falco.user.shell
+    field: user.shell
+    ignore_empty_value: true
+- rename:
+    target_field: falco.user.loginuid
+    field: user.loginuid
+    ignore_empty_value: true
+- rename:
+    target_field: falco.user.loginname
+    field: user.loginname
+    ignore_empty_value: true
+- rename:
+    target_field: falco.container.image.full_id
+    field: container.full_id
+    ignore_empty_value: true
+- rename:
+    target_field: falco.container.image.id
+    field: container.image.id
     ignore_empty_value: true
 - script:
     lang: painless
@@ -1201,165 +1119,194 @@ processors:
                 mountRecord.propagation = parts && parts.length > 4 ? parts[4] : null;
                 mountsList.add(mountRecord);
             }
-            ctx['Falco.container.mounts'] = mountsList;
+            ctx['falco.container.mounts'] = mountsList;
         } else {
-            ctx['Falco.container.mounts'] = null;
+            ctx['falco.container.mounts'] = null;
         }
-- set:
-    field: Falco.container.image.repository
-    copy_from: container.image.repository
+- rename:
+    target_field: falco.container.image.repository
+    field: container.image.repository
     ignore_empty_value: true
-- set:
-    field: Falco.container.healthcheck
-    copy_from: container.healthcheck
+- rename:
+    target_field: falco.container.healthcheck
+    field: container.healthcheck
     ignore_empty_value: true
-- set:
-    field: Falco.container.liveness_probe
-    copy_from: container.liveness_probe
+- rename:
+    target_field: falco.container.liveness_probe
+    field: container.liveness_probe
     ignore_empty_value: true
-- set:
-    field: Falco.container.readiness_probe
-    copy_from: container.readiness_probe
+- rename:
+    target_field: falco.container.readiness_probe
+    field: container.readiness_probe
     ignore_empty_value: true
-- set:
-    field: Falco.container.start_ts
-    copy_from: container.start_ts
+- rename:
+    target_field: falco.container.start_ts
+    field: container.start_ts
     ignore_empty_value: true
-- set:
-    field: Falco.container.duration
-    copy_from: container.duration
+- rename:
+    target_field: falco.container.duration
+    field: container.duration
     ignore_empty_value: true
-- set:
-    field: Falco.container.cni_json
-    copy_from: container.cni_json
+- rename:
+    target_field: falco.container.cni_json
+    field: container.cni_json
     ignore_empty_value: true
-- set:
-    field: Falco.fd.num
-    copy_from: fd.num
+- rename:
+    target_field: falco.fd.num
+    field: fd.num
     ignore_empty_value: true
-- set:
-    field: Falco.fd.type
-    copy_from: fd.type
+- rename:
+    target_field: falco.fd.type
+    field: fd.type
     ignore_empty_value: true
-- set:
-    field: Falco.fd.typechar
-    copy_from: fd.typechar
+- rename:
+    target_field: falco.fd.typechar
+    field: fd.typechar
     ignore_empty_value: true
-- set:
-    field: Falco.fd.name
-    copy_from: fd.name
+- rename:
+    target_field: falco.fd.name
+    field: fd.name
     ignore_empty_value: true
-- set:
-    field: Falco.fd.I4proto
-    copy_from: fd.I4proto
+- rename:
+    target_field: falco.fd.I4proto
+    field: fd.I4proto
     ignore_empty_value: true
-- set:
-    field: Falco.fd.sockfamily
-    copy_from: fd.sockfamily
+- rename:
+    target_field: falco.fd.sockfamily
+    field: fd.sockfamily
     ignore_empty_value: true
-- set:
-    field: Falco.fd.is_server
-    copy_from: fd.is_server
+- rename:
+    target_field: falco.fd.is_server
+    field: fd.is_server
     ignore_empty_value: true
-- set:
-    field: Falco.fd.uid
-    copy_from: fd.uid
+- rename:
+    target_field: falco.fd.uid
+    field: fd.uid
     ignore_empty_value: true
-- set:
-    field: Falco.fd.containername
-    copy_from: fd.containername
+- rename:
+    target_field: falco.fd.containername
+    field: fd.containername
     ignore_empty_value: true
-- set:
-    field: Falco.fd.containerdirectory
-    copy_from: fd.containerdirectory
+- rename:
+    target_field: falco.fd.containerdirectory
+    field: fd.containerdirectory
     ignore_empty_value: true
-- set:
-    field: Falco.fd.cproto
-    copy_from: fd.cproto
+- rename:
+    target_field: falco.fd.cproto
+    field: fd.cproto
     ignore_empty_value: true
-- set:
-    field: Falco.fd.sproto
-    copy_from: fd.sproto
+- rename:
+    target_field: falco.fd.sproto
+    field: fd.sproto
     ignore_empty_value: true
-- set:
-    field: Falco.fd.lproto
-    copy_from: fd.lproto
+- rename:
+    target_field: falco.fd.lproto
+    field: fd.lproto
     ignore_empty_value: true
-- set:
-    field: Falco.fd.rproto
-    copy_from: fd.rproto
+- rename:
+    target_field: falco.fd.rproto
+    field: fd.rproto
     ignore_empty_value: true
-- set:
-    field: Falco.fd.connected
-    copy_from: fd.connected
+- rename:
+    target_field: falco.fd.connected
+    field: fd.connected
     ignore_empty_value: true
-- set:
-    field: Falco.fd.name_changed
-    copy_from: fd.name_changed
+- rename:
+    target_field: falco.fd.name_changed
+    field: fd.name_changed
     ignore_empty_value: true
-- set:
-    field: Falco.fd.dev
-    copy_from: fd.dev
+- rename:
+    target_field: falco.fd.dev
+    field: fd.dev
     ignore_empty_value: true
-- set:
-    field: Falco.fd.dev_major
-    copy_from: fd.dev_major
+- rename:
+    target_field: falco.fd.dev_major
+    field: fd.dev_major
     ignore_empty_value: true
-- set:
-    field: Falco.fd.dev_minor
-    copy_from: fd.dev_minor
+- rename:
+    target_field: falco.fd.dev_minor
+    field: fd.dev_minor
     ignore_empty_value: true
-- set:
-    field: Falco.fs.path.name
-    copy_from: fs.path.name
+- rename:
+    target_field: falco.fs.path.name
+    field: fs.path.name
     ignore_empty_value: true
-- set:
-    field: Falco.fs.path.source
-    copy_from: fs.path.source
+- rename:
+    target_field: falco.fs.path.source
+    field: fs.path.source
     ignore_empty_value: true
-- set:
-    field: Falco.fs.path.target
-    copy_from: fs.path.target
+- rename:
+    target_field: falco.fs.path.target
+    field: fs.path.target
     ignore_empty_value: true
-- set:
-    field: Falco.fdlist.names
-    copy_from: fdlist.names
+- rename:
+    target_field: falco.fdlist.names
+    field: fdlist.names
     ignore_empty_value: true
-- set:
-    field: Falco.fdlist.cips
-    copy_from: fdlist.cips
+- rename:
+    target_field: falco.fdlist.cips
+    field: fdlist.cips
     ignore_empty_value: true
-- set:
-    field: Falco.fdlist.sips
-    copy_from: fdlist.sips
+- rename:
+    target_field: falco.fdlist.sips
+    field: fdlist.sips
     ignore_empty_value: true
-- set:
-    field: Falco.fdlist.cports
-    copy_from: fdlist.cports
+- rename:
+    target_field: falco.fdlist.cports
+    field: fdlist.cports
     ignore_empty_value: true
-- set:
-    field: Falco.fdlist.sports
-    copy_from: fdlist.sports
+- rename:
+    target_field: falco.fdlist.sports
+    field: fdlist.sports
     ignore_empty_value: true
-- set:
-    field: Falco.k8s.pod.sandbox_id
-    copy_from: k8s.pod.sandbox_id
+- rename:
+    target_field: falco.k8s.pod.sandbox_id
+    field: k8s.pod.sandbox_id
     ignore_empty_value: true
-- set:
-    field: Falco.k8s.pod.full_sandbox_id
-    copy_from: k8s.pod.full_sandbox_id
+- rename:
+    target_field: falco.k8s.pod.full_sandbox_id
+    field: k8s.pod.full_sandbox_id
     ignore_empty_value: true
-- set:
-    field: Falco.k8s.pod.cni_json
-    copy_from: k8s.pod.cni_json
+- rename:
+    target_field: falco.k8s.pod.cni_json
+    field: k8s.pod.cni_json
     ignore_empty_value: true
+- rename:
+    target_field: hostname
+    field: hostname
+    ignore_empty_value: true
+- rename:
+    target_field: input.type
+    field: input.type
+    ignore_empty_value: true
+- rename:
+    target_field: log.source.address
+    field: log.source.address
+    ignore_empty_value: true
+- rename:
+    target_field: message
+    field: message
+    ignore_empty_value: true
+- rename:
+    target_field: process.program
+    field: process.program
+    ignore_empty_value: true
+- rename:
+    target_field: syslog.priority
+    field: syslog.priority
+    ignore_empty_value: true
+- rename:
+    target_field: syslog.severity_label
+    field: syslog.severity_label
+    ignore_empty_value: true
+- remove:
+    field: ['falco.output','falco.priority','falco.rule','falco.evt.num','falco.evt.time','falco.evt.source','falco.evt.hostname','falco.proc.exepath','falco.proc.pexepath','falco.proc.name','falco.proc.pname','falco.proc.cmdline','falco.proc.pcmdline','falco.proc.cmdnargs','falco.proc.env','falco.proc.cwd','falco.proc.pid','falco.proc.ppid','falco.proc.vpid','falco.proc.pvpid','falco.proc.sid','falco.proc.sname','falco.proc.sid.exepath','falco.proc.vpgid','falco.proc.vpgid.name','falco.proc.vpgid.exepath','falco.proc.duration','falco.proct.ppid.duration','falco.proc.pid.ts','falco.proc.ppid.ts','falco.proc.is_sid_leader','falco.proc.is_vpgid_leader','falco.thread.cap_permitted','falco.thread.cap_effective','falco.thread.tid','falco.user.uid','falco.user.name','falco.group.gid','falco.group.name','falco.container.id','falco.container.name','falco.container.image','falco.container.type','falco.container.privileged','falco.container.image.digest','falco.container.ip','falco.fd.directory','falco.fd.filename','falco.fd.cip','falco.fd.sip','falco.fd.lip','falco.fd.rip','falco.fd.cport','falco.fd.sport','falco.fd.lport','falco.fd.rport','falco.fd.cip.name','falco.fd.sip.name','falco.fd.lip.name','falco.fd.rip.name','falco.fd.ino','falco.syslog.facility.str','falco.syslog.facility','falco.syslog.severity.str','falco.syslog.severity','falco.k8s.ns.name','falco.k8s.pod.name','falco.k8s.pod.uid','falco.k8s.pod.labels','falco.k8s.pod.ip']
+    if: ctx['tags'] == null || !(ctx['tags'].contains('preserve_falco_fields'))
+    ignore_missing: true
 on_failure:
-- set:
+- append:
     field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+    value: Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
 - set:
-    field: error.failed_processor_type
-    value: '{{_ingest.on_failure_processor_type }}'
-- set:
-    field: error.failed_processor_tag
-    value: '{{_ingest.on_failure_processor_tag }}'
+    field: event.kind
+    value: pipeline_error

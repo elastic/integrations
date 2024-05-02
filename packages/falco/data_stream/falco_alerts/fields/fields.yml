@@ -1,13 +1,10 @@
 - name: event.sequence
   type: long
   description: Event number.
-- name: observer.hostname
-  type: text
-  description: Host of the originating event.
 - name: related.hosts
   type: text
   description: Host of the originating event.
-- name: Falco
+- name: falco
   type: group
   description: Namespace for Falco-specific fields without a direct ECS equivalent.
   fields:
@@ -393,255 +390,273 @@
       type: object
       description: Kubernetes CNI result field from the respective pod status info.
       object_type: keyword
-- name: output
-  type: text
-  description: Preserved Falco field for event.original.
-- name: priority
+    - name: output
+      type: text
+      description: Preserved Falco field for event.original.
+    - name: priority
+      type: keyword
+      description: Preserved Falco field for event.severity.
+    - name: rule
+      type: text
+      description: Preserved Falco field for rule.name.
+    - name: evt.num
+      type: integer
+      description: Preserved Falco field for event.sequence.
+    - name: evt.time
+      type: text
+      description: Preserved Falco field for @timestamp.
+    - name: evt.source
+      type: text
+      description: Preserved Falco field for event.original.
+    - name: evt.hostname
+      type: text
+      description: Preserved Falco field for observer.hostname
+    - name: proc.exepath
+      type: text
+      description: Preserved Falco field for process.executable
+    - name: proc.pexepath
+      type: text
+      description: Preserved Falco field for process.parent.executable
+    - name: proc.name
+      type: text
+      description: Preserved Falco field for process.name
+    - name: proc.pname
+      type: text
+      description: Preserved Falco field for process.parent.name
+    - name: proc.cmdline
+      type: text
+      description: Preserved Falco field for process.command_line
+    - name: proc.pcmdline
+      type: text
+      description: Preserved Falco field for process.parent.command_line
+    - name: proc.cmdnargs
+      type: integer
+      description: Preserved Falco field for process.args_count
+    - name: proc.env
+      type: text
+      description: Preserved Falco field for process.env_vars
+    - name: proc.cwd
+      type: text
+      description: Preserved Falco field for process.working_directory
+    - name: proc.pid
+      type: integer
+      description: Preserved Falco field for process.pid
+    - name: proc.ppid
+      type: integer
+      description: Preserved Falco field for process.parent.pid
+    - name: proc.vpid
+      type: integer
+      description: Preserved Falco field for process.vpid
+    - name: proc.pvpid
+      type: integer
+      description: Preserved Falco field for process.parent.vpid
+    - name: proc.sid
+      type: integer
+      description: Preserved Falco field for process.session_leader
+    - name: proc.sname
+      type: text
+      description: Preserved Falco field for process.session_leader.name
+    - name: proc.sid.exepath
+      type: text
+      description: Preserved Falco field for process.session_leader.executable
+    - name: proc.vpgid
+      type: integer
+      description: Preserved Falco field for process.group_leader.vpid
+    - name: proc.vpgid.name
+      type: text
+      description: Preserved Falco field for process.group_leader.name
+    - name: proc.vpgid.exepath
+      type: text
+      description: Preserved Falco field for process.group_leader.executable
+    - name: proc.duration
+      type: text
+      description: Preserved Falco field for process.uptime
+    - name: proct.ppid.duration
+      type: text
+      description: Preserved Falco field for process.parent.uptime
+    - name: proc.pid.ts
+      type: text
+      description: Preserved Falco field for process.pid.start
+    - name: proc.ppid.ts
+      type: text
+      description: Preserved Falco field for process.parent.start
+    - name: proc.is_sid_leader
+      type: boolean
+      description: Preserved Falco field for process.session_leader.same_as_process
+    - name: proc.is_vpgid_leader
+      type: boolean
+      description: Preserved Falco field for process.group_leader.same_as_process
+    - name: thread.cap_permitted
+      type: text
+      description: Preserved Falco field for process.thread.capabilities.permitted
+    - name: thread.cap_effective
+      type: text
+      description: Preserved Falco field for process.thread.capabilities.effective
+    - name: thread.tid
+      type: integer
+      description: Preserved Falco field for process.thread.id
+    - name: user.uid
+      type: integer
+      description: Preserved Falco field for process.user.uid
+    - name: user.name
+      type: text
+      description: Preserved Falco field for process.user.name
+    - name: group.gid
+      type: integer
+      description: Preserved Falco field for process.group.id
+    - name: group.name
+      type: text
+      description: Preserved Falco field for process.group.name
+    - name: container.image
+      type: text
+      description: Preserved Falco field for container.image.name
+    - name: container.type
+      type: text
+      description: Preserved Falco field for container.runtime
+    - name: container.privileged
+      type: boolean
+      description: Preserved Falco field for container.security_context.privileged
+    - name: container.image.digest
+      type: text
+      description: Preserved Falco field for container.image.hash.all
+    - name: container.ip
+      type: text
+      description: Preserved Falco field for host.ip
+    - name: fd.directory
+      type: text
+      description: Preserved Falco field for file.directory
+    - name: fd.filename
+      type: text
+      description: Preserved Falco field for file.name
+    - name: fd.cip
+      type: ip
+      description: Preserved Falco field for client.ip
+    - name: fd.sip
+      type: ip
+      description: Preserved Falco field for server.ip
+    - name: fd.lip
+      type: ip
+      description: Preserved Falco field for source.ip
+    - name: fd.rip
+      type: ip
+      description: Preserved Falco field for destination.ip
+    - name: fd.cport
+      type: text
+      description: Preserved Falco field for client.port
+    - name: fd.sport
+      type: text
+      description: Preserved Falco field for server.port
+    - name: fd.lport
+      type: text
+      description: Preserved Falco field for source.port
+    - name: fd.rport
+      type: text
+      description: Preserved Falco field for destination.port
+    - name: fd.cip.name
+      type: text
+      description: Preserved Falco field for client.domain
+    - name: fd.sip.name
+      type: text
+      description: Preserved Falco field for server.domain
+    - name: fd.lip.name
+      type: text
+      description: Preserved Falco field for source.domain
+    - name: fd.rip.name
+      type: text
+      description: Preserved Falco field for destination.domain
+    - name: fd.ino
+      type: text
+      description: Preserved Falco field for file.inode
+    - name: syslog.facility.str
+      type: text
+      description: Preserved Falco field for log.syslog.facility.name
+    - name: syslog.facility
+      type: text
+      description: Preserved Falco field for log.syslog.facility.code
+    - name: syslog.severity.str
+      type: text
+      description: Preserved Falco field for log.syslog.severity.name
+    - name: syslog.severity
+      type: text
+      description: Preserved Falco field for log.syslog.severity.code
+    - name: k8s.ns.name
+      type: text
+      description: Preserved Falco field for orchestrator.namespace
+    - name: k8s.pod.name
+      type: text
+      description: Preserved Falco field for orchestrator.resource.name
+    - name: k8s.pod.uid
+      type: text
+      description: Preserved Falco field for orchestrator.resource.id
+    - name: k8s.pod.labels
+      type: text
+      description: Preserved Falco field for orchestrator.resource.label
+    - name: k8s.pod.ip
+      type: text
+      description: Preserved Falco field for orchestrator.resource.ip
+    - name: container.mounts
+      type: text
+      description: Preserved Falco field for container.mounts
+    - name: evt.args
+      type: text
+      description: Preserved Falco field for evt.args
+    - name: evt.category
+      type: text
+      description: Preserved Falco field for evt.category
+    - name: evt.dir
+      type: text
+      description: Preserved Falco field for evt.dir
+    - name: evt.info
+      type: text
+      description: Preserved Falco field for evt.info
+    - name: evt.latency
+      type: float
+      description: Preserved Falco field for evt.latency
+    - name: evt.plugininfo
+      type: text
+      description: Preserved Falco field for evt.plugininfo
+    - name: evt.pluginname
+      type: text
+      description: Preserved Falco field for evt.pluginname
+    - name: evt.res
+      type: text
+      description: Preserved Falco field for evt.res
+    - name: evt.type
+      type: text
+      description: Preserved Falco field for evt.type
+    - name: observer.product
+      type: text
+      description: Preserved Falco field for observer.product
+    - name: observer.type
+      type: text
+      description: Preserved Falco field for observer.type
+    - name: observer.vendor
+      type: text
+      description: Preserved Falco field for observer.vendor
+    - name: proc.thread.cap_inheritable
+      type: text
+      description: Preserved Falco field for proc.thread.cap_inheritable
+- name: hostname
   type: keyword
-  description: Preserved Falco field for event.severity.
-- name: rule
+  description: Required field for integration
+- name: input.type
+  type: keyword
+  description: Required field for integration
+- name: log.source.address
   type: text
-  description: Preserved Falco field for rule.name.
-- name: evt.num
-  type: integer
-  description: Preserved Falco field for event.sequence.
-- name: evt.time
+  description: Required field for integration
+- name: message
   type: text
-  description: Preserved Falco field for @timestamp.
-- name: evt.source
+  description: Required field for integration
+- name: process.program
+  type: keyword
+  description: Required field for integration
+- name: syslog.facility_label
   type: text
-  description: Preserved Falco field for event.original.
-- name: evt.hostname
-  type: text
-  description: Preserved Falco field for observer.hostname
-- name: proc.exepath
-  type: text
-  description: Preserved Falco field for process.executable
-- name: proc.pexepath
-  type: text
-  description: Preserved Falco field for process.parent.executable
-- name: proc.name
-  type: text
-  description: Preserved Falco field for process.name
-- name: proc.pname
-  type: text
-  description: Preserved Falco field for process.parent.name
-- name: proc.cmdline
-  type: text
-  description: Preserved Falco field for process.command_line
-- name: proc.pcmdline
-  type: text
-  description: Preserved Falco field for process.parent.command_line
-- name: proc.cmdnargs
-  type: integer
-  description: Preserved Falco field for process.args_count
-- name: proc.env
-  type: text
-  description: Preserved Falco field for process.env_vars
-- name: proc.cwd
-  type: text
-  description: Preserved Falco field for process.working_directory
-- name: proc.pid
-  type: integer
-  description: Preserved Falco field for process.pid
-- name: proc.ppid
-  type: integer
-  description: Preserved Falco field for process.parent.pid
-- name: proc.vpid
-  type: integer
-  description: Preserved Falco field for process.vpid
-- name: proc.pvpid
-  type: integer
-  description: Preserved Falco field for process.parent.vpid
-- name: proc.sid
-  type: integer
-  description: Preserved Falco field for process.session_leader
-- name: proc.sname
-  type: text
-  description: Preserved Falco field for process.session_leader.name
-- name: proc.sid.exepath
-  type: text
-  description: Preserved Falco field for process.session_leader.executable
-- name: proc.vpgid
-  type: integer
-  description: Preserved Falco field for process.group_leader.vpid
-- name: proc.vpgid.name
-  type: text
-  description: Preserved Falco field for process.group_leader.name
-- name: proc.vpgid.exepath
-  type: text
-  description: Preserved Falco field for process.group_leader.executable
-- name: proc.duration
-  type: text
-  description: Preserved Falco field for process.uptime
-- name: proct.ppid.duration
-  type: text
-  description: Preserved Falco field for process.parent.uptime
-- name: proc.pid.ts
-  type: text
-  description: Preserved Falco field for process.pid.start
-- name: proc.ppid.ts
-  type: text
-  description: Preserved Falco field for process.parent.start
-- name: proc.is_sid_leader
-  type: boolean
-  description: Preserved Falco field for process.session_leader.same_as_process
-- name: proc.is_vpgid_leader
-  type: boolean
-  description: Preserved Falco field for process.group_leader.same_as_process
-- name: thread.cap_permitted
-  type: text
-  description: Preserved Falco field for process.thread.capabilities.permitted
-- name: thread.cap_effective
-  type: text
-  description: Preserved Falco field for process.thread.capabilities.effective
-- name: thread.tid
-  type: integer
-  description: Preserved Falco field for process.thread.id
-- name: user.uid
-  type: integer
-  description: Preserved Falco field for process.user.uid
-- name: user.name
-  type: text
-  description: Preserved Falco field for process.user.name
-- name: group.gid
-  type: integer
-  description: Preserved Falco field for process.group.id
-- name: group.name
-  type: text
-  description: Preserved Falco field for process.group.name
-- name: container.id
-  type: text
-  description: Preserved Falco field for container.id
-- name: container.name
-  type: text
-  description: Preserved Falco field for container.name
-- name: container.image
-  type: text
-  description: Preserved Falco field for container.image.name
-- name: container.type
-  type: text
-  description: Preserved Falco field for container.runtime
-- name: container.privileged
-  type: boolean
-  description: Preserved Falco field for container.security_context.privileged
-- name: container.image.digest
-  type: text
-  description: Preserved Falco field for container.image.hash.all
-- name: container.ip
-  type: text
-  description: Preserved Falco field for host.ip
-- name: fd.directory
-  type: text
-  description: Preserved Falco field for file.directory
-- name: fd.filename
-  type: text
-  description: Preserved Falco field for file.name
-- name: fd.cip
-  type: ip
-  description: Preserved Falco field for client.ip
-- name: fd.sip
-  type: ip
-  description: Preserved Falco field for server.ip
-- name: fd.lip
-  type: ip
-  description: Preserved Falco field for source.ip
-- name: fd.rip
-  type: ip
-  description: Preserved Falco field for destination.ip
-- name: fd.cport
-  type: text
-  description: Preserved Falco field for client.port
-- name: fd.sport
-  type: text
-  description: Preserved Falco field for server.port
-- name: fd.lport
-  type: text
-  description: Preserved Falco field for source.port
-- name: fd.rport
-  type: text
-  description: Preserved Falco field for destination.port
-- name: fd.cip.name
-  type: text
-  description: Preserved Falco field for client.domain
-- name: fd.sip.name
-  type: text
-  description: Preserved Falco field for server.domain
-- name: fd.lip.name
-  type: text
-  description: Preserved Falco field for source.domain
-- name: fd.rip.name
-  type: text
-  description: Preserved Falco field for destination.domain
-- name: fd.ino
-  type: text
-  description: Preserved Falco field for file.inode
-- name: syslog.facility.str
-  type: text
-  description: Preserved Falco field for log.syslog.facility.name
-- name: syslog.facility
-  type: text
-  description: Preserved Falco field for log.syslog.facility.code
-- name: syslog.severity.str
-  type: text
-  description: Preserved Falco field for log.syslog.severity.name
-- name: syslog.severity
-  type: text
-  description: Preserved Falco field for log.syslog.severity.code
-- name: k8s.ns.name
-  type: text
-  description: Preserved Falco field for orchestrator.namespace
-- name: k8s.pod.name
-  type: text
-  description: Preserved Falco field for orchestrator.resource.name
-- name: k8s.pod.uid
-  type: text
-  description: Preserved Falco field for orchestrator.resource.id
-- name: k8s.pod.labels
-  type: text
-  description: Preserved Falco field for orchestrator.resource.label
-- name: k8s.pod.ip
-  type: text
-  description: Preserved Falco field for orchestrator.resource.ip
-- name: container.mounts
-  type: text
-  description: Preserved Falco field for container.mounts
-- name: evt.args
-  type: text
-  description: Preserved Falco field for evt.args
-- name: evt.category
-  type: text
-  description: Preserved Falco field for evt.category
-- name: evt.dir
-  type: text
-  description: Preserved Falco field for evt.dir
-- name: evt.info
-  type: text
-  description: Preserved Falco field for evt.info
-- name: evt.latency
+  description: Required field for integration
+- name: syslog.priority
   type: float
-  description: Preserved Falco field for evt.latency
-- name: evt.plugininfo
-  type: text
-  description: Preserved Falco field for evt.plugininfo
-- name: evt.pluginname
-  type: text
-  description: Preserved Falco field for evt.pluginname
-- name: evt.res
-  type: text
-  description: Preserved Falco field for evt.res
-- name: evt.type
-  type: text
-  description: Preserved Falco field for evt.type
-- name: observer.product
-  type: text
-  description: Preserved Falco field for observer.product
-- name: observer.type
-  type: text
-  description: Preserved Falco field for observer.type
-- name: observer.vendor
-  type: text
-  description: Preserved Falco field for observer.vendor
-- name: proc.thread.cap_inheritable
-  type: text
-  description: Preserved Falco field for proc.thread.cap_inheritable
+  description: Required field for integration
+- name: syslog.severity_label
+  type: keyword
+  description: Required field for integration
