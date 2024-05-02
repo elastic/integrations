@@ -160,12 +160,12 @@ list log events from the specified log group.
 | gen_ai.compliance.response_triggered | Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks. | keyword |
 | gen_ai.compliance.violation_code | Code identifying the specific compliance rule that was violated. | keyword |
 | gen_ai.compliance.violation_detected | Indicates if any compliance violation was detected during the interaction. | boolean |
-| gen_ai.model.id | Unique identifier for the LLM model. | keyword |
 | gen_ai.owasp.description | Description of the OWASP risk triggered. | text |
 | gen_ai.owasp.id | Identifier for the OWASP risk addressed. | keyword |
 | gen_ai.performance.request_size | Size of the request payload in bytes. | long |
 | gen_ai.performance.response_size | Size of the response payload in bytes. | long |
 | gen_ai.performance.response_time | Time taken by the LLM to generate a response in milliseconds. | long |
+| gen_ai.performance.start_response_time | Time taken by the LLM to send first response byte in milliseconds. | long |
 | gen_ai.policy.action | Action taken due to a policy violation, such as blocking, alerting, or modifying the content. | keyword |
 | gen_ai.policy.confidence | Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria. | keyword |
 | gen_ai.policy.match_detail.\* |  | object |
@@ -174,12 +174,12 @@ list log events from the specified log group.
 | gen_ai.prompt | The full text of the user's request to the gen_ai. | text |
 | gen_ai.request.id | Unique identifier for the LLM request. | keyword |
 | gen_ai.request.max_tokens | Maximum number of tokens the LLM generates for a request. | integer |
-| gen_ai.request.model | Name of the LLM model a request is being made to. | keyword |
 | gen_ai.request.model.description | Description of the LLM model. | keyword |
+| gen_ai.request.model.id | Unique identifier for the LLM model. | keyword |
 | gen_ai.request.model.instructions | Custom instructions for the LLM model. | text |
 | gen_ai.request.model.role | Role of the LLM model in the interaction. | keyword |
 | gen_ai.request.model.type | Type of LLM model. | keyword |
-| gen_ai.request.model_version | Version of the LLM model used to generate the response. | keyword |
+| gen_ai.request.model.version | Version of the LLM model used to generate the response. | keyword |
 | gen_ai.request.temperature | Temperature setting for the LLM request. | float |
 | gen_ai.request.timestamp | Timestamp when the request was made. | date |
 | gen_ai.request.top_k | The top_k sampling setting for the LLM request. | float |

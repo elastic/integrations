@@ -70,6 +70,9 @@ processors:
 # Proposed LLM fields
 ######
   - set:
+      field: gen_ai.system
+      value: aws
+  - set:
       field: gen_ai.response.timestamp
       copy_from: '@timestamp'
   # Remarshal the request and response.
@@ -192,6 +195,8 @@ processors:
         "sensitiveInformationPolicy": "sensitive_information_policy"
         "piiEntities": "pii_entities"
         "normalizeIndex": "normalize_index"
+        "latencyMs": "latency_ms"
+        "stopReason": "stop_reason"
       tag: painless_to_rename_fields_under_aws_bedrock_groups
       source: |
         def renameKeys(Map src, Map keyMap) {
@@ -233,10 +238,18 @@ processors:
         ctx.aws_bedrock = renameKeys(ctx.aws_bedrock, params)
 
   - set:
-      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.anthropic_version != null
-      field: gen_ai.request.model_version
-      copy_from: aws_bedrock.invocation.input.input_body_json.anthropic_version
+      if: ctx.aws_bedrock?.invocation?.model_id != null
+      field: gen_ai.request.model.id
+      copy_from: aws_bedrock.invocation.model_id
       ignore_failure: true
+  - script:
+      tag: get_response_id
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json != null && ctx.gen_ai?.request?.model?.id instanceof String && ctx.gen_ai.request.model.id.contains('.')
+      lang: painless
+      source: |
+        def typ = ctx.gen_ai.request.model.id.substring(0, ctx.gen_ai.request.model.id.indexOf('.'));
+        ctx.gen_ai.request.model.type = typ;
+        ctx.gen_ai.request.model.version = ctx.aws_bedrock.invocation.input.input_body_json[typ+'_version'];
   - convert:
       if: ctx.aws_bedrock?.invocation?.input?.input_token_count != null
       field: aws_bedrock.invocation.input.input_token_count
@@ -274,11 +287,6 @@ processors:
       type: long
       ignore_failure: true
   - set:
-      if: ctx.aws_bedrock?.invocation?.model_id != null
-      field: gen_ai.model.id
-      copy_from: aws_bedrock.invocation.model_id
-      ignore_failure: true
-  - set:
       if: ctx.aws_bedrock?.invocation?.request_id != null
       field: gen_ai.request.id
       copy_from: aws_bedrock.invocation.request_id
@@ -289,7 +297,7 @@ processors:
       copy_from: aws_bedrock.invocation.output.output_body_json.id
       ignore_failure: true
   - script:
-      tag: get_response_id
+      tag: get_response_id_and_role_from_list
       if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
       lang: painless
       source: |
@@ -301,10 +309,21 @@ processors:
             if (ctx.gen_ai.response == null) {
               ctx.gen_ai.response = new HashMap();
             }
+            ctx.gen_ai.request.model.role = e.message?.role; // Surprisingly this is in the invocation.
             ctx.gen_ai.response.id = e.message?.id;
             break;
           }
         }
+  - set:
+      tag: get_response_role_from_object
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output?.message?.role != null'
+      field: gen_ai.request.model.role
+      copy_from: aws_bedrock.invocation.output.output_body_json.output.message.role
+  - set:
+      tag: get_stop_reason
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.stop_reason != null'
+      field: gen_ai.response.finish_reasons
+      copy_from: aws_bedrock.invocation.output.output_body_json.stop_reason
   - script:
       tag: get_response_time
       if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
@@ -319,6 +338,7 @@ processors:
             if (ctx.gen_ai.performance == null) {
               ctx.gen_ai.performance = new HashMap();
             }
+            ctx.gen_ai.performance.start_response_time = e.amazon_bedrock_invocation_metrics.first_byte_latency;
             ctx.gen_ai.performance.response_time = e.amazon_bedrock_invocation_metrics.invocation_latency;
             break;
           }
