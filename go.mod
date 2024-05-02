@@ -140,7 +140,7 @@ require (
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/shirou/gopsutil/v3 v3.24.3 // indirect
+	github.com/shirou/gopsutil/v3 v3.24.4 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
@@ -209,4 +209,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace github.com/elastic/elastic-package => github.com/elastic/elastic-package v0.99.1-0.20240425180132-e4ede838a0f0
+replace github.com/elastic/elastic-package => github.com/elastic/elastic-package v0.99.1-0.20240502101242-eba9ed548b49
