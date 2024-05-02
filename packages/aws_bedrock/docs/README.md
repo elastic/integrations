@@ -68,7 +68,7 @@ either S3 or CloudWatch. The full details of this are available from the
 (https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html),
 but outlined here.
 
-1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) Logs destination. We recommend using S3 over CloudWatch as CloudWatch caps data at 100KB.
+1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) Logs destination.
 2. Enable logging. This can be done either through the [AWS Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the AWS Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
 
 
@@ -175,7 +175,7 @@ list log events from the specified log group.
 | gen_ai.performance.response_time | Time taken by the LLM to generate a response in milliseconds. | long |
 | gen_ai.policy.action | Action taken due to a policy violation, such as blocking, alerting, or modifying the content. | keyword |
 | gen_ai.policy.confidence | Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria. | keyword |
-| gen_ai.policy.match_detail.\* | Details about what specifically triggered the policy, including matched words, phrases, or patterns. | object |
+| gen_ai.policy.match_detail.\* |  | object |
 | gen_ai.policy.name | Name of the specific policy that was triggered. | keyword |
 | gen_ai.policy.violation | Specifies if a security policy was violated. | boolean |
 | gen_ai.prompt | The full text of the user's request to the gen_ai. | text |
