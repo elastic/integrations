@@ -15,6 +15,7 @@ export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
 
+COVERAGE_OPTIONS="--test-coverage"
 
 running_on_buildkite() {
     if [[ "${BUILDKITE:-"false"}" == "true" ]]; then
@@ -135,14 +136,51 @@ with_mage() {
     mage --version
 }
 
-with_docker_compose() {
+with_docker() {
+    echo "--- Setting up the Docker environment..."
+    echo "- Current docker client version:"
+    docker version -f json  | jq -r '.Client.Version'
+    echo "- Current docker server version:"
+    docker version -f json  | jq -r '.Server.Version'
+
+    if [[ "${DOCKER_VERSION:-"false"}" == "false" ]]; then
+        echo "Skip docker installation"
+        return
+    fi
+    local ubuntu_version
+    local ubuntu_codename
+    local architecture
+    ubuntu_version="$(lsb_release -rs)" # 20.04
+    ubuntu_codename="$(lsb_release -sc)" # focal
+    architecture=$(dpkg --print-architecture)
+    local debian_version="5:${DOCKER_VERSION}-1~ubuntu.${ubuntu_version}~${ubuntu_codename}"
+
+    sudo sudo mkdir -p /etc/apt/keyrings
+    if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    fi
+    echo "deb [arch=${architecture} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${ubuntu_codename} stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce=${debian_version}"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce-cli=${debian_version}"
+    sudo systemctl start docker
+}
+
+with_docker_compose_plugin() {
+    echo "--- Setting up the Docker compose plugin environment..."
+    if [[ "${DOCKER_COMPOSE_VERSION:-"false"}" == "false" ]]; then
+        echo "Skip docker compose installation (plugin)"
+        return
+    fi
     create_bin_folder
     check_platform_architecture
 
-    echo "--- Setting up the Docker-compose environment..."
-    retry 5 curl -sSL -o "${BIN_FOLDER}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
-    chmod +x "${BIN_FOLDER}/docker-compose"
-    docker-compose version
+    local DOCKER_CONFIG="$HOME/.docker/cli-plugins"
+    mkdir -p "$DOCKER_CONFIG"
+
+    retry 5 curl -SL -o ${DOCKER_CONFIG}/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
+    chmod +x ${DOCKER_CONFIG}/docker-compose
+    docker compose version
 }
 
 with_kubernetes() {
@@ -270,7 +308,6 @@ create_kind_cluster() {
     kind create cluster --config "${WORKSPACE}/kind-config.yaml" --image "kindest/node:${K8S_VERSION}"
 }
 
-
 delete_kind_cluster() {
     echo "--- Delete kind cluster"
     kind delete cluster || true
@@ -294,7 +331,81 @@ kibana_version_manifest() {
 }
 
 capabilities_manifest() {
-    cat manifest.yml | yq ".conditions.elastic.capabilities"
+    # 1) Expected format
+    #  conditions:
+    #    elastic:
+    #      capabilities:
+    #        - observability
+    #        - uptime
+    # expected output:
+    # "observability"
+    # "uptime"
+    # 2) Expected format
+    #  conditions:
+    #    elastic:
+    #      capabilities: [observability, uptime]
+    # expected output:
+    # "observability"
+    # "uptime"
+    local capabilities=""
+    capabilities=$(cat manifest.yml | yq -M -r -o json ".conditions.elastic.capabilities")
+    if [[ "$capabilities" != "null" ]]; then
+        echo "$capabilities" | jq '.[]'
+        return
+    fi
+    echo "$capabilities"
+}
+
+capabilities_in_kibana() {
+    # Expected format
+    # xpack.fleet.internal.registry.capabilities: [
+    #   'apm',
+    #   'observability',
+    #   'uptime',
+    # ]
+    # Expected output:
+    # "apm"
+    # "observability"
+    # "uptime"
+    cat "${KIBANA_CONFIG_FILE_PATH}" | yq -M -r -o json '."xpack.fleet.internal.registry.capabilities"' | jq '.[]'
+}
+
+packages_excluded() {
+    # Expected format:
+    #   xpack.fleet.internal.registry.excludePackages: [
+    #     # Security integrations
+    #     'endpoint',
+    #     'beaconing',
+    #     'osquery_manager',
+    #   ]
+    # required double quotes to ensure that the package is checked (e.g. synthetics synthetics_dashboard)
+    # excluded_packages must be:
+    # "endpoint"
+    # "beaconing"
+    # "osquery_manager"
+    local config_file_path=$1
+    local excluded_packages=""
+    excluded_packages=$(cat "${config_file_path}" | yq -M -r -o json '."xpack.fleet.internal.registry.excludePackages"')
+    if [[ "${excluded_packages}" != "null" ]]; then
+        echo "${excluded_packages}" | jq '.[]'
+        return
+    fi
+    echo "${excluded_packages}"
+}
+
+is_package_excluded() {
+    local package=$1
+    local config_file_path=$2
+    local excluded_packages=""
+
+    excluded_packages=$(packages_excluded "${config_file_path}")
+    if [[ "${excluded_packages}" == "null" ]]; then
+        return 1
+    fi
+    if echo "${excluded_packages}" | grep -q -E "\"${package}\""; then
+        return 0
+    fi
+    return 1
 }
 
 is_supported_capability() {
@@ -302,7 +413,7 @@ is_supported_capability() {
         return 0
     fi
 
-    local capabilities
+    local capabilities=""
     capabilities=$(capabilities_manifest)
 
     # if no capabilities defined, it is available iavailable all projects
@@ -310,23 +421,24 @@ is_supported_capability() {
         return 0
     fi
 
-    if [[ ${SERVERLESS_PROJECT} == "observability" ]]; then
-        if echo "${capabilities}" | grep -E 'apm|observability|uptime' ; then
-            return 0
-        else
-            return 1
-        fi
+    local capabilities_kibana_grep=""
+
+    capabilities_kibana_grep=$(capabilities_in_kibana | tr -d '\n' | sed 's/""/"|"/g')
+    # Expected value of "capabilities_kibana"
+    # "apm"|"observability"|"uptime"
+
+    # if there is no key defined in kibana, allow to be tested
+    if [[ ${capabilities_kibana_grep} == "null" ]]; then
+        return 0
     fi
 
-    if [[ ${SERVERLESS_PROJECT} == "security" ]]; then
-        if echo "${capabilities}" | grep -E 'security' ; then
-            return 0
-        else
+    for cap in ${capabilities}; do
+        if ! echo "${cap}" | grep -q -E "${capabilities_kibana_grep}"; then
             return 1
         fi
-    fi
+    done
 
-    return 1
+    return 0
 }
 
 is_supported_stack() {
@@ -533,7 +645,7 @@ is_pr_affected() {
     local from=${2:-""}
     local to=${3:-""}
 
-    echo "[${package}] Original commits: from '${from}' - to: '${to}'"
+    echoerr "[${package}] Original commits: from '${from}' - to: '${to}'"
 
     if ! is_supported_stack ; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
@@ -541,6 +653,10 @@ is_pr_affected() {
     fi
 
     if is_serverless; then
+        if is_package_excluded "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
+            echo "[${package}] PR is not affected: package ${package} excluded in Kibana config for ${SERVERLESS_PROJECT}"
+            return 1
+        fi
         if ! is_supported_capability ; then
             echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
             return 1
@@ -636,6 +752,19 @@ build_zip_package() {
     return 0
 }
 
+skip_installation_step() {
+    local package=$1
+    if ! is_serverless ; then
+        return 1
+    fi
+
+    if [[ "$package" == "security_detection_engine" ]]; then
+        return 0
+    fi
+
+    return 1
+}
+
 install_package() {
     local package=$1
     echo "Install package: ${package}"
@@ -648,11 +777,11 @@ install_package() {
 
 test_package_in_local_stack() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file --test-coverage"
+    TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     # Run all test suites
-    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS}
+    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
     local ret=$?
     echo ""
     return $ret
@@ -666,10 +795,10 @@ test_package_in_serverless() {
     TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
-    if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} --test-coverage ; then
+    if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
         return 1
     fi
-    if ! ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS} --test-coverage ; then
+    if ! ${ELASTIC_PACKAGE_BIN} test static ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
         return 1
     fi
     # FIXME: adding test-coverage for serverless results in errors like this:
@@ -695,10 +824,13 @@ run_tests_package() {
         fi
     fi
 
-    echo "--- [${package}] test installation"
-    if ! install_package "${package}" ; then
-        return 1
+    if ! skip_installation_step "${package}" ; then
+        echo "--- [${package}] test installation"
+        if ! install_package "${package}" ; then
+            return 1
+        fi
     fi
+
     echo "--- [${package}] run test suites"
     if is_serverless; then
         if ! test_package_in_serverless "${package}" ; then
@@ -758,6 +890,10 @@ upload_safe_logs_from_package() {
     fi
 
     local package=$1
+    local retry_count="${BUILDKITE_RETRY_COUNT:-"0"}"
+    if [[ "${retry_count}" -ne 0 ]]; then
+        package="${package}_retry_${retry_count}"
+    fi
     local build_directory=$2
 
     local parent_folder="insecure-logs"

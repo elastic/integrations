@@ -59,6 +59,7 @@ for package in ${PACKAGE_LIST}; do
         UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
       artifact_paths:
         - build/test-results/*.xml
+        - build/test-coverage/*.xml
         - build/benchmark-results/*.json
         - build/elastic-stack-dump/*/logs/*.log
         - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
