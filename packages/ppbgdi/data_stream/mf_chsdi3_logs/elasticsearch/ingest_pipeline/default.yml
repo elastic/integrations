@@ -17,12 +17,19 @@ processors:
         - ^%{CHAR:first_char}
       pattern_definitions:
         CHAR: .
+      ignore_missing: true
   - pipeline:
-      if: ctx.first_char != '{'
+      description: Process common logs
+      if: ctx?.first_char != null && ctx?.first_char != '{'
       name: '{{ IngestPipeline "common" }}'
+  - pipeline:
+      description: Process url path
+      if: ctx?.url?.path != null && ctx?.url?.path != ""
+      name: '{{ IngestPipeline "url-path" }}'
   - remove:
       field:
         - first_char
+      ignore_missing: true
   - pipeline:
       description: Process url query
       if: ctx?.url?.query != null && ctx?.url?.query != ""
