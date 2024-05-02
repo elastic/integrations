@@ -6,7 +6,7 @@
 
 Use the MongoDB Atlas integration to:
 
-- Collect MongoDB Atlas mongod audit logs, mongod database logs, organization events and process metrics for comprehensive monitoring and analysis.
+- Collect MongoDB Atlas mongod audit logs, mongod database logs, organization logs and process metrics for comprehensive monitoring and analysis.
 - Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
 - Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
 
@@ -21,7 +21,7 @@ Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` 
 Data streams:
 - `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 - `mongod_database`: This data stream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
-- `organization`: Organization events provide a detailed view of your organization's activities, enabling tracking and monitoring of significant actions and status changes involving database operations, billing, security, hosts, encryption, user access, and more, as performed by users and teams.
+- `organization`: Organization logs provide a detailed view of your organization's activities, enabling tracking and monitoring of significant actions and status changes involving database operations, billing, security, hosts, encryption, user access, and more, as performed by users and teams.
 - `process`: This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
 
 Note:
@@ -346,8 +346,8 @@ An example event for `organization` looks as following:
 {
     "@timestamp": "2024-04-30T06:17:35.000Z",
     "agent": {
-        "ephemeral_id": "dc54bbac-6098-42af-8aa5-693c2d0a0948",
-        "id": "2165188e-589c-46b8-bdb6-cc62e642580a",
+        "ephemeral_id": "983472a6-fe7c-4f37-a9df-59e8338a2101",
+        "id": "8dc08178-6541-405d-bdc0-7ccedefccebc",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -364,7 +364,7 @@ An example event for `organization` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2165188e-589c-46b8-bdb6-cc62e642580a",
+        "id": "8dc08178-6541-405d-bdc0-7ccedefccebc",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -376,7 +376,7 @@ An example event for `organization` looks as following:
         ],
         "dataset": "mongodb_atlas.organization",
         "id": "66308cff73a61b3c0633ad96",
-        "ingested": "2024-04-30T09:50:25Z",
+        "ingested": "2024-05-01T10:50:39Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
@@ -394,10 +394,10 @@ An example event for `organization` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.244.7"
+            "192.168.254.7"
         ],
         "mac": [
-            "02-42-C0-A8-F4-07"
+            "02-42-C0-A8-FE-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
