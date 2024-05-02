@@ -6,13 +6,14 @@ processors:
       field: message
       ignore_failure: true
       target_fields:
-        # FUTURE_USE field is set to event.code for now.
-        - panw.panos.event.code
-        - panw.panos.event.id
-        - panw.panos.user.name
-        - panw.panos.event.action
-        - panw.panos.event.outcome
-
+        - panw.panos.config_version
+        - panw.panos.cmd_source
+        - user.name
+        - panw.panos.cmd
+        - event.outcome
+  - uppercase:
+      field: panw.panos.type
+      ignore_missing: true
 # Set event.kind & event.category field.
   - set:
       field: event.kind
@@ -23,6 +24,13 @@ processors:
         - configuration
 
 # Set custom fields to ECS fields
+  - date:
+      if: ctx._temp_?.syslog_time != null
+      field: _temp_.syslog_time
+      target_field: event.created
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
   - set:
       field: observer.hostname
       copy_from: panw.panos.device_name
