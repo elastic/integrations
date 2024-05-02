@@ -27,7 +27,9 @@ processors:
         ctx.stormshield.forEach((k, v) -> {
           params.devices.forEach(d -> {
             if (k.startsWith(d)) {
-              deviceStats[k] = v;
+              deviceStats[k] = [:];
+              deviceStats[k]["value"] = v;
+              deviceStats[k]["stem"] = d;
             }
         
             return true;
@@ -38,18 +40,30 @@ processors:
           return;
         }
         ctx.stormshield.device_stats = [:];
+        def result = [:];
         for (entry in deviceStats.entrySet()) {
-          ctx.stormshield.device_stats[entry.getKey()] = [:];
-          def values = entry.getValue().splitOnToken(',', 7);
+          def entryValue = entry.getValue();
+          def stem = entryValue["stem"];
+          if (!result.containsKey(stem)) {
+            result[stem] = [];
+          }
+          def values = entryValue["value"].splitOnToken(',', 7);
+          def item = [:];
+          item["original"] = entry.getKey();
           for (int i = 0; i < values.length; ++i) {
             if (i == 0) {
-              ctx.stormshield.device_stats[entry.getKey()][params.stats[i]] = values[i];
+              item[params.stats[i]] = values[i];
             } else {
-              ctx.stormshield.device_stats[entry.getKey()][params.stats[i]] = Long.parseLong(values[i]);        
+              item[params.stats[i]] = Long.parseLong(values[i]);        
             }
           }
+          result[stem].add(item);
           ctx.stormshield.remove(entry.getKey());
         }
+        for (entry in result.entrySet()) {
+          result[entry.getKey()].sort((a, b) -> a["original"].compareTo(b["original"]));
+        }
+        ctx.stormshield.device_stats = result;
 on_failure:
   - append:
       field: error.message

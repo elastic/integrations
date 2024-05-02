@@ -23,7 +23,7 @@ processors:
       description: Parse key/value pairs from message.
       lang: painless
       source: >-
-        ctx["ss"] = new HashMap();
+        ctx["stormshield"] = new HashMap();
 
         def kvStart = 0;
         def kvSplit = 0;
@@ -46,7 +46,7 @@ processors:
             if (kvStart != kvSplit) {
               def key = ctx["message"].substring(kvStart, kvSplit);
               def value = ctx["message"].substring(kvSplit + 1, i).replace("\"", "");
-              ctx["ss"][key] = value;
+              ctx["stormshield"][key] = value;
             }
 
             kvStart = i + 1;
@@ -55,7 +55,7 @@ processors:
         }
 
   - grok:
-      field: ss.tz
+      field: stormshield.tz
       patterns:
         - "(?:%{OFFSET:_temp_.tz_offset})(?:%{HOUR:_temp_.tz_hour}):?(?:%{MINUTE:_temp_.tz_minute})"
       pattern_definitions:
@@ -69,12 +69,12 @@ processors:
       if: ctx._temp_?.tz_hour != null
 
   - rename:
-      field: "ss.msg"
+      field: "stormshield.msg"
       target_field: "event.log.msg"
-      if: ctx.ss?.msg != null
+      if: ctx.stormshield?.msg != null
 
   - date:
-      field: ss.startime
+      field: stormshield.startime
       target_field: "event.created"
       formats:
         - "yyyy-MM-dd HH:mm:ss"
@@ -96,19 +96,14 @@ processors:
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
 
-  - set:
-      copy_from: "ss.fw"
-      field: "host.name"
-      if: ctx.ss?.fw != null
-
-  - set:
-      copy_from: "ss.logtype"
-      field: "stormshield.logtype"
-      if: ctx.ss?.logtype != null
-
   - pipeline:
       name: '{{ IngestPipeline "filterstat" }}'
       if: ctx.stormshield.logtype == 'filterstat'
+
+  - pipeline:
+      name: '{{ IngestPipeline "monitor" }}'
+      if: ctx.stormshield.logtype == 'monitor'
+
   #
   # The syslog header should have been stripped off, so we need to process the key=value data
   # We will be using painless here, because it is the best option we have.
@@ -139,15 +134,6 @@ processors:
                 mapper[base].add(obj);
             }
         }
-        void handleMove(Map context, String namespace) {
-            if (context.containsKey("ss")) {
-                context["stormshield"]["logtype"] = context["ss"]["logtype"];
-                context["ss"].remove("logtype");
-            }
-
-            context["stormshield"][namespace] = context["ss"];
-            context.remove("ss");
-        }
         void rename_field(Map mapper, String orig, String newName) {
             if (mapper.containsKey(orig)) {
                 mapper[newName] = mapper[orig];
@@ -169,41 +155,7 @@ processors:
             }
         }
 
-        handleMove(ctx, ctx.ss.logtype);
-
-        if (ctx.stormshield.logtype == "monitor") {
-            def monitor = ctx.stormshield.monitor;
-            rename_field(monitor, "CPU", "CPU_");
-            rename_field(monitor, "ipsec", "ipsec_native");
-
-            def availableFields = [
-                "name",
-                "incoming_throughput",
-                "maximum_incoming_throughput",
-                "outgoing_throughput",
-                "maximum_outgoing_throughput",
-                "packets_accepted",
-                "packets_blocked"
-            ];
-            def fields = [
-                "Ethernet",
-                "Vlan",
-                "Qid",
-                "Wifi",
-                "sslvpn",
-                "ipsec",
-                "agg"
-            ];
-            def cpu = ["user_time", "kernel_time", "system_disruption"];
-            expand_(monitor, ",", "CPU_", "CPU", cpu, /* skipOriginal = */ true, /* flatten = */ true);
-            monitor.remove("CPU_");
-            expand_(monitor, ",", "ipsec_native", "ipsec", availableFields, /* skipOriginal = */ true, /* flatten = */ false);
-            monitor.remove("ipsec_native");
-            monitor["ipsec"][0]["native"] = true;
-            for (field_base in fields) {
-                renameNumberedDynamicFields(monitor, field_base, availableFields);
-            }
-        } else if (ctx.stormshield.logtype == "count") {
+        if (ctx.stormshield.logtype == "count") {
           def mapper = ctx.stormshield.count;
           // RuleX:Y
           // Split the name
