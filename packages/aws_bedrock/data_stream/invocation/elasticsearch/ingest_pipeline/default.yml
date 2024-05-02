@@ -354,18 +354,21 @@ processors:
       ignore_failure: true
   - script:
       tag: get_guardrail_details
-      if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
+      if: ctx.aws_bedrock?.invocation?.output?.output_body_json != null
       lang: painless
       source: |
-        if (!(ctx.aws_bedrock.invocation.output.output_body_json instanceof List)) {
-          return;
+        // output_body_json can be either an object or a list of the same shape of object,
+        // so to avoid unnecessary code duplication, raise the object to a list
+        def body = ctx.aws_bedrock.invocation.output.output_body_json;
+        if (!(body instanceof List)) {
+          body = [body];
         }
         def actions = new HashSet();
         def policies = new HashSet();
         def confidences = new HashSet();
         def violations = new HashSet();
         def matches = new HashSet();
-        for (def e: ctx.aws_bedrock.invocation.output.output_body_json) {
+        for (def e: body) {
           if (e.amazon_bedrock_guardrail_action == 'INTERVENED') {
             if (ctx.gen_ai == null) {
               ctx.gen_ai = new HashMap();
