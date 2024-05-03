@@ -127,7 +127,7 @@ An example event for `lambda` looks as following:
 | aws.dimensions.FunctionName | Lambda function name. | keyword |  |  |
 | aws.dimensions.Resource | Resource name. | keyword |  |  |
 | aws.lambda.metrics.AsyncEventAge.avg | The time between whem Lambda successfully queues the event and when the function is invoked. | long | ms | gauge |
-| aws.lambda.metrics.AsyncEventsReceived.avg | The number of events that Lambda successfully queues for processing. | long |  | gauge |
+| aws.lambda.metrics.AsyncEventsReceived.sum | The number of events that Lambda successfully queues for processing. | long |  | gauge |
 | aws.lambda.metrics.ConcurrentExecutions.avg | The number of function instances that are processing events. | double |  | gauge |
 | aws.lambda.metrics.DeadLetterErrors.avg | For asynchronous invocation, the average number of times Lambda attempts to send an event to a dead-letter queue but fails. | double |  | gauge |
 | aws.lambda.metrics.DeadLetterErrors.sum | For asynchronous invocation, the total number of times Lambda attempts to send an event to a dead-letter queue but fails. | double |  | gauge |
