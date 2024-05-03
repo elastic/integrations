@@ -7,10 +7,18 @@ processors:
         - "^\\[%{TIMESTAMP_ISO8601:@timestamp}\\] \\[%{DATA:log.level}\\] \\[pid/tid %{POSINT:process.pid}/%{POSINT:process.thread.id}\\] \\[%{DATA:log.logger}\\] \\[ID %{NOTSPACE:event.id}\\] %{GREEDYDATA:message}"
         - "^\\[%{TIMESTAMP_ISO8601:@timestamp}\\] \\[%{DATA:log.level}\\] \\[pid/tid %{POSINT:process.pid}/%{POSINT:process.thread.id}\\] \\[%{DATA:log.logger}\\] \\[ID %{NOTSPACE:event.id} %{GREEDYDATA:message}"
         - "^\\[%{TIMESTAMP_MF_CHSDI3:temp_timestamp}\\] \\[%{DATA:log.logger}:%{DATA:log.level}\\] \\[pid %{POSINT:process.pid}:tid %{POSINT:process.thread.id}\\] %{GREEDYDATA:message}$"
+        - "^%{GREEDYDATA:message}$" # Default catch-all pattern to deal with crappy log content like '/var/www/vhosts/mf-chsdi3/private/chsdi'
       pattern_definitions:
         TIMESTAMP_MF_CHSDI3: "%{DAY} %{MONTH} %{MONTHDAY} %{TIME} %{YEAR}" # Thu May 02 15:44:34.030551 2024
       trace_match: true
       ecs_compatibility: v1
+      on_failure:
+        - set:
+            field: event.kind
+            value: pipeline_error
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: process.pid
       type: long

@@ -20,17 +20,41 @@ processors:
         - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/legend$' # Legend Resource
         - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}$' # Feature Resource
         - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}/htmlPopup$' # Htmlpopup Resource
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}/extendedHtmlPopup$' # Extented Htmlpopup Resource
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}/iframeHtmlPopup$' # Iframe Htmlpopup Resource
         - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/layersConfig$' # Layers configuration
         - '^/rest/services/%{MF_CHSDI3_TOPIC}/CatalogServer$' # Topic catalog
+        - '^/rest/services/translations$' # Translations
         - '^/rest/services$' # Services catalog
+        - '^/(_)?static' # Static
+        - '^/loader\.js$' # Loader
+        - '^/stationboard' # Stationboard
+        - '^/luftbilder' # Luftbilder
+        - '^/search.html$' # Search
+        - '^/historicalmaps/viewer.html$' # Search
+        - '^/api/examples\.html$' # Api examples
+        - '^/genindex\.html$' # Genindex
+        - '^/vectorStyles/%{GREEDYDATA:ppbgdi.app.vector_style.id}$' # Vector styles
+        - '^/examples' # Examples
+        - '^/robots\.txt$' # Robots
+        - '^/crossdomain\.xml$' # Crossdomain
+        - '^/info\.json$' # Info
+        - '^/clientaccesspolicy\.xml$' # Clientaccesspolicy
+        - '^/images/legends/?%{MF_CHSDI3_LEGEND}$' # image legends
+        - '^/images(/%{MF_CHSDI3_TOPIC})?/%{MF_CHSDI3_IMAGE}$' # Images
       pattern_definitions:
-        MF_CHSDI3_TOPIC: "(?<ppbgdi.app.topic.id>[^/]+)"
-        MF_CHSDI3_LAYER: "(?<ppbgdi.app.layer.id>ch\\.[^/]+)" # To avoid problems, assume features start with ch. To be improve if exceptions pop up.
-        MF_CHSDI3_FEATURE: "(?<ppbgdi.app.feature.id>[^/]+)"
-        MF_CHSDI3_LAYERSCONFIG_ENDPOINT: "(?<ppbgdi.app.endpoint.id>layersConfig)"
+        MF_CHSDI3_TOPIC: '(?<ppbgdi.app.topic.id>[^/]+)'
+        MF_CHSDI3_LAYER: '(?<ppbgdi.app.layer.id>(ch|test)\.[^/]+)' # To avoid problems, assume features start with ch or test. To be improve if exceptions pop up.
+        MF_CHSDI3_FEATURE: '(?<ppbgdi.app.feature.id>[^/]+)'
+        MF_CHSDI3_IMAGE: '(?<ppbgdi.app.image.id>[^/]+)'
+        MF_CHSDI3_LEGEND: '(?<ppbgdi.app.legend.id>[^/]+)'
+        MF_CHSDI3_LAYERSCONFIG_ENDPOINT: '(?<ppbgdi.app.endpoint.id>layersConfig)'
       trace_match: true # Adds the index of the matching pattern to _ingest._grok_match_index. Used to set endpoint names
       ecs_compatibility: v1
       on_failure:
+        - set:
+            field: event.kind
+            value: pipeline_error
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -54,9 +78,28 @@ processors:
           - legend_resource
           - feature_resource
           - htmlpopup_resource
+          - extended_htmlpopup_resource
+          - iframe_htmlpopup_resource
           - layers_configuration
           - topic_catalog
+          - translations
           - services_catalog
+          - static
+          - loader
+          - stationboard
+          - luftbilder
+          - search
+          - historicalmaps
+          - api_examples
+          - genindex
+          - vector_styles
+          - examples
+          - robots
+          - crossdomain
+          - info
+          - clientaccesspolicy
+          - image_legend
+          - images
       if: ctx?.temp?.endpoint_index != null
   - dot_expander:
       description: Convert ppbgdi.app.endpoint.id into an object field
