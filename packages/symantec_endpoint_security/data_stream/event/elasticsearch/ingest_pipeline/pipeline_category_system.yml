@@ -1229,7 +1229,7 @@ processors:
       tag: append_related_ip_from_email_sender_ip
       value: '{{{ses.email.sender_ip}}}'
       allow_duplicates: false
-      if: ctx.email?.sender_ip != null
+      if: ctx.ses?.email?.sender_ip != null
   - convert:
       field: ses.email.size
       tag: convert_email_size_to_long
@@ -3132,6 +3132,12 @@ processors:
       value: '{{{ses.remote_process.file.sha1}}}'
       allow_duplicates: false
       if: ctx.ses?.remote_process?.file?.sha1 != null && ctx.ses.remote_process.file.sha1 != ''
+  - append:
+      field: related.hash
+      tag: append_related_hash_from_remote_process_module_sha1
+      value: '{{{ses.remote_process.module.sha1}}}'
+      allow_duplicates: false
+      if: ctx.ses?.remote_process?.module?.sha1 != null && ctx.ses.remote_process.module.sha1 != ''
   - append:
       field: related.hash
       tag: append_related_hash_from_remote_process_module_parent_sha1

@@ -1,7 +1,7 @@
 # Symantec Endpoint Security
 
 This Symantec Endpoint Security integration enables your security team to securely stream event data to Elastic Security, via AWS S3, AWS SQS or GCS. When integrated with Elastic Security, this valuable data can be leveraged within Elastic.
-Symantec Endpoint Security (SES) complete delivers comprehensive protection for all your traditional and mobile devices across the entire attack chain. Symantec endpoint innovations include behavioral isolation, Active Directory security, and Threat Hunter technologies to protect your endpoints against sophisticated threats and targeted attacks.
+Symantec Endpoint Security (SES) delivers comprehensive protection for all your traditional and mobile devices across the entire attack chain. Symantec endpoint innovations include behavioral isolation, Active Directory security, and Threat Hunter technologies to protect your endpoints against sophisticated threats and targeted attacks.
 
 The Symantec Endpoint Security integration can be used in three different modes to collect data:
 - AWS S3 polling mode: Symantec Endpoint Security writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
@@ -120,18 +120,17 @@ The minimum **kibana.version** required is **8.12.0**.
 ### To collect data from an AWS S3 bucket, follow the below steps:
 
 - Considering you already have an AWS S3 bucket setup, to configure it with Symantec Endpoint Security, follow the steps mentioned [here](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-security/sescloud/Integrations/Event-streaming-using-EDR.html) to enable the Symantec Endpoint Streaming.
-- The default value of the field `Bucket List Prefix` is s1/symantec.
 
 ### To collect data from a GCS bucket, follow the below steps:
 
 - Considering you already have a GCS bucket setup, configure it with Symantec Endpoint Security.
 - Enable the Symantec Endpoint Streaming as mentioned [here](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-security/sescloud/Integrations/Event-streaming-using-EDR.html).
 - The default value of the field `File Selectors` is `- regex: "event/"`. It is commented out by default and resides in the advanced settings section.
-- Configure the integration with your GCS project ID, Buckets name and Service Account Key/Service Account Credentials File.
+- Configure the integration with your GCS project ID, Bucket name and Service Account Key/Service Account Credentials File.
 
 ### The GCS credentials key file:
-This is a one-time download JSON key file that you get after adding a key to a GCP service account.
-If you are just starting out creating your GCS bucket, do the following:
+Once you have added a key to GCP service account, you will get a JSON key file that can only be downloaded once.
+If you're new to GCS bucket creation, follow the following steps:
 
 1) Make sure you have a service account available, if not follow the steps below:
    - Navigate to 'APIs & Services' > 'Credentials'
@@ -159,7 +158,7 @@ A sample JSON Credentials file looks as follows:
 
 **NOTE**:
 
-- You must have Symantec Account Credentials for configure event stream.
+- You must have Symantec Account Credentials to configure event stream. Refer [here](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-security/sescloud/Integrations/Event-streaming-using-EDR.html) for more details.
 
 
 ### To collect data from AWS SQS, follow the below steps:

@@ -382,6 +382,34 @@ processors:
             field: ses.device_os_type_id
             ignore_missing: true
   - script:
+      description: Add value for device os type value based on device_os_type_id.
+      tag: script_to_add_device_os_type_value
+      if: ctx.ses?.device_os_type_id != null
+      params:
+        '0': Unknown
+        '100': Windows
+        '200': Linux
+        '300': Solaris
+        '301': AIX
+        '302': HP-UX
+        '400': Macintosh
+        '500': iOS
+        '501': Android
+        '502': Windows Mobile
+        '503': iPadOS
+        '1001': Other
+      lang: painless
+      source: >-
+        def var = new ArrayList();
+        if (params.containsKey((ctx.ses.device_os_type_id).toString())) {
+            def type = params.get((ctx.ses.device_os_type_id).toString());
+            ctx.ses.device_os_type_value = type;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
       description: Add value for host os type based on device_os_name.
       tag: script_to_add_host_os_type
       if: ctx.ses?.device_os_type_id != null
@@ -397,6 +425,12 @@ processors:
         if (params.containsKey((ctx.ses.device_os_type_id).toString())) {
             def type = params.get((ctx.ses.device_os_type_id).toString());
             var.add(type);
+        }
+        if (ctx.host == null) {
+            ctx.host = new HashMap();
+        }
+        if (ctx.host.os == null) {
+            ctx.host.os = new HashMap();
         }
         ctx.host.os.put('type', var)
       on_failure:
@@ -1000,6 +1034,18 @@ processors:
       value: '{{{ses.device_name_md5}}}'
       allow_duplicates: false
       if: ctx.ses?.device_name_md5 != null && ctx.ses.device_name_md5 != ''
+  - append:
+      field: related.hash
+      tag: append_related_hash_from_stic_ip_hash
+      value: '{{{ses.stic_ip_hash}}}'
+      allow_duplicates: false
+      if: ctx.ses?.stic_ip_hash != null && ctx.ses.stic_ip_hash != ''
+  - append:
+      field: related.user
+      tag: append_related_user_from_impersonator_user_uid
+      value: '{{{ses.impersonator_user_uid}}}'
+      allow_duplicates: false
+      if: ctx.ses?.impersonator_user_uid != null && ctx.ses.impersonator_user_uid != ''
   - append:
       field: related.user
       tag: append_related_user_from_user_uid
