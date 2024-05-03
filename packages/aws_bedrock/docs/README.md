@@ -64,8 +64,7 @@ The minimum **kibana.version** required is **8.12.0**.
 In order to use the AWS Bedrock model invocation logs, logging model
 invocation logging must be enabled and be sent to a log store destination,
 either S3 or CloudWatch. The full details of this are available from the
-[AWS Bedrock User Guide]
-(https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html),
+[AWS Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html),
 but outlined here.
 
 1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) Logs destination.
