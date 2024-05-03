@@ -6,7 +6,7 @@ processors:
       patterns:
         - "^\\[%{TIMESTAMP_ISO8601:@timestamp}\\] \\[%{DATA:log.level}\\] \\[pid/tid %{POSINT:process.pid}/%{POSINT:process.thread.id}\\] \\[%{DATA:log.logger}\\] \\[ID %{NOTSPACE:event.id}\\] %{GREEDYDATA:message}"
         - "^\\[%{TIMESTAMP_ISO8601:@timestamp}\\] \\[%{DATA:log.level}\\] \\[pid/tid %{POSINT:process.pid}/%{POSINT:process.thread.id}\\] \\[%{DATA:log.logger}\\] \\[ID %{NOTSPACE:event.id} %{GREEDYDATA:message}"
-        - "^\\[%{TIMESTAMP_MF_CHSDI3:temp.timestamp}\\] \\[%{DATA:log.logger}:%{DATA:log.level}\\] \\[pid %{POSINT:process.pid}:tid %{POSINT:process.thread.id}\\] %{GREEDYDATA:message}$"
+        - "^\\[%{TIMESTAMP_MF_CHSDI3:temp_timestamp}\\] \\[%{DATA:log.logger}:%{DATA:log.level}\\] \\[pid %{POSINT:process.pid}:tid %{POSINT:process.thread.id}\\] %{GREEDYDATA:message}$"
       pattern_definitions:
         TIMESTAMP_MF_CHSDI3: "%{DAY} %{MONTH} %{MONTHDAY} %{TIME} %{YEAR}" # Thu May 02 15:44:34.030551 2024
       trace_match: true
@@ -20,10 +20,14 @@ processors:
       type: long
       ignore_missing: true
   - date:
-      field: temp.timestamp
+      field: temp_timestamp
       formats:
         - EEE MMM dd H:m:s.SSSSSS yyyy
-      if: ctx?.temp?.timestamp != null
+      if: ctx?.temp_timestamp != null
+  - remove:
+      field: temp_timestamp
+      ignore_missing: true
+
 on_failure:
   - set:
       field: event.kind
