@@ -207,7 +207,7 @@ The Diagnostic settings export the logs from Azure services to a destination and
 
 To create a diagnostic settings to export logs:
 
-1. Locate the Diagnostic settings for the service (for example, Azure Active Directory).
+1. Locate the Diagnostic settings for the service (for example, Microsoft Entra ID).
 1. Select Diagnostic settings in the **Monitoring** section of the service. Note that different services may place the diagnostic settings in different positions.
 1. Select **Add diagnostic setting**.
 
