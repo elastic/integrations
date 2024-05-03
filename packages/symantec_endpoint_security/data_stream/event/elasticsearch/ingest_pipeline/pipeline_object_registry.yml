@@ -1,0 +1,192 @@
+---
+description: Pipeline for processing registry object.
+processors:
+  - convert:
+      field: ses.reg_key.is_system
+      tag: convert_reg_key_is_system_to_boolean
+      type: boolean
+      if: ctx.ses?.reg_key?.is_system != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_key.is_system
+            ignore_missing: true
+  - date:
+      field: ses.reg_key.last_write
+      tag: date_reg_key_last_write
+      target_field: ses.reg_key.last_write
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.reg_key?.last_write != null && ctx.ses.reg_key.last_write != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_key.last_write
+            ignore_missing: true
+  - set:
+      field: registry.path
+      tag: set_registry_path_from_reg_key_path
+      copy_from: ses.reg_key.path
+      ignore_empty_value: true
+  - convert:
+      field: ses.reg_key_result.is_system
+      tag: convert_reg_key_result_is_system_to_boolean
+      type: boolean
+      if: ctx.ses?.reg_key_result?.is_system != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_key_result.is_system
+            ignore_missing: true
+  - date:
+      field: ses.reg_key_result.last_write
+      tag: date_reg_key_result_last_write
+      target_field: ses.reg_key_result.last_write
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.reg_key_result?.last_write != null && ctx.ses.reg_key_result.last_write != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_key_result.last_write
+            ignore_missing: true
+  - set:
+      field: registry.value
+      tag: set_registry_value_from_reg_value_data
+      copy_from: ses.reg_value.data
+      ignore_empty_value: true
+  - convert:
+      field: ses.reg_value.is_default_value
+      tag: convert_reg_value_is_default_value_to_boolean
+      type: boolean
+      if: ctx.ses?.reg_value?.is_default_value != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_value.is_default_value
+            ignore_missing: true
+  - convert:
+      field: ses.reg_value.is_system
+      tag: convert_reg_value_is_system_to_boolean
+      type: boolean
+      if: ctx.ses?.reg_value?.is_system != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_value.is_system
+            ignore_missing: true
+  - date:
+      field: ses.reg_value.last_write
+      tag: date_reg_value_last_write
+      target_field: ses.reg_value.last_write
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.reg_value?.last_write != null && ctx.ses.reg_value.last_write != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_value.last_write
+            ignore_missing: true
+  - convert:
+      field: ses.reg_value.type_id
+      tag: convert_reg_value_type_id_to_long
+      type: string
+      if: ctx.ses?.reg_value?.type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_value.type_id
+            ignore_missing: true
+  - convert:
+      field: ses.reg_value_result.is_default_value
+      tag: convert_reg_value_result_is_default_value_to_boolean
+      type: boolean
+      if: ctx.ses?.reg_value_result?.is_default_value != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_value_result.is_default_value
+            ignore_missing: true
+  - convert:
+      field: ses.reg_value_result.is_system
+      tag: convert_reg_value_result_is_system_to_boolean
+      type: boolean
+      if: ctx.ses?.reg_value_result?.is_system != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_value_result.is_system
+            ignore_missing: true
+  - date:
+      field: ses.reg_value_result.last_write
+      tag: date_reg_value_result_last_write
+      target_field: ses.reg_value_result.last_write
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.reg_value_result?.last_write != null && ctx.ses.reg_value_result.last_write != ''
+      on_failure:
+        - append: 
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_value_result.last_write
+            ignore_missing: true
+  - convert:
+      field: ses.reg_value_result.type_id
+      tag: convert_reg_value_result_type_id_to_long
+      type: string
+      if: ctx.ses?.reg_value_result?.type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.reg_value_result.type_id
+            ignore_missing: true
+  - remove:
+      field:
+        - ses.reg_key.path
+        - ses.reg_value.data
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
