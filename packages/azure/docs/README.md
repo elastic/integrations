@@ -155,20 +155,20 @@ Having one event hub for each Azure service is beneficial in terms of performanc
 For high-volume deployments, we recommend one event hub for each data stream:
 
 ```text
-                       ┌──────────────┐   ┌─────────────────────┐                   
-                       │  Diagnostic  │   │   signin (adlogs)   │                   
-                    ┌─▶│   settings   │──▶│    <<event hub>>    │──┐                
-                    │  └──────────────┘   └─────────────────────┘  │                
-                    │                                              │                
- ┌────────────────┐ │  ┌──────────────┐   ┌─────────────────────┐  │  ┌────────────┐
- │ MS Entra ID    │ │  │  Diagnostic  │   │   audit (adlogs)    │  │  │  Elastic   │
- │  <<service>>   │─┼─▶│   settings   │──▶│    <<event hub>>    │──┼─▶│   Agent    │
- └────────────────┘ │  └──────────────┘   └─────────────────────┘  │  └────────────┘
-                    │                                              │                
-                    │  ┌──────────────┐   ┌─────────────────────┐  │                
-                    │  │  Diagnostic  │   │provisioning (adlogs)│  │                
-                    └─▶│   settings   │──▶│    <<event hub>>    │──┘                
-                       └──────────────┘   └─────────────────────┘                   
+                    ┌──────────────┐   ┌─────────────────────┐                  
+                    │  Diagnostic  │   │   signin (adlogs)   │                  
+                 ┌─▶│   settings   │──▶│    <<event hub>>    │──┐               
+                 │  └──────────────┘   └─────────────────────┘  │               
+                 │                                              │               
+┌──────────────┐ │  ┌──────────────┐   ┌─────────────────────┐  │  ┌───────────┐
+│ MS Entra ID  │ │  │  Diagnostic  │   │   audit (adlogs)    │  │  │  Elastic  │
+│  <<service>> │─┼─▶│   settings   │──▶│    <<event hub>>    │──┼─▶│   Agent   │
+└──────────────┘ │  └──────────────┘   └─────────────────────┘  │  └───────────┘
+                 │                                              │               
+                 │  ┌──────────────┐   ┌─────────────────────┐  │               
+                 │  │  Diagnostic  │   │provisioning (adlogs)│  │               
+                 └─▶│   settings   │──▶│    <<event hub>>    │──┘               
+                    └──────────────┘   └─────────────────────┘                  
 ```
 
 #### Consumer Group
@@ -249,15 +249,15 @@ To create the storage account:
 This is the final diagram of the a setup for collecting Activity logs from the Azure Monitor service.
 
 ```text
-  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐         ┌────────────┐
-  │Active Directory│   │  Diagnostic  │   │     adlogs     │  logs   │  Elastic   │
-  │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │────────▶│   Agent    │
-  └────────────────┘   └──────────────┘   └────────────────┘         └────────────┘
-                                                                            │      
-                       ┌──────────────┐          consumer group info        │      
-                       │  azurelogs   │          (state, position, or       │      
-                       │<<container>> │◀───────────────offset)──────────────┘      
-                       └──────────────┘                                                             
+ ┌────────────────┐   ┌──────────────┐   ┌────────────────┐         ┌───────────┐
+ │Active Directory│   │  Diagnostic  │   │     adlogs     │  logs   │  Elastic  │
+ │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │────────▶│   Agent   │
+ └────────────────┘   └──────────────┘   └────────────────┘         └───────────┘
+                                                                           │     
+                      ┌──────────────┐          consumer group info        │     
+                      │  azurelogs   │          (state, position, or       │     
+                      │<<container>> │◀───────────────offset)──────────────┘     
+                      └──────────────┘                                           
 ```
 
 #### How many Storage account containers?
