@@ -1,3 +1,24 @@
+- name: tls
+  type: group
+  fields:
+    - name: server
+      type: group
+      fields:
+        - name: supported_ciphers
+          type: keyword
+          description: Array of ciphers offered by the server during the client hello.
+        - name: supported_ciphers_mac
+          type: keyword
+          description: Array of cipher macs offered by the server during the client hello.
+- name: service
+  type: group
+  fields:
+    - name: protocol
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The protocol used by the listening service
 - name: tychon
   type: group
   fields:
@@ -49,12 +70,21 @@
             - name: subject_name
               type: keyword
               description: The Subject Name of the signing certificate
+            - name: friendly_name
+              type: keyword
+              description: The friendly name of the certificate or cipher
     - name: tls
       type: group
       fields:
         - name: server
           type: group
           fields:
+            - name: signature_hash
+              type: group
+              fields:
+                - name: weight
+                  description: The risk weight of the signature hash
+                  type: integer
             - name: cipher
               type: group
               fields:

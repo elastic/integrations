@@ -6,8 +6,8 @@ source:
       must:
         - match_phrase:
             event.kind: 'state'
-        - match_phrase:
-            tychon.script.name: 'Get-BrowserCryptography.ps1'
+        - wildcard:
+            log.file.path: '*browsercryptography_info.json'
 dest:
   index: tychon_browser_crypto
 frequency: 30m
@@ -20,7 +20,7 @@ latest:
     - tychon.id
   sort: '@timestamp'
 _meta:
-  fleet_transform_version: 1.0.2
+  fleet_transform_version: 1.0.3
   run_as_kibana_system: false
   managed: true
 description: This transformation ensures there is a running configuration of what certificates are currently on a device from TYCHON.

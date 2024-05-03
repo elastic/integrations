@@ -6,8 +6,8 @@ source:
       must:
         - match_phrase:
             event.kind: 'state'
-        - match_phrase:
-            script.name: 'Get-CertificateFromListeningProcess.ps1'
+        - wildcard:
+            log.file.path: '*listeningcerts_info.json'
 dest:
   index: tychon_listeningcerts
 frequency: 30m
@@ -20,7 +20,7 @@ latest:
     - id
   sort: '@timestamp'
 _meta:
-  fleet_transform_version: 1.0.1
+  fleet_transform_version: 1.0.3
   run_as_kibana_system: false
   managed: true
 description: This transformation ensures there is a running configuration of what certificates are currently on a device from TYCHON.
