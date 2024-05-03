@@ -1,0 +1,58 @@
+---
+description: Pipeline for processing kernel object.
+processors:
+  - convert:
+      field: ses.kernel.is_system
+      tag: convert_kernel_is_system_to_boolean
+      type: boolean
+      if: ctx.ses?.kernel?.is_system != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.kernel.is_system
+            ignore_missing: true
+  - convert:
+      field: ses.kernel.type_id
+      tag: convert_kernel_type_id_to_string
+      type: string
+      if: ctx.ses?.kernel?.type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.kernel.type_id
+            ignore_missing: true
+  - script:
+      description: Add value for kernel type based on kernel type id.
+      tag: script_to_add_kernel_type_value
+      if: ctx.ses?.kernel?.type_id != null
+      params:
+        '0': Unknown
+        '1': Shared mutex
+        '2': System call
+        '3': Named pipe
+      lang: painless
+      source: >-
+        def obj = ctx.ses.kernel.type_id;
+        
+        if (params.containsKey(obj.toString())) {
+          def type = params.get(obj.toString());
+          ctx.ses.kernel.type_value = type
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
