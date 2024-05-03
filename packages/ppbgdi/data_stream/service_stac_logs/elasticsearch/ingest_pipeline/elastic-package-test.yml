@@ -18,7 +18,10 @@ processors:
       inline: ctx?.tags.removeIf(item -> item == 'elastic-package-test')
 
 on_failure:
-- append:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
 

@@ -5,6 +5,9 @@ processors:
       field: ecs.version
       value: '8.11.0'
   - set:
+      field: event.kind
+      value: event
+  - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
   - rename:
@@ -107,6 +110,9 @@ processors:
 
 
 on_failure:
-- append:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
