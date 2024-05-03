@@ -125,7 +125,6 @@ The minimum **kibana.version** required is **8.12.0**.
 
 - Considering you already have a GCS bucket setup, configure it with Symantec Endpoint Security.
 - Enable the Symantec Endpoint Streaming as mentioned [here](https://techdocs.broadcom.com/us/en/symantec-security-software/endpoint-security-and-management/endpoint-security/sescloud/Integrations/Event-streaming-using-EDR.html).
-- The default value of the field `File Selectors` is `- regex: "event/"`. It is commented out by default and resides in the advanced settings section.
 - Configure the integration with your GCS project ID, Bucket name and Service Account Key/Service Account Credentials File.
 
 ### The GCS credentials key file:
