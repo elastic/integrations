@@ -27,6 +27,7 @@
             {
                 "embeddableConfig": {
                     "enhancements": {},
+                    "hidePanelTitles": false,
                     "savedVis": {
                         "data": {
                             "aggs": [],
@@ -44,7 +45,7 @@
                             "markdown": "### Azure Storage\n\n[**Overview**](#/dashboard/azure_metrics-1a151f80-32db-11ea-a83e-25b8612d00cc) | [Blob](#/dashboard/azure_metrics-b165ef60-32f7-11ea-a83e-25b8612d00cc) | [File](#/dashboard/azure_metrics-dff7a080-32f7-11ea-a83e-25b8612d00cc) | [Table](#/dashboard/azure_metrics-ff2fe020-32f7-11ea-a83e-25b8612d00cc) | [Queue](#/dashboard/azure_metrics-10efa340-32f8-11ea-a83e-25b8612d00cc) ",
                             "openLinksInNewTab": false
                         },
-                        "title": "Navigation Storage Overview [Azure Metrics]",
+                        "title": "Navigation Storage Overview",
                         "type": "markdown",
                         "uiState": {}
                     }
@@ -57,6 +58,7 @@
                     "y": 0
                 },
                 "panelIndex": "3e05fed8-0edd-4973-a640-3499c62b141d",
+                "title": "Navigation Storage Overview",
                 "type": "visualization",
                 "version": "8.7.0"
             },
@@ -98,12 +100,12 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Used Capacity",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes"
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "azure.storage_account.used_capacity.avg"
@@ -111,10 +113,10 @@
                                                 "a2063525-bfe8-4af3-a408-3b35113a1481": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "overall_max(average(azure.storage_account.used_capacity.avg))",
+                                                    "label": "overall_max(last_value(azure.storage_account.used_capacity.avg))",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "overall_max(average(azure.storage_account.used_capacity.avg))",
+                                                        "formula": "overall_max(last_value(azure.storage_account.used_capacity.avg))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -125,11 +127,15 @@
                                                 "a2063525-bfe8-4af3-a408-3b35113a1481X0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "azure.storage_account.used_capacity.avg: *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Part of overall_max(average(azure.storage_account.used_capacity.avg))",
-                                                    "operationType": "average",
+                                                    "label": "Part of overall_max(last_value(azure.storage_account.used_capacity.avg))",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "azure.storage_account.used_capacity.avg"
@@ -138,7 +144,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of overall_max(average(azure.storage_account.used_capacity.avg))",
+                                                    "label": "Part of overall_max(last_value(azure.storage_account.used_capacity.avg))",
                                                     "operationType": "overall_max",
                                                     "references": [
                                                         "a2063525-bfe8-4af3-a408-3b35113a1481X0"
@@ -175,7 +181,7 @@
                                 "showBar": false
                             }
                         },
-                        "title": "Storage Used Capacity [Azure Metrics] (converted)",
+                        "title": "Storage Used Capacity",
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
@@ -190,7 +196,7 @@
                     "y": 5
                 },
                 "panelIndex": "ed66fab5-f4e7-45d9-b27f-2315e0a10850",
-                "title": "Storage Used Capacity [Azure Metrics]",
+                "title": "Storage Used Capacity",
                 "type": "lens",
                 "version": "8.7.0"
             },
@@ -226,10 +232,10 @@
                                                 "6160382c-270e-42f7-9d4a-f644e4af73a1": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "overall_max(average(azure.storage_account.ingress.total))",
+                                                    "label": "overall_max(max(azure.storage_account.ingress.total))",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "overall_max(average(azure.storage_account.ingress.total))",
+                                                        "formula": "overall_max(max(azure.storage_account.ingress.total))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -241,8 +247,8 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of overall_max(average(azure.storage_account.ingress.total))",
-                                                    "operationType": "average",
+                                                    "label": "Part of overall_max(max(azure.storage_account.ingress.total))",
+                                                    "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
@@ -253,7 +259,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of overall_max(average(azure.storage_account.ingress.total))",
+                                                    "label": "Part of overall_max(max(azure.storage_account.ingress.total))",
                                                     "operationType": "overall_max",
                                                     "references": [
                                                         "6160382c-270e-42f7-9d4a-f644e4af73a1X0"
@@ -269,7 +275,7 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Ingress",
-                                                    "operationType": "average",
+                                                    "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
@@ -309,7 +315,7 @@
                                 "showBar": false
                             }
                         },
-                        "title": "Storage Ingress Gauge [Azure Metrics] (converted)",
+                        "title": "Storage Ingress Gauge",
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
@@ -324,7 +330,7 @@
                     "y": 5
                 },
                 "panelIndex": "71f11ae2-b13c-49b5-ae16-3d6d5e1dacec",
-                "title": "Storage Ingress Gauge [Azure Metrics]",
+                "title": "Storage Ingress Gauge",
                 "type": "lens",
                 "version": "8.7.0"
             },
@@ -366,7 +372,7 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Egress",
-                                                    "operationType": "average",
+                                                    "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
@@ -379,10 +385,10 @@
                                                 "e5b9cf0f-995d-4164-b70b-c3c7d3a28422": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "overall_max(average(azure.storage_account.egress.total))",
+                                                    "label": "overall_max(max(azure.storage_account.egress.total))",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "overall_max(average(azure.storage_account.egress.total))",
+                                                        "formula": "overall_max(max(azure.storage_account.egress.total))",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -394,8 +400,8 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of overall_max(average(azure.storage_account.egress.total))",
-                                                    "operationType": "average",
+                                                    "label": "Part of overall_max(max(azure.storage_account.egress.total))",
+                                                    "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
                                                     },
@@ -406,7 +412,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of overall_max(average(azure.storage_account.egress.total))",
+                                                    "label": "Part of overall_max(max(azure.storage_account.egress.total))",
                                                     "operationType": "overall_max",
                                                     "references": [
                                                         "e5b9cf0f-995d-4164-b70b-c3c7d3a28422X0"
@@ -442,7 +448,7 @@
                                 "metricAccessor": "18860bc9-c1b5-47ca-8377-355028ce4e63"
                             }
                         },
-                        "title": "Storage Egress Gauge [Azure Metrics] (converted)",
+                        "title": "Storage Egress Gauge",
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
@@ -457,7 +463,7 @@
                     "y": 5
                 },
                 "panelIndex": "dae9895e-c53a-4989-bab1-1b7b7c233c56",
-                "title": "Storage Egress Gauge [Azure Metrics]",
+                "title": "Storage Egress Gauge",
                 "type": "lens",
                 "version": "8.7.0"
             },
@@ -491,18 +497,22 @@
                                                 "0f3a1d5f-a240-422b-aa08-658f47ba2ac6": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "azure.storage_account.availability.avg: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Availability",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 1,
                                                                 "suffix": "%"
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "azure.storage_account.availability.avg"
@@ -515,7 +525,7 @@
                                                     "params": {
                                                         "dropPartials": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -606,7 +616,7 @@
                                 "yRightScale": "linear"
                             }
                         },
-                        "title": "Storage Availability [Azure Metrics] (converted)",
+                        "title": "Storage Availability",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -661,7 +671,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -791,7 +801,7 @@
                                 "yRightScale": "linear"
                             }
                         },
-                        "title": "Storage Transactions [Azure Metrics] (converted)",
+                        "title": "Storage Transactions",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -846,7 +856,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -854,18 +864,22 @@
                                                 "490543d6-dc11-4696-8261-fa41d4897288": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "azure.storage_account.success_server_latency.avg: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "SuccessServerLatency (ms)",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 1,
                                                                 "suffix": " ms"
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "azure.storage_account.success_server_latency.avg"
@@ -983,7 +997,7 @@
                                 "yRightScale": "linear"
                             }
                         },
-                        "title": "Storage Success Server Latency [Azure Metrics] (converted)",
+                        "title": "Storage Success Server Latency",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -1033,18 +1047,22 @@
                                                 "70e1d63a-137c-4d51-b195-0dce32c673a8": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "azure.storage_account.success_e2elatency.avg: *"
+                                                    },
                                                     "isBucketed": false,
                                                     "label": "Success E2E Latency (ms)",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 1,
                                                                 "suffix": " ms"
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "azure.storage_account.success_e2elatency.avg"
@@ -1083,7 +1101,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1175,7 +1193,7 @@
                                 "yRightScale": "linear"
                             }
                         },
-                        "title": "Storage Success E2E Latency [Azure Metrics] (converted)",
+                        "title": "Storage Success E2E Latency",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -1230,15 +1248,15 @@
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Used Capacity",
-                                                    "operationType": "average",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
                                                                 "decimals": 1
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "azure.storage_account.used_capacity.avg"
@@ -1346,7 +1364,7 @@
                                 "valueLabels": "show"
                             }
                         },
-                        "title": "Storage Used Capacity Resource Table [Azure Metrics] (converted)",
+                        "title": "Storage Used Capacity Resource Table",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -1401,7 +1419,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1541,7 +1559,7 @@
                                 "yRightScale": "linear"
                             }
                         },
-                        "title": "Storage Account Egress Traffic [Azure Metrics] (converted)",
+                        "title": "Storage Account Egress Traffic",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -1618,7 +1636,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1736,7 +1754,7 @@
                                 "yRightScale": "linear"
                             }
                         },
-                        "title": "Storage Account Ingress Traffic [Azure Metrics] (converted)",
+                        "title": "Storage Account Ingress Traffic",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -1761,7 +1779,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.7.0",
-    "created_at": "2023-09-01T05:30:06.264Z",
+    "created_at": "2024-03-29T10:14:24.713Z",
     "id": "azure_metrics-1a151f80-32db-11ea-a83e-25b8612d00cc",
     "migrationVersion": {
         "dashboard": "8.7.0"
