@@ -28,106 +28,101 @@ program: |
     state.url.trim_right("/") + "/login.html",
     "application/x-www-form-urlencoded",
     {"username":[state.username],"password":[state.password]}.format_query()
-  ).do_request().as(resp, resp.Request.URL.contains("error") ? "" :
-      resp.Request.Response.Request.Response.Header["Set-Cookie"].filter(e, e.contains("JSESSIONID")).as(sess, sess.size() > 0 ?
-          sess[0].split(";").as(sub, sub.filter(e, e.contains("JSESSIONID")).size() > 0 ?
-              sub[0]
-            :
-              ""
-          )
+  ).do_request().as(resp, resp.Request.URL.contains("error") ? "" : // When the base request redirects to a new request,
+      resp.Request.Response.Request.Response.Header["Set-Cookie"].filter(e, e.contains("JSESSIONID")).as(sess, sess.size() > 0 ? // we obtain the request object for the initial request's response.
+        sess[0].split(";").as(sub, sub.filter(e, e.contains("JSESSIONID")).size() > 0 ? // To retrieve the appropriate header based on the redirect,
+          sub[0] // we've implemented the following method.
         :
           ""
-      )
-  ).as(cookie, cookie == "" ? {"events": []} :
-      post_request(
-        state.url.trim_right("/") + "/rest/visualsearch/query/simple",
-        "application/json",
-          {
-            "queryPath": [
-              {
-                "requestedType": "Connection",
-                "filters": [],
-                "isResult": "true",
-              }
-            ],
-            "totalResultLimit": state.batch,
-            "perGroupLimit": 100,
-            "perFeatureLimit": 100,
-            "templateContext": "SPECIFIC",
-            "startTime": state.?cursor.last_timestamp.orValue(int(now - duration(state.initial_interval)) * 1000),
-            "endTime": int(now) * 1000,
-            "customFields": [
-              "direction",
-              "serverAddress",
-              "serverPort",
-              "portType",
-              "aggregatedReceivedBytesCount",
-              "aggregatedTransmittedBytesCount",
-              "remoteAddressCountryName",
-              "accessedByMalwareEvidence",
-              "ownerMachine",
-              "ownerProcess",
-              "dnsQuery",
-              "calculatedCreationTime",
-              "endTime",
-              "elementDisplayName",
-              "ownerProcess.user",
-              "localPort",
-              "remotePort",
-              "transportProtocol",
-              "state",
-            ]
-          }.encode_json()
-      ).with({
-        "Header": {
-          "Cookie": [cookie],
-          "Content-Type": ["application/json"],
-        },
-      }).do_request().as(resp,
-        resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body, {
-          "events": !has(body.?data.resultIdToElementDataMap) ? [{}] :
-          (
-            body.data.resultIdToElementDataMap.size() == 0 ? [{}] :
-            (
-              body.data.resultIdToElementDataMap.map(e, {
-                "message": [
-                  body.data.resultIdToElementDataMap[e].encode_json(),
-                  body.data.suspicionsMap.encode_json(),
-                  body.data.evidenceMap.encode_json(),
-                ],
-              })
-            )
-          ),
-          "cursor": {
-            "last_timestamp": (
-              has(body.?data.resultIdToElementDataMap) && body.data.resultIdToElementDataMap.size() > 0 ?
-                int(now) * 1000
-              :
-                state.?cursor.last_timestamp.orValue(int(now) * 1000)
-            ),
-          },
-          "username": state.username,
-          "password": state.password,
-          "initial_interval": state.initial_interval,
-          "batch": state.batch,
-        })
+        )
       :
-        {
-          "events": [{
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": string(resp.Body),
-            }
-          }],
-          "username": state.username,
-          "password": state.password,
-          "initial_interval": state.initial_interval,
-          "batch": state.batch,
-        }
+        ""
       )
-  )
+    ).as(cookie, cookie == "" ? {"events": []} :
+        post_request(
+          state.url.trim_right("/") + "/rest/visualsearch/query/simple",
+          "application/json",
+            {
+              "queryPath": [
+                {
+                  "requestedType": "Connection",
+                  "filters": [],
+                  "isResult": "true",
+                  }
+              ],
+              "totalResultLimit": state.batch,
+              "perGroupLimit": 100,
+              "perFeatureLimit": 100,
+              "templateContext": "SPECIFIC",
+              "startTime": state.?cursor.last_timestamp.orValue(int(now - duration(state.initial_interval)) * 1000),
+              "endTime": int(now) * 1000,
+              "customFields": [
+                "direction",
+                "serverAddress",
+                "serverPort",
+                "portType",
+                "aggregatedReceivedBytesCount",
+                "aggregatedTransmittedBytesCount",
+                "remoteAddressCountryName",
+                "accessedByMalwareEvidence",
+                "ownerMachine",
+                "ownerProcess",
+                "dnsQuery",
+                "calculatedCreationTime",
+                "endTime",
+                "elementDisplayName",
+                "ownerProcess.user",
+                "localPort",
+                "remotePort",
+                "transportProtocol",
+                "state",
+              ],
+            }.encode_json()
+        ).with({
+          "Header": {
+            "Cookie": [cookie],
+            "Content-Type": ["application/json"],
+          },
+        }).do_request().as(resp,
+            resp.StatusCode == 200 ?
+              bytes(resp.Body).decode_json().as(body, {
+              "events": !has(body.?data.resultIdToElementDataMap) ? [{}] :
+                body.data.resultIdToElementDataMap.map(e, {
+                  "message": [
+                    body.data.resultIdToElementDataMap[e].encode_json(),
+                    body.data.suspicionsMap.encode_json(),
+                    body.data.evidenceMap.encode_json(),
+                  ],
+                }),
+              "cursor": {
+                "last_timestamp": (
+                  has(body.?data.resultIdToElementDataMap) && body.data.resultIdToElementDataMap.size() > 0 ?
+                    int(now) * 1000
+                  :
+                    state.?cursor.last_timestamp.orValue(int(now) * 1000)
+                ),
+              },
+              "username": state.username,
+              "password": state.password,
+              "initial_interval": state.initial_interval,
+              "batch": state.batch,
+              })
+            :
+              {
+                "events": [{
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": string(resp.Body),
+                  }
+                }],
+                "username": state.username,
+                "password": state.password,
+                "initial_interval": state.initial_interval,
+                "batch": state.batch,
+              }
+          )
+      )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
