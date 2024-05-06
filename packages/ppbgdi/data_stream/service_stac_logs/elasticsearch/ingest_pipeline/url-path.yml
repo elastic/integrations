@@ -9,24 +9,27 @@ processors:
   - grok:
       field: url.path
       patterns:
-        - '^/api/stac/%{STAC_VERSION}$'
-        - '^/api/stac/%{STAC_VERSION}/conformance$'
-        - '^/api/stac/%{STAC_VERSION}/collections$'
-        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}$'
-        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items$'
-        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}$'
-        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets$'
-        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}$'
-        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads$'
-        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}$'
-        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}/complete$'
-        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}/abort$'
-        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}/parts$'
-        - '^/api/stac/%{STAC_VERSION}/search$'
-        - '^/api/stac/get-token$'
-        - '^/checker$'
-        - '^/metrics$'
-        - '^/api/stac/admin'
+        # Patterns are based on the API documentation: https://api3.geo.admin.ch/services/sdiservices.html
+        # In order to set the endpoint names by a following processor, each pattern in the list below
+        # must only match one specific endpoint.
+        - '^/api/stac/%{STAC_VERSION}$' # landing_page
+        - '^/api/stac/%{STAC_VERSION}/conformance$' # conformance
+        - '^/api/stac/%{STAC_VERSION}/collections$' # collections
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}$' # collection
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items$' # features
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}$' # feature
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets$' # assets
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}$' # asset
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads$' # asset_uploads
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}$' # asset_upload
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}/complete$' # complete_asset_opload
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}/abort$' # abort_asset_upload
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}/parts$' # get_asset_upload_parts
+        - '^/api/stac/%{STAC_VERSION}/search$' # search
+        - '^/api/stac/get-token$' # get_token
+        - '^/checker$' # checker
+        - '^/metrics$' # metrics
+        - '^/api/stac/admin' # admin
       pattern_definitions:
         STAC_VERSION: "v(?<ppbgdi.app.api.version>[0-9]([.][0-9])*)"
         STAC_COLLECTION_ID: "(?<ppbgdi.app.stac.collection.id>[^/]+)"
@@ -51,7 +54,7 @@ processors:
   - script:
       description: Sets the endpoint name based on the index of the matching grok pattern
       source: >-
-        ctx['ppbgdi.app.endpoint.id'] = params['endpoint_names'][ctx?.temp_endpoint_index];
+        ctx['ppbgdi.app.stac.endpoint.id'] = params['endpoint_names'][ctx?.temp_endpoint_index];
       params:
         endpoint_names:
           - landing_page # GET
@@ -66,11 +69,11 @@ processors:
           - asset_upload # GET
           - complete_asset_upload # POST
           - abort_asset_upload # POST
-          - get_upload_parts # GET
+          - get_asset_upload_parts # GET
           - search # GET | POST
           - get_token # POST
-          - checker
-          - metrics
+          - checker # GET
+          - metrics # GET
           - admin
       if: ctx?.temp_endpoint_index != null
   - dot_expander:
