@@ -70,13 +70,19 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-11-13T12:00:35.389Z",
     "agent": {
-        "ephemeral_id": "abbf681d-09ba-4a9a-9e24-be8dc3400bc0",
-        "id": "8a466644-c7b0-4c90-86c2-8a2cf6d98148",
+        "ephemeral_id": "b9d6de84-93bd-40d6-9dc8-c06a84e0718e",
+        "id": "7a02b789-2d3c-4e39-a804-6995ecfd6bc0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
     },
     "azure": {
+        "resource": {
+            "group": "FABRIKAMRG",
+            "id": "/SUBSCRIPTIONS/00000000-0000-0000-0000-000000000000/RESOURCEGROUPS/FABRIKAMRG/PROVIDERS/MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/FABRIAKMVM1-NSG",
+            "name": "FABRIAKMVM1-NSG",
+            "provider": "MICROSOFT.NETWORK/NETWORKSECURITYGROUPS"
+        },
         "storage": {
             "blob": {
                 "content_type": "application/json",
@@ -85,7 +91,8 @@ An example event for `log` looks as following:
             "container": {
                 "name": "azure-container1"
             }
-        }
+        },
+        "subscription_id": "00000000-0000-0000-0000-000000000000"
     },
     "azure_network_watcher_nsg": {
         "log": {
@@ -300,7 +307,7 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8a466644-c7b0-4c90-86c2-8a2cf6d98148",
+        "id": "7a02b789-2d3c-4e39-a804-6995ecfd6bc0",
         "snapshot": false,
         "version": "8.12.0"
     },
@@ -310,7 +317,7 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "azure_network_watcher_nsg.log",
-        "ingested": "2024-05-01T11:31:28Z",
+        "ingested": "2024-05-03T08:30:09Z",
         "kind": "event",
         "type": [
             "info"
@@ -395,9 +402,14 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.resource.group | Resource group. | keyword |
+| azure.resource.id | Resource ID. | keyword |
+| azure.resource.name | Name. | keyword |
+| azure.resource.provider | Resource type/namespace. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object. | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object. | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container. | keyword |
+| azure.subscription_id | Azure subscription ID. | keyword |
 | azure_network_watcher_nsg.log.category | Category of the event. | keyword |
 | azure_network_watcher_nsg.log.operation_name | Always NetworkSecurityGroupFlowEvents. | keyword |
 | azure_network_watcher_nsg.log.properties.flows.flows.mac | MAC address of the network interface on which the flows are listed. | keyword |
