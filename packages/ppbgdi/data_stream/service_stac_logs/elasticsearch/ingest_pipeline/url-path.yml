@@ -8,28 +8,33 @@ processors:
       replacement: ""
   - grok:
       field: url.path
+      patterns:
+        - '^/api/stac/%{STAC_VERSION}$'
+        - '^/api/stac/%{STAC_VERSION}/conformance$'
+        - '^/api/stac/%{STAC_VERSION}/collections$'
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}$'
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items$'
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}$'
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets$'
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}$'
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads$'
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}$'
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}/complete$'
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}/abort$'
+        - '^/api/stac/%{STAC_VERSION}/collections/%{STAC_COLLECTION_ID}/items/%{STAC_FEATURE_ID}/assets/%{STAC_ASSET_ID}/uploads/%{STAC_UPLOAD_ID}/parts$'
+        - '^/api/stac/%{STAC_VERSION}/search$'
+        - '^/api/stac/get-token$'
+        - '^/checker$'
+        - '^/metrics$'
+        - '^/api/stac/admin'
       pattern_definitions:
         STAC_VERSION: "v(?<ppbgdi.app.api.version>[0-9]([.][0-9])*)"
-        STAC_ADMIN_ENDPOINT: "(?<ppbgdi.app.stac.endpoint>admin)"
-        STAC_CHECKER_ENDPOINT: "(?<ppbgdi.app.stac.endpoint>checker)"
-        STAC_METRICS_ENDPOINT: "(?<ppbgdi.app.stac.endpoint>metrics)"
-        STAC_COLLECTIONS_ENDPOINT: "(?<ppbgdi.app.stac.endpoint>collections)"
-        STAC_CONFORMANCE_ENDPOINT: "(?<ppbgdi.app.stac.endpoint>conformance)"
-        STAC_SEARCH_ENDPOINT: "(?<ppbgdi.app.stac.endpoint>search)"
-        STAC_COLLECTION: "/(?<ppbgdi.app.stac.collection.id>[^/]+)"
-        STAC_FEATURE: "/(?<ppbgdi.app.stac.feature.id>[^/]+)"
-        STAC_ASSET: "/(?<ppbgdi.app.stac.asset.id>[^/]+)"
-        STAC_UPLOAD_ID: "/(?<ppbgdi.app.stac.upload.id>[^/]+)"
-        STAC_UPLOAD_OPTION: "/(?<ppbgdi.app.stac.upload.option>abort|complete|parts)"
-
-      patterns:
-        - '^/%{STAC_CHECKER_ENDPOINT}$'
-        - '^/%{STAC_METRICS_ENDPOINT}$'
-        - '^/api/stac/%{STAC_VERSION}/?$'
-        - '^/api/stac/%{STAC_VERSION}/%{STAC_CONFORMANCE_ENDPOINT}/?$'
-        - '^/api/stac/%{STAC_VERSION}/%{STAC_COLLECTIONS_ENDPOINT}(%{STAC_COLLECTION}(/items%{STAC_FEATURE}?(/assets%{STAC_ASSET}?(/uploads%{STAC_UPLOAD_ID}?(%{STAC_UPLOAD_OPTION})?)?)?)?)?$'
-        - '^/api/stac/%{STAC_VERSION}/%{STAC_SEARCH_ENDPOINT}$'
-        - '^/api/stac/%{STAC_ADMIN_ENDPOINT}'
+        STAC_COLLECTION_ID: "(?<ppbgdi.app.stac.collection.id>[^/]+)"
+        STAC_FEATURE_ID: "(?<ppbgdi.app.stac.feature.id>[^/]+)"
+        STAC_ASSET_ID: "(?<ppbgdi.app.stac.asset.id>[^/]+)"
+        STAC_UPLOAD_ID: "(?<ppbgdi.app.stac.upload.id>[^/]+)"
+      trace_match: true # Adds the index of the matching pattern to _ingest._grok_match_index. Used to set endpoint names
+      ecs_compatibility: v1
       on_failure:
         - set:
             field: event.kind
@@ -37,6 +42,43 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      description: Store the index of the matching grok pattern available for endpoint naming
+      field: _ingest._grok_match_index
+      target_field: temp_endpoint_index
+      type: integer
+      ignore_missing: true
+  - script:
+      description: Sets the endpoint name based on the index of the matching grok pattern
+      source: >-
+        ctx['ppbgdi.app.endpoint.id'] = params['endpoint_names'][ctx?.temp_endpoint_index];
+      params:
+        endpoint_names:
+          - landing_page # GET
+          - conformance # GET
+          - collections # GET
+          - collection # GET | PUT | PATCH
+          - features # GET
+          - feature # GET | PUT | PATCH | DELETE
+          - assets # GET
+          - asset # GET | PUT | PATCH | DELETE
+          - asset_uploads # GET | POST
+          - asset_upload # GET
+          - complete_asset_upload # POST
+          - abort_asset_upload # POST
+          - get_upload_parts # GET
+          - search # GET | POST
+          - get_token # POST
+          - checker
+          - metrics
+          - admin
+      if: ctx?.temp_endpoint_index != null
+  - dot_expander:
+      description: Convert ppbgdi.app.endpoint.id into an object field
+      field: ppbgdi.app.endpoint.id
+  - remove:
+      field: temp_endpoint_index
+      ignore_missing: true
 
 on_failure:
   - set:
