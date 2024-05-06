@@ -4,7 +4,7 @@ The Network Beaconing Identification package consists of a framework to identify
 This package is licensed under Elastic License 2.0. 
 
 For more detailed information refer to the following blog:
-- https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic
+- [Identifying beaconing malware using Elastic](https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic)
 
 ## Installation
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Network Beaconing Identification**. Configure the integration name and agent policy. Click Save and Continue.
