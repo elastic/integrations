@@ -70,13 +70,19 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-09-14T09:00:52.562Z",
     "agent": {
-        "ephemeral_id": "21a6a640-db1c-41f2-bc9f-a1828a392fbc",
-        "id": "8a466644-c7b0-4c90-86c2-8a2cf6d98148",
+        "ephemeral_id": "de847db6-f5bf-4453-8aed-e34625b9fbfa",
+        "id": "43c0b2ea-ece0-4773-bd18-10caab20c820",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
     },
     "azure": {
+        "resource": {
+            "group": "NETWORKWATCHERRG",
+            "id": "/SUBSCRIPTIONS/00000000-0000-0000-0000-000000000000/RESOURCEGROUPS/NETWORKWATCHERRG/PROVIDERS/MICROSOFT.NETWORK/NETWORKWATCHERS/NETWORKWATCHER_EASTUS2EUAP/FLOWLOGS/VNETFLOWLOG",
+            "name": "NETWORKWATCHER_EASTUS2EUAP/FLOWLOGS/VNETFLOWLOG",
+            "provider": "MICROSOFT.NETWORK/NETWORKWATCHERS"
+        },
         "storage": {
             "blob": {
                 "content_type": "application/json",
@@ -85,7 +91,8 @@ An example event for `log` looks as following:
             "container": {
                 "name": "azure-container1"
             }
-        }
+        },
+        "subscription_id": "00000000-0000-0000-0000-000000000000"
     },
     "azure_network_watcher_vnet": {
         "log": {
@@ -651,7 +658,7 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8a466644-c7b0-4c90-86c2-8a2cf6d98148",
+        "id": "43c0b2ea-ece0-4773-bd18-10caab20c820",
         "snapshot": false,
         "version": "8.12.0"
     },
@@ -661,7 +668,7 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "azure_network_watcher_vnet.log",
-        "ingested": "2024-05-01T08:54:01Z",
+        "ingested": "2024-05-03T08:01:53Z",
         "kind": "event",
         "type": [
             "info"
@@ -678,8 +685,8 @@ An example event for `log` looks as following:
     },
     "network": {
         "direction": [
-            "outbound",
-            "inbound"
+            "inbound",
+            "outbound"
         ],
         "iana_number": [
             "6"
@@ -756,9 +763,14 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.resource.group | Resource group. | keyword |
+| azure.resource.id | Resource ID. | keyword |
+| azure.resource.name | Name. | keyword |
+| azure.resource.provider | Resource type/namespace. | keyword |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object. | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object. | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container. | keyword |
+| azure.subscription_id | Azure subscription ID. | keyword |
 | azure_network_watcher_vnet.log.category | Category of the event. | keyword |
 | azure_network_watcher_vnet.log.flow_log.guid | Resource GUID of the FlowLog resource. | keyword |
 | azure_network_watcher_vnet.log.flow_log.resource_id | Resource ID of the FlowLog resource. | keyword |
