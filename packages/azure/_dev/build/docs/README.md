@@ -6,7 +6,7 @@ You can then visualize that data in Kibana, create alerts if something goes wron
 
 For example, to detect possible brute force sign-in attacks, you
 can install the Azure Logs integration to send Azure sign-in logs to Elastic.
-Then, by setting up a new rule in the Elastic Observability Logs app you can be alerted when the number of failed sign-in attempts exceeds a certain threshold.
+Then, by setting up a new rule in the Elastic Observability Logs app, you can be alerted when the number of failed sign-in attempts exceeds a certain threshold.
 Or, perhaps you want to better plan your Azure capacity.
 Send Azure Activity logs to Elastic to track and visualize when your virtual machines
 fail to start due to an exceed quota limit.
