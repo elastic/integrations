@@ -126,26 +126,26 @@ An example event for `lambda` looks as following:
 | aws.dimensions.ExecutedVersion | Use the ExecutedVersion dimension to compare error rates for two versions of a function that are both targets of a weighted alias. | keyword |  |  |
 | aws.dimensions.FunctionName | Lambda function name. | keyword |  |  |
 | aws.dimensions.Resource | Resource name. | keyword |  |  |
-| aws.lambda.metrics.AsyncEventAge.avg | The average time between whem Lambda successfully queues the event and when the function is invoked. | long | ms | gauge |
+| aws.lambda.metrics.AsyncEventAge.avg | The average time between when Lambda successfully queues the event and when the function is invoked. | long | ms | gauge |
 | aws.lambda.metrics.AsyncEventsReceived.sum | The total number of events that Lambda successfully queues for processing. | long |  | gauge |
-| aws.lambda.metrics.ConcurrentExecutions.avg | The number of function instances that are processing events. | double |  | gauge |
+| aws.lambda.metrics.ConcurrentExecutions.avg | The average number of function instances that are processing events. | double |  | gauge |
 | aws.lambda.metrics.DeadLetterErrors.avg | For asynchronous invocation, the average number of times Lambda attempts to send an event to a dead-letter queue but fails. | double |  | gauge |
 | aws.lambda.metrics.DeadLetterErrors.sum | For asynchronous invocation, the total number of times Lambda attempts to send an event to a dead-letter queue but fails. | double |  | gauge |
 | aws.lambda.metrics.DestinationDeliveryFailures.avg | For asynchronous invocation, the average number of times Lambda attempts to send an event to a destination but fails. | double |  | gauge |
 | aws.lambda.metrics.DestinationDeliveryFailures.sum | For asynchronous invocation, the total number of times Lambda attempts to send an event to a destination but fails. | double |  | gauge |
-| aws.lambda.metrics.Duration.avg | The amount of time that your function code spends processing an event. | double |  | gauge |
+| aws.lambda.metrics.Duration.avg | The average amount of time that your function code spends processing an event. | double |  | gauge |
 | aws.lambda.metrics.Errors.avg | The average number of invocations that result in a function error. | double |  | gauge |
 | aws.lambda.metrics.Errors.sum | The total number of invocations that result in a function error. | double |  | gauge |
 | aws.lambda.metrics.Invocations.avg | The average number of times your function code is executed, including successful executions and executions that result in a function error. | double |  | gauge |
 | aws.lambda.metrics.Invocations.sum | The total number of times your function code is executed, including successful executions and executions that result in a function error. | double |  | gauge |
-| aws.lambda.metrics.IteratorAge.avg | For event source mappings that read from streams, the age of the last record in the event. | double |  | gauge |
-| aws.lambda.metrics.ProvisionedConcurrencyInvocations.sum | The number of times your function code is executed on provisioned concurrency. | long |  | gauge |
-| aws.lambda.metrics.ProvisionedConcurrencySpilloverInvocations.sum | The number of times your function code is executed on standard concurrency when all provisioned concurrency is in use. | long |  | gauge |
-| aws.lambda.metrics.ProvisionedConcurrencyUtilization.max | For a version or alias, the value of ProvisionedConcurrentExecutions divided by the total amount of provisioned concurrency allocated. | long |  | gauge |
-| aws.lambda.metrics.ProvisionedConcurrentExecutions.max | The number of function instances that are processing events on provisioned concurrency. | long |  | gauge |
+| aws.lambda.metrics.IteratorAge.avg | For event source mappings that read from streams, the average age of the last record in the event. | double |  | gauge |
+| aws.lambda.metrics.ProvisionedConcurrencyInvocations.sum | The total number of times your function code is executed on provisioned concurrency. | long |  | gauge |
+| aws.lambda.metrics.ProvisionedConcurrencySpilloverInvocations.sum | The total number of times your function code is executed on standard concurrency when all provisioned concurrency is in use. | long |  | gauge |
+| aws.lambda.metrics.ProvisionedConcurrencyUtilization.max | For a version or alias, the maximum value of ProvisionedConcurrentExecutions divided by the total amount of provisioned concurrency allocated. | long |  | gauge |
+| aws.lambda.metrics.ProvisionedConcurrentExecutions.max | The maximum number of function instances that are processing events on provisioned concurrency. | long |  | gauge |
 | aws.lambda.metrics.Throttles.avg | The average number of invocation requests that are throttled. | double |  | gauge |
 | aws.lambda.metrics.Throttles.sum | The total number of invocation requests that are throttled. | double |  | gauge |
-| aws.lambda.metrics.UnreservedConcurrentExecutions.avg | For an AWS Region, the number of events that are being processed by functions that don't have reserved concurrency. | double |  | gauge |
+| aws.lambda.metrics.UnreservedConcurrentExecutions.avg | For an AWS Region, the average number of events that are being processed by functions that don't have reserved concurrency. | double |  | gauge |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
