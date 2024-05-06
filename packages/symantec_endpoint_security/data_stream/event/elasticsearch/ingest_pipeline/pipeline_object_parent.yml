@@ -1,0 +1,1213 @@
+---
+description: Pipeline for processing parent object.
+processors:
+  - append:
+      field: process.parent.command_line
+      tag: append_process_parent_command_line_from_parent_cmd_line
+      value: '{{{ses.parent.cmd_line}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.cmd_line != null
+  - date:
+      field: ses.parent.file.accessed
+      tag: date_parent_file_accessed
+      target_field: ses.parent.file.accessed
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.parent?.file?.accessed != null && ctx.ses.parent.file.accessed != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.accessed
+            ignore_missing: true
+  - foreach:
+      field: ses.parent.file.attribute_ids
+      if: ctx.ses?.parent?.file?.attribute_ids instanceof List
+      tag: foreach_parent_file_attribute_ids
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_parent_file_attribute_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.parent.file.attributes
+      tag: convert_parent_file_attributes_to_long
+      type: long
+      if: ctx.ses?.parent?.file?.attributes != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.attributes
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.confidentiality_id
+      tag: convert_parent_file_confidentiality_id_to_string
+      type: string
+      if: ctx.ses?.parent?.file?.confidentiality_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.confidentiality_id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.content_type.family_id
+      tag: convert_parent_file_content_type_family_id_to_string
+      type: string
+      if: ctx.ses?.parent?.file?.content_type?.family_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.content_type.family_id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.content_type.type_id
+      tag: convert_parent_file_content_type_type_id_to_string
+      type: string
+      if: ctx.ses?.parent?.file?.content_type?.type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.content_type.type_id
+            ignore_missing: true
+  - date:
+      field: ses.parent.file.created
+      tag: date_parent_file_created
+      target_field: ses.parent.file.created
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.parent?.file?.created != null && ctx.ses.parent.file.created != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.created
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.is_system
+      tag: convert_parent_file_is_system_to_boolean
+      type: boolean
+      if: ctx.ses?.parent?.file?.is_system != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.is_system
+            ignore_missing: true
+  - date:
+      field: ses.parent.file.modified
+      tag: date_parent_file_modified
+      target_field: ses.parent.file.modified
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.parent?.file?.modified != null && ctx.ses.parent.file.modified != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.modified
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.rep_discovered_band
+      tag: convert_parent_file_rep_discovered_band_to_long
+      type: long
+      if: ctx.ses?.parent?.file?.rep_discovered_band != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.rep_discovered_band
+            ignore_missing: true
+  - date:
+      field: ses.parent.file.rep_discovered_date
+      tag: date_parent_file_rep_discovered_date
+      target_field: ses.parent.file.rep_discovered_date
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.parent?.file?.rep_discovered_date != null && ctx.ses.parent.file.rep_discovered_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.rep_discovered_date
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.rep_prevalence
+      tag: convert_parent_file_rep_prevalence_to_long
+      type: long
+      if: ctx.ses?.parent?.file?.rep_prevalence != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.rep_prevalence
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.rep_prevalence_band
+      tag: convert_parent_file_rep_prevalence_band_to_long
+      type: long
+      if: ctx.ses?.parent?.file?.rep_prevalence_band != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.rep_prevalence_band
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.rep_score
+      tag: convert_parent_file_rep_score_to_long
+      type: long
+      if: ctx.ses?.parent?.file?.rep_score != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.rep_score
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.rep_score_band
+      tag: convert_parent_file_rep_score_band_to_long
+      type: long
+      if: ctx.ses?.parent?.file?.rep_score_band != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.rep_score_band
+            ignore_missing: true
+  - date:
+      field: ses.parent.file.signature_created_date
+      tag: date_parent_file_signature_created_date
+      target_field: ses.parent.file.signature_created_date
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.parent?.file?.signature_created_date != null && ctx.ses.parent.file.signature_created_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.signature_created_date
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.signature_level_id
+      tag: convert_parent_file_signature_level_id_to_string
+      type: string
+      if: ctx.ses?.parent?.file?.signature_level_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.signature_level_id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.signature_value
+      tag: convert_parent_file_signature_value_to_long
+      type: long
+      if: ctx.ses?.parent?.file?.signature_value != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.signature_value
+            ignore_missing: true
+  - foreach:
+      field: ses.parent.file.signature_value_ids
+      if: ctx.ses?.parent?.file?.signature_value_ids instanceof List
+      tag: foreach_parent_file_signature_value_ids
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_parent_file_signature_value_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.parent.file.size
+      tag: convert_parent_file_size_to_long
+      type: long
+      if: ctx.ses?.parent?.file?.size != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.size
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.size_compressed
+      tag: convert_parent_file_size_compressed_to_long
+      type: long
+      if: ctx.ses?.parent?.file?.size_compressed != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.size_compressed
+            ignore_missing: true
+  - convert:
+      field: ses.parent.file.src_ip
+      tag: convert_parent_file_src_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.ses?.parent?.file?.src_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.src_ip
+            ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_related_ip_from_parent_file_src_ip
+      value: '{{{ses.parent.file.src_ip}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.file?.src_ip != null
+  - convert:
+      field: ses.parent.file.type_id
+      tag: convert_parent_file_type_id_to_string
+      type: string
+      if: ctx.ses?.parent?.file?.type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.type_id
+            ignore_missing: true
+  - foreach:
+      field: ses.parent.file.url.category_ids
+      if: ctx.ses?.parent?.file?.url?.category_ids instanceof List
+      tag: foreach_parent_file_url_category_ids
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_parent_file_url_category_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.parent.file.url.port
+      tag: convert_parent_file_url_port_to_long
+      type: long
+      if: ctx.ses?.parent?.file?.url?.port != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.url.port
+            ignore_missing: true
+  - foreach:
+      field: ses.parent.file.url.referrer_category_ids
+      if: ctx.ses?.parent?.file?.url?.referrer_category_ids instanceof List
+      tag: foreach_parent_file_url_referrer_category_ids
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_parent_file_url_referrer_category_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.parent.file.url.rep_score_id
+      tag: convert_parent_file_url_rep_score_id_to_string
+      type: string
+      if: ctx.ses?.parent?.file?.url?.rep_score_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.file.url.rep_score_id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.integrity_id
+      tag: convert_parent_integrity_id_to_string
+      type: string
+      if: ctx.ses?.parent?.integrity_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.integrity_id
+            ignore_missing: true
+  - date:
+      field: ses.parent.module.accessed
+      tag: date_parent_module_accessed
+      target_field: ses.parent.module.accessed
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.parent?.module?.accessed != null && ctx.ses.parent.module.accessed != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.accessed
+            ignore_missing: true
+  - foreach:
+      field: ses.parent.module.attribute_ids
+      if: ctx.ses?.parent?.module?.attribute_ids instanceof List
+      tag: foreach_parent_module_attribute_ids
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_parent_module_attribute_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.parent.module.attributes
+      tag: convert_parent_module_attributes_to_long
+      type: long
+      if: ctx.ses?.parent?.module?.attributes != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.attributes
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.confidentiality_id
+      tag: convert_parent_module_confidentiality_id_to_string
+      type: string
+      if: ctx.ses?.parent?.module?.confidentiality_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.confidentiality_id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.content_type.family_id
+      tag: convert_parent_module_content_type_family_id_to_string
+      type: string
+      if: ctx.ses?.parent?.module?.content_type?.family_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.content_type.family_id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.content_type.type_id
+      tag: convert_parent_module_content_type_type_id_to_string
+      type: string
+      if: ctx.ses?.parent?.module?.content_type?.type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.content_type.type_id
+            ignore_missing: true
+  - date:
+      field: ses.parent.module.created
+      tag: date_parent_module_created
+      target_field: ses.parent.module.created
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.parent?.module?.created != null && ctx.ses.parent.module.created != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.created
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.is_system
+      tag: convert_parent_module_is_system_to_boolean
+      type: boolean
+      if: ctx.ses?.parent?.module?.is_system != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.is_system
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.load_type_id
+      tag: convert_parent_module_load_type_id_to_string
+      type: string
+      if: ctx.ses?.parent?.module?.load_type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.load_type_id
+            ignore_missing: true
+  - date:
+      field: ses.parent.module.modified
+      tag: date_parent_module_modified
+      target_field: ses.parent.module.modified
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.parent?.module?.modified != null && ctx.ses.parent.module.modified != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.modified
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.rep_discovered_band
+      tag: convert_parent_module_rep_discovered_band_to_long
+      type: long
+      if: ctx.ses?.parent?.module?.rep_discovered_band != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.rep_discovered_band
+            ignore_missing: true
+  - date:
+      field: ses.parent.module.rep_discovered_date
+      tag: date_parent_module_rep_discovered_date
+      target_field: ses.parent.module.rep_discovered_date
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.parent?.module?.rep_discovered_date != null && ctx.ses.parent.module.rep_discovered_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.rep_discovered_date
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.rep_prevalence
+      tag: convert_parent_module_rep_prevalence_to_long
+      type: long
+      if: ctx.ses?.parent?.module?.rep_prevalence != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.rep_prevalence
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.rep_prevalence_band
+      tag: convert_parent_module_rep_prevalence_band_to_long
+      type: long
+      if: ctx.ses?.parent?.module?.rep_prevalence_band != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.rep_prevalence_band
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.rep_score
+      tag: convert_parent_module_rep_score_to_long
+      type: long
+      if: ctx.ses?.parent?.module?.rep_score != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.rep_score
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.rep_score_band
+      tag: convert_parent_module_rep_score_band_to_long
+      type: long
+      if: ctx.ses?.parent?.module?.rep_score_band != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.rep_score_band
+            ignore_missing: true
+  - date:
+      field: ses.parent.module.signature_created_date
+      tag: date_parent_module_signature_created_date
+      target_field: ses.parent.module.signature_created_date
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.parent?.module?.signature_created_date != null && ctx.ses.parent.module.signature_created_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.signature_created_date
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.signature_level_id
+      tag: convert_parent_module_signature_level_id_to_string
+      type: string
+      if: ctx.ses?.parent?.module?.signature_level_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.signature_level_id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.signature_value
+      tag: convert_parent_module_signature_value_to_long
+      type: long
+      if: ctx.ses?.parent?.module?.signature_value != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.signature_value
+            ignore_missing: true
+  - foreach:
+      field: ses.parent.module.signature_value_ids
+      if: ctx.ses?.parent?.module?.signature_value_ids instanceof List
+      tag: foreach_parent_module_signature_value_ids
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_parent_module_signature_value_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.parent.module.size
+      tag: convert_parent_module_size_to_long
+      type: long
+      if: ctx.ses?.parent?.module?.size != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.size
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.size_compressed
+      tag: convert_parent_module_size_compressed_to_long
+      type: long
+      if: ctx.ses?.parent?.module?.size_compressed != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.size_compressed
+            ignore_missing: true
+  - convert:
+      field: ses.parent.module.src_ip
+      tag: convert_parent_module_src_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.ses?.parent?.module?.src_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.src_ip
+            ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_related_ip_from_parent_module_src_ip
+      value: '{{{ses.parent.module.src_ip}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.module?.src_ip != null
+  - convert:
+      field: ses.parent.module.type_id
+      tag: convert_parent_module_type_id_to_string
+      type: string
+      if: ctx.ses?.parent?.module?.type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.type_id
+            ignore_missing: true
+  - foreach:
+      field: ses.parent.module.url.category_ids
+      if: ctx.ses?.parent?.module?.url?.category_ids instanceof List
+      tag: foreach_parent_module_url_category_ids
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_parent_module_url_category_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.parent.module.url.port
+      tag: convert_parent_module_url_port_to_long
+      type: long
+      if: ctx.ses?.parent?.module?.url?.port != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.url.port
+            ignore_missing: true
+  - foreach:
+      field: ses.parent.module.url.referrer_category_ids
+      if: ctx.ses?.parent?.module?.url?.referrer_category_ids instanceof List
+      tag: foreach_parent_module_url_referrer_category_ids
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_parent_module_url_referrer_category_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.parent.module.url.rep_score_id
+      tag: convert_parent_module_url_rep_score_id_to_string
+      type: string
+      if: ctx.ses?.parent?.module?.url?.rep_score_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.module.url.rep_score_id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.pid
+      tag: convert_parent_pid_to_long
+      type: long
+      if: ctx.ses?.parent?.pid != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.pid
+            ignore_missing: true
+  - set:
+      field: process.parent.pid
+      tag: set_process_parent_pid_from_parent_pid
+      copy_from: ses.parent.pid
+      ignore_empty_value: true
+  - convert:
+      field: ses.parent.session.auth_protocol_id
+      tag: convert_parent_session_auth_protocol_id_to_string
+      type: string
+      if: ctx.ses?.parent?.session?.auth_protocol_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.auth_protocol_id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.session.cleartext_credentials
+      tag: convert_parent_session_cleartext_credentials_to_boolean
+      type: boolean
+      if: ctx.ses?.parent?.session?.cleartext_credentials != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.cleartext_credentials
+            ignore_missing: true
+  - convert:
+      field: ses.parent.session.direction_id
+      tag: convert_parent_session_direction_id_to_string
+      type: string
+      if: ctx.ses?.parent?.session?.direction_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.direction_id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.session.id
+      tag: convert_parent_session_id_to_long
+      type: string
+      if: ctx.ses?.parent?.session?.id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.session.is_admin
+      tag: convert_parent_session_is_admin_to_boolean
+      type: boolean
+      if: ctx.ses?.parent?.session?.is_admin != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.is_admin
+            ignore_missing: true
+  - convert:
+      field: ses.parent.session.logon_type_id
+      tag: convert_parent_session_logon_type_id_to_string
+      type: string
+      if: ctx.ses?.parent?.session?.logon_type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.logon_type_id
+            ignore_missing: true
+  - convert:
+      field: ses.parent.session.port
+      tag: convert_parent_session_port_to_long
+      type: long
+      if: ctx.ses?.parent?.session?.port != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.port
+            ignore_missing: true
+  - convert:
+      field: ses.parent.session.remote
+      tag: convert_parent_session_remote_to_boolean
+      type: boolean
+      if: ctx.ses?.parent?.session?.remote != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.remote
+            ignore_missing: true
+  - convert:
+      field: ses.parent.session.remote_ip
+      tag: convert_parent_session_remote_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.ses?.parent?.session?.remote_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.remote_ip
+            ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_related_ip_from_parent_session_remote_ip
+      value: '{{{ses.parent.session.remote_ip}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.session?.remote_ip != null
+  - convert:
+      field: ses.parent.session.user.account_disabled
+      tag: convert_parent_session_user_account_disabled_to_boolean
+      type: boolean
+      if: ctx.ses?.parent?.session?.user?.account_disabled != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.user.account_disabled
+            ignore_missing: true
+  - convert:
+      field: ses.parent.session.user.is_admin
+      tag: convert_parent_session_user_is_admin_to_boolean
+      type: boolean
+      if: ctx.ses?.parent?.session?.user?.is_admin != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.user.is_admin
+            ignore_missing: true
+  - convert:
+      field: ses.parent.session.user.password_expires
+      tag: convert_parent_session_user_password_expires_to_boolean
+      type: boolean
+      if: ctx.ses?.parent?.session?.user?.password_expires != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session.user.password_expires
+            ignore_missing: true
+  - convert:
+      field: ses.parent.session_id
+      tag: convert_parent_session_id_to_string
+      type: string
+      if: ctx.ses?.parent?.session_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.session_id
+            ignore_missing: true
+  - date:
+      field: ses.parent.start_time
+      tag: date_parent_start_time
+      target_field: ses.parent.start_time
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.parent?.start_time != null && ctx.ses.parent.start_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.start_time
+            ignore_missing: true
+  - append:
+      field: process.parent.start
+      tag: append_process_parent_start_from_parent_start_time
+      value: '{{{ses.parent.start_time}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.start_time != null
+  - convert:
+      field: ses.parent.tid
+      tag: convert_parent_tid_to_long
+      type: long
+      if: ctx.ses?.parent?.tid != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.tid
+            ignore_missing: true
+  - append:
+      field: process.parent.thread.id
+      tag: append_process_parent_thread_id_from_parent_tid
+      value: '{{{ses.parent.tid}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.tid != null
+  - foreach:
+      field: process.parent.thread.id
+      if: ctx.process?.parent?.thread?.id instanceof List
+      tag: foreach_parent_threat_id
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_parent_threat_id_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: process.parent.entity_id
+      tag: append_process_parent_entity_id_from_parent_uid
+      value: '{{{ses.parent.uid}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.uid != null
+  - convert:
+      field: ses.parent.user.account_disabled
+      tag: convert_parent_user_account_disabled_to_boolean
+      type: boolean
+      if: ctx.ses?.parent?.user?.account_disabled != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.user.account_disabled
+            ignore_missing: true
+  - convert:
+      field: ses.parent.user.is_admin
+      tag: convert_parent_user_is_admin_to_boolean
+      type: boolean
+      if: ctx.ses?.parent?.user?.is_admin != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.user.is_admin
+            ignore_missing: true
+  - append:
+      field: process.parent.user.name
+      tag: append_process_parent_user_name_from_parent_user_name
+      value: '{{{ses.parent.user.name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.user?.name != null
+  - convert:
+      field: ses.parent.user.password_expires
+      tag: convert_parent_user_password_expires_to_boolean
+      type: boolean
+      if: ctx.ses?.parent?.user?.password_expires != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.parent.user.password_expires
+            ignore_missing: true
+  - append:
+      field: process.parent.user.id
+      tag: append_process_parent_user_id_from_parent_user_uid
+      value: '{{{ses.parent.user.uid}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.user?.uid != null
+  - append:
+      field: related.hash
+      tag: append_related_hash_from_parent_file_md5
+      value: '{{{ses.parent.file.md5}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.file?.md5 != null && ctx.ses.parent.file.md5 != ''
+  - append:
+      field: related.hash
+      tag: append_related_hash_from_parent_file_sha1
+      value: '{{{ses.parent.file.sha1}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.file?.sha1 != null && ctx.ses.parent.file.sha1 != ''
+  - append:
+      field: related.hash
+      tag: append_related_hash_from_parent_file_sha2
+      value: '{{{ses.parent.file.sha2}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.file?.sha2 != null && ctx.ses.parent.file.sha2 != ''
+  - append:
+      field: related.hash
+      tag: append_related_hash_from_parent_file_parent_sha2
+      value: '{{{ses.parent.file.parent_sha2}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.file?.parent_sha2 != null && ctx.ses.parent.file.parent_sha2 != ''
+  - append:
+      field: related.hash
+      tag: append_related_hash_from_parent_module_md5
+      value: '{{{ses.parent.module.md5}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.module?.md5 != null && ctx.ses.parent.module.md5 != ''
+  - append:
+      field: related.hash
+      tag: append_related_hash_from_parent_module_sha1
+      value: '{{{ses.parent.module.sha1}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.module?.sha1 != null && ctx.ses.parent.module.sha1 != ''
+  - append:
+      field: related.hash
+      tag: append_related_hash_from_parent_module_sha2
+      value: '{{{ses.parent.module.sha2}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.module?.sha2 != null && ctx.ses.parent.module.sha2 != ''
+  - append:
+      field: related.hash
+      tag: append_related_hash_from_parent_module_parent_sha2
+      value: '{{{ses.parent.module.parent_sha2}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.module?.parent_sha2 != null && ctx.ses.parent.module.parent_sha2 != ''
+  - append:
+      field: related.user
+      tag: append_related_user_from_parent_session_user_uid
+      value: '{{{ses.parent.session.user.uid}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.session?.user?.uid != null && ctx.ses.parent.session.user.uid != ''
+  - append:
+      field: related.user
+      tag: append_related_user_from_parent_session_user_name
+      value: '{{{ses.parent.session.user.name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.session?.user?.name != null && ctx.ses.parent.session.user.name != ''
+  - append:
+      field: related.hosts
+      tag: append_related_host_from_parent_file_src_name
+      value: '{{{ses.parent.file.src_name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.file?.src_name != null && ctx.ses.parent.file.src_name != ''
+  - append:
+      field: related.hosts
+      tag: append_related_host_from_parent_module_src_name
+      value: '{{{ses.parent.module.src_name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.module?.src_name != null && ctx.ses.parent.module.src_name != ''
+  - append:
+      field: related.user
+      tag: append_related_user_from_parent_user_uid
+      value: '{{{ses.parent.user.uid}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.user?.uid != null && ctx.ses.parent.user.uid != ''
+  - append:
+      field: related.user
+      tag: append_related_user_from_parent_user_name
+      value: '{{{ses.parent.user.name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.parent?.user?.name != null && ctx.ses.parent.user.name != ''
+  - remove:
+      field:
+        - ses.parent.cmd_line
+        - ses.parent.pid
+        - ses.parent.start_time
+        - ses.parent.tid
+        - ses.parent.uid
+        - ses.parent.user.name
+        - ses.parent.user.uid
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+        in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
