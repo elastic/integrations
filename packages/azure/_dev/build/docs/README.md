@@ -138,16 +138,16 @@ For example, if you plan to collect Microsoft Entra ID logs and Activity logs, c
 Here's an high-level diagram of the solution:
 
 ```text
-  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐                    
-  │ MS Entra ID    │   │  Diagnostic  │   │     adlogs     │                    
-  │  <<service>>   │──▶│   settings   │──▶│ <<event hub>>  │──┐                 
-  └────────────────┘   └──────────────┘   └────────────────┘  │   ┌────────────┐
-                                                              │   │  Elastic   │
-                                                              ├──▶│   Agent    │
-  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐  │   └────────────┘
-  │ Azure Monitor  │   │  Diagnostic  │   │  activitylogs  │  │                 
-  │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │──┘                 
-  └────────────────┘   └──────────────┘   └────────────────┘                                    
+  ┌───────────────┐   ┌──────────────┐   ┌───────────────┐
+  │  MS Entra ID  │   │  Diagnostic  │   │     adlogs    │
+  │  <<service>>  │──▶│   settings   │──▶│ <<event hub>> │──┐
+  └───────────────┘   └──────────────┘   └───────────────┘  │   ┌───────────┐
+                                                            │   │  Elastic  │
+                                                            ├──▶│   Agent   │
+  ┌───────────────┐   ┌──────────────┐   ┌───────────────┐  │   └───────────┘
+  │ Azure Monitor │   │  Diagnostic  │   │  activitylogs │  │
+  │  <<service>>  ├──▶│   settings   │──▶│ <<event hub>> │──┘
+  └───────────────┘   └──────────────┘   └───────────────┘
 ```
 
 Having one event hub for each Azure service is beneficial in terms of performance and easy of troubleshooting.
@@ -155,20 +155,20 @@ Having one event hub for each Azure service is beneficial in terms of performanc
 For high-volume deployments, we recommend one event hub for each data stream:
 
 ```text
-                    ┌──────────────┐   ┌─────────────────────┐                  
-                    │  Diagnostic  │   │   signin (adlogs)   │                  
-                 ┌─▶│   settings   │──▶│    <<event hub>>    │──┐               
-                 │  └──────────────┘   └─────────────────────┘  │               
-                 │                                              │               
-┌──────────────┐ │  ┌──────────────┐   ┌─────────────────────┐  │  ┌───────────┐
-│ MS Entra ID  │ │  │  Diagnostic  │   │   audit (adlogs)    │  │  │  Elastic  │
-│  <<service>> │─┼─▶│   settings   │──▶│    <<event hub>>    │──┼─▶│   Agent   │
-└──────────────┘ │  └──────────────┘   └─────────────────────┘  │  └───────────┘
-                 │                                              │               
-                 │  ┌──────────────┐   ┌─────────────────────┐  │               
-                 │  │  Diagnostic  │   │provisioning (adlogs)│  │               
-                 └─▶│   settings   │──▶│    <<event hub>>    │──┘               
-                    └──────────────┘   └─────────────────────┘                  
+                   ┌──────────────┐   ┌─────────────────────┐
+                   │  Diagnostic  │   │   signin (adlogs)   │
+                ┌─▶│   settings   │──▶│    <<event hub>>    │──┐
+                │  └──────────────┘   └─────────────────────┘  │
+                │                                              │
+┌─────────────┐ │  ┌──────────────┐   ┌─────────────────────┐  │  ┌───────────┐
+│ MS Entra ID │ │  │  Diagnostic  │   │   audit (adlogs)    │  │  │  Elastic  │
+│ <<service>> │─┼─▶│   settings   │──▶│    <<event hub>>    │──┼─▶│   Agent   │
+└─────────────┘ │  └──────────────┘   └─────────────────────┘  │  └───────────┘
+                │                                              │
+                │  ┌──────────────┐   ┌─────────────────────┐  │
+                │  │  Diagnostic  │   │provisioning (adlogs)│  │
+                └─▶│   settings   │──▶│    <<event hub>>    │──┘
+                   └──────────────┘   └─────────────────────┘
 ```
 
 #### Consumer Group
@@ -222,10 +222,10 @@ Each Azure services exports a well-defined list of log categories. Check the ind
 Select the **subscription** and the **event hub namespace** you previously created. Select the event hub dedicated to this integration.
 
 ```text
-  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐      ┌────────────┐
-  │ MS Entra ID    │   │  Diagnostic  │   │     adlogs     │      │  Elastic   │
-  │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │─────▶│   Agent    │
-  └────────────────┘   └──────────────┘   └────────────────┘      └────────────┘
+  ┌───────────────┐   ┌──────────────┐   ┌───────────────┐      ┌───────────┐
+  │  MS Entra ID  │   │  Diagnostic  │   │     adlogs    │      │  Elastic  │
+  │  <<service>>  ├──▶│   settings   │──▶│ <<event hub>> │─────▶│   Agent   │
+  └───────────────┘   └──────────────┘   └───────────────┘      └───────────┘
 ```
 
 ### Create a Storage account container
