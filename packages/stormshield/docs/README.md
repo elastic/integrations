@@ -225,27 +225,19 @@ An example event for `log` looks as following:
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | stormshield.Accepted | Number of packets corresponding to the application of Pass rules. Example: Accepted=2430. | keyword |
+| stormshield.AssocMem | The memory used for ... | keyword |
 | stormshield.Blocked | Number of packets corresponding to the application of Block rules. Example: Blocked=1254. | keyword |
 | stormshield.Byte.in_count | Number of bytes that have passed through the firewall (incoming) | long |
 | stormshield.Byte.out_count | Number of bytes that have passed through the firewall (outgoing) | long |
-| stormshield.CPU.kernel_time | Time consumed by the kernel | long |
-| stormshield.CPU.system_disruption | Time allocated to system disruptions | long |
-| stormshield.CPU.user_time | Time allocated to the management of user processes | long |
 | stormshield.ConnMem | Percentage of memory allocated to connections. Value from 0 to 100. | keyword |
+| stormshield.DTrackMem | The memory used for ... | keyword |
 | stormshield.DtrackMem | Percentage of memory used for data tracking (TCP/UDP packets). Value from 0 to 100. | keyword |
 | stormshield.DynamicMem | Percentage of the ASQs dynamic memory in use. Value from 0 to 100. | keyword |
 | stormshield.EtherStateByte.in_count | Number of bytes that have passed through the firewall (incoming) | long |
 | stormshield.EtherStateByte.out_count | Number of bytes that have passed through the firewall (outgoing) | long |
 | stormshield.EtherStateConn | Number of stateful statuses for Ethernet exchanges without IP layer. Digital format. Example: EtherStateConn=0 Available from: SNS v4.0.0. | keyword |
+| stormshield.EtherStateMem | The memory used for ... | keyword |
 | stormshield.EtherStatePacket | Number of packets for Ethernet traffic without IP layer. Digital format. Example: EtherStatePacket=128 Available from: SNS v4.0.0. | keyword |
-| stormshield.Ethernet.incoming_throughput | Incoming throughput (bits/second) | long |
-| stormshield.Ethernet.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
-| stormshield.Ethernet.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
-| stormshield.Ethernet.name | Name of the interface | keyword |
-| stormshield.Ethernet.original | Original name of this field | keyword |
-| stormshield.Ethernet.outgoing_throughput | Outgoing throughput (bits/second) | long |
-| stormshield.Ethernet.packets_accepted | Number of packets accepted | long |
-| stormshield.Ethernet.packets_blocked | Number of packets blocked | long |
 | stormshield.FragMem | Percentage of memory allocated to the treatment of fragmented packets. Value from 0 to 100. | keyword |
 | stormshield.Fragmented | Number of fragmented packets that have passed through the Firewall. | keyword |
 | stormshield.HostMem | Percentage of memory allocated to a host processed by the Firewall. Value from 0 to 100. | keyword |
@@ -270,14 +262,6 @@ An example event for `log` looks as following:
 | stormshield.Pvm | All indicators regarding vulnerability management:  Total number of vulnerabilities detected, number of vulnerabilities that can be exploited remotely, number of vulnerabilities requiring the installation of a server on the vulnerable host in order to be exploited, number of vulnerabilities classified as critical, number of vulnerabilities classified as minor, number of vulnerabilities classified as major, number of vulnerabilities that have a bug fix, total amount of information (all levels), number of minor data, number of major data, number of hosts for which PVM has gathered information,  Format: 11 numeric values separated by commas. Example: 0,0,0,0,0,0,0,2,0,0,2 | keyword |
 | stormshield.PvmFacts | Number of events sent by ASQ to the vulnerability management process. | keyword |
 | stormshield.PvmOverflow | Number of events intended for the vulnerability management process that were ignored by ASQ. | keyword |
-| stormshield.Qid.incoming_throughput | Incoming throughput (bits/second) | long |
-| stormshield.Qid.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
-| stormshield.Qid.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
-| stormshield.Qid.name | Name of the interface | keyword |
-| stormshield.Qid.original | Original name of this field | keyword |
-| stormshield.Qid.outgoing_throughput | Outgoing throughput (bits/second) | long |
-| stormshield.Qid.packets_accepted | Number of packets accepted | long |
-| stormshield.Qid.packets_blocked | Number of packets blocked | long |
 | stormshield.Rule.byte_count | The number of bytes that have passed through the designated rule | long |
 | stormshield.Rule.category | Rule Category | keyword |
 | stormshield.Rule.original | Original Rule Identifier | keyword |
@@ -292,13 +276,15 @@ An example event for `log` looks as following:
 | stormshield.TCPConn | Number of TCP connections that have passed through the Firewall. | keyword |
 | stormshield.TCPConnNatDst | Number of TCP connections with a translated destination. | keyword |
 | stormshield.TCPConnNatSrc | Number of TCP connections with a translated source. | keyword |
+| stormshield.TCPConnNoNatDst | Number of TCP connections with a translated destination. | keyword |
+| stormshield.TCPConnNoNatSrc | Number of TCP connections with a translated source. | keyword |
 | stormshield.TCPPacket | Number of TCP packets that have passed through the Firewall. | keyword |
 | stormshield.TLSCertCacheEntriesNb | Number of entries currently in the TLS certificate cache. Digital format. Example: TLSCertCacheEntriesNb=3456 Available from: SNS v4.3.0 | keyword |
 | stormshield.TLSCertCacheExpiredNb | Number of entries deleted from the TLS certificate cache after a TTL expired. Digital format. Example: TLSCertCacheExpiredNb=789 Available from: SNS v4.3.0 | keyword |
 | stormshield.TLSCertCacheFlushOp | Number of "flush" operations (manual deletion of entries, or after reloading signatures) performed on the TLS certificate cache. Digital format. Example: TLSCertCacheFlushOp=7 Available from: SNS v4.3.0 | keyword |
 | stormshield.TLSCertCacheFlushedNb | Number of entries deleted from the TLS certificate cache after a "flush operation. Digital format. Example: TLSCertCacheFlushedNb=123 Available from: SNS v4.3.0 | keyword |
 | stormshield.TLSCertCacheInsert | Number of entries inserted in the TLS certificate cache. Digital format. Example: TLSCertCacheInsert=789 Available from: SNS v4.3.0 | keyword |
-| stormshield.TLSCertCacheLookup.miss_count | Number of lookups missed in the TLS certificate cache. | long |
+| stormshield.TLSCertCacheLookup.miss | Number of lookups missed in the TLS certificate cache. | long |
 | stormshield.TLSCertCacheLookup.total | Number of total TLS certificate cache lookups | long |
 | stormshield.TLSCertCachePurgeOp | Number of "purge" operations (automatic deletion of a percentage of entries when the cache reaches full capacity) performed on the TLS certificate cache. Digital format. Example: TLSCertCachePurgeOp=4 Available from: SNS v4.3.0 | keyword |
 | stormshield.TLSCertCachePurgedNb | Number of entries deleted from the TLS certificate cache after a "purge operation. Digital format. Example: TLSCertCachePurgedNb=456 Available from: SNS v4.3.0 | keyword |
@@ -307,38 +293,23 @@ An example event for `log` looks as following:
 | stormshield.UDPConn | Number of UDP connections that have passed through the Firewall. | keyword |
 | stormshield.UDPConnNatDst | Number of UDP connections with a translated destination. | keyword |
 | stormshield.UDPConnNatSrc | Number of UDP connections with a translated source. | keyword |
+| stormshield.UDPConnNoNatDst | Number of UDP connections with a translated destination. | keyword |
+| stormshield.UDPConnNoNatSrc | Number of UDP connections with a translated source. | keyword |
 | stormshield.UDPPacket | Number of UDP packets that have passed through the Firewall. | keyword |
 | stormshield.UI | Sofbus/Lacbus information unit  String of characters in UTF-8 format. Example: UI=Instruction Available from: SNS v4.3.0 | keyword |
-| stormshield.Vlan.incoming_throughput | Incoming throughput (bits/second) | long |
-| stormshield.Vlan.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
-| stormshield.Vlan.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
-| stormshield.Vlan.name | Name of the interface | keyword |
-| stormshield.Vlan.original | Original name of this field | keyword |
-| stormshield.Vlan.outgoing_throughput | Outgoing throughput (bits/second) | long |
-| stormshield.Vlan.packets_accepted | Number of packets accepted | long |
-| stormshield.Vlan.packets_blocked | Number of packets blocked | long |
-| stormshield.Wifi.incoming_throughput | Incoming throughput (bits/second) | long |
-| stormshield.Wifi.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
-| stormshield.Wifi.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
-| stormshield.Wifi.name | Name of the interface | keyword |
-| stormshield.Wifi.original | Original name of this field | keyword |
-| stormshield.Wifi.outgoing_throughput | Outgoing throughput (bits/second) | long |
-| stormshield.Wifi.packets_accepted | Number of packets accepted | long |
-| stormshield.Wifi.packets_blocked | Number of packets blocked | long |
 | stormshield.action | Behavior associated with the filter rule. Value: "pass". | keyword |
 | stormshield.address | IP address of the client workstation that initiated the connection. Decimal format.  Example: address=192.168.0.2 | keyword |
 | stormshield.ads | Indicates whether the antispam has detected an e-mail as an advertisement. Values:  0 or1. | keyword |
 | stormshield.agentid | SSO agent ID. Value: from 0 to 5. Example: agentid=0 Available from: SNS v3.0.0. | keyword |
-| stormshield.agg.incoming_throughput | Incoming throughput (bits/second) | long |
-| stormshield.agg.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
-| stormshield.agg.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
-| stormshield.agg.name | Name of the interface | keyword |
-| stormshield.agg.original | Original name of this field | keyword |
-| stormshield.agg.outgoing_throughput | Outgoing throughput (bits/second) | long |
-| stormshield.agg.packets_accepted | Number of packets accepted | long |
-| stormshield.agg.packets_blocked | Number of packets blocked | long |
 | stormshield.alarmid | Stormshield Network alarm ID Decimal format. Example: "85" | keyword |
 | stormshield.arg | Details of the detected vulnerability (version of service, operating system concerned, etc). String of characters in UTF-8 format. Example: Samba_3.6.3 | keyword |
+| stormshield.auth | Not documented | keyword |
+| stormshield.authcaptive | Not documented | keyword |
+| stormshield.authconsole | Not documented | keyword |
+| stormshield.authipsec | Not documented | keyword |
+| stormshield.authsslvpn | Not documented | keyword |
+| stormshield.authtotp | Not documented | keyword |
+| stormshield.authwebadmin | Not documented | keyword |
 | stormshield.cat_site | Category (URL filtering) of the website visited. String of characters in UTF-8 format.  Example: \{bank\}, \{news\}, etc. Available from: SNS v1.0.0. | keyword |
 | stormshield.cipclassid | Value of the "Class ID" field in the CIP message. String of characters in UTF-8 format. Example: cipclassid=Connection_Manager_Object Available from: SNS v3.5.0 | keyword |
 | stormshield.cipservicecode | Value of the "Service Code" field in the CIP message. String of characters in UTF-8 format. Example: cipservicecode=Get_Attribute_List Available from: SNS v3.5.0 | keyword |
@@ -351,6 +322,66 @@ An example event for `log` looks as following:
 | stormshield.cookie_i | Temporary identity marker of the initiator of the negotiation. Character string in hexadecimal. Example: 0xae34785945ae3cbf | keyword |
 | stormshield.cookie_r | Temporary identity marker of the peer of the negotiation.  Character string in hexadecimal. Example: "0x56201508549a6526". | keyword |
 | stormshield.detail | Additional information on the vulnerable software version.  String of characters in UTF-8 format. Example: PHP_5.2.3 | keyword |
+| stormshield.device_stats.CPU.kernel_time | Time consumed by the kernel | long |
+| stormshield.device_stats.CPU.system_disruption | Time allocated to system disruptions | long |
+| stormshield.device_stats.CPU.user_time | Time allocated to the management of user processes | long |
+| stormshield.device_stats.Ethernet.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_stats.Ethernet.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_stats.Ethernet.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_stats.Ethernet.name | Name of the interface | keyword |
+| stormshield.device_stats.Ethernet.original | Original name of this field | keyword |
+| stormshield.device_stats.Ethernet.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_stats.Ethernet.packets_accepted | Number of packets accepted | long |
+| stormshield.device_stats.Ethernet.packets_blocked | Number of packets blocked | long |
+| stormshield.device_stats.Qid.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_stats.Qid.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_stats.Qid.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_stats.Qid.name | Name of the interface | keyword |
+| stormshield.device_stats.Qid.original | Original name of this field | keyword |
+| stormshield.device_stats.Qid.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_stats.Qid.packets_accepted | Number of packets accepted | long |
+| stormshield.device_stats.Qid.packets_blocked | Number of packets blocked | long |
+| stormshield.device_stats.Vlan.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_stats.Vlan.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_stats.Vlan.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_stats.Vlan.name | Name of the interface | keyword |
+| stormshield.device_stats.Vlan.original | Original name of this field | keyword |
+| stormshield.device_stats.Vlan.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_stats.Vlan.packets_accepted | Number of packets accepted | long |
+| stormshield.device_stats.Vlan.packets_blocked | Number of packets blocked | long |
+| stormshield.device_stats.Wifi.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_stats.Wifi.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_stats.Wifi.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_stats.Wifi.name | Name of the interface | keyword |
+| stormshield.device_stats.Wifi.original | Original name of this field | keyword |
+| stormshield.device_stats.Wifi.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_stats.Wifi.packets_accepted | Number of packets accepted | long |
+| stormshield.device_stats.Wifi.packets_blocked | Number of packets blocked | long |
+| stormshield.device_stats.agg.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_stats.agg.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_stats.agg.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_stats.agg.name | Name of the interface | keyword |
+| stormshield.device_stats.agg.original | Original name of this field | keyword |
+| stormshield.device_stats.agg.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_stats.agg.packets_accepted | Number of packets accepted | long |
+| stormshield.device_stats.agg.packets_blocked | Number of packets blocked | long |
+| stormshield.device_stats.ipsec.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_stats.ipsec.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_stats.ipsec.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_stats.ipsec.name | Name of the interface | keyword |
+| stormshield.device_stats.ipsec.native | Indication that these statistics are from the native IPSec interface | boolean |
+| stormshield.device_stats.ipsec.original | Original name of this field | keyword |
+| stormshield.device_stats.ipsec.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_stats.ipsec.packets_accepted | Number of packets accepted | long |
+| stormshield.device_stats.ipsec.packets_blocked | Number of packets blocked | long |
+| stormshield.device_stats.sslvpn.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_stats.sslvpn.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_stats.sslvpn.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_stats.sslvpn.name | Name of the interface | keyword |
+| stormshield.device_stats.sslvpn.original | Original name of this field | keyword |
+| stormshield.device_stats.sslvpn.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_stats.sslvpn.packets_accepted | Number of packets accepted | long |
+| stormshield.device_stats.sslvpn.packets_blocked | Number of packets blocked | long |
 | stormshield.discovery | Date on which the security watch team published the vulnerability (only if the level of severity is higher than 0) String in YYYY-MM-DD format. | keyword |
 | stormshield.domain | Authentication method used or LDAP directory of the user authenticated by the firewall. String of characters in UTF-8 format. Example: domain=documentation.stormshield.eu Available from: SNS v3.0.0 | keyword |
 | stormshield.downrate | Indicates the percentage of time the gateway could not be reached over the last 15 minutes. String of characters in UTF-8 format. Example: downrate=0. Available from: SNS v4.3.0. | keyword |
@@ -374,23 +405,16 @@ An example event for `log` looks as following:
 | stormshield.filename | Name of the file scanned by the sandboxing option.  String of characters in UTF-8 format. Example: "mydocument.doc" | keyword |
 | stormshield.filetype | Type of file scanned by the sandboxing option. This may be a document (word processing, table, presentation, etc), a Portable Document Format file (PDF - Adobe Acrobat), and executable file or an archive. Value: "document", "pdf", "executable", "archive". | keyword |
 | stormshield.format | Type of message for IEC104 Available from: SNS v3.1.0 | keyword |
+| stormshield.fw | firewall's ID This is the name entered by the administrator or, by default, its serial number. String of characters in UTF-8 format.  Example: firewall_name or V50XXXXXXXXXXXX Available from: SNS v1.0.0. | keyword |
 | stormshield.group | Code of the "userdata" group for an S7 message. Available from: SNS v2.3.4 | keyword |
 | stormshield.groupid | ID number allowing the tracking of child connections. Example: 0, 1, 2 etc. | keyword |
 | stormshield.gw | Name of the monitored gateway. String of characters in UTF-8 format. Example: gw=gw123. Available from: SNS v4.3.0. | keyword |
 | stormshield.hash | Results of the file content hash (SHA2 method) String of characters in UTF-8 format.Example: "f4d1be410a6102b9ae7d1c32612bed4f12158df3cd1ab6440a9ac0cad417446d" | keyword |
 | stormshield.icmpcode | Code number of the icmp message. Example: 1 (meaning Destination host unreachable). Available from: SNS v1.0.0. | keyword |
 | stormshield.icmptype | Number of the type of icmp message. Example: 3 (meaning Destination unreachable). Available from: SNS v1.0.0. | keyword |
+| stormshield.id | Type of product.  This field constantly has the value firewall for logs on the Firewall. | keyword |
 | stormshield.ike | Version of the IKE protocol used Values: 1, 2 | keyword |
 | stormshield.ipproto | Type of network protocol (entered only if a vulnerability has been detected). String of characters in UTF-8 format. Example: tcp Available from: SNS v1.0.0. | keyword |
-| stormshield.ipsec.incoming_throughput | Incoming throughput (bits/second) | long |
-| stormshield.ipsec.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
-| stormshield.ipsec.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
-| stormshield.ipsec.name | Name of the interface | keyword |
-| stormshield.ipsec.native | Indication that these statistics are from the native IPSec interface | boolean |
-| stormshield.ipsec.original | Original name of this field | keyword |
-| stormshield.ipsec.outgoing_throughput | Outgoing throughput (bits/second) | long |
-| stormshield.ipsec.packets_accepted | Number of packets accepted | long |
-| stormshield.ipsec.packets_blocked | Number of packets blocked | long |
 | stormshield.ipv | Version of the IP protocol used in the traffic Values: 4, 6 Available from: SNS v1.0.0. | keyword |
 | stormshield.jitter | Indicates the average, minimum and maximum jitter (variation in latency) over a regular interval, depending on the configuration (ms). String of characters in UTF-8 format. Example: jitter=5,0,20. Available from: SNS v4.3.0. | keyword |
 | stormshield.latency | Indicates the average, minimum and maximum latency over a regular interval, depending on the configuration (ms). String of characters in UTF-8 format. Example: latency=70,50,100. Available from: SNS v4.3.0. | keyword |
@@ -398,6 +422,7 @@ An example event for `log` looks as following:
 | stormshield.logtype | The specific type of log this is from. | keyword |
 | stormshield.lossrate | Indicates the average rate of packet loss (%) over the last 15 minutes. String of characters in UTF-8 format. Example: lossrate=10. Available from: SNS v4.3.0. | keyword |
 | stormshield.mailruleid | Number of the mail filter rule applied. Digital format Example: mailruleid=48 Available from: SNS v3.2.0. | keyword |
+| stormshield.mem | Not documented | keyword |
 | stormshield.modsrc | Translated IP address of the source host. May be displayed anonymously depending on the administrator's access privileges.  Decimal format. Example: 192.168.0.1 Available from: SNS v1.0.0. | keyword |
 | stormshield.modsrcport | Translated TCP/UDP source port number. Example: "80" Available from: SNS v1.0.0. | keyword |
 | stormshield.msg | Text message explaining the alarm.  String of characters in UTF-8 format. Example: Port probe | keyword |
@@ -453,20 +478,15 @@ An example event for `log` looks as following:
 | stormshield.srcname | Name of the object corresponding to the IP address of the source host. String of characters in UTF-8 format. Example: client_workstation May be displayed anonymously depending on the administrator's access privileges. Available from: SNS v1.0.0. | keyword |
 | stormshield.srcport | Source TCP/UDP port number. Example: "49753" Available from: SNS v1.0.0. | keyword |
 | stormshield.srcportname | Source port name if it is known. String of characters in UTF-8 format. Example: http, ephemeral_fw_tcp Available from: SNS v1.0.0. | keyword |
-| stormshield.sslvpn.incoming_throughput | Incoming throughput (bits/second) | long |
-| stormshield.sslvpn.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
-| stormshield.sslvpn.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
-| stormshield.sslvpn.name | Name of the interface | keyword |
-| stormshield.sslvpn.original | Original name of this field | keyword |
-| stormshield.sslvpn.outgoing_throughput | Outgoing throughput (bits/second) | long |
-| stormshield.sslvpn.packets_accepted | Number of packets accepted | long |
-| stormshield.sslvpn.packets_blocked | Number of packets blocked | long |
+| stormshield.startime | Local time at the beginning of the logged event (time configured on the Firewall). String in YYYY-MM-DD HH:MM:SS format. Available from: SNS v1.0.0. | keyword |
 | stormshield.system | Indicator of the Firewalls system status.  This value is used by the fleet management tool (Stormshield Network Unified Manager) to provide information on the system status (available RAM, CPU use, bandwidth, interfaces, fullness of audit logs, etc). Decimal format representing a percentage. | keyword |
 | stormshield.target | Shows whether the src or dst fields correspond to the target of the packet that had raised the alarm. Values: "src" or "dst" Available from: SNS v3.0.0. | keyword |
 | stormshield.targetclient | Indicates whether the exploitation of the vulnerability requires the use of a client on the vulnerable host. Values: 0 (false) or 1 (true). | keyword |
 | stormshield.targetserver | Indicates whether the exploitation of the vulnerability requires the installation of a server on the vulnerable host. Values: 0 (false) or 1 (true). | keyword |
+| stormshield.time | Local time at which the log was recorded in the log file (time configured on the Firewall). String in YYYY-MM-DD HH:MM:SS format. Available from: SNS v1.0.0. | keyword |
 | stormshield.totp | Indicates whether authentication required a TOTP Values: "yes" if a TOTP was used, "no" if no TOTP was used. Example: totp=yes Available from: SNS v4.5.0. | keyword |
 | stormshield.tsagentname | Indicates the name of the TS agent used. String of characters in UTF-8 format. Example: tsagentname="agent_name_test" Available from: SNS v4.7.0. | keyword |
+| stormshield.tz | Time difference between the Firewalls time and GMT. This depends on the time zone used. String in +HHMM or -HHMM format. Available from: SNS v1.0.0. | keyword |
 | stormshield.unit_id | Value of the "Unit Id" in a Modbus message. Example: "255". Available from: SNS v2.3.0 | keyword |
 | stormshield.unreachrate | Indicates the percentage of time the gateway could not be accessed over the last 15 minutes. String of characters in UTF-8 format. Example: unreachrate=0. Available from: SNS v4.3.0. | keyword |
 | stormshield.uprate | Indicates the percentage of time the status of the gateway was active over the last 15 minutes. String of characters in UTF-8 format. Example: uprate=0. Available from: SNS v4.3.0. | keyword |

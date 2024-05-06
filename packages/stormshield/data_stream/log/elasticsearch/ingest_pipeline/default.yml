@@ -108,6 +108,39 @@ processors:
       name: '{{ IngestPipeline "count" }}'
       if: ctx.stormshield.logtype == 'count'
 
+  #########################################################
+  # Now rename things to ECS
+
+  - rename:
+      field: dst
+      target_field: destination.ip
+      if: ctx.dst != null && ctx.destination?.ip == null
+
+  - rename:
+      field: dstmac
+      target_field: destination.mac
+      if: ctx.dstmac != null && ctx.destination?.mac == null
+
+  - rename:
+      field: dstport
+      target_field: destination.port
+      if: ctx.dstport != null && ctx.destination?.port == null
+
+  - rename:
+      field: src
+      target_field: source.ip
+      if: ctx.src != null && ctx.source?.ip == null
+
+  - rename:
+      field: srcmac
+      target_field: source.mac
+      if: ctx.srcmac != null && ctx.source?.mac == null
+
+  - rename:
+      field: srcport
+      target_field: source.port
+      if: ctx.srcport != null && ctx.source?.port == null
+
   - remove:
       field: _temp_
       ignore_missing: true
