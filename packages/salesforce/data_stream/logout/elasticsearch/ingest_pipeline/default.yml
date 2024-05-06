@@ -23,15 +23,15 @@ processors:
       ignore_failure: true
       ignore_empty_value: true
   - set:
-      field: salesforce.login.document_id
+      field: salesforce.logout.document_id
       copy_from: _id
       ignore_empty_value: true
 
   - pipeline:
-      name: '{< IngestPipeline "object" >}'
+      name: '{{ IngestPipeline "object" }}'
       if: ctx.event?.provider == "Object"
   - pipeline:
-      name: '{< IngestPipeline "eventlogfile" >}'
+      name: '{{ IngestPipeline "eventlogfile" }}'
       if: ctx.event?.provider == "EventLogFile"
 
   - set:
