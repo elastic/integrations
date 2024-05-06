@@ -25,9 +25,19 @@ processors:
       ignore_missing: true
   - remove:
       field: temp.query_params.crs
+      ignore_missing: true
+  - dissect:
+      description: Parse epsg code from srs. Raises an error if not starts with EPSG%2F
+      field: temp.query_params.srs
+      pattern: "EPSG:%{ppbgdi.app.epsg}"
+      ignore_missing: true
+  - remove:
+      field: temp.query_params.srs
+      ignore_missing: true
   - convert:
       field: ppbgdi.app.epsg
       type: long
+      ignore_missing: true
   - rename:
       field: temp.query_params.format
       target_field: ppbgdi.app.layer.extension
@@ -37,6 +47,7 @@ processors:
       field: ppbgdi.app.layer.extension
       pattern: "image/"
       replacement: ""
+      ignore_missing: true
   - rename:
       field: temp.query_params.height
       target_field: ppbgdi.app.layer.height
