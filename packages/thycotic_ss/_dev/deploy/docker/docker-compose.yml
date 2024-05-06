@@ -7,14 +7,12 @@ services:
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
   thycotic-ss-log-udp:
-    image: akroh/stream:v0.2.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9571 -p=udp /sample_logs/thycotic-ss-*.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9571 -p=udp /sample_logs/thycotic-ss-*.log
   thycotic-ss-log-tcp:
-    image: akroh/stream:v0.2.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9571 -p=tcp /sample_logs/thycotic-ss-*.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9571 -p=tcp /sample_logs/thycotic-ss-*.log

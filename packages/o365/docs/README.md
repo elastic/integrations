@@ -245,6 +245,7 @@ An example event for `audit` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| o365.audit.Activity |  | keyword |
 | o365.audit.Actor.ID |  | keyword |
 | o365.audit.Actor.Type |  | keyword |
 | o365.audit.ActorContextId |  | keyword |
@@ -338,6 +339,7 @@ An example event for `audit` looks as following:
 | o365.audit.EventSource |  | keyword |
 | o365.audit.ExceptionInfo.\* |  | object |
 | o365.audit.ExchangeMetaData.\* |  | object |
+| o365.audit.Experience |  | keyword |
 | o365.audit.ExtendedProperties.\* |  | object |
 | o365.audit.ExternalAccess |  | boolean |
 | o365.audit.FileSizeBytes |  | long |
@@ -366,8 +368,12 @@ An example event for `audit` looks as following:
 | o365.audit.ModifiedProperties.\*.\* |  | object |
 | o365.audit.Name |  | keyword |
 | o365.audit.NewValue |  | keyword |
+| o365.audit.ObjectDisplayName |  | keyword |
 | o365.audit.ObjectId |  | keyword |
+| o365.audit.ObjectType |  | keyword |
 | o365.audit.Operation |  | keyword |
+| o365.audit.OperationId |  | keyword |
+| o365.audit.OperationProperties |  | object |
 | o365.audit.OrganizationId |  | keyword |
 | o365.audit.OrganizationName |  | keyword |
 | o365.audit.OriginatingServer |  | keyword |
@@ -376,6 +382,7 @@ An example event for `audit` looks as following:
 | o365.audit.PolicyDetails |  | flattened |
 | o365.audit.PolicyId |  | keyword |
 | o365.audit.RecordType |  | keyword |
+| o365.audit.RequestId |  | keyword |
 | o365.audit.ResultStatus |  | keyword |
 | o365.audit.SensitiveInfoDetectionIsIncluded |  | boolean |
 | o365.audit.SessionId |  | keyword |
@@ -396,6 +403,7 @@ An example event for `audit` looks as following:
 | o365.audit.TargetUserOrGroupType |  | keyword |
 | o365.audit.TeamGuid |  | keyword |
 | o365.audit.TeamName |  | keyword |
+| o365.audit.Timestamp |  | keyword |
 | o365.audit.UniqueSharingId |  | keyword |
 | o365.audit.UserAgent |  | keyword |
 | o365.audit.UserId |  | keyword |
@@ -404,6 +412,8 @@ An example event for `audit` looks as following:
 | o365.audit.Version |  | keyword |
 | o365.audit.WebId |  | keyword |
 | o365.audit.Workload |  | keyword |
+| o365.audit.WorkspaceId |  | keyword |
+| o365.audit.WorkspaceName |  | keyword |
 | o365.audit.YammerNetworkId |  | keyword |
 | organization.id | Unique identifier for the organization. | keyword |
 | organization.name | Organization name. | keyword |

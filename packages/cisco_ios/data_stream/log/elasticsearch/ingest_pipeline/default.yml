@@ -42,7 +42,7 @@ processors:
         CISCO_PRIORITY_MSGCOUNT: '<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT:cisco.ios.message_count})?(?:: )?'
         CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
         CISCO_UPTIME: '[0-9a-zA-Z]+'
-        CISCO_HOSTNAME: '[a-zA-Z][0-9a-zA-Z-_]{0,61}[0-9a-zA-Z]?'
+        CISCO_HOSTNAME: '[a-zA-Z][0-9a-zA-Z_-]{0,61}[0-9a-zA-Z]?'
         CISCO_TZ: '[a-zA-Z]{1,4}'
   - grok:
       field: _temp_.message
@@ -171,7 +171,12 @@ processors:
       field: message
       tag: dissect_gsp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{igmp.type}), %{source.packets} packet"
-      if: "['IPACCESSLOGSP', 'ACCESSLOGSP'].contains(ctx.event?.code)"
+      if: "ctx.event?.code == 'IPACCESSLOGSP'"
+  - dissect:
+      field: message
+      tag: dissect_sp
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.type} %{source.address} %{} %{destination.address}, %{source.packets} packet"
+      if: "ctx.event?.code == 'ACCESSLOGSP'"
   - dissect:
       field: message
       tag: dissect_gnp

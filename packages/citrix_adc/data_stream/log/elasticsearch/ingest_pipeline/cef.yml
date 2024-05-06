@@ -1,0 +1,134 @@
+---
+description: Pipeline for Citrix CEF messages.
+processors:
+  - set:
+      field: citrix.cef_format
+      tag: set_cef_format
+      value: true
+  # https://docs.citrix.com/en-us/citrix-adc/downloads/cef-log-components.pdf
+  - dissect:
+      field: citrix.detail
+      tag: dissect_detail
+      pattern: "CEF:%{citrix.cef_version}|%{citrix.device_vendor}|%{citrix.device_product}|%{citrix.device_version}|%{citrix.device_event_class_id}|%{citrix.name}|%{event.severity}|%{citrix.extended.message}"
+  - kv:
+      field: citrix.extended.message
+      tag: kv_extended_message
+      target_field: citrix.extended_kv
+      field_split: ' (?=[a-zA-Z][a-zA-Z0-9]*=)'
+      value_split: '='
+      ignore_missing: true
+  - remove:
+      field: citrix.extended
+      tag: remove_extended
+      if: ctx.citrix?.extended_kv != null
+  
+  # https://docs.citrix.com/en-us/citrix-adc/current-release/application-firewall/logs.html#common-event-format-cef-logs
+  - convert:
+      # src – source IP address
+      field: citrix.extended_kv.src
+      tag: convert_extended_kv_src_to_ip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+  - remove:
+      field: citrix.extended_kv.src
+      tag: remove_extended_kv_src
+      ignore_missing: true
+  - convert:
+      # spt – source port number
+      field: citrix.extended_kv.spt
+      tag: convert_extended_kv_spt_to_long
+      target_field: source.port
+      type: long
+      ignore_missing: true
+  - remove:
+      field: citrix.extended_kv.spt
+      tag: remove_extended_kv_spt
+      ignore_missing: true
+  - rename:
+      # method – Method (for example GET/POST)
+      field: citrix.extended_kv.method
+      tag: rename_extended_kv_method
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      # request – request URL
+      field: citrix.extended_kv.request
+      tag: rename_extended_kv_request
+      target_field: url.original
+      ignore_missing: true
+  - rename:
+      # action (for example blocked, transformed)
+      field: citrix.extended_kv.act
+      tag: rename_extended_kv_act
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      # message (Message regarding the observed security check violation)
+      field: citrix.extended_kv.msg
+      tag: rename_extended_kv_msg
+      target_field: message
+      ignore_missing: true
+  - rename:
+      # event ID
+      field: citrix.extended_kv.cn1
+      tag: rename_extended_kv_cn1
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      # HTTP Transaction ID
+      field: citrix.extended_kv.cn2
+      tag: rename_extended_kv_cn2
+      target_field: http.request.id
+      ignore_missing: true
+  - rename:
+      # profile name
+      field: citrix.extended_kv.cs1
+      tag: rename_extended_kv_cs1
+      target_field: citrix.profile_name
+      ignore_missing: true
+  - rename:
+      # PPE ID (for example PPE1)
+      field: citrix.extended_kv.cs2
+      tag: rename_extended_kv_cs2
+      target_field: citrix.ppe_id
+      ignore_missing: true
+  - rename:
+      # Session ID
+      field: citrix.extended_kv.cs3
+      tag: rename_extended_kv_cs3
+      target_field: citrix.session_id
+      ignore_missing: true
+  - rename:
+      # Severity (for example INFO, ALERT)
+      field: citrix.extended_kv.cs4
+      tag: rename_extended_kv_cs4
+      target_field: citrix.severity
+      ignore_missing: true
+  - rename:
+      # event year
+      field: citrix.extended_kv.cs5
+      tag: rename_extended_kv_cs5
+      target_field: citrix.event_year
+      ignore_missing: true
+  - rename:
+      # Signature Violation Category
+      field: citrix.extended_kv.cs6
+      tag: rename_extended_kv_cs6
+      target_field: citrix.signature_violation_category
+      ignore_missing: true
+  
+  - rename:
+      field: citrix.extended_kv
+      tag: rename_extended_kv
+      target_field: citrix.extended
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
