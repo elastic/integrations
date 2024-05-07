@@ -621,7 +621,7 @@ An example event for `identity_protection` looks as following:
 
 ### Provisioning logs
 
-Retrieves Microsoft Entra ID Provisioning logs. The [Microsoft Entra ID Provisioning](https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/how-provisioning-works) service syncs Microsoft Entra ID users and groups to and from external enterprise applications. For example, you can configure the provisioning service to replicate all existing Microsoft Entra ID users and groups to an external Dropbox Business account or vice-versa.
+Retrieves Microsoft Entra ID Provisioning logs. The [Microsoft Entra ID Provisioning](https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/how-provisioning-works) service syncs Microsoft Entra ID users and groups to and from external enterprise applications. For example, you can configure the provisioning service to replicate all existing Microsoft Entra ID users and groups to an external Dropbox Business account or vice versa.
 
 The Provisioning Logs contain a lot of details about a inbound/outbound sync activity, like:
 
