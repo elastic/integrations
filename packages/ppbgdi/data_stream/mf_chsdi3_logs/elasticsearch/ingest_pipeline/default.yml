@@ -1,0 +1,44 @@
+---
+description: Default pipeline for processing mf-chsdi3 logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - pipeline:
+      description: Pipeline used to create fields for elastic-package tests
+      if: ctx?.tags != null && ctx?.tags.contains('elastic-package-test')
+      name: '{{ IngestPipeline "elastic-package-test" }}'
+  - grok:
+      field: event.original
+      patterns:
+        - ^%{CHAR:first_char}
+      pattern_definitions:
+        CHAR: .
+      ignore_missing: true
+  - pipeline:
+      description: Process common logs
+      if: ctx?.first_char != null && ctx?.first_char != '{'
+      name: '{{ IngestPipeline "common" }}'
+  - pipeline:
+      description: Process url path
+      if: ctx?.url?.path != null && ctx?.url?.path != "" && ctx?.url?.path != "/"
+      name: '{{ IngestPipeline "url-path" }}'
+  - remove:
+      field:
+        - first_char
+      ignore_missing: true
+  - pipeline:
+      description: Process url query
+      if: ctx?.url?.query != null && ctx?.url?.query != ""
+      name: '{{ IngestPipeline "url-query" }}'
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

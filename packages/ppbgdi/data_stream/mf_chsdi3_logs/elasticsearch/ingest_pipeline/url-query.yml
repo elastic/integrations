@@ -1,0 +1,24 @@
+---
+description: Pipeline for processing service STAC url query string
+processors:
+  - kv:
+      description: Parse url query parameters to an object
+      field: url.query
+      target_field: ppbgdi.app.query_params
+      field_split: "&"
+      value_split: "="
+  - foreach:
+      description: Lowercase all query parameter keys for easier handling
+      field: ppbgdi.app.query_params
+      processor:
+        lowercase:
+          field: _ingest._key
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
