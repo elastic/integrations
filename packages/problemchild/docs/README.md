@@ -20,7 +20,7 @@ For more detailed information refer to the following blogs and webinar:
     POST INDEX_NAME/_settings
     {
       "index" : {
-        "default_pipeline" : "2.1.3-problem_child_ingest_pipeline"
+        "default_pipeline" : "<VERSION>-problem_child_ingest_pipeline"
       }
     }
     ```
