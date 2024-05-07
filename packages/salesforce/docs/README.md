@@ -327,47 +327,48 @@ An example event for `apex` looks as following:
 | http.response.status_code | HTTP response status code. | long |  |  |
 | input.type | Input type. | keyword |  |  |
 | related.ip | All of the IPs seen on your event. | ip |  |  |
-| salesforce.apex.access_mode | The mode of collecting logs from Salesforce - "REST" or "Stream". | keyword |  |  |
 | salesforce.apex.action | Action performed by the callout. | keyword |  |  |
-| salesforce.apex.callout_time | Time spent waiting on webservice callouts, in milliseconds. | float | ms | gauge |
+| salesforce.apex.callout_time | Time spent waiting on web service callouts, in milliseconds. | float | ms | gauge |
 | salesforce.apex.class_name | The Apex class name. If the class is part of a managed package, this string includes the package namespace. | keyword |  |  |
-| salesforce.apex.client_name | The name of the client that's using Salesforce services. This field is an optional parameter that can be passed in API calls. If blank, the caller didnt specify a client in the CallOptions header. | keyword |  |  |
+| salesforce.apex.client_name | The name of the client that's using Salesforce services. This field is an optional parameter that can be passed in API calls. If blank, the caller didn't specify a client in the CallOptions header. | keyword |  |  |
 | salesforce.apex.cpu_time | The CPU time in milliseconds used to complete the request. | float | ms | gauge |
 | salesforce.apex.db_blocks | Indicates how much activity is occurring in the database. A high value for this field suggests that adding indexes or filters on your queries would benefit performance. | long |  | gauge |
 | salesforce.apex.db_cpu_time | The CPU time in milliseconds to complete the request. Indicates the amount of activity taking place in the database layer during the request. | float | ms | gauge |
-| salesforce.apex.db_time.total | Time (in milliseconds) spent waiting for database processing in aggregate for all operations in the request. Compare this field to CPU_TIME to determine whether performance issues are occurring in the database layer or in your own code. | float | ms | gauge |
+| salesforce.apex.db_total_time | Time (in milliseconds) spent waiting for database processing in aggregate for all operations in the request. Compare this field to cpu_time to determine whether performance issues are occurring in the database layer or in your own code. | float | ms | gauge |
+| salesforce.apex.document_id | Unique ID of the Apex document. | keyword |  |  |
 | salesforce.apex.entity | Name of the external object being accessed. | keyword |  |  |
 | salesforce.apex.entity_name | The name of the object affected by the trigger. | keyword |  |  |
 | salesforce.apex.entry_point | The entry point for this Apex execution. | keyword |  |  |
 | salesforce.apex.event_type | The type of event. | keyword |  |  |
-| salesforce.apex.execute.ms | How long it took (in milliseconds) for Salesforce to prepare and execute the query. Available in API version 42.0 and later. | float | ms | gauge |
-| salesforce.apex.fetch.ms | How long it took (in milliseconds) to retrieve the query results from the external system. Available in API version 42.0 and later. | float | ms | gauge |
-| salesforce.apex.fields.count | The number of fields or columns, where applicable. | long |  |  |
+| salesforce.apex.execute_ms | How long it took (in milliseconds) for Salesforce to prepare and execute the query. Available in API version 42.0 and later. | float | ms | gauge |
+| salesforce.apex.fetch_ms | How long it took (in milliseconds) to retrieve the query results from the external system. Available in API version 42.0 and later. | float | ms | gauge |
+| salesforce.apex.fields_count | The number of fields or columns, where applicable. | long |  |  |
 | salesforce.apex.filter | Field expressions to filter which rows to return. Corresponds to WHERE in SOQL queries. | keyword |  |  |
 | salesforce.apex.is_long_running_request | Indicates whether the request is counted against your org's concurrent long-running Apex request limit (true) or not (false). | keyword |  |  |
 | salesforce.apex.limit | Maximum number of rows to return for a query. Corresponds to LIMIT in SOQL queries. | long |  |  |
-| salesforce.apex.limit_usage.pct | The percentage of Apex SOAP calls that were made against the organization's limit. | float | percent | gauge |
+| salesforce.apex.limit_usage_pct | The percentage of Apex SOAP calls that were made against the organization's limit. | float | percent | gauge |
 | salesforce.apex.login_key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |  |  |
 | salesforce.apex.media_type | The media type of the response. | keyword |  |  |
-| salesforce.apex.message | Error or warning message associated with the failed call. | keyword |  |  |
+| salesforce.apex.message | Error or warning message associated with the failed call. | text |  |  |
 | salesforce.apex.method_name | The name of the calling Apex method. | keyword |  |  |
 | salesforce.apex.offset | Number of rows to skip when paging through a result set. Corresponds to OFFSET in SOQL queries. | long |  |  |
+| salesforce.apex.orderby | Field or column to use for sorting query results, and whether to sort the results in ascending (default) or descending order. Corresponds to ORDER BY in SOQL queries. | keyword |  |  |
 | salesforce.apex.organization_id | The 15-character ID of the organization. | keyword |  |  |
 | salesforce.apex.query | The SOQL query, if one was performed. | keyword |  |  |
 | salesforce.apex.quiddity | The type of outer execution associated with this event. | keyword |  |  |
-| salesforce.apex.request_id | The unique ID of a single transaction. A transaction can contain one or more events. Each event in a given transaction has the same REQUEST_ID. | keyword |  |  |
+| salesforce.apex.request_id | The unique ID of a single transaction. A transaction can contain one or more events. Each event in a given transaction has the same request_id. | keyword |  |  |
 | salesforce.apex.request_status | The status of the request for a page view or user interface action. | keyword |  |  |
-| salesforce.apex.rows.fetched | Number of rows fetched by the callout. Available in API version 42.0 and later. | long |  |  |
-| salesforce.apex.rows.processed | The number of rows that were processed in the request. | long |  |  |
-| salesforce.apex.rows.total | Total number of records in the result set. The value is always -1 if the custom adapter's DataSource.Provider class doesn't declare the QUERY_TOTAL_SIZE capability. | long |  |  |
+| salesforce.apex.rows_fetched | Number of rows fetched by the callout. Available in API version 42.0 and later. | long |  |  |
+| salesforce.apex.rows_processed | The number of rows that were processed in the request. | long |  |  |
+| salesforce.apex.rows_total | Total number of records in the result set. The value is always -1 if the custom adapter's DataSource.Provider class doesn't declare the QUERY_TOTAL_SIZE capability. | long |  |  |
 | salesforce.apex.run_time | The amount of time that the request took in milliseconds. | float | ms | gauge |
 | salesforce.apex.select | Comma-separated list of fields being queried. Corresponds to SELECT in SOQL queries. | keyword |  |  |
-| salesforce.apex.soql_queries.count | The number of SOQL queries that were executed during the event. | long |  |  |
+| salesforce.apex.soql_queries_count | The number of SOQL queries that were executed during the event. | long |  |  |
 | salesforce.apex.subqueries | Reserved for future use. | keyword |  |  |
 | salesforce.apex.throughput | Number of records retrieved in one second. | float |  | gauge |
-| salesforce.apex.trigger.id | The 15-character ID of the trigger that was fired. | keyword |  |  |
-| salesforce.apex.trigger.name | For triggers coming from managed packages, TRIGGER_NAME includes a namespace prefix separated with a . character. If no namespace prefix is present, the trigger is from an unmanaged trigger. | keyword |  |  |
-| salesforce.apex.trigger.type | The type of this trigger. | keyword |  |  |
+| salesforce.apex.trigger_id | The 15-character ID of the trigger that was fired. | keyword |  |  |
+| salesforce.apex.trigger_name | For triggers coming from managed packages, trigger_name includes a namespace prefix separated with a . character. If no namespace prefix is present, the trigger is from an unmanaged trigger. | keyword |  |  |
+| salesforce.apex.trigger_type | The type of this trigger. | keyword |  |  |
 | salesforce.apex.type | The type of Apex callout. | keyword |  |  |
 | salesforce.apex.uri | The URI of the page that's receiving the request. | keyword |  |  |
 | salesforce.apex.uri_derived_id | The 18-character case-safe ID of the URI of the page that's receiving the request. | keyword |  |  |
@@ -527,23 +528,37 @@ An example event for `login` looks as following:
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |  |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |  |  |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |  |  |
 | input.type | Input type. | keyword |  |  |
 | related.ip | All of the IPs seen on your event. | ip |  |  |
 | salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |  |  |
-| salesforce.login.access_mode | Mode of API from which the event is collected. | keyword |  |  |
-| salesforce.login.api.type | The type of API request. | keyword |  |  |
-| salesforce.login.api.version | The version of the API that's being used. | keyword |  |  |
+| salesforce.login.additional_info | JSON serialization of additional information that's captured from the HTTP headers during a login request. | text |  |  |
+| salesforce.login.api.type | The type of Salesforce API request. | keyword |  |  |
+| salesforce.login.api.version | The version of the Salesforce API that's being used. | keyword |  |  |
+| salesforce.login.application | The application used to access the organization. | keyword |  |  |
+| salesforce.login.auth.method_reference | The authentication method used by a third-party identification provider for an OpenID Connect single sign-on protocol. This field is available in API version 51.0 and later. | keyword |  |  |
 | salesforce.login.auth.service_id | The authentication method used by a third-party identification provider for an OpenID Connect single sign-on protocol. | keyword |  |  |
-| salesforce.login.client_ip | The IP address of the client that's using Salesforce services. | keyword |  |  |
-| salesforce.login.cpu_time | The CPU time in milliseconds used to complete the request. This field indicates the amount of activity taking place in the app server layer. | float | ms | gauge |
-| salesforce.login.db_time.total | The time in milliseconds for a database round trip. Includes time spent in the JDBC driver, network to the database, and db_time.total. Compare this field to cpu_time to determine whether performance issues are occurring in the database layer or in your own code. | float | ms | gauge |
-| salesforce.login.document_id | Unique document id generated by Elasticsearch. | keyword |  |  |
+| salesforce.login.client_ip | The IP address of the client that's using Salesforce services. A Salesforce internal IP (such as a login from Salesforce Workbench or AppExchange) is shown as “Salesforce.com IP”. | keyword |  |  |
+| salesforce.login.client_version | The version number of the login client. If no version number is available, “Unknown” is returned. | keyword |  |  |
+| salesforce.login.cpu_time | The CPU time in milliseconds used to complete the request. This field indicates the amount of activity taking place in the app server layer. | long | ms | gauge |
+| salesforce.login.db_time_total | The time in nanoseconds for a database round trip. Includes time spent in the JDBC driver, network to the database, and DB's CPU time. Compare this field to cpu_time to determine whether performance issues are occurring in the database layer or in your own code. | double | ms | gauge |
+| salesforce.login.document_id | Unique Id. | keyword |  |  |
+| salesforce.login.evaluation_time | The amount of time it took to evaluate the transaction security policy, in milliseconds. | float | ms | gauge |
 | salesforce.login.event_type | The type of event. The value is always Login. | keyword |  |  |
+| salesforce.login.geo_id | The Salesforce ID of the LoginGeo object associated with the login user's IP address. | keyword |  |  |
+| salesforce.login.history_id | Tracks a user session so you can correlate user activity with a particular login instance. This field is also available on the LoginHistory, AuthSession, and other objects, making it easier to trace events back to a user's original authentication. | keyword |  |  |
 | salesforce.login.key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |  |  |
+| salesforce.login.login_type | The type of login used to access the session. | keyword |  |  |
 | salesforce.login.organization_id | The 15-character ID of the organization. | keyword |  |  |
+| salesforce.login.policy_id | The ID of the policy used to evaluate the transaction. | keyword |  |  |
+| salesforce.login.policy_outcome | The outcome of the policy evaluation. | keyword |  |  |
+| salesforce.login.related_event_identifier | The ID of the related event. | keyword |  |  |
 | salesforce.login.request_id | The unique ID of a single transaction. A transaction can contain one or more events. Each event in a given transaction has the same REQUEST_ID. | keyword |  |  |
 | salesforce.login.request_status | The status of the request for a page view or user interface action. | keyword |  |  |
-| salesforce.login.run_time | The amount of time that the request took in milliseconds. | float | ms | gauge |
+| salesforce.login.run_time | The amount of time that the request took in milliseconds. | long | ms | gauge |
+| salesforce.login.session.key | The user's unique session ID. Use this value to identify all user events within a session. When a user logs out and logs in again, a new session is started. For LoginEvent, this field is often null because the event is captured before a session is created. For example, vMASKIU6AxEr+Op5. This field is available in API version 46.0 and later. | keyword |  |  |
+| salesforce.login.session.level | Session-level security controls user access to features that support it, such as connected apps and reporting. This field is available in API version 42.0 and later. | text |  |  |
+| salesforce.login.type | The type of login used to access the session. | keyword |  |  |
 | salesforce.login.uri_derived_id | The 18-character case insensitive ID of the URI of the page that's receiving the request. | keyword |  |  |
 | salesforce.login.user_id | The 15-character ID of the user who's using Salesforce services through the UI or the API. | keyword |  |  |
 | source.geo.city_name | City name. | keyword |  |  |
@@ -551,6 +566,7 @@ An example event for `login` looks as following:
 | source.geo.country_iso_code | Country ISO code. | keyword |  |  |
 | source.geo.country_name | Country name. | keyword |  |  |
 | source.geo.location | Longitude and latitude. | geo_point |  |  |
+| source.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |  |
 | source.geo.region_iso_code | Region ISO code. | keyword |  |  |
 | source.geo.region_name | Region name. | keyword |  |  |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |  |  |
@@ -562,6 +578,7 @@ An example event for `login` looks as following:
 | user.id | Unique identifier of the user. | keyword |  |  |
 | user.roles | Array of user roles at the time of the event. | keyword |  |  |
 | user_agent.name | Name of the user agent. | keyword |  |  |
+| user_agent.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 
 
 ### Logout
@@ -694,20 +711,26 @@ An example event for `logout` looks as following:
 | input.type | Input type. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |
-| salesforce.logout.access_mode | Mode of Salesforce API from which the event is collected. | keyword |
 | salesforce.logout.api.type | The type of Salesforce API request. | keyword |
 | salesforce.logout.api.version | The version of the Salesforce API that's being used. | keyword |
 | salesforce.logout.app_type | The application type that was in use upon logging out. | keyword |
 | salesforce.logout.browser_type | The identifier string returned by the browser used at login. | keyword |
 | salesforce.logout.client_version | The version of the client that was in use upon logging out. | keyword |
+| salesforce.logout.created_by_id | Unavailable | keyword |
+| salesforce.logout.document_id | Unique Id. | keyword |
+| salesforce.logout.event_identifier | This field is populated only when the activity that this event monitors requires extra authentication, such as multi-factor authentication. In this case, Salesforce generates more events and sets the RelatedEventIdentifier field of the new events to the value of the EventIdentifier field of the original event. Use this field with the EventIdentifier field to correlate all the related events. If no extra authentication is required, this field is blank. | keyword |
 | salesforce.logout.event_type | The type of event. The value is always Logout. | keyword |
-| salesforce.logout.login_key | The string that ties together all events in a given user's logout session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |
+| salesforce.logout.login_key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |
+| salesforce.logout.organization_by_id | The 15-character ID of the organization. | keyword |
 | salesforce.logout.organization_id | The 15-character ID of the organization. | keyword |
 | salesforce.logout.platform_type | The code for the client platform. If a timeout caused the logout, this field is null. | keyword |
-| salesforce.logout.resolution_type | TThe screen resolution of the client. If a timeout caused the logout, this field is null. | keyword |
-| salesforce.logout.session.level | The security level of the session that was used when logging out (e.g. Standard Session or High-Assurance Session). | keyword |
+| salesforce.logout.resolution_type | The screen resolution of the client. If a timeout caused the logout, this field is null. | keyword |
+| salesforce.logout.session.key | The user's unique session ID. You can use this value to identify all user events within a session. When a user logs out and logs in again, a new session is started. | keyword |
+| salesforce.logout.session.level | The security level of the session that was used when logging out (e.g. Standard Session or High-Assurance Session). | text |
 | salesforce.logout.session.type | The session type that was used when logging out (e.g. API, Oauth2 or UI). | keyword |
+| salesforce.logout.user.roles | The roles of the user who's using Salesforce services through the UI or the API. | keyword |
 | salesforce.logout.user_id | The 15-character ID of the user who's using Salesforce services through the UI or the API. | keyword |
+| salesforce.logout.user_id_derived | The 18-character case-safe ID of the user who's using Salesforce services through the UI or the API. | keyword |
 | salesforce.logout.user_initiated_logout | The value is 1 if the user intentionally logged out of the organization by clicking the Logout button. If the user's session timed out due to inactivity or another implicit logout action, the value is 0. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -718,6 +741,7 @@ An example event for `logout` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.roles | Array of user roles at the time of the event. | keyword |
 
@@ -814,13 +838,13 @@ An example event for `setupaudittrail` looks as following:
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | input.type | Input type. | keyword |
 | salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |
-| salesforce.setup_audit_trail.access_mode | Type of API from which the event is collected. | keyword |
 | salesforce.setup_audit_trail.created_by_context | The context under which the Setup change was made. For example, if Einstein uses cloud-to-cloud services to make a change in Setup, the value of this field is Einstein. | keyword |
 | salesforce.setup_audit_trail.created_by_id | The id under which the Setup change was made. For example, if Einstein uses cloud-to-cloud services to make a change in Setup, the value of this field is id of Einstein. | keyword |
 | salesforce.setup_audit_trail.created_by_issuer | Reserved for future use. | keyword |
-| salesforce.setup_audit_trail.delegate_user | The Login-As user who executed the action in Setup. If a Login-As user didn't perform the action, this field is empty string. This field is available in API version 35.0 and later. | keyword |
-| salesforce.setup_audit_trail.display | The full description of changes made in Setup. For example, if the event.action field has a value of PermSetCreate, the Display field has a value like "Created permission set MAD: with user license Salesforce." | keyword |
-| salesforce.setup_audit_trail.event_type | Event type. | keyword |
+| salesforce.setup_audit_trail.delegate_user | The Login-As user who executed the action in Setup. If a Login-As user didn't perform the action, this field is blank. This field is available in API version 35.0 and later. | keyword |
+| salesforce.setup_audit_trail.display | The full description of changes made in Setup. For example, if the Action field has a value of PermSetCreate, the Display field has a value like “Created permission set MAD: with user license Salesforce." | keyword |
+| salesforce.setup_audit_trail.document_id | Unique Id. | keyword |
+| salesforce.setup_audit_trail.responsible_namespace_prefix | Unknown | keyword |
 | salesforce.setup_audit_trail.section | The section in the Setup menu where the action occurred. For example, Manage Users or Company Profile. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.id | Unique identifier of the user. | keyword |
