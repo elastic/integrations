@@ -61,7 +61,7 @@ In Elastic, navigate to the PingOne integration, then:
 6. In the **Audit logs** data stream section, set an **Initial Interval** of
    no more than 2 years.
 7. Choose an agent policy to add the integration to and click
-   **Save and Contine**.
+   **Save and Continue**.
 
 ### To collect data from PingOne via HTTP Endpoint, follow below steps:
 
