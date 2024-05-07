@@ -652,7 +652,7 @@ An example event for `provisioning` looks as following:
                 "id": "d6cbb0bd-c3ec-6455-bd3e-4282141ce369",
                 "initiated_by": {
                     "id": "",
-                    "name": "Azure AD Provisioning Service",
+                    "name": "Microsoft Entra ID Provisioning Service",
                     "type": "system"
                 },
                 "job_id": "DropboxSCIMOutDelta.5611623b9128461e9d7fa0d9c270ead2.d6163622-bdf8-4b26-976f-7d573c638e2a",
@@ -791,7 +791,7 @@ An example event for `provisioning` looks as following:
 | azure.provisioning.properties.initiated_by.type | Type of initiator. Possible values are: user, application, system, unknownFutureValue. | keyword |
 | azure.provisioning.properties.job_id | The unique ID for the whole provisioning job. | keyword |
 | azure.provisioning.properties.modified_properties | Details of each property that was modified in this provisioning action on this object. | flattened |
-| azure.provisioning.properties.provisioning_action | Indicates the activity name or the operation name. Possible values are: create, update, delete, stageddelete, disable, other and unknownFutureValue. For a list of activities logged, refer to Azure AD activity list. | keyword |
+| azure.provisioning.properties.provisioning_action | Indicates the activity name or the operation name. Possible values are: create, update, delete, stageddelete, disable, other and unknownFutureValue. For a list of activities logged, refer to Microsoft Entra ID activity list. | keyword |
 | azure.provisioning.properties.provisioning_status_info.error_information.additional_details | Additional details in case of error. | keyword |
 | azure.provisioning.properties.provisioning_status_info.error_information.error_category | Categorizes the error code. Possible values are failure, nonServiceFailure, success, unknownFutureValue. | keyword |
 | azure.provisioning.properties.provisioning_status_info.error_information.error_code | Unique error code if any occurred. To learn more, visit https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/concept-provisioning-logs#error-codes | keyword |
@@ -823,10 +823,10 @@ An example event for `provisioning` looks as following:
 | azure.provisioning.properties.target_system.details.service_principal_id |  | keyword |
 | azure.provisioning.properties.target_system.id | Identifier of the system that a user was provisioned to or from. | keyword |
 | azure.provisioning.properties.target_system.name | Name of the system that a user was provisioned to or from. | keyword |
-| azure.provisioning.properties.tenant_id | Unique Azure AD tenant ID | keyword |
+| azure.provisioning.properties.tenant_id | Unique Microsoft Entra ID tenant ID | keyword |
 | azure.provisioning.result_signature | Result signature | keyword |
 | azure.provisioning.result_type | Result type | keyword |
-| azure.provisioning.tenant_id | Unique Azure AD tenant ID | keyword |
+| azure.provisioning.tenant_id | Unique Microsoft Entra ID tenant ID | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
 | azure.resource.name | Name | keyword |
