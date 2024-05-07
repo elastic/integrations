@@ -80,7 +80,7 @@ In Elastic, navigate to the PingOne integration, then:
    configured. PingOne webhooks will only work with a `https://` destination
    URL.
 6. Choose an agent policy to add the integration to and click
-   **Save and Contine**.
+   **Save and Continue**.
 
 Create a webhook in PingOne, as follows:
 
