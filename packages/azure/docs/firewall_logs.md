@@ -9,6 +9,11 @@ Supported log categories:
 | AzureFirewallApplicationRule | These logs capture information about the traffic that is allowed or denied by application rules configured in Azure Firewall.        |
 | AzureFirewallNetworkRule     | These logs capture information about the traffic that is allowed or denied by network rules configured in Azure Firewall.            |
 | AzureFirewallDnsProxy        | These logs capture information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.                    |
+| AzureFirewallApplicationRuleStructured | These logs capture resource specific information about the traffic that is allowed or denied by application rules configured in Azure Firewall.                  |
+| AzureFirewallNetworkRuleStructured  | These logs capture resource specific information about the traffic that is allowed or denied by network rules configured in Azure Firewall.  |
+| AzureFirewallNATRuleStructured | These logs capture resource specific information about all DNAT (Destination Network Address Translation) events log data.     |
+| AzureFirewallDnsProxyStructured   | These logs capture resource specific information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.
+
 
 ## Requirements and setup
 
