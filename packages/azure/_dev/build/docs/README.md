@@ -249,15 +249,15 @@ To create the storage account:
 This is the final diagram of the a setup for collecting Activity logs from the Azure Monitor service.
 
 ```text
- ┌────────────────┐   ┌──────────────┐   ┌────────────────┐         ┌───────────┐
- │Active Directory│   │  Diagnostic  │   │     adlogs     │  logs   │  Elastic  │
- │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │────────▶│   Agent   │
- └────────────────┘   └──────────────┘   └────────────────┘         └───────────┘
-                                                                           │     
-                      ┌──────────────┐          consumer group info        │     
-                      │  azurelogs   │          (state, position, or       │     
-                      │<<container>> │◀───────────────offset)──────────────┘     
-                      └──────────────┘                                           
+ ┌───────────────┐   ┌──────────────┐   ┌────────────────┐         ┌───────────┐
+ │  MS Entra ID  │   │  Diagnostic  │   │     adlogs     │  logs   │  Elastic  │
+ │  <<service>>  ├──▶│   settings   │──▶│ <<event hub>>  │────────▶│   Agent   │
+ └───────────────┘   └──────────────┘   └────────────────┘         └───────────┘
+                                                                          │     
+                     ┌──────────────┐          consumer group info        │     
+                     │  azurelogs   │          (state, position, or       │     
+                     │<<container>> │◀───────────────offset)──────────────┘     
+                     └──────────────┘                                           
 ```
 
 #### How many Storage account containers?
