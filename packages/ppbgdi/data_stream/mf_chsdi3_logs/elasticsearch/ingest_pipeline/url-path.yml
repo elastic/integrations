@@ -12,36 +12,37 @@ processors:
         # Patterns are based on the API documentation: https://api3.geo.admin.ch/services/sdiservices.html
         # In order to set the endpoint names by a following processor, each pattern in the list below
         # must only match one specific endpoint.
-        - '^/checker' # Checker
-        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer$' # Layers Metadata
-        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/identify$' # Identify Features
-        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/find$' # Find
-        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}$' # Layer Attributes
-        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/legend$' # Legend Resource
-        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}$' # Feature Resource
-        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}/htmlPopup$' # Htmlpopup Resource
-        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}/extendedHtmlPopup$' # Extented Htmlpopup Resource
-        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}/iframeHtmlPopup$' # Iframe Htmlpopup Resource
-        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/layersConfig$' # Layers configuration
-        - '^/rest/services/%{MF_CHSDI3_TOPIC}/CatalogServer$' # Topic catalog
-        - '^/rest/services/translations$' # Translations
-        - '^/rest/services$' # Services catalog
-        - '^/(_)?static' # Static
-        - '^/loader\.js$' # Loader
-        - '^/stationboard' # Stationboard
-        - '^/luftbilder' # Luftbilder
-        - '^/search.html$' # Search
-        - '^/historicalmaps/viewer.html$' # Search
-        - '^/api/examples\.html$' # Api examples
-        - '^/genindex\.html$' # Genindex
-        - '^/vectorStyles/%{GREEDYDATA:ppbgdi.app.vector_style.id}$' # Vector styles
-        - '^/examples' # Examples
-        - '^/robots\.txt$' # Robots
-        - '^/crossdomain\.xml$' # Crossdomain
-        - '^/info\.json$' # Info
-        - '^/clientaccesspolicy\.xml$' # Clientaccesspolicy
-        - '^/images/legends/?%{MF_CHSDI3_LEGEND}$' # image legends
-        - '^/images(/%{MF_CHSDI3_TOPIC})?/%{MF_CHSDI3_IMAGE}$' # Images
+        - '^/checker' # checker
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer$' # layers_metadata
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/identify$' # identify
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/find$' # find
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}$' # layer_attributes
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/legend$' # legend_resource
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}$' # feature_Resource
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}/htmlPopup$' # htmlpopup_resource
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}/extendedHtmlPopup$' # extented_htmlpopup_resource
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/%{MF_CHSDI3_LAYER}/%{MF_CHSDI3_FEATURE}/iframeHtmlPopup$' # iframe_htmlpopup_resource
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/MapServer/layersConfig$' # layers_configuration
+        - '^/rest/services/%{MF_CHSDI3_TOPIC}/CatalogServer$' # topic_catalog
+        - '^/rest/services/translations$' # translations
+        - '^/rest/services$' # services_catalog
+        - '^/(_)?static' # static
+        - '^/loader\.js$' # loader
+        - '^/stationboard' # stationboard
+        - '^/luftbilder' # luftbilder
+        - '^/search.html$' # search
+        - '^/historicalmaps/viewer.html$' # historicalmaps
+        - '^/api/examples\.html$' # api_examples
+        - '^/genindex\.html$' # genindex
+        - '^/vectorStyles/%{GREEDYDATA:ppbgdi.app.vector_style.id}$' # vector_styles
+        - '^/examples' # examples
+        - '^/robots\.txt$' # robots
+        - '^/crossdomain\.xml$' # crossdomain
+        - '^/info\.json$' # info
+        - '^/clientaccesspolicy\.xml$' # clientaccesspolicy
+        - '^/images/legends/?%{MF_CHSDI3_LEGEND}$' # image_legends
+        - '^/images(/%{MF_CHSDI3_TOPIC})?/%{MF_CHSDI3_IMAGE}$' # images
+        - '^/index.html$' # landing_page
       pattern_definitions:
         MF_CHSDI3_TOPIC: '(?<ppbgdi.app.topic.id>[^/]+)'
         MF_CHSDI3_LAYER: '(?<ppbgdi.app.layer.id>(ch|test)\.[^/]+)' # To avoid problems, assume features start with ch or test. To be improve if exceptions pop up.
@@ -100,6 +101,7 @@ processors:
           - clientaccesspolicy
           - image_legend
           - images
+          - landing_page
       if: ctx?.temp?.endpoint_index != null
   - dot_expander:
       description: Convert ppbgdi.app.endpoint.id into an object field
