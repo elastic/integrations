@@ -16,9 +16,17 @@ processors:
   - set:
       field: event.type
       value: [indicator]
+  - set:
+      field: labels.interval
+      copy_from: _conf.interval
+      if: ctx._conf?.interval != null && ctx._conf.interval != ''
+
   ######################
   # General ECS fields #
   ######################
+  - drop:
+      description: Drop if message is empty string return by CEL program.
+      if: ctx?.message == null || ctx.message == ""
   - rename:
       field: message
       target_field: event.original
@@ -27,10 +35,6 @@ processors:
   - json:
       field: event.original
       target_field: abusech.url
-  - fingerprint:
-      fields:
-        - abusech.url.id
-      target_field: "_id"
   #####################
   # Threat ECS Fields #
   #####################
@@ -44,8 +48,30 @@ processors:
         - "yyyy-MM-dd HH:mm:ss z"
         - "yyyy-MM-dd HH:mm:ss Z"
       if: "ctx.abusech?.url?.date_added != null"
+  - date:
+      field: abusech.url.dateadded
+      target_field: threat.indicator.first_seen
+      formats:
+        - "yyyy-MM-dd HH:mm:ss z"
+        - "yyyy-MM-dd HH:mm:ss Z"
+      if: "ctx.abusech?.url?.dateadded != null && ctx.threat?.indicator?.first_seen == null"
+  - date:
+      field: abusech.url.last_online
+      target_field: threat.indicator.last_seen
+      formats:
+        - "yyyy-MM-dd HH:mm:ss z"
+        - "yyyy-MM-dd HH:mm:ss Z"
+      if: ctx.abusech?.url?.last_online != null
+  - remove: 
+      field: abusech.url.last_online
+      if: ctx.threat?.indicator?.last_seen != null
+  - set:
+      field: threat.indicator.name
+      copy_from: abusech.url.url
+      tag: set-indicator-name
   - uri_parts:
       field: abusech.url.url
+      if: ctx.abusech?.url?.url != null
       target_field: threat.indicator.url
       keep_original: true
       remove_if_successful: true
@@ -57,9 +83,15 @@ processors:
       field: abusech.url.urlhaus_reference
       target_field: threat.indicator.reference
       ignore_missing: true
+  - rename:
+      field: abusech.url.urlhaus_link
+      target_field: threat.indicator.reference
+      if: ctx.abusech?.url?.urlhaus_link != null && ctx.threat?.indicator?.reference == null
+      ignore_missing: true
   # Host can be both IP addresses and domain names
   - grok:
       field: abusech.url.host
+      if: ctx.abusech?.url?.host != null
       patterns:
         - "(?:%{IP:threat.indicator.ip}|%{GREEDYDATA:threat.indicator.url.domain})"
       ignore_failure: true
@@ -67,20 +99,80 @@ processors:
       field: abusech.url.reporter
       target_field: threat.indicator.provider
       ignore_missing: true
+  # Copy tags and remove
+  - foreach:
+      field: abusech.url.tags
+      if: ctx.abusech?.url?.tags instanceof List
+      processor:
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      field: abusech.url.tags
+      ignore_missing: true
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  ######################
+  #   IOC expiration   #
+  ######################
+  # The `AbuseCH Active URL API` ingests all active indicators during every `Interval`. So, all indicators are expired every `Interval` so new indicators are ingested.
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: ctx.abusech?.url?.deleted_at == null && (ctx.labels.interval instanceof String)
+      description: Indicator are expired after every `labels.interval` since `event.ingested`. This script adds a default `abusech.url.deleted_at` field to allow indicator expiration at the transform.
+      source: >
+        def dur = ctx.labels.interval;
+        ZonedDateTime _tmp_deleted_at;
+        ZonedDateTime _tmp_created_at = ZonedDateTime.parse(ctx.event.ingested);
+        long max_ingest_time_in_sec = 30L;
+        long transform_max_age_in_min = 1L;
+        String time_unit = dur.substring(dur.length() -  1, dur.length());
+        String time_value = dur.substring(0, dur.length() - 1);
+        if (time_unit == 'd') {
+          _tmp_deleted_at = _tmp_created_at.plusDays(Long.parseLong(time_value));
+        } else if (time_unit == 'h') {
+          _tmp_deleted_at = _tmp_created_at.plusHours(Long.parseLong(time_value));
+        } else if (time_unit == 'm') {
+          _tmp_deleted_at = _tmp_created_at.plusMinutes(Long.parseLong(time_value));
+        } else {
+          _tmp_deleted_at = _tmp_created_at.plusDays(90L);
+          if (ctx.error == null) {
+            ctx.error = new HashMap();
+          }
+          if (ctx.error.message == null) {
+            ctx.error.message = new ArrayList();
+          }
+          ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
+        }
+        // Subtract transform's retention max_age and ingest time so that indicators are expire time slightly before next interval.
+        // This ensures the indicator is deleted when the next interval starts.
+        
+        _tmp_deleted_at = _tmp_deleted_at.minusMinutes(transform_max_age_in_min).minusSeconds(max_ingest_time_in_sec);
+        ctx.abusech.url.deleted_at = _tmp_deleted_at;
+  - date:
+      field: abusech.url.deleted_at
+      tag: date_deleted_at
+      target_field: abusech.url.deleted_at
+      formats:
+        - ISO8601
+        - UNIX
   ######################
   # Cleanup processors #
   ######################
   - set:
       field: threat.indicator.type
       value: unknown
-      if: ctx?.threat?.indicator?.type == null
+      if: ctx.threat?.indicator?.type == null
   - convert:
       field: abusech.url.larted
       type: boolean
       ignore_missing: true
   - script:
       lang: painless
-      if: ctx?.abusech != null
+      if: ctx.abusech != null
       source: |
         void handleMap(Map map) {
           for (def x : map.values()) {
@@ -104,15 +196,16 @@ processors:
         handleMap(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_missing: true
   - remove:
       field:
         - abusech.url.date_added
+        - abusech.url.dateadded
         - abusech.url.url
         - abusech.url.host
         - message
+        - _conf
       ignore_missing: true
   - script:
       description: Remove null/empty values recursively.
@@ -137,4 +230,4 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{ _ingest.on_failure_processor_type }} {{#_ingest.on_failure_processor_tag}}with tag {{ _ingest.on_failure_processor_tag }} {{/_ingest.on_failure_processor_tag}}in pipeline {{_ingest.pipeline}} failed with message {{ _ingest.on_failure_message }}'

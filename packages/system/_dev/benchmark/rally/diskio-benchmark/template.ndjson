@@ -1,0 +1,95 @@
+{{- $event_duration := generate "event_duration" }}
+{{- $timestamp := generate "timestamp" }}
+{{- $system_diskio_io_time := generate "system_diskio_io_time" }}
+{{- $system_diskio_io_ops := generate "system_diskio_io_ops" }}
+{{- $system_diskio_name := generate "system_diskio_name" }}    
+{{- $system_diskio_read_count := generate "system_diskio_read_count" }}
+{{- $system_diskio_write_count := generate "system_diskio_write_count" }}
+{{- $system_diskio_read_bytes := generate "system_diskio_read_bytes" }}
+{{- $system_diskio_write_bytes := generate "system_diskio_write_bytes" }}
+{{- $system_diskio_read_time := generate "system_diskio_read_time" }}
+{{- $system_diskio_write_time := generate "system_diskio_write_time" }}
+{
+  "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z07:00" }}",
+  "agent": {
+    "ephemeral_id": "22ed892c-43bd-408a-9121-65e2f5b6a56e",
+    "id": "de42127b-4db8-4471-824e-a7b14f478663",
+    "name": "system-scale-123456",
+    "type": "metricbeat",
+    "version": "8.8.0"
+  },
+  "data_stream": {
+    "dataset": "system.diskio",
+    "namespace": "ep",
+    "type": "metrics"
+  },
+  "ecs": {
+    "version": "8.0.0"
+  },
+  "elastic_agent": {
+    "id": "de42127b-4db8-4471-824e-a7b14f478663",
+    "snapshot": false,
+    "version": "8.12.1"
+  },
+  "event": {
+    "agent_id_status": "verified",
+    "dataset": "system.diskio",
+    "duration": {{ $event_duration }},
+    "module": "system"
+  },
+  "host": {
+    "architecture": "x86_64",
+    "containerized": true,
+    "hostname": "docker-fleet-agent",
+    "id": "96bd755dd266474fb86bd80a98cbaad5",
+    "ip": "192.168.253.7",
+    "mac": "02-42-C0-A8-FD-07",
+    "name": "docker-fleet-agent",
+    "os": {
+      "codename": "focal",
+      "family": "debian",
+      "kernel": "3.10.0-1160.105.1.el7.x86_64",
+      "name": "Ubuntu",
+      "platform": "ubuntu",
+      "type": "linux",
+      "version": "20.04.6 LTS (Focal Fossa)"
+    }
+  },
+  "metricset": {
+    "name": "diskio",
+    "period": 10000
+  },
+  "service": {
+    "type": "system"
+  },
+  "system": {
+    "diskio": {
+      "io": {
+        "ops": {{ $system_diskio_io_ops }},
+        "time": {{ $system_diskio_io_time }}
+      },
+      "name": "{{ $system_diskio_name }}",
+      {{- if eq $system_diskio_name "sda"}}
+      "serial_number": "SN20240308001",
+      {{- else if eq $system_diskio_name "sda1"}}
+      "serial_number": "SN20240308002",
+      {{- else if eq $system_diskio_name "sda2"}}
+      "serial_number": "SN20240308003",
+      {{- else if eq $system_diskio_name "dm-0"}}
+      "serial_number": "SN20240308004",
+      {{- else }}
+      "serial_number": "SN20240308005",
+      {{- end }}
+      "read": {
+        "bytes": {{ $system_diskio_read_bytes }},
+        "count": {{ $system_diskio_read_count }},
+        "time": {{ $system_diskio_read_time }}
+      },
+      "write": {
+        "bytes": {{ $system_diskio_write_bytes }},
+        "count": {{ $system_diskio_write_count }},
+        "time": {{ $system_diskio_write_time }}
+      }
+    }
+  }
+}
