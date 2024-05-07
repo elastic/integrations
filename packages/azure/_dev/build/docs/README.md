@@ -42,8 +42,8 @@ Azure Diagnostic settings allow you to export metrics and logs from a **source**
 
 Examples of source services:
 
-* Microsoft Entra ID
 * Azure Monitor
+* Microsoft Entra ID
 * Spring Apps
 
 The Diagnostic settings support several destination types. The Elastic Agent requires a Diagnostic setting configured with Event Hub as the destination.
