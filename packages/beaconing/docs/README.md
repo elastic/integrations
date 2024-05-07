@@ -17,6 +17,8 @@ For more detailed information refer to the following blog:
         - Select **Show Advanced settings** and enable **Allow hidden and system indices**
 	    - Custom data view ID: `ml_beaconing`
 
+![Data Exfiltration Detection Rules](../img/beaconingrules.png)
+*In Security > Rules, filtering with the “Use Case: C2 Beaconing Detection” tag*
 
 ## Transforms
 
