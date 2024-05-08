@@ -652,7 +652,7 @@ An example event for `provisioning` looks as following:
                 "id": "d6cbb0bd-c3ec-6455-bd3e-4282141ce369",
                 "initiated_by": {
                     "id": "",
-                    "name": "Microsoft Entra ID Provisioning Service",
+                    "name": "Azure AD Provisioning Service",
                     "type": "system"
                 },
                 "job_id": "DropboxSCIMOutDelta.5611623b9128461e9d7fa0d9c270ead2.d6163622-bdf8-4b26-976f-7d573c638e2a",
