@@ -208,6 +208,43 @@ processors:
         - cisco.umbrella.audit.before
         - cisco.umbrella.audit.after
       if: ctx.log?.file?.path != null && ctx.log.file.path.contains('auditlogs')
+  - kv:
+      tag: kv_audit_before
+      field: cisco.umbrella.audit.before
+      target_field: cisco.umbrella.audit.before_values
+      field_split: '\n'
+      value_split: ':\s*'
+      trim_key: ' '
+      ignore_missing: true
+      if: ctx.cisco?.umbrella?.audit?.type != 'global_settings'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: cisco.umbrella.audit.before
+      separator: '\n'
+      ignore_missing: true
+      if: ctx.cisco?.umbrella?.audit?.type != 'global_settings'
+  - kv:
+      tag: kv_audit_after
+      field: cisco.umbrella.audit.after
+      target_field: cisco.umbrella.audit.after_values
+      field_split: '\n'
+      value_split: ':\s*'
+      trim_key: ' '
+      ignore_missing: true
+      if: ctx.cisco?.umbrella?.audit?.type != 'global_settings'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: cisco.umbrella.audit.after
+      separator: '\n'
+      ignore_missing: true
+      if: ctx.cisco?.umbrella?.audit?.type != 'global_settings'
+
 
   - uri_parts:
       field: url.original
@@ -672,6 +709,7 @@ processors:
         - cisco.umbrella._tmp
         - cisco.umbrella.direction
         - cisco.umbrella.action
+        - log.flags
       ignore_missing: true
   - remove:
       field: event.original

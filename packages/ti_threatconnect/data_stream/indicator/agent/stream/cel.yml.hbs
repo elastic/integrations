@@ -1,0 +1,134 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ioc_expiration_duration}}
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiration_duration: "{{ioc_expiration_duration}}"
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  access_id: {{escape_string access_id}}
+  secret_key: {{escape_string secret_key}}
+  counter: 0
+  want_more: false
+  batch: {{batch_size}}
+  initial_interval: {{initial_interval}}
+  event_list:
+    - associatedGroups
+    - associatedIndicators
+    - attributes
+    - securityLabels
+    - sightings
+    - tags
+    - threatAssess
+{{#if tql}}
+  tql_filter: {{tql}}
+{{/if}}
+redact:
+  fields:
+    - secret_key
+program: |
+  ['lastModified GEQ "'+(
+      !state.want_more ?
+          state.?cursor.last_timestamp.orValue(string(now - duration(state.initial_interval)))
+      :
+          state.?cursor.first_timestamp.orValue("")
+      )+'"'+(
+          state.?tql_filter.orValue("") != "" ?
+              " AND "+state.tql_filter.trim(" ")
+          :
+              ""
+      )
+  ].as(tql,
+      request("GET",
+          state.want_more ?
+              state.next_url
+          :
+              state.url.trim_right("/") + "/api/v3/indicators?" + {
+                  "fields": state.event_list,
+                  "resultStart": ["0"],
+                  "resultLimit": [string(state.batch)],
+                  "sorting": ["lastModified asc"],
+                  "tql": tql,
+              }.format_query()
+      ).as(req, req.URL.parse_url().as(url, req.with({
+          "Header": {
+              "Authorization": ["TC "+ string(state.access_id) + ":" +
+                  bytes(url.Path + (url.RawQuery == "" ? "" : "?") + url.RawQuery + ":" + req.Method + ":" + string(int(now))).hmac("sha256", bytes(state.secret_key)).base64()
+              ],
+              "Timestamp": [string(int(now))],
+          }
+      }))).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
+          "events": body.data.map(e, {
+              "message": e.encode_json(),
+          }),
+          "url": state.url.trim_right("/"),
+          "counter": has(body.next) && body.next != null && body.next != "" ? int(state.counter) + int(state.batch) : 0,
+          "access_id": state.access_id,
+          "secret_key": state.secret_key,
+          "want_more": has(body.next) && body.next != null && body.next != "",
+          "batch": state.batch,
+          "initial_interval": state.initial_interval,
+          "event_list": state.event_list,
+          ?"tql_filter": state.?tql_filter,
+          "next_url": (
+              has(body.next) && body.next != null && body.next != "" ?
+                  state.url.trim_right("/") + "/api/v3/indicators?" + {
+                      "fields": state.event_list,
+                      "resultStart": [string(int(state.counter) + body.data.size())],
+                      "resultLimit": [string(state.batch)],
+                      "sorting": ["lastModified asc"],
+                      "tql": tql,
+                  }.format_query()
+              :
+                  state.url.trim_right("/")
+          ),
+          "cursor": {
+              ?"last_timestamp": (
+                  has(body.data) && body.data.size() > 0 ?
+                      optional.of(body.data.map(e, timestamp(e.lastModified)).max() + duration("1s"))
+                  :
+                      state.?cursor.last_timestamp
+              ),
+              "first_timestamp": (
+                  has(body.data) && state.?cursor.first_timestamp.orValue(null) != null ?
+                      (
+                          has(body.next) && body.next != null && body.next != "" ?
+                              state.cursor.first_timestamp
+                          :
+                              state.cursor.last_timestamp
+                      )
+                  :
+                      string(now - duration(state.initial_interval))
+              ),
+          }
+      }))
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

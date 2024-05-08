@@ -14,7 +14,7 @@ processors:
   - append:
       field: event.type
       value:
-        - start 
+        - start
         - connection
       tag: append_start_connection_type
   - append:
@@ -164,7 +164,11 @@ processors:
       ignore_missing: true
       tag: convert_remote_port
       if: ctx.crowdstrike?.event?.RemotePort != null && ctx.network?.direction == "egress"
-
+  - rename:
+      field: crowdstrike.event.Platform
+      target_field: host.os.platform
+      ignore_missing: true
+      tag: rename_Platform
 on_failure:
   - append:
       field: error.message

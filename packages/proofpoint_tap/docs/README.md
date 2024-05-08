@@ -192,6 +192,7 @@ An example event for `clicks_blocked` looks as following:
 | email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
 | email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
 | email.to.address | The email address of recipient | keyword |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
@@ -428,6 +429,7 @@ An example event for `clicks_permitted` looks as following:
 | email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
 | email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
 | email.to.address | The email address of recipient | keyword |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
@@ -501,11 +503,11 @@ An example event for `message_blocked` looks as following:
 {
     "@timestamp": "2021-11-25T09:10:00.050Z",
     "agent": {
-        "ephemeral_id": "c84bcbe5-ed0f-4c89-a9c4-8b21738f93d2",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "ephemeral_id": "2738078c-875f-4284-984f-5858cbba75c9",
+        "id": "633dac72-aecd-41d9-88df-dd066a3b83ea",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "proofpoint_tap.message_blocked",
@@ -516,9 +518,9 @@ An example event for `message_blocked` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "633dac72-aecd-41d9-88df-dd066a3b83ea",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "email": {
         "attachments": [
@@ -575,9 +577,9 @@ An example event for `message_blocked` looks as following:
         "category": [
             "email"
         ],
-        "created": "2023-09-22T17:33:59.847Z",
+        "created": "2024-04-03T23:27:42.516Z",
         "dataset": "proofpoint_tap.message_blocked",
-        "ingested": "2023-09-22T17:34:02Z",
+        "ingested": "2024-04-03T23:27:46Z",
         "kind": "event",
         "original": "{\"GUID\":\"x11xxxx1-12f9-111x-x12x-1x1x123456xx\",\"QID\":\"x2XXxXXX111111\",\"ccAddresses\":[\"abc@example.com\"],\"clusterId\":\"pharmtech_hosted\",\"completelyRewritten\":\"true\",\"fromAddress\":\"abc@example.com\",\"headerCC\":\"\\\"Example Abc\\\" \\u003cabc@example.com\\u003e\",\"headerFrom\":\"\\\"A. Bc\\\" \\u003cabc@example.com\\u003e\",\"headerReplyTo\":null,\"headerTo\":\"\\\"Aa Bb\\\" \\u003caa.bb@example.com\\u003e; \\\"Hey Hello\\\" \\u003chey.hello@example.com\\u003e\",\"impostorScore\":0,\"malwareScore\":100,\"messageID\":\"12345678912345.12345.mail@example.com\",\"messageParts\":[{\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"filename\":\"text.txt\",\"md5\":\"b10a8db164e0754105b7a99be72e3fe5\",\"oContentType\":\"text/plain\",\"sandboxStatus\":\"unsupported\",\"sha256\":\"a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e\"},{\"contentType\":\"application/pdf\",\"disposition\":\"attached\",\"filename\":\"text.pdf\",\"md5\":\"b10a8db164e0754105b7a99be72e3fe5\",\"oContentType\":\"application/pdf\",\"sandboxStatus\":\"threat\",\"sha256\":\"a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e\"}],\"messageTime\":\"2021-11-25T09:10:00.050Z\",\"modulesRun\":[\"pdr\",\"sandbox\",\"spam\",\"urldefense\"],\"phishScore\":46,\"policyRoutes\":[\"default_inbound\",\"executives\"],\"quarantineFolder\":\"Attachment Defense\",\"quarantineRule\":\"module.sandbox.threat\",\"recipient\":[\"example.abc@example.com\",\"hey.hello@example.com\"],\"replyToAddress\":null,\"sender\":\"x99x7x5580193x6x51x597xx2x0210@example.com\",\"senderIP\":\"175.16.199.1\",\"spamScore\":4,\"subject\":\"Please find a totally safe invoice attached.\",\"threatsInfoMap\":[{\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"MALWARE\",\"threat\":\"a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e\",\"threatId\":\"2xxx740f143fc1aa4c1cd0146d334x5593b1428x6x062b2c406e5efe8xxx95xx\",\"threatStatus\":\"active\",\"threatTime\":\"2021-11-25T09:10:00.050Z\",\"threatType\":\"ATTACHMENT\",\"threatUrl\":\"https://www.example.com/?name=john\"},{\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"MALWARE\",\"threat\":\"example.com\",\"threatId\":\"3xx97xx852c66a7xx761450xxxxxx9f4ffab74715b591294f78b5e37a76481xx\",\"threatTime\":\"2021-07-20T05:00:00.050Z\",\"threatType\":\"URL\",\"threatUrl\":\"https://www.example.com/?name=john\"}],\"toAddresses\":[\"example.abc@example.com\",\"hey.hello@example.com\"],\"xmailer\":\"Spambot v2.5\"}",
         "type": [
@@ -637,23 +639,23 @@ An example event for `message_blocked` looks as following:
                     "classification": "MALWARE",
                     "threat": {
                         "artifact": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
+                        "id": "2xxx740f143fc1aa4c1cd0146d334x5593b1428x6x062b2c406e5efe8xxx95xx",
                         "status": "active",
                         "time": "2021-11-25T09:10:00.050Z",
                         "type": "ATTACHMENT",
                         "url": "https://www.example.com/?name=john"
-                    },
-                    "threatId": "2xxx740f143fc1aa4c1cd0146d334x5593b1428x6x062b2c406e5efe8xxx95xx"
+                    }
                 },
                 {
                     "campaign_id": "46x01x8x-x899-404x-xxx9-111xx393d1x7",
                     "classification": "MALWARE",
                     "threat": {
                         "artifact": "example.com",
+                        "id": "3xx97xx852c66a7xx761450xxxxxx9f4ffab74715b591294f78b5e37a76481xx",
                         "time": "2021-07-20T05:00:00.050Z",
                         "type": "URL",
                         "url": "https://www.example.com/?name=john"
-                    },
-                    "threatId": "3xx97xx852c66a7xx761450xxxxxx9f4ffab74715b591294f78b5e37a76481xx"
+                    }
                 }
             ],
             "to_addresses": [
@@ -692,7 +694,6 @@ An example event for `message_blocked` looks as following:
         "proofpoint_tap-message_blocked"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -720,6 +721,7 @@ An example event for `message_blocked` looks as following:
 | email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
 | email.attachments.file.hash.md5 | MD5 hash. | keyword |
 | email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
 | email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | email.cc.address | The email address of CC recipient | keyword |
 | email.content_type | Information about how the message is to be displayed. Typically a MIME type. | keyword |
@@ -732,6 +734,7 @@ An example event for `message_blocked` looks as following:
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | email.to.address | The email address of recipient | keyword |
 | email.x_mailer | The name of the application that was used to draft and send the original email message. | keyword |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
@@ -959,6 +962,7 @@ An example event for `message_delivered` looks as following:
 | email.attachments | A list of objects describing the attachment files sent along with an email message. | nested |
 | email.attachments.file.hash.md5 | MD5 hash. | keyword |
 | email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
 | email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | email.cc.address | The email address of CC recipient | keyword |
 | email.content_type | Information about how the message is to be displayed. Typically a MIME type. | keyword |
@@ -971,6 +975,7 @@ An example event for `message_delivered` looks as following:
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | email.to.address | The email address of recipient | keyword |
 | email.x_mailer | The name of the application that was used to draft and send the original email message. | keyword |
+| error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |

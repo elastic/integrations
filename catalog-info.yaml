@@ -17,7 +17,8 @@ spec:
   lifecycle: production
   dependsOn:
     - "component:package-storage-infra"
-    # TODO add a new dependsOn item for signing package job
+    - "resource:pipeline-package-storage-infra-publishing"
+    - "resource:buildkite-pipeline-unified-release-gpg-signing"
 
 ---
 # yaml-language-server: $schema=https://gist.githubusercontent.com/elasticmachine/988b80dae436cafea07d9a4a460a011d/raw/e57ee3bed7a6f73077a3f55a38e76e40ec87a7cf/rre.schema.json
@@ -49,15 +50,14 @@ spec:
         build_tags: false
         filter_enabled: true
         filter_condition: >-
-          build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null)
+          build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null && build.source == 'api')
       repository: elastic/integrations
       cancel_intermediate_builds: true
       cancel_intermediate_builds_branch_filter: '!main !backport-*'
       skip_intermediate_builds: true
       skip_intermediate_builds_branch_filter: '!main !backport-*'
-      # TODO set as true ELASTIC_PR_COMMENTS_ENABLED when pipeline is ready
-      # env:
-      #   ELASTIC_PR_COMMENTS_ENABLED: 'true'
+      env:
+        ELASTIC_PR_COMMENTS_ENABLED: 'true'
       teams:
         ingest-fp:
           access_level: MANAGE_BUILD_AND_READ
@@ -99,7 +99,7 @@ spec:
         build_tags: false
         filter_enabled: true
         filter_condition: >-
-          build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null)
+          build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null && build.source == 'api')
       repository: elastic/integrations
       cancel_intermediate_builds: true
       cancel_intermediate_builds_branch_filter: '!main'
@@ -146,7 +146,7 @@ spec:
         build_tags: false
         filter_enabled: true
         filter_condition: >-
-          build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null)
+          build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null && build.source == 'api')
       repository: elastic/integrations
       cancel_intermediate_builds: true
       cancel_intermediate_builds_branch_filter: '!main'
@@ -188,12 +188,54 @@ spec:
         build_tags: false
         filter_enabled: true
         filter_condition: >-
-          build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null)
+          build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null && build.source == 'api')
       repository: elastic/integrations
       cancel_intermediate_builds: true
       cancel_intermediate_builds_branch_filter: '!main'
       skip_intermediate_builds: true
       skip_intermediate_builds_branch_filter: '!main'
+      teams:
+        ingest-fp:
+          access_level: MANAGE_BUILD_AND_READ
+        everyone:
+          access_level: BUILD_AND_READ
+
+---
+# yaml-language-server: $schema=https://gist.githubusercontent.com/elasticmachine/988b80dae436cafea07d9a4a460a011d/raw/e57ee3bed7a6f73077a3f55a38e76e40ec87a7cf/rre.schema.json
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: buildkite-pipeline-integrations-publish
+  description: 'Pipeline for the Integrations project to publish packages'
+  links:
+    - title: Pipeline
+      url: https://buildkite.com/elastic/integrations-publish
+
+spec:
+  type: buildkite-pipeline
+  owner: group:ingest-fp
+  system: buildkite
+  implementation:
+    apiVersion: buildkite.elastic.dev/v1
+    kind: Pipeline
+    metadata:
+      name: integrations-publish
+      description: 'Pipeline for the Integrations project to publish packages'
+    spec:
+      branch_configuration: "main backport-*"
+      pipeline_file: ".buildkite/pipeline.publish.yml"
+      provider_settings:
+        build_pull_request_forks: false
+        build_pull_requests: false # requires filter_enabled and filter_condition settings as below when used with buildkite-pr-bot
+        build_tags: false
+        filter_enabled: true
+        filter_condition: >-
+          build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null && build.source == 'api')
+      repository: elastic/integrations
+      cancel_intermediate_builds: true
+      cancel_intermediate_builds_branch_filter: '!main !backport-*'
+      skip_intermediate_builds: true
+      skip_intermediate_builds_branch_filter: '!main !backport-*'
       teams:
         ingest-fp:
           access_level: MANAGE_BUILD_AND_READ

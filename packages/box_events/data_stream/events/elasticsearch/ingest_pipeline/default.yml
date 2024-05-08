@@ -12,6 +12,12 @@ processors:
   - json:
       field: event.original
       target_field: box
+  - fingerprint:
+      fields:
+        - box.event_id
+        - _conf.client_id
+      target_field: "_id"
+      ignore_missing: true
   - date:
       field: box.recorded_at
       target_field: "@timestamp"
@@ -1181,6 +1187,23 @@ processors:
           field: "_ingest._value.indicator.as.organization_name"
           target_field: "_ingest._value.indicator.as.organization.name"
           ignore_missing: true
+# Move geo.ip out of geo and check for IP validity.
+  - foreach:
+      field: threat.enrichments
+      ignore_missing: true
+      processor:
+        convert:
+          field: "_ingest._value.indicator.geo.ip"
+          target_field: "_ingest._value.indicator.ip"
+          type: ip
+          ignore_failure: true
+  - foreach:
+      field: threat.enrichments
+      ignore_missing: true
+      processor:
+        remove:
+          field: "_ingest._value.indicator.geo.ip"
+          ignore_missing: true
 # AS lookup for stand-alone indicator 
   - geoip:
       database_file: GeoLite2-ASN.mmdb
@@ -1222,6 +1245,9 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - remove:
+      field: _conf
+      ignore_missing: true
 on_failure:
   - set:
       field: event.kind

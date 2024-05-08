@@ -17,7 +17,7 @@ explanation on how to configure the Anomali ThreatStream to send indicator
 to this integration.
 
 ### Expiration of Indicators of Compromise (IOCs)
-The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates a destination index named `logs-ti_anomali_latest.threatstream` which only contains active and unexpired IOCs. When setting up indicator match rules, use this latest destination index to avoid false positives from expired IOCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source `.ds-logs-ti_anomali.threatstream-*` indices.
+The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates a destination index named `logs-ti_anomali_latest.threatstream-2` which only contains active and unexpired IOCs. The destination index also has an alias `logs-ti_anomali_latest.threatstream`. When setting up indicator match rules, use this latest destination index to avoid false positives from expired IOCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source `.ds-logs-ti_anomali.threatstream-*` indices.
 
 #### Handling Orphaned IOCs
 When an IOC expires, Anomali feed contains information about all IOCs that got `deleted`. However, some Anomali IOCs may never expire and will continue to stay in the latest destination index `logs-ti_anomali_latest.threatstream`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination index `logs-ti_anomali_latest.threatstream` after this specified duration is reached. Users must pull entire feed instead of incremental feed when this expiration happens so that the IOCs get reset. 
@@ -44,18 +44,18 @@ An example event for `threatstream` looks as following:
 {
     "@timestamp": "2020-10-08T12:22:11.000Z",
     "agent": {
-        "ephemeral_id": "784ec3d1-432a-4e36-9fe0-7eb9bb80c36b",
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "ephemeral_id": "5f5fdd12-5b96-4370-aae2-3f4ca99136eb",
+        "id": "8130bdff-3530-4540-8c03-ba091c47a24f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.1"
+        "version": "8.11.0"
     },
     "anomali": {
         "threatstream": {
             "added_at": "2020-10-08T12:22:11.000Z",
             "classification": "public",
             "confidence": 20,
-            "deleted_at": "2021-01-06T12:22:11.000Z",
+            "deleted_at": "2020-10-13T12:22:11.000Z",
             "detail2": "imported by user 184",
             "id": "3135167627",
             "import_session_id": "1400",
@@ -80,9 +80,9 @@ An example event for `threatstream` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5607d6f4-6e45-4c33-a087-2e07de5f0082",
+        "id": "8130bdff-3530-4540-8c03-ba091c47a24f",
         "snapshot": false,
-        "version": "8.9.1"
+        "version": "8.11.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -90,7 +90,7 @@ An example event for `threatstream` looks as following:
             "threat"
         ],
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2023-08-30T14:59:36Z",
+        "ingested": "2023-12-22T11:03:22Z",
         "kind": "enrichment",
         "original": "{\"added_at\":\"2020-10-08T12:22:11\",\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
         "severity": 7,
@@ -137,7 +137,6 @@ An example event for `threatstream` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**

@@ -215,6 +215,7 @@ An example event for `log` looks as following:
 | cisco.ftd.connection_type | The VPN connection type | keyword |
 | cisco.ftd.dap_records | The assigned DAP records | keyword |
 | cisco.ftd.destination_interface | Destination interface for the flow or event. | keyword |
+| cisco.ftd.destination_user_or_sgt | The destination user or security group tag. | keyword |
 | cisco.ftd.destination_username | Name of the user that is the destination for this event. | keyword |
 | cisco.ftd.icmp_code | ICMP code. | short |
 | cisco.ftd.icmp_type | ICMP type. | short |
@@ -295,6 +296,7 @@ An example event for `log` looks as following:
 | cisco.ftd.security_event.web_application |  | keyword |
 | cisco.ftd.session_type | Session type (for example, IPsec or UDP). | keyword |
 | cisco.ftd.source_interface | Source interface for the flow or event. | keyword |
+| cisco.ftd.source_user_or_sgt | The source user or security group tag. | keyword |
 | cisco.ftd.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.ftd.suffix | Optional suffix after %FTD identifier. | keyword |
 | cisco.ftd.termination_user | AAA name of user requesting termination | keyword |
@@ -347,6 +349,8 @@ An example event for `log` looks as following:
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
+| destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| destination.user.email | User email address. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | device.manufacturer | The vendor name of the device manufacturer. | keyword |
@@ -487,6 +491,8 @@ An example event for `log` looks as following:
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
+| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
