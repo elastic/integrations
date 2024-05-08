@@ -261,7 +261,6 @@ spec:
   sessionAffinity: None
   type: ClusterIP
 ```
-
 This Service can be used as a `remote_write.url` in Prometheus configuration:
 ```yml
 remote_write:
