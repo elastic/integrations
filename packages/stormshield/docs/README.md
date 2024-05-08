@@ -35,9 +35,9 @@ An example event for `log` looks as following:
 {
     "agent": {
         "name": "ubuntu",
-        "id": "adb095de-7fdf-448d-a89c-a43cc4e3b5cb",
+        "id": "00b10fd1-01e6-4c9c-bd93-33451ccce64c",
+        "ephemeral_id": "8b08b69d-9e8f-413f-beb5-f0799b611cad",
         "type": "filebeat",
-        "ephemeral_id": "5891695a-5cfb-40b5-8812-c237c02d400d",
         "version": "8.11.4"
     },
     "process": {
@@ -45,7 +45,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.197.134:14720"
+            "address": "192.168.197.134:2747"
         },
         "syslog": {
             "severity": {
@@ -54,16 +54,16 @@ An example event for `log` looks as following:
             },
             "hostname": "stormy-1",
             "appname": "serverd",
-            "priority": 133,
+            "priority": 13,
+            "version": "1",
             "facility": {
-                "code": 16,
-                "name": "local0"
-            },
-            "version": "1"
+                "code": 1,
+                "name": "user-level"
+            }
         }
     },
     "elastic_agent": {
-        "id": "adb095de-7fdf-448d-a89c-a43cc4e3b5cb",
+        "id": "00b10fd1-01e6-4c9c-bd93-33451ccce64c",
         "version": "8.11.4",
         "snapshot": false
     },
@@ -71,132 +71,169 @@ An example event for `log` looks as following:
         "forwarded"
     ],
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
-    "@timestamp": "2024-04-24T10:58:00.000Z",
+    "@timestamp": "2024-05-08T17:18:57.000Z",
     "ecs": {
         "version": "8.11.0"
     },
     "data_stream": {
-        "namespace": "stormshield",
+        "namespace": "default",
         "type": "logs",
         "dataset": "stormshield.log"
     },
     "stormshield": {
-        "logtype": "monitor",
-        "monitor": {
-            "startime": "2024-04-24 10:58:00",
-            "tz": "+0000",
-            "Pvm": "0,0,0,0,0,0,0,0,0,0,0",
-            "CPU": {
-                "kernel_time": "0",
-                "system_disruption": "0",
-                "user_time": "1"
-            },
-            "sslvpn": [
-                {
-                    "original": "sslvpn0",
-                    "packets_blocked": "0",
-                    "name": "sslvpn",
-                    "incoming_throughput": "0",
-                    "maximum_outgoing_throughput": "0",
-                    "outgoing_throughput": "0",
-                    "packets_accepted": "0",
-                    "maximum_incoming_throughput": "0"
-                },
-                {
-                    "original": "sslvpn1",
-                    "packets_blocked": "0",
-                    "name": "sslvpn_udp",
-                    "incoming_throughput": "0",
-                    "maximum_outgoing_throughput": "0",
-                    "outgoing_throughput": "0",
-                    "packets_accepted": "0",
-                    "maximum_incoming_throughput": "0"
-                }
-            ],
-            "Qid": [
-                {
-                    "original": "Qid0",
-                    "packets_blocked": "0",
-                    "name": "BYPASS_out",
-                    "incoming_throughput": "0",
-                    "maximum_outgoing_throughput": "0",
-                    "outgoing_throughput": "0",
-                    "packets_accepted": "70",
-                    "maximum_incoming_throughput": "15656"
-                },
-                {
-                    "original": "Qid1",
-                    "packets_blocked": "0",
-                    "name": "BYPASS_segment0",
-                    "incoming_throughput": "0",
-                    "maximum_outgoing_throughput": "0",
-                    "outgoing_throughput": "0",
-                    "packets_accepted": "0",
-                    "maximum_incoming_throughput": "0"
-                },
-                {
-                    "original": "Qid2",
-                    "packets_blocked": "0",
-                    "name": "BYPASS_ipsec",
-                    "incoming_throughput": "0",
-                    "maximum_outgoing_throughput": "0",
-                    "outgoing_throughput": "0",
-                    "packets_accepted": "0",
-                    "maximum_incoming_throughput": "0"
-                }
-            ],
-            "fw": "stormy-1",
-            "security": "0",
-            "system": "0",
-            "mem": "0,0,0,0,0,0,15,0",
+        "startime": "2024-05-08 17:18:57",
+        "tz": "+0000",
+        "Pvm": "0,0,0,0,0,0,0,0,0,0,0",
+        "device_stats": {
             "ipsec": [
                 {
-                    "packets_blocked": "0",
-                    "native": true,
+                    "original": "ipsec",
+                    "packets_blocked": 0,
                     "name": "ipsec",
-                    "incoming_throughput": "0",
-                    "maximum_outgoing_throughput": "0",
-                    "outgoing_throughput": "0",
-                    "packets_accepted": "0",
-                    "maximum_incoming_throughput": "0"
+                    "incoming_throughput": 0,
+                    "maximum_outgoing_throughput": 0,
+                    "outgoing_throughput": 0,
+                    "packets_accepted": 0,
+                    "maximum_incoming_throughput": 0
                 }
             ],
             "Ethernet": [
                 {
                     "original": "Ethernet0",
-                    "packets_blocked": "0",
+                    "packets_blocked": 0,
                     "name": "out",
-                    "incoming_throughput": "91",
-                    "maximum_outgoing_throughput": "536",
-                    "outgoing_throughput": "188",
-                    "packets_accepted": "62",
-                    "maximum_incoming_throughput": "456"
+                    "incoming_throughput": 134,
+                    "maximum_outgoing_throughput": 656,
+                    "outgoing_throughput": 185,
+                    "packets_accepted": 48,
+                    "maximum_incoming_throughput": 480
                 },
                 {
                     "original": "Ethernet1",
-                    "packets_blocked": "0",
+                    "packets_blocked": 0,
                     "name": "segment0",
-                    "incoming_throughput": "0",
-                    "maximum_outgoing_throughput": "0",
-                    "outgoing_throughput": "0",
-                    "packets_accepted": "0",
-                    "maximum_incoming_throughput": "0"
+                    "incoming_throughput": 0,
+                    "maximum_outgoing_throughput": 0,
+                    "outgoing_throughput": 0,
+                    "packets_accepted": 0,
+                    "maximum_incoming_throughput": 0
+                },
+                {
+                    "original": "Ethernet2",
+                    "packets_blocked": 0,
+                    "name": "segment1",
+                    "incoming_throughput": 0,
+                    "maximum_outgoing_throughput": 0,
+                    "outgoing_throughput": 0,
+                    "packets_accepted": 0,
+                    "maximum_incoming_throughput": 0
+                },
+                {
+                    "original": "Ethernet3",
+                    "packets_blocked": 0,
+                    "name": "dmz2",
+                    "incoming_throughput": 0,
+                    "maximum_outgoing_throughput": 0,
+                    "outgoing_throughput": 0,
+                    "packets_accepted": 0,
+                    "maximum_incoming_throughput": 0
                 }
             ],
-            "id": "firewall",
-            "time": "2024-04-24 10:58:00"
-        }
-    },
-    "host": {
-        "name": "stormy-1"
+            "CPU": {
+                "kernel_time": 1,
+                "system_disruption": 1,
+                "user_time": 0
+            },
+            "sslvpn": [
+                {
+                    "original": "sslvpn0",
+                    "packets_blocked": 0,
+                    "name": "sslvpn",
+                    "incoming_throughput": 0,
+                    "maximum_outgoing_throughput": 0,
+                    "outgoing_throughput": 0,
+                    "packets_accepted": 0,
+                    "maximum_incoming_throughput": 0
+                },
+                {
+                    "original": "sslvpn1",
+                    "packets_blocked": 0,
+                    "name": "sslvpn_udp",
+                    "incoming_throughput": 0,
+                    "maximum_outgoing_throughput": 0,
+                    "outgoing_throughput": 0,
+                    "packets_accepted": 0,
+                    "maximum_incoming_throughput": 0
+                }
+            ],
+            "Qid": [
+                {
+                    "original": "Qid0",
+                    "packets_blocked": 0,
+                    "name": "BYPASS_out",
+                    "incoming_throughput": 22,
+                    "maximum_outgoing_throughput": 0,
+                    "outgoing_throughput": 0,
+                    "packets_accepted": 49,
+                    "maximum_incoming_throughput": 9064
+                },
+                {
+                    "original": "Qid1",
+                    "packets_blocked": 0,
+                    "name": "BYPASS_segment0",
+                    "incoming_throughput": 0,
+                    "maximum_outgoing_throughput": 0,
+                    "outgoing_throughput": 0,
+                    "packets_accepted": 0,
+                    "maximum_incoming_throughput": 0
+                },
+                {
+                    "original": "Qid2",
+                    "packets_blocked": 0,
+                    "name": "BYPASS_ipsec",
+                    "incoming_throughput": 0,
+                    "maximum_outgoing_throughput": 0,
+                    "outgoing_throughput": 0,
+                    "packets_accepted": 0,
+                    "maximum_incoming_throughput": 0
+                },
+                {
+                    "original": "Qid3",
+                    "packets_blocked": 0,
+                    "name": "BYPASS_segment1",
+                    "incoming_throughput": 0,
+                    "maximum_outgoing_throughput": 0,
+                    "outgoing_throughput": 0,
+                    "packets_accepted": 0,
+                    "maximum_incoming_throughput": 0
+                },
+                {
+                    "original": "Qid4",
+                    "packets_blocked": 0,
+                    "name": "BYPASS_dmz2",
+                    "incoming_throughput": 0,
+                    "maximum_outgoing_throughput": 0,
+                    "outgoing_throughput": 0,
+                    "packets_accepted": 0,
+                    "maximum_incoming_throughput": 0
+                }
+            ]
+        },
+        "fw": "stormy-1",
+        "security": "0",
+        "logtype": "monitor",
+        "system": "0",
+        "mem": "0,0,0,0,0,0,15,0",
+        "id": "firewall",
+        "time": "2024-05-08 17:18:57"
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2024-04-24T10:58:02Z",
+        "ingested": "2024-05-08T17:18:58Z",
         "timezone": "+00:00",
-        "created": "2024-04-24T10:58:00.000Z",
+        "created": "2024-05-08T17:18:57.000Z",
         "dataset": "stormshield.log"
     }
 }
