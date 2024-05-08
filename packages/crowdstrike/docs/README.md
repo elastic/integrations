@@ -1499,6 +1499,7 @@ and/or `session_token`.
 | crowdstrike.UserMemoryAllocateExecutableRemoteCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableRemoteCount |  | long |
+| crowdstrike.UserName |  | keyword |
 | crowdstrike.UserSid |  | keyword |
 | crowdstrike.UserSid_readable |  | keyword |
 | crowdstrike.UserTime |  | long |
