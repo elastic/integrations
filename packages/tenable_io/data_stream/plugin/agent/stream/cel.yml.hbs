@@ -26,10 +26,10 @@ redact:
 program: |
   request("GET",
     state.url.trim_right("/") + "/plugins/plugin?last_updated=" + (
-    !state.?want_more.orValue(false) ?
-      state.?cursor.last_update_time.orValue(string(timestamp(0)))
-    :
-      state.?cursor.first_update_time.orValue(null)
+      !state.?want_more.orValue(false) ?
+        state.?cursor.last_update_time.orValue(string(timestamp(0)))
+      :
+        state.?cursor.first_update_time.orValue(null)
     ) + "&page=" + string(state.next_page) + "&size=" + string(state.batch_size)
   ).with({
     "Header":{
@@ -43,28 +43,28 @@ program: |
         "cursor": {
           "last_update_time": (
             has(body.?data.plugin_details) && body.data.plugin_details.size() > 0 ?
-            (
-              has(state.?cursor.last_update_time) && body.data.plugin_details.map(e, e.attributes.plugin_modification_date).max() < state.cursor.last_update_time ?
-                state.cursor.last_update_time
-              :
-                body.data.plugin_details.map(e, e.attributes.plugin_modification_date).max()
-            )
+              (
+                has(state.?cursor.last_update_time) && body.data.plugin_details.map(e, e.attributes.plugin_modification_date).max() < state.cursor.last_update_time ?
+                  state.cursor.last_update_time
+                :
+                  body.data.plugin_details.map(e, e.attributes.plugin_modification_date).max()
+              )
             :
               state.?cursor.last_update_time.orValue(string(timestamp(0)))
           ),
           "first_update_time": (
             has(state.?cursor.first_update_time) && has(body.data.plugin_details) ?
-            (
-              body.data.plugin_details.size() > 0 ?
               (
-                body.size == int(state.batch_size) && state.want_more ?
-                  state.cursor.first_update_time
+                body.data.plugin_details.size() > 0 ?
+                  (
+                    body.size == int(state.batch_size) && state.want_more ?
+                      state.cursor.first_update_time
+                    :
+                      state.cursor.last_update_time
+                  )
                 :
                   state.cursor.last_update_time
               )
-              :
-                state.cursor.last_update_time
-            )
             :
               string(timestamp(0))
           ),
@@ -76,20 +76,20 @@ program: |
         "batch_size": state.batch_size,
       })
     :
-    {
-      "events": {
-        "error": {
-          "code": string(resp.StatusCode),
-          "id": string(resp.Status),
-          "message": string(resp.Body),
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": string(resp.Body),
+          },
         },
-      },
-      "want_more": false,
-      "next_page": 1,
-      "batch_size": state.batch_size,
-      "access_key": state.access_key,
-      "secret_key": state.secret_key,
-    }
+        "want_more": false,
+        "next_page": 1,
+        "batch_size": state.batch_size,
+        "access_key": state.access_key,
+        "secret_key": state.secret_key,
+      }
   )
 tags:
 {{#if preserve_original_event}}
