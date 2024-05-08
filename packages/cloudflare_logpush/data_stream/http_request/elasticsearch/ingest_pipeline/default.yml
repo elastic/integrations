@@ -712,26 +712,34 @@ processors:
       target_field: cloudflare_logpush.http_request.waf.rule.message
       ignore_missing: true
       if: ctx.cloudflare_logpush?.http_request?.waf?.rule?.message == null
-  - rename:
+  - convert:
       field: json.WAFAttackScore
       target_field: cloudflare_logpush.http_request.waf.score.global
+      type: long
+      if: ctx.json?.WAFAttackScore != ''
       ignore_missing: true
-      tag: rename_waf_score_global
-  - rename:
+      tag: convert_waf_score_global
+  - convert:
       field: json.WAFRCEAttackScore
       target_field: cloudflare_logpush.http_request.waf.score.rce
+      type: long
+      if: ctx.json?.WAFRCEAttackScore != ''
       ignore_missing: true
-      tag: rename_waf_score_rce
-  - rename:
+      tag: convert_waf_score_rce
+  - convert:
       field: json.WAFSQLiAttackScore
       target_field: cloudflare_logpush.http_request.waf.score.sqli
+      type: long
+      if: ctx.json?.WAFSQLiAttackScore != ''
       ignore_missing: true
-      tag: rename_waf_score_sqli
-  - rename:
+      tag: convert_waf_score_sqli
+  - convert:
       field: json.WAFXSSAttackScore
       target_field: cloudflare_logpush.http_request.waf.score.xss
+      type: long
+      if: ctx.json?.WAFXSSAttackScore != ''
       ignore_missing: true
-      tag: rename_waf_score_xss
+      tag: convert_waf_score_xss
   - convert:
       field: json.WorkerCPUTime
       target_field: cloudflare_logpush.http_request.worker.cpu_time
