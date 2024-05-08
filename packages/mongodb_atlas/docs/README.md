@@ -22,7 +22,7 @@ Data streams:
 - `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 - `mongod_database`: This data stream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
 - `organization`: Organization logs provide a detailed view of your organization's activities, enabling tracking and monitoring of significant actions and status changes involving database operations, billing, security, hosts, encryption, user access, and more, as performed by users and teams.
-- `process`: This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
+- `process`: This data stream collects host metrics per process for all the hosts of the specified group. Metrics, like measurements for the host such as CPU usage, number of I/O operations, and memory, are available on this data stream.
 
 Note:
 - Users can monitor and see the logs and metrics inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
@@ -43,11 +43,11 @@ You can store and search your data using Elasticsearch and visualize and manage 
 ### Steps to obtain Public Key, Private Key, Group ID, and Organization ID
 
 1. Generate programmatic API keys with `Organization Owner` permission by following the instructions in the Atlas [documentation](https://www.mongodb.com/docs/atlas/configure-api-access/#grant-programmatic-access-to-an-organization). Then, copy the public and private keys which function as a username and API key respectively.
-2. From the Atlas UI with `project owner` permission, go to Project Settings > Access Manager > API Keys and then click on Invite To Project to add the API key created above, as described in this Atlas [document](https://www.mongodb.com/docs/atlas/configure-api-access/#invite-an-organization-api-key-to-a-project).
-3. Add a specific role to API keys, under Project Settings > Access Manager > API Keys. This step is important to make sure that these API keys have the right permissions to access the data without running into any issues. The specific role for each data stream is defined under the data stream reference section.
-4. Enable Database Auditing for the Atlas project you want to monitor logs. You can follow the instructions provided in this Atlas [document](https://www.mongodb.com/docs/atlas/database-auditing/#procedure).
-5. You can find your Project ID (Group ID) in the Atlas UI. To do this, navigate to your project, click on Settings, and copy the Project ID (Group ID). You can also programmatically find it using the Atlas Admin API or Atlas CLI as described in this Atlas [document](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id).
-6. Go to your organization by using context dropdown at the top from the Atlas UI, click Settings, and copy the Organization ID.
+2. From the Atlas UI with `project owner` permission, go to **Project Settings > Access Manager > API Keys** and then click **Invite To Project** to add the API key created above, as described in the Atlas [documentation](https://www.mongodb.com/docs/atlas/configure-api-access/#invite-an-organization-api-key-to-a-project).
+3. Add a specific role to API keys, under **Project Settings > Access Manager > API Keys**. This step is important to make sure that these API keys have the right permissions to access the data without running into any issues. The specific role for each data stream is defined under the data stream reference section.
+4. Enable Database Auditing for the Atlas project you want to monitor logs. You can follow the instructions provided in this Atlas [documentation](https://www.mongodb.com/docs/atlas/database-auditing/#procedure).
+5. You can find your Project ID (Group ID) in the Atlas UI. To do this, navigate to your project, click on **Settings**, and copy the **Project ID (Group ID)**. You can also programmatically find it using the Atlas Admin API or Atlas CLI as described in this Atlas [documentation](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id).
+6. On the Atlas UI, select your organization from the context dropdown, click **Settings**, and copy the **Organization ID**.
 
 ### Important terms of MongoDB Atlas API
 
@@ -338,7 +338,7 @@ An example event for `mongod_database` looks as following:
 
 ### Organization
 
-This is the `organization` data stream. This datastream collects detailed view of your organization's activities, enabling tracking and monitoring of significant actions and status changes involving database operations, billing, security, hosts, encryption, user access, and more, as performed by users and teams.
+This is the `organization` data stream. This data stream collects detailed view of your organization's activities, enabling tracking and monitoring of significant actions and status changes involving database operations, billing, security, hosts, encryption, user access, and more, as performed by users and teams.
 
 An example event for `organization` looks as following:
 
@@ -346,8 +346,8 @@ An example event for `organization` looks as following:
 {
     "@timestamp": "2024-04-30T06:17:35.000Z",
     "agent": {
-        "ephemeral_id": "983472a6-fe7c-4f37-a9df-59e8338a2101",
-        "id": "8dc08178-6541-405d-bdc0-7ccedefccebc",
+        "ephemeral_id": "1c645786-d85d-402d-ba20-e09c80cec694",
+        "id": "15d8bb05-2d3f-4df5-ba3c-2fab23670e47",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -364,7 +364,7 @@ An example event for `organization` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8dc08178-6541-405d-bdc0-7ccedefccebc",
+        "id": "15d8bb05-2d3f-4df5-ba3c-2fab23670e47",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -376,7 +376,7 @@ An example event for `organization` looks as following:
         ],
         "dataset": "mongodb_atlas.organization",
         "id": "66308cff73a61b3c0633ad96",
-        "ingested": "2024-05-01T10:50:39Z",
+        "ingested": "2024-05-07T12:23:55Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
@@ -394,10 +394,10 @@ An example event for `organization` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.254.7"
+            "192.168.251.7"
         ],
         "mac": [
-            "02-42-C0-A8-FE-07"
+            "02-42-C0-A8-FB-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -422,14 +422,14 @@ An example event for `organization` looks as following:
                 "cre": "2024-04-30T06:17:35Z",
                 "description": "Tag(s) were added or modified on project",
                 "gn": "test_project_org",
-                "orgName": "Integrations - 2023-05-25",
+                "org_name": "Integrations - 2023-05-25",
                 "severity": "INFO",
                 "source": "USER",
-                "tagsAdded": [
+                "tags_added": [
                     "{key=test_123, value=test_123}"
                 ],
                 "un": "sample1.user@example.com",
-                "updatedTagsList": [
+                "updated_tags_list": [
                     "{key=application, value=mongo_test}",
                     "{key=test_123, value=test_123}"
                 ],
@@ -529,18 +529,18 @@ An example event for `organization` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | mongodb_atlas.organization.access_list_entry | Access list entry of the API Key targeted by the event. | keyword |
-| mongodb_atlas.organization.additional_info.\* | Additional meta information about the event. This field only appears when the includeRaw query parameter is true. | object |
+| mongodb_atlas.organization.additional_info.\* | Additional meta information about the event. Only present when includeRaw query parameter is true. | object |
 | mongodb_atlas.organization.alert.config.id | Unique identifier for the alert configuration associated with the alertId. | keyword |
 | mongodb_atlas.organization.alert.id | Unique identifier for the alert associated with this event. | keyword |
 | mongodb_atlas.organization.api_key.id | Unique identifier for the API Key that triggered this event. | keyword |
 | mongodb_atlas.organization.cluster.id | ID of the cluster to which this event applies. | keyword |
 | mongodb_atlas.organization.cluster.name | Name of the cluster to which this event applies. | keyword |
-| mongodb_atlas.organization.collection.name | Name of the collection on which the event occurred. | keyword |
+| mongodb_atlas.organization.collection.name | Name of the collection where the event occurred. | keyword |
 | mongodb_atlas.organization.current_value.number | The value of the metric at the time of the event. | double |
 | mongodb_atlas.organization.current_value.units | Relevant units for the value. | keyword |
-| mongodb_atlas.organization.database.name | Name of the database on which the event occurred. | keyword |
-| mongodb_atlas.organization.event_type.name | Indicates name of the event. | keyword |
-| mongodb_atlas.organization.host.id | ID of the host on which this event occurred. | keyword |
+| mongodb_atlas.organization.database.name | Name of the database where the event occurred. | keyword |
+| mongodb_atlas.organization.event_type.name | Name of the event type. | keyword |
+| mongodb_atlas.organization.host.id | ID of the host where this event occurred. | keyword |
 | mongodb_atlas.organization.host.name | Hostname, FQDN, IPv4 address, or IPv6 address of the host on which this event occurred. | keyword |
 | mongodb_atlas.organization.invoice.id | Unique identifier of the invoice associated with this event. | keyword |
 | mongodb_atlas.organization.is_global_admin | Flag indicating whether the user who triggered this event is a MongoDB employee. | boolean |
