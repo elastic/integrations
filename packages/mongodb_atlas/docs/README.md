@@ -6,7 +6,7 @@
 
 Use the MongoDB Atlas integration to:
 
-- Collect MongoDB Atlas mongod audit and mongod database logs along with hardware and process metrics for comprehensive monitoring and analysis.
+- Collect MongoDB Atlas mongod audit logs, mongod database logs, hardware and process metrics for comprehensive monitoring and analysis.
 - Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
 - Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
 
@@ -22,7 +22,7 @@ Data streams:
 - `hardware`: This data stream collects all the Atlas Search hardware and status data series within the provided time range for one process in the specified project.
 - `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 - `mongod_database`: This data stream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
-- `process`: This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
+- `process`: This data stream collects host metrics per process for all the hosts in the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory usage are available in this data stream.
 
 Note:
 - Users can monitor and see the logs and metrics inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
@@ -337,16 +337,16 @@ An example event for `mongod_database` looks as following:
 ## Metrics reference
 
 ### Hardware
-This data stream collects hardware and status metrics per process of the specified group. Metrics like measurements for the hardware and status, such as CPU usage and JVM memory usage are available on this data stream.
+This data stream collects hardware and status metrics for each process in the specified group. It includes measurements such as CPU usage, memory consumption, JVM memory usage, disk usage, etc.
 
 An example event for `hardware` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-24T07:36:16.449Z",
+    "@timestamp": "2024-05-08T05:28:35.903Z",
     "agent": {
-        "ephemeral_id": "1998d9c0-3d6f-4f52-b342-826fc26ce89c",
-        "id": "d4d946c7-17c9-4ce6-b388-89e75a08f407",
+        "ephemeral_id": "f1da46ba-c948-41e5-8858-28b1db234a9c",
+        "id": "130eb953-a957-4fbb-ba6f-5bd31442e2f2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -360,20 +360,21 @@ An example event for `hardware` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d4d946c7-17c9-4ce6-b388-89e75a08f407",
+        "id": "130eb953-a957-4fbb-ba6f-5bd31442e2f2",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "driver"
+            "database"
         ],
         "dataset": "mongodb_atlas.hardware",
-        "ingested": "2024-04-24T07:36:26Z",
+        "ingested": "2024-05-08T05:28:45Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
+            "access",
             "info"
         ]
     },
@@ -386,10 +387,10 @@ An example event for `hardware` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.248.7"
+            "192.168.253.7"
         ],
         "mac": [
-            "02-42-C0-A8-F8-07"
+            "02-42-C0-A8-FD-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -413,7 +414,9 @@ An example event for `hardware` looks as following:
                     "bytes": 175143048.53333333
                 }
             },
-            "page_faults": 0.16428448420436206
+            "status": {
+                "page_faults": 0.16428448420436206
+            }
         },
         "process_id": "hostname1"
     },
@@ -432,19 +435,19 @@ An example event for `hardware` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
-| mongodb_atlas.group_id | Identifier for the project of the event. | keyword |  |  |
-| mongodb_atlas.hardware.fts.disk_usage.bytes | Total bytes of disk space that search processes use. | long | byte | counter |
+| mongodb_atlas.group_id | Unique identifier that identifies the project. | keyword |  |  |
+| mongodb_atlas.hardware.fts.disk_usage.bytes | Total bytes of disk space that search processes use. | long | byte | gauge |
 | mongodb_atlas.hardware.fts.process.cpu.kernel.pct | The amount of CPU time spent by the Full-Text Search process in kernel space. Kernel space includes the core operating system functions such as handling system calls and hardware interrupts. | double | percent | gauge |
 | mongodb_atlas.hardware.fts.process.cpu.user.pct | The amount of CPU time spent by the Full-Text Search process in user space. User space includes the execution of application code and processing data | double | percent | gauge |
-| mongodb_atlas.hardware.fts.process.memory.resident.bytes | Total bytes of resident memory that search processes occupy. | long | byte | counter |
-| mongodb_atlas.hardware.fts.process.memory.shared.bytes | Total bytes of shared memory that search processes occupy. | long | byte | counter |
-| mongodb_atlas.hardware.fts.process.memory.virtual.bytes | Total bytes of virtual memory that search processes occupy. | long | byte | counter |
+| mongodb_atlas.hardware.fts.process.memory.resident.bytes | Total bytes of resident memory that search processes occupy. | long | byte | gauge |
+| mongodb_atlas.hardware.fts.process.memory.shared.bytes | Total bytes of shared memory that search processes occupy. | long | byte | gauge |
+| mongodb_atlas.hardware.fts.process.memory.virtual.bytes | Total bytes of virtual memory that search processes occupy. | long | byte | gauge |
 | mongodb_atlas.hardware.fts.process.normalized.cpu.kernel.pct | Percentage of time that the CPU spent servicing operating system calls for the search process. | double | percent | gauge |
 | mongodb_atlas.hardware.fts.process.normalized.cpu.user.pct | Percentage of time that the CPU spent servicing user calls for the search process. | double | percent | gauge |
-| mongodb_atlas.hardware.jvm.memory.heap.available.mb | Total amount of available memory in the JVM heap. | long |  | counter |
-| mongodb_atlas.hardware.jvm.memory.heap.used.mb | Amount of memory that the JVM heap is currently using. | long |  | gauge |
-| mongodb_atlas.hardware.page_faults | Average rate of page faults on this process per second over the selected sample period. | double |  | gauge |
-| mongodb_atlas.process_id | Combination of hostname and Internet Assigned Numbers Authority (IANA) port that serves the MongoDB process. | keyword |  |  |
+| mongodb_atlas.hardware.status.jvm.memory.heap.available.mb | Total amount of available memory in the JVM heap. | long |  | gauge |
+| mongodb_atlas.hardware.status.jvm.memory.heap.used.mb | Amount of memory that the JVM heap is currently using. | long |  | gauge |
+| mongodb_atlas.hardware.status.page_faults | Average rate of page faults on this process per second over the selected sample period. | double |  | gauge |
+| mongodb_atlas.process_id | Combination of hostname and MongoDB process port that serves the MongoDB process. | keyword |  |  |
 
 
 ### Process
@@ -454,10 +457,10 @@ An example event for `process` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-24T07:37:36.486Z",
+    "@timestamp": "2024-04-24T13:14:25.586Z",
     "agent": {
-        "ephemeral_id": "1998d9c0-3d6f-4f52-b342-826fc26ce89c",
-        "id": "d4d946c7-17c9-4ce6-b388-89e75a08f407",
+        "ephemeral_id": "effbd42a-d55f-49b6-a104-14e765397baf",
+        "id": "0e76a408-722e-4fbf-88cf-b53b90679dd9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -471,7 +474,7 @@ An example event for `process` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d4d946c7-17c9-4ce6-b388-89e75a08f407",
+        "id": "0e76a408-722e-4fbf-88cf-b53b90679dd9",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -481,7 +484,7 @@ An example event for `process` looks as following:
             "process"
         ],
         "dataset": "mongodb_atlas.process",
-        "ingested": "2024-04-24T07:37:46Z",
+        "ingested": "2024-04-24T13:14:35Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
@@ -497,10 +500,10 @@ An example event for `process` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.248.7"
+            "192.168.252.7"
         ],
         "mac": [
-            "02-42-C0-A8-F8-07"
+            "02-42-C0-A8-FC-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -541,7 +544,7 @@ An example event for `process` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
-| mongodb_atlas.group_id | Identifier for the project of the event. | keyword |  |  |
+| mongodb_atlas.group_id | Unique identifier that identifies the project. | keyword |  |  |
 | mongodb_atlas.host_id | Unique identifier of the host for the MongoDB process. | keyword |  |  |
 | mongodb_atlas.process.assert.msg | The average rate of message asserts per second over the selected sample period. | double |  | gauge |
 | mongodb_atlas.process.assert.regular | The average rate of regular asserts raised per second over the selected sample period. | double |  | gauge |
@@ -678,5 +681,4 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.system.normalized.cpu.user.pct | The portion of CPU time spent executing user space processes and running applications. | double | percent | gauge |
 | mongodb_atlas.process.ticket.available.read.count | The number of read tickets available to the WiredTiger storage engine. | long |  | gauge |
 | mongodb_atlas.process.ticket.available.write.count | The number of write tickets available to the WiredTiger storage engine. | long |  | gauge |
-| mongodb_atlas.process_id | Combination of hostname and Internet Assigned Numbers Authority (IANA) port that serves the MongoDB process. | keyword |  |  |
-
+| mongodb_atlas.process_id | Combination of hostname and MongoDB process port that serves the MongoDB process. | keyword |  |  |

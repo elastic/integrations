@@ -2,7 +2,7 @@
   type: group
   fields:
     - name: group_id
-      description: Identifier for the project of the event.
+      description: Unique identifier that identifies the project.
       type: keyword
     - name: hardware
       type: group
@@ -12,7 +12,7 @@
           fields:
             - name: disk_usage.bytes
               type: long
-              metric_type: counter
+              metric_type: gauge
               unit: byte
               description: Total bytes of disk space that search processes use.
             - name: process
@@ -36,17 +36,17 @@
                   fields:
                     - name: resident.bytes
                       type: long
-                      metric_type: counter
+                      metric_type: gauge
                       unit: byte
                       description: Total bytes of resident memory that search processes occupy.
                     - name: shared.bytes
                       type: long
-                      metric_type: counter
+                      metric_type: gauge
                       unit: byte
                       description: Total bytes of shared memory that search processes occupy.
                     - name: virtual.bytes
                       type: long
-                      metric_type: counter
+                      metric_type: gauge
                       unit: byte
                       description: Total bytes of virtual memory that search processes occupy.
                 - name: normalized
@@ -65,27 +65,30 @@
                           metric_type: gauge
                           unit: percent
                           description: Percentage of time that the CPU spent servicing user calls for the search process.
-        - name: jvm
+        - name: status
           type: group
           fields:
-            - name: memory
+            - name: jvm
               type: group
               fields:
-                - name: heap
+                - name: memory
                   type: group
                   fields:
-                    - name: available.mb
-                      type: long
-                      metric_type: counter
-                      description: Total amount of available memory in the JVM heap.
-                    - name: used.mb
-                      type: long
-                      metric_type: gauge
-                      description: Amount of memory that the JVM heap is currently using.
-        - name: page_faults
-          type: double
-          metric_type: gauge
-          description: Average rate of page faults on this process per second over the selected sample period.
+                    - name: heap
+                      type: group
+                      fields:
+                        - name: available.mb
+                          type: long
+                          metric_type: gauge
+                          description: Total amount of available memory in the JVM heap.
+                        - name: used.mb
+                          type: long
+                          metric_type: gauge
+                          description: Amount of memory that the JVM heap is currently using.
+            - name: page_faults
+              type: double
+              metric_type: gauge
+              description: Average rate of page faults on this process per second over the selected sample period.
     - name: process_id
       type: keyword
-      description: Combination of hostname and Internet Assigned Numbers Authority (IANA) port that serves the MongoDB process.
+      description: Combination of hostname and MongoDB process port that serves the MongoDB process.
