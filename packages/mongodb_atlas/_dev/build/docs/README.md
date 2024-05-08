@@ -22,7 +22,7 @@ Data streams:
 - `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 - `mongod_database`: This data stream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
 - `organization`: Organization logs provide a detailed view of your organization's activities, enabling tracking and monitoring of significant actions and status changes involving database operations, billing, security, hosts, encryption, user access, and more, as performed by users and teams.
-- `process`: This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
+- `process`: This data stream collects host metrics per process for all the hosts of the specified group. Metrics, like measurements for the host such as CPU usage, number of I/O operations, and memory, are available on this data stream.
 
 Note:
 - Users can monitor and see the logs and metrics inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
@@ -43,11 +43,11 @@ You can store and search your data using Elasticsearch and visualize and manage 
 ### Steps to obtain Public Key, Private Key, Group ID, and Organization ID
 
 1. Generate programmatic API keys with `Organization Owner` permission by following the instructions in the Atlas [documentation](https://www.mongodb.com/docs/atlas/configure-api-access/#grant-programmatic-access-to-an-organization). Then, copy the public and private keys which function as a username and API key respectively.
-2. From the Atlas UI with `project owner` permission, go to Project Settings > Access Manager > API Keys and then click on Invite To Project to add the API key created above, as described in this Atlas [document](https://www.mongodb.com/docs/atlas/configure-api-access/#invite-an-organization-api-key-to-a-project).
-3. Add a specific role to API keys, under Project Settings > Access Manager > API Keys. This step is important to make sure that these API keys have the right permissions to access the data without running into any issues. The specific role for each data stream is defined under the data stream reference section.
-4. Enable Database Auditing for the Atlas project you want to monitor logs. You can follow the instructions provided in this Atlas [document](https://www.mongodb.com/docs/atlas/database-auditing/#procedure).
-5. You can find your Project ID (Group ID) in the Atlas UI. To do this, navigate to your project, click on Settings, and copy the Project ID (Group ID). You can also programmatically find it using the Atlas Admin API or Atlas CLI as described in this Atlas [document](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id).
-6. Go to your organization by using context dropdown at the top from the Atlas UI, click Settings, and copy the Organization ID.
+2. From the Atlas UI with `project owner` permission, go to **Project Settings > Access Manager > API Keys** and then click **Invite To Project** to add the API key created above, as described in the Atlas [documentation](https://www.mongodb.com/docs/atlas/configure-api-access/#invite-an-organization-api-key-to-a-project).
+3. Add a specific role to API keys, under **Project Settings > Access Manager > API Keys**. This step is important to make sure that these API keys have the right permissions to access the data without running into any issues. The specific role for each data stream is defined under the data stream reference section.
+4. Enable Database Auditing for the Atlas project you want to monitor logs. You can follow the instructions provided in this Atlas [documentation](https://www.mongodb.com/docs/atlas/database-auditing/#procedure).
+5. You can find your Project ID (Group ID) in the Atlas UI. To do this, navigate to your project, click on **Settings**, and copy the **Project ID (Group ID)**. You can also programmatically find it using the Atlas Admin API or Atlas CLI as described in this Atlas [documentation](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id).
+6. On the Atlas UI, select your organization from the context dropdown, click **Settings**, and copy the **Organization ID**.
 
 ### Important terms of MongoDB Atlas API
 
@@ -102,7 +102,7 @@ This is the `mongod_database` data stream. This datastream collects a running lo
 
 ### Organization
 
-This is the `organization` data stream. This datastream collects detailed view of your organization's activities, enabling tracking and monitoring of significant actions and status changes involving database operations, billing, security, hosts, encryption, user access, and more, as performed by users and teams.
+This is the `organization` data stream. This data stream collects detailed view of your organization's activities, enabling tracking and monitoring of significant actions and status changes involving database operations, billing, security, hosts, encryption, user access, and more, as performed by users and teams.
 
 {{event "organization"}}
 
