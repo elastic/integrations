@@ -11,25 +11,25 @@ This integration has been tested against `Cassandra version 3.11.11`.
 ### Prerequisites
 
 - Java Development Kit (JDK) 1.8 or later
-- Apache Cassandra 3.x/4.x (Adjust according to version)
-- Jolokia agent
+- Apache Cassandra 3.x or 4.x (depending on user's version)
+- Jolokia agent JAR file
 
 ### Jolokia Setup
 
-To monitor Cassandra with Jolokia, need to set up the Jolokia JVM agent.
+Follow these steps to set up Jolokia for monitoring Apache Cassandra:
 
 1. Download the Jolokia JVM Agent:
 
-   Obtain the latest Jolokia JVM agent `.jar` file from the [Jolokia official download page](https://repo1.maven.org/maven2/org/jolokia/jolokia-jvm/).
+   Visit the [Jolokia official download page](https://repo1.maven.org/maven2/org/jolokia/jolokia-jvm/) to obtain the latest version of the Jolokia JVM agent JAR file. Download the `jolokia-jvm-<jolokia_version>-agent.jar` file.
 
-2. Place the Jolokia Agent:
+2. Copy the Jolokia Agent to Cassandra's Library Directory:
 
-   Copy the downloaded `.jar` file to a suitable location on the server where Cassandra is installed.
+   Copy the downloaded `jolokia-jvm-<jolokia_version>-agent.jar` file to the Cassandra library directory on the server where Cassandra is installed.
 
    For example:
 
    ```bash
-   sudo cp jolokia-jvm-<version>-agent.jar /path/to/cassandra/lib/
+   cp jolokia-jvm-<jolokia_version>-agent.jar /path/to/cassandra/lib/
    ```
 
 3. Configure Cassandra to use the Jolokia Agent:
@@ -37,17 +37,33 @@ To monitor Cassandra with Jolokia, need to set up the Jolokia JVM agent.
    To enable the Jolokia agent, modify the `cassandra-env.sh` by adding the following line at the bottom of file:
 
    ```
-   JVM_OPTS="$JVM_OPTS -javaagent:/path/to/jolokia-jvm-<version>-agent.jar=port=7777,host=0.0.0.0"
+   JVM_OPTS="$JVM_OPTS -javaagent:/path/to/jolokia-jvm-<jolokia_version>-agent.jar=port=<jolokia_port>,host=0.0.0.0"
    ```
 
 4. Restart Cassandra:
 
-   After configuring Cassandra with the Jolokia agent, restart the Cassandra service to apply the changes.
+   Restart the Apache Cassandra service to apply the changes made to the configuration.
 
-   Note:
-   - Restarting the Cassandra service will temporarily disrupt database connectivity. Dependent services may experience failures and should be designed to handle such interruptions gracefully.
-   - Immediately after a restart, Cassandra's performance may be impacted due to cold caches and commit log replay.
-   - Ensure no cluster maintenance tasks are in progress during the restart to prevent any unintended consequences.
+   > Note:
+   - Restarting the Apache Cassandra service will temporarily disrupt database connectivity. Ensure that dependent services are designed to handle such interruptions gracefully.
+   - Immediately after a restart, Cassandra's performance may be impacted due to cold caches and commit log replay. Allow some time for the system to stabilize.
+   - Before restarting Cassandra, ensure that no cluster maintenance tasks are in progress to prevent any unintended consequences.
+   - The exact steps will vary based on the installation type, the setup process might differ based on the specific deployment method or environment.
+   - Procedures for restarting Cassandra may vary based on user's specific setup and configuration.
+
+## Verifying the setup
+
+After restarting Cassandra, user can verify that Jolokia is properly set up by accessing the Jolokia endpoint:
+
+```
+http://<cassandra-host>:<jolokia_port>/jolokia
+```
+
+Replace with the hostname or IP address of user's Cassandra server.
+
+If the setup is successful, user should see a JSON response containing information about the available Jolokia operations and the Cassandra instance.
+
+User can now use Jolokia to monitor and manage Apache Cassandra cluster.
 
 ## Troubleshooting
 
