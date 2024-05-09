@@ -1,0 +1,55 @@
+title: Collect Hardware metrics from MongoDB Atlas
+type: logs
+streams:
+  - input: cel
+    title: MongoDB Atlas Hardware metrics
+    enabled: false
+    description: Collect Hardware metrics from MongoDB Atlas.
+    template_path: input.yml.hbs
+    vars:
+      - name: period
+        type: text
+        title: Period
+        description: Period of fetching metrics. Value of Granularity and Period will be same (check readme for more details). Supported units for this parameter are h/m.
+        default: 10m
+        multi: false
+        required: true
+        show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are m (minutes) and s (seconds). If the data collection period is extensive, ensure that this parameter's value is appropriately long.
+        multi: false
+        required: true
+        show_user: false
+        default: 1m
+      - name: groupId
+        type: text
+        title: Group ID
+        description: Identifier string that identifies your project. Groups and projects are synonymous terms. Group id is identical to project id. Ex. 32b6e34b3d91647abb20e7b8
+        multi: false
+        required: true
+        show_user: true
+      - name: enable_request_tracer
+        type: bool
+        title: Enable Request Tracing
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - mongodb_atlas-hardware
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
