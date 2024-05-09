@@ -19,7 +19,7 @@ Logs help you keep a record of events that happen on your machine. The `Log` dat
 Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration are `process` and `hardware` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
 
 Data streams:
-- `hardware`: This data stream collects all the Atlas Search hardware and status data series within the provided time range for one process in the specified project.
+- `hardware`: This data stream collects all the Atlas search hardware and status data series within the provided time range for one process in the specified project.
 - `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 - `mongod_database`: This data stream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
 - `organization`: Organization logs provide a detailed view of your organization's activities, enabling tracking and monitoring of significant actions and status changes involving database operations, billing, security, hosts, encryption, user access, and more, as performed by users and teams.
