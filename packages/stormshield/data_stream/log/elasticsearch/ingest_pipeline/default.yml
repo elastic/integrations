@@ -112,34 +112,79 @@ processors:
   # Now rename things to ECS
 
   - rename:
-      field: dst
+      field: stormshield.dstcontinent
+      target_field: destination.geo.continent_code
+      if: ctx.stormshield?.dstcontinent != null
+
+  - rename:
+      field: stormshield.dstcountry
+      target_field: destination.geo.country_iso_code
+      if: ctx.stormshield?.dstcountry != null
+
+  - rename:
+      field: stormshield.dstname
+      target_field: destination.domain
+      if: ctx.stormshield?.dstname != null
+
+  - convert:
+      field: stormshield.dst
       target_field: destination.ip
-      if: ctx.dst != null && ctx.destination?.ip == null
+      type: ip
+      if: ctx.stormshield?.dst != null && ctx.destination?.ip == null
+
+  - remove:
+      field: stormshield.dst
+      if: ctx.stormshield?.dst != null
 
   - rename:
-      field: dstmac
+      field: stormshield.dstmac
       target_field: destination.mac
-      if: ctx.dstmac != null && ctx.destination?.mac == null
+      if: ctx.stormshield?.dstmac != null && ctx.destination?.mac == null
 
-  - rename:
-      field: dstport
+  - convert:
+      field: stormshield.dstport
       target_field: destination.port
-      if: ctx.dstport != null && ctx.destination?.port == null
+      type: long
+      if: ctx.stormshield?.dstport != null && ctx.destination?.port == null
+
+  - remove:
+      field: stormshield.dstport
+      if: ctx.stormshield?.dstport != null
 
   - rename:
-      field: src
+      field: stormshield.srccontinent
+      target_field: source.geo.continent_code
+      if: ctx.stormshield?.srccontinent != null
+
+  - rename:
+      field: stormshield.srccountry
+      target_field: source.geo.country_iso_code
+      if: ctx.stormshield?.srccountry != null
+
+  - convert:
+      field: stormshield.src
       target_field: source.ip
-      if: ctx.src != null && ctx.source?.ip == null
+      type: ip
+      if: ctx.stormshield?.src != null && ctx.source?.ip == null
+
+  - remove:
+      field: stormshield.src
+      if: ctx.stormshield?.src != null
 
   - rename:
-      field: srcmac
+      field: stormshield.srcmac
       target_field: source.mac
-      if: ctx.srcmac != null && ctx.source?.mac == null
+      if: ctx.stormshield?.srcmac != null && ctx.source?.mac == null
 
-  - rename:
-      field: srcport
+  - convert:
+      field: stormshield.srcport
       target_field: source.port
-      if: ctx.srcport != null && ctx.source?.port == null
+      type: long
+      if: ctx.stormshield?.srcport != null && ctx.source?.port == null
+
+  - remove:
+      field: stormshield.srcport
+      if: ctx.stormshield?.srcport != null
 
   - remove:
       field: _temp_
