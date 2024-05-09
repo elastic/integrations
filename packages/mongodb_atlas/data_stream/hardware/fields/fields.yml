@@ -1,0 +1,94 @@
+- name: mongodb_atlas
+  type: group
+  fields:
+    - name: group_id
+      description: Unique identifier that identifies the project.
+      type: keyword
+    - name: hardware
+      type: group
+      fields:
+        - name: fts
+          type: group
+          fields:
+            - name: disk_usage.bytes
+              type: long
+              metric_type: gauge
+              unit: byte
+              description: Total bytes of disk space that search processes use.
+            - name: process
+              type: group
+              fields:
+                - name: cpu
+                  type: group
+                  fields:
+                    - name: kernel.pct
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                      description: The amount of CPU time spent by the Full-Text Search process in kernel space. Kernel space includes the core operating system functions such as handling system calls and hardware interrupts.
+                    - name: user.pct
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                      description: The amount of CPU time spent by the Full-Text Search process in user space. User space includes the execution of application code and processing data
+                - name: memory
+                  type: group
+                  fields:
+                    - name: resident.bytes
+                      type: long
+                      metric_type: gauge
+                      unit: byte
+                      description: Total bytes of resident memory that search processes occupy.
+                    - name: shared.bytes
+                      type: long
+                      metric_type: gauge
+                      unit: byte
+                      description: Total bytes of shared memory that search processes occupy.
+                    - name: virtual.bytes
+                      type: long
+                      metric_type: gauge
+                      unit: byte
+                      description: Total bytes of virtual memory that search processes occupy.
+                - name: normalized
+                  type: group
+                  fields:
+                    - name: cpu
+                      type: group
+                      fields:
+                        - name: kernel.pct
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+                          description: Percentage of time that the CPU spent servicing operating system calls for the search process.
+                        - name: user.pct
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+                          description: Percentage of time that the CPU spent servicing user calls for the search process.
+        - name: status
+          type: group
+          fields:
+            - name: jvm
+              type: group
+              fields:
+                - name: memory
+                  type: group
+                  fields:
+                    - name: heap
+                      type: group
+                      fields:
+                        - name: available.mb
+                          type: long
+                          metric_type: gauge
+                          description: Total amount of available memory in the JVM heap.
+                        - name: used.mb
+                          type: long
+                          metric_type: gauge
+                          description: Amount of memory that the JVM heap is currently using.
+            - name: page_faults
+              type: double
+              metric_type: gauge
+              description: Average rate of page faults on this process per second over the selected sample period.
+    - name: process_id
+      type: keyword
+      description: Combination of hostname and MongoDB process port that serves the MongoDB process.
