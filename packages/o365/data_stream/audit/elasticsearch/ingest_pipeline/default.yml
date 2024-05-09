@@ -80,6 +80,16 @@ processors:
       field: o365audit.OrganizationId
       target_field: organization.id
       ignore_missing: true
+  - json:
+      tag: json-extract-stringly-OperationProperties
+      field: o365audit.OperationProperties
+      if: ctx.o365audit?.OperationProperties instanceof String
+      on_failure:
+        - remove:
+            field: o365audit.OperationProperties
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365audit.UserAgent
       target_field: user_agent.original

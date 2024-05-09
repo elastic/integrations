@@ -1,0 +1,835 @@
+- name: mongodb_atlas
+  type: group
+  fields:
+    - name: group_id
+      description: Unique identifier that identifies the project.
+      type: keyword
+    - name: host_id
+      description: Unique identifier of the host for the MongoDB process.
+      type: keyword
+    - name: process
+      type: group
+      fields:
+        - name: assert
+          type: group
+          fields:
+            - name: msg
+              description: The average rate of message asserts per second over the selected sample period.
+              type: double
+              metric_type: gauge
+            - name: regular
+              description: The average rate of regular asserts raised per second over the selected sample period.
+              type: double
+              metric_type: gauge
+            - name: user
+              description: The average rate of user asserts per second over the selected sample period.
+              type: double
+              metric_type: gauge
+            - name: warning
+              description: The average rate of warnings per second over the selected sample period.
+              type: double
+              metric_type: gauge
+        - name: background_flush.avg
+          description: Amount of data flushed in the background.
+          type: double
+          metric_type: gauge
+        - name: cache
+          type: group
+          fields:
+            - name: dirty.bytes
+              description: "Amount of dirty bytes in the WiredTiger storage engine cache."
+              type: double
+              metric_type: gauge
+              unit: byte
+            - name: read.bytes
+              description: "Read - Amount of bytes in the WiredTiger storage engine cache."
+              type: double
+              metric_type: gauge
+              unit: byte
+            - name: used.total.bytes
+              description: Amount of used bytes in the WiredTiger storage engine cache.
+              type: double
+              metric_type: gauge
+              unit: byte
+            - name: write.bytes
+              description: Write - Amount of bytes in the WiredTiger storage engine cache.
+              type: double
+              metric_type: gauge
+              unit: byte
+        - name: connections
+          description: Displays the total number of active connections to the database deployment. Monitor connections to determine whether the current connection limits are sufficient.
+          type: double
+          metric_type: gauge
+        - name: cpu
+          type: group
+          fields:
+            - name: children
+              type: group
+              fields:
+                - name: kernel
+                  type: group
+                  fields:
+                    - name: max.pct
+                      description: The maximum amount of CPU time spent by child processes in kernel space.
+                      type: double
+                      metric_type: counter
+                      unit: percent
+                    - name: pct
+                      description: CPU children kernel space for mongodb processes.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                - name: user
+                  type: group
+                  fields:
+                    - name: max.pct
+                      description: The maximum amount of CPU time spent by child processes in user space.
+                      type: double
+                      metric_type: counter
+                      unit: percent
+                    - name: pct
+                      description: CPU children user space for mongodb.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+            - name: kernel
+              type: group
+              fields:
+                - name: max.pct
+                  description: The maximum amount of CPU time spent by the MongoDB process itself in kernel space, handling system calls and hardware interrupts.
+                  type: double
+                  metric_type: counter
+                  unit: percent
+                - name: pct
+                  description: CPU kernel space for mongodb processes.
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+            - name: normalized
+              type: group
+              fields:
+                - name: children
+                  type: group
+                  fields:
+                    - name: kernel
+                      type: group
+                      fields:
+                        - name: max.pct
+                          description: Max children kernel CPU usage scaled to a range of 0% to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: counter
+                          unit: percent
+                        - name: pct
+                          description: NORMALIZED CPU children kernel space for mongodb processes.
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+                    - name: user
+                      type: group
+                      fields:
+                        - name: max.pct
+                          description: Max children user CPU usage scaled to a range of 0% to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: counter
+                          unit: percent
+                        - name: pct
+                          description: NORMALIZED CPU children user space for mongodb.
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+                - name: kernel
+                  type: group
+                  fields:
+                    - name: max.pct
+                      description: Max kernel CPU usage scaled to a range of 0% to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                      type: double
+                      metric_type: counter
+                      unit: percent
+                    - name: pct
+                      description: NORMALIZED CPU kernel space for mongodb processes.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                - name: user
+                  type: group
+                  fields:
+                    - name: max.pct
+                      description: Max user CPU usage scaled to a range of 0% to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                      type: double
+                      metric_type: counter
+                      unit: percent
+                    - name: pct
+                      description: NORMALIZED CPU user space for mongodb processes.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+            - name: user
+              type: group
+              fields:
+                - name: max.pct
+                  description: The maximum amount of CPU time spent by the MongoDB process itself in user space, executing application code and processing data.
+                  type: double
+                  metric_type: counter
+                  unit: percent
+                - name: pct
+                  description: CPU user space for mongodb processes.
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+        - name: cursor
+          type: group
+          fields:
+            - name: open.total
+              description: The number of cursors that the server maintains for clients.
+              type: long
+              metric_type: gauge
+            - name: timed_out.total
+              description: The average rate of cursors that have timed out per second over the selected sample period.
+              type: double
+              metric_type: gauge
+        - name: database
+          type: group
+          fields:
+            - name: size.total.bytes
+              description: The amount of storage space in bytes that your stored data uses.
+              type: long
+              metric_type: gauge
+              unit: byte
+            - name: storage.total.bytes
+              description: Sum total of the compressed on-disk storage space allocated for document storage across all databases.
+              type: long
+              metric_type: gauge
+              unit: byte
+        - name: document
+          type: group
+          fields:
+            - name: deleted
+              description: Displays the documents deleted per second.
+              type: double
+              metric_type: gauge
+            - name: inserted
+              description: Displays the documents inserted per second.
+              type: double
+              metric_type: gauge
+            - name: returned
+              description: Displays the documents returned per second.
+              type: double
+              metric_type: gauge
+            - name: updated
+              description: Displays the documents updated per second.
+              type: double
+              metric_type: gauge
+        - name: fts
+          type: group
+          fields:
+            - name: cpu
+              type: group
+              fields:
+                - name: kernel.pct
+                  description: The amount of CPU time spent by the Full-Text search process in kernel space.
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                - name: normalized
+                  type: group
+                  fields:
+                    - name: kernel.pct
+                      description: Percentage of time that the CPU spent servicing the operating system calls for the search process.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                    - name: user.pct
+                      description: Percentage of time that the CPU spent servicing user calls for the search process.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                - name: user.pct
+                  description: The amount of CPU time spent by the Full-Text search process in user space.
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+            - name: disk
+              type: group
+              fields:
+                - name: utilization.total.bytes
+                  description: Total bytes of disk space that search processes use.
+                  type: long
+                  metric_type: gauge
+                  unit: byte
+            - name: memory
+              type: group
+              fields:
+                - name: mapped.total.bytes
+                  description: Total bytes of mapped memory that search processes occupy.
+                  type: long
+                  metric_type: gauge
+                  unit: byte
+                - name: resident.total.bytes
+                  description: Total bytes of resident memory that search processes occupy.
+                  type: long
+                  metric_type: gauge
+                  unit: byte
+                - name: virtual.total.bytes
+                  description: Total bytes of virtual memory that search processes occupy.
+                  type: long
+                  metric_type: gauge
+                  unit: byte
+        - name: global
+          type: group
+          fields:
+            - name: access.not_in_memory
+              description: The number of accesses to data that are not currently stored in memory, requiring disk access.
+              type: long
+              metric_type: gauge
+            - name: lock
+              type: group
+              fields:
+                - name: current_queue
+                  type: group
+                  fields:
+                    - name: reader.count
+                      description: The number of operations that are currently queued and waiting for the read lock.
+                      type: long
+                      metric_type: gauge
+                    - name: total
+                      description: The total number of operations queued waiting for the lock (readers + writers)
+                      type: long
+                      metric_type: gauge
+                    - name: writer.count
+                      description: The number of operations that are currently queued and waiting for the write lock.
+                      type: long
+                      metric_type: gauge
+            - name: page_fault.exception_thrown
+              description: The number of exceptions thrown due to page faults.
+              type: long
+              metric_type: gauge
+        - name: host
+          type: group
+          fields:
+            - name: page_faults
+              description: Measurements on page faults related to the host.
+              type: double
+              metric_type: gauge
+        - name: index
+          type: group
+          fields:
+            - name: btree
+              type: group
+              fields:
+                - name: access.count
+                  description: Number of index btree ACCESSES.
+                  type: long
+                  metric_type: gauge
+                - name: hits.count
+                  description: Number of index btree HITS.
+                  type: long
+                  metric_type: gauge
+                - name: miss_ratio.count
+                  description: Index btree miss ratio.
+                  type: double
+                  metric_type: gauge
+                - name: miss.count
+                  description: Number of index btree MISSES.
+                  type: long
+                  metric_type: gauge
+        - name: journaling
+          type: group
+          fields:
+            - name: commits.write_lock
+              description: Number of journaling COMMIT operations.
+              type: long
+              metric_type: gauge
+            - name: mb
+              description: Average amount of data in megabytes Cloud Manager writes to the recovery log per second meets your specified threshold.
+              type: double
+              metric_type: gauge
+            - name: write.data_files.mb
+              description: The maximum size in megabytes (MB) of data files written by the journaling process.
+              type: double
+              metric_type: gauge
+        - name: memory
+          type: group
+          fields:
+            - name: computed.mb
+              description: Amount of COMPUTED process memory in megabytes.
+              type: double
+              metric_type: gauge
+            - name: mapped.mb
+              description: Amount of MAPPED process memory in megabytes.
+              type: double
+              metric_type: gauge
+            - name: resident.mb
+              description: Amount of RESIDENT process memory in megabytes.
+              type: double
+              metric_type: gauge
+            - name: virtual.mb
+              description: Amount of VIRTUAL process memory in megabytes.
+              type: double
+              metric_type: gauge
+        - name: network
+          type: group
+          fields:
+            - name: in
+              description: Process incoming network throughput in bytes per second.
+              type: double
+              metric_type: gauge
+            - name: out
+              description: Process outgoing network throughput in bytes per second.
+              type: double
+              metric_type: gauge
+            - name: request.total
+              description: The total number of distinct requests that the process has received.
+              type: double
+              metric_type: counter
+        - name: opcounter
+          type: group
+          fields:
+            - name: cmd
+              description: Database operations rate on a process since the process last started.
+              type: double
+              metric_type: gauge
+            - name: delete
+              description: Database DELETE operations rate on a process since the process last started.
+              type: double
+              metric_type: gauge
+            - name: getmore
+              description: Database GETMORE operations rate on a process since the process last started.
+              type: double
+              metric_type: gauge
+            - name: insert
+              description: Database INSERT operations rate on a process since the process last started.
+              type: double
+              metric_type: gauge
+            - name: query
+              description: Database QUERY operations rate on a process since the process last started.
+              type: double
+              metric_type: gauge
+            - name: repl
+              type: group
+              fields:
+                - name: cmd
+                  description: Database operations rate on secondaries.
+                  type: double
+                  metric_type: gauge
+                - name: delete
+                  description: Database DELETE operations rate on secondaries.
+                  type: double
+                  metric_type: gauge
+                - name: insert
+                  description: Database INSERT operations rate on secondaries.
+                  type: double
+                  metric_type: gauge
+                - name: update
+                  description: Database UPDATE operations rate on secondaries.
+                  type: double
+                  metric_type: gauge
+            - name: update
+              description: Database UPDATE operations rate on a process since the process last started.
+              type: double
+              metric_type: gauge
+        - name: operation
+          type: group
+          fields:
+            - name: execution.time
+              type: group
+              fields:
+                - name: cmd.avg.ms
+                  description: Average execution time in milliseconds per command operation over the selected sample period.
+                  type: double
+                  metric_type: gauge
+                  unit: ms
+                - name: read.avg.ms
+                  description: Average execution time in milliseconds per read operation over the selected sample period.
+                  type: double
+                  metric_type: gauge
+                  unit: ms
+                - name: write.avg.ms
+                  description: Average execution time in milliseconds per write operation over the selected sample period.
+                  type: double
+                  metric_type: gauge
+                  unit: ms
+            - name: scan_and_order
+              description: The total number of queries that return sorted data that cannot perform the sort operation using an index.
+              type: double
+              metric_type: gauge
+        - name: oplog
+          type: group
+          fields:
+            - name: master
+              type: group
+              fields:
+                - name: lag.time_diff.s
+                  description: Lag or delay in replication between the primary node (oplog master) and its secondary nodes.
+                  type: double
+                  unit: s
+                  metric_type: gauge
+                - name: time.s
+                  description: The replication oplog window. The approximate time available in the primary's replication oplog. If a secondary is behind real-time by more than this amount, it cannot catch up and will require a full resync.
+                  type: double
+                  metric_type: gauge
+                  unit: s
+            - name: rate.gb_per_hour
+              description: The rate of change in the size of the oplog in gigabytes per hour.
+              type: double
+              metric_type: gauge
+            - name: repl_lag.s
+              description: The amount of time, typically in seconds, it takes for changes recorded in the oplog on the primary node to be replicated and applied to the secondary node.
+              type: double
+              metric_type: gauge
+              unit: s
+            - name: slave.lag.master.time.s
+              description: The difference in time, typically in seconds, between the oplog time on the secondary (slave) node and the time of the latest operation in the oplog on the primary (master) node.
+              type: double
+              metric_type: gauge
+              unit: s
+        - name: query
+          type: group
+          fields:
+            - name: executor
+              type: group
+              fields:
+                - name: scanned
+                  description: Average rate per second to scan index items during queries and query-plan evaluations.
+                  type: double
+                  metric_type: gauge
+                - name: scanned_objects
+                  description: Average rate of documents scanned per second during queries and query-plan evaluations.
+                  type: double
+                  metric_type: gauge
+            - name: targeting
+              type: group
+              fields:
+                - name: scanned_objects_per_returned
+                  description: Ratio of the number of documents scanned to the number of documents returned.
+                  type: double
+                  metric_type: gauge
+                - name: scanned_per_returned
+                  description: Ratio of the number of index items scanned to the number of documents returned.
+                  type: double
+                  metric_type: gauge
+        - name: restart.in_last_hour
+          description: Number of times the host restarted within the previous hour.
+          type: double
+          metric_type: gauge
+        - name: swap
+          type: group
+          fields:
+            - name: usage
+              type: group
+              fields:
+                - name: free.max.kb
+                  description: Max amount of swap space free.
+                  type: double
+                  metric_type: counter
+                - name: total
+                  type: group
+                  fields:
+                    - name: free
+                      description: Total amount of swap space free.
+                      type: double
+                      metric_type: gauge
+                    - name: used
+                      description: Total amount of swap space in use.
+                      type: double
+                      metric_type: gauge
+                - name: used.max.kb
+                  description: Max amount of swap space in use.
+                  type: double
+                  metric_type: counter
+        - name: system
+          type: group
+          fields:
+            - name: cpu
+              type: group
+              fields:
+                - name: guest
+                  type: group
+                  fields:
+                    - name: max.pct
+                      description: Max amount of CPU time spent running a virtual CPU for guest operating systems.
+                      type: double
+                      metric_type: counter
+                      unit: percent
+                    - name: pct
+                      description: Tracks CPU time consumed by guest operating systems, like virtual machines, on the host system.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                - name: iowait
+                  type: group
+                  fields:
+                    - name: max.pct
+                      description: Max amount of CPU time spent waiting for I/O operations to complete.
+                      type: double
+                      metric_type: counter
+                      unit: percent
+                    - name: pct
+                      description: The CPU time spent waiting for I/O operations to complete.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                - name: irq
+                  type: group
+                  fields:
+                    - name: max.pct
+                      description: Max amount of CPU time spent servicing hardware interrupts.
+                      type: double
+                      metric_type: counter
+                      unit: percent
+                    - name: pct
+                      description: The portion of CPU time spent servicing hardware interrupts.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                - name: kernel
+                  type: group
+                  fields:
+                    - name: max.pct
+                      description: Max amount of CPU time spent in kernel space, executing system calls and handling hardware interrupts.
+                      type: double
+                      metric_type: counter
+                      unit: percent
+                    - name: pct
+                      description: The portion of CPU time spent executing kernel space processes and handling system calls.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                - name: nice.pct
+                  description: The portion of CPU time allocated to processes with a 'nice' priority level.
+                  type: double
+                  metric_type: gauge
+                  unit: percent
+                - name: softirq
+                  type: group
+                  fields:
+                    - name: max.pct
+                      description: Max amount of CPU time spent servicing soft interrupts, which are interrupts triggered by software.
+                      type: double
+                      metric_type: counter
+                      unit: percent
+                    - name: pct
+                      description: The CPU time spent handling software-generated interrupts.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                - name: steal
+                  type: group
+                  fields:
+                    - name: max.pct
+                      description: Max amount of CPU time 'stolen' by the hypervisor for other virtual machines running on the same physical host.
+                      type: double
+                      metric_type: counter
+                      unit: percent
+                    - name: pct
+                      description: The amount of CPU time 'stolen' by the hypervisor for other virtual machines running on the same physical host.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+                - name: user
+                  type: group
+                  fields:
+                    - name: max.pct
+                      description: Max amount of CPU time spent in user space, executing user-level processes and applications.
+                      type: double
+                      metric_type: counter
+                      unit: percent
+                    - name: pct
+                      description: The portion of CPU time spent executing user space processes and running applications.
+                      type: double
+                      metric_type: gauge
+                      unit: percent
+            - name: memory
+              type: group
+              fields:
+                - name: available
+                  type: group
+                  fields:
+                    - name: kb
+                      description: Physical memory available in kilobytes.
+                      type: double
+                      metric_type: gauge
+                    - name: max.kb
+                      description: Max Physical memory available in kilobytes.
+                      type: double
+                      metric_type: counter
+                - name: free
+                  type: group
+                  fields:
+                    - name: kb
+                      description: Physical memory free in kilobytes.
+                      type: double
+                      metric_type: gauge
+                    - name: max.kb
+                      description: Max Physical memory free in kilobytes.
+                      type: double
+                      metric_type: counter
+                - name: used
+                  type: group
+                  fields:
+                    - name: kb
+                      description: Physical memory used in kilobytes.
+                      type: double
+                      metric_type: gauge
+                    - name: max.kb
+                      description: Max Physical memory used in kilobytes.
+                      type: double
+                      metric_type: counter
+            - name: network
+              type: group
+              fields:
+                - name: in
+                  description: Incoming network throughput in bytes per second.
+                  type: double
+                  metric_type: gauge
+                - name: max.in
+                  description: Max Incoming network throughput in bytes per second.
+                  type: double
+                  metric_type: counter
+                - name: out
+                  description: Outgoing network throughput in bytes per second.
+                  type: double
+                  metric_type: gauge
+                - name: max.out
+                  description: Max Outgoing network throughput in bytes per second.
+                  type: double
+                  metric_type: counter
+            - name: normalized
+              type: group
+              fields:
+                - name: cpu
+                  type: group
+                  fields:
+                    - name: guest
+                      type: group
+                      fields:
+                        - name: max.pct
+                          description: Max Guest CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: counter
+                          unit: percent
+                        - name: pct
+                          description: Guest CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+                    - name: iowait
+                      type: group
+                      fields:
+                        - name: max.pct
+                          description: Max CPU usage of processes spent waiting for IO operations to complete, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: counter
+                          unit: percent
+                        - name: pct
+                          description: CPU usage of processes spent waiting for IO operations to complete, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+                    - name: irq
+                      type: group
+                      fields:
+                        - name: max.pct
+                          description: Max CPU usage of hardware interrupts, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: counter
+                          unit: percent
+                        - name: pct
+                          description: NORMALIZED irq CPU utilization across various processes for a server
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+                    - name: kernel
+                      type: group
+                      fields:
+                        - name: max.pct
+                          description: Max kernel CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: counter
+                          unit: percent
+                        - name: pct
+                          description: Kernel CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+                    - name: nice
+                      type: group
+                      fields:
+                        - name: max.pct
+                          description: Max CPU usage of processes with a positive nice value, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: counter
+                          unit: percent
+                        - name: pct
+                          description: NORMALIZED nice CPU utilization across various processes for a server
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+                    - name: softirq
+                      type: group
+                      fields:
+                        - name: max.pct
+                          description: Max CPU usage of software interrupts, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: counter
+                          unit: percent
+                        - name: pct
+                          description: NORMALIZED softirq CPU utilization across various processes for a server
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+                    - name: steal
+                      type: group
+                      fields:
+                        - name: max.pct
+                          description: Max The percentage of time the CPU had something runnable, but the hypervisor chose to run something else, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: counter
+                          unit: percent
+                        - name: pct
+                          description: The percentage of time the CPU had something runnable, but the hypervisor chose to run something else, scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+                        - name: user
+                          type: group
+                          fields:
+                            - name: max.pct
+                              description: Max user CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                              type: double
+                              metric_type: counter
+                              unit: percent
+                            - name: pct
+                              description: NORMALIZED CPU user space utilization across various processes for a server
+                              type: double
+                              metric_type: gauge
+                              unit: percent
+                    - name: user
+                      type: group
+                      fields:
+                        - name: max.pct
+                          description: Max user CPU usage of processes on the host scaled to a range of 0 to 100%, is obtained by dividing the usage value by the total number of CPU cores.
+                          type: double
+                          metric_type: counter
+                          unit: percent
+                        - name: pct
+                          description: The portion of CPU time spent executing user space processes and running applications.
+                          type: double
+                          metric_type: gauge
+                          unit: percent
+        - name: ticket
+          type: group
+          fields:
+            - name: available
+              type: group
+              fields:
+                - name: read.count
+                  description: The number of read tickets available to the WiredTiger storage engine.
+                  type: long
+                  metric_type: gauge
+                - name: write.count
+                  description: The number of write tickets available to the WiredTiger storage engine.
+                  type: long
+                  metric_type: gauge
+    - name: process_id
+      description: Combination of hostname and MongoDB process port that serves the MongoDB process.
+      type: keyword
