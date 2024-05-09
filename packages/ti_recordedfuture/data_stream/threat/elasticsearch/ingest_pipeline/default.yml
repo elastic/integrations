@@ -117,7 +117,7 @@ processors:
               value: '{{{ _ingest._value }}}'
               allow_duplicates: false
 
-# Convert evidence_details fields to snakecase
+  # Convert evidence_details fields to snakecase
   - script:
       description: Convert evidence_details fields to snakecase.
       if: ctx.json.evidence_details instanceof List && ctx.json.evidence_details.size() > 0
@@ -159,7 +159,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-# Convert evidence_details timestamps to date
+  # Convert evidence_details timestamps to date
   - foreach:
       field: json.evidence_details
       ignore_missing: true
@@ -272,7 +272,7 @@ processors:
       ignore_empty_value: true
       if: 'ctx.threat?.indicator?.type == "domain-name" && ctx.threat?.indicator?.url?.domain == null'
 
-# Add Threat scanner_stats and sightings fields
+  # Add Threat scanner_stats and sightings fields
   - script:
       description: Calculate threat.indicator.scanner_stats as sum of sources_count
       lang: painless
