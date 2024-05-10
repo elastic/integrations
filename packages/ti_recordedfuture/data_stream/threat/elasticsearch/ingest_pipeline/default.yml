@@ -117,6 +117,67 @@ processors:
               value: '{{{ _ingest._value }}}'
               allow_duplicates: false
 
+  # Convert evidence_details fields to snakecase
+  - script:
+      description: Convert evidence_details fields to snakecase.
+      if: ctx.json.evidence_details instanceof List && ctx.json.evidence_details.size() > 0
+      tag: script-evidence_details_snakecase
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def out = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            out.put(k, v);
+          }
+
+          return out;
+        }
+        List evidence_details = new ArrayList();
+        for (evidence in ctx.json.evidence_details){
+          evidence_details.add(keysToSnakeCase(evidence));
+        }
+        ctx.json.evidence_details = evidence_details;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert evidence_details timestamps to date
+  - foreach:
+      field: json.evidence_details
+      ignore_missing: true
+      processor:
+        date:
+          field: '_ingest._value.timestamp'
+          tag: date_time
+          target_field: '_ingest._value.timestamp'
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: '_ingest._value.timestamp'
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
 #
 # Hash indicators (threat.indicator.type=file)
 # As risklist indicators don't have a "type" field, it's necessary
@@ -210,6 +271,43 @@ processors:
       value: '{{{ json.Name }}}'
       ignore_empty_value: true
       if: 'ctx.threat?.indicator?.type == "domain-name" && ctx.threat?.indicator?.url?.domain == null'
+
+  # Add Threat scanner_stats and sightings fields
+  - script:
+      description: Calculate threat.indicator.scanner_stats as sum of sources_count
+      lang: painless
+      tag: script-scanner_stats
+      if: ctx.json.evidence_details instanceof List && ctx.json.evidence_details.size() > 0
+      source: |
+        def sum_sources_count = 0;
+        for (evidence in ctx.json.evidence_details){
+          if (evidence['sources_count'] != null){
+            sum_sources_count += evidence['sources_count'];
+          }
+        }
+        ctx.threat.indicator.scanner_stats = sum_sources_count;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Calculate threat.indicator.sightings as sum of sightings_count
+      lang: painless
+      tag: script-sightings
+      if: ctx.json.evidence_details instanceof List && ctx.json.evidence_details.size() > 0
+      source: |
+        def sum_sightings_count = 0;
+        for (evidence in ctx.json.evidence_details){
+          if (evidence['sightings_count'] != null){
+            sum_sightings_count += evidence['sightings_count'];
+          }
+        }
+        ctx.threat.indicator.sightings = sum_sightings_count;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
 
 #
 # Normalize Risk
