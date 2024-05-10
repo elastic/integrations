@@ -670,4 +670,4 @@ The fields reported are:
 ## Dashboard
 
 Prometheus integration is shipped including default overview dashboard.
-Default dashboard works only for `remote_write` datastream and `collector` darastream, if metrics are scraped from the Prometheus server metrics endpoint.
+Default dashboard works only for `remote_write` datastream and `collector` datastream, if metrics are scraped from the Prometheus server metrics endpoint.
