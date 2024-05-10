@@ -248,6 +248,11 @@ An example event for `log` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.geo.continent_code | Two-letter code representing continent's name. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | input.type | Type of input. | keyword |
 | log.source.address | Source address for the log. | keyword |
@@ -261,78 +266,80 @@ An example event for `log` looks as following:
 | log.syslog.version | The version of the Syslog protocol specification. Only applicable for RFC 5424 messages. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
 | stormshield.Accepted | Number of packets corresponding to the application of Pass rules. Example: Accepted=2430. | keyword |
-| stormshield.AssocMem | The memory used for ... | keyword |
-| stormshield.Blocked | Number of packets corresponding to the application of Block rules. Example: Blocked=1254. | keyword |
+| stormshield.AssocMem | The memory used for ... | long |
+| stormshield.Blocked | Number of packets corresponding to the application of Block rules. Example: Blocked=1254. | long |
 | stormshield.Byte.in_count | Number of bytes that have passed through the firewall (incoming) | long |
 | stormshield.Byte.out_count | Number of bytes that have passed through the firewall (outgoing) | long |
-| stormshield.ConnMem | Percentage of memory allocated to connections. Value from 0 to 100. | keyword |
-| stormshield.DTrackMem | The memory used for ... | keyword |
+| stormshield.ConnMem | Percentage of memory allocated to connections. Value from 0 to 100. | long |
+| stormshield.DTrackMem | The memory used for ... | long |
 | stormshield.DtrackMem | Percentage of memory used for data tracking (TCP/UDP packets). Value from 0 to 100. | keyword |
-| stormshield.DynamicMem | Percentage of the ASQs dynamic memory in use. Value from 0 to 100. | keyword |
+| stormshield.DynamicMem | Percentage of the ASQs dynamic memory in use. Value from 0 to 100. | long |
 | stormshield.EtherStateByte.in_count | Number of bytes that have passed through the firewall (incoming) | long |
 | stormshield.EtherStateByte.out_count | Number of bytes that have passed through the firewall (outgoing) | long |
-| stormshield.EtherStateConn | Number of stateful statuses for Ethernet exchanges without IP layer. Digital format. Example: EtherStateConn=0 Available from: SNS v4.0.0. | keyword |
-| stormshield.EtherStateMem | The memory used for ... | keyword |
-| stormshield.EtherStatePacket | Number of packets for Ethernet traffic without IP layer. Digital format. Example: EtherStatePacket=128 Available from: SNS v4.0.0. | keyword |
-| stormshield.FragMem | Percentage of memory allocated to the treatment of fragmented packets. Value from 0 to 100. | keyword |
-| stormshield.Fragmented | Number of fragmented packets that have passed through the Firewall. | keyword |
-| stormshield.HostMem | Percentage of memory allocated to a host processed by the Firewall. Value from 0 to 100. | keyword |
-| stormshield.HostrepMax | Highest reputation score of monitored hosts. Value: decimal integer between 0 and 65535. Example: HostrepMax=6540 Available from: SNS v3.0.0. | keyword |
-| stormshield.HostrepRequests | Number of reputation score requests submitted. Value: unrestricted decimal integer. Example: HostrepRequests=445 Available from: SNS v3.0.0. | keyword |
-| stormshield.HostrepScore | Average reputation score of monitored hosts. Value: decimal integer between 0 and 65535. Example: HostrepScore=1234 Available from: SNS v3.0.0. | keyword |
+| stormshield.EtherStateConn | Number of stateful statuses for Ethernet exchanges without IP layer. Digital format. Example: EtherStateConn=0 Available from: SNS v4.0.0. | long |
+| stormshield.EtherStateMem | The memory used for ... | long |
+| stormshield.EtherStatePacket | Number of packets for Ethernet traffic without IP layer. Digital format. Example: EtherStatePacket=128 Available from: SNS v4.0.0. | long |
+| stormshield.FragMem | Percentage of memory allocated to the treatment of fragmented packets. Value from 0 to 100. | long |
+| stormshield.Fragmented | Number of fragmented packets that have passed through the Firewall. | long |
+| stormshield.HostMem | Percentage of memory allocated to a host processed by the Firewall. Value from 0 to 100. | long |
+| stormshield.HostrepMax | Highest reputation score of monitored hosts. Value: decimal integer between 0 and 65535. Example: HostrepMax=6540 Available from: SNS v3.0.0. | long |
+| stormshield.HostrepRequests | Number of reputation score requests submitted. Value: unrestricted decimal integer. Example: HostrepRequests=445 Available from: SNS v3.0.0. | long |
+| stormshield.HostrepScore | Average reputation score of monitored hosts. Value: decimal integer between 0 and 65535. Example: HostrepScore=1234 Available from: SNS v3.0.0. | long |
 | stormshield.ICMPByte.in_count | Number of bytes that have passed through the firewall (incoming) | long |
 | stormshield.ICMPByte.out_count | Number of bytes that have passed through the firewall (outgoing) | long |
-| stormshield.ICMPMem | Percentage of memory allocated to ICMP. Value from 0 to 100. | keyword |
-| stormshield.ICMPPacket | Number of ICMP packets that have passed through the Firewall. | keyword |
+| stormshield.ICMPMem | Percentage of memory allocated to ICMP. Value from 0 to 100. | long |
+| stormshield.ICMPPacket | Number of ICMP packets that have passed through the Firewall. | long |
 | stormshield.IPStateByte.in_count | Number of bytes that have passed through the firewall (incoming) | long |
 | stormshield.IPStateByte.out_count | Number of bytes that have passed through the firewall (outgoing) | long |
-| stormshield.IPStateConn | Number of active pseudo-connections relating to protocols other than TCP, UDP or ICMP (e.g.: GRE). | keyword |
-| stormshield.IPStateConnNatDst | Number of active pseudo-connections with address translation on the destination. | keyword |
-| stormshield.IPStateConnNatSrc | Number of active pseudo-connections with address translation on the source. | keyword |
-| stormshield.IPStateConnNoNatDst | Number of active pseudo-connections that explicitly include "No NAT" instructions on the destination. | keyword |
-| stormshield.IPStateConnNoNatSrc | Number of active pseudo-connections that explicitly include "No NAT" instructions on the source. | keyword |
-| stormshield.IPStateMem | Percentage of memory allocated to processing pseudo-connections relating to protocols other than TCP, UDP or ICMP (e.g.: GRE) that have passed through the firewall. | keyword |
-| stormshield.IPStatePacket | Number of network packets originating from protocols other than TCP, UDP or ICMP (e.g.: GRE) that have passed through the firewall. | keyword |
-| stormshield.LogOverflow | Number of log lines that could not be generated by the intrusion prevention engine. | keyword |
-| stormshield.Logged | Number of log lines generated by the intrusion prevention engine. | keyword |
+| stormshield.IPStateConn | Number of active pseudo-connections relating to protocols other than TCP, UDP or ICMP (e.g.: GRE). | long |
+| stormshield.IPStateConnNatDst | Number of active pseudo-connections with address translation on the destination. | long |
+| stormshield.IPStateConnNatSrc | Number of active pseudo-connections with address translation on the source. | long |
+| stormshield.IPStateConnNoNatDst | Number of active pseudo-connections that explicitly include "No NAT" instructions on the destination. | long |
+| stormshield.IPStateConnNoNatSrc | Number of active pseudo-connections that explicitly include "No NAT" instructions on the source. | long |
+| stormshield.IPStateMem | Percentage of memory allocated to processing pseudo-connections relating to protocols other than TCP, UDP or ICMP (e.g.: GRE) that have passed through the firewall. | long |
+| stormshield.IPStatePacket | Number of network packets originating from protocols other than TCP, UDP or ICMP (e.g.: GRE) that have passed through the firewall. | long |
+| stormshield.LogOverflow | Number of log lines that could not be generated by the intrusion prevention engine. | long |
+| stormshield.Logged | Number of log lines generated by the intrusion prevention engine. | long |
 | stormshield.Pvm | All indicators regarding vulnerability management:  Total number of vulnerabilities detected, number of vulnerabilities that can be exploited remotely, number of vulnerabilities requiring the installation of a server on the vulnerable host in order to be exploited, number of vulnerabilities classified as critical, number of vulnerabilities classified as minor, number of vulnerabilities classified as major, number of vulnerabilities that have a bug fix, total amount of information (all levels), number of minor data, number of major data, number of hosts for which PVM has gathered information,  Format: 11 numeric values separated by commas. Example: 0,0,0,0,0,0,0,2,0,0,2 | keyword |
-| stormshield.PvmFacts | Number of events sent by ASQ to the vulnerability management process. | keyword |
-| stormshield.PvmOverflow | Number of events intended for the vulnerability management process that were ignored by ASQ. | keyword |
+| stormshield.PvmFacts | Number of events sent by ASQ to the vulnerability management process. | long |
+| stormshield.PvmOverflow | Number of events intended for the vulnerability management process that were ignored by ASQ. | long |
 | stormshield.Rule.byte_count | The number of bytes that have passed through the designated rule | long |
 | stormshield.Rule.category | Rule Category | keyword |
 | stormshield.Rule.original | Original Rule Identifier | keyword |
 | stormshield.Rule.rule_number | Original Rule Number | long |
-| stormshield.SCTPAssoc | Number of SCTP associations. Digital format. Example: SCTPAssoc=2. Available from: SNS v3.9.0. | keyword |
+| stormshield.SCTPAssoc | Number of SCTP associations. Digital format. Example: SCTPAssoc=2. Available from: SNS v3.9.0. | long |
 | stormshield.SCTPAssocByte.in_count | Number of bytes that have passed through the firewall (incoming) | long |
 | stormshield.SCTPAssocByte.out_count | Number of bytes that have passed through the firewall (outgoing) | long |
-| stormshield.SCTPAssocPacket | Number of packets exchanged for an SCTP association. Digital format. Example: SCTPAssocPacket=128 Available from: SNS v3.9.0. | keyword |
-| stormshield.SavedEvaluation | Number of rule evaluations that did not use intrusion prevention technology. | keyword |
+| stormshield.SCTPAssocPacket | Number of packets exchanged for an SCTP association. Digital format. Example: SCTPAssocPacket=128 Available from: SNS v3.9.0. | long |
+| stormshield.SavedEvaluation | Number of rule evaluations that did not use intrusion prevention technology. | long |
 | stormshield.TCPByte.in_count | Number of bytes that have passed through the firewall (incoming) | long |
 | stormshield.TCPByte.out_count | Number of bytes that have passed through the firewall (outgoing) | long |
-| stormshield.TCPConn | Number of TCP connections that have passed through the Firewall. | keyword |
-| stormshield.TCPConnNatDst | Number of TCP connections with a translated destination. | keyword |
-| stormshield.TCPConnNatSrc | Number of TCP connections with a translated source. | keyword |
-| stormshield.TCPConnNoNatDst | Number of TCP connections with a translated destination. | keyword |
-| stormshield.TCPConnNoNatSrc | Number of TCP connections with a translated source. | keyword |
-| stormshield.TCPPacket | Number of TCP packets that have passed through the Firewall. | keyword |
-| stormshield.TLSCertCacheEntriesNb | Number of entries currently in the TLS certificate cache. Digital format. Example: TLSCertCacheEntriesNb=3456 Available from: SNS v4.3.0 | keyword |
-| stormshield.TLSCertCacheExpiredNb | Number of entries deleted from the TLS certificate cache after a TTL expired. Digital format. Example: TLSCertCacheExpiredNb=789 Available from: SNS v4.3.0 | keyword |
-| stormshield.TLSCertCacheFlushOp | Number of "flush" operations (manual deletion of entries, or after reloading signatures) performed on the TLS certificate cache. Digital format. Example: TLSCertCacheFlushOp=7 Available from: SNS v4.3.0 | keyword |
-| stormshield.TLSCertCacheFlushedNb | Number of entries deleted from the TLS certificate cache after a "flush operation. Digital format. Example: TLSCertCacheFlushedNb=123 Available from: SNS v4.3.0 | keyword |
-| stormshield.TLSCertCacheInsert | Number of entries inserted in the TLS certificate cache. Digital format. Example: TLSCertCacheInsert=789 Available from: SNS v4.3.0 | keyword |
+| stormshield.TCPConn | Number of TCP connections that have passed through the Firewall. | long |
+| stormshield.TCPConnNatDst | Number of TCP connections with a translated destination. | long |
+| stormshield.TCPConnNatSrc | Number of TCP connections with a translated source. | long |
+| stormshield.TCPConnNoNatDst | Number of TCP connections with a translated destination. | long |
+| stormshield.TCPConnNoNatSrc | Number of TCP connections with a translated source. | long |
+| stormshield.TCPPacket | Number of TCP packets that have passed through the Firewall. | long |
+| stormshield.TLSCertCacheEntriesNb | Number of entries currently in the TLS certificate cache. Digital format. Example: TLSCertCacheEntriesNb=3456 Available from: SNS v4.3.0 | long |
+| stormshield.TLSCertCacheExpiredNb | Number of entries deleted from the TLS certificate cache after a TTL expired. Digital format. Example: TLSCertCacheExpiredNb=789 Available from: SNS v4.3.0 | long |
+| stormshield.TLSCertCacheFlushOp | Number of "flush" operations (manual deletion of entries, or after reloading signatures) performed on the TLS certificate cache. Digital format. Example: TLSCertCacheFlushOp=7 Available from: SNS v4.3.0 | long |
+| stormshield.TLSCertCacheFlushedNb | Number of entries deleted from the TLS certificate cache after a "flush operation. Digital format. Example: TLSCertCacheFlushedNb=123 Available from: SNS v4.3.0 | long |
+| stormshield.TLSCertCacheInsert | Number of entries inserted in the TLS certificate cache. Digital format. Example: TLSCertCacheInsert=789 Available from: SNS v4.3.0 | long |
 | stormshield.TLSCertCacheLookup.miss | Number of lookups missed in the TLS certificate cache. | long |
 | stormshield.TLSCertCacheLookup.total | Number of total TLS certificate cache lookups | long |
-| stormshield.TLSCertCachePurgeOp | Number of "purge" operations (automatic deletion of a percentage of entries when the cache reaches full capacity) performed on the TLS certificate cache. Digital format. Example: TLSCertCachePurgeOp=4 Available from: SNS v4.3.0 | keyword |
-| stormshield.TLSCertCachePurgedNb | Number of entries deleted from the TLS certificate cache after a "purge operation. Digital format. Example: TLSCertCachePurgedNb=456 Available from: SNS v4.3.0 | keyword |
+| stormshield.TLSCertCachePurgeOp | Number of "purge" operations (automatic deletion of a percentage of entries when the cache reaches full capacity) performed on the TLS certificate cache. Digital format. Example: TLSCertCachePurgeOp=4 Available from: SNS v4.3.0 | long |
+| stormshield.TLSCertCachePurgedNb | Number of entries deleted from the TLS certificate cache after a "purge operation. Digital format. Example: TLSCertCachePurgedNb=456 Available from: SNS v4.3.0 | long |
 | stormshield.UDPByte.in_count | Number of bytes that have passed through the firewall (incoming) | long |
 | stormshield.UDPByte.out_count | Number of bytes that have passed through the firewall (outgoing) | long |
-| stormshield.UDPConn | Number of UDP connections that have passed through the Firewall. | keyword |
-| stormshield.UDPConnNatDst | Number of UDP connections with a translated destination. | keyword |
-| stormshield.UDPConnNatSrc | Number of UDP connections with a translated source. | keyword |
-| stormshield.UDPConnNoNatDst | Number of UDP connections with a translated destination. | keyword |
-| stormshield.UDPConnNoNatSrc | Number of UDP connections with a translated source. | keyword |
-| stormshield.UDPPacket | Number of UDP packets that have passed through the Firewall. | keyword |
+| stormshield.UDPConn | Number of UDP connections that have passed through the Firewall. | long |
+| stormshield.UDPConnNatDst | Number of UDP connections with a translated destination. | long |
+| stormshield.UDPConnNatSrc | Number of UDP connections with a translated source. | long |
+| stormshield.UDPConnNoNatDst | Number of UDP connections with a translated destination. | long |
+| stormshield.UDPConnNoNatSrc | Number of UDP connections with a translated source. | long |
+| stormshield.UDPPacket | Number of UDP packets that have passed through the Firewall. | long |
 | stormshield.UI | Sofbus/Lacbus information unit  String of characters in UTF-8 format. Example: UI=Instruction Available from: SNS v4.3.0 | keyword |
 | stormshield.action | Behavior associated with the filter rule. Value: "pass". | keyword |
 | stormshield.address | IP address of the client workstation that initiated the connection. Decimal format.  Example: address=192.168.0.2 | keyword |
