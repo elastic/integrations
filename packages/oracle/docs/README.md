@@ -80,7 +80,7 @@ In the seoncd, logfmt-encoded DSN format, if the password contains a backslash
 character (`\`), it must be escaped with another backslash. For example, if the
 password is `my\_password`, it must be written as `my\\_password`.
 
-> Note: If the requirement is to mask the password shown in the DSN, use the `username` and `password` fields under advanced options to configure them. To do this, simply take the username/password pair out from the DSN, and just use the Host address along with additional params(if any), as you normally would.  
+> Note: To mask the password shown in the DSN, remove the username and password from the DSN string, and configure the DSN to only include the host address and any additional parameters required for the connection. Subsquently, use the `username` and `password` fields under advanced options to configure them. 
 
 ## Compatibility
 
