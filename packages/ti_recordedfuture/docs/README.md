@@ -23,10 +23,10 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-29T13:22:35.326Z",
+    "@timestamp": "2024-05-09T12:24:05.286Z",
     "agent": {
-        "ephemeral_id": "8b6df1e2-9c94-40c3-b5f8-e09238b868da",
-        "id": "c4046867-b40e-4edd-b9cf-1968be890bc1",
+        "ephemeral_id": "b0d47395-89bd-40e7-8018-57fdcc0cf1b8",
+        "id": "013c7177-2e5d-40da-9e17-9ee5d2249880",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.2"
@@ -40,7 +40,7 @@ An example event for `threat` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c4046867-b40e-4edd-b9cf-1968be890bc1",
+        "id": "013c7177-2e5d-40da-9e17-9ee5d2249880",
         "snapshot": false,
         "version": "8.12.2"
     },
@@ -50,9 +50,9 @@ An example event for `threat` looks as following:
             "threat"
         ],
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2024-04-29T13:22:45Z",
+        "ingested": "2024-05-09T12:24:15Z",
         "kind": "enrichment",
-        "risk_score": 87,
+        "risk_score": 75,
         "timezone": "+00:00",
         "type": [
             "indicator"
@@ -63,60 +63,45 @@ An example event for `threat` looks as following:
     },
     "log": {
         "file": {
-            "path": "/tmp/service_logs/rf_url_default.csv"
+            "path": "/tmp/service_logs/rf_file_default.csv"
         },
-        "offset": 45
+        "offset": 57
     },
     "recordedfuture": {
         "evidence_details": [
             {
-                "criticality": 1,
-                "criticality_label": "Unusual",
-                "evidence_string": "66 sightings on 22 sources including: Ars Technica, fook.news, urdupresss.com, HackDig Posts, apple.news. Most recent link (Jul 20, 2021): https://techsecuritenews.com/solarwinds-pirates-utilisent-nouvelle-faille-zero-day-attaques/",
+                "criticality": 2,
+                "criticality_label": "Suspicious",
+                "evidence_string": "2 sightings on 1 source: PolySwarm. Most recent link (Mar 23, 2024): https://polyswarm.network/scan/results/file/63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f",
                 "mitigation_string": "",
-                "name": "defangedURL",
-                "rule": "Historically Reported as a Defanged URL",
+                "name": "linkedToMalware",
+                "rule": "Linked to Malware",
+                "sightings_count": 2,
                 "sources": [
-                    "Ctq",
-                    "idn:fook.news",
-                    "idn:urdupresss.com",
-                    "POs2u-",
-                    "idn:apple.news",
-                    "idn:cryptoinfoos.com.ng",
-                    "g9rk5F",
-                    "idn:thewindowsupdate.com",
-                    "idn:nationalcybersecuritynews.today",
-                    "gBDK5G",
-                    "idn:microsoft.com",
-                    "idn:techsecuritenews.com",
-                    "idn:mblogs.info",
-                    "J6UzbO",
-                    "idn:viralamo.com",
-                    "idn:sellorbuyhomefast.com",
-                    "idn:crazyboy.tech",
-                    "idn:times24h.com",
-                    "idn:buzzfeeg.com",
-                    "idn:dsmenders.com",
-                    "WroSbs",
-                    "idn:vzonetvgh.com"
+                    "source:doLlw5"
                 ],
-                "timestamp": "2021-07-20T00:00:00.000Z"
+                "sources_count": 1,
+                "timestamp": "2024-03-23T17:10:20.642Z"
             },
             {
                 "criticality": 3,
                 "criticality_label": "Malicious",
-                "evidence_string": "1 sighting on 1 source: Insikt Group. 1 report: SolarWinds Fixes Critical Vulnerability in Serv-U Managed File Transfer and Secure FTP Products. Most recent link (Jul 10, 2021): https://app.recordedfuture.com/live/sc/1GnDrn8zigTd",
+                "evidence_string": "3 sightings on 3 sources: Polyswarm Sandbox Analysis, Recorded Future Triage Malware Analysis, PolySwarm. Most recent link (Mar 23, 2024): https://polyswarm.network/scan/results/file/63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f",
                 "mitigation_string": "",
-                "name": "recentAnalystNote",
-                "rule": "Recently Reported by Insikt Group",
+                "name": "positiveMalwareVerdict",
+                "rule": "Positive Malware Verdict",
+                "sightings_count": 3,
                 "sources": [
-                    "VKz42X"
+                    "source:hzRhwZ",
+                    "source:ndy5_2",
+                    "source:doLlw5"
                 ],
-                "timestamp": "2021-07-10T00:00:00.000Z"
+                "sources_count": 3,
+                "timestamp": "2024-03-23T16:36:02.000Z"
             }
         ],
-        "name": "http://144.34.179.162/a",
-        "risk_string": "2/24"
+        "name": "63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f",
+        "risk_string": "2/17"
     },
     "tags": [
         "forwarded",
@@ -127,24 +112,19 @@ An example event for `threat` looks as following:
             "name": "Recorded Future"
         },
         "indicator": {
+            "file": {
+                "hash": {
+                    "sha256": "63212aa8c94098a844945ed1611389b2e1c9dc3906a5ba9d7d0d320344213f4f"
+                }
+            },
             "provider": [
-                "Ars Technica",
-                "fook.news",
-                "urdupresss.com",
-                "HackDig Posts",
-                "apple.news",
-                "Insikt Group"
+                "PolySwarm",
+                "Polyswarm Sandbox Analysis",
+                "Recorded Future Triage Malware Analysis"
             ],
-            "scanner_stats": 0,
-            "sightings": 0,
-            "type": "url",
-            "url": {
-                "domain": "144.34.179.162",
-                "full": "http://144.34.179.162/a",
-                "original": "http://144.34.179.162/a",
-                "path": "/a",
-                "scheme": "http"
-            }
+            "scanner_stats": 4,
+            "sightings": 5,
+            "type": "file"
         }
     }
 }
