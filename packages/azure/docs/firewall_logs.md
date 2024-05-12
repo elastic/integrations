@@ -175,8 +175,6 @@ An example event for `firewall` looks as following:
 | azure.firewall.action | Action taken by the firewall following the match with the network rule | keyword |
 | azure.firewall.action_reason | Reason for the action performed by the firewall | keyword |
 | azure.firewall.category | Category | keyword |
-| azure.firewall.destination_ip | Packet's destination IP address | ip |
-| azure.firewall.destination_port | Packet's destination port | long |
 | azure.firewall.dnssec_bool_flag | True if DNS request is using DNSSEC | boolean |
 | azure.firewall.dnssec_buffer_size | Size of the DNSSEC buffer | long |
 | azure.firewall.dnssec_ok_bit | A flag indicating that the resolver supports DNSSEC records. | boolean |
