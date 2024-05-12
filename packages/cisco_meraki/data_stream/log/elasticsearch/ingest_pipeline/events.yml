@@ -5,6 +5,10 @@ processors:
 # set event_subtype based on type/format
 ####################################################
 - dissect:
+    field: event.original
+    pattern: "%{} events %{message}"
+    ignore_failure: true
+- dissect:
     description: Determine event type/format
     field: event.original
     pattern: "%{} events %{msgtype} %{}"
@@ -34,7 +38,7 @@ processors:
     if: ctx.msgtype.toLowerCase() == "carrier_change"
 ####################################################
 # log event with type=<value> format
-# these are dfs_event, association, disassocation, 
+# these are dfs_event, association, disassociation, 
 # vpn_connectivity_change, wpa_auth, wpa_deauth
 ####################################################
 - dissect:
