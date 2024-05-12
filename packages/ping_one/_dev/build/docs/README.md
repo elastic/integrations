@@ -22,33 +22,88 @@ This module has been tested against `PingOne API version 1.0`.
 
 ## Setup
 
-### To collect data from PingOne REST APIs, follow below steps:
+### To collect data from the PingOne REST API, follow the steps below:
 
-1. Go to the [PingOne console](https://www.pingidentity.com/en/account/sign-on.html), select PingOne as an Account and add username and password.
-2. Select Environment.
-3. Go to **Connections -> Applications**.
-4. Click **+** to create an application.
-5. Enter an Application Name.
-6. Select **Worker** as an application type.
-7. Click Save.
-8. Click the toggle switch to enable the application, if it is not already enabled.
-9. Go to **Configuration**.
-10. Copy **Token Endpoint**.
-11. Copy **Environment ID**, **Client ID** and **Client Secret** from General Section.
+Create a worker application in PingOne and copy the credentials, as follows:
 
-For more details, see [Documentation](https://docs.pingidentity.com/bundle/pingone/page/vpz1564020488577.html).
+1. Go to [pingidentity.com](https://pingidentity.com/), click
+   [Sign On](https://www.pingidentity.com/bin/ping/signOnLink) and carry out
+   any necessary authentication steps. You will arrive at the PingIdentity
+   console.
+2. From the navigation sidebar, expand the **Applications** section and
+   select **Applications**.
+3. Click **+** to begin creating a new application.
+4. Enter an **Application Name**.
+5. Select **Worker** as the application type.
+6. Click **Save**.
+7. On the application flyout, ensure that the toggle switch in the header is
+   activated, in order to enable the application.
+8. Select the **Roles** tab of the application flyout.
+9. Click the **Grant Roles** button.
+10. Under **Available responsibilities**, in the **Environment Admin**,
+    section, select the environment(s) to grant access to, then click **Save**.
+11. Select the **Configuration** tab of the application flyout.
+12. Expand the **URLs** section and copy the **Token Endpoint**.
+13. From the **General** section, copy the **Client ID**, **Client Secret** and
+    **Environment ID**.
 
-**Note** : Value of initial interval must be less than 2 years.
+For more information, see the PingOne documentation about
+[Adding an application](https://docs.pingidentity.com/r/en-us/pingone/p1_add_app_worker).
+
+In Elastic, navigate to the PingOne integration, then:
+
+1. Click **Add PingOne**.
+2. Deactivate the **Collect PingOne logs via HTTP Endpoint** input.
+3. Activate the **Collect PingOne logs via API** input.
+4. Enter the PingOne API URL for your region in the **URL** field.
+5. Enter the credentails copied from the PingOne console into the corresponding
+   fields.
+6. In the **Audit logs** data stream section, set an **Initial Interval** of
+   no more than 2 years.
+7. Choose an agent policy to add the integration to and click
+   **Save and Continue**.
 
 ### To collect data from PingOne via HTTP Endpoint, follow below steps:
 
-1. Reference link for configuring [HTTP Endpoint Remote logging](https://docs.pingidentity.com/bundle/pingone/page/sxi1589922927893.html) for PingOne.
-2. In Destination, enter the full URL, including the port.  
-`Example Format: http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
+In Elastic, navigate to the PingOne integration, then:
 
-**Note** :  
-- Select Ping Activity Format (JSON) in the format drop down.
-- HTTP Endpoint Remote logging will expose the port to the internet, therefore it is advised to have proper network access configured.
+1. Click **Add PingOne**.
+2. Deactivate the **Collect PingOne logs via API** input.
+3. Activate the **Collect PingOne logs via HTTP Endpoint** input.
+4. Set the **Listen Address**, and (from the **Audit logs** data stream
+   settings) set and copy the **Listen Port** and (under **Advanced options**)
+   the **URL Path**.
+5. In the input settings, enter any **SSL Configuration** and **Secret header**
+   settings appropriate for the endpoint. Make a note of these details for use
+   while configuring the PingOne webhook. **Note**: This endpoint will expose a
+   port to the Internet, so it is advised to have proper network access
+   configured. PingOne webhooks will only work with a `https://` destination
+   URL.
+6. Choose an agent policy to add the integration to and click
+   **Save and Continue**.
+
+Create a webhook in PingOne, as follows:
+
+1. Go to [pingidentity.com](https://pingidentity.com/), click
+   [Sign On](https://www.pingidentity.com/bin/ping/signOnLink) and carry out
+   any necessary authentication steps. You will arrive at the PingIdentity
+   console.
+2. From the navigation sidebar, expand the **Integrations** section and
+   select **Webhooks**.
+3. Click the **+ Add Webhook** button to begin creating a new webhook.
+4. In **Destination URL**, enter the full endpoint URL, including the port.
+   Example format: `https://{EXTERNAL_AGENT_LISTEN_ADDRESS}:{AGENT_LISTEN_PORT}/{URL_PATH}`.
+5. As **Format** select **Ping Activity Format (JSON)**.
+6. In the **Filters** section, select all the **Event Types** you want to
+   collect.
+7. Enter any **TLS settings** and **Headers** required for the webhook to
+   establish connections with the Agent's HTTP endpoint.
+8. Click **Save**.
+9. Ensure that the toggle switch for the webhook is activated, so that the
+   webhook is enabled.
+
+For more information, see the PingOne documentation about
+[Creating or editing a webhook](https://docs.pingidentity.com/r/en-us/pingone/p1_create_webhook).
 
 ## Logs Reference
 
