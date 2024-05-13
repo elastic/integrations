@@ -414,7 +414,7 @@ is_package_excluded_in_config() {
     return 1
 }
 
-is_package_excluded_in_env_var() {
+is_package_excluded_in_list() {
     local package=$1
     local excluded_list="$2"
     local excluded_array
@@ -691,7 +691,7 @@ is_pr_affected() {
     fi
 
     if is_serverless; then
-        if is_package_excluded_in_env_var "${package}" "${EXCLUDED_PACKAGES}"; then
+        if is_package_excluded_in_list "${package}" "${EXCLUDED_PACKAGES}"; then
             echo "[${package}] PR is not affected: package ${package} excluded in env. var"
             return 1
         fi
