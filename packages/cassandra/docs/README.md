@@ -32,13 +32,17 @@ Follow these steps to set up Jolokia for monitoring Apache Cassandra:
    cp jolokia-jvm-<jolokia_version>-agent.jar /path/to/cassandra/lib/
    ```
 
+   Replace `/path/to/cassandra/lib/` with the actual path to Cassandra's library directory.
+
 3. Configure Cassandra to use the Jolokia Agent:
 
-   To enable the Jolokia agent, modify the `cassandra-env.sh` by adding the following line at the bottom of file:
+   Open the `cassandra-env.sh` file, located in the Cassandra configuration directory, using a text editor, and add the following line at the bottom of the file:
 
    ```
    JVM_OPTS="$JVM_OPTS -javaagent:/path/to/jolokia-jvm-<jolokia_version>-agent.jar=port=<jolokia_port>,host=0.0.0.0"
    ```
+
+   Replace `/path/to/jolokia-jvm-<version>-agent.jar` with the actual path to the Jolokia agent JAR file copied in Step 2. Save the changes and close the `cassandra-env.sh` file.
 
 4. Restart Cassandra:
 
