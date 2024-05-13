@@ -4,38 +4,6 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
-is_package_in_excluded_list() {
-    local package=$1
-    local excluded_list="$2"
-    local excluded_array
-
-    if [[ "${excluded_list}" == "" ]]; then
-        return 1
-    fi
-
-    # as "<<<" operator adds a new line, a trailing "," is added to be able to remove the
-    # last element
-    # Example:
-    # excluded_list="security_detection_engine,universal_profiling_agent"
-    # readarray -td, array1 <<< "${excluded_list}" ; declare -p array1
-    #  $ declare -p array1
-    # declare -a array1=([0]="security_detection_engine" [1]=$'universal_profiling_agent\n')
-    #
-    # readarray -td, array2 <<< "${excluded_list,}" ; declare -p array2
-    #  $ declare -p array2
-    # declare -a array2=([0]="security_detection_engine" [1]="universal_profiling_agent" [2]=$'\n')
-    readarray -td, excluded_array <<<"${excluded_list},"
-    # remove last element containing just a new line
-    unset excluded_array[-1]
-
-    for excluded in "${excluded_array[@]}"; do
-        if [[ "${excluded}" == "${package}" ]]; then
-            return 0
-        fi
-    done
-    return 1
-}
-
 # default values
 SERVERLESS=${SERVERLESS:-"false"}
 STACK_VERSION=${STACK_VERSION:-""}
@@ -101,10 +69,6 @@ EXCLUDED_PACKAGES=${EXCLUDED_PACKAGES:-""}
 
 pushd packages > /dev/null
 for package in $(list_all_directories); do
-    if is_package_in_excluded_list "${package}" "${EXCLUDED_PACKAGES}" ; then
-        continue
-    fi
-
     if ! process_package "${package}" "${from}" "${to}"; then
         any_package_failing=1
     fi
