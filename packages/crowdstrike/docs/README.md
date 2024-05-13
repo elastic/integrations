@@ -619,6 +619,8 @@ Current supported event types are:
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
 | crowdstrike.event.AuditKeyValues | Fields that were changed in this event. | nested |
+| crowdstrike.event.AuditKeyValues.Key |  | keyword |
+| crowdstrike.event.AuditKeyValues.ValueString |  | keyword |
 | crowdstrike.event.Category | IDP incident category. | keyword |
 | crowdstrike.event.CertificateTemplateIdentifier | The ID of the certificate template. | keyword |
 | crowdstrike.event.CertificateTemplateName | Name of the certificate template. | keyword |
@@ -639,6 +641,9 @@ Current supported event types are:
 | crowdstrike.event.EnvironmentVariables | Provides one or more JSON objects which includes related environment variables. | nested |
 | crowdstrike.event.EventType | CrowdStrike provided event type. | keyword |
 | crowdstrike.event.ExecutablesWritten | Detected executables written to disk by a process. | nested |
+| crowdstrike.event.ExecutablesWritten.FileName |  | keyword |
+| crowdstrike.event.ExecutablesWritten.FilePath |  | keyword |
+| crowdstrike.event.ExecutablesWritten.Timestamp |  | keyword |
 | crowdstrike.event.ExecutionID |  | keyword |
 | crowdstrike.event.ExecutionMetadata.ExecutionDuration |  | long |
 | crowdstrike.event.ExecutionMetadata.ExecutionStart |  | date |
@@ -681,11 +686,28 @@ Current supported event types are:
 | crowdstrike.event.MatchCount | Number of firewall rule matches. | long |
 | crowdstrike.event.MatchCountSinceLastReport | Number of firewall rule matches since the last report. | long |
 | crowdstrike.event.MobileAppsDetails | Provides one or more JSON objects describing the related mobile applications. | nested |
+| crowdstrike.event.MobileAppsDetails.AndroidAppLabel |  | keyword |
+| crowdstrike.event.MobileAppsDetails.AndroidAppVersionName |  | keyword |
+| crowdstrike.event.MobileAppsDetails.AppIdentifier |  | keyword |
+| crowdstrike.event.MobileAppsDetails.AppInstallerInformation |  | keyword |
+| crowdstrike.event.MobileAppsDetails.DexFileHashes |  | keyword |
+| crowdstrike.event.MobileAppsDetails.ImageFileName |  | keyword |
+| crowdstrike.event.MobileAppsDetails.IsBeingDebugged |  | keyword |
+| crowdstrike.event.MobileAppsDetails.IsContainerized |  | keyword |
 | crowdstrike.event.MobileDnsRequests | Provides one or more JSON objects describing the related DNS requests from the mobile device. | nested |
 | crowdstrike.event.MobileNetworkConnections | Provides one or more JSON objects describing the related network connections from the mobile device. | nested |
 | crowdstrike.event.MostRecentActivityTimeStamp | The timestamp of the latest activity performed by the account. | date |
 | crowdstrike.event.MountedVolumes | Provides one or more JSON objects describing mounted volumes on the mobile device. | nested |
 | crowdstrike.event.NetworkAccesses | Detected Network traffic done by a process. | nested |
+| crowdstrike.event.NetworkAccesses.AccessTimestamp |  | keyword |
+| crowdstrike.event.NetworkAccesses.AccessType |  | keyword |
+| crowdstrike.event.NetworkAccesses.ConnectionDirection |  | keyword |
+| crowdstrike.event.NetworkAccesses.IsIPV6 |  | keyword |
+| crowdstrike.event.NetworkAccesses.LocalAddress |  | keyword |
+| crowdstrike.event.NetworkAccesses.LocalPort |  | keyword |
+| crowdstrike.event.NetworkAccesses.Protocol |  | keyword |
+| crowdstrike.event.NetworkAccesses.RemoteAddress |  | keyword |
+| crowdstrike.event.NetworkAccesses.RemotePort |  | keyword |
 | crowdstrike.event.NetworkProfile | CrowdStrike network profile. | keyword |
 | crowdstrike.event.NotificationId | ID of the generated notification. | keyword |
 | crowdstrike.event.NumberOfCompromisedEntities | Number of compromised entities, users and endpoints. | long |
@@ -1195,7 +1217,7 @@ and/or `session_token`.
 | crowdstrike.ConfigIDBase |  | keyword |
 | crowdstrike.ConfigIDBuild |  | keyword |
 | crowdstrike.ConfigIDPlatform |  | keyword |
-| crowdstrike.ConfigStateData |  | keyword |
+| crowdstrike.ConfigStateData |  | text |
 | crowdstrike.ConfigStateHash |  | keyword |
 | crowdstrike.ConfigurationVersion |  | keyword |
 | crowdstrike.ConnectTime |  | date |
@@ -1245,7 +1267,7 @@ and/or `session_token`.
 | crowdstrike.FalconGroupingTags |  | keyword |
 | crowdstrike.FalconHostLink |  | keyword |
 | crowdstrike.FeatureExtractionVersion |  | keyword |
-| crowdstrike.FeatureVector |  | keyword |
+| crowdstrike.FeatureVector |  | match_only_text |
 | crowdstrike.File |  | keyword |
 | crowdstrike.FileAttributes |  | keyword |
 | crowdstrike.FileDeletedCount |  | long |
@@ -1342,7 +1364,7 @@ and/or `session_token`.
 | crowdstrike.NewExecutableWrittenCount |  | long |
 | crowdstrike.NewFileIdentifier |  | keyword |
 | crowdstrike.Nonce |  | integer |
-| crowdstrike.OSVersionFileData |  | keyword |
+| crowdstrike.OSVersionFileData |  | match_only_text |
 | crowdstrike.OSVersionFileName |  | keyword |
 | crowdstrike.OU |  | keyword |
 | crowdstrike.Objective |  | keyword |
@@ -1477,6 +1499,7 @@ and/or `session_token`.
 | crowdstrike.UserMemoryAllocateExecutableRemoteCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableRemoteCount |  | long |
+| crowdstrike.UserName |  | keyword |
 | crowdstrike.UserSid |  | keyword |
 | crowdstrike.UserSid_readable |  | keyword |
 | crowdstrike.UserTime |  | long |
