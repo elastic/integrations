@@ -41,7 +41,7 @@ The minimum **kibana.version** required is **8.13.0**.
  
 DNS analytical events are not enabled by default. To enable it, you can follow the [guide to enable DNS diagnostics logging](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn800669(v=ws.11)#to-enable-dns-diagnostic-logging) of Microsoft's documentation.
 
-**Note:**  DNS logging and diagnostics feature in Windows is designed to have a very low impact on performance. However, according to the [Audit and analytic event logging section](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn800669(v=ws.11)#audit-and-analytic-event-logging), typically will only affect DNS server performance at very high DNS query rates. For example, a DNS server running on modern hardware that is receiving 100,000 queries per second (QPS) can experience a performance degradation of 5% when analytic logs are enabled.
+**Note:**  DNS logging and diagnostics feature in Windows is designed to have a very low impact on performance. However, according to the [Audit and analytic event logging section](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/dn800669(v=ws.11)#audit-and-analytic-event-logging) of the docs, typically will only affect DNS server performance at very high DNS query rates. For example, a DNS server running on modern hardware that is receiving 100,000 queries per second (QPS) can experience a performance degradation of 5% when analytic logs are enabled.
 
 ## Usage
 
@@ -49,7 +49,7 @@ DNS analytical events are not enabled by default. To enable it, you can follow t
 
 This integration provides a native filtering mechanism called `Match All Keyword`. This filter uses a 64-bit bitmask to specify which events to capture based on their defined keywords. Each keyword corresponds to a specific type of event detailed in the DNS Server provider's manifest.
 
-To view these keywords and understand what types of events can be traced, you can run the following command in a command prompt: `logman query providers "Microsoft-Windows-DNSServer"`. Here is an example of how it looks like:
+To view these keywords and understand what types of events can be traced, you can run the following command in a command prompt: `logman query providers "Microsoft-Windows-DNSServer"`. Here is an example of the output:
 
 ```text
 PS> logman query providers "Microsoft-Windows-DNSServer"

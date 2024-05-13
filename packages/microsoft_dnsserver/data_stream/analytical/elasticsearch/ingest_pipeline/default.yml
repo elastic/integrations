@@ -165,11 +165,7 @@ processors:
         if (t != null) {
           ctx.dnsserver.analytical.put("question_type", t);
         }
-  - remove:
-      field: dnsserver.analytical.QTYPE
-      ignore_failure: true
-      ignore_missing: true
-      tag: remove_dns_qtype
+        ctx.dnsserver.analytical.remove(QTYPE);
 
   - script:
       lang: painless
@@ -203,15 +199,11 @@ processors:
         if (t != null) {
           ctx.dnsserver.analytical.put("response_code", t);
         }
-  - remove:
-      field: dnsserver.analytical.RCODE
-      ignore_failure: true
-      ignore_missing: true
-      tag: remove_dns_rcode
+        ctx.dnsserver.analytical.remove(RCODE);
 
   - remove:
       field: dnsserver.analytical.PolicyName
-      if: ctx.dnsserver?.analytical?.PolicyName != null && ctx.dnsserver.analytical.PolicyName == "NULL"
+      if: ctx.dnsserver?.analytical?.PolicyName == "NULL"
       ignore_failure: true
       ignore_missing: true
       tag: remove_null_policy_name
@@ -338,7 +330,7 @@ processors:
   - set: 
       field: event.outcome
       value: success
-      if: ctx.dns?.response_code != null && ctx.dns.response_code == "NoError"
+      if: ctx.dns?.response_code == "NoError"
       tag: set_event_outcome_success
   - set: 
       field: event.outcome
@@ -349,25 +341,25 @@ processors:
   - append:
       field: dns.header_flags
       value: AA
-      if: ctx.dnsserver?.analytical?.AA != null && ctx.dnsserver.analytical.AA == "1"
+      if: ctx.dnsserver?.analytical?.AA == "1"
       allow_duplicates: false
       tag: append_dns_header_flag_AA
   - append:
       field: dns.header_flags
       value: AD
-      if: ctx.dnsserver?.analytical?.AD != null && ctx.dnsserver.analytical.AD == "1"
+      if: ctx.dnsserver?.analytical?.AD == "1"
       allow_duplicates: false
       tag: append_dns_header_flag_AD
   - append:
       field: dns.header_flags
       value: RD
-      if: ctx.dnsserver?.analytical?.RD != null && ctx.dnsserver.analytical.RD == "1"
+      if: ctx.dnsserver?.analytical?.RD == "1"
       allow_duplicates: false
       tag: append_dns_header_flag_RD
   - append:
       field: dns.header_flags
       value: TC
-      if: ctx.dnsserver?.analytical?.TC != null && ctx.dnsserver.analytical.TC == "1"
+      if: ctx.dnsserver?.analytical?.TC == "1"
       allow_duplicates: false
       tag: append_dns_header_flag_TC
   - remove:
@@ -386,12 +378,12 @@ processors:
   - set:
       field: network.transport
       value: tcp
-      if: ctx.dnsserver?.analytical?.TCP != null && ctx.dnsserver.analytical.TCP == "1"
+      if: ctx.dnsserver?.analytical?.TCP == "1"
       tag: set_network_transport_tcp
   - set:
       field: network.transport
       value: udp
-      if: ctx.dnsserver?.analytical?.TCP != null && ctx.dnsserver.analytical.TCP == "0"
+      if: ctx.dnsserver?.analytical?.TCP == "0"
       tag: set_network_transport_udp
   - remove:
       field:
@@ -445,7 +437,7 @@ processors:
       tag: remove_process_information
   - remove:
       field: winlog.activity_guid
-      if: ctx.winlog?.activity_guid != null && ctx.winlog.activity_guid == "{00000000-0000-0000-0000-000000000000}"
+      if: ctx.winlog?.activity_guid == "{00000000-0000-0000-0000-000000000000}"
       tag: remove_empty_activity_guid
   - rename:
       field: winlog.activity_guid

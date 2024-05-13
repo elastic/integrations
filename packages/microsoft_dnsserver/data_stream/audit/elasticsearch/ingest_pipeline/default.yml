@@ -13,7 +13,7 @@ processors:
   - set:
       field: event.category
       value: [configuration]
-      if: ctx.winlog?.task != null && ctx.winlog.task == "Configuration"
+      if: ctx.winlog?.task == "Configuration"
       tag: set_event_category_configuration
 
 # Move winlog.event_data to dnsserver.audit
@@ -120,11 +120,7 @@ processors:
         if (t != null) {
           ctx.dnsserver.audit.put("question_type", t);
         }
-  - remove:
-      field: dnsserver.audit.QTYPE
-      ignore_failure: true
-      ignore_missing: true
-      tag: remove_dns_qtype
+        ctx.dnsserver.audit.remove(QTYPE);
 
   - script:
       lang: painless
