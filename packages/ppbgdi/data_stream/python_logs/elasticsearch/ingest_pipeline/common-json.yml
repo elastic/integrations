@@ -1,6 +1,10 @@
 ---
 description: Pipeline for processing json logs
 processors:
+  - append:
+      description: "Add information on the log format to tags: E.g. k8s_log_json k8s_log_raw. Useful for development and debugging"
+      field: tags
+      value: k8s_log_json
   - json:
       field: event.original
       target_field: temp
@@ -107,6 +111,11 @@ processors:
       field: temp.url.original
       remove_if_successful: true
       ignore_missing: true
+      on_failure:
+        - append:
+            description: In case of invalid url's just add the error message and not fail with pipeline_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: temp.url.path
       target_field: url.path
@@ -118,6 +127,7 @@ processors:
   - urldecode:
       field: url.query
       ignore_missing: true
+      ignore_failure: true # Ignore failures, especially to survive e2e tests. If failing, original value remains unchanged.
   - set:
       description: Override event.id with request.id if existing
       field: event.id

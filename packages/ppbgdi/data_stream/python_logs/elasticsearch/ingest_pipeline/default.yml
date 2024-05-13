@@ -10,6 +10,14 @@ processors:
   - set:
       field: event.ingested
       value: '{{_ingest.timestamp}}'
+  - append:
+      field: tags
+      value: no_message
+      if: 'ctx?.message == null'
+  - append:
+      field: tags
+      value: empty_message
+      if: 'ctx?.message != null && ctx?.message == ""'
   - rename:
       field: message
       target_field: event.original
@@ -25,14 +33,13 @@ processors:
         - ^%{CHAR:first_char}
       pattern_definitions:
         CHAR: .
-
-#   - pipeline:
-#       if: ctx.first_char != '{'
-#       name: '{{ IngestPipeline "default-common" }}'
   - pipeline:
       description: JSON logs pipeline
       if: ctx.first_char == '{'
       name: '{{ IngestPipeline "common-json" }}'
+  - pipeline:
+      if: ctx.first_char != '{'
+      name: '{{ IngestPipeline "common-raw" }}'
   - remove:
       field:
         - first_char
