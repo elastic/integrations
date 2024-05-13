@@ -1010,7 +1010,7 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.plugin.cvss3.vector.scope |  | keyword |
 | tenable_io.vulnerability.plugin.cvss3.vector.user_interaction |  | keyword |
 | tenable_io.vulnerability.plugin.d2_elliot_name | The name of the exploit in the D2 Elliot Web Exploitation framework. | keyword |
-| tenable_io.vulnerability.plugin.description | Full text description of the vulnerability. | keyword |
+| tenable_io.vulnerability.plugin.description | Full text description of the vulnerability plugin. | text |
 | tenable_io.vulnerability.plugin.exploit_available | A value specifying whether a public exploit exists for the vulnerability. | boolean |
 | tenable_io.vulnerability.plugin.exploit_framework.canvas | A value specifying whether an exploit exists in the Immunity CANVAS framework. | boolean |
 | tenable_io.vulnerability.plugin.exploit_framework.core | A value specifying whether an exploit exists in the CORE Impact framework. | boolean |
@@ -1078,8 +1078,7 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.state | The state of the vulnerability as determined by the Tenable Vulnerability Management state service. Possible values include: open, reopen and fixed. | keyword |
 | vulnerability.category | The type of system or architecture that the vulnerability affects. These may be platform-specific (for example, Debian or SUSE) or general (for example, Database or Firewall). For example (https://qualysguard.qualys.com/qwebhelp/fo_portal/knowledgebase/vulnerability_categories.htm[Qualys vulnerability categories]) This field must be an array. | keyword |
 | vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
-| vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created[Common Vulnerabilities and Exposure CVE description]) | keyword |
-| vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |
+| vulnerability.description | The description of the vulnerability. | text |
 | vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |
 | vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
 | vulnerability.reference | A resource that provides additional information, context, and mitigations for the identified vulnerability. | keyword |
