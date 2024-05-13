@@ -57,7 +57,7 @@ program: |
           "events": bytes(res.Body).decode_json().as(f, f.with({"response": zip(
             //Combining measurement names and actual values of measurement to generate `key : value` pairs.
             f.measurements.map(m, m.name),
-            f.measurements.map(m, m.dataPoints.map(d, d.value).as(v, size(v) == 0 ? 0 : v[0]))
+            f.measurements.map(m, m.dataPoints.map(d, d.value).as(v, size(v) == 0 ? null : v[0]))
           )}).drop(["measurements", "links"])),
           "hostlist": (int(state.next)+1) < size(state.hostlist) ? state.hostlist : [],
           "next": (int(state.next)+1) < size(state.hostlist) ? (int(state.next)+1) : 0,
