@@ -1,10 +1,10 @@
 title: Collect Asset data from Tenable Vulnerability Management
 type: logs
 streams:
-  - input: httpjson
+  - input: cel
     title: Asset data
     description: Collect asset data from Tenable Vulnerability Management.
-    template_path: httpjson.yml.hbs
+    template_path: cel.yml.hbs
     vars:
       - name: interval
         type: text
@@ -22,22 +22,14 @@ streams:
         required: true
         show_user: true
         default: 720h
-      - name: retry_wait_min
+      - name: export_status_timeout
         type: text
-        title: Minimum Wait Time
+        title: Export Status Timeout
+        description: "Duration for which the export job should check its status. NOTE: Supported units for this parameter are h/m/s."
         multi: false
         required: true
-        show_user: false
-        default: 60s
-        description: The minimum time to wait before a retry is attempted.
-      - name: retry_max_attempts
-        type: integer
-        title: Max Retries
-        multi: false
-        required: true
-        show_user: false
-        default: 10
-        description: The maximum number of retries for the HTTP client.
+        show_user: true
+        default: 12h
       - name: batch_size
         type: integer
         title: Chunk Size

@@ -6,7 +6,7 @@
 
 Use the MongoDB Atlas integration to:
 
-- Collect MongoDB Atlas mongod audit logs, mongod database logs, and process metrics for comprehensive monitoring and analysis.
+- Collect MongoDB Atlas mongod audit logs, mongod database logs, hardware and process metrics for comprehensive monitoring and analysis.
 - Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
 - Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
 
@@ -16,14 +16,13 @@ The MongoDB Atlas integration collects logs and metrics.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration are `mongod_audit` and `mongod_database`.
 
-Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration is `process` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
+Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration are `process` and `hardware` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
 
 Data streams:
+- `hardware`: This data stream collects all the Atlas Search hardware and status data series within the provided time range for one process in the specified project.
 - `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
-
-- `mongod_database`: This datastream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
-
-- `process` : This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream.
+- `mongod_database`: This data stream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
+- `process`: This data stream collects host metrics per process for all the hosts in the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory usage are available in this data stream.
 
 Note:
 - Users can monitor and see the logs and metrics inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
@@ -44,7 +43,7 @@ You can store and search your data using Elasticsearch and visualize and manage 
 
 1. Generate programmatic API keys with `project owner` permissions by following the instructions in the Atlas [documentation](https://www.mongodb.com/docs/atlas/configure-api-access/#create-an-api-key-for-a-project). Then, copy the public and private keys which function as a username and API key respectively.
 2. From the Atlas UI, go to Project Settings > Access Manager > API Keys and then click on Invite To Project to add the API key created above.
-3. Add specific role to API keys, under Project Settings > Access Manager > API Keys. This step is important to make sure that these API keys have the right permissions to access the data without running into any issues. The specific role for each datastream is defined under data stream reference section.
+3. Add a specific role to API keys, under Project Settings > Access Manager > API Keys. This step is important to make sure that these API keys have the right permissions to access the data without running into any issues. The specific role for each data stream is defined under the data stream reference section.
 4. Enable Database Auditing for the Atlas project you want to monitor logs. You can follow the instructions provided in this Atlas [document](https://www.mongodb.com/docs/atlas/database-auditing/#procedure).
 5. You can find your Project ID (Group ID) in the Atlas UI. To do this, navigate to your project, click on Settings, and copy the Project ID (Group ID). You can also programmatically find it using the Atlas Admin API or Atlas CLI as described in this Atlas [document](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#find-a-project-id).
 
@@ -53,7 +52,7 @@ You can store and search your data using Elasticsearch and visualize and manage 
 1. Granularity: Duration that specifies the interval at which Atlas reports the metrics.
 2. Period: Duration over which Atlas reports the metrics.
 
-Note: Both of above attributes can be set by using `period` in configuration parameters.
+Note: Both of the above attributes can be set by using a `period` in configuration parameters.
 
 ### Steps to enable Integration in Elastic
 
@@ -337,6 +336,120 @@ An example event for `mongod_database` looks as following:
 
 ## Metrics reference
 
+### Hardware
+This data stream collects hardware and status metrics for each process in the specified group. It includes measurements such as CPU usage, memory consumption, JVM memory usage, disk usage, etc.
+
+An example event for `hardware` looks as following:
+
+```json
+{
+    "@timestamp": "2024-05-08T05:28:35.903Z",
+    "agent": {
+        "ephemeral_id": "f1da46ba-c948-41e5-8858-28b1db234a9c",
+        "id": "130eb953-a957-4fbb-ba6f-5bd31442e2f2",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb_atlas.hardware",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "130eb953-a957-4fbb-ba6f-5bd31442e2f2",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "dataset": "mongodb_atlas.hardware",
+        "ingested": "2024-05-08T05:28:45Z",
+        "kind": "event",
+        "module": "mongodb_atlas",
+        "type": [
+            "access",
+            "info"
+        ]
+    },
+    "group": {
+        "id": "mongodb-group1"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": [
+            "192.168.253.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-FD-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.114.2.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "mongodb_atlas": {
+        "group_id": "mongodb-group1",
+        "hardware": {
+            "fts": {
+                "disk_usage": {
+                    "bytes": 175143048.53333333
+                }
+            },
+            "status": {
+                "page_faults": 0.16428448420436206
+            }
+        },
+        "process_id": "hostname1"
+    },
+    "tags": [
+        "mongodb_atlas-hardware"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| mongodb_atlas.group_id | Unique identifier that identifies the project. | keyword |  |  |
+| mongodb_atlas.hardware.fts.disk_usage.bytes | Total bytes of disk space that search processes use. | long | byte | gauge |
+| mongodb_atlas.hardware.fts.process.cpu.kernel.pct | The amount of CPU time spent by the Full-Text Search process in kernel space. Kernel space includes the core operating system functions such as handling system calls and hardware interrupts. | double | percent | gauge |
+| mongodb_atlas.hardware.fts.process.cpu.user.pct | The amount of CPU time spent by the Full-Text Search process in user space. User space includes the execution of application code and processing data | double | percent | gauge |
+| mongodb_atlas.hardware.fts.process.memory.resident.bytes | Total bytes of resident memory that search processes occupy. | long | byte | gauge |
+| mongodb_atlas.hardware.fts.process.memory.shared.bytes | Total bytes of shared memory that search processes occupy. | long | byte | gauge |
+| mongodb_atlas.hardware.fts.process.memory.virtual.bytes | Total bytes of virtual memory that search processes occupy. | long | byte | gauge |
+| mongodb_atlas.hardware.fts.process.normalized.cpu.kernel.pct | Percentage of time that the CPU spent servicing operating system calls for the search process. | double | percent | gauge |
+| mongodb_atlas.hardware.fts.process.normalized.cpu.user.pct | Percentage of time that the CPU spent servicing user calls for the search process. | double | percent | gauge |
+| mongodb_atlas.hardware.status.jvm.memory.heap.available.mb | Total amount of available memory in the JVM heap. | long |  | gauge |
+| mongodb_atlas.hardware.status.jvm.memory.heap.used.mb | Amount of memory that the JVM heap is currently using. | long |  | gauge |
+| mongodb_atlas.hardware.status.page_faults | Average rate of page faults on this process per second over the selected sample period. | double |  | gauge |
+| mongodb_atlas.process_id | Combination of hostname and MongoDB process port that serves the MongoDB process. | keyword |  |  |
+
+
 ### Process
 This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream. To collect process metrics, the requesting API Key must have the `Project Read Only` role.
 
@@ -344,10 +457,10 @@ An example event for `process` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-11T12:42:53.267Z",
+    "@timestamp": "2024-04-24T13:14:25.586Z",
     "agent": {
-        "ephemeral_id": "c8ebb866-6d72-471b-9083-6d386219bf61",
-        "id": "926ca6d4-5487-4a8b-b88b-34f188fe8cfb",
+        "ephemeral_id": "effbd42a-d55f-49b6-a104-14e765397baf",
+        "id": "0e76a408-722e-4fbf-88cf-b53b90679dd9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -361,7 +474,7 @@ An example event for `process` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "926ca6d4-5487-4a8b-b88b-34f188fe8cfb",
+        "id": "0e76a408-722e-4fbf-88cf-b53b90679dd9",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -371,12 +484,15 @@ An example event for `process` looks as following:
             "process"
         ],
         "dataset": "mongodb_atlas.process",
-        "ingested": "2024-04-11T12:43:05Z",
+        "ingested": "2024-04-24T13:14:35Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
             "info"
         ]
+    },
+    "group": {
+        "id": "mongodb-group1"
     },
     "host": {
         "architecture": "x86_64",
@@ -384,16 +500,16 @@ An example event for `process` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.253.4"
+            "192.168.252.7"
         ],
         "mac": [
-            "02-42-C0-A8-FD-04"
+            "02-42-C0-A8-FC-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "kernel": "3.10.0-1160.114.2.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -428,17 +544,17 @@ An example event for `process` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
-| mongodb_atlas.group_id | Identifier for the project of the event. | keyword |  |  |
+| mongodb_atlas.group_id | Unique identifier that identifies the project. | keyword |  |  |
 | mongodb_atlas.host_id | Unique identifier of the host for the MongoDB process. | keyword |  |  |
 | mongodb_atlas.process.assert.msg | The average rate of message asserts per second over the selected sample period. | double |  | gauge |
 | mongodb_atlas.process.assert.regular | The average rate of regular asserts raised per second over the selected sample period. | double |  | gauge |
 | mongodb_atlas.process.assert.user | The average rate of user asserts per second over the selected sample period. | double |  | gauge |
 | mongodb_atlas.process.assert.warning | The average rate of warnings per second over the selected sample period. | double |  | gauge |
 | mongodb_atlas.process.background_flush.avg | Amount of data flushed in the background. | double |  | gauge |
-| mongodb_atlas.process.cache.dirty.bytes | Write - Amount of bytes in the WiredTiger storage engine cache. | double | byte | gauge |
+| mongodb_atlas.process.cache.dirty.bytes | Amount of dirty bytes in the WiredTiger storage engine cache. | double | byte | gauge |
 | mongodb_atlas.process.cache.read.bytes | Read - Amount of bytes in the WiredTiger storage engine cache. | double | byte | gauge |
-| mongodb_atlas.process.cache.used.total.bytes | The total bytes cached in memory for serving reads and writes. | double | byte | gauge |
-| mongodb_atlas.process.cache.write.bytes | The maximum disk read latency value over the period specified by the metric granularity. | double | byte | gauge |
+| mongodb_atlas.process.cache.used.total.bytes | Amount of used bytes in the WiredTiger storage engine cache. | double | byte | gauge |
+| mongodb_atlas.process.cache.write.bytes | Write - Amount of bytes in the WiredTiger storage engine cache. | double | byte | gauge |
 | mongodb_atlas.process.connections | Displays the total number of active connections to the database deployment. Monitor connections to determine whether the current connection limits are sufficient. | double |  | gauge |
 | mongodb_atlas.process.cpu.children.kernel.max.pct | The maximum amount of CPU time spent by child processes in kernel space. | double | percent | counter |
 | mongodb_atlas.process.cpu.children.kernel.pct | CPU children kernel space for mongodb processes. | double | percent | gauge |
@@ -565,5 +681,4 @@ An example event for `process` looks as following:
 | mongodb_atlas.process.system.normalized.cpu.user.pct | The portion of CPU time spent executing user space processes and running applications. | double | percent | gauge |
 | mongodb_atlas.process.ticket.available.read.count | The number of read tickets available to the WiredTiger storage engine. | long |  | gauge |
 | mongodb_atlas.process.ticket.available.write.count | The number of write tickets available to the WiredTiger storage engine. | long |  | gauge |
-| mongodb_atlas.process_id | Combination of hostname and Internet Assigned Numbers Authority (IANA) port that serves the MongoDB process. | keyword |  |  |
-
+| mongodb_atlas.process_id | Combination of hostname and MongoDB process port that serves the MongoDB process. | keyword |  |  |
