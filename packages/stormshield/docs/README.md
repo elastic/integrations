@@ -268,7 +268,7 @@ An example event for `log` looks as following:
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
-| stormshield.Accepted | Number of packets corresponding to the application of Pass rules. Example: Accepted=2430. | keyword |
+| stormshield.Accepted | Number of packets corresponding to the application of Pass rules. Example: Accepted=2430. | long |
 | stormshield.AssocMem | The memory used for ... | long |
 | stormshield.Blocked | Number of packets corresponding to the application of Block rules. Example: Blocked=1254. | long |
 | stormshield.Byte.in_count | Number of bytes that have passed through the firewall (incoming) | long |
