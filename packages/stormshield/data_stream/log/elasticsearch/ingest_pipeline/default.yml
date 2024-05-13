@@ -74,6 +74,7 @@ processors:
       if: ctx.stormshield?.msg != null
 
   - date:
+      tag: format_startime
       field: stormshield.startime
       target_field: "event.created"
       formats:
@@ -83,18 +84,12 @@ processors:
         - remove:
             field: event.created
             ignore_missing: true
-        - append:
-            field: error.message
-            value: "{{{_ingest.on_failure_message}}}"
 
   # Set @timestamp to the time when the log indicates.
   - set:
       copy_from: event.created
       field: '@timestamp'
-      on_failure:
-        - append:
-            field: error.message
-            value: "{{{_ingest.on_failure_message}}}"
+      if: ctx.event?.created != null
 
   - pipeline:
       name: '{{ IngestPipeline "filterstat" }}'
@@ -136,8 +131,14 @@ processors:
       field: stormshield.dst
       if: ctx.stormshield?.dst != null
 
-  - rename:
+  - uppercase:
       field: stormshield.dstmac
+      ignore_missing: true
+
+  - gsub:
+      field: stormshield.dstmac
+      pattern: ':'
+      replacement: '-'
       target_field: destination.mac
       if: ctx.stormshield?.dstmac != null && ctx.destination?.mac == null
 
@@ -171,8 +172,14 @@ processors:
       field: stormshield.src
       if: ctx.stormshield?.src != null
 
-  - rename:
+  - uppercase:
       field: stormshield.srcmac
+      ignore_missing: true
+
+  - gsub:
+      field: stormshield.srcmac
+      pattern: ':'
+      replacement: '-'
       target_field: source.mac
       if: ctx.stormshield?.srcmac != null && ctx.source?.mac == null
 

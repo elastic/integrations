@@ -267,6 +267,7 @@ An example event for `log` looks as following:
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | source.port | Port of the source. | long |
 | stormshield.Accepted | Number of packets corresponding to the application of Pass rules. Example: Accepted=2430. | long |
 | stormshield.AssocMem | The memory used for ... | long |
