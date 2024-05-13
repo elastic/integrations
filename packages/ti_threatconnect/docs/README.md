@@ -520,7 +520,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.source | The Indicators source. | keyword |
 | threat_connect.indicator.subject | The subject line of the email associated with the Email Subject Indicator. | keyword |
 | threat_connect.indicator.summary | Summary or description of the indicator. | keyword |
-| threat_connect.indicator.tags.data.description | The Tags description. | keyword |
+| threat_connect.indicator.tags.data.description | The Tags description. | text |
 | threat_connect.indicator.tags.data.id | Unique Identifier of tag. | keyword |
 | threat_connect.indicator.tags.data.last_used | Date and time when tag was last used. | date |
 | threat_connect.indicator.tags.data.name | Name of tag. | keyword |

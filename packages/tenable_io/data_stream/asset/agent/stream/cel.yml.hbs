@@ -1,0 +1,309 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  access_key: {{access_key}}
+  secret_key: {{secret_key}}
+  chunk_status: "QUEUED"
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+  export_status_timeout: {{export_status_timeout}}
+redact:
+  fields:
+    - access_key
+    - secret_key
+program: |
+  state.with(state.?chunk_status.orValue("") != "PROCESSING" && !state.?want_more.orValue(false) ?
+    post_request(
+      state.url.trim_right("/") + "/assets/export", "application/json",
+      '{"chunk_size":' + state.batch_size.encode_json() + ',"filters":{"updated_at": ' + state.?cursor.last_event_ts.orValue(int(now - duration(state.initial_interval))).encode_json() + '}}'
+    ).with({
+      "Header":{
+        "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+        "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
+      },
+    }).do_request().as(resp,
+      resp.StatusCode == 200 ?
+        {
+          "export_response": bytes(resp.Body).decode_json(),
+          "export_status_timeout": state.export_status_timeout,
+          "expires": now + duration(state.export_status_timeout),
+          "cursor": {
+            "last_event_ts": int(now)
+          }
+        }
+      :
+        {
+          "response_error": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": string(resp.Body)
+            },
+          },
+          "want_more": false,
+          "export_response": {},
+          "export_status_timeout": state.export_status_timeout,
+          "expires": now + duration(state.export_status_timeout),
+        }
+    )
+  :
+    {
+      "url": state.url,
+      "export_status_timeout": state.export_status_timeout,
+      "expires": state.expires,
+      "want_more": state.want_more,
+      "chunks": state.?chunks.orValue([]),
+      "chunk_status": state.chunk_status,
+      "export_response": state.?export_response.orValue({}),
+      "next": state.?next.orValue(0),
+      "access_key": state.access_key,
+      "secret_key": state.secret_key,
+      "initial_interval": state.initial_interval,
+      "batch_size": state.batch_size,
+      "response_error": state.?response_error.orValue({}),
+      "cursor": {
+        "last_event_ts": state.?cursor.last_event_ts.orValue(int(now))
+      }
+    }
+  ).as(state,
+    has(state.?export_response.export_uuid) && state.?chunk_status.orValue("") != "FINISHED" ?
+      request("GET",
+        state.url.trim_right("/") +"/assets/export/" + state.export_response.export_uuid + "/status"
+      ).with({
+        "Header":{
+          "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+          "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
+        }
+      }).do_request().as(response,
+        response.StatusCode == 200 ?
+          bytes(response.Body).decode_json().as(inner_body, {
+            "export_status_timeout": state.export_status_timeout,
+            "expires": state.expires,
+            "want_more": (inner_body.?status.orValue("") != "FINISHED" || size(inner_body.chunks_available) > 0) && (string(now) <= string(state.expires)),
+            "chunk_status": inner_body.?status.orValue("") == "FINISHED" && size(inner_body.chunks_available) == 0 ? "QUEUED" : inner_body.status,
+            "export_response": state.export_response,
+            "chunks": inner_body.chunks_available,
+            "url": state.url,
+            "next": 0,
+            "access_key": state.access_key,
+            "secret_key": state.secret_key,
+            "initial_interval": state.initial_interval,
+            "batch_size": state.batch_size,
+            "cursor": {
+              "last_event_ts": state.?cursor.last_event_ts.orValue(int(now))
+            }
+          })
+        :
+          {
+            "response_error": {
+              "error": {
+                "code": string(response.StatusCode),
+                "id": string(response.Status),
+                "message": string(response.Body)
+              },
+            },
+            "url": state.url,
+            "export_status_timeout": state.export_status_timeout,
+            "expires": state.expires,
+            "want_more": false,
+            "chunks": [],
+            "chunk_status": "QUEUED",
+            "export_response": {},
+            "next": 0,
+            "access_key": state.access_key,
+            "secret_key": state.secret_key,
+            "initial_interval": state.initial_interval,
+            "batch_size": state.batch_size,
+          }
+      )
+    :
+      {
+        "url": state.url,
+        "export_status_timeout": state.export_status_timeout,
+        "expires": state.expires,
+        "want_more": state.want_more,
+        "chunks": state.?chunks.orValue([]),
+        "chunk_status": state.chunk_status,
+        "export_response": state.?export_response.orValue({}),
+        "next": state.?next.orValue(0),
+        "access_key": state.access_key,
+        "secret_key": state.secret_key,
+        "initial_interval": state.initial_interval,
+        "batch_size": state.batch_size,
+        "response_error": state.?response_error.orValue({}),
+        "cursor": {
+          "last_event_ts": state.?cursor.last_event_ts.orValue(int(now))
+        }
+      }
+  ).as(state,
+    has(state.?export_response.export_uuid) && state.?chunk_status.orValue("") != "FINISHED" && (string(now) > string(state.expires))?
+      post_request(
+        state.url.trim_right("/") +"/assets/export/" + state.export_response.export_uuid + "/cancel", "application/json", ""
+      ).with({
+        "Header":{
+          "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+          "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
+        }
+      }).do_request().as(response,
+        response.StatusCode == 200 ?
+          bytes(response.Body).decode_json().as(inner_body, {
+            "export_status_timeout": state.export_status_timeout,
+            "expires": state.expires,
+            "want_more": false,
+            "chunk_status": "QUEUED",
+            "export_response": {},
+            "chunks": [],
+            "url": state.url,
+            "next": 0,
+            "access_key": state.access_key,
+            "secret_key": state.secret_key,
+            "initial_interval": state.initial_interval,
+            "batch_size": state.batch_size,
+            "cursor": {
+              "last_event_ts": state.?cursor.last_event_ts.orValue(int(now))
+            }
+          })
+        :
+          {
+            "response_error": {
+              "error": {
+                "code": string(response.StatusCode),
+                "id": string(response.Status),
+                "message": string(response.Body)
+              },
+            },
+            "url": state.url,
+            "export_status_timeout": state.export_status_timeout,
+            "expires": state.expires,
+            "want_more": false,
+            "chunks": [],
+            "chunk_status": "QUEUED",
+            "export_response": {},
+            "next": 0,
+            "access_key": state.access_key,
+            "secret_key": state.secret_key,
+            "initial_interval": state.initial_interval,
+            "batch_size": state.batch_size,
+          }
+      )
+    :
+      {
+        "url": state.url,
+        "export_status_timeout": state.export_status_timeout,
+        "expires": state.expires,
+        "want_more": state.want_more,
+        "chunks": state.?chunks.orValue([]),
+        "chunk_status": state.chunk_status,
+        "export_response": state.?export_response.orValue({}),
+        "next": state.?next.orValue(0),
+        "access_key": state.access_key,
+        "secret_key": state.secret_key,
+        "initial_interval": state.initial_interval,
+        "batch_size": state.batch_size,
+        "response_error": state.?response_error.orValue({}),
+        "cursor": {
+          "last_event_ts": state.?cursor.last_event_ts.orValue(int(now))
+        }
+      }
+  ).as(state,
+    has(state.?export_response.export_uuid) && state.?chunk_status.orValue("") == "FINISHED" && size(state.chunks) > 0 ?
+      request("GET",
+        state.url.trim_right("/") +"/assets/export/" + state.export_response.export_uuid + "/chunks/" + string(state.chunks[state.next])
+      ).with({
+        "Header":{
+          "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+          "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
+        }
+      }).do_request().as(response1,
+        response1.StatusCode == 200 ?
+          bytes(response1.Body).decode_json().as(second_chain_body, {
+            "events": second_chain_body != null ? second_chain_body.map(e, { "message": e.encode_json() }) : [{}],
+            "expires": state.expires,
+            "export_status_timeout": state.export_status_timeout,
+            "want_more": (int(state.next)+1) < size(state.chunks),
+            "export_response": (int(state.next)+1) < size(state.chunks) ? state.export_response : {},
+            "next": (int(state.next)+1) < size(state.chunks) ? (int(state.next)+1) : 0,
+            "chunk_status": ((int(state.next)+1) < size(state.chunks)) || (second_chain_body == null) ? state.chunk_status : "QUEUED",
+            "access_key": state.access_key,
+            "secret_key": state.secret_key,
+            "initial_interval": state.initial_interval,
+            "batch_size": state.batch_size,
+            "chunks": (int(state.next)+1) < size(state.chunks) ? state.chunks : [],
+            "url": state.url,
+            "cursor": {
+              "last_event_ts": state.?cursor.last_event_ts.orValue(int(now))
+            }
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(response1.StatusCode),
+                "id": string(response1.Status),
+                "message": string(response1.Body)
+              },
+            },
+            "url": state.url,
+            "export_status_timeout": state.export_status_timeout,
+            "expires": state.expires,
+            "want_more": false,
+            "chunks": [],
+            "chunk_status": "QUEUED",
+            "export_response": {},
+            "next": 0,
+            "access_key": state.access_key,
+            "secret_key": state.secret_key,
+            "initial_interval": state.initial_interval,
+            "batch_size": state.batch_size,
+          }
+      )
+    :
+      {
+        "events": state.?response_error.error.orValue(null) != null ? state.response_error : [{}],
+        "export_status_timeout": state.export_status_timeout,
+        "expires": state.expires,
+        "url": state.url,
+        "chunks": state.?chunks.orValue([]),
+        "chunk_status": state.chunk_status,
+        "want_more": state.want_more,
+        "export_response": state.?export_response.orValue({}),
+        "next": state.?next.orValue(0),
+        "access_key": state.access_key,
+        "secret_key": state.secret_key,
+        "initial_interval": state.initial_interval,
+        "batch_size": state.batch_size,
+        "cursor": {
+          "last_event_ts": state.?cursor.last_event_ts.orValue(int(now))
+        }
+      }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
