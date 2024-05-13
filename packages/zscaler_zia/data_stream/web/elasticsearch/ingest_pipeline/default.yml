@@ -9,6 +9,12 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  # Fix improper escaping of \ characters
+  - gsub:
+      field: event.original
+      pattern: '([^\\])\\([^\\])'
+      replacement: '$1\\\\$2'
+      if: ctx.event?.original != null && ctx.event.original.indexOf('\\') > 0
   - json:
       field: event.original
       target_field: resp
@@ -217,6 +223,18 @@ processors:
             field: user_agent.original
             value: '{{{json.eua}}}'
             if: ctx.json?.eua != null && ctx.json.eua != ''
+  - urldecode:
+      field: json.ua
+      ignore_missing: true
+      if: ctx.json?.ua != null && ctx.json.ua != '' && ctx.json.eua == null
+  - user_agent:
+      field: json.ua
+      if: ctx.json?.ua != null && ctx.json.ua != '' && ctx.json.eua == null
+      on_failure:
+        - set:
+            field: user_agent.original
+            value: '{{{json.ua}}}'
+            if: ctx.json?.ua != null && ctx.json.ua != '' && ctx.json.eua == null
   - rename:
       field: json.login
       target_field: user.id
@@ -483,6 +501,7 @@ processors:
         - json.eurl
         - json.url
         - json.eua
+        - json.ua
         - json.stime
         - json.ctime
         - json.riskscore
