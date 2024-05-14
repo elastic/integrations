@@ -1,0 +1,146 @@
+---
+description: Pipeline for processing container object.
+processors:
+  - foreach:
+      field: ses.container.networks
+      if: ctx.ses?.container?.networks instanceof List
+      tag: foreach_container_networks_gateway_ip
+      processor:
+        convert:
+          field: _ingest._value.gateway_ip
+          tag: convert_container_networks_gateway_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.gateway_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.container.networks
+      if: ctx.ses?.container?.networks instanceof List
+      tag: foreach_container_network
+      processor:              
+        append:
+          field: related.ip
+          tag: append_related_ip_from_gateway_ip
+          value: '{{{_ingest._value.gateway_ip}}}'
+          allow_duplicates: false
+          if: ctx.ses?.container?.networks != null
+  - foreach:
+      field: ses.container.networks
+      if: ctx.ses?.container?.networks instanceof List
+      tag: foreach_container_networks_ipv4
+      processor:
+        convert:
+          field: _ingest._value.ipv4
+          tag: convert_container_networks_ipv4_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ipv4
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.container.networks
+      if: ctx.ses?.container?.networks instanceof List
+      tag: foreach_container_network
+      processor:              
+        append:
+          field: related.ip
+          tag: append_related_ip_from_ipv4
+          value: '{{{_ingest._value.ipv4}}}'
+          allow_duplicates: false
+          if: ctx.ses?.container?.networks != null
+  - foreach:
+      field: ses.container.networks
+      if: ctx.ses?.container?.networks instanceof List
+      tag: foreach_container_networks_ipv6
+      processor:
+        convert:
+          field: _ingest._value.ipv6
+          tag: convert_container_networks_ipv6_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ipv6
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.container.networks
+      if: ctx.ses?.container?.networks instanceof List
+      tag: foreach_container_network
+      processor:              
+        append:
+          field: related.ip
+          tag: append_related_ip_from_ipv6
+          value: '{{{_ingest._value.ipv6}}}'
+          allow_duplicates: false
+          if: ctx.ses?.container?.networks != null
+  - foreach:
+      field: ses.container.networks
+      if: ctx.ses?.container?.networks instanceof List
+      tag: foreach_container_networks_is_public
+      processor:
+        convert:
+          field: _ingest._value.is_public
+          tag: convert_container_networks_is_public_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_public
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.container.networks
+      if: ctx.ses?.container?.networks instanceof List
+      tag: foreach_container_networks_rep_score_id
+      processor:
+        convert:
+          field: _ingest._value.rep_score_id
+          tag: convert_container_networks_rep_score_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.rep_score_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.container.networks
+      if: ctx.ses?.container?.networks instanceof List
+      tag: foreach_container_networks_type_id
+      processor:
+        convert:
+          field: _ingest._value.type_id
+          tag: convert_container_networks_type_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.type_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
