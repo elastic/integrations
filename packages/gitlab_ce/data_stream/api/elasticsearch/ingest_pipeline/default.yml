@@ -32,8 +32,10 @@ processors:
     ignore_missing: true
 - script:
     lang: painless
-    source: if (ctx.gitlab_ce.api.duration_s != null) { ctx.event.duration = ctx.gitlab_ce.api.duration_s
-      * 1000000; }
+    source: |-
+      if (ctx.gitlab_ce?.api?.duration_s != null) {
+        ctx.event.duration = ctx.gitlab_ce.api.duration_s * 1000000;
+      }
     ignore_failure: true
 - rename:
     field: gitlab_ce.api.status
