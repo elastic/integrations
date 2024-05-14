@@ -31,6 +31,7 @@ processors:
       field: _temp_.message
       patterns:
         - "^%{DATA},%{TIMESTAMP:event.created},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD:_temp_.config_version},%{TIMESTAMP:_temp_.generated_time},%{GREEDYDATA:message}$"
+        - "^%{SYSLOGTIMESTAMP:_temp_.syslog_time} %{IP:source.ip} %{NOTSPACE:observer.serial_number},%{PANW_DATE:_temp_.generated_time},%{FIELD:panw.panos.type},%{GREEDYDATA:message}$"
       pattern_definitions:
         TIMESTAMP: "%{PANW_DATE}|%{TIMESTAMP_ISO8601}"
         PANW_DATE: "%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}"
@@ -92,6 +93,10 @@ processors:
   - pipeline:
       if: ctx.panw?.panos?.type == 'START' || ctx.panw.panos.type == 'END'
       name: '{{ IngestPipeline "tunnel_inspection" }}'
+## AUDIT
+  - pipeline:
+      if: ctx.panw?.panos?.type == 'AUDIT' || ctx.panw?.panos?.type == 'audit'
+      name: '{{ IngestPipeline "audit" }}'
 
   - set:
       field: panw.panos.observer.serial_number

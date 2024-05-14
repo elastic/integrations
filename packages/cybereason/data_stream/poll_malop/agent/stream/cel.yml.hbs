@@ -1,0 +1,103 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: https://{{host}}:{{port}}
+state:
+  username: {{username}}
+  password: {{password}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - username
+    - password
+program: |
+  post_request(
+    state.url.trim_right("/") + "/login.html",
+    "application/x-www-form-urlencoded",
+    {"username":[state.username],"password":[state.password]}.format_query()
+  ).do_request().as(resp, resp.Request.URL.contains("error") ? "" : // When the base request redirects to a new request,
+    resp.Request.Response.Request.Response.Header["Set-Cookie"].filter(e, e.contains("JSESSIONID")).as(sess, sess.size() > 0 ? // we obtain the request object for the initial request's response.
+      sess[0].split(";").as(sub, sub.filter(e, e.contains("JSESSIONID")).size() > 0 ? // To retrieve the appropriate header based on the redirect,
+        sub[0] // we've implemented the following method.
+      :
+        ""
+      )
+    :
+      ""
+    )
+  ).as(cookie, cookie == "" ? {"events": []} :
+    post_request(
+      state.url.trim_right("/") + "/rest/detection/inbox",
+      "application/json",
+      {
+        "startTime": state.?cursor.last_update_timestamp.orValue(int(now - duration(state.initial_interval)) * 1000),
+        "endTime": int(now) * 1000
+      }.encode_json()
+    ).with({
+      "Header": {
+        "Cookie": [cookie],
+        "Content-Type": ["application/json"],
+      },
+    }).do_request().as(resp,
+      resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(body, {
+          "events": !has(body.malops) ? [{}] :
+            body.malops.map(e, {
+              "message": e.encode_json(),
+            }),
+          "cursor": {
+            "last_update_timestamp": (
+              has(body.malops) && body.malops.size() > 0 ?
+                int(body.malops.map(e, e.lastUpdateTime).max())
+              :
+                state.?cursor.last_update_timestamp.orValue(int(now - duration(state.initial_interval)) * 1000)
+            ),
+          },
+          "username": state.username,
+          "password": state.password,
+          "initial_interval": state.initial_interval,
+        })
+      :
+      {
+        "events": [{
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": string(resp.Body),
+          }
+        }],
+        "username": state.username,
+        "password": state.password,
+        "initial_interval": state.initial_interval,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

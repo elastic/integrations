@@ -23,6 +23,12 @@ processors:
       target_field: json
   - drop:
       if: ctx.json?.data?.plugin_details != null && ctx.json.data.plugin_details.isEmpty()
+  - fingerprint:
+      fields:
+        - json.id
+        - json.attributes.plugin_modification_date
+      target_field: _id
+      ignore_missing: true
   - convert:
       field: json.id
       target_field: tenable_io.plugin.id

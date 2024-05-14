@@ -84,6 +84,7 @@ processors:
       field: azure.auditlogs.properties.activityDisplayName
       target_field: azure.auditlogs.properties.activity_display_name
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: azure.auditlogs.properties.activityDateTime
       target_field: azure.auditlogs.properties.activity_datetime
@@ -136,6 +137,10 @@ processors:
       target_field: azure.auditlogs.properties.result_reason
       ignore_missing: true
   - rename:
+      field: azure.auditlogs.properties.resultDescription
+      target_field: azure.auditlogs.properties.result_description
+      ignore_missing: true
+  - rename:
       field: azure.auditlogs.properties.correlationId
       target_field: azure.auditlogs.properties.correlation_id
       ignore_missing: true
@@ -155,6 +160,11 @@ processors:
       field: azure.auditlogs.properties.additional_details.userAgent
       target_field: azure.auditlogs.properties.additional_details.user_agent
       ignore_missing: true
+  - remove:
+      description: Drop displayName field if value is null.
+      if: ctx?.azure?.auditlogs?.properties?.initiatedBy?.user?.displayName == null
+      field: azure.auditlogs.properties.initiatedBy.user.displayName
+      ignore_missing: true   
   - script:
       lang: painless
       source: >-
@@ -178,7 +188,9 @@ processors:
             for (def j = 0; j < ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties.length; j++) {
               String n = String.valueOf(j);
               ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n] = new HashMap();
+
               ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].display_name = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].displayName;
+              
               if (ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].newValue != null) {
                 ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].new_value = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].newValue;
               }
