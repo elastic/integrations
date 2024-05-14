@@ -235,19 +235,31 @@ processors:
       target_field: aws.cloudtrail.read_only
       ignore_failure: true
   - script:
+      description: 'Drops duplicates where the same combination of ARN, accountId and type is found multiple times in the resources list.'
       lang: painless
       source: >
         if (ctx.json?.resources instanceof List) {
-          for (int i = 0; i < ctx.json.resources.size(); i++) {
-            if (ctx.json.resources[i].containsKey('ARN')) {
-              ctx.json.resources[i].arn = ctx.json.resources[i].remove('ARN');
+              def resources = ctx.json.resources;
+              
+              Map uniqueResources = new HashMap();
+              for (def originalResource : resources) {
+                if (originalResource instanceof Map) {
+                  Map resource = new HashMap();
+                  resource.putAll(originalResource);
+                  if (resource.containsKey('ARN')) {
+                    resource['arn'] = resource.remove('ARN');
+                  }
+                  if (resource.containsKey('accountId')) {
+                    resource['account_id'] = resource.remove('accountId');
+                  }
+                  String key = (resource.containsKey('arn') ? resource.arn : '') + '_' +
+                               (resource.containsKey('account_id') ? resource.account_id : '') + '_' +
+                               (resource.containsKey('type') ? resource.type : '');
+                  uniqueResources[key] = resource;
+                }
+              }
+             ctx.json.resources = new ArrayList(uniqueResources.values());
             }
-            if (ctx.json.resources[i].containsKey('accountId')) {
-              ctx.json.resources[i].account_id = ctx.json.resources[i].remove('accountId');
-            }
-            // No need for renaming 'type' as it would be the same.
-          }
-        }
   - rename:
       field: json.resources
       target_field: aws.cloudtrail.resources
