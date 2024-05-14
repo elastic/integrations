@@ -65,6 +65,10 @@ processors:
 - dot_expander:
     path: gitlab_ce.api
     field: meta.remote_ip
+- convert:
+    field: gitlab_ce.production.meta.remote_ip
+    type: ip
+    ignore_missing: true
 - dot_expander:
     path: gitlab_ce.api
     field: meta.user
@@ -81,6 +85,20 @@ processors:
     tag: 'split_ips'
     target_field: source.ip
     separator: ', '
+- foreach:
+    field: source.ip
+    if: ctx.source?.ip instanceof List
+    ignore_failure: true
+    processor:
+      convert:
+        field: _ingest._value.name
+        type: ip
+        target_field: _ingest._value.name_ips
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: _ingest._value.ip
+              ignore_missing: true
 - remove:
     field: gitlab_ce.api.remote_ip
     ignore_missing: true
@@ -149,8 +167,7 @@ processors:
     value:
     - error
     allow_duplicates: false
-    if: ctx.http?.response?.status_code != null && (ctx.http.response.status_code
-      < 200 || ctx.http.response.status_code >= 400)
+    if: ctx.http?.response?.status_code != null && (ctx.http.response.status_code < 200 || ctx.http.response.status_code >= 400)
 - append:
     field: event.kind
     value:
@@ -165,14 +182,21 @@ processors:
     ignore_missing: true
 - script:
     description: Drops null/empty values recursively.
-    tag: script_drop_null_empty_values
     lang: painless
-    source: "boolean dropEmptyFields(Object object) {\n  if (object == null || object\
-      \ == \"\") {\n    return true;\n  } else if (object instanceof Map) {\n    ((Map)\
-      \ object).values().removeIf(value -> dropEmptyFields(value));\n    return (((Map)\
-      \ object).size() == 0);\n  } else if (object instanceof List) {\n    ((List)\
-      \ object).removeIf(value -> dropEmptyFields(value));\n    return (((List) object).length\
-      \ == 0);\n  }\n  return false;\n}\ndropEmptyFields(ctx);\n"
+    source: |
+      boolean dropEmptyFields(Object object) {
+        if (object == null || object == "") {
+          return true;
+        } else if (object instanceof Map) {
+          ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+          return (((Map) object).size() == 0);
+        } else if (object instanceof List) {
+          ((List) object).removeIf(value -> dropEmptyFields(value));
+          return (((List) object).length == 0);
+        }
+        return false;
+      }
+      dropEmptyFields(ctx);
 on_failure:
 - append:
     field: error.message
