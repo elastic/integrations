@@ -1254,6 +1254,32 @@ processors:
       tag: set_process_code_signature_status
       ignore_empty_value: true
       if: ctx.event?.category != null && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+  - set:
+      field: process.parent.code_signature.exists
+      value: true
+      tag: set_process_code_signature_exists_true
+      if: ctx.event?.category != null && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')) && ctx.m365_defender?.event?.initiating_process?.signature_status == "Valid"
+  - set:
+      field: process.parent.code_signature.exists
+      value: false
+      tag: set_process_code_signature_exists_false
+      if: ctx.event?.category != null && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')) && ctx.m365_defender?.event?.initiating_process?.signature_status == "Unsigned"
+  - set:
+      field: process.parent.code_signature.status
+      value: trusted
+      tag: set_process_code_signature_status_trusted
+      override: true
+      if: ctx.event?.category != null && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')) && ctx.m365_defender?.event?.initiating_process?.signature_status == "Valid"
+  - set:
+      field: process.parent.code_signature.trusted
+      value: true
+      tag: set_process_code_signature_trusted_true
+      if: ctx.event?.category != null && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')) && ctx.m365_defender?.event?.initiating_process?.signature_status == "Valid"
+  - set:
+      field: process.parent.code_signature.trusted
+      value: false
+      tag: set_process_code_signature_trusted_false
+      if: ctx.event?.category != null && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')) && ctx.m365_defender?.event?.initiating_process?.signature_status == "Unsigned"
 
   ## All other DeviceEvent types that is not DeviceProcessEvent or DeviceEvent map InitiatingProcess* to process.* rather than process.parent.*
   - set:
