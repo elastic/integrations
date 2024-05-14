@@ -7,6 +7,11 @@ processors:
       target_field: ppbgdi.app.query_params
       field_split: "&"
       value_split: "="
+      on_failure:
+        - append:
+            description: In case of invalid url's just add tag to indicate the parser problem
+            field: tags
+            value: url_query_parsing_error
   - foreach:
       description: Lowercase all query parameter keys for easier handling
       field: ppbgdi.app.query_params

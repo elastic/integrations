@@ -32,7 +32,7 @@ processors:
         - '^/luftbilder' # luftbilder
         - '^/search.html$' # search
         - '^/historicalmaps/viewer.html$' # historicalmaps
-        - '^/api/examples\.html$' # api_examples
+        - '^/api/' # api
         - '^/genindex\.html$' # genindex
         - '^/vectorStyles/%{GREEDYDATA:ppbgdi.app.vector_style.id}$' # vector_styles
         - '^/examples' # examples
@@ -42,12 +42,15 @@ processors:
         - '^/clientaccesspolicy\.xml$' # clientaccesspolicy
         - '^/images/legends/?%{MF_CHSDI3_LEGEND}$' # image_legends
         - '^/images(/%{MF_CHSDI3_TOPIC})?/%{MF_CHSDI3_IMAGE}$' # images
+        - '^/%{MF_CHSDI3_FAVICON}' # images
         - '^/index.html$' # landing_page
+        - '^/releasenotes/' # releasenotes
       pattern_definitions:
         MF_CHSDI3_TOPIC: '(?<ppbgdi.app.topic.id>[^/]+)'
         MF_CHSDI3_LAYER: '(?<ppbgdi.app.layer.id>(ch|test)\.[^/]+)' # To avoid problems, assume features start with ch or test. To be improve if exceptions pop up.
         MF_CHSDI3_FEATURE: '(?<ppbgdi.app.feature.id>[^/]+)'
         MF_CHSDI3_IMAGE: '(?<ppbgdi.app.image.id>[^/]+)'
+        MF_CHSDI3_FAVICON: '(?<ppbgdi.app.image.id>favicon\.ico)'
         MF_CHSDI3_LEGEND: '(?<ppbgdi.app.legend.id>[^/]+)'
         MF_CHSDI3_LAYERSCONFIG_ENDPOINT: '(?<ppbgdi.app.endpoint.id>layersConfig)'
       trace_match: true # Adds the index of the matching pattern to _ingest._grok_match_index. Used to set endpoint names
@@ -91,7 +94,7 @@ processors:
           - luftbilder
           - search
           - historicalmaps
-          - api_examples
+          - api
           - genindex
           - vector_styles
           - examples
@@ -101,7 +104,9 @@ processors:
           - clientaccesspolicy
           - image_legend
           - images
+          - images
           - landing_page
+          - releasenotes
       if: ctx?.temp?.endpoint_index != null
   - dot_expander:
       description: Convert ppbgdi.app.endpoint.id into an object field
