@@ -98,7 +98,13 @@ processors:
       value: change
       tag: append_event_type_change
       if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('registrykeyrenamed') || ctx.json.properties.ActionType.toLowerCase().contains('registryvalueset'))
-  
+  - set:
+      field: json.properties.ActionType
+      value: load
+      tag: set_json_properties_ActionType_load
+      override: true
+      if: ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('imageloaded')
+
   # AdditionalFields are flattened, as they can vary depending on the source, users can use custom pipelines to move fields away from AdditionalFields if required.
   # We move the AdditionalFields.direction when it exists, as its required for source/destination mapping
   - json:
