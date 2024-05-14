@@ -62,7 +62,7 @@ processors:
       field: event.type
       value: end
       tag: append_event_type_end
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') || (ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('processcreated') || ctx.json.properties.ActionType.toLowerCase().contains('connectionsuccess')))
+      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') || (ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('connectionsuccess'))
   - append:
       field: event.type
       value: denied
@@ -72,7 +72,7 @@ processors:
       field: event.type
       value: start
       tag: append_event_type_start
-      if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('connectionrequest') || ctx.json.properties.ActionType.toLowerCase().contains('listeningconnectioncreated'))
+      if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('connectionrequest') || ctx.json.properties.ActionType.toLowerCase().contains('listeningconnectioncreated') || ctx.json.properties.ActionType.toLowerCase().contains('processcreated'))
   - append:
       field: event.type
       value: allowed
@@ -1434,16 +1434,16 @@ processors:
   - set:
       field: host.os.type
       value: windows
-      if: ctx.m365_defender?.event?.os?.platform != null && m365_defender.event.os.platform.toLowerCase().contains('windows')
+      if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('windows')
   # TODO: Lack of data for non-windows OS. Must be verified.
   - set:
       field: host.os.type
       value: linux
-      if: ctx.m365_defender?.event?.os?.platform != null && m365_defender.event.os.platform.toLowerCase().contains('linux')
+      if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('linux')
   - set:
       field: host.os.type
       value: macos
-      if: ctx.m365_defender?.event?.os?.platform != null && m365_defender.event.os.platform.toLowerCase().contains('macos')
+      if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('macos')
   - set:
       field: host.os.full
       copy_from: m365_defender.event.os.platform
