@@ -13,6 +13,13 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
       field: event.original
       patterns:
@@ -62,7 +69,7 @@ processors:
   - set:
       field: event.kind
       value: event
-  - set:
+  - append:
       field: event.category
       value: web
   - script:
@@ -71,9 +78,9 @@ processors:
       source: >-
         def err_levels = ["emerg", "alert", "crit", "error", "warn"];
         if (err_levels.contains(ctx.log.level)) {
-          ctx.event.type = "error";
+          ctx.event.type = ["error"];
         } else {
-          ctx.event.type = "info";
+          ctx.event.type = ["info"];
         }
 
   - grok:
