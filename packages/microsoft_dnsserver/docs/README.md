@@ -176,35 +176,6 @@ On the other hand, **Audit** events are exposed through Microsoft-Windows-DNS-Se
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.response_code | The DNS response code. | keyword |
-| dnsserver.analytical.additional_info | Any additional information relevant to the event. | keyword |
-| dnsserver.analytical.bytes_sent | The number of bytes sent in the DNS response. | long |
-| dnsserver.analytical.cache_scope | Indicates whether the DNS data came from a cache and the scope of that cache. | keyword |
-| dnsserver.analytical.description | A textual description of the event. | keyword |
-| dnsserver.analytical.destination.ip | The IP address of the destination where the DNS query is sent or the response is received. | ip |
-| dnsserver.analytical.destination.port | The network port on the destination host used in the DNS transaction. | long |
-| dnsserver.analytical.dnssec | Indicates whether DNSSEC (DNS Security Extensions) was used in the DNS transaction. | keyword |
-| dnsserver.analytical.elapsed_time | The time taken to process the DNS query or transaction. | keyword |
-| dnsserver.analytical.forward_interface_ip | The IP address of the network interface used to forward DNS queries to an upstream server. | ip |
-| dnsserver.analytical.guid | A globally unique identifier associated with the event. | keyword |
-| dnsserver.analytical.interface_ip | The IP address of the network interface on the DNS server that handled the transaction. | keyword |
-| dnsserver.analytical.keywords | Keywords associated with the event, useful for categorizing or filtering. | keyword |
-| dnsserver.analytical.packet_data | The raw data of the DNS packet. | keyword |
-| dnsserver.analytical.policy_name | The name of any policy that influenced the handling of the DNS query or response. | keyword |
-| dnsserver.analytical.queries_attached | Number of queries that are associated with a particular event or transaction within the DNS server. | keyword |
-| dnsserver.analytical.question_name | The domain name queried in the DNS request. | keyword |
-| dnsserver.analytical.question_type | The type of DNS query, e.g., A, AAAA, MX, etc. | keyword |
-| dnsserver.analytical.qxid | The query transaction identifier. | keyword |
-| dnsserver.analytical.reason | The reason for any actions taken during the DNS transaction. | keyword |
-| dnsserver.analytical.recursion_depth | The depth of the recursion used in resolving the DNS query. | keyword |
-| dnsserver.analytical.recursion_scope | Indicates the scope of recursion allowed in the DNS query handling. | keyword |
-| dnsserver.analytical.response_code | The DNS response code, such as NOERROR, NXDOMAIN, etc. | keyword |
-| dnsserver.analytical.scope | General scope of the log or event, potentially indicating the context or breadth of impact. | keyword |
-| dnsserver.analytical.secure | Indicates whether the transaction was conducted over a secure channel. | keyword |
-| dnsserver.analytical.source.ip | The IP address of the source from which the DNS query originated. | ip |
-| dnsserver.analytical.source.port | The network port on the source host used in the DNS transaction. | long |
-| dnsserver.analytical.xid | The transaction identifier for the DNS request. | keyword |
-| dnsserver.analytical.zone | The DNS zone that is the subject of the query or affected by the event. | keyword |
-| dnsserver.analytical.zone_scope | Specifies the scope of the DNS zone involved in the event. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -240,6 +211,35 @@ On the other hand, **Audit** events are exposed through Microsoft-Windows-DNS-Se
 | input.type | Input type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| microsoft_dnsserver.analytical.additional_info | Any additional information relevant to the event. | keyword |
+| microsoft_dnsserver.analytical.bytes_sent | The number of bytes sent in the DNS response. | long |
+| microsoft_dnsserver.analytical.cache_scope | Indicates whether the DNS data came from a cache and the scope of that cache. | keyword |
+| microsoft_dnsserver.analytical.description | A textual description of the event. | keyword |
+| microsoft_dnsserver.analytical.destination.ip | The IP address of the destination where the DNS query is sent or the response is received. | ip |
+| microsoft_dnsserver.analytical.destination.port | The network port on the destination host used in the DNS transaction. | long |
+| microsoft_dnsserver.analytical.dnssec | Indicates whether DNSSEC (DNS Security Extensions) was used in the DNS transaction. | keyword |
+| microsoft_dnsserver.analytical.elapsed_time | The time taken to process the DNS query or transaction. | keyword |
+| microsoft_dnsserver.analytical.forward_interface_ip | The IP address of the network interface used to forward DNS queries to an upstream server. | ip |
+| microsoft_dnsserver.analytical.guid | A globally unique identifier associated with the event. | keyword |
+| microsoft_dnsserver.analytical.interface_ip | The IP address of the network interface on the DNS server that handled the transaction. | keyword |
+| microsoft_dnsserver.analytical.keywords | Keywords associated with the event, useful for categorizing or filtering. | keyword |
+| microsoft_dnsserver.analytical.packet_data | The raw data of the DNS packet. | keyword |
+| microsoft_dnsserver.analytical.policy_name | The name of any policy that influenced the handling of the DNS query or response. | keyword |
+| microsoft_dnsserver.analytical.queries_attached | Number of queries that are associated with a particular event or transaction within the DNS server. | keyword |
+| microsoft_dnsserver.analytical.question_name | The domain name queried in the DNS request. | keyword |
+| microsoft_dnsserver.analytical.question_type | The type of DNS query, e.g., A, AAAA, MX, etc. | keyword |
+| microsoft_dnsserver.analytical.qxid | The query transaction identifier. | keyword |
+| microsoft_dnsserver.analytical.reason | The reason for any actions taken during the DNS transaction. | keyword |
+| microsoft_dnsserver.analytical.recursion_depth | The depth of the recursion used in resolving the DNS query. | keyword |
+| microsoft_dnsserver.analytical.recursion_scope | Indicates the scope of recursion allowed in the DNS query handling. | keyword |
+| microsoft_dnsserver.analytical.response_code | The DNS response code, such as NOERROR, NXDOMAIN, etc. | keyword |
+| microsoft_dnsserver.analytical.scope | General scope of the log or event, potentially indicating the context or breadth of impact. | keyword |
+| microsoft_dnsserver.analytical.secure | Indicates whether the transaction was conducted over a secure channel. | keyword |
+| microsoft_dnsserver.analytical.source.ip | The IP address of the source from which the DNS query originated. | ip |
+| microsoft_dnsserver.analytical.source.port | The network port on the source host used in the DNS transaction. | long |
+| microsoft_dnsserver.analytical.xid | The transaction identifier for the DNS request. | keyword |
+| microsoft_dnsserver.analytical.zone | The DNS zone that is the subject of the query or affected by the event. | keyword |
+| microsoft_dnsserver.analytical.zone_scope | Specifies the scope of the DNS zone involved in the event. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
@@ -301,109 +301,6 @@ On the other hand, **Audit** events are exposed through Microsoft-Windows-DNS-Se
 | dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.type | The type of record being queried. | keyword |
-| dnsserver.audit.action |  | keyword |
-| dnsserver.audit.active_key |  | keyword |
-| dnsserver.audit.base64_data |  | keyword |
-| dnsserver.audit.bytes_sent |  | keyword |
-| dnsserver.audit.child_zone |  | keyword |
-| dnsserver.audit.client_subnet_list |  | keyword |
-| dnsserver.audit.client_subnet_record |  | keyword |
-| dnsserver.audit.condition |  | keyword |
-| dnsserver.audit.criteria |  | keyword |
-| dnsserver.audit.crypto_algorithm |  | keyword |
-| dnsserver.audit.current_rollover_status |  | keyword |
-| dnsserver.audit.current_state |  | keyword |
-| dnsserver.audit.denial_of_existence |  | keyword |
-| dnsserver.audit.digest |  | keyword |
-| dnsserver.audit.digest_type |  | keyword |
-| dnsserver.audit.distribute_trust_anchor |  | keyword |
-| dnsserver.audit.ds_record_generation_algorithm |  | keyword |
-| dnsserver.audit.ds_record_set_ttl |  | keyword |
-| dnsserver.audit.ds_signature_validity_periodzx |  | keyword |
-| dnsserver.audit.enable_rfc_5011_key_rollover |  | keyword |
-| dnsserver.audit.errors_per_second |  | keyword |
-| dnsserver.audit.event_string |  | keyword |
-| dnsserver.audit.file_path |  | keyword |
-| dnsserver.audit.forwarders |  | keyword |
-| dnsserver.audit.friendly_name |  | keyword |
-| dnsserver.audit.guid |  | keyword |
-| dnsserver.audit.initial_rollover_offset |  | keyword |
-| dnsserver.audit.ipv4_prefix_length |  | keyword |
-| dnsserver.audit.ipv6_prefix_length |  | keyword |
-| dnsserver.audit.is_enabled |  | keyword |
-| dnsserver.audit.is_key_master_server |  | keyword |
-| dnsserver.audit.key_id |  | keyword |
-| dnsserver.audit.key_length |  | keyword |
-| dnsserver.audit.key_master_server |  | keyword |
-| dnsserver.audit.key_or_zone |  | keyword |
-| dnsserver.audit.key_protocol |  | keyword |
-| dnsserver.audit.key_record_set_ttl |  | keyword |
-| dnsserver.audit.key_signature_validity_period |  | keyword |
-| dnsserver.audit.key_storage_provider |  | keyword |
-| dnsserver.audit.key_tag |  | keyword |
-| dnsserver.audit.key_type |  | keyword |
-| dnsserver.audit.ksk_or_zsk |  | keyword |
-| dnsserver.audit.last_rollover_time |  | keyword |
-| dnsserver.audit.leak_rate |  | keyword |
-| dnsserver.audit.listen_addresses |  | keyword |
-| dnsserver.audit.master_server |  | keyword |
-| dnsserver.audit.mode |  | keyword |
-| dnsserver.audit.name |  | keyword |
-| dnsserver.audit.name_server |  | keyword |
-| dnsserver.audit.new_friendly_name |  | keyword |
-| dnsserver.audit.new_property_values |  | keyword |
-| dnsserver.audit.new_scope |  | keyword |
-| dnsserver.audit.new_value |  | keyword |
-| dnsserver.audit.next_key |  | keyword |
-| dnsserver.audit.next_rollover_action |  | keyword |
-| dnsserver.audit.next_rollover_time |  | keyword |
-| dnsserver.audit.node_name |  | keyword |
-| dnsserver.audit.nsec3_hash_algorithm |  | keyword |
-| dnsserver.audit.nsec3_iterations |  | keyword |
-| dnsserver.audit.nsec3_opt_out |  | keyword |
-| dnsserver.audit.nsec3_random_salt_length |  | keyword |
-| dnsserver.audit.nsec3_user_salt |  | keyword |
-| dnsserver.audit.old_friendly_name |  | keyword |
-| dnsserver.audit.old_property_values |  | keyword |
-| dnsserver.audit.old_scope |  | keyword |
-| dnsserver.audit.parent_has_secure_delegation |  | keyword |
-| dnsserver.audit.policy |  | keyword |
-| dnsserver.audit.processing_order |  | keyword |
-| dnsserver.audit.propagation_time |  | keyword |
-| dnsserver.audit.property_key |  | keyword |
-| dnsserver.audit.question_name |  | keyword |
-| dnsserver.audit.question_type |  | keyword |
-| dnsserver.audit.recursion_scope |  | keyword |
-| dnsserver.audit.resolved_data |  | keyword |
-| dnsserver.audit.response_per_second |  | keyword |
-| dnsserver.audit.rollover_period |  | keyword |
-| dnsserver.audit.rollover_type |  | keyword |
-| dnsserver.audit.rrl_exception_list |  | keyword |
-| dnsserver.audit.scavenge_servers |  | keyword |
-| dnsserver.audit.scope |  | keyword |
-| dnsserver.audit.scope_weight |  | keyword |
-| dnsserver.audit.scope_weight_new |  | keyword |
-| dnsserver.audit.scope_weight_old |  | keyword |
-| dnsserver.audit.scopes |  | keyword |
-| dnsserver.audit.secure_delegation_polling_period |  | keyword |
-| dnsserver.audit.seized_or_transfered |  | keyword |
-| dnsserver.audit.setting |  | keyword |
-| dnsserver.audit.signature_inception_offset |  | keyword |
-| dnsserver.audit.source_ip |  | ip |
-| dnsserver.audit.standby_key |  | keyword |
-| dnsserver.audit.store_keys_in_AD |  | keyword |
-| dnsserver.audit.subtree_aging |  | keyword |
-| dnsserver.audit.tc_rate |  | keyword |
-| dnsserver.audit.total_responses_in_window |  | keyword |
-| dnsserver.audit.ttl |  | long |
-| dnsserver.audit.type |  | keyword |
-| dnsserver.audit.virtualization_id |  | keyword |
-| dnsserver.audit.window_size |  | keyword |
-| dnsserver.audit.with_new_keys |  | keyword |
-| dnsserver.audit.with_without |  | keyword |
-| dnsserver.audit.zone |  | keyword |
-| dnsserver.audit.zone_scope |  | keyword |
-| dnsserver.audit.zone_signature_validity_period |  | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
@@ -438,6 +335,109 @@ On the other hand, **Audit** events are exposed through Microsoft-Windows-DNS-Se
 | input.type | Input type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| microsoft_dnsserver.audit.action |  | keyword |
+| microsoft_dnsserver.audit.active_key |  | keyword |
+| microsoft_dnsserver.audit.base64_data |  | keyword |
+| microsoft_dnsserver.audit.bytes_sent |  | keyword |
+| microsoft_dnsserver.audit.child_zone |  | keyword |
+| microsoft_dnsserver.audit.client_subnet_list |  | keyword |
+| microsoft_dnsserver.audit.client_subnet_record |  | keyword |
+| microsoft_dnsserver.audit.condition |  | keyword |
+| microsoft_dnsserver.audit.criteria |  | keyword |
+| microsoft_dnsserver.audit.crypto_algorithm |  | keyword |
+| microsoft_dnsserver.audit.current_rollover_status |  | keyword |
+| microsoft_dnsserver.audit.current_state |  | keyword |
+| microsoft_dnsserver.audit.denial_of_existence |  | keyword |
+| microsoft_dnsserver.audit.digest |  | keyword |
+| microsoft_dnsserver.audit.digest_type |  | keyword |
+| microsoft_dnsserver.audit.distribute_trust_anchor |  | keyword |
+| microsoft_dnsserver.audit.ds_record_generation_algorithm |  | keyword |
+| microsoft_dnsserver.audit.ds_record_set_ttl |  | keyword |
+| microsoft_dnsserver.audit.ds_signature_validity_periodzx |  | keyword |
+| microsoft_dnsserver.audit.enable_rfc_5011_key_rollover |  | keyword |
+| microsoft_dnsserver.audit.errors_per_second |  | keyword |
+| microsoft_dnsserver.audit.event_string |  | keyword |
+| microsoft_dnsserver.audit.file_path |  | keyword |
+| microsoft_dnsserver.audit.forwarders |  | keyword |
+| microsoft_dnsserver.audit.friendly_name |  | keyword |
+| microsoft_dnsserver.audit.guid |  | keyword |
+| microsoft_dnsserver.audit.initial_rollover_offset |  | keyword |
+| microsoft_dnsserver.audit.ipv4_prefix_length |  | keyword |
+| microsoft_dnsserver.audit.ipv6_prefix_length |  | keyword |
+| microsoft_dnsserver.audit.is_enabled |  | keyword |
+| microsoft_dnsserver.audit.is_key_master_server |  | keyword |
+| microsoft_dnsserver.audit.key_id |  | keyword |
+| microsoft_dnsserver.audit.key_length |  | keyword |
+| microsoft_dnsserver.audit.key_master_server |  | keyword |
+| microsoft_dnsserver.audit.key_or_zone |  | keyword |
+| microsoft_dnsserver.audit.key_protocol |  | keyword |
+| microsoft_dnsserver.audit.key_record_set_ttl |  | keyword |
+| microsoft_dnsserver.audit.key_signature_validity_period |  | keyword |
+| microsoft_dnsserver.audit.key_storage_provider |  | keyword |
+| microsoft_dnsserver.audit.key_tag |  | keyword |
+| microsoft_dnsserver.audit.key_type |  | keyword |
+| microsoft_dnsserver.audit.ksk_or_zsk |  | keyword |
+| microsoft_dnsserver.audit.last_rollover_time |  | keyword |
+| microsoft_dnsserver.audit.leak_rate |  | keyword |
+| microsoft_dnsserver.audit.listen_addresses |  | keyword |
+| microsoft_dnsserver.audit.master_server |  | keyword |
+| microsoft_dnsserver.audit.mode |  | keyword |
+| microsoft_dnsserver.audit.name |  | keyword |
+| microsoft_dnsserver.audit.name_server |  | keyword |
+| microsoft_dnsserver.audit.new_friendly_name |  | keyword |
+| microsoft_dnsserver.audit.new_property_values |  | keyword |
+| microsoft_dnsserver.audit.new_scope |  | keyword |
+| microsoft_dnsserver.audit.new_value |  | keyword |
+| microsoft_dnsserver.audit.next_key |  | keyword |
+| microsoft_dnsserver.audit.next_rollover_action |  | keyword |
+| microsoft_dnsserver.audit.next_rollover_time |  | keyword |
+| microsoft_dnsserver.audit.node_name |  | keyword |
+| microsoft_dnsserver.audit.nsec3_hash_algorithm |  | keyword |
+| microsoft_dnsserver.audit.nsec3_iterations |  | keyword |
+| microsoft_dnsserver.audit.nsec3_opt_out |  | keyword |
+| microsoft_dnsserver.audit.nsec3_random_salt_length |  | keyword |
+| microsoft_dnsserver.audit.nsec3_user_salt |  | keyword |
+| microsoft_dnsserver.audit.old_friendly_name |  | keyword |
+| microsoft_dnsserver.audit.old_property_values |  | keyword |
+| microsoft_dnsserver.audit.old_scope |  | keyword |
+| microsoft_dnsserver.audit.parent_has_secure_delegation |  | keyword |
+| microsoft_dnsserver.audit.policy |  | keyword |
+| microsoft_dnsserver.audit.processing_order |  | keyword |
+| microsoft_dnsserver.audit.propagation_time |  | keyword |
+| microsoft_dnsserver.audit.property_key |  | keyword |
+| microsoft_dnsserver.audit.question_name |  | keyword |
+| microsoft_dnsserver.audit.question_type |  | keyword |
+| microsoft_dnsserver.audit.recursion_scope |  | keyword |
+| microsoft_dnsserver.audit.resolved_data |  | keyword |
+| microsoft_dnsserver.audit.response_per_second |  | keyword |
+| microsoft_dnsserver.audit.rollover_period |  | keyword |
+| microsoft_dnsserver.audit.rollover_type |  | keyword |
+| microsoft_dnsserver.audit.rrl_exception_list |  | keyword |
+| microsoft_dnsserver.audit.scavenge_servers |  | keyword |
+| microsoft_dnsserver.audit.scope |  | keyword |
+| microsoft_dnsserver.audit.scope_weight |  | keyword |
+| microsoft_dnsserver.audit.scope_weight_new |  | keyword |
+| microsoft_dnsserver.audit.scope_weight_old |  | keyword |
+| microsoft_dnsserver.audit.scopes |  | keyword |
+| microsoft_dnsserver.audit.secure_delegation_polling_period |  | keyword |
+| microsoft_dnsserver.audit.seized_or_transfered |  | keyword |
+| microsoft_dnsserver.audit.setting |  | keyword |
+| microsoft_dnsserver.audit.signature_inception_offset |  | keyword |
+| microsoft_dnsserver.audit.source_ip |  | ip |
+| microsoft_dnsserver.audit.standby_key |  | keyword |
+| microsoft_dnsserver.audit.store_keys_in_AD |  | keyword |
+| microsoft_dnsserver.audit.subtree_aging |  | keyword |
+| microsoft_dnsserver.audit.tc_rate |  | keyword |
+| microsoft_dnsserver.audit.total_responses_in_window |  | keyword |
+| microsoft_dnsserver.audit.ttl |  | long |
+| microsoft_dnsserver.audit.type |  | keyword |
+| microsoft_dnsserver.audit.virtualization_id |  | keyword |
+| microsoft_dnsserver.audit.window_size |  | keyword |
+| microsoft_dnsserver.audit.with_new_keys |  | keyword |
+| microsoft_dnsserver.audit.with_without |  | keyword |
+| microsoft_dnsserver.audit.zone |  | keyword |
+| microsoft_dnsserver.audit.zone_scope |  | keyword |
+| microsoft_dnsserver.audit.zone_signature_validity_period |  | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |

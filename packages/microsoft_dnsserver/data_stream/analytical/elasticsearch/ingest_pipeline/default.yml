@@ -18,10 +18,10 @@ processors:
       value: [protocol]
       tag: append_event_type_protocol
 
-# Rename winlog.event_data to dnsserver.analytical
+# Rename winlog.event_data to microsoft_dnsserver.analytical
   - rename:
       field: winlog.event_data
-      target_field: dnsserver.analytical
+      target_field: microsoft_dnsserver.analytical
       if: ctx.winlog?.event_data != null && ctx.winlog.event_data != ''
       tag: rename_winlog_eventdata
       on_failure:
@@ -67,16 +67,16 @@ processors:
         if (t == null) {
           return;
         }
-        if (ctx.dnsserver?.analytical == null ) {
+        if (ctx.microsoft_dnsserver?.analytical == null ) {
           Map map = new HashMap();
-          ctx.dnsserver.put("analytical", map);
+          ctx.microsoft_dnsserver.put("analytical", map);
         }
-        ctx.dnsserver.analytical.put("description", t)
+        ctx.microsoft_dnsserver.analytical.put("description", t)
 
   - script:
       lang: painless
       ignore_failure: false
-      if: ctx.dnsserver?.analytical?.QTYPE != null
+      if: ctx.microsoft_dnsserver?.analytical?.QTYPE != null
       tag: map_dns_question_type
       description: Map numerical DNS question type to human-readable format
       params:
@@ -161,16 +161,16 @@ processors:
         "32768": TA
         "32769": DLV
       source: |-
-        def t = params.get(ctx.dnsserver.analytical.QTYPE);
+        def t = params.get(ctx.microsoft_dnsserver.analytical.QTYPE);
         if (t != null) {
-          ctx.dnsserver.analytical.put("question_type", t);
+          ctx.microsoft_dnsserver.analytical.put("question_type", t);
         }
-        ctx.dnsserver.analytical.remove(QTYPE);
+        ctx.microsoft_dnsserver.analytical.remove("QTYPE");
 
   - script:
       lang: painless
       ignore_failure: false
-      if: ctx.dnsserver?.analytical?.RCODE != null
+      if: ctx.microsoft_dnsserver?.analytical?.RCODE != null
       tag: map_dns_response_code
       description: Map numerical DNS response code to human-readable format
       params:
@@ -195,21 +195,21 @@ processors:
         "22": BADTRUNC
         "23": BADCOOKIE
       source: |-
-        def t = params.get(ctx.dnsserver.analytical.RCODE);
+        def t = params.get(ctx.microsoft_dnsserver.analytical.RCODE);
         if (t != null) {
-          ctx.dnsserver.analytical.put("response_code", t);
+          ctx.microsoft_dnsserver.analytical.put("response_code", t);
         }
-        ctx.dnsserver.analytical.remove(RCODE);
+        ctx.microsoft_dnsserver.analytical.remove("RCODE");
 
   - remove:
-      field: dnsserver.analytical.PolicyName
-      if: ctx.dnsserver?.analytical?.PolicyName == "NULL"
+      field: microsoft_dnsserver.analytical.PolicyName
+      if: ctx.microsoft_dnsserver?.analytical?.PolicyName == "NULL"
       ignore_failure: true
       ignore_missing: true
       tag: remove_null_policy_name
   # DNS flags are broken down into other fields
   - remove:
-      field: dnsserver.analytical.Flags
+      field: microsoft_dnsserver.analytical.Flags
       ignore_failure: true
       ignore_missing: true
       tag: remove_dns_flags
@@ -246,8 +246,8 @@ processors:
   - script:
       lang: painless
       description: This script processor rename the fields under the analytical object.
-      if: ctx.dnsserver?.analytical != null
-      tag: painless_to_rename_fields_under_dnsserver_analytical
+      if: ctx.microsoft_dnsserver?.analytical != null
+      tag: painless_to_rename_fields_under_microsoft_dnsserver_analytical
       params:
         "AdditionalInfo": "additional_info"
         "BufferSize": "bytes_sent"
@@ -304,27 +304,27 @@ processors:
           }
           return dst;
         }
-        ctx.dnsserver.analytical = renameKeys(ctx.dnsserver.analytical, params)
+        ctx.microsoft_dnsserver.analytical = renameKeys(ctx.microsoft_dnsserver.analytical, params)
 
 # ECS fields
   - set:
       field: dns.id
-      copy_from: dnsserver.analytical.xid
+      copy_from: microsoft_dnsserver.analytical.xid
       ignore_empty_value: true
       tag: set_dns_id
   - set:
       field: dns.question.name
-      copy_from: dnsserver.analytical.question_name
+      copy_from: microsoft_dnsserver.analytical.question_name
       ignore_empty_value: true
       tag: set_dns_question_name
   - set:
       field: dns.question.type
-      copy_from: dnsserver.analytical.question_type
+      copy_from: microsoft_dnsserver.analytical.question_type
       ignore_empty_value: true
       tag: set_dns_question_type
   - set:
       field: dns.response_code
-      copy_from: dnsserver.analytical.response_code
+      copy_from: microsoft_dnsserver.analytical.response_code
       ignore_empty_value: true
       tag: set_dns_question_response
   - set: 
@@ -341,33 +341,33 @@ processors:
   - append:
       field: dns.header_flags
       value: AA
-      if: ctx.dnsserver?.analytical?.AA == "1"
+      if: ctx.microsoft_dnsserver?.analytical?.AA == "1"
       allow_duplicates: false
       tag: append_dns_header_flag_AA
   - append:
       field: dns.header_flags
       value: AD
-      if: ctx.dnsserver?.analytical?.AD == "1"
+      if: ctx.microsoft_dnsserver?.analytical?.AD == "1"
       allow_duplicates: false
       tag: append_dns_header_flag_AD
   - append:
       field: dns.header_flags
       value: RD
-      if: ctx.dnsserver?.analytical?.RD == "1"
+      if: ctx.microsoft_dnsserver?.analytical?.RD == "1"
       allow_duplicates: false
       tag: append_dns_header_flag_RD
   - append:
       field: dns.header_flags
       value: TC
-      if: ctx.dnsserver?.analytical?.TC == "1"
+      if: ctx.microsoft_dnsserver?.analytical?.TC == "1"
       allow_duplicates: false
       tag: append_dns_header_flag_TC
   - remove:
       field:
-        - dnsserver.analytical.AA
-        - dnsserver.analytical.AD
-        - dnsserver.analytical.RD
-        - dnsserver.analytical.TC
+        - microsoft_dnsserver.analytical.AA
+        - microsoft_dnsserver.analytical.AD
+        - microsoft_dnsserver.analytical.RD
+        - microsoft_dnsserver.analytical.TC
       ignore_missing: true
       tag: remove_dns_headers
 
@@ -378,32 +378,32 @@ processors:
   - set:
       field: network.transport
       value: tcp
-      if: ctx.dnsserver?.analytical?.TCP == "1"
+      if: ctx.microsoft_dnsserver?.analytical?.TCP == "1"
       tag: set_network_transport_tcp
   - set:
       field: network.transport
       value: udp
-      if: ctx.dnsserver?.analytical?.TCP == "0"
+      if: ctx.microsoft_dnsserver?.analytical?.TCP == "0"
       tag: set_network_transport_udp
   - remove:
       field:
-        - dnsserver.analytical.TCP
+        - microsoft_dnsserver.analytical.TCP
       ignore_missing: true
       tag: remove_dns_tcp
   - set:
       field: event.reason
-      copy_from: dnsserver.analytical.reason
+      copy_from: microsoft_dnsserver.analytical.reason
       ignore_empty_value: true
       tag: set_event_reason
   - convert:
-      field: dnsserver.analytical.bytes_sent
+      field: microsoft_dnsserver.analytical.bytes_sent
       type: long
       ignore_failure: true
       ignore_missing: true
       tag: convert_bytes_sent
   - set:
       field: network.bytes
-      copy_from: dnsserver.analytical.bytes_sent
+      copy_from: microsoft_dnsserver.analytical.bytes_sent
       ignore_empty_value: true
       tag: set_network_bytes
   - set:
@@ -494,37 +494,37 @@ processors:
 # DNS IP processing
   # Destination IP
   - convert:
-      field: dnsserver.analytical.Destination
-      target_field: dnsserver.analytical.destination.ip
+      field: microsoft_dnsserver.analytical.Destination
+      target_field: microsoft_dnsserver.analytical.destination.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
       tag: convert_destionation_ip
   - remove:
-      field: dnsserver.analytical.Destination
+      field: microsoft_dnsserver.analytical.Destination
       ignore_failure: true
       ignore_missing: true
       tag: remove_destination_ip
   - set:
       field: destination.ip
-      copy_from: dnsserver.analytical.destination.ip
+      copy_from: microsoft_dnsserver.analytical.destination.ip
       ignore_empty_value: true
       tag: set_destination_ip
   - rename:
-      field: dnsserver.analytical.Port
-      target_field: dnsserver.analytical.destination.port
+      field: microsoft_dnsserver.analytical.Port
+      target_field: microsoft_dnsserver.analytical.destination.port
       if: ctx.destination?.ip != null && ctx.destination.ip != ''
       ignore_missing: true
       tag: rename_dns_destination_port
   - convert:
-      field: dnsserver.analytical.destination.port
+      field: microsoft_dnsserver.analytical.destination.port
       type: long
       ignore_failure: true
       ignore_missing: true
       tag: convert_destination_port
   - set:
       field: destination.port
-      copy_from: dnsserver.analytical.destination.port
+      copy_from: microsoft_dnsserver.analytical.destination.port
       ignore_empty_value: true
       tag: set_destination_port
   - geoip:
@@ -559,37 +559,37 @@ processors:
   
   # Source IP
   - convert:
-      field: dnsserver.analytical.Source
-      target_field: dnsserver.analytical.source.ip
+      field: microsoft_dnsserver.analytical.Source
+      target_field: microsoft_dnsserver.analytical.source.ip
       type: ip
       ignore_failure: true
       ignore_missing: true
       tag: convert_source_ip
   - remove:
-      field: dnsserver.analytical.Source
+      field: microsoft_dnsserver.analytical.Source
       ignore_failure: true
       ignore_missing: true
       tag: remove_source_ip
   - set:
       field: source.ip
-      copy_from: dnsserver.analytical.source.ip
+      copy_from: microsoft_dnsserver.analytical.source.ip
       ignore_empty_value: true
       tag: set_source_ip
   - rename:
-      field: dnsserver.analytical.Port
-      target_field: dnsserver.analytical.source.port
+      field: microsoft_dnsserver.analytical.Port
+      target_field: microsoft_dnsserver.analytical.source.port
       if: ctx.source?.ip != null && ctx.source.ip != ''
       ignore_missing: true
       tag: rename_dns_source_port
   - convert:
-      field: dnsserver.analytical.source.port
+      field: microsoft_dnsserver.analytical.source.port
       type: long
       ignore_failure: true
       ignore_missing: true
       tag: convert_source_port
   - set:
       field: source.port
-      copy_from: dnsserver.analytical.source.port
+      copy_from: microsoft_dnsserver.analytical.source.port
       ignore_empty_value: true
       tag: set_source_port
   - geoip:
@@ -624,24 +624,24 @@ processors:
 
   # InterfaceIP
   - convert:
-      field: dnsserver.analytical.InterfaceIP
-      target_field: dnsserver.analytical.interface_ip
+      field: microsoft_dnsserver.analytical.InterfaceIP
+      target_field: microsoft_dnsserver.analytical.interface_ip
       type: ip
       ignore_failure: true
       ignore_missing: true
       tag: convert_interface_ip
   # ForwardInterfaceIP
   - convert:
-      field: dnsserver.analytical.ForwardInterfaceIP
-      target_field: dnsserver.analytical.forward_interface_ip
+      field: microsoft_dnsserver.analytical.ForwardInterfaceIP
+      target_field: microsoft_dnsserver.analytical.forward_interface_ip
       type: ip
       ignore_failure: true
       ignore_missing: true
       tag: convert_forward_interface_ip
   - remove:
       field:
-        - dnsserver.analytical.InterfaceIP
-        - dnsserver.analytical.ForwardInterfaceIP
+        - microsoft_dnsserver.analytical.InterfaceIP
+        - microsoft_dnsserver.analytical.ForwardInterfaceIP
       ignore_failure: true
       ignore_missing: true
       tag: remove_additional_ips
@@ -661,14 +661,14 @@ processors:
       tag: append_related_source_ip
   - append:
       field: related.ip
-      value: '{{{dnsserver.analytical.interface_ip}}}'
-      if: ctx.dnsserver?.analytical?.interface_ip != null && ctx.dnsserver.analytical.interface_ip != ''
+      value: '{{{microsoft_dnsserver.analytical.interface_ip}}}'
+      if: ctx.microsoft_dnsserver?.analytical?.interface_ip != null && ctx.microsoft_dnsserver.analytical.interface_ip != ''
       allow_duplicates: false
       tag: append_related_interface_ip
   - append:
       field: related.ip
-      value: '{{{dnsserver.analytical.forward_interface_ip}}}'
-      if: ctx.dnsserver?.analytical?.forward_interface_ip != null && ctx.dnsserver.analytical.forward_interface_ip != ''
+      value: '{{{microsoft_dnsserver.analytical.forward_interface_ip}}}'
+      if: ctx.microsoft_dnsserver?.analytical?.forward_interface_ip != null && ctx.microsoft_dnsserver.analytical.forward_interface_ip != ''
       allow_duplicates: false
       tag: append_related_forward_ip
 
@@ -694,17 +694,17 @@ processors:
 
   - remove:
       field:
-        - dnsserver.analytical.question_name
-        - dnsserver.analytical.question_type
-        - dnsserver.analytical.response_code
-        - dnsserver.analytical.bytes_sent
-        - dnsserver.analytical.xid
-        - dnsserver.analytical.task
-        - dnsserver.analytical.reason
-        - dnsserver.analytical.destination.ip
-        - dnsserver.analytical.destination.port
-        - dnsserver.analytical.source.ip
-        - dnsserver.analytical.source.port
+        - microsoft_dnsserver.analytical.question_name
+        - microsoft_dnsserver.analytical.question_type
+        - microsoft_dnsserver.analytical.response_code
+        - microsoft_dnsserver.analytical.bytes_sent
+        - microsoft_dnsserver.analytical.xid
+        - microsoft_dnsserver.analytical.task
+        - microsoft_dnsserver.analytical.reason
+        - microsoft_dnsserver.analytical.destination.ip
+        - microsoft_dnsserver.analytical.destination.port
+        - microsoft_dnsserver.analytical.source.ip
+        - microsoft_dnsserver.analytical.source.port
         - winlog.task
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_failure: true

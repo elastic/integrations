@@ -16,10 +16,10 @@ processors:
       if: ctx.winlog?.task == "Configuration"
       tag: set_event_category_configuration
 
-# Move winlog.event_data to dnsserver.audit
+# Move winlog.event_data to microsoft_dnsserver.audit
   - rename:
       field: winlog.event_data
-      target_field: dnsserver.audit
+      target_field: microsoft_dnsserver.audit
       if: ctx.winlog?.event_data != null && ctx.winlog.event_data != ''
       tag: rename_winlog_eventdata
       on_failure:
@@ -31,7 +31,7 @@ processors:
   - script:
       lang: painless
       ignore_failure: false
-      if: ctx.dnsserver?.audit?.QTYPE != null
+      if: ctx.microsoft_dnsserver?.audit?.QTYPE != null
       tag: map_dns_question_type
       description: Map numerical DNS question type to human-readable format
       params:
@@ -116,16 +116,16 @@ processors:
         "32768": TA
         "32769": DLV
       source: |-
-        def t = params.get(ctx.dnsserver.audit.QTYPE);
+        def t = params.get(ctx.microsoft_dnsserver.audit.QTYPE);
         if (t != null) {
-          ctx.dnsserver.audit.put("question_type", t);
+          ctx.microsoft_dnsserver.audit.put("question_type", t);
         }
-        ctx.dnsserver.audit.remove(QTYPE);
+        ctx.microsoft_dnsserver.audit.remove("QTYPE");
 
   - script:
       lang: painless
       description: This script processor rename the fields under the audit object.
-      if: ctx.dnsserver?.audit != null
+      if: ctx.microsoft_dnsserver?.audit != null
       params:
         "Action": "action"
         "ActiveKey": "active_key"
@@ -231,7 +231,7 @@ processors:
         "ZoneScope": "zone_scope"
         "ZoneSignatureValidityPeriod": "zone_signature_validity_period"
         "ZoneName": "zone"
-      tag: painless_to_rename_fields_under_dnsserver_audit
+      tag: painless_to_rename_fields_under_microsoft_dnsserver_audit
       source: |
         def renameKeys(Map src, Map keyMap) {
           def dst = new HashMap();
@@ -268,63 +268,63 @@ processors:
           }
           return dst;
         }
-        ctx.dnsserver.audit = renameKeys(ctx.dnsserver.audit, params)
+        ctx.microsoft_dnsserver.audit = renameKeys(ctx.microsoft_dnsserver.audit, params)
 
 # ECS fields
   - convert:
-      field: dnsserver.audit.ttl
+      field: microsoft_dnsserver.audit.ttl
       type: long
       ignore_failure: true
       ignore_missing: true
       tag: convert_audit_ttl
   - set:
       field: dns.answers.ttl
-      copy_from: dnsserver.audit.ttl
+      copy_from: microsoft_dnsserver.audit.ttl
       ignore_empty_value: true
       tag: set_dns_answers_ttl
   - set:
       field: dns.question.name
-      copy_from: dnsserver.audit.question_name
+      copy_from: microsoft_dnsserver.audit.question_name
       ignore_empty_value: true
       tag: set_dns_question_name
   - set:
       field: dns.question.type
-      copy_from: dnsserver.audit.question_type
+      copy_from: microsoft_dnsserver.audit.question_type
       ignore_empty_value: true
       tag: set_dns_question_type
   - set:
       field: file.path
-      copy_from: dnsserver.audit.file_path
+      copy_from: microsoft_dnsserver.audit.file_path
       ignore_empty_value: true
       tag: set_file_path
   - convert:
-      field: dnsserver.audit.bytes_sent
+      field: microsoft_dnsserver.audit.bytes_sent
       type: long
       ignore_failure: true
       ignore_missing: true
       tag: convert_bytes_sent
   - set:
       field: network.bytes
-      copy_from: dnsserver.audit.bytes_sent
+      copy_from: microsoft_dnsserver.audit.bytes_sent
       ignore_empty_value: true
       tag: set_network_bytes
 
 # Source IP
   - convert:
-      field: dnsserver.audit.Source
-      target_field: dnsserver.audit.source_ip
+      field: microsoft_dnsserver.audit.Source
+      target_field: microsoft_dnsserver.audit.source_ip
       type: ip
       ignore_failure: true
       ignore_missing: true
       tag: convert_source_ip
   - remove:
-      field: dnsserver.audit.Source
+      field: microsoft_dnsserver.audit.Source
       ignore_failure: true
       ignore_missing: true
       tag: remove_source_ip
   - set:
       field: source.ip
-      copy_from: dnsserver.audit.source_ip
+      copy_from: microsoft_dnsserver.audit.source_ip
       ignore_empty_value: true
       tag: set_source_ip
   - geoip:
@@ -401,12 +401,12 @@ processors:
   # Some winlog fields are already present in event object
   - remove:
       field:
-        - dnsserver.audit.bytes_sent
-        - dnsserver.audit.file_path
-        - dnsserver.audit.question_name
-        - dnsserver.audit.question_type
-        - dnsserver.audit.source_ip
-        - dnsserver.audit.ttl
+        - microsoft_dnsserver.audit.bytes_sent
+        - microsoft_dnsserver.audit.file_path
+        - microsoft_dnsserver.audit.question_name
+        - microsoft_dnsserver.audit.question_type
+        - microsoft_dnsserver.audit.source_ip
+        - microsoft_dnsserver.audit.ttl
         - winlog.event_id
         - winlog.provider_name
         - winlog.task
