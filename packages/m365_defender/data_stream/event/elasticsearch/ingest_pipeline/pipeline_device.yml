@@ -1432,6 +1432,19 @@ processors:
       tag: set_host_architecture
       ignore_empty_value: true
   - set:
+      field: host.os.type
+      value: windows
+      if: ctx.m365_defender?.event?.os?.platform != null && m365_defender.event.os.platform.toLowerCase().contains('windows')
+  # TODO: Lack of data for non-windows OS. Must be verified.
+  - set:
+      field: host.os.type
+      value: linux
+      if: ctx.m365_defender?.event?.os?.platform != null && m365_defender.event.os.platform.toLowerCase().contains('linux')
+  - set:
+      field: host.os.type
+      value: macos
+      if: ctx.m365_defender?.event?.os?.platform != null && m365_defender.event.os.platform.toLowerCase().contains('macos')
+  - set:
       field: host.os.full
       copy_from: m365_defender.event.os.platform
       tag: set_host_os_full
