@@ -31,7 +31,12 @@ processors:
       field: event.category
       value: process
       tag: append_event_category_process
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') || ctx.m365_defender.event.category.toLowerCase().contains('deviceprocessevents')
+      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceprocessevents')
+  - append:
+      field: event.category
+      value: library
+      tag: append_event_category_library
+      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
   - append:
       field: event.category
       value: network
@@ -62,7 +67,7 @@ processors:
       field: event.type
       value: end
       tag: append_event_type_end
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') || (ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('connectionsuccess'))
+      if: ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('connectionsuccess')
   - append:
       field: event.type
       value: denied
@@ -72,7 +77,7 @@ processors:
       field: event.type
       value: start
       tag: append_event_type_start
-      if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('connectionrequest') || ctx.json.properties.ActionType.toLowerCase().contains('listeningconnectioncreated') || ctx.json.properties.ActionType.toLowerCase().contains('processcreated'))
+      if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('connectionrequest') || ctx.json.properties.ActionType.toLowerCase().contains('listeningconnectioncreated') || ctx.json.properties.ActionType.toLowerCase().contains('processcreated') || ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents'))
   - append:
       field: event.type
       value: allowed
