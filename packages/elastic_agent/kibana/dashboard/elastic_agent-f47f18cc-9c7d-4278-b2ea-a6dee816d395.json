@@ -9,7 +9,30 @@
         "description": "Elastic Agent metrics dashboard",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "elastic_agent*"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "elastic_agent*"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -64,124 +87,244 @@
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "data_stream.dataset",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "elastic_agent.elastic_agent"
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-70b91320-13a9-40a7-addc-930510ee2343",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "70b91320-13a9-40a7-addc-930510ee2343": {
+                                            "columnOrder": [
+                                                "de315eab-f776-4af4-a633-a4ae14cbca0e",
+                                                "0fac0d2e-8181-4c95-a683-413a2e95159b",
+                                                "d03c561c-9ec4-49b9-8c02-8e3ab17ea698",
+                                                "d03c561c-9ec4-49b9-8c02-8e3ab17ea698X0",
+                                                "d03c561c-9ec4-49b9-8c02-8e3ab17ea698X1",
+                                                "d03c561c-9ec4-49b9-8c02-8e3ab17ea698X2"
+                                            ],
+                                            "columns": {
+                                                "0fac0d2e-8181-4c95-a683-413a2e95159b": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d03c561c-9ec4-49b9-8c02-8e3ab17ea698": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "CPU Usage",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "last_value(system.process.cpu.total.value)/last_value(system.process.cpu.total.ticks)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "d03c561c-9ec4-49b9-8c02-8e3ab17ea698X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "d03c561c-9ec4-49b9-8c02-8e3ab17ea698X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"system.process.cpu.total.value\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Usage",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.process.cpu.total.value"
+                                                },
+                                                "d03c561c-9ec4-49b9-8c02-8e3ab17ea698X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"system.process.cpu.total.ticks\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Usage",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.process.cpu.total.ticks"
+                                                },
+                                                "d03c561c-9ec4-49b9-8c02-8e3ab17ea698X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of CPU Usage",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "d03c561c-9ec4-49b9-8c02-8e3ab17ea698X0",
+                                                                "d03c561c-9ec4-49b9-8c02-8e3ab17ea698X1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 85,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "last_value(system.process.cpu.total.value)/last_value(system.process.cpu.total.ticks)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "d03c561c-9ec4-49b9-8c02-8e3ab17ea698X0",
+                                                        "d03c561c-9ec4-49b9-8c02-8e3ab17ea698X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "de315eab-f776-4af4-a633-a4ae14cbca0e": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of elastic_agent.process",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "elastic_agent.process"
+                                                }
                                             },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "data_stream.dataset": "elastic_agent.elastic_agent"
-                                            }
+                                            "incompleteColumns": {},
+                                            "sampling": 1
                                         }
                                     }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
                                 }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "drop_last_bucket": 0,
-                            "id": "61ca57f0-469d-11e7-af02-69e470af7417",
-                            "index_pattern": "metrics-*",
-                            "interval": "",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "filter": {
-                                        "language": "kuery",
-                                        "query": ""
-                                    },
-                                    "formatter": "percent",
-                                    "id": "61ca57f1-469d-11e7-af02-69e470af7417",
-                                    "label": "CPU usage",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "system.process.cpu.total.value",
-                                            "id": "61ca57f2-469d-11e7-af02-69e470af7417",
-                                            "type": "max"
-                                        },
-                                        {
-                                            "field": "61ca57f2-469d-11e7-af02-69e470af7417",
-                                            "id": "42fea6f0-3da7-11eb-a63c-0f13e40aab83",
-                                            "type": "derivative",
-                                            "unit": ""
-                                        },
-                                        {
-                                            "id": "48fd6190-3da7-11eb-a63c-0f13e40aab83",
-                                            "script": "if (params.cpu_total \u003e 0) {\n  return params.cpu_total / params._interval  \n}\n\n",
-                                            "type": "calculation",
-                                            "variables": [
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d03c561c-9ec4-49b9-8c02-8e3ab17ea698"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
                                                 {
-                                                    "field": "42fea6f0-3da7-11eb-a63c-0f13e40aab83",
-                                                    "id": "4b81c280-3da7-11eb-a63c-0f13e40aab83",
-                                                    "name": "cpu_total"
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
                                                 }
                                             ]
-                                        }
-                                    ],
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_index_pattern": "",
-                                    "split_color_mode": "kibana",
-                                    "split_mode": "terms",
-                                    "stacked": "stacked",
-                                    "terms_field": "elastic_agent.process",
-                                    "time_range_mode": "entire_time_range",
-                                    "type": "timeseries"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "@timestamp",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": false
+                                        },
+                                        "layerId": "70b91320-13a9-40a7-addc-930510ee2343",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "de315eab-f776-4af4-a633-a4ae14cbca0e",
+                                        "xAccessor": "0fac0d2e-8181-4c95-a683-413a2e95159b"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
                         },
-                        "type": "metrics",
-                        "uiState": {}
-                    }
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "6b8f954e-e930-4830-b13d-7df1466ad92f",
+                    "h": 11,
+                    "i": "d8330bc3-a5a7-4411-8c2f-73c8bf258941",
                     "w": 40,
                     "x": 8,
                     "y": 0
                 },
-                "panelIndex": "6b8f954e-e930-4830-b13d-7df1466ad92f",
+                "panelIndex": "d8330bc3-a5a7-4411-8c2f-73c8bf258941",
                 "title": "[Elastic Agent] CPU Usage",
-                "type": "visualization"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -338,7 +481,7 @@
                     "i": "59d829a2-c460-450d-b3f1-e24463ca8fbc",
                     "w": 40,
                     "x": 8,
-                    "y": 9
+                    "y": 11
                 },
                 "panelIndex": "59d829a2-c460-450d-b3f1-e24463ca8fbc",
                 "title": "[Elastic Agent] Memory Usage",
@@ -471,7 +614,7 @@
                     "i": "3f8fc111-60c1-4886-bb6d-3b83cdcf88c5",
                     "w": 40,
                     "x": 8,
-                    "y": 18
+                    "y": 20
                 },
                 "panelIndex": "3f8fc111-60c1-4886-bb6d-3b83cdcf88c5",
                 "title": "[Elastic Agent] Open Handles",
@@ -660,7 +803,7 @@
                     "i": "6f1753a7-612d-4e25-a33f-8aa3542d3c39",
                     "w": 24,
                     "x": 0,
-                    "y": 27
+                    "y": 29
                 },
                 "panelIndex": "6f1753a7-612d-4e25-a33f-8aa3542d3c39",
                 "title": "[Elastic Agent] Total events rate /s",
@@ -857,7 +1000,7 @@
                     "i": "daff36f6-d0b5-45e8-b0d9-910bace3c15b",
                     "w": 24,
                     "x": 24,
-                    "y": 27
+                    "y": 29
                 },
                 "panelIndex": "daff36f6-d0b5-45e8-b0d9-910bace3c15b",
                 "title": "[Elastic Agent] Output write throughput",
@@ -1047,7 +1190,7 @@
                     "i": "0165de2d-694a-40f5-95e1-855ce4ebd03e",
                     "w": 24,
                     "x": 0,
-                    "y": 36
+                    "y": 38
                 },
                 "panelIndex": "0165de2d-694a-40f5-95e1-855ce4ebd03e",
                 "title": "[Elastic Agent] Output write errors",
@@ -1236,7 +1379,7 @@
                     "i": "b1dcfde7-66f1-41fb-bc7d-d3deef840d4f",
                     "w": 24,
                     "x": 24,
-                    "y": 36
+                    "y": 38
                 },
                 "panelIndex": "b1dcfde7-66f1-41fb-bc7d-d3deef840d4f",
                 "title": "[Elastic Agent] Events acknowledged rate /s",
@@ -1428,7 +1571,7 @@
                     "i": "1a30ba18-2c22-4935-b245-6ec8f1a37ced",
                     "w": 24,
                     "x": 0,
-                    "y": 45
+                    "y": 47
                 },
                 "panelIndex": "1a30ba18-2c22-4935-b245-6ec8f1a37ced",
                 "title": "[Elastic Agent] Output write batches",
@@ -1609,11 +1752,165 @@
                     "i": "d004044a-99f4-44fa-964a-361accd1810d",
                     "w": 24,
                     "x": 24,
-                    "y": 45
+                    "y": 47
                 },
                 "panelIndex": "d004044a-99f4-44fa-964a-361accd1810d",
                 "title": "[Elastic Agent] Output batch size",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "elastic_agent.elastic_agent"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "elastic_agent.elastic_agent"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "axis_formatter": "number",
+                            "axis_position": "left",
+                            "axis_scale": "normal",
+                            "drop_last_bucket": 0,
+                            "filter": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "id": "f0383b91-4a09-4b03-a013-f5938add6bfa",
+                            "index_pattern_ref_name": "metrics_42ec7297-eb0f-492b-bb18-d1301fa1ead7_0_index_pattern",
+                            "interval": "",
+                            "isModelInvalid": false,
+                            "max_lines_legend": 1,
+                            "series": [
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "#68BC00",
+                                    "fill": 0.5,
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": ""
+                                    },
+                                    "formatter": "number",
+                                    "id": "a35c4256-5cee-4b6a-ae21-bdd0f0f6d4a2",
+                                    "label": "Cgroup CPU usage",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "field": "system.process.cgroup.cpuacct.total.ns",
+                                            "id": "458710e3-e78d-4ebf-b9c7-3b1ca8bfc55a",
+                                            "type": "max"
+                                        },
+                                        {
+                                            "field": "system.process.cgroup.cpu.cfs.quota.us",
+                                            "id": "5a08b810-fc31-11eb-9d3e-9d72967e3395",
+                                            "type": "min"
+                                        },
+                                        {
+                                            "field": "458710e3-e78d-4ebf-b9c7-3b1ca8bfc55a",
+                                            "id": "391dc9f0-fc32-11eb-9d3e-9d72967e3395",
+                                            "type": "derivative",
+                                            "unit": "1s"
+                                        },
+                                        {
+                                            "field": "90f31960-fc31-11eb-9d3e-9d72967e3395",
+                                            "id": "4661f000-fc32-11eb-9d3e-9d72967e3395",
+                                            "type": "derivative",
+                                            "unit": "1s"
+                                        },
+                                        {
+                                            "field": "system.process.cgroup.cpu.stats.periods",
+                                            "id": "90f31960-fc31-11eb-9d3e-9d72967e3395",
+                                            "type": "max"
+                                        },
+                                        {
+                                            "id": "5c737680-fc31-11eb-9d3e-9d72967e3395",
+                                            "script": "\n      if (params.deltaUsageDerivNormalizedValue \u003e 0 \u0026\u0026 params.periodsDerivNormalizedValue \u003e0  \u0026\u0026 params.quota \u003e 0) {\n        // if throttling is configured\n        double  factor = params.deltaUsageDerivNormalizedValue / (params.periodsDerivNormalizedValue * params.quota * 1000); \n\n        return factor * 100; \n      }\n\n      return null;",
+                                            "type": "calculation",
+                                            "variables": [
+                                                {
+                                                    "field": "391dc9f0-fc32-11eb-9d3e-9d72967e3395",
+                                                    "id": "60300950-fc31-11eb-9d3e-9d72967e3395",
+                                                    "name": "deltaUsageDerivNormalizedValue"
+                                                },
+                                                {
+                                                    "field": "4661f000-fc32-11eb-9d3e-9d72967e3395",
+                                                    "id": "d6060d50-fc31-11eb-9d3e-9d72967e3395",
+                                                    "name": "periodsDerivNormalizedValue"
+                                                },
+                                                {
+                                                    "field": "5a08b810-fc31-11eb-9d3e-9d72967e3395",
+                                                    "id": "e3368450-fc31-11eb-9d3e-9d72967e3395",
+                                                    "name": "quota"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "palette": {
+                                        "name": "default",
+                                        "type": "palette"
+                                    },
+                                    "point_size": 1,
+                                    "separate_axis": 0,
+                                    "split_mode": "terms",
+                                    "stacked": "stacked",
+                                    "terms_field": "elastic_agent.process",
+                                    "time_range_mode": "entire_time_range",
+                                    "type": "timeseries",
+                                    "value_template": "{{value}}%"
+                                }
+                            ],
+                            "show_grid": 1,
+                            "show_legend": 1,
+                            "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
+                            "type": "timeseries",
+                            "use_kibana_indexes": true
+                        },
+                        "type": "metrics",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "42ec7297-eb0f-492b-bb18-d1301fa1ead7",
+                    "w": 24,
+                    "x": 0,
+                    "y": 56
+                },
+                "panelIndex": "42ec7297-eb0f-492b-bb18-d1301fa1ead7",
+                "title": "[Elastic Agent] CGroup CPU Usage",
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -1795,360 +2092,10 @@
                     "i": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1",
                     "w": 24,
                     "x": 24,
-                    "y": 54
+                    "y": 56
                 },
                 "panelIndex": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1",
                 "title": "[Elastic Agent] Queue depth",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                                            "key": "data_stream.dataset",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "elastic_agent.elastic_agent"
-                                            },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "data_stream.dataset": "elastic_agent.elastic_agent"
-                                            }
-                                        }
-                                    }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "drop_last_bucket": 0,
-                            "filter": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "id": "f0383b91-4a09-4b03-a013-f5938add6bfa",
-                            "index_pattern_ref_name": "metrics_42ec7297-eb0f-492b-bb18-d1301fa1ead7_0_index_pattern",
-                            "interval": "",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "filter": {
-                                        "language": "kuery",
-                                        "query": ""
-                                    },
-                                    "formatter": "number",
-                                    "id": "a35c4256-5cee-4b6a-ae21-bdd0f0f6d4a2",
-                                    "label": "Cgroup CPU usage",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "system.process.cgroup.cpuacct.total.ns",
-                                            "id": "458710e3-e78d-4ebf-b9c7-3b1ca8bfc55a",
-                                            "type": "max"
-                                        },
-                                        {
-                                            "field": "system.process.cgroup.cpu.cfs.quota.us",
-                                            "id": "5a08b810-fc31-11eb-9d3e-9d72967e3395",
-                                            "type": "min"
-                                        },
-                                        {
-                                            "field": "458710e3-e78d-4ebf-b9c7-3b1ca8bfc55a",
-                                            "id": "391dc9f0-fc32-11eb-9d3e-9d72967e3395",
-                                            "type": "derivative",
-                                            "unit": "1s"
-                                        },
-                                        {
-                                            "field": "90f31960-fc31-11eb-9d3e-9d72967e3395",
-                                            "id": "4661f000-fc32-11eb-9d3e-9d72967e3395",
-                                            "type": "derivative",
-                                            "unit": "1s"
-                                        },
-                                        {
-                                            "field": "system.process.cgroup.cpu.stats.periods",
-                                            "id": "90f31960-fc31-11eb-9d3e-9d72967e3395",
-                                            "type": "max"
-                                        },
-                                        {
-                                            "id": "5c737680-fc31-11eb-9d3e-9d72967e3395",
-                                            "script": "\n      if (params.deltaUsageDerivNormalizedValue \u003e 0 \u0026\u0026 params.periodsDerivNormalizedValue \u003e0  \u0026\u0026 params.quota \u003e 0) {\n        // if throttling is configured\n        double  factor = params.deltaUsageDerivNormalizedValue / (params.periodsDerivNormalizedValue * params.quota * 1000); \n\n        return factor * 100; \n      }\n\n      return null;",
-                                            "type": "calculation",
-                                            "variables": [
-                                                {
-                                                    "field": "391dc9f0-fc32-11eb-9d3e-9d72967e3395",
-                                                    "id": "60300950-fc31-11eb-9d3e-9d72967e3395",
-                                                    "name": "deltaUsageDerivNormalizedValue"
-                                                },
-                                                {
-                                                    "field": "4661f000-fc32-11eb-9d3e-9d72967e3395",
-                                                    "id": "d6060d50-fc31-11eb-9d3e-9d72967e3395",
-                                                    "name": "periodsDerivNormalizedValue"
-                                                },
-                                                {
-                                                    "field": "5a08b810-fc31-11eb-9d3e-9d72967e3395",
-                                                    "id": "e3368450-fc31-11eb-9d3e-9d72967e3395",
-                                                    "name": "quota"
-                                                }
-                                            ]
-                                        }
-                                    ],
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "split_mode": "terms",
-                                    "stacked": "stacked",
-                                    "terms_field": "elastic_agent.process",
-                                    "time_range_mode": "entire_time_range",
-                                    "type": "timeseries",
-                                    "value_template": "{{value}}%"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "@timestamp",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": true
-                        },
-                        "type": "metrics",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "42ec7297-eb0f-492b-bb18-d1301fa1ead7",
-                    "w": 24,
-                    "x": 0,
-                    "y": 54
-                },
-                "panelIndex": "42ec7297-eb0f-492b-bb18-d1301fa1ead7",
-                "title": "[Elastic Agent] CGroup CPU Usage",
-                "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-fa212775-2294-4cb0-a671-eb76e6856d14",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-c7cc9cd8-585a-4078-a86f-8b0213c874fd",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "c7cc9cd8-585a-4078-a86f-8b0213c874fd": {
-                                            "columnOrder": [
-                                                "ba13a1db-763d-4a12-88c2-a5247a612c66"
-                                            ],
-                                            "columns": {
-                                                "ba13a1db-763d-4a12-88c2-a5247a612c66": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Container Limit",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.process.cgroup.memory.mem.limit.bytes"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "linkToLayers": [],
-                                            "sampling": 1
-                                        },
-                                        "fa212775-2294-4cb0-a671-eb76e6856d14": {
-                                            "columnOrder": [
-                                                "3495fd36-d74d-4daf-9dae-1e84e63bc31e",
-                                                "a084070f-a15a-473c-abf4-d2e52e84c6ae",
-                                                "90bc620d-c329-4607-90d4-5245a7cc7e69"
-                                            ],
-                                            "columns": {
-                                                "3495fd36-d74d-4daf-9dae-1e84e63bc31e": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of elastic_agent.process",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "90bc620d-c329-4607-90d4-5245a7cc7e69",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "elastic_agent.process"
-                                                },
-                                                "90bc620d-c329-4607-90d4-5245a7cc7e69": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Memory Usage",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.process.cgroup.memory.mem.usage.bytes"
-                                                },
-                                                "a084070f-a15a-473c-abf4-d2e52e84c6ae": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": true,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": false
-                                },
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": false
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "90bc620d-c329-4607-90d4-5245a7cc7e69"
-                                        ],
-                                        "layerId": "fa212775-2294-4cb0-a671-eb76e6856d14",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "area_stacked",
-                                        "showGridlines": false,
-                                        "splitAccessor": "3495fd36-d74d-4daf-9dae-1e84e63bc31e",
-                                        "xAccessor": "a084070f-a15a-473c-abf4-d2e52e84c6ae"
-                                    },
-                                    {
-                                        "accessors": [
-                                            "ba13a1db-763d-4a12-88c2-a5247a612c66"
-                                        ],
-                                        "layerId": "c7cc9cd8-585a-4078-a86f-8b0213c874fd",
-                                        "layerType": "referenceLine",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "ba13a1db-763d-4a12-88c2-a5247a612c66"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "legendSize": "large",
-                                    "position": "right",
-                                    "shouldTruncate": true,
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "area_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": false
-                                },
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide",
-                                "valuesInLegend": true,
-                                "yRightTitle": ""
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "e651fb9f-763d-4c9d-80d7-7c56adb98883",
-                    "w": 24,
-                    "x": 24,
-                    "y": 63
-                },
-                "panelIndex": "e651fb9f-763d-4c9d-80d7-7c56adb98883",
-                "title": "[Elastic Agent] Cgroup Memory Usage",
                 "type": "lens"
             },
             {
@@ -2377,10 +2324,206 @@
                     "i": "bf48fd17-63ec-4d90-8b6a-328bb74b466a",
                     "w": 24,
                     "x": 0,
-                    "y": 63
+                    "y": 65
                 },
                 "panelIndex": "bf48fd17-63ec-4d90-8b6a-328bb74b466a",
                 "title": "[Elastic Agent] Queue Usage",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-fa212775-2294-4cb0-a671-eb76e6856d14",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-c7cc9cd8-585a-4078-a86f-8b0213c874fd",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "c7cc9cd8-585a-4078-a86f-8b0213c874fd": {
+                                            "columnOrder": [
+                                                "ba13a1db-763d-4a12-88c2-a5247a612c66"
+                                            ],
+                                            "columns": {
+                                                "ba13a1db-763d-4a12-88c2-a5247a612c66": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Container Limit",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.process.cgroup.memory.mem.limit.bytes"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "linkToLayers": [],
+                                            "sampling": 1
+                                        },
+                                        "fa212775-2294-4cb0-a671-eb76e6856d14": {
+                                            "columnOrder": [
+                                                "3495fd36-d74d-4daf-9dae-1e84e63bc31e",
+                                                "a084070f-a15a-473c-abf4-d2e52e84c6ae",
+                                                "90bc620d-c329-4607-90d4-5245a7cc7e69"
+                                            ],
+                                            "columns": {
+                                                "3495fd36-d74d-4daf-9dae-1e84e63bc31e": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of elastic_agent.process",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "90bc620d-c329-4607-90d4-5245a7cc7e69",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "elastic_agent.process"
+                                                },
+                                                "90bc620d-c329-4607-90d4-5245a7cc7e69": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Memory Usage",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.process.cgroup.memory.mem.usage.bytes"
+                                                },
+                                                "a084070f-a15a-473c-abf4-d2e52e84c6ae": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "90bc620d-c329-4607-90d4-5245a7cc7e69"
+                                        ],
+                                        "layerId": "fa212775-2294-4cb0-a671-eb76e6856d14",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "3495fd36-d74d-4daf-9dae-1e84e63bc31e",
+                                        "xAccessor": "a084070f-a15a-473c-abf4-d2e52e84c6ae"
+                                    },
+                                    {
+                                        "accessors": [
+                                            "ba13a1db-763d-4a12-88c2-a5247a612c66"
+                                        ],
+                                        "layerId": "c7cc9cd8-585a-4078-a86f-8b0213c874fd",
+                                        "layerType": "referenceLine",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "ba13a1db-763d-4a12-88c2-a5247a612c66"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "area_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": false
+                                },
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yRightTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "e651fb9f-763d-4c9d-80d7-7c56adb98883",
+                    "w": 24,
+                    "x": 24,
+                    "y": 65
+                },
+                "panelIndex": "e651fb9f-763d-4c9d-80d7-7c56adb98883",
+                "title": "[Elastic Agent] Cgroup Memory Usage",
                 "type": "lens"
             }
         ],
@@ -2389,13 +2532,18 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-05-01T20:29:40.958Z",
+    "created_at": "2024-05-14T19:24:19.875Z",
     "id": "elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395",
     "managed": false,
     "references": [
         {
             "id": "metrics-*",
-            "name": "6b8f954e-e930-4830-b13d-7df1466ad92f:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "d8330bc3-a5a7-4411-8c2f-73c8bf258941:indexpattern-datasource-layer-70b91320-13a9-40a7-addc-930510ee2343",
             "type": "index-pattern"
         },
         {
@@ -2469,16 +2617,6 @@
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
-            "name": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1:indexpattern-datasource-layer-38cd2447-deab-49b7-9d84-400f2ba12511",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1:97ad75be-db47-4cb4-bb1e-0c0320d04edd",
-            "type": "index-pattern"
-        },
-        {
             "id": "metrics-*",
             "name": "42ec7297-eb0f-492b-bb18-d1301fa1ead7:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
@@ -2489,6 +2627,21 @@
             "type": "index-pattern"
         },
         {
+            "id": "logs-*",
+            "name": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1:indexpattern-datasource-layer-38cd2447-deab-49b7-9d84-400f2ba12511",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9bbe71b3-01b6-4eb3-bac0-90ea2437d0d1:97ad75be-db47-4cb4-bb1e-0c0320d04edd",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "bf48fd17-63ec-4d90-8b6a-328bb74b466a:indexpattern-datasource-layer-38cd2447-deab-49b7-9d84-400f2ba12511",
+            "type": "index-pattern"
+        },
+        {
             "id": "metrics-*",
             "name": "e651fb9f-763d-4c9d-80d7-7c56adb98883:indexpattern-datasource-layer-fa212775-2294-4cb0-a671-eb76e6856d14",
             "type": "index-pattern"
@@ -2496,11 +2649,6 @@
         {
             "id": "metrics-*",
             "name": "e651fb9f-763d-4c9d-80d7-7c56adb98883:indexpattern-datasource-layer-c7cc9cd8-585a-4078-a86f-8b0213c874fd",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "bf48fd17-63ec-4d90-8b6a-328bb74b466a:indexpattern-datasource-layer-38cd2447-deab-49b7-9d84-400f2ba12511",
             "type": "index-pattern"
         },
         {
