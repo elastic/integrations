@@ -1,0 +1,685 @@
+---
+description: Pipeline for processing connection object.
+processors:
+  - convert:
+      field: ses.connection.bytes_download
+      tag: convert_connection_bytes_download_to_long
+      type: long
+      if: ctx.ses?.connection?.bytes_download != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.bytes_download
+            ignore_missing: true
+  - set:
+      field: destination.bytes
+      tag: set_destination_bytes_from_connection_bytes_download
+      copy_from: ses.connection.bytes_download
+      ignore_empty_value: true
+  - convert:
+      field: ses.connection.bytes_upload
+      tag: convert_connection_bytes_upload_to_long
+      type: long
+      if: ctx.ses?.connection?.bytes_upload != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.bytes_upload
+            ignore_missing: true
+  - set:
+      field: source.bytes
+      tag: set_source_bytes_from_connection_bytes_upload
+      copy_from: ses.connection.bytes_upload
+      ignore_empty_value: true
+  - convert:
+      field: ses.connection.connection_direction_id
+      tag: convert_connection_connection_direction_id_to_string
+      type: string
+      if: ctx.ses?.connection?.connection_direction_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.connection_direction_id
+            ignore_missing: true
+  - convert:
+      field: ses.connection.direction_id
+      tag: convert_connection_direction_id_to_string
+      type: string
+      if: ctx.ses?.connection?.direction_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.direction_id
+            ignore_missing: true
+  - script:
+      description: Add value for network direction based on connection direction id.
+      tag: script_to_add_direction
+      if: ctx.ses?.connection?.direction_id != null
+      params:
+        '0': unknown
+        '1': inbound
+        '2': outbound
+      lang: painless
+      source: >-
+        def var = new ArrayList();
+        def direction = ctx.ses.connection.direction_id;
+        if (params.containsKey(direction.toString())) {
+            def type = params.get(direction.toString());
+            var.add(type);
+        }
+
+        if (ctx.network == null) {
+            ctx.network = new HashMap();
+        }
+        ctx.network.put('direction', var)
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.connection.dst_ip
+      tag: convert_connection_dst_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.ses?.connection?.dst_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.dst_ip
+            ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_related_ip_from_connection_dst_ip
+      value: '{{{ses.connection.dst_ip}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.dst_ip != null
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_connection_dst_ip
+      copy_from: ses.connection.dst_ip
+      ignore_empty_value: true
+  - foreach:
+      field: ses.connection.dst_location.coordinates
+      if: ctx.ses?.connection?.dst_location?.coordinates instanceof List
+      tag: foreach_connection_dst_location_coordinates
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_connection_dst_location_coordinates_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.connection.dst_location.on_premises
+      tag: convert_connection_dst_location_on_premises_to_boolean
+      type: boolean
+      if: ctx.ses?.connection?.dst_location?.on_premises != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.dst_location.on_premises
+            ignore_missing: true
+  - gsub:
+      field: ses.connection.dst_mac
+      tag: gsub_connection_dst_mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ses.connection.dst_mac
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      field: ses.connection.dst_mac
+      tag: uppercase_dst_mac
+      ignore_missing: true
+      if: ctx.ses?.connection?.dst_mac != ''
+      on_failure:
+        - remove:
+            field: ses.connection.dst_mac
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.mac
+      tag: set_destination_mac_from_connection_dst_mac
+      copy_from: ses.connection.dst_mac
+      ignore_empty_value: true
+  - convert:
+      field: ses.connection.dst_port
+      tag: convert_connection_dst_port_to_long
+      type: long
+      if: ctx.ses?.connection?.dst_port != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.dst_port
+            ignore_missing: true
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_connection_dst_port
+      copy_from: ses.connection.dst_port
+      ignore_empty_value: true
+  - convert:
+      field: ses.connection.ether_type
+      tag: convert_connection_ether_type_to_long
+      type: long
+      if: ctx.ses?.connection?.ether_type != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.ether_type
+            ignore_missing: true
+  - convert:
+      field: ses.connection.http_status
+      tag: convert_connection_http_status_to_long
+      type: long
+      if: ctx.ses?.connection?.http_status != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.http_status
+            ignore_missing: true
+  - convert:
+      field: ses.connection.local
+      tag: convert_connection_local_to_boolean
+      type: boolean
+      if: ctx.ses?.connection?.local != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.local
+            ignore_missing: true
+  - convert:
+      field: ses.connection.protocol_id
+      tag: convert_connection_protocol_id_to_string
+      type: string
+      if: ctx.ses?.connection?.protocol_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.protocol_id
+            ignore_missing: true
+  - convert:
+      field: ses.connection.protocol_version
+      tag: convert_connection_protocol_version_to_long
+      type: long
+      if: ctx.ses?.connection?.protocol_version != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.protocol_version
+            ignore_missing: true
+  - convert:
+      field: ses.connection.rpc.interface_op
+      tag: convert_connection_rpc_interface_op_to_long
+      type: long
+      if: ctx.ses?.connection?.rpc?.interface_op != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.rpc.interface_op
+            ignore_missing: true
+  - convert:
+      field: ses.connection.src_ip
+      tag: convert_connection_src_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.ses?.connection?.src_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.src_ip
+            ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_related_ip_from_connection_src_ip
+      value: '{{{ses.connection.src_ip}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.src_ip != null
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_connection_src_ip
+      copy_from: ses.connection.src_ip
+      ignore_empty_value: true
+  - foreach:
+      field: ses.connection.src_location.coordinates
+      if: ctx.ses?.connection?.src_location?.coordinates instanceof List
+      tag: foreach_connection_src_location_coordinates
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_connection_src_location_coordinates_to_float
+          type: float
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.connection.src_location.on_premises
+      tag: convert_connection_src_location_on_premises_to_boolean
+      type: boolean
+      if: ctx.ses?.connection?.src_location?.on_premises != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.src_location.on_premises
+            ignore_missing: true
+  - gsub:
+      field: ses.connection.src_mac
+      tag: gsub_connection_src_mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ses.connection.src_mac
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      field: ses.connection.src_mac
+      tag: uppercase_src_mac
+      ignore_missing: true
+      if: ctx.ses?.connection?.src_mac != ''
+      on_failure:
+        - remove:
+            field: ses.connection.src_mac
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.mac
+      tag: set_source_mac_from_connection_src_mac
+      copy_from: ses.connection.src_mac
+      ignore_empty_value: true
+  - convert:
+      field: ses.connection.src_port
+      tag: convert_connection_src_port_to_long
+      type: long
+      if: ctx.ses?.connection?.src_port != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.src_port
+            ignore_missing: true
+  - set:
+      field: source.port
+      tag: set_source_port_from_connection_src_port
+      copy_from: ses.connection.src_port
+      ignore_empty_value: true
+  - convert:
+      field: ses.connection.tcp_flags
+      tag: convert_connection_tcp_flags_to_long
+      type: long
+      if: ctx.ses?.connection?.tcp_flags != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tcp_flags
+            ignore_missing: true
+  - append:
+      field: tls.cipher
+      tag: append_tls_cipher_from_connection_tls_cipher
+      value: '{{{ses.connection.tls.cipher}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.tls?.cipher != null
+  - convert:
+      field: ses.connection.tls.cipher_size
+      tag: convert_connection_tls_cipher_size_to_long
+      type: long
+      if: ctx.ses?.connection?.tls?.cipher_size != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.cipher_size
+            ignore_missing: true
+  - convert:
+      field: ses.connection.tls.cipher_strength
+      tag: convert_connection_tls_cipher_strength_to_long
+      type: long
+      if: ctx.ses?.connection?.tls?.cipher_strength != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.cipher_strength
+            ignore_missing: true
+  - date:
+      field: ses.connection.tls.client_certificate.end_time
+      tag: date_connection_tls_client_certificate_end_time
+      target_field: ses.connection.tls.client_certificate.end_time
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.connection?.tls?.client_certificate?.end_time != null && ctx.ses.connection.tls.client_certificate.end_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.client_certificate.end_time
+            ignore_missing: true
+  - convert:
+      field: ses.connection.tls.client_certificate.is_valid
+      tag: convert_connection_tls_client_certificate_is_valid_to_boolean
+      type: boolean
+      if: ctx.ses?.connection?.tls?.client_certificate?.is_valid != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.client_certificate.is_valid
+            ignore_missing: true
+  - date:
+      field: ses.connection.tls.client_certificate.start_time
+      tag: date_connection_tls_client_certificate_start_time
+      target_field: ses.connection.tls.client_certificate.start_time
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.connection?.tls?.client_certificate?.start_time != null && ctx.ses.connection.tls.client_certificate.start_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.client_certificate.start_time
+            ignore_missing: true
+  - convert:
+      field: ses.connection.tls.is_advertised
+      tag: convert_connection_tls_is_advertised_to_boolean
+      type: boolean
+      if: ctx.ses?.connection?.tls?.is_advertised != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.is_advertised
+            ignore_missing: true
+  - convert:
+      field: ses.connection.tls.is_used
+      tag: convert_connection_tls_is_used_to_boolean
+      type: boolean
+      if: ctx.ses?.connection?.tls?.is_used != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.is_used
+            ignore_missing: true
+  - convert:
+      field: ses.connection.tls.key_length
+      tag: convert_connection_tls_key_length_to_long
+      type: long
+      if: ctx.ses?.connection?.tls?.key_length != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.key_length
+            ignore_missing: true
+  - date:
+      field: ses.connection.tls.server_certificate.end_time
+      tag: date_connection_tls_server_certificate_end_time
+      target_field: ses.connection.tls.server_certificate.end_time
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.connection?.tls?.server_certificate?.end_time != null && ctx.ses.connection.tls.server_certificate.end_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.server_certificate.end_time
+            ignore_missing: true
+  - convert:
+      field: ses.connection.tls.server_certificate.is_valid
+      tag: convert_connection_tls_server_certificate_is_valid_to_boolean
+      type: boolean
+      if: ctx.ses?.connection?.tls?.server_certificate?.is_valid != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.server_certificate.is_valid
+            ignore_missing: true
+  - date:
+      field: ses.connection.tls.server_certificate.start_time
+      tag: date_connection_tls_server_certificate_start_time
+      target_field: ses.connection.tls.server_certificate.start_time
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.connection?.tls?.server_certificate?.start_time != null && ctx.ses.connection.tls.server_certificate.start_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.server_certificate.start_time
+            ignore_missing: true
+  - convert:
+      field: ses.connection.tls.tls_policy_id
+      tag: convert_connection_tls_tls_policy_id_to_string
+      type: string
+      if: ctx.ses?.connection?.tls?.tls_policy_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.tls.tls_policy_id
+            ignore_missing: true
+  - append:
+      field: tls.version
+      tag: append_tls_version_from_connection_tls_version
+      value: '{{{ses.connection.tls.version}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.tls?.version != null
+  - foreach:
+      field: ses.connection.url.category_ids
+      if: ctx.ses?.connection?.url?.category_ids instanceof List
+      tag: foreach_connection_url_category_ids
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_connection_url_category_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: url.path
+      tag: append_url_path_from_connection_url_path
+      value: '{{{ses.connection.url.path}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.url?.path != null
+  - convert:
+      field: ses.connection.url.port
+      tag: convert_connection_url_port_to_long
+      type: long
+      if: ctx.ses?.connection?.url?.port != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.url.port
+            ignore_missing: true
+  - append:
+      field: url.port
+      tag: append_url_port_from_connection_url_port
+      value: '{{{ses.connection.url.port}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.url?.port != null
+  - append:
+      field: url.query
+      tag: append_url_query_from_connection_url_query
+      value: '{{{ses.connection.url.query}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.url?.query != null
+  - foreach:
+      field: ses.connection.url.referrer_category_ids
+      if: ctx.ses?.connection?.url?.referrer_category_ids instanceof List
+      tag: foreach_connection_url_referrer_category_ids
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_connection_url_referrer_category_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.connection.url.rep_score_id
+      tag: convert_connection_url_rep_score_id_to_string
+      type: string
+      if: ctx.ses?.connection?.url?.rep_score_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.connection.url.rep_score_id
+            ignore_missing: true
+  - append:
+      field: url.full
+      tag: append_url_full_from_connection_url_text
+      value: '{{{ses.connection.url.text}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.url?.text != null
+  - append:
+      field: related.hosts
+      tag: append_related_host_from_connection_dst_name
+      value: '{{{ses.connection.dst_name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.dst_name != null && ctx.ses.connection.dst_name != ''
+  - append:
+      field: related.hosts
+      tag: append_related_host_from_connection_src_name
+      value: '{{{ses.connection.src_name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.connection?.src_name != null && ctx.ses.connection.src_name != ''
+  - remove:
+      field:
+        - ses.connection.bytes_download
+        - ses.connection.bytes_upload
+        - ses.connection.dst_ip
+        - ses.connection.dst_mac
+        - ses.connection.dst_port
+        - ses.connection.src_ip
+        - ses.connection.src_mac
+        - ses.connection.src_port
+        - ses.connection.tls.cipher
+        - ses.connection.tls.version
+        - ses.connection.url.path
+        - ses.connection.url.port
+        - ses.connection.url.query
+        - ses.connection.url.text
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+        in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
