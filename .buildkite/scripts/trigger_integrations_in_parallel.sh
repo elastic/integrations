@@ -54,6 +54,7 @@ for package in ${PACKAGE_LIST}; do
         provider: gcp
         image: ${IMAGE_UBUNTU_X86_64}
       env:
+        ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT: "true"
         STACK_VERSION: "${STACK_VERSION}"
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
         SERVERLESS: "false"
