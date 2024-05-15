@@ -781,23 +781,65 @@ install_package() {
     return 0
 }
 
+requires_root_privileges() {
+    local package="$1"
+    local root_privileges=""
+
+    root_privileges=$(cat manifest.yml | yq -r '.agent.privileges.root')
+    if [[ "${root_privileges}" == "true" ]]; then
+        return 0
+    fi
+    return 1
+}
+
+number_system_tests() {
+    local package="$1"
+    local test_number
+
+    test_number=$(for folder in $(find . -type d -name system ); do
+        pushd $folder > /dev/null
+        find . -type f -name "*-config.yml" | wc -l
+        popd > /dev/null
+    done | awk '{s+=$1} END {print s}')
+
+    echo "$test_number"
+}
+
+requires_disabling_independent_elastic_agents() {
+    if requires_root_privileges ; then
+        return 1
+    fi
+
+    if [[ "${MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS:-""}" == "" ]]; then
+        return 1
+    fi
+    local system_tests=""
+    system_tests=$(number_system_tests "${package}")
+    echo ">>> Number system tests: \"${system_tests}\""
+
+    if [ "${system_tests}" -lt "${MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS}" ]; then
+        return 1
+    fi
+
+    if [[ "${ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT:-""}" == "true" ]]; then
+        return 0
+    fi
+
+    return 1
+}
+
 test_package_in_local_stack() {
     local package=$1
-    local system_tests=0
     local updated_var=0
     local prev_value=""
     local TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
     prev_value=${ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT:-""}
-    system_tests=$(number_system_tests "${package}")
-    echo ">>> Number system tests: \"${system_tests}\""
 
-    if [[ "${MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS:-""}" != "" ]]; then
-        if [[ "$prev_value" == "true" && $system_tests -gt "${MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS}" ]]; then
-            echo ">>> Disabling system tests with independent Elastic Agents: \"${system_tests}\""
-            updated_var=1
-            export ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT=false
-        fi
+    if requires_disabling_independent_elastic_agents; then
+        echo ">>> Disabling system tests with independent Elastic Agents: \"${system_tests}\""
+        updated_var=1
+        export ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT=false
     fi
 
     echo "Test package: ${package}"
@@ -808,6 +850,7 @@ test_package_in_local_stack() {
 
     if [[ "${updated_var}" == 1 ]]; then
         if [[ "${prev_value}" != "" ]]; then
+            echo ">>> Setting previous value independent Elastic Agents: \"${prev_value}\""
             export ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT="${prev_value}"
         else
             unset ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT
@@ -944,20 +987,6 @@ upload_safe_logs_from_package() {
         "${build_directory}/container-logs/*.log" \
         "${parent_folder}/${package}/container-logs/"
 }
-
-number_system_tests() {
-    local package="$1"
-    local test_number
-
-    test_number=$(for folder in $(find . -type d -name system ); do
-        pushd $folder > /dev/null
-        find . -type f -name "*-config.yml" | wc -l
-        popd > /dev/null
-    done | awk '{s+=$1} END {print s}')
-
-    echo "$test_number"
-}
-
 
 # Helper to run all tests and checks for a package
 process_package() {
