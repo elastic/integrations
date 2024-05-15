@@ -1774,7 +1774,7 @@ processors:
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == null
 
   # Event Outcome/Actions mapping
-  # Special handling if event.category is 'file'
+  # Special handling when event.category is 'file' or 'registry' for better compatibility and detection rules.
   - set:
       field: event.action
       value: deletion
@@ -1783,7 +1783,7 @@ processors:
   - set:
       field: event.action
       value: modification
-      tag: set_event_action_modification
+      tag: set_event_action_modification_file
       if: (ctx.event?.category != null && ctx.event.category.contains('file')) && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase() == 'filemodified'
   - set:
       field: event.action
@@ -1793,8 +1793,18 @@ processors:
   - set:
       field: event.action
       value: creation
-      tag: set_event_action_creation
+      tag: set_event_action_creation_file
       if: (ctx.event?.category != null && ctx.event.category.contains('file')) && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase() == 'filecreated'
+  - set:
+      field: event.action
+      value: creation
+      tag: set_event_action_creation_registry
+      if: (ctx.event?.category != null && ctx.event.category.contains('registry')) && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase() == 'registrykeycreated'
+  - set:
+      field: event.action
+      value: modification
+      tag: set_event_action_modification_registry
+      if: (ctx.event?.category != null && ctx.event.category.contains('registry')) && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase() == 'registryvalueset'
   # For all other categories, copy the value from m365_defender.event.action.type
   - set:
       field: event.action
