@@ -284,14 +284,45 @@ An example event for `system` looks as following:
 | okta.client.zone | The zone information of the client. | keyword |
 | okta.debug_context.debug_data |  | object |
 | okta.debug_context.debug_data.authn_request_id | The authorization request ID. | keyword |
+| okta.debug_context.debug_data.behaviors |  | keyword |
+| okta.debug_context.debug_data.behaviors.new_city |  | keyword |
+| okta.debug_context.debug_data.behaviors.new_country |  | keyword |
+| okta.debug_context.debug_data.behaviors.new_device |  | keyword |
+| okta.debug_context.debug_data.behaviors.new_geo_location |  | keyword |
+| okta.debug_context.debug_data.behaviors.new_ip |  | keyword |
+| okta.debug_context.debug_data.behaviors.new_state |  | keyword |
+| okta.debug_context.debug_data.behaviors.velocity |  | keyword |
+| okta.debug_context.debug_data.behaviors.velocity_behavior |  | keyword |
 | okta.debug_context.debug_data.device_fingerprint | The fingerprint of the device. | keyword |
 | okta.debug_context.debug_data.dt_hash | The device token hash | keyword |
 | okta.debug_context.debug_data.factor | The factor used for authentication. | keyword |
 | okta.debug_context.debug_data.flattened | The complete debug_data object. | flattened |
+| okta.debug_context.debug_data.log_only_security_data |  | keyword |
+| okta.debug_context.debug_data.log_only_security_data.behaviors |  | keyword |
+| okta.debug_context.debug_data.log_only_security_data.behaviors.new_city |  | keyword |
+| okta.debug_context.debug_data.log_only_security_data.behaviors.new_country |  | keyword |
+| okta.debug_context.debug_data.log_only_security_data.behaviors.new_device |  | keyword |
+| okta.debug_context.debug_data.log_only_security_data.behaviors.new_geo_location |  | keyword |
+| okta.debug_context.debug_data.log_only_security_data.behaviors.new_ip |  | keyword |
+| okta.debug_context.debug_data.log_only_security_data.behaviors.new_state |  | keyword |
+| okta.debug_context.debug_data.log_only_security_data.behaviors.velocity |  | keyword |
+| okta.debug_context.debug_data.log_only_security_data.risk |  | keyword |
+| okta.debug_context.debug_data.log_only_security_data.risk.level |  | keyword |
+| okta.debug_context.debug_data.log_only_security_data.risk.reasons |  | keyword |
+| okta.debug_context.debug_data.original_principal |  | keyword |
+| okta.debug_context.debug_data.original_principal.alternate_id |  | keyword |
+| okta.debug_context.debug_data.original_principal.display_name |  | keyword |
+| okta.debug_context.debug_data.original_principal.id |  | keyword |
+| okta.debug_context.debug_data.original_principal.type |  | keyword |
+| okta.debug_context.debug_data.prompting_policy_types |  | keyword |
 | okta.debug_context.debug_data.request_id | The identifier of the request. | keyword |
 | okta.debug_context.debug_data.request_uri | The request URI. | keyword |
+| okta.debug_context.debug_data.risk |  | keyword |
+| okta.debug_context.debug_data.risk.level |  | keyword |
+| okta.debug_context.debug_data.risk.reasons |  | keyword |
 | okta.debug_context.debug_data.risk_behaviors | The set of behaviors that contribute to a risk assessment. | keyword |
 | okta.debug_context.debug_data.risk_level | The risk level assigned to the sign in attempt. | keyword |
+| okta.debug_context.debug_data.risk_object |  | keyword |
 | okta.debug_context.debug_data.risk_reasons | The reasons for the risk. | keyword |
 | okta.debug_context.debug_data.threat_suspected | Threat suspected. | keyword |
 | okta.debug_context.debug_data.url | The URL. | keyword |
