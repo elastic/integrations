@@ -1602,6 +1602,12 @@ processors:
       tag: append_registry_data_strings
       allow_duplicates: false
       if: ctx.m365_defender?.event?.registry?.value_data != null
+  - set:
+      field: registry.data.type
+      copy_from: m365_defender.event.registry.value_type
+      tag: set_registry_type
+      ignore_empty_value: true
+      if: ctx.m365_defender?.event?.registry?.value_type != null
 
   # Source Mapping (DeviceLoginEvent has different mappings than the rest. DeviceNetworkEvent might include a direction, which controls which field goes to source/destination)
   - set:
