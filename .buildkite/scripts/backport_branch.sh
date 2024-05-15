@@ -38,8 +38,6 @@ echo "Parameters: ${PARAMETERS[*]}" | sed 's/ /\n- /g' | buildkite-agent annotat
     --style "info" \
     --context "context-parameters"
 
-exit
-
 FULL_ZIP_PACKAGE_NAME="${PACKAGE_NAME}-${PACKAGE_VERSION}.zip"
 TRIMMED_PACKAGE_VERSION="$(echo "$PACKAGE_VERSION" | cut -d '.' -f -2)"
 SOURCE_BRANCH="main"
