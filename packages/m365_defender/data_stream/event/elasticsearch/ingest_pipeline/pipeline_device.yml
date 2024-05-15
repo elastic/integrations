@@ -445,6 +445,14 @@ processors:
       target_field: m365_defender.event.registry.key
       tag: rename_json_properties_RegistryKey
       ignore_missing: true
+  - script:
+      description: Remove HKEY_CURRENT_USER\ and HKEY_LOCAL_MACHINE\ from registry key
+      lang: painless
+      if: ctx.m365_defender?.event?.registry?.key != null
+      source: |
+        String key = ctx.m365_defender.event.registry.key;
+        def regex = /HKEY_CURRENT_USER\\|HKEY_LOCAL_MACHINE\\/;
+        ctx.m365_defender.event.registry.key = regex.matcher(key).replaceAll('');
   - rename:
       field: json.properties.RegistryValueName
       target_field: m365_defender.event.registry.value_name
