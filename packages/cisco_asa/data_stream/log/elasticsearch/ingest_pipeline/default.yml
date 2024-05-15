@@ -2151,10 +2151,7 @@ processors:
             outcome: success
             action: configuration
       source: >-
-        if (ctx.event.code == null || !params.containsKey(ctx.event.code) || ctx._temp_?.outcome == null) {
-          return;
-        }
-        params.get(ctx.event.code).get(ctx._temp_.outcome).forEach((k, v) -> ctx.event[k] = v);
+        params.get(ctx.event.code)?.get(ctx._temp_.outcome)?.forEach((k, v) -> ctx.event[k] = v);
 
   - script:
       tag: script_ecs_categorization
@@ -2640,10 +2637,7 @@ processors:
           outcome: success
           action: flow-offload-ended
       source: >-
-        if (ctx.event.code == null || !params.containsKey(ctx.event.code)) {
-          return;
-        }
-        params.get(ctx.event.code).forEach((k, v) -> ctx.event[k] = v);
+        params.get(ctx.event.code)?.forEach((k, v) -> ctx.event[k] = v);
 
   # Malware event kind is classified as alert when sha_disposition is "Malware", "Custom Detection" not for other cases.
   - set:
