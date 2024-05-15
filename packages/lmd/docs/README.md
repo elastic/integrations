@@ -10,7 +10,7 @@ For more detailed information refer to the following blogs:
 
 1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Lateral Movement Detection**. Configure the integration name and agent policy. Click **Save and Continue**.
-1. **Check the health of the transform**: The transform is scheduled to run every hour. This transform creates the index `ml-rdp-lmd`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-lmd.pivot_transform-default-<VERSION>`.
+1. **Check the health of the transform**: The transform is scheduled to run every hour. This transform creates the index `ml-rdp-lmd`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-lmd.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`.
 1. **Create data views for anomaly detection jobs**: The anomaly detection jobs under this package rely on two indices. One has file transfer events (`logs-*`), and the other index (`ml-rdp-lmd`) collects RDP session information from a transform. Before enabling the anomaly detection jobs, create a data view with both index patterns.
     1. Go to **Stack Management > Kibana > Data Views** and click **Create data view**.
     1. Enter the name of your respective index patterns in the **Index pattern** box, i.e., `logs-*, ml-rdp-lmd`, and copy the same in the **Name** field.
