@@ -784,23 +784,34 @@ install_package() {
 test_package_in_local_stack() {
     local package=$1
     local system_tests=0
-    local env_vars=""
+    local updated_var=0
+    local prev_value=""
     TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
+    prev_value=${ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT:-""}
     system_tests=$(number_system_tests "${package}")
+    echo ">>> Number system tests: \"${system_tests}\""
+
+    if [[ "$prev_value" == "true" && $system_tests -gt "$MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS" ]]; then
+        echo ">>> Disabling system tests with independent Elastic Agents: \"${system_tests}\""
+        updated_var=1
+        export ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT=false
+    fi
 
     echo "Test package: ${package}"
     # Run all test suites
-    echo ">>> Number system tests: \"${system_tests}\""
-    if [ "$system_tests" -gt "$MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS" ]; then
-        echo "Setting to false Independent Elastic Agents (number system tests \"${system_tests}\")"
-        env_vars="ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT=false"
-    fi
-
-    ${env_vars} \
-        ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
+    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
     local ret=$?
     echo ""
+
+    if [[ "${updated_var}" == 1 ]]; then
+        if [[ "${prev_value}" != "" ]]; then
+            export ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT="${prev_value}"
+        else
+            unset ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT
+        fi
+    fi
+
     return $ret
 }
 
