@@ -735,7 +735,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E 'network_traffic|zeek|kubernetes|nginx'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E 'network_traffic|zeek|kubernetes|nginx|cloudflare'
 }
 
 check_package() {
