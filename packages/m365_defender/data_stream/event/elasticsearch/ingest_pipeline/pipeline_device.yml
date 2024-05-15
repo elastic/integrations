@@ -1423,6 +1423,19 @@ processors:
       tag: set_process_Ext_token_integrity_level_name
       if: ctx.event?.category != null && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') || ctx.event.category.contains('library'))
       ignore_empty_value: true
+  - script:
+      description: Add process.Ext.api.name when event.category is 'api'
+      lang: painless
+      if: ctx.event?.category != null && ctx.event.category.contains('api')
+      source: |
+        String actiontype = ctx.m365_defender.event.action.type;
+        def idx = actiontype.toLowerCase().lastIndexOf('apicall');
+        ctx._temp_process_Ext_api_name = actiontype.substring(0, idx);
+  - rename:
+      field: _temp_process_Ext_api_name
+      target_field: process.Ext.api.name
+      tag: rename_process_Ext_api_name
+      ignore_missing: true
 
   ## All other DeviceEvent types that is not DeviceProcessEvent or DeviceEvent map InitiatingProcess* to process.* rather than process.parent.*
   - set:
