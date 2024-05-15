@@ -1,0 +1,181 @@
+---
+description: Pipeline for Okta debug data not using flattened.
+processors:
+  - rename:
+      field: json.debugContext.debugData
+      target_field: okta.debug_context.debug_data
+      ignore_failure: true
+  - json:
+      field: okta.debug_context.debug_data.logOnlySecurityData
+      ignore_failure: true
+  - dissect:
+      field: okta.debug_context.debug_data.behaviors
+      pattern: "{%{okta.debug_context.debug_data.behaviors}}"
+      ignore_missing: true
+      ignore_failure: true
+  - kv:
+      field: okta.debug_context.debug_data.behaviors
+      field_split: ", "
+      value_split: "="
+      target_field: _behaviors_object
+      if: ctx.okta?.debug_context?.debug_data?.behaviors != null
+  - remove:
+      field: okta.debug_context.debug_data.behaviors
+      if: ctx._behaviors_object != null
+  - rename:
+      field: _behaviors_object
+      target_field: okta.debug_context.debug_data.behaviors
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: okta.debug_context.debug_data.risk_object
+      copy_from: okta.debug_context.debug_data.risk
+      if: ctx.okta?.debug_context?.debug_data?.risk != null
+  - dissect:
+      field: okta.debug_context.debug_data.risk
+      pattern: "{%{okta.debug_context.debug_data.risk}}"
+      ignore_missing: true
+      ignore_failure: true
+  - kv:
+      field: okta.debug_context.debug_data.risk
+      field_split: ", "
+      value_split: "="
+      target_field: _risk_object
+      if: ctx.okta?.debug_context?.debug_data?.risk != null
+      on_failure:
+        - remove:
+            field: _risk_object
+  - remove:
+      field: okta.debug_context.debug_data.risk_object
+      if: ctx._risk_object != null
+  # Make heroic efforts to capture risk level and reason if kv could not get them.
+  - grok:
+      field: okta.debug_context.debug_data.risk
+      patterns:
+        - level=%{NOTSPACE:_risk_object.level}
+      if: ctx.okta?.debug_context?.debug_data?.risk_object != null && ctx.okta?.debug_context?.debug_data?.risk != null
+      ignore_failure: true
+  - grok:
+      field: okta.debug_context.debug_data.risk
+      patterns:
+        - reasons=%{DATA:_risk_object.reasons}, %{KEY}
+        - reasons=%{DATA:_risk_object.reasons}$
+      pattern_definitions:
+        KEY: '%{NOTSPACE}='
+      if: ctx.okta?.debug_context?.debug_data?.risk_object != null && ctx.okta?.debug_context?.debug_data?.risk != null
+      ignore_failure: true
+  - remove:
+      field: okta.debug_context.debug_data.risk
+      if: ctx._risk_object != null
+  - rename:
+      field: _risk_object
+      target_field: okta.debug_context.debug_data.risk
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: okta.debug_context.debug_data.risk_level
+      value: "{{{okta.debug_context.debug_data.logOnlySecurityData.risk.level}}}"
+      if: 'ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.level != ""'
+  - split:
+      field: okta.debug_context.debug_data.logOnlySecurityData.risk.reasons
+      target_field: okta.debug_context.debug_data.risk_reasons
+      separator: ',\s*'
+      if: 'ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.reasons != null && ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.reasons != ""'
+  - set:
+      field: okta.debug_context.debug_data.risk_level
+      value: "{{{okta.debug_context.debug_data.risk.level}}}"
+      if: 'ctx.okta?.debug_context?.debug_data?.risk_level == null && ctx.okta?.debug_context?.debug_data?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.risk?.level != ""'
+  - set:
+      field: okta.debug_context.debug_data.factor
+      value: "{{{okta.debug_context.debug_data.factor}}}"
+      if: 'ctx.okta?.debug_context?.debug_data?.factor == null && ctx.okta?.debug_context?.debug_data?.factor != null && ctx.okta?.debug_context?.debug_data?.factor != ""'
+  - split:
+      field: okta.debug_context.debug_data.risk.reasons
+      target_field: okta.debug_context.debug_data.risk_reasons
+      separator: ',\s*'
+      if: 'ctx.okta?.debug_context?.debug_data?.risk_reasons == null && ctx.okta?.debug_context?.debug_data?.risk?.reasons != null && ctx.okta?.debug_context?.debug_data?.risk?.reasons != ""'
+  - script:
+      lang: painless
+      source: |
+        def src = ctx.okta?.debug_context?.debug_data?.behaviors;
+        if (src == null) {
+          return;
+        }
+        def dst = new ArrayList();
+        for (e in src.entrySet()) {
+          if (e != null && e.getValue() == "POSITIVE") {
+            dst.add(e.getKey());
+          }
+        }
+        if (dst.length != 0) {
+          ctx.okta.debug_context.debug_data['risk_behaviors'] = dst;
+        }
+  - script:
+      lang: painless
+      description: Rename the fields under the aws_bedrock objects.
+      params:
+        dtHash: dt_hash
+        requestId: request_id
+        requestUri: request_uri
+        authnRequestId: authn_request_id
+        deviceFingerprint: device_fingerprint
+        promptingPolicyTypes: prompting_policy_types
+        threatSuspected: threat_suspected
+        logOnlySecurityData: log_only_security_data
+        originalPrincipal: original_principal
+        alternateId: alternate_id
+        displayName: display_name
+      tag: painless_to_rename_fields_under_aws_bedrock_groups
+      if: ctx.okta?.debug_context?.debug_data != null
+      source: |
+        String lunderscore(String s) {
+          return /[ -]/.matcher(s.toLowerCase()).replaceAll('_');
+        }
+        def renameKeys(Map src, Map keyMap) {
+          def dst = new HashMap();
+          for (def entry: src.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                dst[lunderscore(key)] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = updatedList;
+              } else {
+                dst[lunderscore(key)] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = value;
+              } else {
+                dst[lunderscore(key)] = value;
+              }
+            }
+          }
+          return dst;
+        }
+        ctx.okta.debug_context.debug_data = renameKeys(ctx.okta.debug_context.debug_data, params)
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+
