@@ -26,11 +26,11 @@ fi
 
 # Report data set in the input step
 PARAMETERS=(
-    "- **DRY_RUN**=$DRY_RUN"
-    "- **BASE_COMMIT**=$BASE_COMMIT"
-    "- **PACKAGE_NAME**=$PACKAGE_NAME"
-    "- **PACKAGE_VERSION**=$PACKAGE_VERSION"
-    "- **REMOVE_OTHER_PACKAGES**=$REMOVE_OTHER_PACKAGES"
+    "**DRY_RUN**=$DRY_RUN"
+    "**BASE_COMMIT**=$BASE_COMMIT"
+    "**PACKAGE_NAME**=$PACKAGE_NAME"
+    "**PACKAGE_VERSION**=$PACKAGE_VERSION"
+    "**REMOVE_OTHER_PACKAGES**=$REMOVE_OTHER_PACKAGES"
 )
 
 # Show each parameter in a different line
