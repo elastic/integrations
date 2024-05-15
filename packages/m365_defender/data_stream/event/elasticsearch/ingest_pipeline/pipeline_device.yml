@@ -1038,6 +1038,34 @@ processors:
       ignore_empty_value: true
       tag: set_file_path
       if: ctx.event?.category != null && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+  - script:
+      description: Adds file information.
+      lang: painless
+      if: ctx.file?.path != null && ctx.file.path.length() > 1
+      source: |-
+        String path = ctx.file.path;
+        String sep = "/";
+        String windows_sep = "\\";
+        def idx = -1;
+        if (path.contains(windows_sep)) {
+            idx = path.lastIndexOf(windows_sep);
+        }
+        else {
+            idx = path.lastIndexOf(sep);
+        } 
+        if (idx > -1) {
+            if (ctx?.file == null) {
+                ctx.file = new HashMap();
+            }
+            if (ctx.file.name == null) {
+                ctx.file.name = path.substring(idx+1);
+            }
+            ctx.file.directory = path.substring(0, idx);
+            def extIdx = path.lastIndexOf(".");
+            if (extIdx > -1 && ctx.file.extension == null) {
+                ctx.file.extension = path.substring(extIdx+1);
+            }
+        }
   - set:
       field: file.hash.md5
       copy_from: m365_defender.event.md5
