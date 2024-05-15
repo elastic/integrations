@@ -24,6 +24,20 @@ if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
   exit 1
 fi
 
+# Report data set in the input step
+PARAMETERS=(
+    "- **DRY_RUN**=$DRY_RUN"
+    "- **BASE_COMMIT**=$BASE_COMMIT"
+    "- **PACKAGE_NAME**=$PACKAGE_NAME"
+    "- **PACKAGE_VERSION**=$PACKAGE_VERSION"
+    "- **REMOVE_OTHER_PACKAGES**=$REMOVE_OTHER_PACKAGES"
+)
+
+# Show each parameter in a different line
+echo "Parameters:\n${PARAMETERS[*]}" | tr ' ' '\n' | buildkite-agent annotate \
+    --style "info" \
+    --context "context-parameters"
+
 FULL_ZIP_PACKAGE_NAME="${PACKAGE_NAME}-${PACKAGE_VERSION}.zip"
 TRIMMED_PACKAGE_VERSION="$(echo "$PACKAGE_VERSION" | cut -d '.' -f -2)"
 SOURCE_BRANCH="main"
