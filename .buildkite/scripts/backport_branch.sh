@@ -4,6 +4,15 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+cleanup_gh() {
+    pushd $WORKSPACE > /dev/null
+    git config remote.origin.url "https://github.com/elastic/integrations.git"
+    popd > /dev/null
+}
+
+trap cleanup_gh EXIT
+
+
 DRY_RUN="$(buildkite-agent meta-data get DRY_RUN --default ${DRY_RUN:-"true"})"
 BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default ${BASE_COMMIT:-""})"
 PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default ${PACKAGE_NAME:-""})"
@@ -81,6 +90,15 @@ removeOtherPackages() {
   done
 }
 
+update_git_config() {
+    pushd $WORKSPACE > /dev/null
+    git config --global user.name "${GITHUB_USERNAME_SECRET}"
+    git config --global user.email "${GITHUB_EMAIL_SECRET}"
+
+    git config remote.origin.url "https://${GITHUB_USERNAME_SECRET}:${GITHUB_TOKEN}@github.com/elastic/integrations.git"
+    popd $WORKSPACE > /dev/null
+}
+
 updateBackportBranchContents() {
   local BUILDKITE_FOLDER_PATH=".buildkite"
   local JENKINS_FOLDER_PATH=".ci"
@@ -106,8 +124,7 @@ updateBackportBranchContents() {
   fi
 
   echo "Setting up git environment..."
-  git config --global user.name "${GITHUB_USERNAME_SECRET}"
-  git config --global user.email "${GITHUB_EMAIL_SECRET}"
+  update_git_config
 
   echo "Commiting"
   git add $BUILDKITE_FOLDER_PATH
@@ -131,6 +148,8 @@ updateBackportBranchContents() {
     echo "Pushing..."
     git push origin $BACKPORT_BRANCH_NAME
   fi
+
+  cleanup_gh
 }
 
 if ! [[ $PACKAGE_VERSION =~ ^[0-9]+(\.[0-9]+){2}(\-.*)?$ ]]; then
