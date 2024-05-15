@@ -1720,7 +1720,7 @@ processors:
       copy_from: m365_defender.event.initiating_process.account_name
       tag: set_user_name_initiating_process_account_name
       ignore_empty_value: true
-      if: ctx.event?.category != null && ctx.event.category.contains('library') && ctx.user?.name == null
+      if: ctx.event?.category != null && (ctx.event.category.contains('library') || ctx.event.category.contains('registry')) && ctx.user?.name == null
   - set:
       field: user.domain
       copy_from: m365_defender.event.account.domain
@@ -1731,7 +1731,7 @@ processors:
       copy_from: m365_defender.event.initiating_process.account_domain
       tag: set_user_domain_initiating_process_account_domain
       ignore_empty_value: true
-      if: ctx.event?.category != null && ctx.event.category.contains('library') && ctx.user?.domain == null
+      if: ctx.event?.category != null && (ctx.event.category.contains('library') || ctx.event.category.contains('registry')) && ctx.user?.domain == null
   - set:
       field: user.id
       copy_from: m365_defender.event.account.sid
