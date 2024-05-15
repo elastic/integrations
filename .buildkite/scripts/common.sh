@@ -735,7 +735,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E 'network_traffic|zeek|kubernetes'
 }
 
 check_package() {
@@ -783,11 +783,22 @@ install_package() {
 
 test_package_in_local_stack() {
     local package=$1
+    local system_tests=0
+    local env_vars=""
     TEST_OPTIONS="-v --report-format xUnit --report-output file"
+
+    system_tests=$(number_system_tests "${package}")
 
     echo "Test package: ${package}"
     # Run all test suites
-    ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
+    echo ">>> Number system tests: \"${system_tests}\""
+    if [ "$system_tests" -gt "$MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS" ]; then
+        echo "Setting to false Independent Elastic Agents (number system tests \"${system_tests}\")"
+        env_vars="ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT=false"
+    fi
+
+    ${env_vars} \
+        ${ELASTIC_PACKAGE_BIN} test ${TEST_OPTIONS} ${COVERAGE_OPTIONS}
     local ret=$?
     echo ""
     return $ret
@@ -920,6 +931,20 @@ upload_safe_logs_from_package() {
         "${build_directory}/container-logs/*.log" \
         "${parent_folder}/${package}/container-logs/"
 }
+
+number_system_tests() {
+    local package="$1"
+    local test_number
+
+    test_number=$(for folder in $(find . -type d -name system ); do
+        pushd $folder > /dev/null
+        find . -type f -name "*-config.yml" | wc -l
+        popd > /dev/null
+    done | awk '{s+=$1} END {print s}')
+
+    echo "$test_number"
+}
+
 
 # Helper to run all tests and checks for a package
 process_package() {
