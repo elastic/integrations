@@ -782,7 +782,6 @@ install_package() {
 }
 
 requires_root_privileges() {
-    local package="$1"
     local root_privileges=""
 
     root_privileges=$(cat manifest.yml | yq -r '.agent.privileges.root')
@@ -793,7 +792,6 @@ requires_root_privileges() {
 }
 
 number_system_tests() {
-    local package="$1"
     local test_number
 
     test_number=$(for folder in $(find . -type d -name system ); do
@@ -806,7 +804,7 @@ number_system_tests() {
 }
 
 requires_disabling_independent_elastic_agents() {
-    if requires_root_privileges ; then
+    if requires_root_privileges; then
         return 1
     fi
 
@@ -814,7 +812,7 @@ requires_disabling_independent_elastic_agents() {
         return 1
     fi
     local system_tests=""
-    system_tests=$(number_system_tests "${package}")
+    system_tests=$(number_system_tests)
     echo ">>> Number system tests: \"${system_tests}\""
 
     if [ "${system_tests}" -lt "${MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS}" ]; then
@@ -822,6 +820,7 @@ requires_disabling_independent_elastic_agents() {
     fi
 
     if [[ "${ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT:-""}" == "true" ]]; then
+        echo ">>> Disabling system tests with independent Elastic Agents: \"${system_tests}\""
         return 0
     fi
 
@@ -837,7 +836,6 @@ test_package_in_local_stack() {
     prev_value=${ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT:-""}
 
     if requires_disabling_independent_elastic_agents; then
-        echo ">>> Disabling system tests with independent Elastic Agents: \"${system_tests}\""
         updated_var=1
         export ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT=false
     fi
