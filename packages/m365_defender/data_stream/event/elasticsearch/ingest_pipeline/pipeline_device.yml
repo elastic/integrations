@@ -1086,37 +1086,37 @@ processors:
       copy_from: m365_defender.event.folder_path
       ignore_empty_value: true
       tag: set_dll_path
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
+      if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
   - set:
       field: dll.hash.md5
       copy_from: m365_defender.event.md5
       ignore_empty_value: true
       tag: set_dll_md5
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
+      if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
   - set:
       field: dll.hash.sha1
       copy_from: m365_defender.event.sha1
       ignore_empty_value: true
       tag: set_dll_sha1
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
+      if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
   - set:
       field: dll.hash.sha256
       copy_from: m365_defender.event.sha256
       ignore_empty_value: true
       tag: set_dll_sha256
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
+      if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
   - set:
       field: dll.name
       copy_from: m365_defender.event.file.name
       ignore_empty_value: true
       tag: set_dll_name
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
+      if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
   - set:
-      field: dll.pe.sections.physical_size
+      field: dll.Ext.size
       copy_from: m365_defender.event.file.size
       ignore_empty_value: true
       tag: set_dll_pe_size
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
+      if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
 
   # Process mappings (Only when its Process category (but not DeviceImageLoadEvents), or DeviceEvent, else it means something else)
   # Fields like InitatingProcess* related to process.* unless the type is DeviceProcessEvent or DeviceEvent, then it relates to process.parent.*
