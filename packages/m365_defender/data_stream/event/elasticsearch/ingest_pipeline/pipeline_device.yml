@@ -1581,6 +1581,13 @@ processors:
       copy_from: m365_defender.event.registry.value_name
       tag: set_registry_value
       ignore_empty_value: true
+  - set:
+      field: registry.path
+      value: >-
+        {{#registry.hive}}{{ registry.hive }}\{{/registry.hive}}{{{registry.key}}}\{{{registry.value}}}
+      tag: set_registry_path
+      if: ctx.registry?.key != null && ctx.registry.value != null
+      ignore_empty_value: true
   - append:
       field: registry.data.strings
       value: '{{{m365_defender.event.registry.value_data}}}'
