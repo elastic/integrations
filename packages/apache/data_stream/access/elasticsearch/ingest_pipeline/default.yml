@@ -15,6 +15,11 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
       field: event.original
       patterns:
@@ -95,7 +100,7 @@ processors:
   - set:
       field: event.kind
       value: event
-  - set:
+  - append:
       field: event.category
       value: web
   - set:
