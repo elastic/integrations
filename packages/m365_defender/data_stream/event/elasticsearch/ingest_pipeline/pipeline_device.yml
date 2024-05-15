@@ -21,7 +21,12 @@ processors:
       field: event.category
       value: host
       tag: append_event_category_host
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') || ctx.m365_defender.event.category.toLowerCase().contains('deviceinfo')
+      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceinfo') || (ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') && ctx.json?.properties?.ActionType != null && !ctx.json.properties.ActionType.toLowerCase().endsWith('apicall'))
+  - append:
+      field: event.category
+      value: api
+      tag: append_event_category_host
+      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') && ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().endsWith('apicall')
   - append:
       field: event.category
       value: file
