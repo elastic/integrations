@@ -54,8 +54,7 @@ processors:
       if: >-
         (ctx.event?.category != null &&
         (ctx.event.category.contains('authentication') ||
-        ctx.event.category.contains('host') ||
-        ctx.event.category.contains('file'))) || (ctx.json?.properties?.ActionType
+        ctx.event.category.contains('host'))) || (ctx.json?.properties?.ActionType
         != null &&
         (ctx.json.properties.ActionType.toLowerCase().contains('openprocess') ||
         ctx.json.properties.ActionType.toLowerCase().contains('connectionfound')
@@ -63,6 +62,26 @@ processors:
         ctx.json.properties.ActionType.toLowerCase().contains('networksignatureinspected')
         ||
         ctx.json.properties.ActionType.toLowerCase().contains('devicenetworkinfo')))
+  - append:
+      field: event.type
+      value: deletion
+      tag: append_event_type_deletion
+      if: (ctx.event?.category != null && ctx.event.category.contains('file')) && ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase() == 'filedeleted'
+  - append:
+      field: event.type
+      value: change
+      tag: append_event_type_change
+      if: (ctx.event?.category != null && ctx.event.category.contains('file')) && (ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase() == 'filemodified' || ctx.json.properties.ActionType.toLowerCase() == 'filerenamed'))
+  - append:
+      field: event.type
+      value: creation
+      tag: append_event_type_creation
+      if: (ctx.event?.category != null && ctx.event.category.contains('file')) && ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase() == 'filecreated'
+  - append:
+      field: event.type
+      value: info
+      tag: append_event_type_info
+      if: (ctx.event?.category != null && ctx.event.category.contains('file')) && ctx.event?.type == null
   - append:
       field: event.type
       value: end
@@ -1722,11 +1741,35 @@ processors:
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == null
 
   # Event Outcome/Actions mapping
+  # Special handling if event.category is 'file'
+  - set:
+      field: event.action
+      value: deletion
+      tag: set_event_action_deletion
+      if: (ctx.event?.category != null && ctx.event.category.contains('file')) && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase() == 'filedeleted'
+  - set:
+      field: event.action
+      value: modification
+      tag: set_event_action_modification
+      if: (ctx.event?.category != null && ctx.event.category.contains('file')) && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase() == 'filemodified'
+  - set:
+      field: event.action
+      value: rename
+      tag: set_event_action_rename
+      if: (ctx.event?.category != null && ctx.event.category.contains('file')) && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase() == 'filerenamed'
+  - set:
+      field: event.action
+      value: creation
+      tag: set_event_action_creation
+      if: (ctx.event?.category != null && ctx.event.category.contains('file')) && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase() == 'filecreated'
+  # For all other categories, copy the value from m365_defender.event.action.type
   - set:
       field: event.action
       copy_from: m365_defender.event.action.type
       tag: set_event_action
+      if: ctx.event?.category != null && !ctx.event.category.contains('file')
       ignore_empty_value: true
+      override: false
   - lowercase:
       field: event.action
       tag: lowercase_event_action
