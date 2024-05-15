@@ -735,7 +735,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E 'network_traffic|zeek|kubernetes'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E 'network_traffic|zeek|kubernetes|nginx'
 }
 
 check_package() {
@@ -786,16 +786,18 @@ test_package_in_local_stack() {
     local system_tests=0
     local updated_var=0
     local prev_value=""
-    TEST_OPTIONS="-v --report-format xUnit --report-output file"
+    local TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
     prev_value=${ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT:-""}
     system_tests=$(number_system_tests "${package}")
     echo ">>> Number system tests: \"${system_tests}\""
 
-    if [[ "$prev_value" == "true" && $system_tests -gt "$MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS" ]]; then
-        echo ">>> Disabling system tests with independent Elastic Agents: \"${system_tests}\""
-        updated_var=1
-        export ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT=false
+    if [[ "${MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS:-""}" != "" ]]; then
+        if [[ "$prev_value" == "true" && $system_tests -gt "${MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS}" ]]; then
+            echo ">>> Disabling system tests with independent Elastic Agents: \"${system_tests}\""
+            updated_var=1
+            export ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT=false
+        fi
     fi
 
     echo "Test package: ${package}"
@@ -820,7 +822,7 @@ test_package_in_local_stack() {
 # Packages are tested one by one to avoid creating more than 100 projects for one build.
 test_package_in_serverless() {
     local package=$1
-    TEST_OPTIONS="-v --report-format xUnit --report-output file"
+    local TEST_OPTIONS="-v --report-format xUnit --report-output file"
 
     echo "Test package: ${package}"
     if ! ${ELASTIC_PACKAGE_BIN} test asset ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
