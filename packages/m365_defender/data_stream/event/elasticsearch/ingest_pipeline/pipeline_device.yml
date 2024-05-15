@@ -1883,6 +1883,12 @@ processors:
       tag: lowercase_network_protocol
       ignore_missing: true
   - set:
+      field: network.protocol
+      value: dns
+      tag: set_network_protocol_dns
+      if: ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('dns')
+      override: true
+  - set:
       field: network.direction
       value: inbound
       tag: set_network_direction_inbound
