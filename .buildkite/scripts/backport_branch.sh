@@ -34,7 +34,7 @@ PARAMETERS=(
 )
 
 # Show each parameter in a different line
-echo "Parameters: ${PARAMETERS[*]}" | sed 's/ /\n- ' | buildkite-agent annotate \
+echo "Parameters: ${PARAMETERS[*]}" | sed 's/ /\n- /g' | buildkite-agent annotate \
     --style "info" \
     --context "context-parameters"
 
