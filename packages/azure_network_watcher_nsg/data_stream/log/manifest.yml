@@ -1,0 +1,119 @@
+title: Collect NSG logs from Azure Network Watcher
+type: logs
+streams:
+  - input: azure-blob-storage
+    description: Collect NSG logs from Azure Network Watcher via Azure Blob Storage.
+    title: NSG Logs
+    template_path: abs.yml.hbs
+    vars:
+      - name: account_name
+        type: text
+        title: Account Name
+        description: |
+          This attribute is required for various internal operations with respect to authentication, creating service clients and blob clients which are used internally for various processing purposes.
+        required: true
+        show_user: true
+      - name: service_account_key
+        type: password
+        title: Service Account Key
+        description: |
+          This attribute contains the access key, found under the Access keys section on Azure Cloud, under the respective storage account. A single storage account can contain multiple containers, and they will all use this common access key.
+        required: false
+        show_user: true
+        secret: true
+      - name: service_account_uri
+        type: text
+        title: Service Account URI
+        description: |
+          This attribute contains the connection string, found under the Access keys section on Azure Cloud, under the respective storage account. A single storage account can contain multiple containers, and they will all use this common connection string.
+        required: false
+        show_user: false
+      - name: storage_url
+        type: text
+        title: Storage URL
+        description: |
+          Use this attribute to specify a custom storage URL if required. By default it points to azure cloud storage. Only use this if there is a specific need to connect to a different environment where blob storage is available.
+          URL format : {{protocol}}://{{account_name}}.{{storage_uri}}.
+        required: false
+        show_user: false
+      - name: number_of_workers
+        type: integer
+        title: Maximum number of workers
+        multi: false
+        required: false
+        show_user: true
+        default: 3
+        description: Determines how many workers are spawned per container. Maximum allowed value is 5000.
+      - name: poll
+        type: bool
+        title: Polling
+        multi: false
+        required: false
+        show_user: true
+        default: true
+        description: Determines if the container will be continuously polled for new documents.
+      - name: poll_interval
+        type: text
+        title: Polling interval
+        multi: false
+        required: false
+        show_user: true
+        default: 15s
+        description: Determines the time interval between polling operations.
+      - name: containers
+        type: yaml
+        title: Containers
+        description: "This attribute contains the details about a specific container like, name, number_of_workers, poll, poll_interval etc. \nThe attribute 'name' is specific to a container as it describes the container name, while the fields number_of_workers, poll, poll_interval can exist both at the container level and at the global level. \nIf you have already defined the attributes globally, then you can only specify the container name in this yaml config. \nIf you want to override any specific attribute for a container, then, you can define it here. \nAny attribute defined in the yaml will override the global definitions. Please see the relevant [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-blob-storage.html#attrib-containers) for further information.\n"
+        required: true
+        show_user: true
+        default: |
+          #- name: azure-container1
+          #   max_workers: 3
+          #   poll: true
+          #   poll_interval: 15s
+          #- name: azure-container2
+          #  max_workers: 3
+          #  poll: true
+          #  poll_interval: 10s
+      - name: file_selectors
+        type: yaml
+        title: File Selectors
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # - regex: "event/"
+        description: "If the container will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which is made up of regex patters. \nThe regex should match the container filepath. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that don’t match one of the regexes will not be processed.\n"
+      - name: timestamp_epoch
+        type: integer
+        title: Timestamp Epoch
+        multi: false
+        required: false
+        description: "This attribute can be used to filter out files/blobs which have a timestamp older than the specified value. The value of this attribute should be in unix epoch (seconds) format."
+        show_user: false
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        required: true
+        default:
+          - forwarded
+          - azure_network_watcher_nsg-log
+        multi: true
+        show_user: false
