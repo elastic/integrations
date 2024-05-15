@@ -805,10 +805,12 @@ number_system_tests() {
 
 requires_disabling_independent_elastic_agents() {
     if requires_root_privileges; then
+        echo ">>> Requires root privileges"
         return 1
     fi
 
     if [[ "${MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS:-""}" == "" ]]; then
+        echo ">>> Not defined env.var"
         return 1
     fi
     local system_tests=""
@@ -816,6 +818,7 @@ requires_disabling_independent_elastic_agents() {
     echo ">>> Number system tests: \"${system_tests}\""
 
     if [ "${system_tests}" -lt "${MAXIMUM_NUMBER_TESTS_FOR_INDEPENDENT_ELASTIC_AGENTS}" ]; then
+        echo ">>> Number of test lower than threshold"
         return 1
     fi
 
@@ -824,6 +827,7 @@ requires_disabling_independent_elastic_agents() {
         return 0
     fi
 
+    echo "Other cauase"
     return 1
 }
 
