@@ -1761,6 +1761,12 @@ processors:
       tag: set_destination_ip
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == 'In'
   - set:
+      field: destination.address
+      copy_from: destination.ip
+      ignore_empty_value: true
+      tag: set_destination_address
+      if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.destination?.ip != null
+  - set:
       field: destination.port
       copy_from: m365_defender.event.remote.port
       ignore_empty_value: true
