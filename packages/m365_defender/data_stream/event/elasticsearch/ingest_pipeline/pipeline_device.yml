@@ -84,8 +84,8 @@ processors:
       if: (ctx.event?.category != null && ctx.event.category.contains('file')) && ctx.event?.type == null
   - append:
       field: event.type
-      value: end
-      tag: append_event_type_end
+      value: start
+      tag: append_event_type_start
       if: ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('connectionsuccess')
   - append:
       field: event.type
@@ -99,8 +99,8 @@ processors:
       if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('connectionrequest') || ctx.json.properties.ActionType.toLowerCase().contains('listeningconnectioncreated') || ctx.json.properties.ActionType.toLowerCase().contains('processcreated') || ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents'))
   - append:
       field: event.type
-      value: allowed
-      tag: append_event_type_allowed
+      value: start
+      tag: append_event_type_start
       if: ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('inboundconnectionaccepted')
   - append:
       field: event.type
@@ -123,6 +123,17 @@ processors:
       tag: set_json_properties_ActionType_load
       override: true
       if: ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('imageloaded')
+  # Handle event.type when event.category is network
+  - append:
+      field: event.type
+      value: protocol
+      tag: append_event_type_protocol
+      if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
+  - append:
+      field: event.type
+      value: info
+      tag: append_event_type_info
+      if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.event?.type == null
 
   # AdditionalFields are flattened, as they can vary depending on the source, users can use custom pipelines to move fields away from AdditionalFields if required.
   # We move the AdditionalFields.direction when it exists, as its required for source/destination mapping
