@@ -110,7 +110,7 @@ update_git_config() {
     git config --global user.email "${GITHUB_EMAIL_SECRET}"
 
     git config remote.origin.url "https://${GITHUB_USERNAME_SECRET}:${GITHUB_TOKEN}@github.com/elastic/integrations.git"
-    popd $WORKSPACE > /dev/null
+    popd > /dev/null
 }
 
 updateBackportBranchContents() {
