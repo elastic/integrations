@@ -1,0 +1,349 @@
+---
+description: Pipeline for processing auth logs
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - append:
+      field: event.category
+      value: web
+  - append:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: event
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      if: ctx.event?.original == null
+      ignore_missing: true
+  - json:
+      field: event.original
+      tag: 'json_decoding'
+      target_field: json
+  - date:
+      field: json.time
+      formats:
+        - "ISO8601"
+      target_field: "@timestamp"
+      timezone: "UTC"
+      tag: date_event_created_time_epoch
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      value: 0
+      if: ctx.json?.level == 'emergency'
+      tag: set_severity_0
+  - set:
+      field: event.severity
+      value: 1
+      if: ctx.json?.level == 'alert'
+      tag: set_severity_1
+  - set:
+      field: event.severity
+      value: 2
+      if: ctx.json?.level == 'critical'
+      tag: set_severity_2
+  - set:
+      field: event.severity
+      value: 3
+      if: ctx.json?.level == 'error'
+      tag: set_severity_3
+  - set:
+      field: event.severity
+      value: 4
+      if: ctx.json?.level == 'warn'
+      tag: set_severity_4
+  - set:
+      field: event.severity
+      value: 5
+      if: ctx.json?.level == 'notice'
+      tag: set_severity_5
+  - set:
+      field: event.severity
+      value: 6
+      if: ctx.json?.level == 'info'
+      tag: set_severity_6
+  - set:
+      field: event.severity
+      value: 7
+      if: ctx.json?.level == 'debug'
+      tag: set_severity_7
+  - dot_expander:
+      field: "*"
+      path: json
+  - rename:
+      field: json.correlation_id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: json.component
+      target_field: gitlab.gitaly.component
+      ignore_missing: true
+  - rename: 
+      field: json.msg
+      target_field: message
+  - rename:
+      field: json.pid
+      target_field: process.pid
+  - rename: 
+      field: json.remote_ip
+      target_field: source.ip
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+  - set:
+      field: client
+      copy_from: source
+  - rename:
+      field: json.span.kind
+      target_field: gitlab.gitaly.span_kind
+      ignore_missing: true
+  - rename:
+      field: json.system
+      target_field: gitlab.gitaly.system
+      ignore_missing: true
+  - rename: 
+      field: json.user_id
+      target_field: user.id
+  - rename:
+      field: json.username
+      target_field: user.name
+  - rename: 
+      field: json.catfile.duration_ms
+      target_field: gitlab.gitaly.catfile.duration_ms
+      ignore_missing: true
+  - rename: 
+      field: json.catfile.flush_count
+      target_field: gitlab.gitaly.catfile.flush_count
+      ignore_missing: true
+  - rename: 
+      field: json.catfile.flush_ms
+      target_field: gitlab.gitaly.catfile.flush_ms
+      ignore_missing: true
+  - rename: 
+      field: json.catfile.read_info_count
+      target_field: gitlab.gitaly.catfile.read_info_count
+      ignore_missing: true
+  - rename: 
+      field: json.catfile.read_info_ms
+      target_field: gitlab.gitaly.catfile.read_info_ms
+      ignore_missing: true
+  - rename: 
+      field: json.catfile.read_object_count
+      target_field: gitlab.gitaly.catfile.read_object_count
+      ignore_missing: true
+  - rename: 
+      field: json.catfile.read_object_ms
+      target_field: gitlab.gitaly.catfile.read_object_ms
+      ignore_missing: true
+  - rename: 
+      field: json.catfile.request_info_count
+      target_field: gitlab.gitaly.catfile.request_info_count
+      ignore_missing: true
+  - rename: 
+      field: json.catfile.request_info_ms
+      target_field: gitlab.gitaly.catfile.request_info_ms
+      ignore_missing: true
+  - rename: 
+      field: json.catfile.request_object_count
+      target_field: gitlab.gitaly.catfile.request_object_count
+      ignore_missing: true
+  - rename: 
+      field: json.catfile.request_object_ms
+      target_field: gitlab.gitaly.catfile.request_object_ms
+      ignore_missing: true
+  - rename: 
+      field: json.command.count
+      target_field: gitlab.gitaly.command.count
+      ignore_missing: true
+  - rename: 
+      field: json.command.cpu_time_ms
+      target_field: gitlab.gitaly.command.cpu_time_ms
+      ignore_missing: true
+  - rename: 
+      field: json.command.inblock
+      target_field: gitlab.gitaly.command.inblock
+      ignore_missing: true
+  - rename: 
+      field: json.command.majflt
+      target_field: gitlab.gitaly.command.majflt
+      ignore_missing: true
+  - rename: 
+      field: json.command.maxrss
+      target_field: gitlab.gitaly.command.maxrss
+      ignore_missing: true
+  - rename: 
+      field: json.command.minflt
+      target_field: gitlab.gitaly.command.minflt
+      ignore_missing: true
+  - rename: 
+      field: json.command.oublock
+      target_field: gitlab.gitaly.command.oublock
+      ignore_missing: true
+  - rename: 
+      field: json.command.real_time_ms
+      target_field: gitlab.gitaly.command.real_time_ms
+      ignore_missing: true
+  - rename: 
+      field: json.command.spawn_token_fork_ms
+      target_field: gitlab.gitaly.command.spawn_token_fork_ms
+      ignore_missing: true
+  - rename: 
+      field: json.command.spawn_token_wait_ms
+      target_field: gitlab.gitaly.command.spawn_token_wait_ms
+      ignore_missing: true
+  - rename: 
+      field: json.command.system_time_ms
+      target_field: gitlab.gitaly.command.system_time_ms
+      ignore_missing: true
+  - rename: 
+      field: json.command.user_time_ms
+      target_field: gitlab.gitaly.command.user_time_ms
+      ignore_missing: true
+  - rename:
+      field: json.grpc.code
+      target_field: gitlab.gitaly.grpc.code
+      ignore_missing: true
+  - rename:
+      field: json.grpc.meta.auth_version
+      target_field: gitlab.gitaly.grpc.meta.auth_version
+      ignore_missing: true
+  - rename:
+      field: json.grpc.meta.client_name
+      target_field: gitlab.gitaly.grpc.meta.client_name
+      ignore_missing: true
+  - rename:
+      field: json.grpc.meta.deadline_type
+      target_field: gitlab.gitaly.grpc.meta.deadline_type
+      ignore_missing: true
+  - rename:
+      field: json.grpc.meta.method_operation
+      target_field: gitlab.gitaly.grpc.meta.method_operation
+      ignore_missing: true
+  - rename:
+      field: json.grpc.meta.method_scope
+      target_field: gitlab.gitaly.grpc.meta.method_scope
+      ignore_missing: true
+  - rename:
+      field: json.grpc.meta.method_type
+      target_field: gitlab.gitaly.grpc.meta.method_type
+      ignore_missing: true
+  - rename:
+      field: json.grpc.method
+      target_field: gitlab.gitaly.grpc.method
+      ignore_missing: true
+  - date:
+      field: json.grpc.request.deadline
+      formats:
+        - "ISO8601"
+      target_field: gitlab.gitaly.grpc.request.deadline
+      timezone: "UTC"
+      tag: deadline_date_event_created_time_epoch
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.grpc.request.fullMethod
+      target_field: gitlab.gitaly.grpc.request.fullMethod
+      ignore_missing: true
+  - rename:
+      field: json.grpc.request.glProjectPath
+      target_field: gitlab.gitaly.grpc.request.glProjectPath
+      ignore_missing: true
+  - rename:
+      field: json.grpc.request.glRepository
+      target_field: gitlab.gitaly.grpc.request.glRepository
+      ignore_missing: true
+  - rename:
+      field: json.grpc.request.payload_bytes
+      target_field: gitlab.gitaly.grpc.request.payload_bytes
+      ignore_missing: true
+  - rename:
+      field: json.grpc.request.repoPath
+      target_field: gitlab.gitaly.grpc.request.repoPath
+      ignore_missing: true
+  - rename:
+      field: json.grpc.request.repoStorage
+      target_field: gitlab.gitaly.grpc.request.repoStorage
+      ignore_missing: true
+  - rename:
+      field: json.grpc.response.payload_bytes
+      target_field: gitlab.gitaly.grpc.response.payload_bytes
+      ignore_missing: true
+  - rename:
+      field: json.grpc.service
+      target_field: gitlab.gitaly.grpc.service
+      ignore_missing: true
+  - rename:
+      field: json.grpc.start_time
+      target_field: gitlab.gitaly.grpc.start_time
+      ignore_missing: true
+  - rename:
+      field: json.grpc.time_ms
+      target_field: gitlab.gitaly.grpc.time_ms
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{gitlab.meta.remote_ip}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{user.name}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{user.id}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+
+
+
