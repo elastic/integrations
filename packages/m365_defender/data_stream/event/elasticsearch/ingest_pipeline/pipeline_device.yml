@@ -1211,7 +1211,7 @@ processors:
       tag: set_file_code_signature_trusted
       ignore_empty_value: true
 
-  # DLL Mappings (Only when its DeviceImageLoadEvents, else it means something else)    
+  # DLL Mappings (Only when its DeviceImageLoadEvents or (ActionType == 'driverload'), else it means something else)    
   - set:
       field: dll.path
       copy_from: m365_defender.event.folder_path
@@ -1219,11 +1219,24 @@ processors:
       tag: set_dll_path
       if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
   - set:
+      field: dll.path
+      value: >-
+        {{{m365_defender.event.folder_path}}}\{{{m365_defender.event.file.name}}}
+      ignore_empty_value: true
+      tag: set_dll_path_driver
+      if: ctx.event?.category != null && ctx.event.category.contains('driver')
+  - set:
       field: dll.hash.md5
       copy_from: m365_defender.event.md5
       ignore_empty_value: true
       tag: set_dll_md5
       if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
+  - set:
+      field: dll.hash.md5
+      copy_from: m365_defender.event.md5
+      ignore_empty_value: true
+      tag: set_dll_md5_driver
+      if: ctx.event?.category != null && ctx.event.category.contains('driver')
   - set:
       field: dll.hash.sha1
       copy_from: m365_defender.event.sha1
@@ -1231,17 +1244,35 @@ processors:
       tag: set_dll_sha1
       if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
   - set:
+      field: dll.hash.sha1
+      copy_from: m365_defender.event.sha1
+      ignore_empty_value: true
+      tag: set_dll_sha1_driver
+      if: ctx.event?.category != null && ctx.event.category.contains('driver')
+  - set:
       field: dll.hash.sha256
       copy_from: m365_defender.event.sha256
       ignore_empty_value: true
       tag: set_dll_sha256
       if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
   - set:
+      field: dll.hash.sha256
+      copy_from: m365_defender.event.sha256
+      ignore_empty_value: true
+      tag: set_dll_sha256_driver
+      if: ctx.event?.category != null && ctx.event.category.contains('driver')
+  - set:
       field: dll.name
       copy_from: m365_defender.event.file.name
       ignore_empty_value: true
       tag: set_dll_name
       if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
+  - set:
+      field: dll.name
+      copy_from: m365_defender.event.file.name
+      ignore_empty_value: true
+      tag: set_dll_name_driver
+      if: ctx.event?.category != null && ctx.event.category.contains('driver')
   - set:
       field: dll.Ext.size
       copy_from: m365_defender.event.file.size
@@ -1531,7 +1562,7 @@ processors:
   - set:
       field: process.executable
       value: >-
-        {{m365_defender.event.initiating_process.folder_path}}\{{m365_defender.event.initiating_process.file_name}}
+        {{{m365_defender.event.initiating_process.folder_path}}}\{{{m365_defender.event.initiating_process.file_name}}}
       ignore_empty_value: true
       tag: set_process_executable_api
       if: ctx.event?.category != null && ctx.event.category.contains('api') && ctx.m365_defender?.event?.initiating_process?.folder_path != null
@@ -1743,7 +1774,7 @@ processors:
   - set:
       field: registry.path
       value: >-
-        {{#registry.hive}}{{ registry.hive }}\{{/registry.hive}}{{{registry.key}}}\{{{registry.value}}}
+        {{{registry.key}}}\{{{registry.value}}}
       tag: set_registry_path
       if: ctx.registry?.key != null && ctx.registry.value != null
       ignore_empty_value: true
