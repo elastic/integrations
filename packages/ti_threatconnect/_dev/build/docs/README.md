@@ -67,7 +67,7 @@ The ingested indicators expire after certain duration. An [Elastic Transform](ht
 
 #### Handling Orphaned Indicators
 
-In order to prevent orphaned indicators that may never expire in the destination index. Users can configure IOC Expiration Duration parameter while setting up the integration. This parameter deletes all data inside the destination index logs-ti_threatconnect_latest.dest_indicator after this specified duration is reached.
+In order to prevent orphaned indicators that may never expire in the destination index users can configure IOC Expiration Duration parameter while setting up the integration. This parameter deletes all data inside the destination index logs-ti_threatconnect_latest.dest_indicator after this specified duration is reached.
 
 ### How it works
 
