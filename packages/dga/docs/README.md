@@ -19,7 +19,7 @@ For more detailed information refer to the following blogs:
     POST INDEX_NAME/_settings
     {
       "index" : {
-        "default_pipeline" : "2.0.2-ml_dga_ingest_pipeline"
+        "default_pipeline" : "<VERSION>-ml_dga_ingest_pipeline"
       }
     }
     ```
