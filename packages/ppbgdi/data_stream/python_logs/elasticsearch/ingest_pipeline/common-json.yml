@@ -23,7 +23,7 @@ processors:
       copy_from: event.created
   - convert:
       field: event.severity
-      type: long
+      type: integer
       ignore_missing: true
   - convert:
       field: event.duration
@@ -55,12 +55,24 @@ processors:
             }
             ctx.http.response.headers = response_headers;
         }
+  - convert:
+      field: http.request.bytes
+      type: long
+      ignore_missing: true
   - user_agent:
       field: http.request.headers.user-agent
       extract_device_type: true
       ignore_missing: true
   - remove:
       field: http.request.headers.user-agent
+      ignore_missing: true
+  - user_agent:
+      field: temp.user_agent.original
+      extract_device_type: true
+      ignore_missing: true
+      if: '!ctx?.http?.request?.headers?.containsKey("user-agent")'
+  - remove:
+      field: temp.user_agent.original
       ignore_missing: true
   - rename:
       field: http.response.headers.content-length
@@ -73,6 +85,10 @@ processors:
   - rename:
       field: http.response.headers.content-type
       target_field: http.response.mime_type
+      ignore_missing: true
+  - convert:
+      field: http.response.status_code
+      type: integer
       ignore_missing: true
   - rename:
       field: log.file.path
@@ -107,8 +123,13 @@ processors:
       field: temp.process
       target_field: process
       ignore_missing: true
+  - convert:
+      field: process.pid
+      type: integer
+      ignore_missing: true
   - uri_parts:
       field: temp.url.original
+      target_field: temp.url
       remove_if_successful: true
       ignore_missing: true
       on_failure:
@@ -117,17 +138,49 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      field: temp.url.domain
+      target_field: url.domain
+      ignore_missing: true
+      if: ctx?.url?.extension == null
+  - rename:
+      field: temp.url.extension
+      target_field: url.extension
+      ignore_missing: true
+      if: ctx?.url?.extension == null
+  - rename:
+      field: temp.url.original
+      target_field: url.original
+      ignore_missing: true
+      if: ctx?.url?.original == null
+  - rename:
       field: temp.url.path
       target_field: url.path
       ignore_missing: true
+      if: ctx?.url?.path == null
+  - rename:
+      field: temp.url.port
+      target_field: url.port
+      ignore_missing: true
+      if: ctx?.url?.port == null
   - rename:
       field: temp.url.query
       target_field: url.query
       ignore_missing: true
+      if: ctx?.url?.query == null
   - urldecode:
       field: url.query
       ignore_missing: true
       ignore_failure: true # Ignore failures, especially to survive e2e tests. If failing, original value remains unchanged.
+  - rename:
+      field: temp.url.scheme
+      target_field: url.scheme
+      ignore_missing: true
+      if: ctx?.url?.scheme == null
+  - rename:
+      field: temp.url.username
+      target_field: url.username
+      ignore_missing: true
+      if: ctx?.url?.username == null
   - set:
       description: Override event.id with request.id if existing
       field: event.id
@@ -159,8 +212,11 @@ processors:
       description: Remove pidTid to avoid overhead
       field: temp.pidTid
       ignore_missing: true
-
   # TODO: Is this always an IP addres or may be a host as well? Is it cf or the client?
+  - rename:
+      field: temp.source.address
+      target_field: source.address
+      ignore_missing: true
   - rename:
       field: temp.request.remoteAddr
       target_field: source.address
@@ -198,7 +254,7 @@ processors:
       ignore_missing: true
   - convert:
       field: ppbgdi.app.epsg
-      type: long
+      type: integer
       ignore_missing: true
   - set:
       field: service.name

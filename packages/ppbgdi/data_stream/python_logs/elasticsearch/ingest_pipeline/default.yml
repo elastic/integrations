@@ -47,6 +47,10 @@ processors:
       description: Layer object pipeline
       if: ctx?.temp?.ppbgdi?.app?.layer != null
       name: '{{ IngestPipeline "entity-layer" }}'
+  - pipeline:
+      description: Layer object pipeline
+      if: ctx?.kubernetes?.container?.name == 'auth-bod'
+      name: '{{ IngestPipeline "entity-auth-bod" }}'
   - set:
       field: event.outcome
       value: failure
@@ -82,7 +86,7 @@ processors:
       field: related.hosts
       value: '{{ http.request.headers.x-forwarded-host }}'
       allow_duplicates: false
-      if: 'ctx?.http?.request?.headers?.host != null'
+      if: 'ctx?.http?.request?.headers?.containsKey("x-forwarded-host")'
 #   - remove:
 #       field: temp
 #       ignore_missing: true
@@ -94,27 +98,40 @@ processors:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null or empty values.
       source: |
-        void handleMap(Map map) {
+        void handleMap(Map map, Map params) {
           for (def x : map.values()) {
             if (x instanceof Map) {
-                handleMap(x);
+                handleMap(x, params);
             } else if (x instanceof List) {
-                handleList(x);
+                handleList(x, params);
             }
           }
-          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+          map.values().removeIf(v ->
+            (params['remove_null'] == true && v == null) ||
+            (params['remove_empty_string'] == true && v == '') ||
+            (params['remove_empty_map'] == true && v instanceof Map && v.size() == 0) ||
+            (params['remove_empty_list'] == true && v instanceof List && v.size() == 0));
         }
-        void handleList(List list) {
+        void handleList(List list, Map params) {
           for (def x : list) {
               if (x instanceof Map) {
-                  handleMap(x);
+                  handleMap(x, params);
               } else if (x instanceof List) {
-                  handleList(x);
+                  handleList(x, params);
               }
           }
-          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+          list.removeIf(v ->
+            (params['remove_null_value'] == true && v == null) ||
+            (params['remove_empty_string'] == true && v == '') ||
+            (params['remove_empty_map'] == true && v instanceof Map && v.size() == 0) ||
+            (params['remove_empty_list'] == true && v instanceof List && v.size() == 0));
         }
-        handleMap(ctx);
+        handleMap(ctx, params);
+      params:
+        remove_null: true
+        remove_empty_string: false
+        remove_empty_map: true
+        remove_empty_list: true
 
 
 on_failure:

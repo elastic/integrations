@@ -1,49 +1,60 @@
 ---
 description: Parse wms query params
 processors:
-  - kv:
-      description: Parse url query parameters to an object
-      field: url.query
-      target_field: temp.query_params
-      field_split: "&"
-      value_split: "="
-  - foreach:
-      description: Lowercase all query parameter keys for easier handling
-      field: temp.query_params
-      processor:
-        lowercase:
-          field: _ingest._key
-      ignore_missing: true
+  - script:
+      description: Script to parse query strings.
+      source: |
+        // Split the query-string into a list of parameters
+        String[] paramList = ctx?.url?.query?.splitOnToken('&');
+        Map queryParams = new HashMap(); // the new query param list to fill up
+        for (def x : paramList) {
+          String[] paramSplit = x.splitOnToken('=',2); // Split kv on first '=' char
+          if (paramSplit.length == 2) { // KV parameter
+            queryParams.put(paramSplit[0].toLowerCase(), paramSplit[1].toLowerCase());
+          } else { // Flag parameter
+            queryParams.put(x.toLowerCase(), 'true');
+          }
+        }
+        // Create ppbgdi field if not existing
+        if (ctx?.ppbgdi == null){
+          ctx.ppbgdi = new HashMap();
+        }
+        // Create ppbgdi.app field if not existing
+        if (ctx?.ppbgdi?.app == null){
+          ctx.ppbgdi.app = new HashMap();
+        }
+        // Add the parsed query-parameters to the document source
+        ctx.ppbgdi.app.query_params = queryParams;
   - rename:
-      field: temp.query_params.bbox
+      field: ppbgdi.app.query_params.bbox
       target_field: ppbgdi.app.layer.bbox
       ignore_missing: true
   - dissect:
       description: Parse epsg code from crs. Raises an error if not starts with EPSG%2F
-      field: temp.query_params.crs
-      pattern: "EPSG:%{ppbgdi.app.epsg}"
+      field: ppbgdi.app.query_params.crs
+      pattern: "epsg:%{ppbgdi.app.epsg}"
       ignore_missing: true
       on_failure:
         - append:
             field: tags
             value: crs_value_error
   - remove:
-      field: temp.query_params.crs
+      field: ppbgdi.app.query_params.crs
       ignore_missing: true
   - dissect:
       description: Parse epsg code from srs. Raises an error if not starts with EPSG%2F
-      field: temp.query_params.srs
-      pattern: "EPSG:%{ppbgdi.app.epsg}"
+      field: ppbgdi.app.query_params.srs
+      pattern: "epsg:%{ppbgdi.app.epsg}"
       ignore_missing: true
   - remove:
-      field: temp.query_params.srs
+      field: ppbgdi.app.query_params.srs
       ignore_missing: true
   - convert:
       field: ppbgdi.app.epsg
       type: long
       ignore_missing: true
   - rename:
-      field: temp.query_params.format
+      field: ppbgdi.app.query_params.format
       target_field: ppbgdi.app.layer.extension
       ignore_missing: true
   - gsub:
@@ -53,7 +64,7 @@ processors:
       replacement: ""
       ignore_missing: true
   - rename:
-      field: temp.query_params.height
+      field: ppbgdi.app.query_params.height
       target_field: ppbgdi.app.layer.height
       ignore_missing: true
   - convert:
@@ -61,19 +72,19 @@ processors:
       type: long
       ignore_missing: true
   - rename:
-      field: temp.query_params.lang
+      field: ppbgdi.app.query_params.lang
       target_field: ppbgdi.app.language
       ignore_missing: true
   - split:
-      field: temp.query_params.layers
+      field: ppbgdi.app.query_params.layers
       target_field: ppbgdi.app.layer.id
       separator: ","
       ignore_missing: true
   - remove:
-      field: temp.query_params.layers
+      field: ppbgdi.app.query_params.layers
       ignore_missing: true
   - rename:
-      field: temp.query_params.map_resolution
+      field: ppbgdi.app.query_params.map_resolution
       target_field: ppbgdi.app.layer.map_resolution
       ignore_missing: true
   - convert:
@@ -81,35 +92,38 @@ processors:
       type: long
       ignore_missing: true
   - rename:
-      field: temp.query_params.request
+      field: ppbgdi.app.query_params.request
       target_field: ppbgdi.app.layer.request
       ignore_missing: true
   - remove:
       description: This is the equivalent to service.name set by kubernetes.
-      field: temp.query_params.service
-      ignore_missing: true
-  - split:
-      field: temp.query_params.styles
-      target_field: ppbgdi.app.layer.styles
-      separator: ","
-      ignore_missing: true
-  - remove:
-      field: temp.query_params.styles
+      field: ppbgdi.app.query_params.service
       ignore_missing: true
   - rename:
-      field: temp.query_params.transparent
+      field: ppbgdi.app.query_params.styles
+      target_field: ppbgdi.app.layer.styles
+      ignore_missing: true
+  - split:
+      field: ppbgdi.app.layer.styles
+      separator: ","
+      if: 'ctx?.ppbgdi?.app?.layer?.styles != null && ctx?.ppbgdi?.app?.layer?.styles.contains(",")'
+  - remove:
+      field: ppbgdi.app.query_params.styles
+      ignore_missing: true
+  - rename:
+      field: ppbgdi.app.query_params.transparent
       target_field: ppbgdi.app.layer.transparent
       ignore_missing: true
   - convert:
-      field: ppbgdi.app.layer.transparent
+      field: ppbgdi.app.query_params.transparent
       type: boolean
       ignore_missing: true
   - rename:
-      field: temp.query_params.version
+      field: ppbgdi.app.query_params.version
       target_field: ppbgdi.app.api.version
       ignore_missing: true
   - rename:
-      field: temp.query_params.width
+      field: ppbgdi.app.query_params.width
       target_field: ppbgdi.app.layer.width
       ignore_missing: true
   - convert:
