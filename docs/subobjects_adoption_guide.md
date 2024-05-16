@@ -44,17 +44,15 @@ We started using it in support requests to address problems in the metrics space
 
 By the end of 2023, we started [adding support for the subobjects](https://github.com/elastic/package-spec/issues/349) mapping parameter to package-spec and Kibana.
 
-#### Field vs. Data Stream
-
-Users can set the subobjects mapping parameter on a single field or for the whole data stream (root level).
-
 When the last requirement was merged in Elasticsearch, we added support for per-field subobjects in stack 8.13 and per data stream in stack 8.14. 
 
 ### High-level Overview
 
 The default value for subobjects is true, so Elasticsearch turns fields with dots in their names into an object tree.
 
-The subobjects mapping parameter applies to single fields and the whole data stream.
+#### Field vs. Data Stream
+
+Users can set the subobjects mapping parameter on a single field or for the whole data stream (root level).
 
 #### Per field
 
@@ -70,6 +68,8 @@ You can start small by disabling subobjects on a single field.
     Azure resource tags.
 ```
 
+Adding subobjects to a field definition is a great option for dealing with a field with dots in its name (like metric names or tag names from cloud providers) on existing data streams. The scope of the change is limited to that field.
+
 #### Per data stream
 
 You can also disable subobjects at the root level on the whole data stream.
@@ -82,6 +82,10 @@ elasticsearch:
     mappings:
       subobjects: false
 ```
+
+If you have to deal with inconsistent data from your data source, consider using subobjects: false on the whole data stream. See the example below about indexing `{"host": "foo"}` and `{"host": {"name": "bar"}}` in the same data stream.
+
+Read the "Considerations on disabling subobjects" below to learn about a few restrictions that apply when you set subobjects to false.
 
 
 ## Availability
