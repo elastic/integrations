@@ -52,6 +52,7 @@ for package in ${PACKAGE_LIST}; do
       command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
       agents:
         provider: gcp
+        image: ${IMAGE_UBUNTU_X86_64}
       env:
         ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT: "true"
         STACK_VERSION: "${STACK_VERSION}"
@@ -69,6 +70,7 @@ for package in ${PACKAGE_LIST}; do
       command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
       agents:
         provider: gcp
+        image: ${IMAGE_UBUNTU_X86_64}
       env:
         ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT: "false"
         STACK_VERSION: "${STACK_VERSION}"
