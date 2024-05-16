@@ -22,7 +22,7 @@ This document shares how to start using subobjects in integrations.
 
 ### Elasticsearch
 
-In early spring 2022, Elasticsearch v8.3 [introduced](https://github.com/elastic/elasticsearch/pull/86166) the subobjects mapping parameter, which added support for dots in field names for metrics use cases.
+In early 2022, Elasticsearch v8.3 [introduced](https://github.com/elastic/elasticsearch/pull/86166) the subobjects mapping parameter, which added support for dots in field names for metrics use cases.
 
 The subobjects mapping parameter made it possible to store metrics data with fields in the metric names:
 
