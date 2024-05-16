@@ -21,12 +21,17 @@ processors:
       field: event.category
       value: host
       tag: append_event_category_host
-      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceinfo') || (ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') && ctx.json?.properties?.ActionType != null && !ctx.json.properties.ActionType.toLowerCase().endsWith('apicall'))
+      if: ctx.m365_defender.event.category.toLowerCase().contains('deviceinfo') || (ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') && ctx.json?.properties?.ActionType != null && !ctx.json.properties.ActionType.toLowerCase().endsWith('apicall') && !ctx.json.properties.ActionType.toLowerCase().contains('driverload'))
   - append:
       field: event.category
       value: api
-      tag: append_event_category_host
+      tag: append_event_category_api
       if: ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') && ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().endsWith('apicall')
+  - append:
+      field: event.category
+      value: driver
+      tag: append_event_category_driver
+      if: ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('driverload')
   - append:
       field: event.category
       value: file
@@ -91,7 +96,7 @@ processors:
       field: event.type
       value: start
       tag: append_event_type_start
-      if: ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('connectionsuccess')
+      if: ctx.json?.properties?.ActionType != null && (ctx.json.properties.ActionType.toLowerCase().contains('connectionsuccess') || ctx.json.properties.ActionType.toLowerCase().contains('driverload'))
   - append:
       field: event.type
       value: denied
@@ -1991,7 +1996,7 @@ processors:
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == null
 
   # Event Outcome/Actions mapping
-  # Special handling when event.category is 'file' or 'registry' for better compatibility and detection rules.
+  # Special handling when event.category is 'file' or 'registry' or 'driver' for better compatibility and detection rules.
   - set:
       field: event.action
       value: deletion
@@ -2022,6 +2027,11 @@ processors:
       value: modification
       tag: set_event_action_modification_registry
       if: (ctx.event?.category != null && ctx.event.category.contains('registry')) && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase() == 'registryvalueset'
+  - set:
+      field: event.action
+      value: load
+      tag: set_event_action_load
+      if: ctx.event?.category != null && ctx.event.category.contains('driver')
   # For all other categories, copy the value from m365_defender.event.action.type
   - set:
       field: event.action
