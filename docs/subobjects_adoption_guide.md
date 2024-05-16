@@ -1,6 +1,6 @@
 # Goals
 
-This document that summarizes the history of subobjects, the motivation for adding the option, and recommended steps to guide integration users and developers in using it.
+This document summarizes the history of subobjects, the motivation for adding the option, and recommended steps to guide integration users and developers in using it.
 
 ## Overview
 
