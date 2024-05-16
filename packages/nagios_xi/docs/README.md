@@ -446,7 +446,7 @@ An example event for `service` looks as following:
 | nagios_xi.service.flap_detection_enabled | This is used to determine whether or not flap detection is enabled for this host. More information on flap detection can be found here. Values=\> 0 = disable host flap detection, 1 = enable host flap detection. | keyword |
 | nagios_xi.service.has_been_checked | Refers to a flag or attribute that indicates whether a particular service has been checked during the current monitoring cycle. | keyword |
 | nagios_xi.service.host_address | Refers to the IP address or network address associated with a specific host that is being monitored. | keyword |
-| nagios_xi.service.host_alias |  | keyword |
+| nagios_xi.service.host_alias | This is used to define a longer name or description used to identify the host. | keyword |
 | nagios_xi.service.host_name | This is used to define a short name used to identify the host. It is used in host group and service definitions to reference this particular host. | keyword |
 | nagios_xi.service.host_object_id | Refers to the unique identifier assigned to a host object within the monitoring system. | keyword |
 | nagios_xi.service.http.performance_data | Exact output of check_command. | keyword |
