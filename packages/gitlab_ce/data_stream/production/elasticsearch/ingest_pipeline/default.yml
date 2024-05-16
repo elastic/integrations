@@ -48,6 +48,13 @@ processors:
     field: gitlab_ce.production.meta.remote_ip
     type: ip
     ignore_missing: true
+    on_failure:
+        - remove:
+            field: gitlab_ce.production.meta.remote_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
 - dot_expander:
     path: gitlab_ce.production
     field: meta.user
@@ -97,13 +104,15 @@ processors:
     lang: painless
     source:
       ctx.event['duration'] = ctx.event.duration * 1e9;
-- rename:
-    field: gitlab_ce.production.remote_ip
-    target_field: source.ip
-    ignore_missing: true
 - convert:
-    field: source.ip
+    target_field: source.ip
+    field: gitlab_ce.production.remote_ip
     type: ip
+    ignore_missing: true
+    ignore_failure: true
+- remove:
+    field: gitlab_ce.production.remote_ip
+    ignore_failure: true
     ignore_missing: true
 - rename:
     field: gitlab_ce.production.user_id

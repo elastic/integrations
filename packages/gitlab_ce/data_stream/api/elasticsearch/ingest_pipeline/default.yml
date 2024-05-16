@@ -66,9 +66,16 @@ processors:
     path: gitlab_ce.api
     field: meta.remote_ip
 - convert:
-    field: gitlab_ce.production.meta.remote_ip
+    field: gitlab_ce.api.meta.remote_ip
     type: ip
     ignore_missing: true
+    on_failure:
+        - remove:
+            field: gitlab_ce.api.meta.remote_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
 - dot_expander:
     path: gitlab_ce.api
     field: meta.user
