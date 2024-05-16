@@ -89,6 +89,47 @@ processors:
           ctx.stormshield.device_stats[entry.getKey()] = entry.getValue();
           ctx.stormshield.remove(entry.getKey());
         }
+
+  - script:
+      tag: script_aggregate_devices
+      lang: painless
+      description: Aggregate device stat fields.
+      params:
+        devices:
+          - agg
+          - ipsec
+          - sslvpn
+          - Wifi
+          - Qid
+          - Vlan
+          - Ethernet
+        stats:
+          - incoming_throughput
+          - maximum_incoming_throughput
+          - outgoing_throughput
+          - maximum_outgoing_throughput
+          - packets_accepted
+          - packets_blocked
+      source: >-
+        ctx.stormshield.device_aggs = [:];
+        def deviceAggs = ctx.stormshield.device_aggs;
+        params.devices.forEach(d -> {
+          if (ctx.stormshield.device_stats.containsKey(d)) {
+            deviceAggs[d] = [:];
+            params.stats.forEach(s -> {
+              deviceAggs[d][s] = 0;
+              def dev = ctx.stormshield.device_stats[d];
+              for (def agg : dev ) {
+                deviceAggs[d][s] += agg[s];
+              }
+              return true;
+            });
+          }
+          return true;
+        });
+
+
+
 on_failure:
   - append:
       field: error.message
