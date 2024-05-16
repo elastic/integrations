@@ -949,7 +949,7 @@ An example event for `ci_resource_groups` looks as following:
 {
     "@timestamp": "2023-02-10T23:02:06.095Z",
     "agent": {
-        "ephemeral_id": "5e63897b-171b-44fc-8442-fe1f35cc03b3",
+        "ephemeral_id": "b6dce39d-a1f4-4ad0-9512-6492f270b9d4",
         "id": "9f4230d5-24e1-40f8-9bad-c632a530aa51",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -975,7 +975,7 @@ An example event for `ci_resource_groups` looks as following:
         ],
         "dataset": "gitlab.ci_resource_groups",
         "id": "01GRYS10C2DZQ9J1G12ZVAD4YD",
-        "ingested": "2024-05-16T13:40:49Z",
+        "ingested": "2024-05-16T18:57:25Z",
         "kind": "event",
         "outcome": "success",
         "severity": 6,
@@ -1089,7 +1089,7 @@ An example event for `database_load_balancing` looks as following:
 {
     "@timestamp": "2024-05-10T18:57:13.459Z",
     "agent": {
-        "ephemeral_id": "d52e7c5a-b411-41a0-896c-7aa32ef49864",
+        "ephemeral_id": "982462e7-ada5-4309-8b32-a08d19c3ffe7",
         "id": "9f4230d5-24e1-40f8-9bad-c632a530aa51",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -1114,7 +1114,7 @@ An example event for `database_load_balancing` looks as following:
             "web"
         ],
         "dataset": "gitlab.database_load_balancing",
-        "ingested": "2024-05-16T13:41:54Z",
+        "ingested": "2024-05-16T18:59:34Z",
         "kind": "event",
         "severity": 7,
         "timezone": "+00:00",
@@ -2815,7 +2815,7 @@ An example event for `performance_bar` looks as following:
 {
     "@timestamp": "2020-12-04T09:29:44.592Z",
     "agent": {
-        "ephemeral_id": "f8e68f12-788e-4543-9efe-3d5627eb7e33",
+        "ephemeral_id": "bcea28c0-306b-441a-bb47-5eb096a6e3e1",
         "id": "9f4230d5-24e1-40f8-9bad-c632a530aa51",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -2842,7 +2842,7 @@ An example event for `performance_bar` looks as following:
         "dataset": "gitlab.performance_bar",
         "duration": 26.889,
         "id": "33680b1490ccd35981b03639c406a697",
-        "ingested": "2024-05-16T14:21:59Z",
+        "ingested": "2024-05-16T19:00:22Z",
         "kind": "event",
         "severity": 6,
         "timezone": "+00:00",
@@ -3403,7 +3403,7 @@ An example event for `service_measurement` looks as following:
 {
     "@timestamp": "2020-04-22T16:04:50.691Z",
     "agent": {
-        "ephemeral_id": "e6bb8624-8148-416e-a1be-d2b40d031baa",
+        "ephemeral_id": "771b074a-b375-4293-a9a4-a8f6771c0b27",
         "id": "9f4230d5-24e1-40f8-9bad-c632a530aa51",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -3429,7 +3429,7 @@ An example event for `service_measurement` looks as following:
         ],
         "dataset": "gitlab.service_measurement",
         "id": "04f1366e-57a1-45b8-88c1-b00b23dc3616",
-        "ingested": "2024-05-16T14:05:07Z",
+        "ingested": "2024-05-16T19:01:12Z",
         "kind": "event",
         "severity": 6,
         "timezone": "+00:00",
@@ -4100,7 +4100,7 @@ An example event for `update_mirror_service` looks as following:
 {
     "@timestamp": "2020-07-28T23:29:29.473Z",
     "agent": {
-        "ephemeral_id": "1298c356-b6cb-42ee-94d6-1a40eff493c5",
+        "ephemeral_id": "5f6f543d-4b98-43f6-9450-eca60c39c8cf",
         "id": "9f4230d5-24e1-40f8-9bad-c632a530aa51",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -4126,7 +4126,7 @@ An example event for `update_mirror_service` looks as following:
         ],
         "dataset": "gitlab.update_mirror_service",
         "id": "5HgIkCJsO53",
-        "ingested": "2024-05-16T14:08:44Z",
+        "ingested": "2024-05-16T19:02:03Z",
         "kind": "event",
         "severity": 3,
         "timezone": "+00:00",
@@ -4263,7 +4263,7 @@ An example event for `web_hooks` looks as following:
 {
     "@timestamp": "2020-11-24T02:30:59.860Z",
     "agent": {
-        "ephemeral_id": "84767761-f72d-42d7-a54f-414425d8535d",
+        "ephemeral_id": "eb3fa446-a058-4b2b-b03b-0bc9ea6d4004",
         "id": "9f4230d5-24e1-40f8-9bad-c632a530aa51",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -4289,7 +4289,7 @@ An example event for `web_hooks` looks as following:
             "web"
         ],
         "dataset": "gitlab.web_hooks",
-        "ingested": "2024-05-16T14:10:34Z",
+        "ingested": "2024-05-16T19:02:56Z",
         "kind": "event",
         "severity": 6,
         "timezone": "+00:00",
