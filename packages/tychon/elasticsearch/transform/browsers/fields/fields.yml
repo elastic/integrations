@@ -1,140 +1,62 @@
 - name: tychon
   type: group
   fields:
-    - name: id
-      description: TYCHON unique host identifier.
-      type: keyword
-    - name: edition
-      description: The product edition
-      type: keyword
-    - name: package
-      type: group
-      fields:
-        - name: uninstall
-          description: Uninstall command to remove the package.
-          type: text
-        - name: publisher
-          description: The publisher of this application
-          type: keyword
-        - name: cpe
-          description: The cpe value for this application
-          type: keyword
-        - name: version_major
-          description: The major version of this application
-          type: keyword
-        - name: version_minor
-          description: The minor version of this application
-          type: keyword
-        - name: version_build
-          description: The build version of this application
-          type: keyword
-        - name: version_release
-          description: The release version of this application
-          type: keyword
-    - name: script
-      type: group
-      fields:
-        - name: current_duration
-          description: Scanner Script Duration.
-          type: long
-        - name: current_time
-          description: Current datetime.
-          type: date
-        - name: name
-          description: Scanner Script Name.
-          type: keyword
-        - name: start
-          description: Scanner Start datetime.
-          type: date
-        - name: type
-          description: Scanner Script Type.
-          type: keyword
-        - name: version
-          description: Scanner Script Version.
-          type: version
     - name: data
       type: group
       fields:
         - name: version
-          description: Tychon Data version.
           type: keyword
+          description: Tychon Data version.
+    - name: edition
+      type: keyword
+      description: The product edition
     - name: host
       title: Host
-      description: 'A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes.'
       type: group
+      description: A host is defined as a general computing instance. ECS host.* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes.
       fields:
         - name: biossn
+          type: keyword
           description: Host BIOS Serial Number.
-          type: keyword
-        - name: ipv4
-          description: Host IPv4 addresses.
-          type: ip
-        - name: ipv6
-          description: Host IPv6 addresses.
-          type: keyword
-        - name: workgroup
-          description: Host Workgroup Network Name.
-          type: keyword
         - name: cloud
           type: group
           fields:
-            - name: hosted
-              description: Is this system cloud hosted
-              type: boolean
-            - name: network
-              type: group
-              fields:
-                - name: public_ipv6
-                  description: Public facing IPV6 address for a cloud instance.
-                  type: keyword
-                - name: public_ipv4
-                  description: Public facing IPV4 address for a cloud instance.
-                  type: keyword
-                - name: mac_address
-                  description: Public facing MAC address of this cloud asset
-                  type: keyword
             - name: compute
               type: group
               fields:
-                - name: tags
-                  description: Cloud compute tags assigned to this machine.
-                  type: keyword
-                - name: resource_id
-                  description: The cloud resource id assignd to this cloud asset.
-                  type: keyword
-                - name: resource_group_name
-                  description: The resource group name given to this cloud asset
-                  type: keyword
-                - name: subscription_id
-                  description: The subscription ID of the account for this cloud asset
-                  type: keyword
                 - name: name
+                  type: keyword
                   description: The cloud based name of this asset
+                - name: resource_group_name
                   type: keyword
+                  description: The resource group name given to this cloud asset
+                - name: resource_id
+                  type: keyword
+                  description: The cloud resource id assignd to this cloud asset.
+                - name: subscription_id
+                  type: keyword
+                  description: The subscription ID of the account for this cloud asset
+                - name: tags
+                  type: keyword
+                  description: Cloud compute tags assigned to this machine.
                 - name: vm_id
-                  description: The Cloud ID of this cloud asset
                   type: keyword
-        - name: oem
-          type: group
-          fields:
-            - name: manufacturer
-              description: Host OEM Manufacturer.
-              type: keyword
-            - name: model
-              description: Host OEM Model.
-              type: keyword
-        - name: os
-          type: group
-          fields:
-            - name: build
-              description: Host OS Build.
-              type: keyword
-            - name: description
-              description: Host OS Description.
-              type: text
-            - name: organization
-              description: Host OS Organization.
-              type: keyword
+                  description: The Cloud ID of this cloud asset
+            - name: hosted
+              type: boolean
+              description: Is this system cloud hosted
+            - name: network
+              type: group
+              fields:
+                - name: mac_address
+                  type: keyword
+                  description: Public facing MAC address of this cloud asset
+                - name: public_ipv4
+                  type: keyword
+                  description: Public facing IPV4 address for a cloud instance.
+                - name: public_ipv6
+                  type: keyword
+                  description: Public facing IPV6 address for a cloud instance.
         - name: hardware
           type: group
           fields:
@@ -142,23 +64,101 @@
               type: group
               fields:
                 - name: name
+                  type: keyword
                   description: Host BIOS Name.
-                  type: keyword
                 - name: version
-                  description: Host BIOS Version.
                   type: keyword
+                  description: Host BIOS Version.
             - name: cpu
               type: group
               fields:
                 - name: caption
-                  description: Host CPU Caption.
                   type: keyword
+                  description: Host CPU Caption.
             - name: manufacturer
+              type: keyword
               description: Host BIOS Manufacturer.
-              type: keyword
             - name: owner
+              type: keyword
               description: Host BIOS Owner.
-              type: keyword
             - name: serial_number
-              description: Host BIOS Serial Number.
               type: keyword
+              description: Host BIOS Serial Number.
+        - name: ipv4
+          type: ip
+          description: Host IPv4 addresses.
+        - name: ipv6
+          type: keyword
+          description: Host IPv6 addresses.
+        - name: oem
+          type: group
+          fields:
+            - name: manufacturer
+              type: keyword
+              description: Host OEM Manufacturer.
+            - name: model
+              type: keyword
+              description: Host OEM Model.
+        - name: os
+          type: group
+          fields:
+            - name: build
+              type: keyword
+              description: Host OS Build.
+            - name: description
+              type: text
+              description: Host OS Description.
+            - name: organization
+              type: keyword
+              description: Host OS Organization.
+        - name: workgroup
+          type: keyword
+          description: Host Workgroup Network Name.
+    - name: id
+      type: keyword
+      description: TYCHON unique host identifier.
+    - name: package
+      type: group
+      fields:
+        - name: cpe
+          type: keyword
+          description: The cpe value for this application
+        - name: publisher
+          type: keyword
+          description: The publisher of this application
+        - name: uninstall
+          type: text
+          description: Uninstall command to remove the package.
+        - name: version_build
+          type: keyword
+          description: The build version of this application
+        - name: version_major
+          type: keyword
+          description: The major version of this application
+        - name: version_minor
+          type: keyword
+          description: The minor version of this application
+        - name: version_release
+          type: keyword
+          description: The release version of this application
+    - name: script
+      type: group
+      fields:
+        - name: current_duration
+          type: long
+          description: Scanner Script Duration.
+        - name: current_time
+          type: date
+          description: Current datetime.
+        - name: name
+          type: keyword
+          description: Scanner Script Name.
+        - name: start
+          type: date
+          description: Scanner Start datetime.
+        - name: type
+          type: keyword
+          description: Scanner Script Type.
+        - name: version
+          type: version
+          description: Scanner Script Version.

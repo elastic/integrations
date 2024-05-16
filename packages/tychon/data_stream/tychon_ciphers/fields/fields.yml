@@ -1,3 +1,12 @@
+- name: service
+  type: group
+  fields:
+    - name: protocol
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The protocol used by the listening service
 - name: tls
   type: group
   fields:
@@ -10,96 +19,87 @@
         - name: supported_ciphers_mac
           type: keyword
           description: Array of cipher macs offered by the server during the client hello.
-- name: service
-  type: group
-  fields:
-    - name: protocol
-      type: group
-      fields:
-        - name: name
-          type: keyword
-          description: The protocol used by the listening service
 - name: tychon
   type: group
   fields:
-    - name: service
-      type: group
-      fields:
-        - name: description
-          description: The description of the service
-          type: keyword
-        - name: display_name
-          description: The friendly name of the service
-          type: keyword
     - name: connection
       type: group
       fields:
         - name: state
+          type: keyword
           description: The current state of the connection tested
-          type: keyword
-    - name: process
-      type: group
-      fields:
-        - name: information_source
-          description: The process information source
-          type: keyword
-        - name: description
-          description: The process description
-          type: keyword
-    - name: server
-      type: group
-      fields:
-        - name: ip
-          description: The ip or domain of the site hosting the cipher
-          type: keyword
     - name: file
       type: group
       fields:
-        - name: version
-          description: The version of the file
-          type: keyword
         - name: code_signature
           type: group
           fields:
-            - name: thumbprint
+            - name: friendly_name
               type: keyword
-              description: The unique ID thumbprint of this signing cert
+              description: The friendly name of the certificate or cipher
             - name: issuer_name
               type: keyword
               description: The issuer of this certificate
             - name: subject_name
               type: keyword
               description: The Subject Name of the signing certificate
-            - name: friendly_name
+            - name: thumbprint
               type: keyword
-              description: The friendly name of the certificate or cipher
+              description: The unique ID thumbprint of this signing cert
+        - name: version
+          type: keyword
+          description: The version of the file
+    - name: process
+      type: group
+      fields:
+        - name: description
+          type: keyword
+          description: The process description
+        - name: information_source
+          type: keyword
+          description: The process information source
+    - name: server
+      type: group
+      fields:
+        - name: ip
+          type: keyword
+          description: The ip or domain of the site hosting the cipher
+    - name: service
+      type: group
+      fields:
+        - name: description
+          type: keyword
+          description: The description of the service
+        - name: display_name
+          type: keyword
+          description: The friendly name of the service
     - name: tls
       type: group
       fields:
+        - name: is_nist_approved
+          type: boolean
+          description: Cipher is NIST approved for Quantum resistance
         - name: server
           type: group
           fields:
-            - name: signature_hash
-              type: group
-              fields:
-                - name: weight
-                  description: The risk weight of the signature hash
-                  type: integer
             - name: cipher
               type: group
               fields:
                 - name: weight
-                  description: The risk weight of the cipher
                   type: integer
+                  description: The risk weight of the cipher
             - name: protocol
               type: group
               fields:
                 - name: weight
-                  description: The risk weight of the protocol
                   type: integer
+                  description: The risk weight of the protocol
+            - name: signature_hash
+              type: group
+              fields:
+                - name: weight
+                  type: integer
+                  description: The risk weight of the signature hash
         - name: supported_cipher_mac
-          description: Message Authentication Code Algorithms.
           type: keyword
-        - name: is_nist_approved
-          description: Cipher is NIST approved for Quantum resistance
-          type: boolean
+          description: Message Authentication Code Algorithms.
