@@ -5,13 +5,16 @@ do
 done
 
 # add "beer-sample" bucket from sampleBuckets
-curl -v -u Administrator:password -X POST http://127.0.0.1:8091/sampleBuckets/install -d '["beer-sample"]'
+until [ "$(curl -v -u Administrator:password -X POST http://localhost:8091/sampleBuckets/install -d '["beer-sample"]' -o /dev/null -w '%{http_code}')" -eq 202 ]
+do
+  sleep 5s
+done
 
 # using couchbase-cli run xdcr-setup for the cluster
 couchbase-cli xdcr-setup -c 127.0.0.1 -u Administrator -p password --create --xdcr-cluster-name cluster --xdcr-hostname 127.0.0.1 --xdcr-username Administrator --xdcr-password password
 
 # wait till the xdcr-setup creates cluster
-until curl -f  http://Administrator:password@localhost:8091/pools/default/buckets/beer-sample/stats
+until [ "$(curl -s -w '%{http_code}' -o /dev/null "http://Administrator:password@localhost:8091/pools/default/buckets/beer-sample/stats")" -eq 200 ]
 do
   sleep 5s
 done
