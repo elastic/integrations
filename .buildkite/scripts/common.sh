@@ -735,7 +735,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E 'cloudflare' |grep -v 'cloudflare_logpush'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E 'cloudflare|oracle_weblogic' |grep -v 'cloudflare_logpush'
 }
 
 check_package() {
