@@ -2244,12 +2244,14 @@ processors:
           }
         }
         if (ctx.winlog?.event_data?.AccessMask != null) {
+          ArrayList masks = new ArrayList();
           ArrayList results = new ArrayList();
           for (elem in split(ctx.winlog.event_data.AccessMask)) {
             def mask = elem.replace("%%","").trim();
             if (mask == "") {
               continue;
             }
+            masks.add(mask);
             Long accessMask = Long.decode(mask);
             for (entry in params.AccessMaskDescriptions.entrySet()) {
               Long accessFlag = Long.decode(entry.getKey());
@@ -2257,6 +2259,9 @@ processors:
                 results.add(entry.getValue());
               }
             }
+          }
+          if (masks.length > 0) {
+            ctx.winlog.event_data.AccessMask = masks;
           }
           if (results.length > 0) {
             ctx.winlog.event_data.put("_AccessMaskDescription", results);
