@@ -397,7 +397,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.associated_groups.data.file.name | The file name of the Document. | keyword |
 | threat_connect.indicator.associated_groups.data.file.size | The File size of the document. | keyword |
 | threat_connect.indicator.associated_groups.data.file.text | The file text of the Signature. | keyword |
-| threat_connect.indicator.associated_groups.data.file.type | The file type of the SignaturePossible values are Bro, ClamAV, CybOX, Iris Search Hash, KQL, OpenIOC, Regex, SPL, Sigma, Snort, Suricata, TQL Query and YARA. | keyword |
+| threat_connect.indicator.associated_groups.data.file.type | The file type of the SignaturePossible values are Bro,ClamAV,CybOX,Iris Search Hash,KQL,OpenIOC,Regex,SPL,Sigma,Snort,Suricata,TQL Query,YARA. | keyword |
 | threat_connect.indicator.associated_groups.data.first_seen | The date and time when the Group was first seen. | date |
 | threat_connect.indicator.associated_groups.data.from | The Emails subject. | keyword |
 | threat_connect.indicator.associated_groups.data.generated_report | Indicates whether the report is generated. | boolean |
@@ -418,7 +418,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.associated_groups.data.status | The status of the Group type. | keyword |
 | threat_connect.indicator.associated_groups.data.subject | The Emails From field. | keyword |
 | threat_connect.indicator.associated_groups.data.to | The receiver email address. | keyword |
-| threat_connect.indicator.associated_groups.data.type | The type of Group being created. Possiblevalues :Adversary, AttackPattern, Campaign, CourseofAction, Document, Email, Event, Incident, IntrusionSet, Malware, Report, Signature, Tactic, Task, Threat, Tool and Vulnerability. | keyword |
+| threat_connect.indicator.associated_groups.data.type | The type of Group being created.Possiblevalues:Adversary,AttackPattern,Campaign,CourseofAction,Document,Email,Event,Incident,IntrusionSet,Malware,Report,Signature,Tactic,Task,Threat,Tool, Vulnerability. | keyword |
 | threat_connect.indicator.associated_groups.data.up_vote | Use this field to update the Groups Intel Rating. | boolean |
 | threat_connect.indicator.associated_groups.data.up_vote_count | Upvote Intel Rating. | keyword |
 | threat_connect.indicator.associated_groups.data.web_link | Link to the group's details in the ThreatConnect web application. | keyword |
@@ -459,7 +459,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.associated_indicators.data.type | Type of the indicator. | keyword |
 | threat_connect.indicator.associated_indicators.data.user_agent_string | The characteristic identification string associated with the User Agent Indicator. | keyword |
 | threat_connect.indicator.associated_indicators.data.value.name | The registry value associated with the Registry Key Indicator. | keyword |
-| threat_connect.indicator.associated_indicators.data.value.type | Possible values: REG_NONE, REG_BINARY, REG_DWORD, REG_DWORD_LITTLE_ENDIAN, REG_DWORD_BIG_ENDIAN, REG_EXPAND_SZ, REG_LINK, REG_MULTI_SZ, REG_QWORD, REG_QWORD_LITTLE_ENDIAN and REG_SZ. | keyword |
+| threat_connect.indicator.associated_indicators.data.value.type | Possible values:REG_NONE,REG_BINARY,REG_DWORD,REG_DWORD_LITTLE_ENDIAN,REG_DWORD_BIG_ENDIAN,REG_EXPAND_SZ,REG_LINK,REG_MULTI_SZ,REG_QWORD,REG_QWORD_LITTLE_ENDIAN,REG_SZ. | keyword |
 | threat_connect.indicator.associated_indicators.data.web_link | Link to the indicator's details in the ThreatConnect web application. | keyword |
 | threat_connect.indicator.associated_indicators.data.whois_active | Indicates whether the Whois feature is active for the Host Indicator. | boolean |
 | threat_connect.indicator.attributes.data.created_by.first_name | First name of the user who created the victim attribute. | keyword |
@@ -513,10 +513,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.owner.name | Name of the organization that owns the indicator. | keyword |
 | threat_connect.indicator.private_flag | Indicates whether the indicator is marked as private. | boolean |
 | threat_connect.indicator.rating | The Indicators Threat Rating. | double |
-| threat_connect.indicator.security_labels.data.color | Color associated with the security label. | keyword |
 | threat_connect.indicator.security_labels.data.date_added | The date and time when the security label was added. | date |
-| threat_connect.indicator.security_labels.data.description | Description of the security label. | keyword |
-| threat_connect.indicator.security_labels.data.id | Unique identifier for the security label. | keyword |
 | threat_connect.indicator.security_labels.data.name | Actual name or label of the security classification. | keyword |
 | threat_connect.indicator.security_labels.data.owner | The entity or system that owns or manages the security label. | keyword |
 | threat_connect.indicator.security_labels.data.source | The source of the security label. | keyword |
@@ -526,8 +523,6 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.source | The Indicators source. | keyword |
 | threat_connect.indicator.subject | The subject line of the email associated with the Email Subject Indicator. | keyword |
 | threat_connect.indicator.summary | Summary or description of the indicator. | keyword |
-| threat_connect.indicator.tags.data.description | The Tags description. | text |
-| threat_connect.indicator.tags.data.id | Unique Identifier of tag. | keyword |
 | threat_connect.indicator.tags.data.last_used | Date and time when tag was last used. | date |
 | threat_connect.indicator.tags.data.name | Name of tag. | keyword |
 | threat_connect.indicator.tags.data.owner | The Organization, Community, or Source to which the Tag belongs. | keyword |
@@ -544,7 +539,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.type | Type of the indicator (e.g., File, IP address). | keyword |
 | threat_connect.indicator.user_agent_string | The characteristic identification string associated with the User Agent Indicator. | keyword |
 | threat_connect.indicator.value.name | The registry value associated with the Registry Key Indicator. | keyword |
-| threat_connect.indicator.value.type | Possible values: REG_NONE, REG_BINARY, REG_DWORD, REG_DWORD_LITTLE_ENDIAN, REG_DWORD_BIG_ENDIAN, REG_EXPAND_SZ, REG_LINK, REG_MULTI_SZ, REG_QWORD, REG_QWORD_LITTLE_ENDIAN and REG_SZ. | keyword |
+| threat_connect.indicator.value.type | Possible values:REG_NONE,REG_BINARY,REG_DWORD,REG_DWORD_LITTLE_ENDIAN,REG_DWORD_BIG_ENDIAN,REG_EXPAND_SZ,REG_LINK,REG_MULTI_SZ,REG_QWORD,REG_QWORD_LITTLE_ENDIAN,REG_SZ. | keyword |
 | threat_connect.indicator.web_link | Link to the indicator's details in the ThreatConnect web application. | keyword |
 | threat_connect.indicator.who_is | Includes WhoIs information related to the Host indicators. | flattened |
 | threat_connect.indicator.whois_active | Indicates whether the Whois feature is active for the Host Indicator. | boolean |
