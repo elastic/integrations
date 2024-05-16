@@ -735,7 +735,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E 'cloudflare'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E 'cloudflare' |grep -v 'cloudflare_logpush'
 }
 
 check_package() {
@@ -972,6 +972,9 @@ upload_safe_logs_from_package() {
     local build_directory=$2
 
     local parent_folder="insecure-logs"
+    if [[ "${ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT:-"false"}" == "true" ]]; then
+        package="${package}-independent"
+    fi
 
     upload_safe_logs \
         "${JOB_GCS_BUCKET_INTERNAL}" \
