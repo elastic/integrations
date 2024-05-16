@@ -583,6 +583,7 @@ This is the `event` dataset.
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
@@ -593,12 +594,18 @@ This is the `event` dataset.
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
+| dll.Ext.size | Size of the dll executable. | long |
 | dll.hash.md5 | MD5 hash. | keyword |
 | dll.hash.sha1 | SHA1 hash. | keyword |
 | dll.hash.sha256 | SHA256 hash. | keyword |
 | dll.name | Name of the library. This generally maps to the name of the file on disk. | keyword |
 | dll.path | Full file path of the library. | keyword |
-| dll.pe.sections.physical_size | PE Section List physical size. | long |
+| dns.answers |  | object |
+| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
+| dns.question.class | The class of records being queried. | keyword |
+| dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.type | The type of record being queried. | keyword |
+| dns.response_code | The DNS response code. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | email.direction | The direction of the message based on the sending and receiving domains. | keyword |
 | email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
@@ -629,6 +636,8 @@ This is the `event` dataset.
 | file.hash.sha1 | SHA1 hash. | keyword |
 | file.hash.sha256 | SHA256 hash. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | file.x509.not_after | Time at which the certificate is no longer considered valid. | date |
@@ -710,6 +719,12 @@ This is the `event` dataset.
 | m365_defender.event.device.type | Type of device based on purpose and functionality, such as network device, workstation, server, mobile, gaming console, or printer. | keyword |
 | m365_defender.event.device_dynamic_tags | Device tags assigned automatically using dynamic tagging rules. | keyword |
 | m365_defender.event.device_manual_tags | Device tags created manually using the portal UI or public API. | keyword |
+| m365_defender.event.dns.answers | The answers returned by the server from DNS query. | keyword |
+| m365_defender.event.dns.header_flags | Array of 2 letter DNS header flags. | keyword |
+| m365_defender.event.dns.qclass_name | The DNS class of records being queried. | keyword |
+| m365_defender.event.dns.qtype_name | The type of DNS record being queried. | keyword |
+| m365_defender.event.dns.query | The DNS query. | keyword |
+| m365_defender.event.dns.rcode_name | The DNS response code. | keyword |
 | m365_defender.event.dns_addresses | DNS server addresses in JSON array format. | keyword |
 | m365_defender.event.email.action | Final action taken on the email based on filter verdict, policies, and user actions: Move message to junk mail folder, Add X-header, Modify subject, Redirect message, Delete message, send to quarantine, No action taken, Bcc message. | keyword |
 | m365_defender.event.email.action_policy | Action policy that took effect: Antispam high-confidence, Antispam, Antispam bulk mail, Antispam phishing, Anti-phishing domain impersonation, Anti-phishing user impersonation, Anti-phishing spoof, Anti-phishing graph impersonation, Antimalware, Safe Attachments, Enterprise Transport Rules (ETR). | keyword |
@@ -912,6 +927,12 @@ This is the `event` dataset.
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.version | Observer version. | keyword |
+| process.Ext.api.name |  | keyword |
+| process.Ext.api.parameters.address |  | long |
+| process.Ext.api.parameters.desired_access_numeric |  | long |
+| process.Ext.api.parameters.protection |  | integer |
+| process.Ext.api.parameters.size |  | long |
+| process.Ext.token.integrity_level_name | Integrity level that determine the levels of protection or access for a principal used by Mandatory Integrity Control (MIC). | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.code_signature.status | Additional information about the certificate status. This is useful for logging cryptographic errors with the certificate validity or trust status. Leave unpopulated if the validity or trust of the certificate was unchecked. | keyword |
@@ -926,7 +947,9 @@ This is the `event` dataset.
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.parent.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
+| process.parent.code_signature.exists | Boolean to capture if a signature is present. | boolean |
 | process.parent.code_signature.status | Additional information about the certificate status. This is useful for logging cryptographic errors with the certificate validity or trust status. Leave unpopulated if the validity or trust of the certificate was unchecked. | keyword |
+| process.parent.code_signature.trusted | Stores the trust status of the certificate chain. Validating the trust of the certificate chain may be complicated, and this field should only be populated by tools that actively check the status. | boolean |
 | process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | process.parent.command_line.text | Multi-field of `process.parent.command_line`. | match_only_text |
 | process.parent.executable | Absolute path to the process executable. | keyword |
@@ -956,7 +979,10 @@ This is the `event` dataset.
 | process.pid | Process id. | long |
 | process.start | The time the process started. | date |
 | registry.data.strings | Content when writing string types. Populated as an array when writing string data to the registry. For single string registry types (REG_SZ, REG_EXPAND_SZ), this should be an array with one string. For sequences of string with REG_MULTI_SZ, this array will be variable length. For numeric data, such as REG_DWORD and REG_QWORD, this should be populated with the decimal representation (e.g `"1"`). | wildcard |
+| registry.data.type | Standard registry type for encoding contents | keyword |
+| registry.hive | Abbreviated name for the hive. | keyword |
 | registry.key | Hive-relative path of keys. | keyword |
+| registry.path | Full path, including hive, key and value | keyword |
 | registry.value | Name of the value written. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
