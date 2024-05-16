@@ -4,7 +4,7 @@ This document summarizes the history of subobjects, the motivation for adding th
 
 ## Overview
 
-[subobjects](https://www.elastic.co/guide/en/elasticsearch/reference/current/subobjects.html) is a mapping parameter that controls the configuration of the object mapper (root as well as individual fields), making it possible to store logs and metrics documents that have fields with dots in their names.
+[subobjects](https://www.elastic.co/guide/en/elasticsearch/reference/8.13/subobjects.html) is a mapping parameter that controls the configuration of the object mapper (root as well as individual fields), making it possible to store logs and metrics documents that have fields with dots in their names.
 
 For example:
 
@@ -42,7 +42,7 @@ We started using it in support requests to address problems in the metrics space
 
 ### Integrations
 
-In winter 2023, we started [adding support for the subobjects](https://github.com/elastic/package-spec/issues/349) mapping parameter to package-spec and Kibana.
+By the end of 2023, we started [adding support for the subobjects](https://github.com/elastic/package-spec/issues/349) mapping parameter to package-spec and Kibana.
 
 #### Field vs. Data Stream
 
