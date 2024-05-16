@@ -1436,6 +1436,30 @@ processors:
       target_field: process.Ext.api.name
       tag: rename_process_Ext_api_name
       ignore_missing: true
+  - rename:
+      field: m365_defender.event.additional_fields.RegionSize
+      target_field: process.Ext.api.parameters.size
+      tag: rename_process_Ext_api_parameters_size
+      if: ctx.event?.category != null && ctx.event.category.contains('api')
+      ignore_missing: true
+  - rename:
+      field: m365_defender.event.additional_fields.ProtectionMask
+      target_field: process.Ext.api.parameters.protection
+      tag: rename_process_Ext_api_parameters_protection
+      if: ctx.event?.category != null && ctx.event.category.contains('api')
+      ignore_missing: true
+  - rename:
+      field: m365_defender.event.additional_fields.BaseAddress
+      target_field: process.Ext.api.parameters.address
+      tag: rename_process_Ext_api_parameters_address
+      if: ctx.event?.category != null && ctx.event.category.contains('api')
+      ignore_missing: true
+  - rename:
+      field: m365_defender.event.additional_fields.DesiredAccess
+      target_field: process.Ext.api.parameters.desired_access_numeric
+      tag: rename_process_Ext_api_parameters_desired_access_numeric
+      if: ctx.event?.category != null && ctx.event.category.contains('api')
+      ignore_missing: true
 
   ## All other DeviceEvent types that is not DeviceProcessEvent or DeviceEvent map InitiatingProcess* to process.* rather than process.parent.*
   ## If event.category is "api" (i.e., subset of DeviceEvent), then use process.* instead of process.parent.*
