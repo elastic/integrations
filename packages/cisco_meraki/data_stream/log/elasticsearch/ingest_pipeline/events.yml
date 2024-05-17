@@ -301,7 +301,7 @@ processors:
       NOTCOLON: '[^:]*'
       REASON: ' Reason: %{DATA:cisco_meraki.anyconnect_vpn_session_manager.reason}'
     if: ctx.cisco_meraki?.event_subtype == "anyconnect_vpn_session_manager"
-    # ignore_failure: true
+    ignore_failure: true
 - grok:
     field: _temp.left
     patterns: 
@@ -343,7 +343,7 @@ processors:
       TUNNEL: '%{WORD:cisco_meraki.anyconnect_vpn_session_manager.tunnel_type} tunnel\[%{NOTBRACKET:cisco_meraki.anyconnect_vpn_session_manager.tunnel_id}\]'
       NOTBRACKET: '[^\]]*'
     if: ctx._temp?.right != null
-    # ignore_failure: true
+    ignore_failure: true
 - set:
     field: cisco_meraki.anyconnect_vpn_session_manager.action
     value: "added tunnel"
