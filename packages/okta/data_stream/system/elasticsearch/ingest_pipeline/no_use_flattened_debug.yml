@@ -110,63 +110,33 @@ processors:
         if (dst.length != 0) {
           ctx.okta.debug_context.debug_data['risk_behaviors'] = dst;
         }
-  - script:
-      lang: painless
-      description: Rename the fields under the aws_bedrock objects.
-      params:
-        dtHash: dt_hash
-        requestId: request_id
-        requestUri: request_uri
-        authnRequestId: authn_request_id
-        deviceFingerprint: device_fingerprint
-        promptingPolicyTypes: prompting_policy_types
-        threatSuspected: threat_suspected
-        logOnlySecurityData: log_only_security_data
-        originalPrincipal: original_principal
-        alternateId: alternate_id
-        displayName: display_name
-      tag: painless_to_rename_fields_under_aws_bedrock_groups
-      if: ctx.okta?.debug_context?.debug_data != null
-      source: |
-        String lunderscore(String s) {
-          return /[ -]/.matcher(s.toLowerCase()).replaceAll('_');
-        }
-        def renameKeys(Map src, Map keyMap) {
-          def dst = new HashMap();
-          for (def entry: src.entrySet()) {
-            def key = entry.getKey();
-            def value = entry.getValue();
-            if (value instanceof Map) {
-              if (keyMap.containsKey(key)) {
-                dst[keyMap[key]] = renameKeys(value, keyMap);
-              } else {
-                dst[lunderscore(key)] = renameKeys(value, keyMap);
-              }
-            } else if (value instanceof List) {
-              def updatedList = [];
-              for (def item: value) {
-                if (item instanceof Map) {
-                  updatedList.add(renameKeys(item, keyMap));
-                } else {
-                  updatedList.add(item);
-                }
-              }
-              if (keyMap.containsKey(key)) {
-                dst[keyMap[key]] = updatedList;
-              } else {
-                dst[lunderscore(key)] = value;
-              }
-            } else {
-              if (keyMap.containsKey(key)) {
-                dst[keyMap[key]] = value;
-              } else {
-                dst[lunderscore(key)] = value;
-              }
-            }
-          }
-          return dst;
-        }
-        ctx.okta.debug_context.debug_data = renameKeys(ctx.okta.debug_context.debug_data, params)
+
+  # Special cases for fields that were previously extracted from flattened. 
+  - rename:
+      field: okta.debug_context.debug_data.deviceFingerprint
+      target_field: okta.debug_context.debug_data.device_fingerprint
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: okta.debug_context.debug_data.dtHash
+      target_field: okta.debug_context.debug_data.dt_hash
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: okta.debug_context.debug_data.requestId
+      target_field: okta.debug_context.debug_data.request_id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: okta.debug_context.debug_data.requestUri
+      target_field: okta.debug_context.debug_data.request_uri
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: okta.debug_context.debug_data.threatSuspected
+      target_field: okta.debug_context.debug_data.threat_suspected
+      ignore_missing: true
+      ignore_failure: true
 
 on_failure:
   - set:
