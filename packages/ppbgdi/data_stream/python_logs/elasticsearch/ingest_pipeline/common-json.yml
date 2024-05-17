@@ -70,7 +70,7 @@ processors:
       field: temp.user_agent.original
       extract_device_type: true
       ignore_missing: true
-      if: '!ctx?.http?.request?.headers?.containsKey("user-agent")'
+      if: 'ctx?.http?.request?.headers != null && !ctx.http.request.headers.containsKey("user-agent")'
   - remove:
       field: temp.user_agent.original
       ignore_missing: true
@@ -80,6 +80,10 @@ processors:
       ignore_missing: true
   - convert:
       field: http.response.bytes
+      type: long
+      ignore_missing: true
+  - convert:
+      field: http.response.body.bytes
       type: long
       ignore_missing: true
   - rename:

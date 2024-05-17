@@ -154,10 +154,21 @@ An example event for `python` looks as following:
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | http.request.headers.\* | Not yet but already in use ecs fields | keyword |
 | http.response.headers.\* | Not yet but already in use ecs fields | keyword |
+| kubernetes.container.name | The name of the kubernetes container | keyword |
 | kubernetes.namespace_labels.\* | Used to set the ppbgdi.app.system field | keyword |
 | kubernetes.namespace_labels.env | Used to set the service.environment field | keyword |
 | kubernetes.namespace_labels.service | Used to set the service.name field | keyword |
 | ppbgdi.app.api.version |  | keyword |
+| ppbgdi.app.auth_bod.connection.requests | Number of requests made in connection | keyword |
+| ppbgdi.app.auth_bod.connection.serial_number | Connection serial number | keyword |
+| ppbgdi.app.auth_bod.gzip_ratio | The Gzip ratio | keyword |
+| ppbgdi.app.auth_bod.pipe | “p” if request was pipelined, “.” otherwise | keyword |
+| ppbgdi.app.auth_bod.upstream.cache_status | Cache HIT/MISS where applicable | keyword |
+| ppbgdi.app.auth_bod.upstream.connect_time | Upstream handshake time incl. TLS | keyword |
+| ppbgdi.app.auth_bod.upstream.header_time | Time spent receiving upstream headers | keyword |
+| ppbgdi.app.auth_bod.upstream.response_length | Upstream response length | keyword |
+| ppbgdi.app.auth_bod.upstream.response_time | Time spent receiving upstream body | keyword |
+| ppbgdi.app.auth_bod.upstream.server | Upstream backend server for proxied requests | keyword |
 | ppbgdi.app.epsg | The projection type of the layer | long |
 | ppbgdi.app.layer.column | The easting orientation of a tile | long |
 | ppbgdi.app.layer.extension | The file extention | keyword |
