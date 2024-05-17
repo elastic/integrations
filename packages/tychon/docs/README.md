@@ -77,7 +77,13 @@ TYCHON scans Endpoint ARP Tables and returns the results.
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.interface | The interface the ARP Table has associated the destination. | keyword |
@@ -164,7 +170,13 @@ TYCHON scans for Endpoint CPU's and returns the results.
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
@@ -240,7 +252,13 @@ TYCHON scans for Endpoint vulnerablities and returns the results.
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
@@ -344,7 +362,13 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | package.build_version | Additional information about the build version of the installed package. For example use the commit SHA of a non-released package. | keyword |
 | package.description | Description of the package. | keyword |
@@ -453,7 +477,13 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
@@ -573,7 +603,13 @@ The TYCHON script scans an endpoint's Hard Drive Configurations and returns info
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
@@ -656,7 +692,13 @@ The TYCHON script scans an endpoint's Hardware Configurations and returns inform
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
@@ -762,6 +804,13 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
@@ -859,6 +908,13 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
@@ -931,7 +987,13 @@ The TYCHON script scans an endpoint's Software Inventory and returns information
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | package.architecture | Package architecture. | keyword |
 | package.cpe | Package Cpe. | keyword |
@@ -1028,7 +1090,13 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | oval.class | Open Vulnerabilities and Assessment Language Class. | keyword |
 | oval.id | Open Vulnerabilities and Assessment Language Identifier. | keyword |
@@ -1125,7 +1193,13 @@ The TYCHON script scans an endpoint's Volume Configurations and returns informat
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
@@ -1223,7 +1297,13 @@ TYCHON gathers which Windows features have been enabled on endpoints and returns
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | package.build_version | Additional information about the build version of the installed package. For example use the commit SHA of a non-released package. | keyword |
 | package.description | Description of the package. | keyword |
@@ -1307,7 +1387,13 @@ TYCHON has integtred with DISA DATT and gathering what Operational Attributes ha
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | script.current_duration | Scanner Script Duration. | long |
 | script.current_time | Current datetime. | date |
@@ -1394,7 +1480,13 @@ TYCHON searches the computer and hard drive for certificate files that stored in
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
@@ -1546,7 +1638,13 @@ TYCHON connects to open ports on the computer and reports back if it is hosting 
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
@@ -1642,7 +1740,13 @@ TYCHON checks local browser configuration settings.
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | host.uptime | Seconds the host has been up. | long |
 | input.type | Input Type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
 | package.name | Package name | keyword |
 | tags | List of keywords used to tag each event. | keyword |
