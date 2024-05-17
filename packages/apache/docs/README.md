@@ -72,6 +72,7 @@ Access logs collects the Apache access logs.
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
+| apache.access.response_time | Time to serve the request in microseconds. | long |
 | http.version | HTTP version. | keyword |
 | input.type | Input type | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
@@ -135,6 +136,11 @@ Supported format for the access logs are:
     >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
   - Example:
     >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)" X-Forwarded-For="10.225.192.17, 10.2.2.121"```
+- Combined Log Format + X-Forwarded-For header + Response time
+  - Defined in apache `LogFormat` by:
+    >```%h %l %u %t \"%r\" %>s %b %D \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
+  - Example:
+    >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 3413 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)" X-Forwarded-For="10.225.192.17, 10.2.2.121"```
 
 ### Error Logs
 
