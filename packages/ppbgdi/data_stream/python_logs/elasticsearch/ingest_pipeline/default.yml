@@ -40,17 +40,17 @@ processors:
   - pipeline:
       if: ctx.first_char != '{'
       name: '{{ IngestPipeline "common-raw" }}'
-  - remove:
-      field:
-        - first_char
   - pipeline:
       description: Layer object pipeline
       if: ctx?.temp?.ppbgdi?.app?.layer != null
       name: '{{ IngestPipeline "entity-layer" }}'
   - pipeline:
       description: Layer object pipeline
-      if: ctx?.kubernetes?.container?.name == 'auth-bod'
+      if: ctx.first_char == '{' &&  ctx?.kubernetes?.container?.name == 'auth-bod'
       name: '{{ IngestPipeline "entity-auth-bod" }}'
+  - remove:
+      field:
+        - first_char
   - set:
       field: event.outcome
       value: failure
