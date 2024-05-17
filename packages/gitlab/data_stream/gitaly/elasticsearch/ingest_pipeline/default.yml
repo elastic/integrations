@@ -34,6 +34,9 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: json.severity
+      ignore_missing: true
   - set:
       field: event.severity
       value: 0
@@ -291,7 +294,7 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{gitlab.meta.remote_ip}}'
+      value: '{{{gitlab.meta.remote_ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
   - append:
