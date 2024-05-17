@@ -137,17 +137,17 @@ processors:
       target_field: message
   - append:
       field: related.ip
-      value: '{{gitlab.meta.remote_ip}}'
+      value: '{{{gitlab.meta.remote_ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
   - append:
       field: related.user
-      value: '{{gitlab.meta.user.name}}'
+      value: '{{{gitlab.meta.user.name}}}'
       if: ctx.gitlab?.meta?.user?.name != null
       allow_duplicates: false
   - append:
       field: related.user
-      value: '{{gitlab.meta.user.id}}'
+      value: '{{{gitlab.meta.user.id}}}'
       if: ctx.gitlab?.meta?.user?.id != null
       allow_duplicates: false
   - remove:
@@ -189,4 +189,3 @@ on_failure:
   - append:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
