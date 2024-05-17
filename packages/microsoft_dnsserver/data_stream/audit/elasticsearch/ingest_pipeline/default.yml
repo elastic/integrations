@@ -1,0 +1,425 @@
+---
+description: Pipeline for processing DNS Server Audit logs
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+      tag: set_ecs_version
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
+  
+  - set:
+      field: event.category
+      value: [configuration]
+      if: ctx.winlog?.task == "Configuration"
+      tag: set_event_category_configuration
+
+# Move winlog.event_data to microsoft_dnsserver.audit
+  - rename:
+      field: winlog.event_data
+      target_field: microsoft_dnsserver.audit
+      if: ctx.winlog?.event_data != null && ctx.winlog.event_data != ''
+      tag: rename_winlog_eventdata
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+
+# Process DNS Server Audit fields
+  - script:
+      lang: painless
+      ignore_failure: false
+      if: ctx.microsoft_dnsserver?.audit?.QTYPE != null
+      tag: map_dns_question_type
+      description: Map numerical DNS question type to human-readable format
+      params:
+        "1": A
+        "2": NS
+        "3": MD
+        "4": MF
+        "5": CNAME
+        "6": SOA
+        "7": MB
+        "8": MG
+        "9": MR
+        "11": WKS
+        "12": PTR
+        "13": HINFO
+        "14": MINFO
+        "15": MX
+        "16": TXT
+        "17": RP
+        "18": AFSDB
+        "19": X25
+        "20": ISDN
+        "21": RT
+        "24": SIG
+        "25": KEY
+        "26": PX
+        "27": GPOS
+        "28": AAAA
+        "29": LOC
+        "31": EID
+        "32": NIMLOC
+        "33": SRV
+        "34": ATMA
+        "35": NAPTR
+        "36": KX
+        "37": CERT
+        "39": DNAME
+        "40": SINK
+        "41": OPL
+        "42": APL
+        "43": DS
+        "44": SSHFP
+        "45": IPSECKEY
+        "46": RRSIG
+        "47": NSEC
+        "48": DNSKEY
+        "49": DHCID
+        "50": NSEC3
+        "51": NSEC3PARAM
+        "52": TLSA
+        "53": SMIMEA
+        "55": HIP
+        "56": NINFO
+        "57": RKEY
+        "58": TALINK
+        "59": CDS
+        "60": CDNSKEY
+        "61": OPENPGPKEY
+        "62": CSYNC
+        "63": ZONEMD
+        "64": SVCB
+        "65": HTTPS
+        "99": SPF
+        "104": NID
+        "105": L32
+        "106": L64
+        "107": LP
+        "108": EUI48
+        "109": EUI64
+        "249": TKEY
+        "250": TSIG
+        "251": IXFR
+        "252": AXFR
+        "253": MAILB
+        "254": MAILA
+        "256": URI
+        "257": CAA
+        "258": AVC
+        "259": DOA
+        "260": AMTRELAY
+        "261": RESINFO
+        "32768": TA
+        "32769": DLV
+      source: |-
+        def t = params.get(ctx.microsoft_dnsserver.audit.QTYPE);
+        if (t != null) {
+          ctx.microsoft_dnsserver.audit.put("question_type", t);
+        }
+        ctx.microsoft_dnsserver.audit.remove("QTYPE");
+
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the audit object.
+      if: ctx.microsoft_dnsserver?.audit != null
+      params:
+        "Action": "action"
+        "ActiveKey": "active_key"
+        "Base64Data": "base64_data"
+        "BufferSize": "bytes_sent"
+        "ChildZone": "child_zone"
+        "ClientSubnetList": "client_subnet_list"
+        "ClientSubnetRecord": "client_subnet_record"
+        "Condition": "condition"
+        "Criteria": "criteria"
+        "CryptoAlgorithm": "crypto_algorithm"
+        "CurrentRolloverStatus": "current_rollover_status"
+        "CurrentState": "current_state"
+        "DenialOfExistence": "denial_of_existence"
+        "Digest": "digest"
+        "DigestType": "digest_type"
+        "DistributeTrustAnchor": "distribute_trust_anchor"
+        "DnsKeyRecordSetTtl": "key_record_set_ttl"
+        "DnsKeySignatureValidityPeriod": "key_signature_validity_period"
+        "DSRecordGenerationAlgorithm": "ds_record_generation_algorithm"
+        "DSRecordSetTtl": "ds_record_set_ttl"
+        "DSSignatureValidityPeriod": "ds_signature_validity_period"
+        "EnableRfc5011KeyRollover": "enable_rfc_5011_key_rollover"
+        "ErrorsPerSecond": "errors_per_second"
+        "EventString": "event_string"
+        "FilePath": "file_path"
+        "Forwarders": "forwarders"
+        "FriendlyName": "friendly_name"
+        "GUID": "guid"
+        "InitialRolloverOffset": "initial_rollover_offset"
+        "IPv4PrefixLength": "ipv4_prefix_length"
+        "IPv6PrefixLength": "ipv6_prefix_length"
+        "IsEnabled": "is_enabled"
+        "IsKeyMasterServer": "is_key_master_server"
+        "KeyId": "key_id"
+        "KeyLength": "key_length"
+        "KeyMasterServer": "key_master_server"
+        "KeyOrZone": "key_or_zone"
+        "KskOrZsk": "ksk_or_zsk"
+        "KeyProtocol": "key_protocol"
+        "KeyStorageProvider": "key_storage_provider"
+        "KeyTag": "key_tag"
+        "KeyType": "key_type"
+        "LastRolloverTime": "last_rollover_time"
+        "LeakRate": "leak_rate"
+        "ListenAddresses": "listen_addresses"
+        "MasterServer": "master_server"
+        "Mode": "mode"
+        "Name": "name"
+        "NAME": "name"
+        "NameServer": "name_server"
+        "NewFriendlyName": "new_friendly_name"
+        "NewPropertyValues": "new_property_values"
+        "NewScope": "new_scope"
+        "NewValue": "new_value"
+        "NextKey": "next_key"
+        "NextRolloverAction": "next_rollover_action"
+        "NextRolloverTime": "next_rollover_time"
+        "NodeName": "node_name"
+        "NSec3HashAlgorithm": "nsec3_hash_algorithm"
+        "NSec3Iterations": "nsec3_iterations"
+        "NSec3OptOut": "nsec3_opt_out"
+        "NSec3RandomSaltLength": "nsec3_random_salt_length"
+        "NSec3UserSalt": "nsec3_user_salt"
+        "OldFriendlyName": "old_friendly_name"
+        "OldPropertyValues": "old_property_values"
+        "OldScope": "old_scope"
+        "ParentHasSecureDelegation": "parent_has_secure_delegation"
+        "Policy": "policy"
+        "ProcessingOrder": "processing_order"
+        "PropagationTime": "propagation_time"
+        "PropertyKey": "property_key"
+        "QNAME": "question_name"
+        "RDATA": "resolved_data"
+        "RecursionScope": "recursion_scope"
+        "ResponsePerSecond": "response_per_second"
+        "RolloverPeriod": "rollover_period"
+        "RolloverType": "rollover_type"
+        "RRLExceptionlist": "rrl_exception_list"
+        "ScavengeServers": "scavenge_servers"
+        "Scope": "scope"
+        "Scopes": "scopes"
+        "ScopeWeight": "scope_weight"
+        "ScopeWeightNew": "scope_weight_new"
+        "ScopeWeightOld": "scope_weight_old"
+        "SecureDelegationPollingPeriod": "secure_delegation_polling_period"
+        "SeizedOrTransfered": "seized_or_transfered"
+        "ServerName": "name_server"
+        "Setting": "setting"
+        "SignatureInceptionOffset": "signature_inception_offset"
+        "StandbyKey": "standby_key"
+        "StoreKeysInAD": "store_keys_in_AD"
+        "SubTreeAging": "subtree_aging"
+        "TCRate": "tc_rate"
+        "TotalResponsesInWindow": "total_responses_in_window"
+        "TTL": "ttl"
+        "Type": "type"
+        "VirtualizationID": "virtualization_id"
+        "WindowSize": "window_size"
+        "WithNewKeys": "with_new_keys"
+        "WithWithout": "with_without"
+        "Zone": "zone"
+        "ZoneScope": "zone_scope"
+        "ZoneSignatureValidityPeriod": "zone_signature_validity_period"
+        "ZoneName": "zone"
+      tag: painless_to_rename_fields_under_microsoft_dnsserver_audit
+      source: |
+        def renameKeys(Map src, Map keyMap) {
+          def dst = new HashMap();
+          for (def entry: src.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                dst[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = updatedList;
+              } else {
+                dst[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = value;
+              } else {
+                dst[key] = value;
+              }
+            }
+          }
+          return dst;
+        }
+        ctx.microsoft_dnsserver.audit = renameKeys(ctx.microsoft_dnsserver.audit, params)
+
+# ECS fields
+  - convert:
+      field: microsoft_dnsserver.audit.ttl
+      type: long
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_audit_ttl
+  - set:
+      field: dns.answers.ttl
+      copy_from: microsoft_dnsserver.audit.ttl
+      ignore_empty_value: true
+      tag: set_dns_answers_ttl
+  - set:
+      field: dns.question.name
+      copy_from: microsoft_dnsserver.audit.question_name
+      ignore_empty_value: true
+      tag: set_dns_question_name
+  - set:
+      field: dns.question.type
+      copy_from: microsoft_dnsserver.audit.question_type
+      ignore_empty_value: true
+      tag: set_dns_question_type
+  - set:
+      field: file.path
+      copy_from: microsoft_dnsserver.audit.file_path
+      ignore_empty_value: true
+      tag: set_file_path
+  - convert:
+      field: microsoft_dnsserver.audit.bytes_sent
+      type: long
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_bytes_sent
+  - set:
+      field: network.bytes
+      copy_from: microsoft_dnsserver.audit.bytes_sent
+      ignore_empty_value: true
+      tag: set_network_bytes
+
+# Source IP
+  - convert:
+      field: microsoft_dnsserver.audit.Source
+      target_field: microsoft_dnsserver.audit.source_ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_source_ip
+  - remove:
+      field: microsoft_dnsserver.audit.Source
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_source_ip
+  - set:
+      field: source.ip
+      copy_from: microsoft_dnsserver.audit.source_ip
+      ignore_empty_value: true
+      tag: set_source_ip
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      tag: geo_source_ip
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geo_source_as
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+      tag: rename_source_as_number
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+      tag: rename_source_as_org
+
+# Process winlog metadata
+  - rename:
+      field: winlog.process
+      target_field: process
+      ignore_missing: true
+      tag: rename_process
+  - convert:
+      field: winlog.record_id
+      type: string
+      ignore_missing: true
+      tag: convert_record_id_string
+
+# Related fields
+  - append:
+      field: related.user
+      value: '{{{winlog.user.name}}}'
+      if: ctx.winlog?.user?.name != null && ctx.winlog.user.name != ''
+      allow_duplicates: false
+      tag: append_related_user
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      allow_duplicates: false
+      tag: append_related_source_ip
+
+# Remove duplicated and empty fields
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+
+  # Some winlog fields are already present in event object
+  - remove:
+      field:
+        - microsoft_dnsserver.audit.bytes_sent
+        - microsoft_dnsserver.audit.file_path
+        - microsoft_dnsserver.audit.question_name
+        - microsoft_dnsserver.audit.question_type
+        - microsoft_dnsserver.audit.source_ip
+        - microsoft_dnsserver.audit.ttl
+        - winlog.event_id
+        - winlog.provider_name
+        - winlog.task
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_duplicated_custom_fields
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
