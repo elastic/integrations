@@ -1,0 +1,74 @@
+---
+description: Default pipeline for processing service-search logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - pipeline:
+      description: Pipeline used to create fields for elastic-package tests
+      if: ctx?.tags != null && ctx?.tags.contains('elastic-package-test')
+      name: '{{ IngestPipeline "elastic-package-test" }}'
+  - grok:
+      field: event.original
+      patterns:
+        - ^%{CHAR:first_char}
+      pattern_definitions:
+        CHAR: .
+      ignore_missing: true
+  - pipeline:
+      description: Process common logs
+      if: ctx?.first_char != null && ctx?.first_char != '{'
+      name: '{{ IngestPipeline "common-raw" }}'
+  - remove:
+      field:
+        - first_char
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null or empty values.
+      source: |
+        void handleMap(Map map, Map params) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x, params);
+            } else if (x instanceof List) {
+                handleList(x, params);
+            }
+          }
+          map.values().removeIf(v ->
+            (params['remove_null'] == true && v == null) ||
+            (params['remove_empty_string'] == true && v == '') ||
+            (params['remove_empty_map'] == true && v instanceof Map && v.size() == 0) ||
+            (params['remove_empty_list'] == true && v instanceof List && v.size() == 0));
+        }
+        void handleList(List list, Map params) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x, params);
+              } else if (x instanceof List) {
+                  handleList(x, params);
+              }
+          }
+          list.removeIf(v ->
+            (params['remove_null_value'] == true && v == null) ||
+            (params['remove_empty_string'] == true && v == '') ||
+            (params['remove_empty_map'] == true && v instanceof Map && v.size() == 0) ||
+            (params['remove_empty_list'] == true && v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx, params);
+      params:
+        remove_null: true
+        remove_empty_string: false
+        remove_empty_map: true
+        remove_empty_list: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

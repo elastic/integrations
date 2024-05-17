@@ -1,55 +1,38 @@
 ---
 description: Pipeline for processing service STAC url query string
 processors:
-  - kv:
-      description: Parse url query parameters to an object
-      field: url.query
-      target_field: temp.query_params
-      field_split: "&"
-      value_split: "="
-  - foreach:
-      description: Lowercase all query parameter keys for easier handling
-      field: temp.query_params
-      processor:
-        lowercase:
-          field: _ingest._key
-      ignore_missing: true
-  - rename:
-      field: temp.query_params.bbox
-      target_field: ppbgdi.app.query_params.bbox
-      ignore_missing: true
+  - script:
+      description: Script to parse query strings.
+      source: |
+        // Split the query-string into a list of parameters
+        String[] paramList = ctx?.url?.query?.splitOnToken('&');
+        Map queryParams = new HashMap(); // the new query param list to fill up
+        for (def x : paramList) {
+          String[] paramSplit = x.splitOnToken('=',2); // Split kv on first '=' char
+          if (paramSplit.length == 2) { // KV parameter
+            queryParams.put(paramSplit[0].toLowerCase(), paramSplit[1].toLowerCase());
+          } else { // Flag parameter
+            queryParams.put(x.toLowerCase(), 'true');
+          }
+        }
+        // Create ppbgdi field if not existing
+        if (ctx?.ppbgdi == null){
+          ctx.ppbgdi = new HashMap();
+        }
+        // Create ppbgdi.app field if not existing
+        if (ctx?.ppbgdi?.app == null){
+          ctx.ppbgdi.app = new HashMap();
+        }
+        // Add the parsed query-parameters to the document source
+        ctx.ppbgdi.app.query_params = queryParams;
   - split:
-      field: temp.query_params.collections
-      target_field: ppbgdi.app.query_params.colection_ids
+      field: ppbgdi.app.query_params.collections
       separator: ","
-      ignore_missing: true
-  - remove:
-      field: temp.query_params.collections
-      ignore_missing: true
-  - rename:
-      field: temp.query_params.datetime
-      target_field: ppbgdi.app.query_params.datetime
-      ignore_missing: true
+      if: 'ctx?.ppbgdi?.app?.query_params.collections != null && ctx?.ppbgdi?.app?.query_params.collections.contains(",")'
   - split:
-      field: temp.query_params.ids
-      target_field: ppbgdi.app.query_params.feature_ids
+      field: ppbgdi.app.query_params.ids
       separator: ","
-      ignore_missing: true
-  - remove:
-      field: temp.query_params.ids
-      ignore_missing: true
-  - rename:
-      field: temp.query_params.limit
-      target_field: ppbgdi.app.query_params.limit
-      ignore_missing: true
-  - convert:
-      field: ppbgdi.app.query_params.limit
-      type: long
-      ignore_missing: true
-  - rename:
-      field: temp.query_params.status
-      target_field: ppbgdi.app.query_params.status
-      ignore_missing: true
+      if: 'ctx?.ppbgdi?.app?.query_params.ids != null && ctx?.ppbgdi?.app?.query_params.ids.contains(",")'
 
 on_failure:
   - set:

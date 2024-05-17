@@ -1,6 +1,11 @@
 ---
-description: Default pipeline for processing mf-chsdi3 logs
+description: Default pipeline for processing mf-chsdi3 raw logs
 processors:
+  - append:
+      description: "Add information on the log format to tags: E.g. k8s_log_json or k8s_log_raw. Useful for development and debugging"
+      field: tags
+      value: k8s_log_raw
+      allow_duplicates: false
   - grok:
       field: event.original
       patterns:

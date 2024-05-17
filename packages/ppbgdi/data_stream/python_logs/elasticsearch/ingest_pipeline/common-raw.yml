@@ -1,0 +1,16 @@
+---
+description: Pipeline for processing common logs
+processors:
+  - append:
+      description: "Add information on the log format to tags: E.g. k8s_log_json or k8s_log_raw. Useful for development and debugging"
+      field: tags
+      value: k8s_log_raw
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
+

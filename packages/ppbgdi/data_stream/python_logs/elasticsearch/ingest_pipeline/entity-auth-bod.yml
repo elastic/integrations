@@ -1,0 +1,97 @@
+---
+description: Pipeline for service-bod auth_bod transforms
+processors:
+  - rename:
+      field: temp.ppbgdi.app.auth_bod
+      target_field: ppbgdi.app.auth_bod
+      ignore_missing: true
+  - rename:
+      field: temp.destination.address
+      target_field: destination.address
+      ignore_missing: true
+  - grok:
+      field: destination.address
+      patterns:
+        - "^(%{IP:destination.ip}|%{HOSTNAME:destination.domain})(:%{POSINT:destination.port})?"
+      ecs_compatibility: v1
+      ignore_missing: true
+      if: 'ctx?.destination?.address != null && ctx?.destination?.address != ""'
+  - rename:
+      field: temp.source.address
+      target_field: source.address
+      ignore_missing: true
+      if: ctx?.source.address == null
+  - grok:
+      field: source.address
+      patterns:
+        - "^(%{IP:source.ip}|%{HOSTNAME:source.domain})(:%{POSINT:source.port})?"
+      ecs_compatibility: v1
+      ignore_missing: true
+  - rename:
+      field: temp.source.port
+      target_field: source.port
+      ignore_missing: true
+      if: ctx?.source.port == null
+  - convert:
+      field: source.port
+      type: integer
+      ignore_missing: true
+  - rename:
+      field: temp.tls
+      target_field: tls
+      ignore_missing: true
+
+
+                # "url": {
+                #     "scheme": "http",
+                #     "username": "igeb-b"
+                # }
+
+
+  - remove:
+      description: Remove deprecated fields (old field structure)
+      field:
+        - temp.args
+        - temp.body_bytes_sent
+        - temp.bytes_sent
+        - temp.connection
+        - temp.connection_requests
+        - temp.gzip_ratio
+        - temp.http_cf_ray
+        - temp.http_host
+        - temp.http_referer
+        - temp.http_user_agent
+        - temp.http_x_forwarded_for
+        - temp.msec
+        - temp.pid
+        - temp.pipe
+        - temp.remote_addr
+        - temp.remote_port
+        - temp.remote_user
+        - temp.request_id
+        - temp.request_length
+        - temp.request_method
+        - temp.request_time
+        - temp.request_uri
+        - temp.scheme
+        - temp.server_name
+        - temp.server_protocol
+        - temp.ssl_cipher
+        - temp.ssl_protocol
+        - temp.status
+        - temp.time_local
+        - temp.upstream
+        - temp.upstream_cache_status
+        - temp.upstream_connect_time
+        - temp.upstream_header_time
+        - temp.upstream_response_length
+        - temp.upstream_response_time
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
