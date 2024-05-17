@@ -1511,6 +1511,26 @@ processors:
       tag: rename_process_Ext_api_parameters_desired_access_numeric
       if: ctx.event?.category != null && ctx.event.category.contains('api')
       ignore_missing: true
+  # Add Target.process.* when remote API call i.e., ActionType: (CreateRemoteThreadApiCall or ReadProcessMemoryApiCall or ntallocatevirtualmemoryremoteapicall or OpenProcessApiCall)
+  - set:
+      field: Target.process.name 
+      copy_from: m365_defender.event.file.name
+      tag: set_Target_process_name 
+      if: ctx.event?.category != null && ctx.event.category.contains('api') && (ctx.m365_defender?.event?.action?.type != null && ['createremotethreadapicall', 'readprocessmemoryapicall', 'ntallocatevirtualmemoryremoteapicall', 'openprocessapicall'].contains(ctx.m365_defender.event.action.type.toLowerCase()))
+      ignore_empty_value: true
+  - set:
+      field: Target.process.command_line
+      copy_from: m365_defender.event.process.command_line
+      tag: set_Target_process_command_line
+      if: ctx.event?.category != null && ctx.event.category.contains('api') && (ctx.m365_defender?.event?.action?.type != null && ['createremotethreadapicall', 'readprocessmemoryapicall', 'ntallocatevirtualmemoryremoteapicall', 'openprocessapicall'].contains(ctx.m365_defender.event.action.type.toLowerCase()))
+      ignore_empty_value: true
+  - set:
+      field: Target.process.executable
+      value: >-
+        {{{m365_defender.event.folder_path}}}\{{{m365_defender.event.file.name}}}
+      tag: set_Target_process_executable
+      if: ctx.event?.category != null && ctx.event.category.contains('api') && (ctx.m365_defender?.event?.action?.type != null && ['createremotethreadapicall', 'readprocessmemoryapicall', 'ntallocatevirtualmemoryremoteapicall', 'openprocessapicall'].contains(ctx.m365_defender.event.action.type.toLowerCase()))
+      ignore_empty_value: true
 
   ## All other DeviceEvent types that is not DeviceProcessEvent or DeviceEvent map InitiatingProcess* to process.* rather than process.parent.*
   ## Also, if event.category in ["api", "driver"] (a subset of DeviceEvent), then use process.* instead of process.parent.*
