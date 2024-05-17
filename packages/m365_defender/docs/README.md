@@ -567,6 +567,12 @@ This is the `event` dataset.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| Target.process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| Target.process.command_line.text | Multi-field of `Target.process.command_line`. | text |
+| Target.process.executable | Absolute path to the process executable. | keyword |
+| Target.process.executable.text | Multi-field of `Target.process.executable`. | text |
+| Target.process.name | Process name. Sometimes called program name or similar. | keyword |
+| Target.process.name.text | Multi-field of `Target.process.name`. | text |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
