@@ -928,10 +928,10 @@ This is the `event` dataset.
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.version | Observer version. | keyword |
 | process.Ext.api.name |  | keyword |
-| process.Ext.api.parameters.address |  | long |
-| process.Ext.api.parameters.desired_access_numeric |  | long |
-| process.Ext.api.parameters.protection |  | integer |
-| process.Ext.api.parameters.size |  | long |
+| process.Ext.api.parameters.address | The target memory address. | long |
+| process.Ext.api.parameters.desired_access_numeric | This parameter indicates the numeric value of the `DesiredAccess` field passed to `OpenProcess` or `OpenThread`. | long |
+| process.Ext.api.parameters.protection | The memory protection for the region of pages. Corresponds to `MEMORY_BASIC_INFORMATION.Protect`. | keyword |
+| process.Ext.api.parameters.size | The size of parameter values passed to the API call. | long |
 | process.Ext.token.integrity_level_name | Integrity level that determine the levels of protection or access for a principal used by Mandatory Integrity Control (MIC). | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
