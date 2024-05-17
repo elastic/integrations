@@ -283,38 +283,38 @@ An example event for `system` looks as following:
 | okta.client.user_agent.raw_user_agent | The raw informaton of the user agent. | keyword |
 | okta.client.zone | The zone information of the client. | keyword |
 | okta.debug_context.debug_data |  | object |
-| okta.debug_context.debug_data.authn_request_id | The authorization request ID. | keyword |
+| okta.debug_context.debug_data.authnRequestId | The authorization request ID. | keyword |
 | okta.debug_context.debug_data.behaviors |  | keyword |
-| okta.debug_context.debug_data.behaviors.new_city |  | keyword |
-| okta.debug_context.debug_data.behaviors.new_country |  | keyword |
-| okta.debug_context.debug_data.behaviors.new_device |  | keyword |
-| okta.debug_context.debug_data.behaviors.new_geo_location |  | keyword |
-| okta.debug_context.debug_data.behaviors.new_ip |  | keyword |
-| okta.debug_context.debug_data.behaviors.new_state |  | keyword |
-| okta.debug_context.debug_data.behaviors.velocity |  | keyword |
-| okta.debug_context.debug_data.behaviors.velocity_behavior |  | keyword |
+| okta.debug_context.debug_data.behaviors.New City |  | keyword |
+| okta.debug_context.debug_data.behaviors.New Country |  | keyword |
+| okta.debug_context.debug_data.behaviors.New Device |  | keyword |
+| okta.debug_context.debug_data.behaviors.New Geo-Location |  | keyword |
+| okta.debug_context.debug_data.behaviors.New IP |  | keyword |
+| okta.debug_context.debug_data.behaviors.New State |  | keyword |
+| okta.debug_context.debug_data.behaviors.Velocity |  | keyword |
+| okta.debug_context.debug_data.behaviors.Velocity Behavior |  | keyword |
 | okta.debug_context.debug_data.device_fingerprint | The fingerprint of the device. | keyword |
 | okta.debug_context.debug_data.dt_hash | The device token hash | keyword |
 | okta.debug_context.debug_data.factor | The factor used for authentication. | keyword |
 | okta.debug_context.debug_data.flattened | The complete debug_data object. | flattened |
-| okta.debug_context.debug_data.log_only_security_data |  | keyword |
-| okta.debug_context.debug_data.log_only_security_data.behaviors |  | keyword |
-| okta.debug_context.debug_data.log_only_security_data.behaviors.new_city |  | keyword |
-| okta.debug_context.debug_data.log_only_security_data.behaviors.new_country |  | keyword |
-| okta.debug_context.debug_data.log_only_security_data.behaviors.new_device |  | keyword |
-| okta.debug_context.debug_data.log_only_security_data.behaviors.new_geo_location |  | keyword |
-| okta.debug_context.debug_data.log_only_security_data.behaviors.new_ip |  | keyword |
-| okta.debug_context.debug_data.log_only_security_data.behaviors.new_state |  | keyword |
-| okta.debug_context.debug_data.log_only_security_data.behaviors.velocity |  | keyword |
-| okta.debug_context.debug_data.log_only_security_data.risk |  | keyword |
-| okta.debug_context.debug_data.log_only_security_data.risk.level |  | keyword |
-| okta.debug_context.debug_data.log_only_security_data.risk.reasons |  | keyword |
-| okta.debug_context.debug_data.original_principal |  | keyword |
-| okta.debug_context.debug_data.original_principal.alternate_id |  | keyword |
-| okta.debug_context.debug_data.original_principal.display_name |  | keyword |
-| okta.debug_context.debug_data.original_principal.id |  | keyword |
-| okta.debug_context.debug_data.original_principal.type |  | keyword |
-| okta.debug_context.debug_data.prompting_policy_types |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.behaviors |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.behaviors.New City |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.behaviors.New Country |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.behaviors.New Device |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.behaviors.New Geo-Location |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.behaviors.New IP |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.behaviors.New State |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.behaviors.Velocity |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.risk |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.risk.level |  | keyword |
+| okta.debug_context.debug_data.logOnlySecurityData.risk.reasons |  | keyword |
+| okta.debug_context.debug_data.originalPrincipal |  | keyword |
+| okta.debug_context.debug_data.originalPrincipal.alternateId |  | keyword |
+| okta.debug_context.debug_data.originalPrincipal.displayName |  | keyword |
+| okta.debug_context.debug_data.originalPrincipal.id |  | keyword |
+| okta.debug_context.debug_data.originalPrincipal.type |  | keyword |
+| okta.debug_context.debug_data.promptingPolicyTypes |  | keyword |
 | okta.debug_context.debug_data.request_id | The identifier of the request. | keyword |
 | okta.debug_context.debug_data.request_uri | The request URI. | keyword |
 | okta.debug_context.debug_data.risk |  | keyword |
