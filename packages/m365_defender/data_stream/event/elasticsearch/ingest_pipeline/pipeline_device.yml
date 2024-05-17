@@ -66,8 +66,7 @@ processors:
         (ctx.event.category.contains('authentication') ||
         ctx.event.category.contains('host'))) || (ctx.json?.properties?.ActionType
         != null &&
-        (ctx.json.properties.ActionType.toLowerCase().contains('openprocess') ||
-        ctx.json.properties.ActionType.toLowerCase().contains('connectionfound')
+        (ctx.json.properties.ActionType.toLowerCase().contains('connectionfound')
         ||
         ctx.json.properties.ActionType.toLowerCase().contains('networksignatureinspected')
         ||
@@ -133,7 +132,7 @@ processors:
       tag: set_json_properties_ActionType_load
       override: true
       if: ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('imageloaded')
-  # Handle event.type when event.category is network
+  # Special handling for event.type when event.category is network or api
   - append:
       field: event.type
       value: protocol
@@ -141,9 +140,19 @@ processors:
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().contains('dnsconnectioninspected')
   - append:
       field: event.type
+      value: access
+      tag: append_event_type_access_api
+      if: ctx.event?.category != null && ctx.event.category.contains('api') && ctx.event?.type == null && ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().startsWith('open')
+  - append:
+      field: event.type
+      value: change
+      tag: append_event_type_change_api
+      if: ctx.event?.category != null && ctx.event.category.contains('api') && ctx.event?.type == null && ctx.json?.properties?.ActionType != null && ctx.json.properties.ActionType.toLowerCase().startsWith('write')
+  - append:
+      field: event.type
       value: info
       tag: append_event_type_info
-      if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.event?.type == null
+      if: ctx.event?.category != null && (ctx.event.category.contains('network') || ctx.event.category.contains('api')) && ctx.event?.type == null
 
   # AdditionalFields are flattened, as they can vary depending on the source, users can use custom pipelines to move fields away from AdditionalFields if required.
   # We move the AdditionalFields.direction when it exists, as its required for source/destination mapping
