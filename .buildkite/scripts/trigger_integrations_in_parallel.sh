@@ -47,24 +47,6 @@ for package in ${PACKAGE_LIST}; do
 
     packages_to_test=$((packages_to_test+1))
     cat << EOF >> ${PIPELINE_FILE}
-    - label: "Check integrations ${package} (independent)"
-      key: "test-integrations-${package}-ind"
-      command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
-      agents:
-        provider: gcp
-        image: ${IMAGE_UBUNTU_X86_64}
-      env:
-        ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT: "true"
-        STACK_VERSION: "${STACK_VERSION}"
-        FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
-        SERVERLESS: "false"
-        UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
-      artifact_paths:
-        - build/test-results/*.xml
-        - build/test-coverage/*.xml
-        - build/benchmark-results/*.json
-        - build/elastic-stack-dump/*/logs/*.log
-        - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
     - label: "Check integrations ${package}"
       key: "test-integrations-${package}"
       command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
@@ -72,7 +54,6 @@ for package in ${PACKAGE_LIST}; do
         provider: gcp
         image: ${IMAGE_UBUNTU_X86_64}
       env:
-        ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT: "false"
         STACK_VERSION: "${STACK_VERSION}"
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
         SERVERLESS: "false"
