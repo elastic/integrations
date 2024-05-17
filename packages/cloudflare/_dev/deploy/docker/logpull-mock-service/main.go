@@ -32,11 +32,8 @@ var (
 
 // Ref: https://developers.cloudflare.com/logs/logpull/requesting-logs/
 func main() {
-	log.Printf("Starting service...")
 	router := mux.NewRouter()
-	log.Printf("Created router object")
 	router.Path("/client/v4/zones/aaabbbccc/logs/received").HandlerFunc(logpullHandler).Methods("GET").Schemes("http")
-	log.Printf("Set path for router")
 
 	port := 3000
 	log.Printf("Server listening on port %d...\n", port)
