@@ -111,7 +111,7 @@ processors:
           ctx.okta.debug_context.debug_data['risk_behaviors'] = dst;
         }
 
-  # Special cases for fields that were previously extracted from flattened. 
+  # Special cases for fields that were previously extracted from flattened.
   - rename:
       field: okta.debug_context.debug_data.deviceFingerprint
       target_field: okta.debug_context.debug_data.device_fingerprint
@@ -137,6 +137,36 @@ processors:
       target_field: okta.debug_context.debug_data.threat_suspected
       ignore_missing: true
       ignore_failure: true
+  - script:
+      lang: painless
+      description: Replace spaces and dashes in field names under okta.debug_context.debug_data.
+      tag: painless_purge_spaces_and_dashes
+      if: ctx.okta?.debug_context?.debug_data != null
+      source: |
+        String underscore(String s) {
+          return /[ -]/.matcher(s).replaceAll('_');
+        }
+        def renameKeys(Map src) {
+          def dst = new HashMap();
+          for (def entry: src.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              dst[underscore(key)] = renameKeys(value);
+            } else if (value instanceof List) {
+              for (int i = 0; i < value.length; i++) {
+                if (value[i] instanceof Map) {
+                  value[i] = renameKeys(value[i]);
+                }
+              }
+              dst[underscore(key)] = value;
+            } else {
+              dst[underscore(key)] = value;
+            }
+          }
+          return dst;
+        }
+        ctx.okta.debug_context.debug_data = renameKeys(ctx.okta.debug_context.debug_data)
 
 on_failure:
   - set:
