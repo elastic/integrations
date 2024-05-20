@@ -1,0 +1,101 @@
+- name: winlog
+  type: group
+  description: >
+    All fields specific to the Windows Eventlog are defined here.
+
+  fields:
+    - name: api
+      type: keyword
+      description: >
+        The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API.
+
+        The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs.
+
+    - name: activity_id
+      type: keyword
+      description: >
+        A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity.
+
+    - name: channel
+      type: keyword
+      description: >
+        The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration.
+
+    - name: computer_name
+      type: keyword
+      description: >
+        The name of the computer that generated the record. When using Windows event forwarding, this name can differ from `agent.hostname`.
+
+    - name: flags
+      type: keyword
+      description: >
+        Flags that provide information about the event such as the type of session it was logged to and if the event contains extended data.
+
+    - name: event_id
+      type: keyword
+      description: >
+        The event identifier. The value is specific to the source of the event.
+
+    - name: keywords
+      type: keyword
+      description: >
+        The keywords are used to classify an event.
+
+    - name: opcode
+      type: keyword
+      description: >
+        The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged.
+
+    - name: provider_guid
+      type: keyword
+      description: >
+        A globally unique identifier that identifies the provider that logged the event.
+
+    - name: provider_name
+      type: keyword
+      description: >
+        The source of the event log record (the application or service that logged the record).
+
+    - name: record_id
+      type: keyword
+      description: >
+        The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0.
+
+    - name: related_activity_id
+      type: keyword
+      description: >
+        A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier.
+
+    - name: task
+      type: keyword
+      description: >
+        A categorical identifier for the type of task performed during the event.
+
+    - name: user
+      type: group
+      fields:
+        - name: domain
+          type: keyword
+          description: >
+            The domain that the account associated with this event is a member of.
+
+        - name: identifier
+          type: keyword
+          description: >
+            The security identifier (SID) of the account associated with this event.
+
+        - name: name
+          type: keyword
+          description: >
+            Name of the user associated with this event.
+
+        - name: type
+          type: keyword
+          description: >
+            The type of account associated with this event.
+
+    - name: version
+      type: long
+      description: >
+        The version number of the event's definition.
+

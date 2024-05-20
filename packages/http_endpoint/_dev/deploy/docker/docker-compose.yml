@@ -1,13 +1,29 @@
 version: '2.3'
 services:
   test-webhook-http:
-    image: docker.elastic.co/observability/stream:v0.15.0
+    image: docker.elastic.co/observability/stream:v0.16.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
       - STREAM_PROTOCOL=webhook
       - STREAM_ADDR=http://elastic-agent:9515/json
       - STREAM_WEBHOOK_HEADER=Content-Type=application/json
-      - STREAM_USERNAME=abc123
-      - STREAM_PASSWORD=abc123
-    command: log --start-signal=SIGHUP --webhook-username=abc123 --webhook-password=abc123 --delay=10s /sample_logs/test-webhook.log
+      - STREAM_WEBHOOK_USERNAME=abc123
+      - STREAM_WEBHOOK_PASSWORD=abc123
+      - STREAM_START_SIGNAL=SIGHUP
+      - STREAM_DELAY=10s
+    command: log /sample_logs/test-webhook.log
+  test-webhook-http-ack:
+    image: docker.elastic.co/observability/stream:v0.16.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9516/json?wait_for_completion_timeout=1m
+      - STREAM_WEBHOOK_HEADER=Content-Type=application/json
+      - STREAM_WEBHOOK_USERNAME=abc123
+      - STREAM_WEBHOOK_PASSWORD=abc123
+      - STREAM_START_SIGNAL=SIGHUP
+      - STREAM_DELAY=10s
+      - STREAM_WEBHOOK_TIMEOUT=2m
+    command: log /sample_logs/test-webhook.log
