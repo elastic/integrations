@@ -87,14 +87,14 @@ Follow these [step-by-step instructions](https://docs.elastic.co/integrations/az
 
 ## Data stream specific configuration notes
 
-`Period`:: (_string_) Reporting interval. Metrics will have a timegrain of 5 minutes, so the `Period` configuration option  for `container_registry` should have a value of `300s` or multiple of `300s`for relevant results.
+`Period`:: (_string_) Reporting interval. Metrics will have a timegrain of 5 minutes, so the `Period` configuration option  for `azure_openai` should have a value of `300s` or multiple of `300s`for relevant results.
 
 `Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format `/subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}`.
 Should return a list of resources.
 
-`Resource Groups`:: (_[]string_) This option will return all container registries inside the resource group.
+`Resource Groups`:: (_[]string_) This option will return all Azure OpenAI services inside the resource group.
 
-If no resource filter is specified, then all container registries inside the entire subscription will be considered.
+If no resource filter is specified, then all Azure OpenAI services inside the entire subscription will be considered.
 
 The primary aggregation value will be retrieved for all the metrics contained in the namespaces. The aggregation options are `avg`, `sum`, `min`, `max`, `total`, `count`.
 
