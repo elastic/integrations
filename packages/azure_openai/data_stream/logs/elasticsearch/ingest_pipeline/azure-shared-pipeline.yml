@@ -4,6 +4,9 @@ processors:
   - set:
       field: cloud.provider
       value: azure
+  - lowercase:
+      field: azure.resource.id
+      ignore_missing: true
   - grok:
       field: azure.resource.id
       if: 'ctx.azure?.subscription_id == null'
@@ -19,26 +22,6 @@ processors:
       field: cloud.account.id
       copy_from: azure.subscription_id
       ignore_empty_value: true
-
-  - lowercase:
-      field: cloud.account.id
-      ignore_missing: true
-
-  - lowercase:
-      field: azure.subscription_id
-      ignore_missing: true
-
-  - lowercase:
-      field: azure.resource.group
-      ignore_missing: true
-
-  - lowercase:
-      field: azure.resource.id
-      ignore_missing: true
-
-  - lowercase:
-      field: azure.resource.name
-      ignore_missing: true
 on_failure:
   - set:
       field: error.message
