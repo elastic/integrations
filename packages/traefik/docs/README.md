@@ -1,17 +1,55 @@
 # Traefik Integration
 
-This integration periodically fetches metrics from [Traefik](https://traefik.io/) servers. It also ingests access
-logs created by the Traefik server.
+## Overview
+
+[Traefik](https://traefik.io/) is a modern reverse proxy and load balancer that helps to manage and route incoming web traffic to the user's applications. It is designed to dynamically adjust to the changes in user's infrastructure, making it easy to deploy and scale user's services. Traefik integrates well with containerized environments and provides features like automatic SSL certificate management and support for multiple backends.
+
+Use the Traefik integration to:
+
+- Collect logs related to access.
+- Create informative visualizations to track usage trends, measure key logs, and derive actionable business insights.
+- Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
+
+## Data streams
+
+The Traefik integration collects logs data.
+
+Logs help User keep a record of events that happen on user's machine. Users can monitor and troubleshoot the performance of their Traefik instance by accessing the `Log` data stream, which includes client IP, host, username, request address, duration, and content.
+
+Data streams:
+- `access`: Collects information related to the client IP, host, username, request address, duration, and content.
+
+Note:
+- Users can monitor and see the log inside the ingested documents for Traefik in the `logs-*` index pattern from `Discover`.
 
 ## Compatibility
 
-The Traefik datasets were tested with Traefik 1.6, 1.7 and 2.9.
+The Traefik datasets were tested with Traefik 1.6, 1.7 and 2.9 versions.
+
+## Prerequisites
+
+User need Elasticsearch for storing and searching user's data and Kibana for visualizing and managing it. User can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on user's own hardware.
+
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Validation
+
+After the integration is successfully configured, clicking on the Assets tab of the Traefik Integration should display a list of available dashboards. Click on the dashboard available for user's configured data stream. It should be populated with the required data.
+
+## Metrics
+Note:
+- The `/health` API endpoint which is used to collect the metrics is removed from Traefik `v2` version. Please refer this [issue](https://github.com/traefik/traefik/issues/7629) for more information.
+- We are currently working on the metrics collection using the suggested [alternative](https://doc.traefik.io/traefik/v2.3/observability/metrics/prometheus/). Keep a watch on this [issue](https://github.com/elastic/integrations/issues/9820) for more updates.
 
 ## Logs
 
 ### Access Logs
 
-The `access` data stream collects Traefik access logs.
+The `access` data stream collects Traefik access logs. This data stream collects logs related to client IP, host, username, request address, duration, and content.
+
+An example event for `access` looks as following:
 
 An example event for `access` looks as following:
 
@@ -167,123 +205,3 @@ An example event for `access` looks as following:
 | traefik.access.service.url.scheme | The scheme of the url | keyword |
 | traefik.access.service.url.username | The username of the url | keyword |
 | traefik.access.user_identifier | Is the RFC 1413 identity of the client | keyword |
-
-
-## Metrics
-
-### Health Metrics
-
-The `health` data stream collects metrics from the Traefik server.
-
-An example event for `health` looks as following:
-
-```json
-{
-    "@timestamp": "2024-02-12T17:21:39.672Z",
-    "agent": {
-        "ephemeral_id": "63e0045d-0344-4bdb-9f94-26442e08d137",
-        "id": "d95af4f5-ce65-45c7-8b0b-39929f004883",
-        "name": "docker-fleet-agent",
-        "type": "metricbeat",
-        "version": "8.11.4"
-    },
-    "data_stream": {
-        "dataset": "traefik.health",
-        "namespace": "ep",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "elastic_agent": {
-        "id": "d95af4f5-ce65-45c7-8b0b-39929f004883",
-        "snapshot": false,
-        "version": "8.11.4"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "dataset": "traefik.health",
-        "duration": 1679238,
-        "ingested": "2024-02-12T17:21:42Z",
-        "module": "traefik"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "65c6e8a59cee4f20baaa9c3b45722316",
-        "ip": [
-            "172.18.0.6"
-        ],
-        "mac": [
-            "02-42-AC-12-00-06"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.15.0-92-generic",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
-    },
-    "metricset": {
-        "name": "health",
-        "period": 10000
-    },
-    "service": {
-        "address": "http://elastic-package-service-traefik_format_common-1:8080/health",
-        "name": "traefik",
-        "type": "traefik"
-    },
-    "traefik": {
-        "health": {
-            "response": {
-                "avg_time": {
-                    "us": 826
-                },
-                "count": 16,
-                "status_codes": {
-                    "200": 16
-                }
-            },
-            "uptime": {
-                "sec": 17
-            }
-        }
-    }
-}
-
-```
-
-**Exported fields**
-
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
-| container.id | Unique container id. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| event.dataset | Event dataset | constant_keyword |  |
-| event.module | Event module | constant_keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| traefik.health.response.avg_time.us | Average response time in microseconds | long | gauge |
-| traefik.health.response.count | Number of responses | long | counter |
-| traefik.health.response.status_codes.\* | Number of responses per status code | object | counter |
-| traefik.health.uptime.sec | Uptime of Traefik instance in seconds | long | gauge |
-
