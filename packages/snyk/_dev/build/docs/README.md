@@ -8,7 +8,13 @@ This integration is for ingesting data from the [Snyk](https://snyk.io/) API.
 To configure access to the Snyk Audit Log API you will have to generate an API access token as described in the [Snyk Documentation](https://snyk.docs.apiary.io/#introduction/authorization)
 
 
-## Audit
+## Audit Logs
+
+{{event "audit_logs"}}
+
+{{fields "audit_logs"}}
+
+## Audit (Legacy)
 
 {{event "audit"}}
 
