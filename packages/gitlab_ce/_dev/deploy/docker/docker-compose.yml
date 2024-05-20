@@ -1,11 +1,26 @@
-version: "2.3"
+version: "3.6"
 services:
+  gitlab-ce:
+    image: gitlab/gitlab-ce:${SERVICE_VERSION}
+    container_name: gitlab-ce
+    hostname: 'gitlab.example.com'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://localhost'
+    ports:
+      - '80:80'
+      - '443:443'
+      - '22:22'
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log/gitlab
+
   gitlab-ce-production-filestream:
     image: alpine
     volumes:
       - ./sample_logs:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
+
   gitlab-ce-api-filestream:
     image: alpine
     volumes:
