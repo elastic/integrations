@@ -135,21 +135,29 @@ processors:
     ignore_failure: true
 - convert:
     field: json.address
-    target_field: nagios_xi.host.address
+    target_field: host.ip
     type: ip
     ignore_missing: true
+    on_failure:
+        - rename:
+            field: json.address
+            target_field: nagios_xi.host.address
+            ignore_missing: true
+- set:
+    field: host.ip
+    value: ["{{{host.ip}}}"]
+    ignore_empty_value: true
+- remove:
+    field: related.ip
     ignore_failure: true
 - set:
-    copy_from: nagios_xi.host.address
-    field: host.ip
-    override: true
-    ignore_failure: true
-- append:
     field: related.ip
     value: "{{{host.ip}}}"
-    if: ctx?.host?.ip != null
-    allow_duplicates: false
-    ignore_failure: true
+    if: ctx.host?.ip == null
+- set:
+    field: related.ip
+    value: ["{{{related.ip}}}"]
+    if: ctx.related?.ip != null
 - convert:
     field: json.normal_check_interval
     target_field: nagios_xi.host.normal_check_interval
@@ -192,11 +200,6 @@ processors:
 - rename:
     field: json.host_name
     target_field: nagios_xi.host.host_name
-    ignore_missing: true
-    ignore_failure: true
-- rename:
-    field: json.address
-    target_field: nagios_xi.host.address
     ignore_missing: true
     ignore_failure: true
 - rename:
@@ -425,7 +428,7 @@ processors:
     ignore_failure: true
 - set:
     field: event.type
-    value: info
+    value: [info]
     ignore_empty_value: true
     ignore_failure: true
 - script:
