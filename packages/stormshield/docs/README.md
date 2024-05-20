@@ -367,6 +367,52 @@ An example event for `log` looks as following:
 | stormshield.cookie_i | Temporary identity marker of the initiator of the negotiation. Character string in hexadecimal. Example: 0xae34785945ae3cbf | keyword |
 | stormshield.cookie_r | Temporary identity marker of the peer of the negotiation.  Character string in hexadecimal. Example: "0x56201508549a6526". | keyword |
 | stormshield.detail | Additional information on the vulnerable software version.  String of characters in UTF-8 format. Example: PHP_5.2.3 | keyword |
+| stormshield.device_aggs.CPU.kernel_time | Time consumed by the kernel | long |
+| stormshield.device_aggs.CPU.system_disruption | Time allocated to system disruptions | long |
+| stormshield.device_aggs.CPU.user_time | Time allocated to the management of user processes | long |
+| stormshield.device_aggs.Ethernet.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_aggs.Ethernet.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.Ethernet.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.Ethernet.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_aggs.Ethernet.packets_accepted | Number of packets accepted | long |
+| stormshield.device_aggs.Ethernet.packets_blocked | Number of packets blocked | long |
+| stormshield.device_aggs.Qid.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_aggs.Qid.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.Qid.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.Qid.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_aggs.Qid.packets_accepted | Number of packets accepted | long |
+| stormshield.device_aggs.Qid.packets_blocked | Number of packets blocked | long |
+| stormshield.device_aggs.Vlan.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_aggs.Vlan.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.Vlan.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.Vlan.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_aggs.Vlan.packets_accepted | Number of packets accepted | long |
+| stormshield.device_aggs.Vlan.packets_blocked | Number of packets blocked | long |
+| stormshield.device_aggs.Wifi.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_aggs.Wifi.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.Wifi.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.Wifi.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_aggs.Wifi.packets_accepted | Number of packets accepted | long |
+| stormshield.device_aggs.Wifi.packets_blocked | Number of packets blocked | long |
+| stormshield.device_aggs.agg.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_aggs.agg.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.agg.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.agg.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_aggs.agg.packets_accepted | Number of packets accepted | long |
+| stormshield.device_aggs.agg.packets_blocked | Number of packets blocked | long |
+| stormshield.device_aggs.ipsec.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_aggs.ipsec.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.ipsec.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.ipsec.native | Indication that these statistics are from the native IPSec interface | boolean |
+| stormshield.device_aggs.ipsec.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_aggs.ipsec.packets_accepted | Number of packets accepted | long |
+| stormshield.device_aggs.ipsec.packets_blocked | Number of packets blocked | long |
+| stormshield.device_aggs.sslvpn.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.device_aggs.sslvpn.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.sslvpn.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.device_aggs.sslvpn.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.device_aggs.sslvpn.packets_accepted | Number of packets accepted | long |
+| stormshield.device_aggs.sslvpn.packets_blocked | Number of packets blocked | long |
 | stormshield.device_stats.CPU.kernel_time | Time consumed by the kernel | long |
 | stormshield.device_stats.CPU.system_disruption | Time allocated to system disruptions | long |
 | stormshield.device_stats.CPU.user_time | Time allocated to the management of user processes | long |
