@@ -1,5 +1,5 @@
 ---
-description: Pipeline to process gitlab_ce api logs
+description: Pipeline to process gitlab api logs
 processors:
 - set:
     field: ecs.version
@@ -22,76 +22,76 @@ processors:
 - json:
     field: event.original
     tag: json_original
-    target_field: gitlab_ce.api
+    target_field: gitlab.api
 - date:
-    field: gitlab_ce.api.time
+    field: gitlab.api.time
     target_field: '@timestamp'
     formats:
     - ISO8601
     ignore_failure: true
 - rename:
-    field: gitlab_ce.api.severity
+    field: gitlab.api.severity
     target_field: log.level
     ignore_missing: true
 - script:
     lang: painless
     source: |-
-      if (ctx.gitlab_ce?.api?.duration_s != null) {
-        ctx.event.duration = ctx.gitlab_ce.api.duration_s * 1000000;
+      if (ctx.gitlab?.api?.duration_s != null) {
+        ctx.event.duration = ctx.gitlab.api.duration_s * 1000000;
       }
     ignore_failure: true
 - rename:
-    field: gitlab_ce.api.status
+    field: gitlab.api.status
     target_field: http.response.status_code
     ignore_missing: true
 - rename:
-    field: gitlab_ce.api.method
+    field: gitlab.api.method
     target_field: http.request.method
     ignore_missing: true
 - rename:
-    field: gitlab_ce.api.path
+    field: gitlab.api.path
     target_field: url.path
     ignore_missing: true
 - rename:
-    field: gitlab_ce.api.host
+    field: gitlab.api.host
     target_field: url.domain
     ignore_missing: true
 - dot_expander:
-    path: gitlab_ce.api
+    path: gitlab.api
     field: meta.caller_id
 - dot_expander:
-    path: gitlab_ce.api
+    path: gitlab.api
     field: meta.client_id
 - dot_expander:
-    path: gitlab_ce.api
+    path: gitlab.api
     field: meta.feature_category
 - dot_expander:
-    path: gitlab_ce.api
+    path: gitlab.api
     field: meta.remote_ip
 - convert:
-    field: gitlab_ce.api.meta.remote_ip
+    field: gitlab.api.meta.remote_ip
     type: ip
     ignore_missing: true
     on_failure:
         - remove:
-            field: gitlab_ce.api.meta.remote_ip
+            field: gitlab.api.meta.remote_ip
             ignore_missing: true
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
 - dot_expander:
-    path: gitlab_ce.api
+    path: gitlab.api
     field: meta.user
 - dot_expander:
-    path: gitlab_ce.api
+    path: gitlab.api
     field: meta.user_id
 - rename:
-    field: gitlab_ce.api.meta.caller_id
+    field: gitlab.api.meta.caller_id
     target_field: event.provider
     ignore_missing: true
 - split:
-    field: gitlab_ce.api.remote_ip
-    if: ctx.gitlab_ce?.api?.remote_ip != null && ctx.gitlab_ce?.api?.remote_ip != ''
+    field: gitlab.api.remote_ip
+    if: ctx.gitlab?.api?.remote_ip != null && ctx.gitlab?.api?.remote_ip != ''
     tag: 'split_ips'
     target_field: source.ip
     separator: ', '
@@ -110,18 +110,18 @@ processors:
               field: _ingest._value.ip
               ignore_missing: true
 - remove:
-    field: gitlab_ce.api.remote_ip
+    field: gitlab.api.remote_ip
     ignore_missing: true
 - rename:
-    field: gitlab_ce.api.ua
+    field: gitlab.api.ua
     target_field: user_agent.original
     ignore_missing: true
 - rename:
-    field: gitlab_ce.api.pid
+    field: gitlab.api.pid
     target_field: process.pid
     ignore_missing: true
 - rename:
-    field: gitlab_ce.api.user_id
+    field: gitlab.api.user_id
     target_field: user.id
     ignore_missing: true
 - convert:
@@ -129,7 +129,7 @@ processors:
     type: string
     ignore_missing: true
 - rename:
-    field: gitlab_ce.api.username
+    field: gitlab.api.username
     target_field: user.name
     ignore_missing: true
 - geoip:
@@ -171,7 +171,7 @@ processors:
     value:
     - database
     allow_duplicates: false
-    if: ctx.gitlab_ce?.api?.db_count != null && ctx.gitlab_ce?.api?.db_count > 0
+    if: ctx.gitlab?.api?.db_count != null && ctx.gitlab?.api?.db_count > 0
 - append:
     field: event.type
     value:

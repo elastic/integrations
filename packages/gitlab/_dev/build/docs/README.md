@@ -1,4 +1,4 @@
-# gitlab_ce Integration
+# gitlab Integration
 
 This integration is for ingesting logs from [Gitlab](https://about.gitlab.com/).
 
