@@ -6,12 +6,14 @@ services:
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://localhost'
+      GITLAB_PRE_RECONFIGURE_SCRIPT: |
+        chmod 0777 ${SERVICE_LOGS_DIR};
     ports:
       - '80:80'
       - '443:443'
       - '2222:22'
     volumes:
-      - ${SERVICE_LOGS_DIR}:/var/log/gitlab/
+      - ${SERVICE_LOGS_DIR}:/var/log/gitlab/gitlab-rails/
   gitlab-filestream:
     image: alpine
     volumes:
