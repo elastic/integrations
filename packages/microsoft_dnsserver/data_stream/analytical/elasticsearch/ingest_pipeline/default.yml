@@ -1,0 +1,721 @@
+---
+description: Pipeline for processing DNS Server Analytical logs
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+      tag: set_ecs_version
+  - set:
+      field: event.category
+      value: [network]
+      tag: set_event_category
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
+  - append:
+      field: event.type
+      value: [protocol]
+      tag: append_event_type_protocol
+
+# Rename winlog.event_data to microsoft_dnsserver.analytical
+  - rename:
+      field: winlog.event_data
+      target_field: microsoft_dnsserver.analytical
+      if: ctx.winlog?.event_data != null && ctx.winlog.event_data != ''
+      tag: rename_winlog_eventdata
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
+
+# Process DNS Server Analytical fields
+  - script:
+      lang: painless
+      ignore_failure: false
+      if: ctx.event?.code != null
+      tag: map_event_description
+      description: Map DNS event description from event ID
+      params:
+        "256": "Query received"
+        "257": "Response success"
+        "258": "Response failure"
+        "259": "Ignored query"
+        "260": "Recursive query out"
+        "261": "Response in"
+        "262": "Recursive query timeout"
+        "263": "Update in"
+        "264": "Update response"
+        "265": "IXFR request out"
+        "266": "IXFR request in"
+        "267": "IXFR response out"
+        "268": "IXFR response in"
+        "269": "AXFR request out"
+        "270": "AXFR request in"
+        "271": "AXFR response out"
+        "272": "AXFR response in"
+        "273": "XFR notification in"
+        "274": "XFR notification out"
+        "275": "XFR notify ACK in"
+        "276": "XFR notify ACK out"
+        "277": "Dynamic update forward"
+        "278": "Dynamic update response in"
+        "279": "Internal lookup CNAME"
+        "280": "Internal lookup additional"
+      source: |-
+        def t = params.get(ctx.event.code);
+        if (t == null) {
+          return;
+        }
+        if (ctx.microsoft_dnsserver?.analytical == null ) {
+          Map map = new HashMap();
+          ctx.microsoft_dnsserver.put("analytical", map);
+        }
+        ctx.microsoft_dnsserver.analytical.put("description", t)
+
+  - script:
+      lang: painless
+      ignore_failure: false
+      if: ctx.microsoft_dnsserver?.analytical?.QTYPE != null
+      tag: map_dns_question_type
+      description: Map numerical DNS question type to human-readable format
+      params:
+        "1": A
+        "2": NS
+        "3": MD
+        "4": MF
+        "5": CNAME
+        "6": SOA
+        "7": MB
+        "8": MG
+        "9": MR
+        "11": WKS
+        "12": PTR
+        "13": HINFO
+        "14": MINFO
+        "15": MX
+        "16": TXT
+        "17": RP
+        "18": AFSDB
+        "19": X25
+        "20": ISDN
+        "21": RT
+        "24": SIG
+        "25": KEY
+        "26": PX
+        "27": GPOS
+        "28": AAAA
+        "29": LOC
+        "31": EID
+        "32": NIMLOC
+        "33": SRV
+        "34": ATMA
+        "35": NAPTR
+        "36": KX
+        "37": CERT
+        "39": DNAME
+        "40": SINK
+        "41": OPL
+        "42": APL
+        "43": DS
+        "44": SSHFP
+        "45": IPSECKEY
+        "46": RRSIG
+        "47": NSEC
+        "48": DNSKEY
+        "49": DHCID
+        "50": NSEC3
+        "51": NSEC3PARAM
+        "52": TLSA
+        "53": SMIMEA
+        "55": HIP
+        "56": NINFO
+        "57": RKEY
+        "58": TALINK
+        "59": CDS
+        "60": CDNSKEY
+        "61": OPENPGPKEY
+        "62": CSYNC
+        "63": ZONEMD
+        "64": SVCB
+        "65": HTTPS
+        "99": SPF
+        "104": NID
+        "105": L32
+        "106": L64
+        "107": LP
+        "108": EUI48
+        "109": EUI64
+        "249": TKEY
+        "250": TSIG
+        "251": IXFR
+        "252": AXFR
+        "253": MAILB
+        "254": MAILA
+        "256": URI
+        "257": CAA
+        "258": AVC
+        "259": DOA
+        "260": AMTRELAY
+        "261": RESINFO
+        "32768": TA
+        "32769": DLV
+      source: |-
+        def t = params.get(ctx.microsoft_dnsserver.analytical.QTYPE);
+        if (t != null) {
+          ctx.microsoft_dnsserver.analytical.put("question_type", t);
+        }
+        ctx.microsoft_dnsserver.analytical.remove("QTYPE");
+
+  - script:
+      lang: painless
+      ignore_failure: false
+      if: ctx.microsoft_dnsserver?.analytical?.RCODE != null
+      tag: map_dns_response_code
+      description: Map numerical DNS response code to human-readable format
+      params:
+        "0": NoError
+        "1": FormErr
+        "2": ServFail
+        "3": NXDomain
+        "4": NotImp
+        "5": Refused
+        "6": YXDomain
+        "7": YXRRSet
+        "8": NXRRSet
+        "9": NotAuth
+        "10": NotZone
+        "11": DSOTYPENI
+        "16": BADVERS/BADSIG
+        "17": BADKEY
+        "18": BADTIME
+        "19": BADMODE
+        "20": BADNAME
+        "21": BADALG
+        "22": BADTRUNC
+        "23": BADCOOKIE
+      source: |-
+        def t = params.get(ctx.microsoft_dnsserver.analytical.RCODE);
+        if (t != null) {
+          ctx.microsoft_dnsserver.analytical.put("response_code", t);
+        }
+        ctx.microsoft_dnsserver.analytical.remove("RCODE");
+
+  - remove:
+      field: microsoft_dnsserver.analytical.PolicyName
+      if: ctx.microsoft_dnsserver?.analytical?.PolicyName == "NULL"
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_null_policy_name
+  # DNS flags are broken down into other fields
+  - remove:
+      field: microsoft_dnsserver.analytical.Flags
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_dns_flags
+
+  - script:
+      lang: painless
+      ignore_failure: false
+      if: ctx.winlog?.task != null
+      tag: map_dns_server_task_code
+      description: Map numerical Task code to human-readable format
+      params:
+        "0": DEFAULT
+        "1": LOOK_UP
+        "2": RECURSE_QUERY
+        "3": DYNAMIC_UPDATE
+        "4": ZONE_XFR
+        "5": ZONE_OP
+        "6": AGEING
+        "7": OnlineSigning
+        "8": DNSSEC_OP
+        "9": CACHE_OP
+        "10": Configuration
+        "11": SERVER_OP
+        "13": POLICY_OP
+        "14": RRL
+        "15": RRL_OP
+        "16": VIRTUALIZATION_OP
+      source: |-
+        def t = params.get(ctx.winlog.task);
+        if (t != null) {
+          ctx.winlog.task = t;
+        }
+
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the analytical object.
+      if: ctx.microsoft_dnsserver?.analytical != null
+      tag: painless_to_rename_fields_under_microsoft_dnsserver_analytical
+      params:
+        "AdditionalInfo": "additional_info"
+        "BufferSize": "bytes_sent"
+        "CacheScope": "cache_scope"
+        "DNSSEC": "dnssec"
+        "ElapsedTime": "elapsed_time"
+        "GUID": "guid"
+        "PacketData": "packet_data"
+        "PolicyName": "policy_name"
+        "QNAME": "question_name"
+        "QueriesAttached": "queries_attached"
+        "QXID": "qxid"
+        "Reason": "reason"
+        "RecursionDepth": "recursion_depth"
+        "RecursionScope": "recursion_scope"
+        "Scope": "scope"
+        "Secure": "secure"
+        "XID": "xid"
+        "Zone": "zone"
+        "ZoneScope": "zone_scope"
+      source: |
+        def renameKeys(Map src, Map keyMap) {
+          def dst = new HashMap();
+          for (def entry: src.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                dst[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = updatedList;
+              } else {
+                dst[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = value;
+              } else {
+                dst[key] = value;
+              }
+            }
+          }
+          return dst;
+        }
+        ctx.microsoft_dnsserver.analytical = renameKeys(ctx.microsoft_dnsserver.analytical, params)
+
+# ECS fields
+  - set:
+      field: dns.id
+      copy_from: microsoft_dnsserver.analytical.xid
+      ignore_empty_value: true
+      tag: set_dns_id
+  - set:
+      field: dns.question.name
+      copy_from: microsoft_dnsserver.analytical.question_name
+      ignore_empty_value: true
+      tag: set_dns_question_name
+  - set:
+      field: dns.question.type
+      copy_from: microsoft_dnsserver.analytical.question_type
+      ignore_empty_value: true
+      tag: set_dns_question_type
+  - set:
+      field: dns.response_code
+      copy_from: microsoft_dnsserver.analytical.response_code
+      ignore_empty_value: true
+      tag: set_dns_question_response
+  - set: 
+      field: event.outcome
+      value: success
+      if: ctx.dns?.response_code == "NoError"
+      tag: set_event_outcome_success
+  - set: 
+      field: event.outcome
+      value: failure
+      if: ctx.dns?.response_code != null && ctx.dns.response_code != "NoError"
+      tag: set_event_outcome_failure
+
+  - append:
+      field: dns.header_flags
+      value: AA
+      if: ctx.microsoft_dnsserver?.analytical?.AA == "1"
+      allow_duplicates: false
+      tag: append_dns_header_flag_AA
+  - append:
+      field: dns.header_flags
+      value: AD
+      if: ctx.microsoft_dnsserver?.analytical?.AD == "1"
+      allow_duplicates: false
+      tag: append_dns_header_flag_AD
+  - append:
+      field: dns.header_flags
+      value: RD
+      if: ctx.microsoft_dnsserver?.analytical?.RD == "1"
+      allow_duplicates: false
+      tag: append_dns_header_flag_RD
+  - append:
+      field: dns.header_flags
+      value: TC
+      if: ctx.microsoft_dnsserver?.analytical?.TC == "1"
+      allow_duplicates: false
+      tag: append_dns_header_flag_TC
+  - remove:
+      field:
+        - microsoft_dnsserver.analytical.AA
+        - microsoft_dnsserver.analytical.AD
+        - microsoft_dnsserver.analytical.RD
+        - microsoft_dnsserver.analytical.TC
+      ignore_missing: true
+      tag: remove_dns_headers
+
+  - set:
+      field: network.protocol
+      value: dns
+      tag: set_event_protocol
+  - set:
+      field: network.transport
+      value: tcp
+      if: ctx.microsoft_dnsserver?.analytical?.TCP == "1"
+      tag: set_network_transport_tcp
+  - set:
+      field: network.transport
+      value: udp
+      if: ctx.microsoft_dnsserver?.analytical?.TCP == "0"
+      tag: set_network_transport_udp
+  - remove:
+      field:
+        - microsoft_dnsserver.analytical.TCP
+      ignore_missing: true
+      tag: remove_dns_tcp
+  - set:
+      field: event.reason
+      copy_from: microsoft_dnsserver.analytical.reason
+      ignore_empty_value: true
+      tag: set_event_reason
+  - convert:
+      field: microsoft_dnsserver.analytical.bytes_sent
+      type: long
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_bytes_sent
+  - set:
+      field: network.bytes
+      copy_from: microsoft_dnsserver.analytical.bytes_sent
+      ignore_empty_value: true
+      tag: set_network_bytes
+  - set:
+      field: event.action
+      copy_from: winlog.task
+      ignore_empty_value: true
+      tag: set_event_action
+
+
+# Process ETW metadata
+  - convert:
+      field: winlog.process_id
+      target_field: process.pid
+      type: long
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_process_pid
+  - convert:
+      field: winlog.thread_id
+      target_field: process.thread.id
+      type: long
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_process_thread_id
+  - remove:
+      field:
+        - winlog.process_id
+        - winlog.thread_id
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_process_information
+  - remove:
+      field: winlog.activity_guid
+      if: ctx.winlog?.activity_guid == "{00000000-0000-0000-0000-000000000000}"
+      tag: remove_empty_activity_guid
+  - rename:
+      field: winlog.activity_guid
+      target_field: winlog.activity_id
+      ignore_missing: true
+      tag: rename_etw_activity_id
+  # Keywords in DNS Server manifest only reflect the event type and can be extracted from the event.code
+  - remove:
+      field: winlog.keywords
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_etw_keywords
+  - script:
+      lang: painless
+      ignore_failure: false
+      if: ctx.event?.code != null
+      tag: generate_winlog_keywords
+      description: Generate Winlog keywords from event ID
+      params:
+        "256": "QUERY_RECEIVED"
+        "257": "RESPONSE_SUCCESS"
+        "258": "RESPONSE_FAILURE"
+        "259": "IGNORED_QUERY"
+        "260": "RECURSE_QUERY_OUT"
+        "261": "RECURSE_RESPONSE_IN"
+        "262": "RECURSE_QUERY_TIMEOUT"
+        "263": "DYN_UPDATE_RECV"
+        "264": "DYN_UPDATE_RESPONSE"
+        "265": "IXFR_REQ_OUT"
+        "266": "IXFR_REQ_RECV"
+        "267": "IXFR_RESP_OUT"
+        "268": "IXFR_RESP_RECV"
+        "269": "AXFR_REQ_OUT"
+        "270": "AXFR_REQ_RECV"
+        "271": "AXFR_RESP_OUT"
+        "272": "AXFR_RESP_RECV"
+        "273": "XFR_NOTIFY_RECV"
+        "274": "XFR_NOTIFY_OUT"
+        "275": "XFR_NOTIFY_ACK_IN"
+        "276": "XFR_NOTIFY_ACK_OUT"
+        "277": "DYN_UPDATE_FORWARD"
+        "278": "DYN_UPDATE_RESPONSE_IN"
+        "279": "INTERNAL_LOOKUP_CNAME"
+        "280": "INTERNAL_LOOKUP_ADDITIONAL"
+      source: |-
+        def t = params.get(ctx.event.code);
+        if (t == null) {
+          return;
+        }
+        def list = new ArrayList();
+        list.add(t);
+        ctx.winlog.keywords = list;
+
+# DNS IP processing
+  # Destination IP
+  - convert:
+      field: microsoft_dnsserver.analytical.Destination
+      target_field: microsoft_dnsserver.analytical.destination.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_destionation_ip
+  - remove:
+      field: microsoft_dnsserver.analytical.Destination
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_destination_ip
+  - set:
+      field: destination.ip
+      copy_from: microsoft_dnsserver.analytical.destination.ip
+      ignore_empty_value: true
+      tag: set_destination_ip
+  - rename:
+      field: microsoft_dnsserver.analytical.Port
+      target_field: microsoft_dnsserver.analytical.destination.port
+      if: ctx.destination?.ip != null && ctx.destination.ip != ''
+      ignore_missing: true
+      tag: rename_dns_destination_port
+  - convert:
+      field: microsoft_dnsserver.analytical.destination.port
+      type: long
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_destination_port
+  - set:
+      field: destination.port
+      copy_from: microsoft_dnsserver.analytical.destination.port
+      ignore_empty_value: true
+      tag: set_destination_port
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+      tag: geo_destination_ip
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geo_destination_as
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+      tag: rename_destination_as_number
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+      tag: rename_destination_as_org
+  - set:
+      field: network.direction
+      value: egress
+      if: ctx.destination?.ip != null && ctx.destination.ip != ''
+      tag: set_network_direction_egress
+  
+  # Source IP
+  - convert:
+      field: microsoft_dnsserver.analytical.Source
+      target_field: microsoft_dnsserver.analytical.source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_source_ip
+  - remove:
+      field: microsoft_dnsserver.analytical.Source
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_source_ip
+  - set:
+      field: source.ip
+      copy_from: microsoft_dnsserver.analytical.source.ip
+      ignore_empty_value: true
+      tag: set_source_ip
+  - rename:
+      field: microsoft_dnsserver.analytical.Port
+      target_field: microsoft_dnsserver.analytical.source.port
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      ignore_missing: true
+      tag: rename_dns_source_port
+  - convert:
+      field: microsoft_dnsserver.analytical.source.port
+      type: long
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_source_port
+  - set:
+      field: source.port
+      copy_from: microsoft_dnsserver.analytical.source.port
+      ignore_empty_value: true
+      tag: set_source_port
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      tag: geo_source_ip
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geo_source_as
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+      tag: rename_source_as_number
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+      tag: rename_source_as_org
+  - set:
+      field: network.direction
+      value: ingress
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      tag: set_network_direction_ingress
+
+  # InterfaceIP
+  - convert:
+      field: microsoft_dnsserver.analytical.InterfaceIP
+      target_field: microsoft_dnsserver.analytical.interface_ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_interface_ip
+  # ForwardInterfaceIP
+  - convert:
+      field: microsoft_dnsserver.analytical.ForwardInterfaceIP
+      target_field: microsoft_dnsserver.analytical.forward_interface_ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+      tag: convert_forward_interface_ip
+  - remove:
+      field:
+        - microsoft_dnsserver.analytical.InterfaceIP
+        - microsoft_dnsserver.analytical.ForwardInterfaceIP
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_additional_ips
+
+# Related fields
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null && ctx.destination.ip != ''
+      allow_duplicates: false
+      tag: append_related_destination_ip
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null && ctx.source.ip != ''
+      allow_duplicates: false
+      tag: append_related_source_ip
+  - append:
+      field: related.ip
+      value: '{{{microsoft_dnsserver.analytical.interface_ip}}}'
+      if: ctx.microsoft_dnsserver?.analytical?.interface_ip != null && ctx.microsoft_dnsserver.analytical.interface_ip != ''
+      allow_duplicates: false
+      tag: append_related_interface_ip
+  - append:
+      field: related.ip
+      value: '{{{microsoft_dnsserver.analytical.forward_interface_ip}}}'
+      if: ctx.microsoft_dnsserver?.analytical?.forward_interface_ip != null && ctx.microsoft_dnsserver.analytical.forward_interface_ip != ''
+      allow_duplicates: false
+      tag: append_related_forward_ip
+
+# Remove duplicated and empty fields
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+
+  - remove:
+      field:
+        - microsoft_dnsserver.analytical.question_name
+        - microsoft_dnsserver.analytical.question_type
+        - microsoft_dnsserver.analytical.response_code
+        - microsoft_dnsserver.analytical.bytes_sent
+        - microsoft_dnsserver.analytical.xid
+        - microsoft_dnsserver.analytical.task
+        - microsoft_dnsserver.analytical.reason
+        - microsoft_dnsserver.analytical.destination.ip
+        - microsoft_dnsserver.analytical.destination.port
+        - microsoft_dnsserver.analytical.source.ip
+        - microsoft_dnsserver.analytical.source.port
+        - winlog.task
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+      tag: remove_duplicated_custom_fields
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
