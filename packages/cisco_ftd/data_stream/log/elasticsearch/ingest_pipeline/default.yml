@@ -474,6 +474,15 @@ processors:
       description: "305011"
       patterns:
         - Built %{NOTSPACE} %{NOTSPACE:network.transport} translation from %{NOTSPACE:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\(%{NOTSPACE:source.user.name}\))? to %{NOTSPACE:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port}
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '305013'"
+      field: "message"
+      description: "305013"
+      patterns:
+        - "Asymmetric NAT rules matched for forward and reverse flows; Connection for %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}/%{NUMBER:source.port}(\\(%{NOTSPACE:source.user.name}\\))? dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST}/%{NUMBER:destination.port} denied due to NAT reverse path failure"
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313001'"
       field: "message"
