@@ -1,7 +1,7 @@
 # Azure OpenAI Integration
 
-The Azure OpenAI service provides flexibility to build your own copilot and AI applications. The Azure OpenAI integration collects and aggregates OpenAI related logs such as audit and request-response logs and metrics from Microsoft.CognitiveServices type resources where it can be used for analysis, visualization, and alerting.
-Additional azure API calls will be executed in order to retrieve information regarding the resources targeted by the user.
+The Azure OpenAI service provides flexibility to build your own copilot and AI applications. The Azure OpenAI integration collects and aggregates OpenAI related logs, such as audit and request-response logs and metrics from Microsoft.CognitiveServices type resources for analysis, visualization, and alerting.
+Additional Azure API calls will be executed to retrieve information regarding the resources targeted by the user.
 
 ## Data streams
 
@@ -26,7 +26,7 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 `eventhub` :
 _string_
 It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
-Default value `insights-operational-logs`.
+Default value: `insights-operational-logs`.
 
 `consumer_group` :
 _string_
