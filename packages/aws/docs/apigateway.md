@@ -20,13 +20,13 @@ AWS API Gateway allows you to set up Custom Access Logging to gain deeper insigh
 The Elastic integration for AWS API Gateway supports the following Log Format by API type:
 
 HTTP:  
-```{"requestId": "$context.requestId","ip": "$context.identity.sourceIp","requestTime": "$context.requestTime","httpMethod": "$context.httpMethod","routeKey": "$context.routeKey","status": "$context.status","protocol": "$context.protocol","responseLength": "$context.responseLength",apiId": "$context.apiId", "domainName": "$context.domainName", "stage": "$context.stage"}```
+```{"requestId": "$context.requestId","ip": "$context.identity.sourceIp","requestTime": "$context.requestTime","httpMethod": "$context.httpMethod","routeKey": "$context.routeKey","status": "$context.status","protocol": "$context.protocol","responseLength": "$context.responseLength","apiId": "$context.apiId", "domainName": "$context.domainName", "stage": "$context.stage"}```
 
 REST:  
-```{"requestId": "$context.requestId","ip": "$context.identity.sourceIp","caller": "$context.identity.caller","user": "$context.identity.user""requestTime": "$context.requestTime","httpMethod": "$context.httpMethod","resourcePath": "$context.resourcePath","status": "$context.status","protocol": "$context.protocol","responseLength": "$context.responseLength",apiId": "$context.apiId", "domainName": "$context.domainName", "stage": "$context.stage"}```
+```{"requestId": "$context.requestId","ip": "$context.identity.sourceIp","caller": "$context.identity.caller","user": "$context.identity.user","requestTime": "$context.requestTime","httpMethod": "$context.httpMethod","resourcePath": "$context.resourcePath","status": "$context.status","protocol": "$context.protocol","responseLength": "$context.responseLength","apiId": "$context.apiId", "domainName": "$context.domainName", "stage": "$context.stage"}```
 
 WebSockets:  
-```{"requestId": "$context.requestId","ip": "$context.identity.sourceIp","caller": "$context.identity.caller","user": "$context.identity.user","requestTime": "$context.requestTime","eventType": "$context.eventType","routeKey": "$context.routeKey","status": "$context.status","connectionId": "$context.connectionId", apiId": "$context.apiId", "domainName": "$context.domainName", "stage": "$context.stage"}```
+```{"requestId": "$context.requestId","ip": "$context.identity.sourceIp","caller": "$context.identity.caller","user": "$context.identity.user","requestTime": "$context.requestTime","eventType": "$context.eventType","routeKey": "$context.routeKey","status": "$context.status","connectionId": "$context.connectionId", "apiId": "$context.apiId", "domainName": "$context.domainName", "stage": "$context.stage"}```
 
 Beyond the standard Log Formats we provide, you can use a wide range of fields for each API type when enabling Custom Access Logging.
 
