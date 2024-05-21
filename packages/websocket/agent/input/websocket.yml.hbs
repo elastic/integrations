@@ -1,0 +1,24 @@
+data_stream:
+  dataset: {{data_stream.dataset}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+url: {{url}}
+
+program: {{escape_string program}}
+
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}
+
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,83 @@
+format_version: 3.0.2
+name: websocket
+title: Custom input using Websocket
+version: 0.1.0
+description: Collect custom events from a socket server with Elastic agent.
+type: input
+categories:
+  - custom
+conditions:
+  kibana:
+    version: "^8.13.0"
+  elastic:
+    subscription: "basic"
+policy_templates:
+  - name: websocket
+    title: Websocket Custom Socket Input
+    description: Collect custom data from websocket server.
+    input: websocket
+    type: logs
+    template_path: websocket.yml.hbs
+    vars:
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: websocket.websocket
+        required: true
+        show_user: true
+      - name: url
+        type: text
+        title: URL
+        description: URL of the Websocket Server.
+        required: true
+        show_user: true
+        default: ws://localhost:443/v1/stream
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: program
+        type: textarea
+        title: The CEL program to be run for each message.
+        description: |
+          Program is the The CEL program that is executed on each message received.
+          More information can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-websocket.html#_execution_2).
+        show_user: true
+        multi: false
+        required: true
+        default: |
+          # // Read and process simple websocket messages from a local websocket server.
+          # bytes(state.response).decode_json().as(inner_body,{
+          #   "events": inner_body.encode_json(),
+          # })
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc, more examples found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config).
+        multi: false
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
