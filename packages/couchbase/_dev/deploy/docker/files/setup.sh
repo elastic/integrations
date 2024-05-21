@@ -1,3 +1,4 @@
+#!/bin/bash
 ADMIN_USER="Administrator"
 ADMIN_PASSWORD="password"
 CB_HOST="localhost"
