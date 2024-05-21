@@ -15,12 +15,6 @@ processors:
   - set:
       field: event.category
       value: [ network ]
-  - set:
-      field: event.type
-      value: [ info ]
-  - set:
-      field: event.action
-      value: firewall-rule
 
   #
   # Parse the syslog header
@@ -2114,332 +2108,536 @@ processors:
       ignore_missing: true
   # ECS categorization
   - script:
+      tag: script_ecs_outcome_categorization
+      lang: painless
+      description: >-
+        Sets the ECS event categorization fields for given message type and outcome.
+        The top-level keys are the Cisco message IDs, which will match against
+        'event.code' in the document. The next level of keys are outcome values,
+        which match against '_temp_.outcome' in the document. The final level of
+        keys are ECS event fields.
+      params:
+        "106100":
+          denied:
+            type: [ connection, denied ]
+            outcome: success
+            action: firewall-rule
+          permitted:
+            type: [ connection, allowed ]
+            outcome: success
+            action: firewall-rule
+          est-allowed:
+            type: [ connection, allowed ]
+            outcome: success
+            action: firewall-rule
+        "106102":
+          denied:
+            type: [ connection, denied ]
+            outcome: success
+            action: firewall-rule
+          permitted:
+            type: [ connection, allowed ]
+            outcome: success
+            action: firewall-rule
+        "111004":
+          failed:
+            category: [ configuration ]
+            type: [ info ]
+            outcome: failure
+            action: configuration
+          ok:
+            category: [ configuration ]
+            type: [ change ]
+            outcome: success
+            action: configuration
+      source: >-
+        params.get(ctx.event.code)?.get(ctx._temp_.outcome)?.forEach((k, v) -> ctx.event[k] = v);
+
+  - script:
       tag: script_ecs_categorization
       lang: painless
       description: >-
-        This script will set the ECS event categorization fields for each
-        message type. If a message wrote to _temp_.outcome, the value of this
-        field will be used to conditionally set the ECS event fields.
-        The top-level keys are the Cisco message IDs. The next level of keys are
-        either the ECS event fields or in the case of _temp_.outcome being set,
-        the possible values of _temp_.outcome. In the latter case, the keys
-        contained within will be the ECS event fields.
+        This script will set the ECS event categorization fields for a given
+        message type. The top-level keys are the Cisco message IDs. The next
+        level of keys are ECS event fields.
       params:
         "106001":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106002":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106006":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106007":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106010":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106013":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106014":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106015":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106016":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106017":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106018":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106020":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106021":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106022":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106023":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "106027":
           type: [ connection, denied ]
           outcome: success
-        "106100":
-          denied:
-            type: [ connection, denied ]
-            action: firewall-rule
-            outcome: success
-          permitted:
-            type: [ connection, allowed ]
-            action: firewall-rule
-            outcome: success
-          est-allowed:
-            type: [ connection, allowed ]
-            action: firewall-rule
-            outcome: success
-        "106102":
-          denied:
-            type: [ connection, denied ]
-            action: firewall-rule
-            outcome: success
-          permitted:
-            type: [ connection, allowed ]
-            action: firewall-rule
-            outcome: success
+          action: firewall-rule
         "106103":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "110002":
-          type: [ connection, denied ]
+          type: [ connection, info ]
           outcome: failure
-        "111004":
-          failed:
-            outcome: failure
-          ok:
-            outcome: success
+          action: firewall-rule
+        "111009":
+          category: [ configuration ]
+          type: [ info ]
+          outcome: success
+          action: configuration
+        "111010":
+          category: [ configuration ]
+          type: [ change ]
+          outcome: success
+          action: configuration
         "113004":
           category: [ authentication, network ]
           type: [ allowed, info ]
-          action: logged-in
           outcome: success
+          action: logged-in
         "113005":
           category: [ authentication, network ]
           type: [ denied, info ]
-          action: logon-failed
           outcome: failure
+          action: logon-failed
         "113012":
           category: [ authentication, network ]
           type: [ allowed, info ]
-          action: logged-in
           outcome: success
+          action: logged-in
+        "113015":
+          category: [ authentication, network ]
+          type: [ denied, info ]
+          outcome: failure
+          action: logon-failed
         "113019":
           type: [ connection, end ]
+          outcome: success
           action: client-vpn-disconnected
         "113021":
           category: [ authentication, network ]
           type: [ denied, info ]
-          action: logon-failed
           outcome: failure
+          action: logon-failed
         "113029":
           type: [ connection, denied ]
+          outcome: failure
           action: client-vpn-error
         "113030":
           type: [ connection, denied ]
+          outcome: failure
           action: client-vpn-error
         "113031":
           type: [ connection, denied ]
+          outcome: failure
           action: client-vpn-error
         "113032":
           type: [ connection, denied ]
+          outcome: failure
           action: client-vpn-error
         "113033":
           type: [ connection, denied ]
+          outcome: failure
           action: client-vpn-error
         "113034":
           type: [ connection, denied ]
+          outcome: failure
           action: client-vpn-error
         "113035":
           type: [ connection, denied ]
+          outcome: failure
           action: client-vpn-error
         "113036":
           type: [ connection, denied ]
+          outcome: failure
           action: client-vpn-error
         "113037":
           type: [ connection, denied ]
+          outcome: failure
           action: client-vpn-error
         "113038":
           type: [ connection, denied ]
+          outcome: failure
           action: client-vpn-error
         "113039":
           category: [ network, session ]
           type: [ connection, start ]
           action: client-vpn-connected
+          outcome: success
         "113040":
           type: [ connection, denied ]
+          outcome: failure
           action: client-vpn-error
+        "302013":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
         "302014":
           type: [ connection, end ]
+          outcome: success
           action: flow-expiration
+        "302015":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
         "302016":
           type: [ connection, end ]
+          outcome: success
           action: flow-expiration
         "302018":
           type: [ connection, end ]
-          action: flow-expiration
           outcome: success
+          action: flow-expiration
         "302020":
           type: [ connection, start ]
+          outcome: success
           action: flow-creation
         "302021":
           type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302022":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
+        "302023":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302024":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
+        "302025":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302026":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
+        "302027":
+          type: [ connection, end ]
+          outcome: success
           action: flow-expiration
         "302036":
           type: [ connection, end ]
+          outcome: success
           action: flow-expiration
         "302304":
           type: [ connection, end ]
+          outcome: success
           action: flow-expiration
         "302306":
           type: [ connection, end ]
+          outcome: success
           action: flow-expiration
+        "303002":
+          category: [ network, file ]
+          type: [ access ]
+          outcome: success
+          action: ftp
         "304001":
-          type: [ connection, allowed ]
+          type: [ access, allowed ]
           outcome: success
+          action: url-access
         "304002":
-          type: [ connection, denied ]
+          type: [ access, denied ]
           outcome: success
+          action: url-access
+        "305011":
+          category: [ network, configuration ]
+          type: [ creation ]
+          outcome: success
+          action: nat-slot
         "305012":
-          type: [ connection, end ]
-          action: flow-expiration
+          category: [ network, configuration ]
+          type: [ deletion ]
+          outcome: success
+          action: nat-slot
         "313001":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "313004":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
+        "313005":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
         "313008":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "313009":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "322001":
           type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
         "338001":
-          type: [ connection ]
+          type: [ connection, info ]
+          action: dynamic-filter
         "338002":
-          type: [ connection, allowed ]
-          outcome: success
+          type: [ connection, info ]
+          action: dynamic-filter
         "338003":
-          type: [ connection ]
+          type: [ connection, info ]
+          action: dynamic-filter
         "338004":
-          category: [ network, intrusion_detection ]
-          outcome: success
+          type: [ connection, info ]
+          action: dynamic-filter
         "338005":
-          type: [ connection ]
+          type: [ connection, denied ]
+          outcome: success
+          action: dynamic-filter
         "338006":
-          type: [ connection ]
+          type: [ connection, denied ]
+          outcome: success
+          action: dynamic-filter
         "338007":
-          type: [ connection ]
+          type: [ connection, denied ]
+          outcome: success
+          action: dynamic-filter
         "338008":
           type: [ connection, denied ]
-          outcome: failure
+          outcome: success
+          action: dynamic-filter
         "338101":
-          type: [ connection ]
+          type: [ connection, info ]
+          action: dynamic-filter
         "338102":
-          type: [ connection ]
+          type: [ connection, info ]
+          action: dynamic-filter
         "338103":
-          type: [ connection ]
+          type: [ connection, info ]
+          action: dynamic-filter
         "338104":
-          type: [ connection ]
+          type: [ connection, info ]
+          action: dynamic-filter
         "338201":
-          type: [ connection ]
+          type: [ connection, info ]
+          action: dynamic-filter
         "338202":
-          type: [ connection ]
+          type: [ connection, info ]
+          action: dynamic-filter
         "338203":
-          type: [ connection ]
+          type: [ connection, denied ]
+          outcome: success
+          action: dynamic-filter
         "338204":
           type: [ connection, denied ]
-          outcome: failure
+          outcome: success
+          action: dynamic-filter
         "338301":
-          type: [ connection ]
+          type: [ connection, info ]
+          action: firewall-rule
+        "419002":
+          type: [ connection, info ]
+          action: firewall-rule
         "434002":
           type: [ connection, denied ]
-          action: drop
-          outcome: unknown
+          outcome: success
+          action: firewall-rule
         "434004":
+          type: [ info ]
           action: bypass
-          outcome: unknown
         "502103":
           category: [ iam ]
-          type: [ group, change ]
+          type: [ user, change ]
+          outcome: success
+          action: privilege-level-changed
+        "507003":
+          type: [ connection, end ]
+          action: flow-termination
         "602303":
           type: [ connection, start ]
-          action: created
           outcome: success
+          action: sa-created
         "602304":
-          type: [ info, end ]
-          action: deleted
+          type: [ connection, end ]
           outcome: success
+          action: sa-deleted
         "605004":
           category: [ authentication, network ]
           type: [ denied, info ]
-          action: logon-failed
           outcome: failure
+          action: logon-failed
         "605005":
-          type: [ connection, allowed ]
+          category: [ authentication, network ]
+          type: [ allowed, info ]
           outcome: success
+          action: logged-in
+        "607001":
+          type: [ info ]
+          outcome: success
+          action: firewall-rule
         "609001":
-          type: [ connection, end ]
-          action: flow-expiration
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
         "609002":
           type: [ connection, end ]
+          outcome: success
           action: flow-expiration
         "611101":
           category: [ authentication, network ]
           type: [ allowed, info ]
-          action: logged-in
           outcome: success
+          action: logged-in
         "611102":
           category: [ authentication, network ]
           type: [ denied, info ]
-          action: logon-failed
           outcome: failure
+          action: logon-failed
         "710003":
           type: [ connection, denied ]
           outcome: success
+          action: firewall-rule
         "710005":
           type: [ connection, denied ]
           outcome: failure
-        "713120":
+          action: firewall-rule
+        "710006":
+          type: [ connection, denied ]
+          outcome: failure
+          action: firewall-rule
+        "713049":
+          type: [ connection, start ]
           outcome: success
+          action: firewall-rule
+        "713120":
+          type: [ connection, info ]
+          outcome: success
+          action: firewall-rule
+        "713202":
+          type: [ connection, info ]
+          action: firewall-rule
         "713901":
-          action: error
+          type: [ info ]
           outcome: failure
+          action: client-vpn-error
         "713902":
-          action: error
+          type: [ info ]
           outcome: failure
+          action: client-vpn-error
         "713903":
-          outcome: failure
+          type: [ info ]
         "713904":
-          action: error
-          outcome: failure
+          type: [ info ]
         "713905":
-          action: error
-          outcome: failure
+          type: [ info ]
+        "713906":
+          type: [ info ]
+        "716002":
+          type: [ connection, end ]
+          outcome: success
+          action: client-vpn-disconnected
         "716039":
           category: [ authentication, network ]
           type: [ denied, info ]
           action: logon-failed
           outcome: failure
+        "722011":
+          type: [ info ]
+        "722022":
+          type: [ connection, info ]
+          outcome: success
+        "722023":
+          type: [ connection, end ]
+          outcome: success
+        "722033":
+          type: [ connection, start ]
+          outcome: success
+        "722034":
+          type: [ connection, info ]
+        "722037":
+          type: [ connection, end ]
+        "722051":
+          type: [ connection, info ]
+          outcome: success
+          action: address-assigned
+        "733100":
+          type: [ info ]
         "734001":
           category: [ authentication, network ]
           type: [ allowed, info ]
-          action: logged-in
           outcome: success
+          action: logged-in
         "750002":
-          type: [ start, connection ]
+          type: [ connection, start ]
+          outcome: success
           action: connection-started
         "750003":
-          action: error
+          type: [ connection, start ]
+          outcome: failure
+        "805001":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-offload-started
+        "805002":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-offload-ended
       source: >-
-        if (ctx.event.code == null || !params.containsKey(ctx.event.code)) {
-          return;
-        }
-        if (ctx._temp_?.outcome == null) {
-          params.get(ctx.event.code).forEach((k, v) -> ctx.event[k] = v);
-        } else {
-          params.get(ctx.event.code).get(ctx._temp_.outcome).forEach((k, v) -> ctx.event[k] = v);
-        }
+        params.get(ctx.event.code)?.forEach((k, v) -> ctx.event[k] = v);
 
   # Malware event kind is classified as alert when sha_disposition is "Malware", "Custom Detection" not for other cases.
   - set:
