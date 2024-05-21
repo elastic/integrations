@@ -96,10 +96,10 @@ An example event for `logs` looks as following:
             "tenant": "eastus"
         },
         "resource": {
-            "group": "OBS-OPENAI-SERVICE-RS",
-            "id": "/SUBSCRIPTIONS/12CABCB4-86E8-404F-A3D2-1DC9982F45CA/RESOURCEGROUPS/OBS-OPENAI-SERVICE-RS/PROVIDERS/MICROSOFT.COGNITIVESERVICES/ACCOUNTS/OBS-OPENAI-TEST-01",
-            "name": "OBS-OPENAI-TEST-01",
-            "provider": "MICROSOFT.COGNITIVESERVICES/ACCOUNTS"
+            "group": "obs-openai-service-rs",
+            "id": "/subscriptions/12cabcb4-86e8-404f-a3d2-1dc9982f45ca/resourcegroups/obs-openai-service-rs/providers/microsoft.cognitiveservices/accounts/obs-openai-test-01",
+            "name": "obs-openai-test-01",
+            "provider": "microsoft.cognitiveservices/accounts"
         }
     },
     "cloud": {
