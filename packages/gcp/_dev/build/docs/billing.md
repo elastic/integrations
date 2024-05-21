@@ -22,6 +22,18 @@ The `dataset_id` is the ID of your BigQuery dataset where your billing data is s
 
 The `table_pattern` defines which tables to pull from within the specified dataset. This can be set to either `gcp_billing_export_v1` for standard usage cost data or `gcp_billing_export_resource_v1` for detailed usage cost data.
 
+### cost_type
+
+The `cost_type` specifies the type of cost data you want to retrieve from your billing data.
+
+- `regular`: This cost type includes all the regular costs associated with your usage of GCP services. This does not include any taxes, adjustments, or rounding errors.
+
+- `tax`: This cost type includes all the taxes associated with your usage of GCP services. This does not include the regular costs, adjustments, or rounding errors.
+
+- `adjustment`: This cost type includes any adjustments made to your billing data. Adjustments could be due to a variety of reasons such as credits, discounts, or any other modifications made to the original cost.
+
+- `rounding_error`: This cost type includes any rounding errors that occurred when calculating your costs. These are typically very small amounts and are used to reconcile any discrepancies due to rounding.
+
 ## Example Configuration
 
 Here's an example of what your configuration might look like:
