@@ -396,6 +396,16 @@ processors:
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
+      if: "ctx._temp_.cisco.message_id == '210007'"
+      field: "message"
+      description: "210007"
+      patterns:
+        - "LU allocate xlate failed for %{TYPE:_temp_.cisco.translate_type} %{WORD:network.protocol} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} \\(%{IPORHOST:_temp_.cisco.mapped_source_ip}/%{NUMBER:_temp_.cisco.mapped_source_port}\\) to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}/%{NUMBER:destination.port} \\(%{IPORHOST:_temp_.cisco.mapped_destination_ip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\\)"
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+        TYPE: "%{WORD}-%{WORD}"
+  - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
       description: "302013, 302015"
