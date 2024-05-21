@@ -12,3 +12,9 @@ services:
       - '2222:22'
     volumes:
       - ${SERVICE_LOGS_DIR}:/var/log/gitlab/gitlab-rails/
+  gitlab-filestream:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
