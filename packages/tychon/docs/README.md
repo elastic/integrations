@@ -818,6 +818,7 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | script.start | Scanner Start datetime. | date |
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
+| tags | List of keywords used to tag each event. | keyword |
 | tychon.definition.oval | Tychon Definition Oval. | date |
 | tychon.definition.stig | Tychon Definition Stig. | date |
 | tychon.id | TYCHON unique host identifier. | keyword |
@@ -922,6 +923,7 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | script.start | Scanner Start datetime. | date |
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
+| tags | List of keywords used to tag each event. | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
 
