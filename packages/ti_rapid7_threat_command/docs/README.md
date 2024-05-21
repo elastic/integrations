@@ -434,10 +434,10 @@ An example event for `alert` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-02T10:03:56.139Z",
+    "@timestamp": "2022-11-02T10:12:46.260Z",
     "agent": {
-        "ephemeral_id": "39d7165a-0c7a-426c-8e0e-16ce7c20ce03",
-        "id": "592b8626-202c-4897-b1ed-d4ca2464e536",
+        "ephemeral_id": "f5e8efc8-9b9e-4354-97db-8776fbcf8b06",
+        "id": "5e4f8c86-8caf-477f-8180-4d224bcc6b61",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.2"
@@ -451,20 +451,20 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "592b8626-202c-4897-b1ed-d4ca2464e536",
+        "id": "5e4f8c86-8caf-477f-8180-4d224bcc6b61",
         "snapshot": false,
         "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-05-21T05:12:57.856Z",
+        "created": "2024-05-21T10:38:41.689Z",
         "dataset": "ti_rapid7_threat_command.alert",
-        "id": "123456789abcdefgh8866123",
-        "ingested": "2024-05-21T05:13:09Z",
+        "id": "123456789zxcvbnmas8a8q60",
+        "ingested": "2024-05-21T10:38:51Z",
         "kind": "alert",
         "module": "ti_rapid7_threat_command",
-        "original": "{\"Assets\":[{\"Type\":\"Domains\",\"Value\":\"example.com\"}],\"Assignees\":[],\"Closed\":{\"IsClosed\":true},\"Details\":{\"Description\":\"A suspicious domain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.\",\"Images\":[\"1al5s6789z6e2b0m9s8a8q60\"],\"Severity\":\"Low\",\"Source\":{\"NetworkType\":\"ClearWeb\",\"Type\":\"WHOIS servers\",\"URL\":\"http://example.com\"},\"SubType\":\"RegisteredSuspiciousDomain\",\"Tags\":[{\"CreatedBy\":\"ProfilingRule\",\"Name\":\"Phishing Domain - Default Detection Rule\",\"_id\":\"1al3p6789zxcvbnmas8a8q60\"}],\"Title\":\"Suspected Phishing Domain - 'example.com'\",\"Type\":\"Phishing\"},\"FoundDate\":\"2022-11-02T10:03:56.139Z\",\"IsFlagged\":false,\"RelatedIocs\":[\"example.com\"],\"RelatedThreatIDs\":[\"6a4e7t9a111bd0003bcc2a57\"],\"TakedownStatus\":\"NotSent\",\"UpdateDate\":\"2022-11-02T10:03:56.139Z\",\"_id\":\"123456789abcdefgh8866123\"}",
-        "reference": "https://dashboard.ti.insight.rapid7.com/#/threat-command/alerts/?search=123456789abcdefgh8866123"
+        "original": "{\"Assets\":[{\"Type\":\"Domains\",\"Value\":\"example.com\"}],\"Assignees\":[],\"Closed\":{\"IsClosed\":true},\"Details\":{\"Description\":\"A suspicious subdomain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.\",\"Images\":[],\"Severity\":\"Low\",\"Source\":{\"NetworkType\":\"ClearWeb\",\"Type\":\"WHOIS servers\",\"URL\":\"http://example.com\"},\"SubType\":\"RegisteredSuspiciousDomain\",\"Tags\":[{\"CreatedBy\":\"ProfilingRule\",\"Name\":\"Phishing Domain - Default Detection Rule\",\"_id\":\"1al3p6789z6c2b7m9s8a8q60\"}],\"Title\":\"Suspected Phishing Domain - 'example.com'\",\"Type\":\"Phishing\"},\"FoundDate\":\"2022-11-02T10:12:46.260Z\",\"IsFlagged\":false,\"RelatedIocs\":[\"example.com\"],\"RelatedThreatIDs\":[\"6a4e7t9a111bd0003bcc2a55\"],\"TakedownStatus\":\"NotSent\",\"UpdateDate\":\"2022-11-02T10:12:46.260Z\",\"_id\":\"123456789zxcvbnmas8a8q60\"}",
+        "reference": "https://dashboard.ti.insight.rapid7.com/#/threat-command/alerts/?search=123456789zxcvbnmas8a8q60"
     },
     "input": {
         "type": "httpjson"
@@ -479,10 +479,7 @@ An example event for `alert` looks as following:
                     }
                 ],
                 "details": {
-                    "description": "A suspicious domain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.",
-                    "images": [
-                        "1al5s6789z6e2b0m9s8a8q60"
-                    ],
+                    "description": "A suspicious subdomain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.",
                     "severity": "Low",
                     "source": {
                         "network_type": "ClearWeb",
@@ -493,25 +490,25 @@ An example event for `alert` looks as following:
                     "tags": [
                         {
                             "created_by": "ProfilingRule",
-                            "id": "1al3p6789zxcvbnmas8a8q60",
+                            "id": "1al3p6789z6c2b7m9s8a8q60",
                             "name": "Phishing Domain - Default Detection Rule"
                         }
                     ],
                     "title": "Suspected Phishing Domain - 'example.com'",
                     "type": "Phishing"
                 },
-                "found_date": "2022-11-02T10:03:56.139Z",
-                "id": "123456789abcdefgh8866123",
+                "found_date": "2022-11-02T10:12:46.260Z",
+                "id": "123456789zxcvbnmas8a8q60",
                 "is_closed": true,
                 "is_flagged": false,
                 "related_iocs": [
                     "example.com"
                 ],
                 "related_threat_ids": [
-                    "6a4e7t9a111bd0003bcc2a57"
+                    "6a4e7t9a111bd0003bcc2a55"
                 ],
                 "takedown_status": "NotSent",
-                "update_date": "2022-11-02T10:03:56.139Z"
+                "update_date": "2022-11-02T10:12:46.260Z"
             }
         }
     },
@@ -550,6 +547,7 @@ An example event for `alert` looks as following:
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
@@ -614,11 +612,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2020-08-24T21:46:48.619Z",
     "agent": {
-        "ephemeral_id": "79ef7310-154a-4f30-a450-263900ebad89",
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
+        "ephemeral_id": "b9729094-523f-4d27-b222-89844a8f7316",
+        "id": "03f6fed3-d7d0-4fd0-b9d6-ad2de5e5bd18",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.12.2"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.vulnerability",
@@ -629,9 +627,9 @@ An example event for `vulnerability` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
-        "snapshot": true,
-        "version": "8.11.0"
+        "id": "03f6fed3-d7d0-4fd0-b9d6-ad2de5e5bd18",
+        "snapshot": false,
+        "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -639,9 +637,9 @@ An example event for `vulnerability` looks as following:
             "threat",
             "vulnerability"
         ],
-        "created": "2023-09-26T13:27:12.970Z",
+        "created": "2024-05-21T11:24:25.540Z",
         "dataset": "ti_rapid7_threat_command.vulnerability",
-        "ingested": "2023-09-26T13:27:15Z",
+        "ingested": "2024-05-21T11:24:37Z",
         "kind": "event",
         "module": "ti_rapid7_threat_command",
         "original": "{\"cpe\":[{\"Range\":{\"VersionEndExcluding\":\"\",\"VersionEndIncluding\":\"4.0.0\",\"VersionStartExcluding\":\"\",\"VersionStartIncluding\":\"1.0.0\"},\"Title\":\"Php\",\"Value\":\"cpe:2.3:a:php:php:*:*:*:*:*:*:*:*\",\"VendorProduct\":\"php php\"}],\"cveId\":\"CVE-2020-7064\",\"cvssScore\":5.4,\"exploitAvailability\":false,\"firstMentionDate\":\"N/A\",\"intsightsScore\":16,\"lastMentionDate\":\"2020-04-01T04:15:00.000Z\",\"mentionsAmount\":0,\"mentionsPerSource\":{\"ClearWebCyberBlogs\":0,\"CodeRepositories\":0,\"DarkWeb\":0,\"Exploit\":0,\"HackingForum\":0,\"InstantMessage\":0,\"PasteSite\":0,\"SocialMedia\":0},\"publishedDate\":\"2020-04-01T04:15:00.000Z\",\"relatedCampaigns\":[\"SolarWinds\"],\"relatedMalware\":[\"doppeldridex\",\"dridex\"],\"relatedThreatActors\":[\"doppelspider\"],\"severity\":\"Low\",\"updateDate\":\"2020-08-24T21:46:48.619Z\",\"vulnerabilityOrigin\":[\"Qualys\"]}",
@@ -733,7 +731,6 @@ An example event for `vulnerability` looks as following:
         "severity": "Low"
     }
 }
-
 ```
 
 **Exported fields**
@@ -762,6 +759,7 @@ An example event for `vulnerability` looks as following:
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
