@@ -60,38 +60,12 @@ Click on **Add row** to filter out data using multiple values of the parameter.
 
 Once the integration is configured and data collection is started, add transforms to identify the latest documents and process data of correlation indices.
 
-### Add Transforms for Unique IOCs and Detection Rule
+### Expiration of Indicators of Compromise (IOCs)
+The ingested IOCs are expired after the duration configured by `IOC Expiration Duration` integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates destination indices named `logs-ti_cybersixgill_latest.dest_threat-*` which only contains active and unexpired IOCs. The latest destination index also has an alias named `logs-ti_cybersixgill_latest.threat`. When querying for active indicators or setting up indicator match rules, only use the latest destination indices or the alias to avoid false positives from expired IOCs. Dashboards are also pointing to the latest destination indices containing active IOC. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source datastream `.ds-logs-ti_cybersixgill.threat-*` indices.
 
-1. In Kibana, go to **Management > Dev Tools**.
-2. Add the below APIs to the console and execute it.
-- Create a template for unique IOCs index
-```
-POST _index_template/rapid7-tc-unique-ioc-template
-{"index_patterns":["rapid7-tc-unique-iocs"],"template":{"mappings":{"properties":{"@timestamp":{"type":"date"},"agent":{"properties":{"ephemeral_id":{"type":"keyword","ignore_above":1024},"id":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024},"type":{"type":"keyword","ignore_above":1024},"version":{"type":"keyword","ignore_above":1024}}},"cloud":{"properties":{"account":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"availability_zone":{"type":"keyword","ignore_above":1024},"image":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"instance":{"properties":{"id":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024}}},"machine":{"properties":{"type":{"type":"keyword","ignore_above":1024}}},"project":{"properties":{"id":{"type":"keyword","ignore_above":1024}}},"provider":{"type":"keyword","ignore_above":1024},"region":{"type":"keyword","ignore_above":1024}}},"container":{"properties":{"id":{"type":"keyword","ignore_above":1024},"image":{"properties":{"name":{"type":"keyword","ignore_above":1024}}},"name":{"type":"keyword","ignore_above":1024}}},"data_stream":{"properties":{"dataset":{"type":"constant_keyword"},"namespace":{"type":"constant_keyword"},"type":{"type":"constant_keyword"}}},"ecs":{"properties":{"version":{"type":"keyword"}}},"elastic_agent":{"properties":{"id":{"type":"keyword","ignore_above":1024},"snapshot":{"type":"boolean"},"version":{"type":"keyword","ignore_above":1024}}},"error":{"properties":{"message":{"type":"match_only_text"}}},"event":{"properties":{"category":{"type":"keyword"},"created":{"type":"date"},"dataset":{"type":"keyword"},"kind":{"type":"keyword"},"module":{"type":"keyword"},"original":{"type":"keyword"},"risk_score":{"type":"float"},"type":{"type":"keyword"}}},"host":{"properties":{"architecture":{"type":"keyword","ignore_above":1024},"containerized":{"type":"boolean"},"domain":{"type":"keyword","ignore_above":1024},"hostname":{"type":"keyword","ignore_above":1024},"id":{"type":"keyword","ignore_above":1024},"ip":{"type":"ip"},"mac":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024},"os":{"properties":{"build":{"type":"keyword","ignore_above":1024},"codename":{"type":"keyword","ignore_above":1024},"family":{"type":"keyword","ignore_above":1024},"kernel":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024,"fields":{"text":{"type":"text"}}},"platform":{"type":"keyword","ignore_above":1024},"version":{"type":"keyword","ignore_above":1024}}},"type":{"type":"keyword","ignore_above":1024}}},"input":{"properties":{"type":{"type":"keyword","ignore_above":1024}}},"log":{"properties":{"offset":{"type":"long"}}},"related":{"properties":{"hash":{"type":"keyword"},"ip":{"type":"ip"}}},"rapid7":{"properties":{"tc":{"properties":{"ioc":{"properties":{"first_seen":{"type":"date"},"geolocation":{"type":"keyword"},"last_seen":{"type":"date"},"last_update_date":{"type":"date"},"provider":{"type":"keyword"},"related":{"properties":{"campaigns":{"type":"keyword"},"malware":{"type":"keyword"},"threat_actors":{"type":"keyword"}}},"reported_feeds":{"type":"nested","properties":{"confidence":{"type":"long"},"id":{"type":"keyword","ignore_above":1024},"name":{"type":"keyword","ignore_above":1024}}},"score":{"type":"double"},"severity":{"type":"keyword"},"status":{"type":"keyword"},"tags":{"type":"keyword"},"type":{"type":"keyword"},"value":{"type":"keyword","ignore_above":4096},"whitelisted":{"type":"keyword"}}}}}}},"tags":{"type":"keyword"},"threat":{"properties":{"indicator":{"properties":{"as":{"properties":{"number":{"type":"long"},"organization":{"properties":{"name":{"type":"keyword","ignore_above":1024,"fields":{"text":{"type":"match_only_text"}}}}}}},"confidence":{"type":"keyword","ignore_above":1024},"description":{"type":"keyword","ignore_above":1024},"email":{"properties":{"address":{"type":"keyword"}}},"file":{"properties":{"hash":{"properties":{"md5":{"type":"keyword","ignore_above":1024},"sha1":{"type":"keyword","ignore_above":1024},"sha256":{"type":"keyword","ignore_above":1024},"sha512":{"type":"keyword","ignore_above":1024},"sha384":{"type":"keyword","ignore_above":1024}}}}},"first_seen":{"type":"date"},"geo":{"properties":{"city_name":{"type":"keyword","ignore_above":1024},"continent_code":{"type":"keyword","ignore_above":1024},"continent_name":{"type":"keyword","ignore_above":1024},"country_iso_code":{"type":"keyword","ignore_above":1024},"country_name":{"type":"keyword","ignore_above":1024},"location":{"type":"geo_point"},"name":{"type":"keyword","ignore_above":1024},"postal_code":{"type":"keyword","ignore_above":1024},"region_iso_code":{"type":"keyword","ignore_above":1024},"region_name":{"type":"keyword","ignore_above":1024},"timezone":{"type":"keyword","ignore_above":1024}}},"ip":{"type":"ip"},"last_seen":{"type":"date"},"modified_at":{"type":"date"},"provider":{"type":"keyword","ignore_above":1024},"type":{"type":"keyword","ignore_above":1024},"url":{"properties":{"domain":{"type":"keyword","ignore_above":1024},"extension":{"type":"keyword","ignore_above":1024},"fragment":{"type":"keyword","ignore_above":1024},"full":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"original":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"password":{"type":"wildcard","ignore_above":1024},"path":{"type":"wildcard","ignore_above":1024},"port":{"type":"long"},"query":{"type":"keyword","ignore_above":4096},"registered_domain":{"type":"keyword","ignore_above":1024},"scheme":{"type":"keyword","ignore_above":1024},"subdomain":{"type":"keyword","ignore_above":1024},"top_level_domain":{"type":"keyword","ignore_above":1024},"username":{"type":"keyword","ignore_above":1024}}}}}}}}}}}
-```
-- Create a transform for unique IOCs
-```
-PUT _transform/ti_rapid7_threat_command_unique_ioc_transform
-{"source":{"index":["logs-*"],"query":{"bool":{"should":[{"match_phrase":{"data_stream.dataset":"ti_rapid7_threat_command.ioc"}}],"minimum_should_match":1}}},"dest":{"index":"rapid7-tc-unique-iocs","pipeline":"0.1.0-ti_rapid7_threat_command-unique-ioc-transform-pipeline"},"frequency":"30m","sync":{"time":{"field":"event.ingested","delay":"60s"}},"latest":{"unique_key":["rapid7.tc.ioc.value"],"sort":"@timestamp"},"description":"This transform creates index to maintain unique values of IOCs."}
-```
-- Start a transform for unique IOCs
-```
-POST _transform/ti_rapid7_threat_command_unique_ioc_transform/_start
-```
-- Create a template for correlation index of IOC rule transform
-```
-POST _index_template/ioc-rule-transform-template
-{"index_patterns":["rapid7-tc-ioc-correlations"],"template":{"mappings":{"properties":{"@timestamp":{"type":"date"},"rapid7":{"properties":{"tc":{"properties":{"ioc":{"properties":{"tags":{"type":"keyword"},"value":{"type":"keyword","ignore_above":4096},"related":{"properties":{"campaigns":{"type":"keyword"},"malware":{"type":"keyword"},"threat_actors":{"type":"keyword"}}}}}}}}},"threat":{"properties":{"enrichment":{"properties":{"indicator":{"properties":{"as":{"properties":{"number":{"type":"long"},"organization":{"properties":{"name":{"type":"keyword","ignore_above":1024,"fields":{"text":{"type":"match_only_text"}}}}}}},"confidence":{"type":"keyword","ignore_above":1024},"description":{"type":"keyword","ignore_above":1024},"email":{"properties":{"address":{"type":"keyword"}}},"file":{"properties":{"hash":{"properties":{"md5":{"type":"keyword","ignore_above":1024},"sha1":{"type":"keyword","ignore_above":1024},"sha256":{"type":"keyword","ignore_above":1024},"sha512":{"type":"keyword","ignore_above":1024},"sha384":{"type":"keyword","ignore_above":1024}}}}},"first_seen":{"type":"date"},"geo":{"properties":{"city_name":{"type":"keyword","ignore_above":1024},"continent_code":{"type":"keyword","ignore_above":1024},"continent_name":{"type":"keyword","ignore_above":1024},"country_iso_code":{"type":"keyword","ignore_above":1024},"country_name":{"type":"keyword","ignore_above":1024},"location":{"type":"geo_point"},"name":{"type":"keyword","ignore_above":1024},"postal_code":{"type":"keyword","ignore_above":1024},"region_iso_code":{"type":"keyword","ignore_above":1024},"region_name":{"type":"keyword","ignore_above":1024},"timezone":{"type":"keyword","ignore_above":1024}}},"ip":{"type":"ip"},"last_seen":{"type":"date"},"modified_at":{"type":"date"},"provider":{"type":"keyword","ignore_above":1024},"type":{"type":"keyword","ignore_above":1024},"url":{"properties":{"domain":{"type":"keyword","ignore_above":1024},"extension":{"type":"keyword","ignore_above":1024},"fragment":{"type":"keyword","ignore_above":1024},"full":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"original":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"password":{"type":"wildcard","ignore_above":1024},"path":{"type":"wildcard","ignore_above":1024},"port":{"type":"long"},"query":{"type":"keyword","ignore_above":4096},"registered_domain":{"type":"keyword","ignore_above":1024},"scheme":{"type":"keyword","ignore_above":1024},"subdomain":{"type":"keyword","ignore_above":1024},"top_level_domain":{"type":"keyword","ignore_above":1024},"username":{"type":"keyword","ignore_above":1024}}}}},"matched":{"properties":{"atomic":{"type":"keyword"},"field":{"type":"keyword"},"id":{"type":"keyword"},"index":{"type":"keyword"},"occured":{"type":"keyword"},"type":{"type":"keyword"}}}}},"indicator":{"properties":{"as":{"properties":{"number":{"type":"long"},"organization":{"properties":{"name":{"type":"keyword","ignore_above":1024,"fields":{"text":{"type":"match_only_text"}}}}}}},"confidence":{"type":"keyword","ignore_above":1024},"description":{"type":"keyword","ignore_above":1024},"email":{"properties":{"address":{"type":"keyword"}}},"file":{"properties":{"hash":{"properties":{"md5":{"type":"keyword","ignore_above":1024},"sha1":{"type":"keyword","ignore_above":1024},"sha256":{"type":"keyword","ignore_above":1024},"sha512":{"type":"keyword","ignore_above":1024},"sha384":{"type":"keyword","ignore_above":1024}}}}},"first_seen":{"type":"date"},"geo":{"properties":{"city_name":{"type":"keyword","ignore_above":1024},"continent_code":{"type":"keyword","ignore_above":1024},"continent_name":{"type":"keyword","ignore_above":1024},"country_iso_code":{"type":"keyword","ignore_above":1024},"country_name":{"type":"keyword","ignore_above":1024},"location":{"type":"geo_point"},"name":{"type":"keyword","ignore_above":1024},"postal_code":{"type":"keyword","ignore_above":1024},"region_iso_code":{"type":"keyword","ignore_above":1024},"region_name":{"type":"keyword","ignore_above":1024},"timezone":{"type":"keyword","ignore_above":1024}}},"ip":{"type":"ip"},"last_seen":{"type":"date"},"provider":{"type":"keyword","ignore_above":1024},"modified_at":{"type":"date"},"type":{"type":"keyword","ignore_above":1024},"url":{"properties":{"domain":{"type":"keyword","ignore_above":1024},"extension":{"type":"keyword","ignore_above":1024},"fragment":{"type":"keyword","ignore_above":1024},"full":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"original":{"type":"wildcard","ignore_above":4096,"fields":{"text":{"type":"match_only_text"}}},"password":{"type":"wildcard","ignore_above":1024},"path":{"type":"wildcard","ignore_above":1024},"port":{"type":"long"},"query":{"type":"keyword","ignore_above":4096},"registered_domain":{"type":"keyword","ignore_above":1024},"scheme":{"type":"keyword","ignore_above":1024},"subdomain":{"type":"keyword","ignore_above":1024},"top_level_domain":{"type":"keyword","ignore_above":1024},"username":{"type":"keyword","ignore_above":1024}}}}}}}}}}}
-```
-- Create a transform for IOC detection rule
-```
-PUT _transform/ti_rapid7_threat_command_ioc_rule_transform
-{"source":{"index":[".internal.alerts-security.alerts-default-*"],"query":{"bool":{"filter":[{"match_phrase":{"kibana.alert.rule.tags":"Rapid7 Threat Command"}},{"match_phrase":{"kibana.alert.rule.tags":"IOC"}},{"match_phrase":{"kibana.alert.rule.category":"Indicator Match Rule"}}]}}},"dest":{"index":"rapid7-tc-ioc-correlations","pipeline":"0.1.0-ti_rapid7_threat_command-ioc-rule-transform-pipeline"},"frequency":"30m","sync":{"time":{"field":"@timestamp","delay":"60s"}},"latest":{"unique_key":["kibana.alert.uuid"],"sort":"@timestamp"},"retention_policy":{"time":{"field":"@timestamp","max_age":"60d"}},"description":"This transform creates index to populate the IOC Correlation and IOC Correlation Details Dashboards."}
-```
-- Start a transform for IOC detection Rule
-```
-POST _transform/ti_rapid7_threat_command_ioc_rule_transform/_start
-```
+### ILM Policy
+To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_cybersixgill.threat-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-ti_cybersixgill.threat-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
+
 
 ### Add Transforms for Unique alerts
 
@@ -215,11 +189,11 @@ An example event for `ioc` looks as following:
 {
     "@timestamp": "2022-05-05T10:39:07.851Z",
     "agent": {
-        "ephemeral_id": "26a79bb1-c4ec-498b-b31e-e125ba1f3bc3",
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
+        "ephemeral_id": "422d9765-2a9e-41cc-ae34-882d2a47860d",
+        "id": "592b8626-202c-4897-b1ed-d4ca2464e536",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.12.2"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.ioc",
@@ -230,18 +204,18 @@ An example event for `ioc` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
-        "snapshot": true,
-        "version": "8.11.0"
+        "id": "592b8626-202c-4897-b1ed-d4ca2464e536",
+        "snapshot": false,
+        "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-09-26T13:26:21.497Z",
+        "created": "2024-05-21T05:44:14.495Z",
         "dataset": "ti_rapid7_threat_command.ioc",
-        "ingested": "2023-09-26T13:26:22Z",
+        "ingested": "2024-05-21T05:44:24Z",
         "kind": "enrichment",
         "module": "ti_rapid7_threat_command",
         "original": "{\"firstSeen\":\"2022-05-04T20:11:04.000Z\",\"lastSeen\":\"2022-05-04T20:11:04.000Z\",\"lastUpdateDate\":\"2022-05-05T10:39:07.851Z\",\"relatedCampaigns\":[],\"relatedMalware\":[\"remcos\"],\"relatedThreatActors\":[],\"reportedFeeds\":[{\"confidenceLevel\":2,\"id\":\"5b68306df84f7c8696047fdd\",\"name\":\"Test Feed\"}],\"score\":13.26086956521739,\"severity\":\"Low\",\"status\":\"Active\",\"tags\":[\"Test\"],\"type\":\"IpAddresses\",\"value\":\"89.160.20.112\",\"whitelisted\":false}",
@@ -256,6 +230,8 @@ An example event for `ioc` looks as following:
     "rapid7": {
         "tc": {
             "ioc": {
+                "deleted_at": "2022-05-15T10:39:07.851Z",
+                "expiration_duration": "10d",
                 "first_seen": "2022-05-04T20:11:04.000Z",
                 "last_seen": "2022-05-04T20:11:04.000Z",
                 "last_update_date": "2022-05-05T10:39:07.851Z",
@@ -319,6 +295,7 @@ An example event for `ioc` looks as following:
             "ip": "89.160.20.112",
             "last_seen": "2022-05-04T20:11:04.000Z",
             "modified_at": "2022-05-05T10:39:07.851Z",
+            "name": "89.160.20.112",
             "provider": [
                 "Test Feed"
             ],
@@ -326,7 +303,6 @@ An example event for `ioc` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -355,6 +331,7 @@ An example event for `ioc` looks as following:
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
@@ -378,7 +355,11 @@ An example event for `ioc` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.offset | Log offset | long |
+| rapid7.tc.ioc.deleted_at | The timestamp when indicator is (or will be) expired. | date |
+| rapid7.tc.ioc.expiration_duration | The configured expiration duration. | keyword |
 | rapid7.tc.ioc.first_seen | IOC first seen date in Unix Millisecond Timestamp. | date |
 | rapid7.tc.ioc.geolocation | Geographical location of an IP address. | keyword |
 | rapid7.tc.ioc.last_seen | IOC last seen date in Unix Millisecond Timestamp. | date |
@@ -422,6 +403,7 @@ An example event for `ioc` looks as following:
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
@@ -454,11 +436,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-11-02T10:03:56.139Z",
     "agent": {
-        "ephemeral_id": "743b16ad-875e-4038-9516-8f13a9aa47df",
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
+        "ephemeral_id": "39d7165a-0c7a-426c-8e0e-16ce7c20ce03",
+        "id": "592b8626-202c-4897-b1ed-d4ca2464e536",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.12.2"
     },
     "data_stream": {
         "dataset": "ti_rapid7_threat_command.alert",
@@ -469,16 +451,16 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dc81497a-8431-4ec0-aeca-be9bfd9982ba",
-        "snapshot": true,
-        "version": "8.11.0"
+        "id": "592b8626-202c-4897-b1ed-d4ca2464e536",
+        "snapshot": false,
+        "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-09-26T13:25:23.714Z",
+        "created": "2024-05-21T05:12:57.856Z",
         "dataset": "ti_rapid7_threat_command.alert",
         "id": "123456789abcdefgh8866123",
-        "ingested": "2023-09-26T13:25:26Z",
+        "ingested": "2024-05-21T05:13:09Z",
         "kind": "alert",
         "module": "ti_rapid7_threat_command",
         "original": "{\"Assets\":[{\"Type\":\"Domains\",\"Value\":\"example.com\"}],\"Assignees\":[],\"Closed\":{\"IsClosed\":true},\"Details\":{\"Description\":\"A suspicious domain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.\",\"Images\":[\"1al5s6789z6e2b0m9s8a8q60\"],\"Severity\":\"Low\",\"Source\":{\"NetworkType\":\"ClearWeb\",\"Type\":\"WHOIS servers\",\"URL\":\"http://example.com\"},\"SubType\":\"RegisteredSuspiciousDomain\",\"Tags\":[{\"CreatedBy\":\"ProfilingRule\",\"Name\":\"Phishing Domain - Default Detection Rule\",\"_id\":\"1al3p6789zxcvbnmas8a8q60\"}],\"Title\":\"Suspected Phishing Domain - 'example.com'\",\"Type\":\"Phishing\"},\"FoundDate\":\"2022-11-02T10:03:56.139Z\",\"IsFlagged\":false,\"RelatedIocs\":[\"example.com\"],\"RelatedThreatIDs\":[\"6a4e7t9a111bd0003bcc2a57\"],\"TakedownStatus\":\"NotSent\",\"UpdateDate\":\"2022-11-02T10:03:56.139Z\",\"_id\":\"123456789abcdefgh8866123\"}",
@@ -540,7 +522,6 @@ An example event for `alert` looks as following:
         "Phishing Domain - Default Detection Rule"
     ]
 }
-
 ```
 
 **Exported fields**
