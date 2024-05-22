@@ -403,7 +403,6 @@ package_name_manifest() {
     cat manifest.yml | yq -r '.name'
 }
 
-
 is_package_excluded_in_config() {
     local package=$1
     local config_file_path=$2
