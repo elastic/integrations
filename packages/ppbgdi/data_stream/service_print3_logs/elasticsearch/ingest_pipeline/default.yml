@@ -41,63 +41,15 @@ processors:
       description: JSON logs pipeline
       if: ctx.first_char == '{'
       name: '{{ IngestPipeline "common-json" }}'
-  - pipeline:
-      if: ctx.first_char != '{'
-      name: '{{ IngestPipeline "common-raw" }}'
-  - pipeline:
-      description: Layer object pipeline
-      if: ctx?.temp?.ppbgdi?.app?.layer != null
-      name: '{{ IngestPipeline "entity-layer" }}'
-  - pipeline:
-      description: auth-bod object pipeline
-      if: ctx.first_char == '{' &&  ctx?.kubernetes?.container?.name == 'auth-bod'
-      name: '{{ IngestPipeline "entity-auth-bod" }}'
+#   - pipeline:
+#       if: ctx.first_char != '{'
+#       name: '{{ IngestPipeline "common-raw" }}'
   - remove:
       field:
         - first_char
-  - set:
-      field: event.outcome
-      value: failure
-      if: "ctx?.event?.severity != null && ctx?.event?.severity >= 40"
-  - set:
-      field: event.outcome
-      value: failure
-      if: 'ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code >= 500'
-  - set:
-      field: event.outcome
-      value: success
-      if: 'ctx?.event?.outcome == null && ctx?.http?.response?.status_code != null && ctx?.http?.response?.status_code < 500'
-  - set:
-      field: event.outcome
-      value: success
-      if: 'ctx?.event?.outcome == null && ctx?.event?.severity != null && ctx?.event?.severity < 40'
-  - append:
-      field: related.hosts
-      value: '{{ source.domain }}'
-      allow_duplicates: false
-      if: 'ctx?.source?.domain != null'
-  - append:
-      field: related.hosts
-      value: '{{ url.domain }}'
-      allow_duplicates: false
-      if: 'ctx?.url?.domain != null'
-  - append:
-      field: related.hosts
-      value: '{{ http.request.headers.host }}'
-      allow_duplicates: false
-      if: 'ctx?.http?.request?.headers?.host != null'
-  - append:
-      field: related.hosts
-      value: '{{ http.request.headers.x-forwarded-host }}'
-      allow_duplicates: false
-      if: 'ctx?.http?.request?.headers != null && ctx.http.request.headers.containsKey("x-forwarded-host")'
 #   - remove:
 #       field: temp
 #       ignore_missing: true
-  - set:
-      field: service.environment
-      copy_from: kubernetes.namespace_labels.env
-      ignore_empty_value: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null or empty values.

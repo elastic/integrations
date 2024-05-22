@@ -1,0 +1,61 @@
+---
+description: Pipeline for processing json logs
+processors:
+  - append:
+      description: "Add information on the log format to tags: E.g. k8s_log_json k8s_log_raw. Useful for development and debugging"
+      field: tags
+      value: k8s_log_json
+  - json:
+      field: event.original
+      target_field: temp
+  - rename:
+      field: temp.application_id
+      target_field: ppbgdi.app.print3.application.id
+      ignore_missing: true
+  - rename:
+      field: temp.job_id
+      target_field: ppbgdi.app.print3.job.id
+      ignore_missing: true
+  - rename:
+      field: temp.level_name
+      target_field: log.level
+      ignore_missing: true
+  - lowercase:
+      field: log.level
+      ignore_missing: true
+  - rename:
+      field: temp.level_value
+      target_field: event.severity
+      ignore_missing: true
+  - rename:
+      field: temp.logger_name
+      target_field: log.logger
+      ignore_missing: true
+  - rename:
+      field: temp.msg
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: temp.thread_name
+      target_field: process.thread.name
+      ignore_missing: true
+  - rename:
+      field: temp.@version
+      target_field: ppbgdi.app.print3.version
+      ignore_missing: true
+  - date:
+      field: temp.timegenerated
+      formats:
+        - ISO8601
+      if: ctx?.temp?.timegenerated != null
+  - remove:
+      field: temp.timegenerated
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
+
