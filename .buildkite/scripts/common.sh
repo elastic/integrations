@@ -164,7 +164,7 @@ with_docker() {
     sudo apt-get update
     sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce=${debian_version}"
     sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce-cli=${debian_version}"
-    sudo retry 3 systemctl restart docker
+    retry 3 sudo systemctl restart docker
 
     echo "- Installed docker client version:"
     docker version -f json  | jq -r '.Client.Version'
