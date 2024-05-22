@@ -65,8 +65,6 @@ to="$(get_to_changeset)"
 
 any_package_failing=0
 
-EXCLUDED_PACKAGES=${EXCLUDED_PACKAGES:-""}
-
 pushd packages > /dev/null
 for package in $(list_all_directories); do
     if ! process_package "${package}" "${from}" "${to}"; then

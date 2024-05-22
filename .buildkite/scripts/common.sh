@@ -422,38 +422,6 @@ is_package_excluded_in_config() {
     return 1
 }
 
-is_package_excluded_in_list() {
-    local package=$1
-    local excluded_list="$2"
-    local excluded_array
-
-    if [[ "${excluded_list}" == "" ]]; then
-        return 1
-    fi
-
-    # as "<<<" operator adds a new line, a trailing "," is added to be able to remove the
-    # last element
-    # Example:
-    # excluded_list="security_detection_engine,universal_profiling_agent"
-    # readarray -td, array1 <<< "${excluded_list}" ; declare -p array1
-    #  $ declare -p array1
-    # declare -a array1=([0]="security_detection_engine" [1]=$'universal_profiling_agent\n')
-    #
-    # readarray -td, array2 <<< "${excluded_list,}" ; declare -p array2
-    #  $ declare -p array2
-    # declare -a array2=([0]="security_detection_engine" [1]="universal_profiling_agent" [2]=$'\n')
-    readarray -td, excluded_array <<<"${excluded_list},"
-    # remove last element containing just a new line
-    unset excluded_array[-1]
-
-    for excluded in "${excluded_array[@]}"; do
-        if [[ "${excluded}" == "${package}" ]]; then
-            return 0
-        fi
-    done
-    return 1
-}
-
 is_supported_capability() {
     if [ "${SERVERLESS_PROJECT}" == "" ]; then
         return 0
@@ -699,10 +667,6 @@ is_pr_affected() {
     fi
 
     if is_serverless; then
-        if is_package_excluded_in_list "${package}" "${EXCLUDED_PACKAGES}"; then
-            echo "[${package}] PR is not affected: package ${package} excluded in env. var"
-            return 1
-        fi
         if is_package_excluded_in_config "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
             echo "[${package}] PR is not affected: package ${package} excluded in Kibana config for ${SERVERLESS_PROJECT}"
             return 1
@@ -1000,8 +964,6 @@ process_package() {
     fi
 
     echo "${reason}"
-    popd > /dev/null
-    return
 
     use_kind=0
     if kubernetes_service_deployer_used ; then
