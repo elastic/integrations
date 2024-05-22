@@ -1000,6 +1000,7 @@ process_package() {
     fi
 
     echo "${reason}"
+    return
 
     use_kind=0
     if kubernetes_service_deployer_used ; then
