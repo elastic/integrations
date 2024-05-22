@@ -20,4 +20,6 @@ Insert how to configure the vendor side of the integration here, for example how
 
 Insert a description of the data stream here.
 
+{{event "audit"}}
+
 {{fields "audit"}}
