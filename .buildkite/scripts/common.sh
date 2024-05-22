@@ -399,6 +399,11 @@ packages_excluded() {
     echo "${excluded_packages}"
 }
 
+package_name_manifest() {
+    cat manifest.yml | yq -r '.name'
+}
+
+
 is_package_excluded_in_config() {
     local package=$1
     local config_file_path=$2
@@ -408,7 +413,10 @@ is_package_excluded_in_config() {
     if [[ "${excluded_packages}" == "null" ]]; then
         return 1
     fi
-    if echo "${excluded_packages}" | grep -q -E "\"${package}\""; then
+    local package_name=""
+    package_name=$(package_name_manifest)
+
+    if echo "${excluded_packages}" | grep -q -E "\"${package_name}\""; then
         return 0
     fi
     return 1
@@ -454,7 +462,7 @@ is_supported_capability() {
     local capabilities=""
     capabilities=$(capabilities_manifest)
 
-    # if no capabilities defined, it is available iavailable all projects
+    # if no capabilities defined, it is available in all projects
     if [[  "${capabilities}" == "null" ]]; then
         return 0
     fi
@@ -623,7 +631,7 @@ get_commit_from_build() {
 get_previous_commit() {
     local pipeline="$1"
     local branch="$2"
-    # Not using state=finished because it implies also skip and cancelled builds https://buildkite.com/docs/pipelines/notifications#build-states
+    # Not using state=finished because it implies also skip and canceled builds https://buildkite.com/docs/pipelines/notifications#build-states
     local status="state[]=failed&state[]=passed"
     local previous_commit
     previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
