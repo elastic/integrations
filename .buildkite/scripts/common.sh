@@ -1000,6 +1000,7 @@ process_package() {
     fi
 
     echo "${reason}"
+    popd > /dev/null
     return
 
     use_kind=0
