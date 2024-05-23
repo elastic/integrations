@@ -78,14 +78,14 @@ processors:
       field: event.type
       value: info
   - convert:
-      field: json.cip
+      field: json.cintip
       target_field: source.nat.ip
       if: ctx.json?.cip != ctx.json?.cintip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
-            field: json.cip
+            field: json.cintip
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
@@ -364,13 +364,13 @@ processors:
       target_field: zscaler_zia.web.bandwidth_throttle
       ignore_missing: true
   - convert:
-      field: json.cintip
+      field: json.cip
       target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
-            field: json.cintip
+            field: json.cip
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'

@@ -1,0 +1,1087 @@
+---
+description: Pipeline for processing cybox object.
+processors:
+  - foreach:
+      field: ses.cybox.emails
+      if: ctx.ses?.cybox?.emails instanceof List
+      tag: foreach_cybox_emails_direction_id
+      processor:
+        convert:
+          field: _ingest._value.direction_id
+          tag: convert_cybox_emails_direction_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.direction_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Add value for email direction based on cybox email direction id.
+      tag: script_to_add_email_direction
+      if: ctx.ses.cybox.emails instanceof List
+      params:
+        '0': unknown
+        '1': inbound
+        '2': outbound
+      lang: painless
+      source: >-
+        def var = new HashSet();
+          if (ctx.email != null && ctx.email.direction != null) {
+              var = ctx.email.direction;
+          } else {
+            if (ctx.email == null)
+            {
+              ctx.email = new HashMap();
+            }
+          }
+
+        for (def email : ctx.ses.cybox.emails) {
+          def direction = email.direction_id;
+          if (params.containsKey(direction.toString())) {
+            def type = params.get(direction.toString());
+            var.add(type);
+          }
+        }
+
+        ctx.email.put('direction', var)
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.emails
+      if: ctx.ses?.cybox?.emails instanceof List
+      tag: foreach_cybox_emails_header_from
+      processor:
+        append:
+          field: email.from.address
+          tag: append_cybox_emails_header_from_into_email_from_address
+          value: '{{{_ingest._value.header_from}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.emails
+      if: ctx.ses?.cybox?.emails instanceof List
+      tag: foreach_cybox_emails_header_subject
+      processor:
+        append:
+          field: email.subject
+          tag: append_cybox_emails_header_subject_into_email_subject
+          value: '{{{_ingest._value.header_subject}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.emails
+      if: ctx.ses?.cybox?.emails instanceof List
+      tag: foreach_cybox_emails_header_to
+      processor:
+        foreach:
+          field: _ingest._value.header_to
+          tag: foreach_cybox_emails_header_to_nest
+          processor:
+            append:
+              field: email.to.address
+              tag: append_cybox_emails_header_to_into_email_to_address
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      field: ses.cybox.emails
+      if: ctx.ses?.cybox?.emails instanceof List
+      tag: foreach_cybox_emails_sender_ip
+      processor:
+        convert:
+          field: _ingest._value.sender_ip
+          tag: convert_cybox_emails_sender_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.sender_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.emails
+      if: ctx.ses?.cybox?.emails instanceof List
+      tag: foreach_cybox_emails_sender_ip
+      processor:              
+        append:
+          field: related.ip
+          tag: append_related_ip_from_emails_sender_ip
+          value: '{{{_ingest._value.sender_ip}}}'
+          allow_duplicates: false
+          if: ctx.ses?.container?.networks != null
+  - foreach:
+      field: ses.cybox.emails
+      if: ctx.ses?.cybox?.emails instanceof List
+      tag: foreach_cybox_emails_size
+      processor:
+        convert:
+          field: _ingest._value.size
+          tag: convert_cybox_emails_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_accessed
+      processor:
+        date:
+          field: _ingest._value.accessed
+          tag: date_cybox_files_accessed
+          target_field: _ingest._value.accessed
+          formats:
+            - UNIX_MS
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.accessed
+                ignore_missing: true
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_accessed
+      processor:
+        append:
+          field: file.accessed
+          tag: append_cybox_files_accessed_into_file_accessed
+          value: '{{{_ingest._value.accessed}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files
+      processor:
+        foreach:
+          field: _ingest._value.attribute_ids
+          tag: foreach_cybox_files_attribute_ids
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_cybox_files_attribute_ids_to_string
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Add value for file attributes based on cybox file attribute id.
+      tag: script_to_add_file_attributes
+      if: ctx.ses?.cybox?.files instanceof List
+      params:
+        '1': archive
+        '2': compressed
+        '3': directory
+        '4': encrypted
+        '5': hidden
+        '8': readonly
+        '11': system
+        '16': execute
+      lang: painless
+      source: >-
+        def var = new HashSet();
+          if (ctx.file != null && ctx.file.attributes != null) {
+              var = ctx.file.attributes;
+          } else {
+            if (ctx.file == null)
+            {
+              ctx.file = new HashMap();
+            }
+          }
+        for (def file : ctx.ses.cybox.files) {
+          for (def id : file.attribute_ids) {
+            if (params.containsKey(id.toString())) {
+              def type = params.get(id.toString());
+              var.add(type);
+            }
+          }
+        }
+        ctx.file.put('attributes', var)
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_attributes
+      processor:
+        convert:
+          field: _ingest._value.attributes
+          tag: convert_cybox_files_attributes_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.attributes
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_confidentiality_id
+      processor:
+        convert:
+          field: _ingest._value.confidentiality_id
+          tag: convert_cybox_files_confidentiality_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.confidentiality_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_content_type_family_id
+      processor:
+        convert:
+          field: _ingest._value.content_type.family_id
+          tag: convert_cybox_files_content_type_family_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.content_type.family_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_content_type_type_id
+      processor:
+        convert:
+          field: _ingest._value.content_type.type_id
+          tag: convert_cybox_files_content_type_type_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.content_type.type_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_created
+      processor:
+        date:
+          field: _ingest._value.created
+          tag: date_cybox_files_created
+          target_field: _ingest._value.created
+          formats:
+            - UNIX_MS
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.created
+                ignore_missing: true
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_created
+      processor:
+        append:
+          field: file.created
+          tag: append_cybox_files_created_into_file_created
+          value: '{{{_ingest._value.created}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_is_system
+      processor:
+        convert:
+          field: _ingest._value.is_system
+          tag: convert_cybox_files_is_system_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.is_system
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_md5
+      processor:
+        append:
+          field: file.hash.md5
+          tag: append_cybox_files_md5_into_file_hash_md5
+          value: '{{{_ingest._value.md5}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_mime_type
+      processor:
+        append:
+          field: file.mime_type
+          tag: append_cybox_files_mime_type_into_file_mime_type
+          value: '{{{_ingest._value.mime_type}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_modified
+      processor:
+        date:
+          field: _ingest._value.modified
+          tag: date_cybox_files_modified
+          target_field: _ingest._value.modified
+          formats:
+            - UNIX_MS
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.modified
+                ignore_missing: true
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_name
+      processor:
+        append:
+          field: file.name
+          tag: append_cybox_files_name_into_file_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_path
+      processor:
+        append:
+          field: file.path
+          tag: append_cybox_files_path_into_file_path
+          value: '{{{_ingest._value.path}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_rep_discovered_band
+      processor:
+        convert:
+          field: _ingest._value.rep_discovered_band
+          tag: convert_cybox_files_rep_discovered_band_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.rep_discovered_band
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_rep_discovered_date
+      processor:
+        date:
+          field: _ingest._value.rep_discovered_date
+          tag: date_cybox_files_rep_discovered_date
+          target_field: _ingest._value.rep_discovered_date
+          formats:
+            - UNIX_MS
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.rep_discovered_date
+                ignore_missing: true
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_rep_prevalence
+      processor:
+        convert:
+          field: _ingest._value.rep_prevalence
+          tag: convert_cybox_files_rep_prevalence_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.rep_prevalence
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_rep_prevalence_band
+      processor:
+        convert:
+          field: _ingest._value.rep_prevalence_band
+          tag: convert_cybox_files_rep_prevalence_band_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.rep_prevalence_band
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_rep_score
+      processor:
+        convert:
+          field: _ingest._value.rep_score
+          tag: convert_cybox_files_rep_score_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.rep_score
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_rep_score_band
+      processor:
+        convert:
+          field: _ingest._value.rep_score_band
+          tag: convert_cybox_files_rep_score_band_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.rep_score_band
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_sha1
+      processor:
+        append:
+          field: file.hash.sha1
+          tag: append_cybox_files_sha1_into_file_hash_sha1
+          value: '{{{_ingest._value.sha1}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_signature_created_date
+      processor:
+        date:
+          field: _ingest._value.signature_created_date
+          tag: date_cybox_files_signature_created_date
+          target_field: _ingest._value.signature_created_date
+          formats:
+            - UNIX_MS
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.signature_created_date
+                ignore_missing: true
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_signature_issuer
+      processor:
+        append:
+          field: file.x509.issuer.distinguished_name
+          tag: append_cybox_files_signature_issuer_into_file_x509_issuer_distinguished_name
+          value: '{{{_ingest._value.signature_issuer}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_signature_level_id
+      processor:
+        convert:
+          field: _ingest._value.signature_level_id
+          tag: convert_cybox_files_signature_level_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.signature_level_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_signature_serial_number
+      processor:
+        append:
+          field: file.x509.serial_number
+          tag: append_cybox_files_signature_serial_number_into_file_x509_serial_number
+          value: '{{{_ingest._value.signature_serial_number}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_signature_value
+      processor:
+        convert:
+          field: _ingest._value.signature_value
+          tag: convert_cybox_files_signature_value_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.signature_value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_signature_value_ids
+      processor:
+        foreach:
+          field: _ingest._value.signature_value_ids
+          tag: foreach_cybox_files_signature_value_ids
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_cybox_files_signature_value_ids_to_string
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_size
+      processor:
+        convert:
+          field: _ingest._value.size
+          tag: convert_cybox_files_size_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_size
+      processor:
+        append:
+          field: file.size
+          tag: append_cybox_files_size_into_file_size
+          value: '{{{_ingest._value.size}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_size_compressed
+      processor:
+        convert:
+          field: _ingest._value.size_compressed
+          tag: convert_cybox_files_size_compressed_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.size_compressed
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_src_ip
+      processor:
+        convert:
+          field: _ingest._value.src_ip
+          tag: convert_cybox_files_src_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.src_ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_src_ip
+      processor:              
+        append:
+          field: related.ip
+          tag: append_related_ip_from_files_src_ip
+          value: '{{{_ingest._value.src_ip}}}'
+          allow_duplicates: false
+          if: ctx.ses?.cybox?.files != null
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_type_id
+      processor:
+        convert:
+          field: _ingest._value.type_id
+          tag: convert_cybox_files_type_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.type_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Add value for file type based on cybox files type id.
+      tag: script_to_add_file_type
+      if: ctx.ses?.cybox?.files instanceof List
+      params:
+        '1': file
+        '2': dir
+        '6': symlink
+      lang: painless
+      source: >-
+        def var = new HashSet();
+        if (ctx.file != null && ctx.file.type != null) {
+            var = ctx.file.type;
+        } else {
+          if (ctx.file == null)
+          {
+            ctx.file = new HashMap();
+          }
+        }
+        for (def file : ctx.ses.cybox.files) {
+          def type_id = file.type_id;
+          if (params.containsKey(type_id.toString())) {
+            def type = params.get(type_id.toString());
+            var.add(type);
+          }
+        }
+        
+        ctx.file.put('type', var); 
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_category_ids
+      processor:
+        foreach:
+          field: _ingest._value.url.category_ids
+          tag: foreach_cybox_files_url_category_ids
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_cybox_files_url_category_ids_to_string
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_url_port
+      processor:
+        convert:
+          field: _ingest._value.url.port
+          tag: convert_cybox_files_url_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.url.port
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_referrer_category_ids
+      processor:
+        foreach:
+          field: _ingest._value.url.referrer_category_ids
+          tag: foreach_cybox_files_url_referrer_category_ids
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_cybox_files_url_referrer_category_ids_to_string
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_url_rep_score_id
+      processor:
+        convert:
+          field: _ingest._value.url.rep_score_id
+          tag: convert_cybox_files_url_rep_score_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.url.rep_score_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.ipv4s
+      if: ctx.ses?.cybox?.ipv4s instanceof List
+      tag: foreach_cybox_ipv4s
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_cybox_ipv4s_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.ipv4s
+      if: ctx.ses?.cybox?.ipv4s instanceof List
+      tag: foreach_cybox_ipv4s
+      processor:              
+        append:
+          field: related.ip
+          tag: append_related_ip_from_ipv4
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          if: ctx.ses?.cybox?.ipv4s != null
+  - foreach:
+      field: ses.cybox.ipv6s
+      if: ctx.ses?.cybox?.ipv6s instanceof List
+      tag: foreach_cybox_ipv6s
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_cybox_ipv6s_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.ipv6s
+      if: ctx.ses?.cybox?.ipv6s instanceof List
+      tag: foreach_cybox_ipv6s
+      processor:              
+        append:
+          field: related.ip
+          tag: append_related_ip_from_ipv6
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          if: ctx.ses?.cybox?.ipv6s != null
+  - foreach:
+      field: ses.cybox.urls
+      if: ctx.ses?.cybox?.urls instanceof List
+      tag: foreach_category_ids
+      processor:
+        foreach:
+          field: _ingest._value.category_ids
+          tag: foreach_cybox_urls_category_ids
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_cybox_urls_category_ids_to_string
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.urls
+      if: ctx.ses?.cybox?.urls instanceof List
+      tag: foreach_cybox_urls_path
+      processor:
+        append:
+          field: url.path
+          tag: append_cybox_urls_path_into_url_path
+          value: '{{{_ingest._value.path}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.urls
+      if: ctx.ses?.cybox?.urls instanceof List
+      tag: foreach_cybox_urls_port
+      processor:
+        convert:
+          field: _ingest._value.port
+          tag: convert_cybox_urls_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.port
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.urls
+      if: ctx.ses?.cybox?.urls instanceof List
+      tag: foreach_cybox_urls_port
+      processor:
+        append:
+          field: url.port
+          tag: append_cybox_urls_port_into_url_port
+          value: '{{{_ingest._value.port}}}'
+          allow_duplicates: false
+  - foreach:
+      field: url.port
+      if: ctx.url?.port instanceof List
+      tag: foreach_url_port
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_url_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.urls
+      if: ctx.ses?.cybox?.urls instanceof List
+      tag: foreach_cybox_urls_query
+      processor:
+        append:
+          field: url.query
+          tag: append_cybox_urls_query_into_url_query
+          value: '{{{_ingest._value.query}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.urls
+      if: ctx.ses?.cybox?.urls instanceof List
+      tag: foreach_cybox_urls_referrer_category_ids
+      processor:
+        foreach:
+          field: _ingest._value.referrer_category_ids
+          tag: foreach_cybox_urls_referrer_category
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_cybox_urls_referrer_category_ids_to_string
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.urls
+      if: ctx.ses?.cybox?.urls instanceof List
+      tag: foreach_cybox_urls_rep_score_id
+      processor:
+        convert:
+          field: _ingest._value.rep_score_id
+          tag: convert_cybox_urls_rep_score_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.rep_score_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.cybox.urls
+      if: ctx.ses?.cybox?.urls instanceof List
+      tag: foreach_cybox_urls_scheme
+      processor:
+        append:
+          field: url.scheme
+          tag: append_cybox_urls_scheme_into_url_scheme
+          value: '{{{_ingest._value.scheme}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.urls
+      if: ctx.ses?.cybox?.urls instanceof List
+      tag: foreach_cybox_urls_text
+      processor:
+        append:
+          field: url.full
+          tag: append_cybox_urls_text_into_url_full
+          value: '{{{_ingest._value.text}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_md5_related
+      processor:
+        append:
+          field: related.hash
+          tag: append_cybox_files_md5_into_related_hash
+          value: '{{{_ingest._value.md5}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_sha1_related
+      processor:
+        append:
+          field: related.hash
+          tag: append_cybox_files_sha1_into_related_hash
+          value: '{{{_ingest._value.sha1}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_sha2_related
+      processor:
+        append:
+          field: related.hash
+          tag: append_cybox_files_sha2_into_related_hash
+          value: '{{{_ingest._value.sha2}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_parent_sha2_related
+      processor:
+        append:
+          field: related.hash
+          tag: append_cybox_files_parent_sha2_into_related_hash
+          value: '{{{_ingest._value.parent_sha2}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_src_name_related
+      processor:
+        append:
+          field: related.hosts
+          tag: append_cybox_files_src_name_into_related_hosts
+          value: '{{{_ingest._value.src_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.emails
+      if: ctx.ses?.cybox?.emails instanceof List
+      tag: foreach_remove_custom_duplicate_fields_from_ses_cybox_emails
+      processor:
+        remove:
+          field:
+            - _ingest._value.header_from
+            - _ingest._value.header_subject
+            - _ingest._value.header_to
+          tag: remove_custom_duplicate_fields_from_ses_cybox_emails
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_remove_custom_duplicate_fields_from_ses_cybox_files
+      processor:
+        remove:
+          field:
+            - _ingest._value.accessed
+            - _ingest._value.created
+            - _ingest._value.md5
+            - _ingest._value.sha1
+            - _ingest._value.mime_type
+            - _ingest._value.name
+            - _ingest._value.path
+            - _ingest._value.size
+            - _ingest._value.signature_issuer
+            - _ingest._value.signature_serial_number
+          tag: remove_custom_duplicate_fields_from_ses_cybox_files
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: ses.cybox.urls
+      if: ctx.ses?.cybox?.urls instanceof List
+      tag: foreach_remove_custom_duplicate_fields_from_ses_cybox_urls
+      processor:
+        remove:
+          field:
+            - _ingest._value.text
+            - _ingest._value.path
+            - _ingest._value.port
+            - _ingest._value.query
+            - _ingest._value.scheme
+          tag: remove_custom_duplicate_fields_from_ses_cybox_urls
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
