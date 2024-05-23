@@ -12,6 +12,12 @@ processors:
   - json:
       field: event.original
       target_field: snyk.issues
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.kind
+      value: [alert]
   - date:
       field: snyk.issues.attributes.created_at
       target_field: "@timestamp"
@@ -25,6 +31,14 @@ processors:
   - set:
       field: vulnerability.scanner.vendor
       value: Snyk
+  - set:
+      field: organization.id
+      copy_from: snyk.issues.relationships.organization.data.id
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.severity
+      copy_from: snyk.issues.attributes.effective_severity_level
+      ignore_empty_value: true
   - foreach:
       field: snyk.issues.attributes.classes
       processor:

@@ -30,6 +30,10 @@ processors:
       field: snyk.audit_logs.orgId
       target_field: snyk.audit_logs.org_id
       ignore_missing: true
+  - set:
+      field: organization.id
+      copy_from: snyk.audit_logs.org_id
+      ignore_empty_value: true
   - rename:
       field: snyk.audit_logs.projectId
       target_field: snyk.audit_logs.project_id
@@ -42,6 +46,50 @@ processors:
       field: snyk.audit_logs.event
       target_field: event.action
       ignore_missing: true
+  - append:
+      field: event.type
+      value: user
+      if: ctx.event?.action != null && ctx.event.action =~ /\buser\b/
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: creation
+      if: ctx.event?.action != null && ctx.event.action =~ /\b(?:add|create)\b/
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: change
+      if: ctx.event?.action != null && ctx.event.action =~ /\bedit\b/
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: access
+      if: ctx.event?.action != null && ctx.event.action =~ /\baccess\b/
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.event?.action != null && ctx.event.action =~ /\b(?:remove|delete)\b/
+      allow_duplicates: false
+  - append:
+      field: event.category
+      value: configuration
+      if: ctx.event?.action != null && ctx.event.action =~ /\bsettings\b/
+      allow_duplicates: false
+  - append:
+      field: event.category
+      value: file
+      if: ctx.event?.action != null && ctx.event.action =~ /\bfiles\b/
+      allow_duplicates: false
+  - append:
+      field: event.category
+      value: iam
+      if: ctx.event?.action != null && ctx.event.action =~ /\buser\b/
+      allow_duplicates: false
+  - set:
+      field: event.type
+      value: [info]
+      if: ctx.event?.type == null
   - date:
       field: snyk.audit_logs.created
       target_field: "@timestamp"
@@ -62,6 +110,14 @@ processors:
       value: '{{{snyk.audit_logs.content.userPublicId}}}'
       if: ctx.snyk?.audit_logs?.content?.userPublicId != null
       allow_duplicates: false
+  - uri_parts:
+      field: snyk.audit_logs.content.url
+      target_field: url
+      if: ctx.snyk?.audit_logs?.content?.url != null
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.

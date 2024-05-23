@@ -32,11 +32,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2024-05-15T16:34:14.144Z",
     "agent": {
-        "ephemeral_id": "2713f495-7594-467e-8720-d53ba7c3e47c",
-        "id": "4c603f27-1a61-4303-b64b-bd8f3ae8f9d9",
+        "ephemeral_id": "6b4b2646-d403-4342-9261-edee5f31db21",
+        "id": "24936262-0cda-4934-aea3-82bed4844c98",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "snyk.audit_logs",
@@ -47,19 +47,25 @@ An example event for `audit` looks as following:
         "version": "8.12.0"
     },
     "elastic_agent": {
-        "id": "4c603f27-1a61-4303-b64b-bd8f3ae8f9d9",
+        "id": "24936262-0cda-4934-aea3-82bed4844c98",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "org.project.issue.create",
         "agent_id_status": "verified",
         "dataset": "snyk.audit_logs",
-        "ingested": "2024-05-20T22:26:30Z",
-        "original": "{\"content\":{\"action\":\"Returned from analysis\"},\"created\":\"2024-05-15T16:34:14.144Z\",\"event\":\"org.project.issue.create\",\"org_id\":\"0de7b2d6-c1da-46aa-887e-1886f96770d4\",\"project_id\":\"d2bf0629-84a7-4b0b-b435-f49a87f0720c\"}"
+        "ingested": "2024-05-23T23:38:58Z",
+        "original": "{\"content\":{\"action\":\"Returned from analysis\"},\"created\":\"2024-05-15T16:34:14.144Z\",\"event\":\"org.project.issue.create\",\"org_id\":\"0de7b2d6-c1da-46aa-887e-1886f96770d4\",\"project_id\":\"d2bf0629-84a7-4b0b-b435-f49a87f0720c\"}",
+        "type": [
+            "creation"
+        ]
     },
     "input": {
         "type": "cel"
+    },
+    "organization": {
+        "id": "0de7b2d6-c1da-46aa-887e-1886f96770d4"
     },
     "snyk": {
         "audit_logs": {
@@ -113,6 +119,7 @@ An example event for `audit` looks as following:
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| organization.id | Unique identifier for the organization. | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | snyk.audit_logs.content | Overview of the content that was changed, both old and new values. | flattened |
 | snyk.audit_logs.org_id | ID of the related Organization related to the event. | keyword |
@@ -121,6 +128,12 @@ An example event for `audit` looks as following:
 | snyk.projects | Array with all related projects objects. | flattened |
 | snyk.related.projects | Array of all the related project ID's. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 
@@ -133,8 +146,8 @@ An example event for `issues` looks as following:
 {
     "@timestamp": "2024-05-15T18:49:24.958Z",
     "agent": {
-        "ephemeral_id": "8cd0d19b-78a9-484c-84ff-1243d5af8053",
-        "id": "216f49f9-c4c6-4b35-aa0e-442778d4ccaf",
+        "ephemeral_id": "15edfc41-3c98-4358-b81a-457fe310ca39",
+        "id": "24936262-0cda-4934-aea3-82bed4844c98",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -148,18 +161,27 @@ An example event for `issues` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "216f49f9-c4c6-4b35-aa0e-442778d4ccaf",
+        "id": "24936262-0cda-4934-aea3-82bed4844c98",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "snyk.issues",
-        "ingested": "2024-05-21T02:44:26Z",
-        "original": "{\"attributes\":{\"coordinates\":[{\"is_fixable_manually\":false,\"is_fixable_snyk\":false,\"is_fixable_upstream\":false,\"is_patchable\":false,\"is_pinnable\":false,\"is_upgradeable\":false,\"reachability\":\"no-info\",\"representations\":[{\"dependency\":{\"package_name\":\"git/git-man\",\"package_version\":\"1:2.30.2-1\"}}]},{\"is_fixable_manually\":false,\"is_fixable_snyk\":false,\"is_fixable_upstream\":false,\"is_patchable\":false,\"is_pinnable\":false,\"is_upgradeable\":false,\"reachability\":\"no-info\",\"representations\":[{\"dependency\":{\"package_name\":\"git\",\"package_version\":\"1:2.30.2-1\"}}]}],\"created_at\":\"2024-05-15T18:49:24.958Z\",\"effective_severity_level\":\"low\",\"ignored\":false,\"key\":\"SNYK-DEBIAN11-GIT-6846207\",\"problems\":[{\"id\":\"SNYK-DEBIAN11-GIT-6846207\",\"source\":\"SNYK\",\"type\":\"vulnerability\",\"updated_at\":\"2024-05-15T18:49:26.454629Z\"},{\"id\":\"CVE-2024-32020\",\"source\":\"NVD\",\"type\":\"vulnerability\",\"updated_at\":\"2024-05-15T18:49:26.454631Z\",\"url\":\"https://nvd.nist.gov/vuln/detail/CVE-2024-32020\"}],\"risk\":{\"factors\":[],\"score\":{\"model\":\"v1\",\"value\":221}},\"status\":\"open\",\"title\":\"CVE-2024-32020\",\"type\":\"package_vulnerability\",\"updated_at\":\"2024-05-15T18:49:24.958Z\"},\"id\":\"bdb0b182-440e-483f-8f42-d4f5477e8349\",\"relationships\":{\"organization\":{\"data\":{\"id\":\"0de7b2d6-c1da-46aa-887e-1886f96770d4\",\"type\":\"organization\"},\"links\":{\"related\":\"/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4\"}},\"scan_item\":{\"data\":{\"id\":\"068c68be-4f21-4edd-9975-92dd051d16dc\",\"type\":\"project\"},\"links\":{\"related\":\"/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4/projects/068c68be-4f21-4edd-9975-92dd051d16dc\"}}},\"type\":\"issue\"}"
+        "ingested": "2024-05-23T23:49:52Z",
+        "kind": [
+            "alert"
+        ],
+        "original": "{\"attributes\":{\"coordinates\":[{\"is_fixable_manually\":false,\"is_fixable_snyk\":false,\"is_fixable_upstream\":false,\"is_patchable\":false,\"is_pinnable\":false,\"is_upgradeable\":false,\"reachability\":\"no-info\",\"representations\":[{\"dependency\":{\"package_name\":\"git/git-man\",\"package_version\":\"1:2.30.2-1\"}}]},{\"is_fixable_manually\":false,\"is_fixable_snyk\":false,\"is_fixable_upstream\":false,\"is_patchable\":false,\"is_pinnable\":false,\"is_upgradeable\":false,\"reachability\":\"no-info\",\"representations\":[{\"dependency\":{\"package_name\":\"git\",\"package_version\":\"1:2.30.2-1\"}}]}],\"created_at\":\"2024-05-15T18:49:24.958Z\",\"effective_severity_level\":\"low\",\"ignored\":false,\"key\":\"SNYK-DEBIAN11-GIT-6846207\",\"problems\":[{\"id\":\"SNYK-DEBIAN11-GIT-6846207\",\"source\":\"SNYK\",\"type\":\"vulnerability\",\"updated_at\":\"2024-05-15T18:49:26.454629Z\"},{\"id\":\"CVE-2024-32020\",\"source\":\"NVD\",\"type\":\"vulnerability\",\"updated_at\":\"2024-05-15T18:49:26.454631Z\",\"url\":\"https://nvd.nist.gov/vuln/detail/CVE-2024-32020\"}],\"risk\":{\"factors\":[],\"score\":{\"model\":\"v1\",\"value\":221}},\"status\":\"open\",\"title\":\"CVE-2024-32020\",\"type\":\"package_vulnerability\",\"updated_at\":\"2024-05-15T18:49:24.958Z\"},\"id\":\"bdb0b182-440e-483f-8f42-d4f5477e8349\",\"relationships\":{\"organization\":{\"data\":{\"id\":\"0de7b2d6-c1da-46aa-887e-1886f96770d4\",\"type\":\"organization\"},\"links\":{\"related\":\"/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4\"}},\"scan_item\":{\"data\":{\"id\":\"068c68be-4f21-4edd-9975-92dd051d16dc\",\"type\":\"project\"},\"links\":{\"related\":\"/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4/projects/068c68be-4f21-4edd-9975-92dd051d16dc\"}}},\"type\":\"issue\"}",
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "cel"
+    },
+    "organization": {
+        "id": "0de7b2d6-c1da-46aa-887e-1886f96770d4"
     },
     "snyk": {
         "issues": {
@@ -256,7 +278,7 @@ An example event for `issues` looks as following:
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "snyk-vulnerabilities"
+        "snyk-issues"
     ],
     "vulnerability": {
         "enumeration": [
@@ -272,7 +294,8 @@ An example event for `issues` looks as following:
         ],
         "scanner": {
             "vendor": "Snyk"
-        }
+        },
+        "severity": "low"
     }
 }
 ```
@@ -312,6 +335,7 @@ An example event for `issues` looks as following:
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| organization.id | Unique identifier for the organization. | keyword |
 | snyk.issues.attributes.classes.id |  | keyword |
 | snyk.issues.attributes.classes.source |  | keyword |
 | snyk.issues.attributes.classes.type |  | keyword |
