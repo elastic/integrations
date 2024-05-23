@@ -436,8 +436,8 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-11-02T10:12:46.260Z",
     "agent": {
-        "ephemeral_id": "f5e8efc8-9b9e-4354-97db-8776fbcf8b06",
-        "id": "5e4f8c86-8caf-477f-8180-4d224bcc6b61",
+        "ephemeral_id": "dccd0442-fb64-4180-b8bc-52567a9fa7ee",
+        "id": "3914f7c7-e40f-4011-8422-140003a70600",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.2"
@@ -451,16 +451,16 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5e4f8c86-8caf-477f-8180-4d224bcc6b61",
+        "id": "3914f7c7-e40f-4011-8422-140003a70600",
         "snapshot": false,
         "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-05-21T10:38:41.689Z",
+        "created": "2024-05-21T11:47:47.724Z",
         "dataset": "ti_rapid7_threat_command.alert",
         "id": "123456789zxcvbnmas8a8q60",
-        "ingested": "2024-05-21T10:38:51Z",
+        "ingested": "2024-05-21T11:47:57Z",
         "kind": "alert",
         "module": "ti_rapid7_threat_command",
         "original": "{\"Assets\":[{\"Type\":\"Domains\",\"Value\":\"example.com\"}],\"Assignees\":[],\"Closed\":{\"IsClosed\":true},\"Details\":{\"Description\":\"A suspicious subdomain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.\",\"Images\":[],\"Severity\":\"Low\",\"Source\":{\"NetworkType\":\"ClearWeb\",\"Type\":\"WHOIS servers\",\"URL\":\"http://example.com\"},\"SubType\":\"RegisteredSuspiciousDomain\",\"Tags\":[{\"CreatedBy\":\"ProfilingRule\",\"Name\":\"Phishing Domain - Default Detection Rule\",\"_id\":\"1al3p6789z6c2b7m9s8a8q60\"}],\"Title\":\"Suspected Phishing Domain - 'example.com'\",\"Type\":\"Phishing\"},\"FoundDate\":\"2022-11-02T10:12:46.260Z\",\"IsFlagged\":false,\"RelatedIocs\":[\"example.com\"],\"RelatedThreatIDs\":[\"6a4e7t9a111bd0003bcc2a55\"],\"TakedownStatus\":\"NotSent\",\"UpdateDate\":\"2022-11-02T10:12:46.260Z\",\"_id\":\"123456789zxcvbnmas8a8q60\"}",
