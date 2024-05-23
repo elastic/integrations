@@ -15,6 +15,7 @@ The format of timezones added to Cisco IOS logs does not always match the expect
 
 2. `Timezone Map` - This option is for users who have logs from multiple timezones and want to translate them to the correct timezone. This option allows the user to specify a map of timezones to translate from and to. This option is recommended for advanced users who have logs from multiple timezones being sent to the same integration instance. If the timezone in a Cisco IOS log entry does not match any of the configured mappings, the log will fall back to the timezone specified in the `Timezone` option, and also defaults to `UTC`.
 
+If log messages are relayed resulting in additional syslog header prefixes or other text, this text must be removed for ingestion to be successful. This may be done by adding an appropriate Beats processor to the configuration.
 
 ### IOS
 
@@ -111,6 +112,7 @@ An example event for `log` looks as following:
 | cisco.ios.sequence | Sequence number provided by the device when the device's service sequence-numbers global configuration is set. | keyword |
 | cisco.ios.session.number | Session ID | integer |
 | cisco.ios.session.type | Session type | keyword |
+| cisco.ios.tableid | The tableid associated with badauth errors | keyword |
 | cisco.ios.uptime | The uptime for the device. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |

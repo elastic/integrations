@@ -75,10 +75,18 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_dns" }}'
       if: ctx.infoblox_nios?.log?.type == 'DNS'
+  # Since logstash sets the @timestamp if not present, `override: true` is required to overwrite the value with event timestamp.
   - set:
       field: '@timestamp'
       value: '{{{event.created}}}'
-      if: "ctx['@timestamp'] == null && ctx.event?.created != null"
+      if: ctx.event?.created != null
+      override: true
+  # If individual pipelines has timestamp, they should take priority. This makes @timestamp < event.created conforming to ECS.
+  - set:
+      field: '@timestamp'
+      value: '{{{_tmp.timestamp}}}'
+      if: ctx._tmp?.timestamp != null
+      override: true
   - convert:
       field: _tmp.host.ip
       if: ctx._tmp?.host?.ip != null && ctx._tmp.host.ip != ''
@@ -136,6 +144,13 @@ processors:
       target_field: client.as.organization.name
       ignore_missing: true
       if: ctx.client?.as?.organization_name != null
+  - dissect:
+      field: network.transport
+      pattern: "view %{}: %{network.transport}"
+      if: ctx.network?.transport instanceof String && ctx.network.transport.contains('view')
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless

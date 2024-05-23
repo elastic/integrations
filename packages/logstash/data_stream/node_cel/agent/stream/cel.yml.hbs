@@ -12,6 +12,9 @@ auth.basic.user: {{escape_string username}}
 {{#if password}}
 auth.basic.password: {{escape_string password}}
 {{/if}}
+{{#if condition}}
+condition: {{ condition }}
+{{/if}}
 
 redact:
   fields: ~
@@ -24,7 +27,7 @@ program: |
              "events":body.events,
              "jvm":{
                 "uptime_in_millis":body.jvm.uptime_in_millis,
-                "mem":body.jvm['mem'].drop("pools"),
+                "mem":[body.jvm['mem']].drop("pools")[0],
                 "threads":body.jvm.threads
               },
              "queue":body.queue,

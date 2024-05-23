@@ -1,0 +1,636 @@
+- name: threat_connect
+  type: group
+  fields:
+    - name: indicator
+      type: group
+      fields:
+        - name: active
+          type: group
+          fields:
+            - name: locked
+              type: boolean
+              description: Indicates whether the active status is locked.
+            - name: value
+              type: boolean
+              description: Indicates whether the indicator is active.
+        - name: address
+          type: keyword
+          description: The email address associated with the Email Address Indicator.
+        - name: as_number
+          type: keyword
+          description: The AS number associated with the ASN Indicator.
+        - name: associated_artifacts
+          type: flattened
+          description: A list of Artifacts associated to the Indicator.
+        - name: associated_cases
+          type: flattened
+          description: A list of Cases associated to the Indicator.
+        - name: associated_groups
+          type: group
+          fields:
+            - name: data
+              type: group
+              fields:
+                - name: assignments
+                  type: group
+                  fields:
+                    - name: data
+                      type: group
+                      fields:
+                        - name: type
+                          type: keyword
+                          description: Valid values for the type of assignment are Assigned and Escalate.
+                        - name: user
+                          type: group
+                          fields:
+                            - name: id
+                              type: keyword
+                              description: Unique identifier of users assigned to the Task or to whom the Task will be escalated.
+                - name: body
+                  type: keyword
+                  description: The Emails body.
+                - name: created_by
+                  type: group
+                  fields:
+                    - name: first_name
+                      type: keyword
+                      description: First name of user.
+                    - name: id
+                      type: keyword
+                      description: Unique Identifier of the user who created the group.
+                    - name: last_name
+                      type: keyword
+                      description: Last name of user.
+                    - name: owner
+                      type: keyword
+                      description: Owner of attribute creator.
+                    - name: pseudonym
+                      type: keyword
+                      description: Pseudonym or alias of the user.
+                    - name: user_name
+                      type: keyword
+                      description: Username of user.
+                - name: date_added
+                  type: date
+                  description: Date and time group was added.
+                - name: document
+                  type: group
+                  fields:
+                    - name: date_added
+                      type: date
+                      description: Date and time when the document was added.
+                    - name: type
+                      type: keyword
+                      description: The type of document.
+                - name: down_vote_count
+                  type: keyword
+                  description: Downvote Intel Rating.
+                - name: due_date
+                  type: date
+                  description: The date and time when the Task is due.
+                - name: email_date
+                  type: date
+                  description: The date associated with an email.
+                - name: escalation_date
+                  type: date
+                  description: The date and time when the Task should be escalated.
+                - name: event_date
+                  type: date
+                  description: The date and time when the Event took place.
+                - name: external
+                  type: group
+                  fields:
+                    - name: date
+                      type: group
+                      fields:
+                        - name: added
+                          type: date
+                          description: The date and time when the Group was created externally.
+                        - name: expires
+                          type: date
+                          description: The date and time when the Group expires externally.
+                    - name: last_modified
+                      type: date
+                      description: The date and time when the Group was last modified externally.
+                - name: file
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The file name of the Document.
+                    - name: size
+                      type: keyword
+                      description: The File size of the document.
+                    - name: text
+                      type: keyword
+                      description: The file text of the Signature.
+                    - name: type
+                      type: keyword
+                      description: The file type of the SignaturePossible values are Bro,ClamAV,CybOX,Iris Search Hash,KQL,OpenIOC,Regex,SPL,Sigma,Snort,Suricata,TQL Query,YARA.
+                - name: first_seen
+                  type: date
+                  description: The date and time when the Group was first seen.
+                - name: from
+                  type: keyword
+                  description: The Emails subject.
+                - name: generated_report
+                  type: boolean
+                  description: Indicates whether the report is generated.
+                - name: header
+                  type: keyword
+                  description: The Emails header.
+                - name: id
+                  type: keyword
+                  description: Unique Identifier of Group.
+                - name: last_modified
+                  type: date
+                  description: Date and time when the document was last updated.
+                - name: last_seen
+                  type: date
+                  description: The date and time when the Group was last seen.
+                - name: legacy_link
+                  type: keyword
+                  description: Legacy link to the group's details in the ThreatConnect web application.
+                - name: malware
+                  type: boolean
+                  description: Indicates whether the Document is malware.
+                - name: name
+                  type: keyword
+                  description: The Groups name.
+                - name: owner
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: The ID of the owner to which the Group belongs.
+                    - name: name
+                      type: keyword
+                      description: The name of the owner to which the Group belongs.
+                - name: password
+                  type: keyword
+                  description: The password associated with the Document.
+                - name: publish_date
+                  type: date
+                  description: The date and time when the Report was published.
+                - name: reminder_date
+                  type: date
+                  description: The date and time when a reminder about the Task will be sent.
+                - name: score_breakdown
+                  type: keyword
+                  description: A breakdown or explanation of the score, providing additional information about how the score was determined.
+                - name: score_includes_body
+                  type: boolean
+                  description: Indicates whether the score includes information from the email body.
+                - name: status
+                  type: keyword
+                  description: The status of the Group type.
+                - name: subject
+                  type: keyword
+                  description: The Emails From field.
+                - name: to
+                  type: keyword
+                  description: The receiver email address.
+                - name: type
+                  type: keyword
+                  description: The type of Group being created.Possiblevalues:Adversary,AttackPattern,Campaign,CourseofAction,Document,Email,Event,Incident,IntrusionSet,Malware,Report,Signature,Tactic,Task,Threat,Tool, Vulnerability.
+                - name: up_vote
+                  type: boolean
+                  description: Use this field to update the Groups Intel Rating.
+                - name: up_vote_count
+                  type: keyword
+                  description: Upvote Intel Rating.
+                - name: web_link
+                  type: keyword
+                  description: Link to the group's details in the ThreatConnect web application.
+                - name: xid
+                  type: keyword
+                  description: The Groups XID.
+        - name: associated_indicators
+          type: group
+          fields:
+            - name: data
+              type: group
+              fields:
+                - name: active
+                  type: group
+                  fields:
+                    - name: locked
+                      type: boolean
+                      description: Indicates whether the active status is locked.
+                    - name: value
+                      type: boolean
+                      description: Indicates whether the indicator is active.
+                - name: address
+                  type: keyword
+                  description: The email address associated with the Email Address Indicator.
+                - name: as_number
+                  type: keyword
+                  description: The AS number associated with the ASN Indicator.
+                - name: block
+                  type: keyword
+                  description: The block of network IP addresses associated with the CIDR Indicator.
+                - name: confidence
+                  type: long
+                  description: The Indicators Confidence Rating.
+                - name: date_added
+                  type: date
+                  description: Date and time when the indicator was added.
+                - name: description
+                  type: keyword
+                  description: Description of the indicator.
+                - name: dns_active
+                  type: boolean
+                  description: Indicates whether the DNS feature is active for the Host Indicator.
+                - name: external
+                  type: group
+                  fields:
+                    - name: date
+                      type: group
+                      fields:
+                        - name: added
+                          type: date
+                          description: The date and time when the Indicator was created externally.
+                        - name: expires
+                          type: date
+                          description: The date and time when the Indicator expires externally.
+                    - name: last_modified
+                      type: date
+                      description: The date and time when the Indicator was last modified externally.
+                - name: first_seen
+                  type: date
+                  description: The date and time when the Indicator was first seen.
+                - name: hashtag
+                  type: keyword
+                  description: The hashtag term associated with the Hashtag Indicator.
+                - name: host_name
+                  type: keyword
+                  description: The host name associated with the Host Indicator.
+                - name: id
+                  type: keyword
+                  description: Unique identifier for the indicator.
+                - name: ip
+                  type: ip
+                  description: The IP address associated with the Address Indicator.
+                - name: key_name
+                  type: keyword
+                  description: The name of the registry key associated with the Registry Key Indicator.
+                - name: last_modified
+                  type: date
+                  description: Date and time when the indicator was last modified.
+                - name: last_seen
+                  type: date
+                  description: The date and time when the Indicator was last seen.
+                - name: legacy_link
+                  type: keyword
+                  description: Legacy link to the indicator's details in the ThreatConnect web application.
+                - name: md5
+                  type: keyword
+                  description: MD5 hash value associated with the indicator.
+                - name: mutex
+                  type: keyword
+                  description: The synchronization primitive used to identify malware files that is associated with the Mutex.
+                - name: owner
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: Identifier for the owner of the indicator.
+                    - name: name
+                      type: keyword
+                      description: Name of the organization that owns the indicator.
+                - name: private_flag
+                  type: boolean
+                  description: Indicates whether the indicator is marked as private.
+                - name: rating
+                  type: double
+                  description: The Indicators Threat Rating.
+                - name: sha1
+                  type: keyword
+                  description: The SHA1 hash associated with the File Indicator.
+                - name: sha256
+                  type: keyword
+                  description: The SHA256 hash associated with the File Indicator.
+                - name: size
+                  type: keyword
+                  description: The size of the file associated with the File Indicator.
+                - name: subject
+                  type: keyword
+                  description: The subject line of the email associated with the Email Subject Indicator.
+                - name: summary
+                  type: keyword
+                  description: Summary or description of the indicator.
+                - name: text
+                  type: keyword
+                  description: The URL associated with the URL Indicator.
+                - name: type
+                  type: keyword
+                  description: Type of the indicator.
+                - name: user_agent_string
+                  type: keyword
+                  description: The characteristic identification string associated with the User Agent Indicator.
+                - name: value
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The registry value associated with the Registry Key Indicator.
+                    - name: type
+                      type: keyword
+                      description: Possible values:REG_NONE,REG_BINARY,REG_DWORD,REG_DWORD_LITTLE_ENDIAN,REG_DWORD_BIG_ENDIAN,REG_EXPAND_SZ,REG_LINK,REG_MULTI_SZ,REG_QWORD,REG_QWORD_LITTLE_ENDIAN,REG_SZ.
+                - name: web_link
+                  type: keyword
+                  description: Link to the indicator's details in the ThreatConnect web application.
+                - name: whois_active
+                  type: boolean
+                  description: Indicates whether the Whois feature is active for the Host Indicator.
+        - name: attributes
+          type: group
+          fields:
+            - name: data
+              type: group
+              fields:
+                - name: created_by
+                  type: group
+                  fields:
+                    - name: first_name
+                      type: keyword
+                      description: First name of the user who created the victim attribute.
+                    - name: id
+                      type: keyword
+                      description: Unique Identifier of the user who created the attribute.
+                    - name: last_name
+                      type: keyword
+                      description: Lastname of the user who created the victim attribute.
+                    - name: owner
+                      type: keyword
+                      description: Owner of attribute creator.
+                    - name: pseudonym
+                      type: keyword
+                      description: Pseudonym or alias of the user.
+                    - name: user_name
+                      type: keyword
+                      description: Username of the user who created the victim attribute.
+                - name: date_added
+                  type: date
+                  description: Date and time when the attribute was added.
+                - name: default
+                  type: boolean
+                  description: Indicates whether the Attribute is the default Attribute of its type for the Indicator to which it is added (this field applies to certain Attribute and data types only).
+                - name: id
+                  type: keyword
+                  description: Unique Identifier of attribute.
+                - name: last_modified
+                  type: date
+                  description: Date and time when attribute was modified.
+                - name: pinned
+                  type: boolean
+                  description: Indicates whether the Attribute is to be displayed as a Pinned Attribute on the Details screen for the Indicator to which the Attribute is added.
+                - name: source
+                  type: keyword
+                  description: The Attributes source.
+                - name: type
+                  type: keyword
+                  description: The Attributes type.
+                - name: value
+                  type: keyword
+                  description: The Attributes value.
+        - name: block
+          type: keyword
+          description: The block of network IP addresses associated with the CIDR Indicator.
+        - name: confidence
+          type: long
+          description: The Indicators Confidence Rating.
+        - name: custom_associations
+          type: flattened
+          description: Includes indicators with custom associations to the indicator.
+        - name: date_added
+          type: date
+          description: Date and time when the indicator was added.
+        - name: deleted_at
+          type: date
+          description: Date when the IOC was expired/deleted.
+        - name: description
+          type: keyword
+          description: Description of the indicator.
+        - name: dns_active
+          type: boolean
+          description: Indicates whether the DNS feature is active for the Host Indicator.
+        - name: dns_resolution
+          type: flattened
+          description: Includes DNS resolution data related to the Host indicators.
+        - name: enrichment
+          type: flattened
+          description: Includes Enrichment data related to the indicator.
+        - name: expiration_duration
+          type: keyword
+          description: Duration when the IOC will expire.
+        - name: external
+          type: group
+          fields:
+            - name: date
+              type: group
+              fields:
+                - name: added
+                  type: date
+                  description: The date and time when the Indicator was created externally.
+                - name: expires
+                  type: date
+                  description: The date and time when the Indicator expires externally.
+        - name: external_last
+          type: group
+          fields:
+            - name: modified
+              type: date
+              description: The date and time when the Indicator was last modified externally.
+        - name: false_positive_reported_by_user
+          type: boolean
+          description: Indicates whether false positive is reported by user.
+        - name: false_positives
+          type: long
+          description: Count of false positives.
+        - name: file_actions
+          type: flattened
+          description: A list of File Actions associated with the File Indicator.
+        - name: file_occurrences
+          type: flattened
+          description: A list of File Occurrences associated with the File Indicator.
+        - name: first_seen
+          type: date
+          description: The date and time when the Indicator was first seen.
+        - name: generic_custom_indicator_values
+          type: flattened
+          description: 'Includes the fields over-writing the custom field names: value1, value2, and value3.'
+        - name: geo_location
+          type: flattened
+          description: Includes GEO location information related to the Host and IP indicators.
+        - name: hashtag
+          type: keyword
+          description: The hashtag term associated with the Hashtag Indicator.
+        - name: host_name
+          type: keyword
+          description: The host name associated with the Host Indicator.
+        - name: id
+          type: keyword
+          description: Unique identifier for the indicator.
+        - name: investigation_links
+          type: flattened
+          description: Includes investigation links related to the indicator type.
+        - name: ip
+          type: ip
+          description: The IP address associated with the Address Indicator.
+        - name: key_name
+          type: keyword
+          description: The name of the registry key associated with the Registry Key Indicator.
+        - name: last_false_positive
+          type: date
+          description: Date and time of last false positive.
+        - name: last_modified
+          type: date
+          description: Date and time when the indicator was last modified.
+        - name: last_seen
+          type: date
+          description: The date and time when the Indicator was last seen.
+        - name: legacy_link
+          type: keyword
+          description: Legacy link to the indicator's details in the ThreatConnect web application.
+        - name: md5
+          type: keyword
+          description: MD5 hash value associated with the indicator.
+        - name: mutex
+          type: keyword
+          description: The synchronization primitive used to identify malware files that is associated with the Mutex.
+        - name: observations
+          type: flattened
+          description: Includes the Observations fields.
+        - name: owner
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Identifier for the owner of the indicator.
+            - name: name
+              type: keyword
+              description: Name of the organization that owns the indicator.
+        - name: private_flag
+          type: boolean
+          description: Indicates whether the indicator is marked as private.
+        - name: rating
+          type: double
+          description: The Indicators Threat Rating.
+        - name: security_labels
+          type: group
+          fields:
+            - name: data
+              type: group
+              fields:
+                - name: date_added
+                  type: date
+                  description: ' The date and time when the security label was added.'
+                - name: name
+                  type: keyword
+                  description: Actual name or label of the security classification.
+                - name: owner
+                  type: keyword
+                  description: The entity or system that owns or manages the security label.
+                - name: source
+                  type: keyword
+                  description: The source of the security label.
+        - name: sha1
+          type: keyword
+          description: The SHA1 hash associated with the File Indicator.
+        - name: sha256
+          type: keyword
+          description: The SHA256 hash associated with the File Indicator.
+        - name: size
+          type: keyword
+          description: The size of the file associated with the File Indicator.
+        - name: source
+          type: keyword
+          description: The Indicators source.
+        - name: subject
+          type: keyword
+          description: The subject line of the email associated with the Email Subject Indicator.
+        - name: summary
+          type: keyword
+          description: Summary or description of the indicator.
+        - name: tags
+          type: group
+          fields:
+            - name: data
+              type: group
+              fields:
+                - name: last_used
+                  type: date
+                  description: Date and time when tag was last used.
+                - name: name
+                  type: keyword
+                  description: Name of tag.
+                - name: owner
+                  type: keyword
+                  description: The Organization, Community, or Source to which the Tag belongs.
+                - name: platforms
+                  type: group
+                  fields:
+                    - name: count
+                      type: long
+                      description: Count of platforms.
+                    - name: data
+                      type: keyword
+                      description: Platform on which tag is added.
+                - name: technique
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                      description: Unique Identifier of tag technique.
+        - name: text
+          type: keyword
+          description: The URL associated with the URL Indicator.
+        - name: threat_assess
+          type: group
+          fields:
+            - name: confidence
+              type: double
+              description: The confidence level associated with the threat assessment.
+            - name: rating
+              type: double
+              description: A numerical rating indicating the threat assessment level.
+            - name: score
+              type: group
+              fields:
+                - name: false_positive
+                  type: long
+                  description: The count of false positives associated with the threat assessment score.
+                - name: observed
+                  type: long
+                  description: The observed value associated with the threat assessment score.
+                - name: value
+                  type: long
+                  description: The overall score assigned to the threat, indicating its severity or risk.
+        - name: tracked_users
+          type: flattened
+          description: Includes Observations and False Positive stats of tracked users.
+        - name: type
+          type: keyword
+          description: Type of the indicator (e.g., File, IP address).
+        - name: user_agent_string
+          type: keyword
+          description: The characteristic identification string associated with the User Agent Indicator.
+        - name: value
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The registry value associated with the Registry Key Indicator.
+            - name: type
+              type: keyword
+              description: Possible values:REG_NONE,REG_BINARY,REG_DWORD,REG_DWORD_LITTLE_ENDIAN,REG_DWORD_BIG_ENDIAN,REG_EXPAND_SZ,REG_LINK,REG_MULTI_SZ,REG_QWORD,REG_QWORD_LITTLE_ENDIAN,REG_SZ.
+        - name: web_link
+          type: keyword
+          description: Link to the indicator's details in the ThreatConnect web application.
+        - name: who_is
+          type: flattened
+          description: Includes WhoIs information related to the Host indicators.
+        - name: whois_active
+          type: boolean
+          description: Indicates whether the Whois feature is active for the Host Indicator.

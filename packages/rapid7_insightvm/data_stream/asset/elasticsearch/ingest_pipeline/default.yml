@@ -115,10 +115,28 @@ processors:
       field: host.name
       copy_from: rapid7.insightvm.asset.host_name
       ignore_empty_value: true
+  - lowercase:
+      field: host.name
+      ignore_missing: true
   - append:
       field: related.hosts
-      value: '{{{rapid7.insightvm.asset.host_name}}}'
-      if: ctx.rapid7?.insightvm?.asset?.host_name != null
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null
+      allow_duplicates: false
+  - script:
+      lang: painless
+      if: ctx.host?.name != null
+      source: |
+        int idx = ctx.host.name.indexOf(".");
+        if (idx == -1) {
+          ctx.host.hostname = ctx.host.name;
+        } else {
+          ctx.host.hostname = ctx.host.name.substring(0, idx);
+        }
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
       allow_duplicates: false
   - rename:
       field: json.id

@@ -1,7 +1,12 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"04d6b69e-92a3-4971-a971-d491bb7c4af9\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"04d6b69e-92a3-4971-a971-d491bb7c4af9\",\"fieldName\":\"threat.feed.name\",\"title\":\"Feed Name\",\"grow\":true,\"width\":\"medium\",\"enhancements\":{}}},\"1f423ba9-6660-49e0-9765-04efbaf6101b\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"1f423ba9-6660-49e0-9765-04efbaf6101b\",\"fieldName\":\"threat.indicator.provider\",\"title\":\"Indicator Provider\",\"grow\":true,\"width\":\"medium\",\"enhancements\":{}}},\"a7c656e6-23a7-46f5-8f81-2884d6fbf759\":{\"type\":\"optionsListControl\",\"order\":2,\"grow\":true,\"width\":\"medium\",\"explicitInput\":{\"id\":\"a7c656e6-23a7-46f5-8f81-2884d6fbf759\",\"fieldName\":\"threat.indicator.type\",\"title\":\"Indicator Type\",\"grow\":true,\"width\":\"medium\",\"enhancements\":{}}}}"
+        },
         "description": "Dashboard providing statistics about indicators ingested from the ThreatQ integration",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -46,6 +51,28 @@
                                 "data_stream.dataset": "ti_threatq.threat"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_ioc_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "labels.is_ioc_transform_source",
+                            "negate": true,
+                            "params": {
+                                "query": "true"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "labels.is_ioc_transform_source": "true"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -57,6 +84,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -95,155 +124,7 @@
                 },
                 "panelIndex": "555e9e6c-04e9-4022-b6df-bda07dde30c4",
                 "title": "Overview Textbox [Logs ThreatQ]",
-                "type": "visualization",
-                "version": "8.0.0-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "index": "logs-*",
-                                            "key": "event.dataset",
-                                            "negate": false,
-                                            "params": [
-                                                "ti_abusech.malware",
-                                                "ti_abusech.malwarebazaar",
-                                                "ti_abusech.url"
-                                            ],
-                                            "type": "phrases"
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "event.dataset": "ti_abusech.malware"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "event.dataset": "ti_abusech.malwarebazaar"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "event.dataset": "ti_abusech.url"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "$state": {
-                                            "store": "appState"
-                                        },
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "index": "logs-*",
-                                            "key": "event.kind",
-                                            "negate": false,
-                                            "params": {
-                                                "query": "enrichment"
-                                            },
-                                            "type": "phrase"
-                                        },
-                                        "query": {
-                                            "match_phrase": {
-                                                "event.kind": "enrichment"
-                                            }
-                                        }
-                                    }
-                                ],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "controls": [
-                                {
-                                    "fieldName": "data_stream.dataset",
-                                    "id": "1635779550157",
-                                    "indexPatternRefName": "control_e971fedd-6afd-4d03-93ac-d0c751acc254_0_index_pattern",
-                                    "label": "Feed Name",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                },
-                                {
-                                    "fieldName": "threat.indicator.provider",
-                                    "id": "1635779603363",
-                                    "indexPatternRefName": "control_e971fedd-6afd-4d03-93ac-d0c751acc254_1_index_pattern",
-                                    "label": "Indicator Provider",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                },
-                                {
-                                    "fieldName": "threat.indicator.type",
-                                    "id": "1635779625911",
-                                    "indexPatternRefName": "control_e971fedd-6afd-4d03-93ac-d0c751acc254_2_index_pattern",
-                                    "label": "Indicator Type",
-                                    "options": {
-                                        "dynamicOptions": true,
-                                        "multiselect": true,
-                                        "order": "desc",
-                                        "size": 5,
-                                        "type": "terms"
-                                    },
-                                    "parent": "",
-                                    "type": "list"
-                                }
-                            ],
-                            "pinFilters": false,
-                            "updateFiltersOnChange": false,
-                            "useTimeFilter": false
-                        },
-                        "title": "Feed and Indicator Selector [Logs AbuseCH]",
-                        "type": "input_control_vis",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "e971fedd-6afd-4d03-93ac-d0c751acc254",
-                    "w": 41,
-                    "x": 7,
-                    "y": 0
-                },
-                "panelIndex": "e971fedd-6afd-4d03-93ac-d0c751acc254",
-                "title": "Feed and Indicator Selector [Logs ThreatQ]",
-                "type": "visualization",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -252,22 +133,14 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-070f5dbc-7687-4e97-9a57-5542b401c13f",
                                 "type": "index-pattern"
                             }
                         ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-1d376820-3b22-11ec-ae50-2fdf1e96c6a6"
-                        },
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "070f5dbc-7687-4e97-9a57-5542b401c13f": {
                                             "columnOrder": [
@@ -281,7 +154,7 @@
                                                     "label": "Total Indicators",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -290,17 +163,20 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "1e352b49-3b83-44a6-98fe-8703d30f2517",
+                                "color": "#6092C0",
                                 "layerId": "070f5dbc-7687-4e97-9a57-5542b401c13f",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "metricAccessor": "1e352b49-3b83-44a6-98fe-8703d30f2517"
                             }
                         },
                         "title": "Total Indicators [Logs AbuseCH]",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -311,107 +187,27 @@
                     "i": "d37eb797-f273-43c2-9004-b947891cce55",
                     "w": 6,
                     "x": 7,
-                    "y": 7
+                    "y": 0
                 },
                 "panelIndex": "d37eb797-f273-43c2-9004-b947891cce55",
                 "title": "Total Indicators [Logs ThreatQ]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-df8e3a91-700b-428a-a763-525076e4d3c8",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-49830790-3b27-11ec-ae50-2fdf1e96c6a6"
-                        },
-                        "state": {
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "df8e3a91-700b-428a-a763-525076e4d3c8": {
-                                            "columnOrder": [
-                                                "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326"
-                                            ],
-                                            "columns": {
-                                                "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total Datastreams",
-                                                    "operationType": "unique_count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "event.dataset"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "accessor": "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326",
-                                "layerId": "df8e3a91-700b-428a-a763-525076e4d3c8",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "Total Datastreams [Logs AbuseCH]",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 8,
-                    "i": "6509dcc9-bb9c-4c1f-80e9-612f67ada340",
-                    "w": 6,
-                    "x": 7,
-                    "y": 15
-                },
-                "panelIndex": "6509dcc9-bb9c-4c1f-80e9-612f67ada340",
-                "title": "Total Datastreams [Logs ThreatQ]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-1e757dc0-2e6d-4bd2-aa38-7da9133ca960",
                                 "type": "index-pattern"
                             }
                         ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-ec1a2c50-3b30-11ec-ae50-2fdf1e96c6a6"
-                        },
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "1e757dc0-2e6d-4bd2-aa38-7da9133ca960": {
                                             "columnOrder": [
@@ -425,7 +221,7 @@
                                                     "label": "Count of records",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "66779b74-d127-4249-93e4-b8cd9c39b91f": {
                                                     "dataType": "string",
@@ -451,6 +247,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -476,12 +273,13 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "right",
                                     "showSingleSeries": false
                                 },
                                 "preferredSeriesType": "bar_horizontal",
                                 "title": "Empty XY chart",
-                                "valueLabels": "inside",
+                                "valueLabels": "show",
                                 "xTitle": "Providers",
                                 "yLeftExtent": {
                                     "mode": "full"
@@ -493,6 +291,7 @@
                             }
                         },
                         "title": "Total Indicators per Provider [Logs AbuseCH]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -501,37 +300,29 @@
                 "gridData": {
                     "h": 16,
                     "i": "86d83606-4176-44b1-b3f3-011d5b5b4b58",
-                    "w": 23,
+                    "w": 12,
                     "x": 13,
-                    "y": 7
+                    "y": 0
                 },
                 "panelIndex": "86d83606-4176-44b1-b3f3-011d5b5b4b58",
                 "title": "Total Indicators per Provider [Logs ThreatQ]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-682732d8-8691-4c5a-bf89-de8e30d71dfb",
                                 "type": "index-pattern"
                             }
                         ],
-                        "sharingSavedObjectProps": {
-                            "outcome": "exactMatch",
-                            "sourceId": "ti_abusech-62801870-3b2a-11ec-ae50-2fdf1e96c6a6"
-                        },
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "682732d8-8691-4c5a-bf89-de8e30d71dfb": {
                                             "columnOrder": [
@@ -545,7 +336,7 @@
                                                     "label": "Count of records",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "dd629c44-e7db-438e-8656-340b94fd30d8": {
                                                     "customLabel": true,
@@ -573,6 +364,7 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -581,17 +373,20 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "dd629c44-e7db-438e-8656-340b94fd30d8"
-                                        ],
                                         "layerId": "682732d8-8691-4c5a-bf89-de8e30d71dfb",
                                         "layerType": "data",
                                         "legendDisplay": "show",
                                         "legendPosition": "right",
-                                        "metric": "bad802d8-b23f-4ef4-8dcf-4e92170595a7",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "bad802d8-b23f-4ef4-8dcf-4e92170595a7"
+                                        ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "dd629c44-e7db-438e-8656-340b94fd30d8"
+                                        ],
                                         "truncateLegend": true
                                     }
                                 ],
@@ -599,6 +394,7 @@
                             }
                         },
                         "title": "Total Indicators per Datastream [Logs AbuseCH]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
@@ -607,14 +403,204 @@
                 "gridData": {
                     "h": 16,
                     "i": "f654c447-12d2-41a4-9091-06169af11ba5",
-                    "w": 12,
-                    "x": 36,
-                    "y": 7
+                    "w": 11,
+                    "x": 25,
+                    "y": 0
                 },
                 "panelIndex": "f654c447-12d2-41a4-9091-06169af11ba5",
                 "title": "Total Indicators per Datastream [Logs ThreatQ]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-682732d8-8691-4c5a-bf89-de8e30d71dfb",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "682732d8-8691-4c5a-bf89-de8e30d71dfb": {
+                                            "columnOrder": [
+                                                "dd629c44-e7db-438e-8656-340b94fd30d8",
+                                                "bad802d8-b23f-4ef4-8dcf-4e92170595a7"
+                                            ],
+                                            "columns": {
+                                                "bad802d8-b23f-4ef4-8dcf-4e92170595a7": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "dd629c44-e7db-438e-8656-340b94fd30d8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Indicators",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "bad802d8-b23f-4ef4-8dcf-4e92170595a7",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "threat.indicator.type"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bad802d8-b23f-4ef4-8dcf-4e92170595a7"
+                                        ],
+                                        "layerId": "682732d8-8691-4c5a-bf89-de8e30d71dfb",
+                                        "layerType": "data",
+                                        "seriesType": "bar",
+                                        "xAccessor": "dd629c44-e7db-438e-8656-340b94fd30d8"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Total Indicators per Datastream [Logs AbuseCH]",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "dc3a201e-770b-473d-84b0-c5cc4697534c",
+                    "w": 12,
+                    "x": 36,
+                    "y": 0
+                },
+                "panelIndex": "dc3a201e-770b-473d-84b0-c5cc4697534c",
+                "title": "Total Indicators per Indicator Type [Logs ThreatQ]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-df8e3a91-700b-428a-a763-525076e4d3c8",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "df8e3a91-700b-428a-a763-525076e4d3c8": {
+                                            "columnOrder": [
+                                                "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326"
+                                            ],
+                                            "columns": {
+                                                "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Datastreams",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.dataset"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "df8e3a91-700b-428a-a763-525076e4d3c8",
+                                "layerType": "data",
+                                "metricAccessor": "e4f78e2f-f0a7-4cc6-96d0-af607ffbf326"
+                            }
+                        },
+                        "title": "Total Datastreams [Logs AbuseCH]",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "6509dcc9-bb9c-4c1f-80e9-612f67ada340",
+                    "w": 6,
+                    "x": 7,
+                    "y": 8
+                },
+                "panelIndex": "6509dcc9-bb9c-4c1f-80e9-612f67ada340",
+                "title": "Total Datastreams [Logs ThreatQ]",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -637,7 +623,7 @@
                         },
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "c1cee622-e3dd-4d6b-a28a-0fb19dc2c7b7": {
                                             "columnOrder": [
@@ -652,7 +638,7 @@
                                                     "label": "Count of records",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "4d7ca99c-8a53-4a7f-96db-409251c0e391": {
                                                     "dataType": "string",
@@ -678,6 +664,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "30s"
                                                     },
                                                     "scale": "interval",
@@ -719,6 +706,7 @@
                                 "legend": {
                                     "isInside": false,
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "bottom",
                                     "shouldTruncate": false,
                                     "showSingleSeries": true
@@ -748,23 +736,21 @@
                     "i": "aab4fac0-d39c-4521-aa9b-0a49d5938e9e",
                     "w": 41,
                     "x": 7,
-                    "y": 23
+                    "y": 16
                 },
                 "panelIndex": "aab4fac0-d39c-4521-aa9b-0a49d5938e9e",
                 "title": "Indicators ingested per Datastream [Logs ThreatQ]",
-                "type": "lens",
-                "version": "8.0.0-SNAPSHOT"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs ThreatQ] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.0.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-12-11T12:11:43.097Z",
     "id": "ti_threatq-a05fd810-78f1-11ec-a97c-7db1518ab848",
-    "migrationVersion": {
-        "dashboard": "8.0.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -778,32 +764,7 @@
         },
         {
             "id": "logs-*",
-            "name": "e971fedd-6afd-4d03-93ac-d0c751acc254:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "e971fedd-6afd-4d03-93ac-d0c751acc254:kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "e971fedd-6afd-4d03-93ac-d0c751acc254:control_e971fedd-6afd-4d03-93ac-d0c751acc254_0_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "e971fedd-6afd-4d03-93ac-d0c751acc254:control_e971fedd-6afd-4d03-93ac-d0c751acc254_1_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "e971fedd-6afd-4d03-93ac-d0c751acc254:control_e971fedd-6afd-4d03-93ac-d0c751acc254_2_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "d37eb797-f273-43c2-9004-b947891cce55:indexpattern-datasource-current-indexpattern",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         },
         {
@@ -813,32 +774,22 @@
         },
         {
             "id": "logs-*",
-            "name": "6509dcc9-bb9c-4c1f-80e9-612f67ada340:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "6509dcc9-bb9c-4c1f-80e9-612f67ada340:indexpattern-datasource-layer-df8e3a91-700b-428a-a763-525076e4d3c8",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "86d83606-4176-44b1-b3f3-011d5b5b4b58:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "86d83606-4176-44b1-b3f3-011d5b5b4b58:indexpattern-datasource-layer-1e757dc0-2e6d-4bd2-aa38-7da9133ca960",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "f654c447-12d2-41a4-9091-06169af11ba5:indexpattern-datasource-current-indexpattern",
+            "name": "f654c447-12d2-41a4-9091-06169af11ba5:indexpattern-datasource-layer-682732d8-8691-4c5a-bf89-de8e30d71dfb",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "f654c447-12d2-41a4-9091-06169af11ba5:indexpattern-datasource-layer-682732d8-8691-4c5a-bf89-de8e30d71dfb",
+            "name": "dc3a201e-770b-473d-84b0-c5cc4697534c:indexpattern-datasource-layer-682732d8-8691-4c5a-bf89-de8e30d71dfb",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6509dcc9-bb9c-4c1f-80e9-612f67ada340:indexpattern-datasource-layer-df8e3a91-700b-428a-a763-525076e4d3c8",
             "type": "index-pattern"
         },
         {
@@ -852,10 +803,31 @@
             "type": "index-pattern"
         },
         {
+            "id": "logs-*",
+            "name": "controlGroup_04d6b69e-92a3-4971-a971-d491bb7c4af9:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_1f423ba9-6660-49e0-9765-04efbaf6101b:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_a7c656e6-23a7-46f5-8f81-2884d6fbf759:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
             "id": "ti_threatq-c0cca010-78f1-11ec-a97c-7db1518ab848",
-            "name": "tag-ti_threatq-c0cca010-78f1-11ec-a97c-7db1518ab848",
+            "name": "tag-ref-ti_threatq-c0cca010-78f1-11ec-a97c-7db1518ab848",
+            "type": "tag"
+        },
+        {
+            "id": "ti_threatq-security-solution-default",
+            "name": "tag-ref-security-solution-default",
             "type": "tag"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

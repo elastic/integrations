@@ -335,6 +335,7 @@ An example event for `system` looks as following:
 | okta.security_context.isp | The Internet Service Provider. | keyword |
 | okta.severity | The severity of the LogEvent. Must be one of DEBUG, INFO, WARN, or ERROR. | keyword |
 | okta.target | The list of targets. | flattened |
+| okta.transaction.detail.request_api_token_id | ID of the API token used in a request. | keyword |
 | okta.transaction.id | Identifier of the transaction. | keyword |
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
 | okta.uuid | The unique identifier of the Okta LogEvent. | keyword |

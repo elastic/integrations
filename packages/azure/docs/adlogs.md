@@ -1,10 +1,10 @@
-# Active Directory Logs
+# Microsoft Entra ID Logs
 
-Azure Active Directory (AAD) logs are records of events and activities that occur within an organization's AAD environment.
+Microsoft Entra ID logs are records of events and activities that occur within a Microsoft Entra ID environment of an organization.
 
 These logs capture important information such as user sign-ins, changes to user accounts, and more. They can be used to monitor and track user activity, identify security threats, troubleshoot issues, and generate reports for compliance purposes.
 
-The Azure Active Directory logs integration contain several data streams:
+The Microsoft Entra ID logs integration contain several data streams:
 
 * **Sign-in logs** – Information about sign-ins and how your users use your resources.
 * **Identity Protection logs** - Information about user risk status and the events that change it.
@@ -32,7 +32,7 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 
 `eventhub` :
   _string_
-It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
+This setting expects the name of a single Event Hub (see the [difference between a namespace and an Event Hub](https://docs.elastic.co/integrations/azure#event-hub-namespace-vs-event-hub)). It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -42,7 +42,7 @@ Default value: `$Default`
 
 `connection_string` :
 _string_
-The connection string required to communicate with Event Hubs, steps here https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string.
+The connection string required to communicate with the specified Event Hub, steps here https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string.
 
 A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping the filebeat azure module it can start back up at the spot that it stopped processing messages.
 
@@ -82,7 +82,7 @@ https://management.usgovcloudapi.net/
 
 ### Sign-in logs
 
-Retrieves Azure Active Directory sign-in logs. The sign-ins report provides information about the usage of managed applications and user sign-in activities.
+Retrieves Microsoft Entra ID sign-in logs. The sign-ins report provides information about the usage of managed applications and user sign-in activities.
 
 An example event for `signinlogs` looks as following:
 
@@ -221,6 +221,7 @@ An example event for `signinlogs` looks as following:
 | azure.resource.name | Name | keyword |
 | azure.resource.namespace | Resource type/namespace | keyword |
 | azure.resource.provider | Resource type/namespace | keyword |
+| azure.signinlogs.caller_ip_address | The IP address of the client that made the request. | ip |
 | azure.signinlogs.category | Category | keyword |
 | azure.signinlogs.identity | Identity | keyword |
 | azure.signinlogs.operation_name | The operation name | keyword |
@@ -388,7 +389,7 @@ An example event for `signinlogs` looks as following:
 
 ### Identity Protection logs
 
-Retrieves Azure AD Identity Protection logs. The [Azure AD Identity Protection](https://docs.microsoft.com/en-us/azure/active-directory/identity-protection/overview-identity-protection) service analyzes events from AD users' behavior, detects risk situations, and can respond by reporting only or even blocking users at risk, according to policy configurations.
+Retrieves Microsoft Entra ID Protection logs. The [Microsoft Entra ID Protection](https://docs.microsoft.com/en-us/azure/active-directory/identity-protection/overview-identity-protection) service analyzes events from Microsoft Entra ID users' behavior, detects risk situations, and can respond by reporting only or even blocking users at risk, according to policy configurations.
 
 An example event for `identity_protection` looks as following:
 
@@ -620,12 +621,12 @@ An example event for `identity_protection` looks as following:
 
 ### Provisioning logs
 
-Retrieves Azure Active Directory Provisioning logs. The [Azure AD Provisioning](https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/how-provisioning-works) service syncs AD users and groups to and from external enterprise applications. For example, you can configure the provisioning service to replicate all existing AD users and groups to an external Dropbox Business account or vice-versa.
+Retrieves Microsoft Entra ID Provisioning logs. The [Microsoft Entra ID Provisioning](https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/how-provisioning-works) service syncs Microsoft Entra ID users and groups to and from external enterprise applications. For example, you can configure the provisioning service to replicate all existing Microsoft Entra ID users and groups to an external Dropbox Business account or vice versa.
 
 The Provisioning Logs contain a lot of details about a inbound/outbound sync activity, like:
 
 * User or group details.
-* Source and target systems (e.g., from Azure AD to Dropbox).
+* Source and target systems (for ex., from Microsoft Entra ID to Dropbox).
 * Provisioning status.
 * Provisioning steps (with details for each step).
 
@@ -790,7 +791,7 @@ An example event for `provisioning` looks as following:
 | azure.provisioning.properties.initiated_by.type | Type of initiator. Possible values are: user, application, system, unknownFutureValue. | keyword |
 | azure.provisioning.properties.job_id | The unique ID for the whole provisioning job. | keyword |
 | azure.provisioning.properties.modified_properties | Details of each property that was modified in this provisioning action on this object. | flattened |
-| azure.provisioning.properties.provisioning_action | Indicates the activity name or the operation name. Possible values are: create, update, delete, stageddelete, disable, other and unknownFutureValue. For a list of activities logged, refer to Azure AD activity list. | keyword |
+| azure.provisioning.properties.provisioning_action | Indicates the activity name or the operation name. Possible values are: create, update, delete, stageddelete, disable, other and unknownFutureValue. For a list of activities logged, refer to Microsoft Entra ID activity list. | keyword |
 | azure.provisioning.properties.provisioning_status_info.error_information.additional_details | Additional details in case of error. | keyword |
 | azure.provisioning.properties.provisioning_status_info.error_information.error_category | Categorizes the error code. Possible values are failure, nonServiceFailure, success, unknownFutureValue. | keyword |
 | azure.provisioning.properties.provisioning_status_info.error_information.error_code | Unique error code if any occurred. To learn more, visit https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/concept-provisioning-logs#error-codes | keyword |
@@ -822,10 +823,10 @@ An example event for `provisioning` looks as following:
 | azure.provisioning.properties.target_system.details.service_principal_id |  | keyword |
 | azure.provisioning.properties.target_system.id | Identifier of the system that a user was provisioned to or from. | keyword |
 | azure.provisioning.properties.target_system.name | Name of the system that a user was provisioned to or from. | keyword |
-| azure.provisioning.properties.tenant_id | Unique Azure AD tenant ID | keyword |
+| azure.provisioning.properties.tenant_id | Unique Microsoft Entra ID tenant ID | keyword |
 | azure.provisioning.result_signature | Result signature | keyword |
 | azure.provisioning.result_type | Result type | keyword |
-| azure.provisioning.tenant_id | Unique Azure AD tenant ID | keyword |
+| azure.provisioning.tenant_id | Unique Microsoft Entra ID tenant ID | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
 | azure.resource.name | Name | keyword |
@@ -931,7 +932,7 @@ An example event for `provisioning` looks as following:
 
 ### Audit logs
 
-Retrieves Azure Active Directory audit logs. The audit logs provide traceability through logs for all changes done by various features within Azure AD. Examples of audit logs include changes made to any resources within Azure AD like adding or removing users, apps, groups, roles and policies.
+Retrieves Microsoft Entra ID audit logs. The audit logs provide traceability through logs for all changes done by various features within Microsoft Entra ID. Examples of audit logs include changes made to any resources within Microsoft Entra ID like adding or removing users, apps, groups, roles and policies.
 
 An example event for `auditlogs` looks as following:
 
@@ -998,7 +999,9 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.operation_version | The operation version | keyword |
 | azure.auditlogs.properties.activity_datetime | Activity timestamp | date |
 | azure.auditlogs.properties.activity_display_name | Activity display name | keyword |
+| azure.auditlogs.properties.additional_details.key | Additional details key | keyword |
 | azure.auditlogs.properties.additional_details.user_agent | User agent name. | keyword |
+| azure.auditlogs.properties.additional_details.value | Additional details value | keyword |
 | azure.auditlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.auditlogs.properties.category | category | keyword |
 | azure.auditlogs.properties.correlation_id | Correlation ID | keyword |
@@ -1010,6 +1013,7 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.properties.initiated_by.user.displayName | Display name | keyword |
 | azure.auditlogs.properties.initiated_by.user.id | ID | keyword |
 | azure.auditlogs.properties.initiated_by.user.ipAddress | ip Address | keyword |
+| azure.auditlogs.properties.initiated_by.user.roles | User roles | keyword |
 | azure.auditlogs.properties.initiated_by.user.userPrincipalName | User principal name | keyword |
 | azure.auditlogs.properties.logged_by_service | Logged by service | keyword |
 | azure.auditlogs.properties.operation_type | Operation type | keyword |
@@ -1023,6 +1027,7 @@ An example event for `auditlogs` looks as following:
 | azure.auditlogs.properties.target_resources.\*.modified_properties.\*.old_value | Old value | keyword |
 | azure.auditlogs.properties.target_resources.\*.type | Type | keyword |
 | azure.auditlogs.properties.target_resources.\*.user_principal_name | User principal name | keyword |
+| azure.auditlogs.result_description | Result description | keyword |
 | azure.auditlogs.result_signature | Result signature | keyword |
 | azure.auditlogs.tenant_id | Tenant ID | keyword |
 | azure.correlation_id | Correlation ID | keyword |

@@ -39,6 +39,9 @@ processors:
     replacement: " "
 - trim:
     field: message
+- drop:
+    if: ctx.message == null || ctx.message == ""
+    tag: drop_empty_event
 - set:
     copy_from: "@timestamp"
     field: event.created
@@ -89,7 +92,7 @@ processors:
     field: message
     target_field: event.original
     ignore_missing: true
-    ignore_failure: true
+    if: 'ctx.event?.original == null'
 - remove:
     field:
     - log_timestamp

@@ -510,31 +510,31 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.SecurityActions
-      target_field: cloudflare_logpush.http_request.firewall.match.action
+      target_field: cloudflare_logpush.http_request.firewall.matches.action
       ignore_missing: true
   - rename:
       field: json.FirewallMatchesActions
-      target_field: cloudflare_logpush.http_request.firewall.match.action
+      target_field: cloudflare_logpush.http_request.firewall.matches.action
       ignore_missing: true
-      if: ctx.cloudflare_logpush?.http_request?.firewall?.match?.action != null
+      if: ctx.cloudflare_logpush?.http_request?.firewall?.matches?.action == null
   - rename:
       field: json.SecurityRuleIDs
-      target_field: cloudflare_logpush.http_request.firewall.match.rule.id
+      target_field: cloudflare_logpush.http_request.firewall.matches.rule_id
       ignore_missing: true
   - rename:
       field: json.FirewallMatchesRuleIDs
-      target_field: cloudflare_logpush.http_request.firewall.match.rule.id
+      target_field: cloudflare_logpush.http_request.firewall.matches.rule_id
       ignore_missing: true
-      if: ctx.cloudflare_logpush?.http_request?.firewall?.match?.rule?.id != null
+      if: ctx.cloudflare_logpush?.http_request?.firewall?.matches?.rule_id == null
   - rename:
       field: json.SecuritySources
-      target_field: cloudflare_logpush.http_request.firewall.match.source
+      target_field: cloudflare_logpush.http_request.firewall.matches.sources
       ignore_missing: true
   - rename:
       field: json.FirewallMatchesSources
-      target_field: cloudflare_logpush.http_request.firewall.match.source
+      target_field: cloudflare_logpush.http_request.firewall.matches.sources
       ignore_missing: true
-      if: ctx.cloudflare_logpush?.http_request?.firewall?.match?.source != null
+      if: ctx.cloudflare_logpush?.http_request?.firewall?.matches?.sources == null
   - rename:
       field: json.JA3Hash
       target_field: cloudflare_logpush.http_request.ja3_hash
@@ -681,7 +681,7 @@ processors:
       field: json.WAFAction
       target_field: cloudflare_logpush.http_request.waf.action
       ignore_missing: true
-      if: ctx.cloudflare_logpush?.http_request?.waf?.action != null
+      if: ctx.cloudflare_logpush?.http_request?.waf?.action == null
   - rename:
       field: json.WAFFlags
       target_field: cloudflare_logpush.http_request.waf.flag
@@ -702,7 +702,7 @@ processors:
       field: json.WAFRuleID
       target_field: cloudflare_logpush.http_request.waf.rule.id
       ignore_missing: true
-      if: ctx.cloudflare_logpush?.http_request?.waf?.rule?.id != null
+      if: ctx.cloudflare_logpush?.http_request?.waf?.rule?.id == null
   - rename:
       field: json.SecurityRuleDescription
       target_field: cloudflare_logpush.http_request.waf.rule.message
@@ -711,7 +711,51 @@ processors:
       field: json.WAFRuleMessage
       target_field: cloudflare_logpush.http_request.waf.rule.message
       ignore_missing: true
-      if: ctx.cloudflare_logpush?.http_request?.waf?.rule?.message != null
+      if: ctx.cloudflare_logpush?.http_request?.waf?.rule?.message == null
+  - convert:
+      field: json.WAFAttackScore
+      target_field: cloudflare_logpush.http_request.waf.score.global
+      type: long
+      if: ctx.json?.WAFAttackScore != ''
+      ignore_missing: true
+      tag: convert_waf_score_global
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.WAFRCEAttackScore
+      target_field: cloudflare_logpush.http_request.waf.score.rce
+      type: long
+      if: ctx.json?.WAFRCEAttackScore != ''
+      ignore_missing: true
+      tag: convert_waf_score_rce
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.WAFSQLiAttackScore
+      target_field: cloudflare_logpush.http_request.waf.score.sqli
+      type: long
+      if: ctx.json?.WAFSQLiAttackScore != ''
+      ignore_missing: true
+      tag: convert_waf_score_sqli
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.WAFXSSAttackScore
+      target_field: cloudflare_logpush.http_request.waf.score.xss
+      type: long
+      if: ctx.json?.WAFXSSAttackScore != ''
+      ignore_missing: true
+      tag: convert_waf_score_xss
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.WorkerCPUTime
       target_field: cloudflare_logpush.http_request.worker.cpu_time

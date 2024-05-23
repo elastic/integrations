@@ -920,21 +920,53 @@ processors:
       target_field: m365_defender.event.previous.registry_value_name
       tag: rename_json_properties_PreviousRegistryValueName
       ignore_missing: true
+  - convert:
+      field: json.properties.FileOriginIP
+      type: ip
+      tag: convert_file_origin_ip
+      if: ctx.json?.properties?.FileOriginIP != null
+      on_failure:
+        - remove:
+            field: json.properties.FileOriginIP
   - rename:
       field: json.properties.FileOriginIP
       target_field: m365_defender.event.file.origin_ip
       tag: rename_json_properties_FileOriginIp
       ignore_missing: true
+  - convert:
+      field: json.properties.RemoteIP
+      type: ip
+      tag: convert_remote_ip
+      if: ctx.json?.properties?.RemoteIP != null
+      on_failure:
+        - remove:
+            field: json.properties.RemoteIP
   - rename:
       field: json.properties.RemoteIP
       target_field: m365_defender.event.remote.ip
       tag: rename_json_properties_RemoteIP
       ignore_missing: true
+  - convert:
+      field: json.properties.LocalIP
+      type: ip
+      tag: convert_local_ip
+      if: ctx.json?.properties?.LocalIP != null
+      on_failure:
+        - remove:
+            field: json.properties.LocalIP
   - rename:
       field: json.properties.LocalIP
       target_field: m365_defender.event.local.ip
       tag: rename_json_properties_LocalIP
       ignore_missing: true
+  - convert:
+      field: json.properties.RequestSourceIP
+      type: ip
+      tag: convert_request_source_ip
+      if: ctx.json?.properties?.RequestSourceIP != null
+      on_failure:
+        - remove:
+            field: json.properties.RequestSourceIP
   - rename:
       field: json.properties.RequestSourceIP
       target_field: m365_defender.event.request.source_ip
@@ -955,6 +987,14 @@ processors:
       target_field: m365_defender.event.local.port
       tag: rename_json_properties_LocalPort
       ignore_missing: true
+  - convert:
+      field: json.properties.PublicIP
+      type: ip
+      tag: convert_public_ip
+      if: ctx.json?.properties?.PublicIP != null
+      on_failure:
+        - remove:
+            field: json.properties.PublicIP
   - rename:
       field: json.properties.PublicIP
       target_field: m365_defender.event.public_ip.value
@@ -1692,60 +1732,108 @@ processors:
           field: related.user
           value: '{{{_ingest._value}}}'
 
-  ## This is an best effort attempt to parse command line into arguments.
-  ## Due to the fact that there is no way to know which OS it originates from, and no specific format these are supplied in the data itself,
-  ## there is no good way to get 100% coverage, but this implementation should cover almost all common scenarios.
   - script:
-      description: Splits up the command line to populate more processor fields.
+      tag: split-command-line-device
+      description: Implements Windows-like SplitCommandLine
       lang: painless
-      tag: script_split_command_line
-      if: ctx.process?.command_line != null && ctx.process.command_line != ''
-      source: |
-        def commandLine = ctx.process.command_line;
-        commandLine = commandLine.trim();
-        if (commandLine != "") {
-        ctx.process.command_line = commandLine;
-    
-        def args = new ArrayList();
-        for (def v : / /.split(commandLine)) {
-            if (v != "") {
-                args.add(v);
+      if: (ctx.process?.command_line != null && ctx.process.command_line != '') || (ctx.process?.parent?.command_line != null && ctx.process.parent.command_line != '')
+      source: |-
+        // appendBSBytes appends n '\\' bytes to b and returns the resulting slice.
+        def appendBSBytes(StringBuilder b, int n) {
+            for (; n > 0; n--) {
+                b.append('\\');
             }
+            return b;
         }
-        if (args.length > 0) {
-            ctx.process.args = args;
-            ctx.process.args_count = args.length;
-        }
-        }
-  - script:
-      description: Splits up the command line to populate more parent processor fields.
-      lang: painless
-      tag: script_split_parent_command_line
-      if: ctx.process?.parent?.command_line != null && ctx.process?.parent?.command_line != ''
-      source: |
-        def commandLine = ctx.process.parent.command_line;
-        commandLine = commandLine.trim();
-        if (commandLine != "") {
-        ctx.process.command_line = commandLine;
-    
-        def args = new ArrayList();
-        for (def v : / /.split(commandLine)) {
-            if (v != "") {
-                args.add(v);
+
+        // readNextArg splits command line string cmd into next
+        // argument and command line remainder.
+        def readNextArg(String cmd) {
+            def b = new StringBuilder();
+            boolean inquote;
+            int nslash;
+            for (; cmd.length() > 0; cmd = cmd.substring(1)) {
+                def c = cmd.charAt(0);
+                if (c == (char)' ' || c == (char)0x09) {
+                    if (!inquote) {
+                        return [
+                            "arg":  appendBSBytes(b, nslash).toString(),
+                            "rest": cmd.substring(1)
+                        ];
+                    }
+                } else if (c == (char)'"') {
+                    b = appendBSBytes(b, nslash/2);
+                    if (nslash%2 == 0) {
+                        // use "Prior to 2008" rule from
+                        // http://daviddeley.com/autohotkey/parameters/parameters.htm
+                        // section 5.2 to deal with double double quotes
+                        if (inquote && cmd.length() > 1 && cmd.charAt(1) == (char)'"') {
+                            b.append(c);
+                            cmd = cmd.substring(1);
+                        }
+                        inquote = !inquote;
+                    } else {
+                        b.append(c);
+                    }
+                    nslash = 0;
+                    continue;
+                } else if (c == (char)'\\') {
+                    nslash++;
+                    continue;
+                }
+                b = appendBSBytes(b, nslash);
+                nslash = 0;
+                b.append(c);
             }
+            return [
+                "arg":  appendBSBytes(b, nslash).toString(),
+                "rest": ''
+            ];
         }
-        if (args.length > 0) {
-            ctx.process.parent.args = args;
-            ctx.process.parent.args_count = args.length;
+
+        // commandLineToArgv splits a command line into individual argument
+        // strings, following the Windows conventions documented
+        // at http://daviddeley.com/autohotkey/parameters/parameters.htm#WINARGV
+        // Original implementation found at: https://github.com/golang/go/commit/39c8d2b7faed06b0e91a1ad7906231f53aab45d1
+        def commandLineToArgv(String cmd) {
+            def args = new ArrayList();
+            while (cmd.length() > 0) {
+                if (cmd.charAt(0) == (char)' ' || cmd.charAt(0) == (char)0x09) {
+                    cmd = cmd.substring(1);
+                    continue;
+                }
+                def next = readNextArg(cmd);
+                cmd = next.rest;
+                args.add(next.arg);
+            }
+            return args;
         }
+
+        if (ctx.process?.command_line != null && ctx.process.command_line != '') {
+          ctx.process.args = commandLineToArgv(ctx.process.command_line);
+          ctx.process.args_count = ctx.process.args.length;
+        }
+        if (ctx.process?.parent?.command_line != null && ctx.process.parent.command_line != '') {
+          ctx.process.parent.args = commandLineToArgv(ctx.process.parent.command_line);
+          ctx.process.parent.args_count = ctx.process.parent.args.length;
         }
 
   # Geo mapping
   - geoip:
-      if: ctx.m365_defender?.event?.public_ip?.value != null
+      if: ctx.host?.ip != null
       field: host.ip
       tag: geoip_host_ip
       target_field: host.geo
+  - geoip:
+      if: ctx.source?.ip != null
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+  - geoip:
+      if: ctx.destination?.ip != null
+      field: destination.ip
+      tag: geoip_destination_ip
+      target_field: destination.geo
 
   # Related fields
   ## Hosts

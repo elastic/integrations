@@ -1,0 +1,2211 @@
+---
+description: Pipeline for processing indicator logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: enrichment
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.provider
+      tag: set_threat_indicator_provider
+      value: ThreatConnect
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      if: ctx.event?.original == null
+      ignore_missing: true
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.summary
+        - json.lastModified
+      target_field: _id
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: ctx.json?.deleted_at == null && ctx.json?.lastModified != null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
+      description: Add default deleted_at field.
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        String lastModified = ctx.json.lastModified;
+        if (dur instanceof String){
+          String time_unit = dur.substring(dur.length() -  1, dur.length());
+          String time_value = dur.substring(0, dur.length() - 1);
+          if (time_unit == 'd') {
+            ctx.json.deleted_at = ZonedDateTime.parse(lastModified).plusDays(Long.parseLong(time_value));
+          } else if (time_unit == 'h') {
+            ctx.json.deleted_at = ZonedDateTime.parse(lastModified).plusHours(Long.parseLong(time_value));
+          } else if (time_unit == 'm') {
+            ctx.json.deleted_at = ZonedDateTime.parse(lastModified).plusMinutes(Long.parseLong(time_value));
+          } else {
+            ctx.json.deleted_at = ZonedDateTime.parse(lastModified).plusDays(90L);
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.deleted_at
+      tag: date_deleted_at
+      target_field: threat_connect.indicator.deleted_at
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: threat_connect.indicator.expiration_duration
+      ignore_missing: true
+  - convert:
+      field: json.activeLocked
+      tag: convert_activeLocked_to_boolean
+      target_field: threat_connect.indicator.active.locked
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.active
+      tag: convert_active_to_boolean
+      target_field: threat_connect.indicator.active.value
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.address
+      tag: rename_address
+      target_field: threat_connect.indicator.address
+      ignore_missing: true
+  - dissect:
+      if: ctx.threat_connect?.indicator?.address != null && ctx.threat_connect.indicator.address.contains('@')
+      tag: dissect_threat_connect_indicator_address
+      field: threat_connect.indicator.address
+      pattern: '%{user.name}@%{user.domain}'
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - set:
+      field: threat.indicator.email.address
+      tag: set_threat_indicator_email_address_from_indicator_address
+      copy_from: threat_connect.indicator.address
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_indicator_address
+      copy_from: threat_connect.indicator.address
+      ignore_empty_value: true
+  - rename:
+      field: json.AS Number
+      tag: rename_AS Number
+      target_field: threat_connect.indicator.as_number
+      ignore_missing: true
+  - gsub:
+      field: threat_connect.indicator.as_number
+      tag: replace_string_values_with_space
+      target_field: threat_connect.indicator.temp
+      pattern: '[a-zA-Z]'
+      replacement: ' '
+      ignore_missing: true
+  - trim:
+      field: threat_connect.indicator.temp
+      tag: trim_white_spaces_from_string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: threat_connect.indicator.temp
+      tag: convert_as_number_string_to_long
+      target_field: threat.indicator.as.number
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: threat_connect.indicator.temp
+      ignore_missing: true
+  - rename:
+      field: json.associatedArtifacts
+      tag: rename_associatedArtifacts
+      target_field: threat_connect.indicator.associated_artifacts
+      ignore_missing: true
+  - rename:
+      field: json.associatedCases
+      tag: rename_associatedCases
+      target_field: threat_connect.indicator.associated_cases
+      ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_associated_data_rename_firstname
+      processor:
+        rename:
+          field: _ingest._value.createdBy.firstName
+          tag: rename_associatedGroups_data_createdBy_firstName
+          target_field: _ingest._value.created_by.first_name
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_associated_groups_data_created_by_firstname_append_into_related_user
+      processor:
+        append:
+          field: related.user
+          tag: append_associatedGroups_data_createdBy_firstName_into_related_user
+          value: '{{{_ingest._value.created_by.first_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_associated_data_convert_createdby_id
+      processor:
+        convert:
+          field: _ingest._value.createdBy.id
+          tag: convert_associatedGroups_data_createdBy_id_to_string
+          target_field: _ingest._value.created_by.id
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.createdBy.id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_associated_data_convert_assignments_data_id
+      processor:
+        foreach:
+          field: _ingest._value.assignments.data
+          ignore_missing: true
+          tag: foreach_assignments_data
+          processor:
+            convert:
+              field: _ingest._value.user.id
+              tag: convert_associatedGroups_data_assignments_data_user_id_to_string
+              target_field: _ingest._value.user.id
+              type: string
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_associated_data_rename_assignments_data_type
+      processor:
+        rename:
+          field: _ingest._value.assignments.data.type
+          tag: rename_associatedGroups_data_assignments_data_type
+          target_field: _ingest._value.assignments.data.type
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_associated_data_rename_createdby_lastname
+      processor:
+        rename:
+          field: _ingest._value.createdBy.lastName
+          tag: rename_associatedGroups_data_createdBy_lastName
+          target_field: _ingest._value.created_by.last_name
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_associatedGroups_data_last_name_append_into_related_user
+      processor:
+        append:
+          field: related.user
+          tag: append_associatedGroups_data_createdBy_lastName_into_related_user
+          value: '{{{_ingest._value.created_by.last_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_associated_data_rename_createdby_owner
+      processor:
+        rename:
+          field: _ingest._value.createdBy.owner
+          tag: rename_associatedGroups_data_createdBy_owner
+          target_field: _ingest._value.created_by.owner
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_associated_data_rename_createdBy_pseudonym
+      processor:
+        rename:
+          field: _ingest._value.createdBy.pseudonym
+          tag: rename_associatedGroups_data_createdBy_pseudonym
+          target_field: _ingest._value.created_by.pseudonym
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_rename_associatedGroups_data_createdBy_userName
+      processor:
+        rename:
+          field: _ingest._value.createdBy.userName
+          tag: rename_associatedGroups_data_createdBy_userName
+          target_field: _ingest._value.created_by.user_name
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_append_associatedGroups_data_createdBy_userName_into_related_user
+      processor:
+        append:
+          field: related.user
+          tag: append_associatedGroups_data_createdBy_userName_into_related_user
+          value: '{{{_ingest._value.created_by.user_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_append_associatedGroups_data_to_email
+      processor:
+        append:
+          field: email.to.address
+          tag: append_associatedGroups_data_to_email
+          value: '{{{_ingest._value.to}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_append_associatedGroups_data_from_email
+      processor:
+        append:
+          field: email.from.address
+          tag: append_associatedGroups_data_from_email
+          value: '{{{_ingest._value.from}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_dateAdded
+      processor:
+        date:
+          field: _ingest._value.dateAdded
+          tag: date_associatedGroups_data_dateAdded
+          target_field: _ingest._value.date_added
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.dateAdded
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_documentDateAdded
+      processor:
+        date:
+          field: _ingest._value.documentDateAdded
+          tag: date_associatedGroups_data_documentDateAdded
+          target_field: _ingest._value.document.date_added
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.documentDateAdded
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_rename_associatedGroups_data_documentType
+      processor:
+        rename:
+          field: _ingest._value.documentType
+          tag: rename_associatedGroups_data_documentType
+          target_field: _ingest._value.document.type
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_rename_associatedGroups_data_downVoteCount
+      processor:
+        rename:
+          field: _ingest._value.downVoteCount
+          tag: rename_associatedGroups_data_downVoteCount
+          target_field: _ingest._value.down_vote_count
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_dueDate
+      processor:
+        date:
+          field: _ingest._value.dueDate
+          tag: date_associatedGroups_data_dueDate
+          target_field: _ingest._value.due_date
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.dueDate
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_emailDate
+      processor:
+        date:
+          field: _ingest._value.emailDate
+          tag: date_associatedGroups_data_emailDate
+          target_field: _ingest._value.email_date
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.emailDate
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_escalationDate
+      processor:
+        date:
+          field: _ingest._value.escalationDate
+          tag: date_associatedGroups_data_escalationDate
+          target_field: _ingest._value.escalation_date
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.escalationDate
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_eventDate
+      processor:
+        date:
+          field: _ingest._value.eventDate
+          tag: date_associatedGroups_data_eventDate
+          target_field: _ingest._value.event_date
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.eventDate
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_externalDateAdded
+      processor:
+        date:
+          field: _ingest._value.externalDateAdded
+          tag: date_associatedGroups_data_externalDateAdded
+          target_field: _ingest._value.external.date.added
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.externalDateAdded
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_externalDateExpires
+      processor:
+        date:
+          field: _ingest._value.externalDateExpires
+          tag: date_associatedGroups_data_externalDateExpires
+          target_field: _ingest._value.external.date.expires
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.externalDateExpires
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_externalLastModified
+      processor:
+        date:
+          field: _ingest._value.externalLastModified
+          tag: date_associatedGroups_data_externalLastModified
+          target_field: _ingest._value.external.last_modified
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.externalLastModified
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_rename_associatedGroups_data_fileName
+      processor:
+        rename:
+          field: _ingest._value.fileName
+          tag: rename_associatedGroups_data_fileName
+          target_field: _ingest._value.file.name
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      processor:
+        convert:
+          field: _ingest._value.fileSize
+          tag: convert_associatedGroups_data_filesize_to_string
+          target_field: _ingest._value.file.size
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.fileSize
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_rename_associatedGroups_data_fileText
+      processor:
+        rename:
+          field: _ingest._value.fileText
+          tag: rename_associatedGroups_data_fileText
+          target_field: _ingest._value.file.text
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_rename_associatedGroups_data_fileType
+      processor:
+        rename:
+          field: _ingest._value.fileType
+          tag: rename_associatedGroups_data_fileType
+          target_field: _ingest._value.file.type
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_firstSeen
+      processor:
+        date:
+          field: _ingest._value.firstSeen
+          tag: date_associatedGroups_data_firstSeen
+          target_field: _ingest._value.first_seen
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.firstSeen
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_convert_associatedGroups_data_generatedReport_to_boolean
+      processor:
+        convert:
+          field: _ingest._value.generatedReport
+          tag: convert_associatedGroups_data_generatedReport_to_boolean
+          target_field: _ingest._value.generated_report
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.generatedReport
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_lastModified
+      processor:
+        date:
+          field: _ingest._value.lastModified
+          tag: date_associatedGroups_data_lastModified
+          target_field: _ingest._value.last_modified
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.lastModified
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_lastSeen
+      processor:
+        date:
+          field: _ingest._value.lastSeen
+          tag: date_associatedGroups_data_lastSeen
+          target_field: _ingest._value.last_seen
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.lastSeen
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_rename_associatedGroups_data_legacyLink
+      processor:
+        rename:
+          field: _ingest._value.legacyLink
+          tag: rename_associatedGroups_data_legacyLink
+          target_field: _ingest._value.legacy_link
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_convert_associatedGroups_data_malware_to_boolean
+      processor:
+        convert:
+          field: _ingest._value.malware
+          tag: convert_associatedGroups_data_malware_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.malware
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_convert_associatedGroups_data_ownerId_to_string
+      processor:
+        convert:
+          field: _ingest._value.ownerId
+          tag: convert_associatedGroups_data_ownerId_to_string
+          target_field: _ingest._value.owner.id
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_rename_associatedGroups_data_ownerName
+      processor:
+        rename:
+          field: _ingest._value.ownerName
+          tag: rename_associatedGroups_data_ownerName
+          target_field: _ingest._value.owner.name
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_publishDate
+      processor:
+        date:
+          field: _ingest._value.publishDate
+          tag: date_associatedGroups_data_publishDate
+          target_field: _ingest._value.publish_date
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.publishDate
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_date_associatedGroups_data_reminderDate
+      processor:
+        date:
+          field: _ingest._value.reminderDate
+          tag: date_associatedGroups_data_reminderDate
+          target_field: _ingest._value.reminder_date
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.reminderDate
+                ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_rename_associatedGroups_data_scoreBreakdown
+      processor:
+        rename:
+          field: _ingest._value.scoreBreakdown
+          tag: rename_associatedGroups_data_scoreBreakdown
+          target_field: _ingest._value.score_breakdown
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_convert_associatedGroups_data_scoreIncludesBody_to_boolean
+      processor:
+        convert:
+          field: _ingest._value.scoreIncludesBody
+          tag: convert_associatedGroups_data_scoreIncludesBody_to_boolean
+          target_field: _ingest._value.score_includes_body
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.scoreIncludesBody
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_convert_associatedGroups_data_upVote_to_boolean
+      processor:
+        convert:
+          field: _ingest._value.upVote
+          tag: convert_associatedGroups_data_upVote_to_boolean
+          target_field: _ingest._value.up_vote
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.upVote
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_rename_associatedGroups_data_upVoteCount
+      processor:
+        rename:
+          field: _ingest._value.upVoteCount
+          tag: rename_associatedGroups_data_upVoteCount
+          target_field: _ingest._value.up_vote_count
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_rename_associatedGroups_data_webLink
+      processor:
+        rename:
+          field: _ingest._value.webLink
+          tag: rename_associatedGroups_data_webLink
+          target_field: _ingest._value.web_link
+          ignore_missing: true
+  - foreach:
+      field: json.associatedGroups.data
+      if: ctx.json?.associatedGroups?.data != null
+      tag: foreach_convert_associatedGroups_data_id_to_string
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_associatedGroups_data_id_to_string
+          target_field: _ingest._value.id
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.upVote
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.associatedGroups.data
+      tag: rename_associatedGroups_data
+      target_field: threat_connect.indicator.associated_groups.data
+      ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_groups.data
+      if: ctx.threat_connect?.indicator?.associated_groups?.data != null
+      tag: foreach_remove_duplicate_fields
+      processor:
+        remove:
+          field:
+            - _ingest._value.createdBy.firstName
+            - _ingest._value.createdBy.lastName
+            - _ingest._value.createdBy.id
+            - _ingest._value.dueDate
+            - _ingest._value.downVoteCount
+            - _ingest._value.documentType
+            - _ingest._value.externalDateAdded
+            - _ingest._value.externalDateExpires
+            - _ingest._value.externalLastModified
+            - _ingest._value.fileName
+            - _ingest._value.fileText
+            - _ingest._value.fileSize
+            - _ingest._value.fileType
+            - _ingest._value.eventDate
+            - _ingest._value.escalationDate
+            - _ingest._value.emailDate
+            - _ingest._value.firstSeen
+            - _ingest._value.lastSeen
+            - _ingest._value.lastModified
+            - _ingest._value.documentDateAdded
+            - _ingest._value.dateAdded
+            - _ingest._value.userName
+            - _ingest._value.reminderDate
+            - _ingest._value.publishDate
+            - _ingest._value.ownerId
+            - _ingest._value.ownerName
+            - _ingest._value.generatedReport
+            - _ingest._value.webLink
+            - _ingest._value.upVoteCount
+            - _ingest._value.upVote
+            - _ingest._value.scoreIncludesBody
+            - _ingest._value.scoreBreakdown
+            - _ingest._value.to
+            - _ingest._value.from
+          tag: remove_duplicate_fields
+          ignore_missing: true
+  - script:
+      lang: painless
+      description: This script rename fields belongs to json associatedIndicators data objects.
+      if: ctx.json?.associatedIndicators?.data != null
+      params:
+        "AS Number": "as_number"
+        "hostName": "host_name"
+        "Hashtag": "hashtag"
+        "Key Name": "key_name"
+        "legacyLink": "legacy_link"
+        "Mutex": "mutex"
+        "Subject": "subject"
+        "User Agent String": "user_agent_string"
+        "webLink": "web_link"
+      tag: painless_to_rename_fields_under_json_associatedIndicators_data_object
+      source: |
+        def renameKeys(Map json, Map keyMap) {
+          def updatedJson = new HashMap();
+          for (def entry: json.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                updatedJson[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = updatedList;
+              } else {
+                updatedJson[key] = updatedList;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                updatedJson[keyMap[key]] = value;
+              } else {
+                updatedJson[key] = value;
+              }
+              if (key=='location') {
+                updatedJson['location_value'] = value;
+                updatedJson.remove('location');
+              }
+            }
+          }
+          return updatedJson;
+        }
+        def entities_obj = new ArrayList();
+        for(entity in ctx.json.associatedIndicators.data){
+          entities_obj.add(renameKeys(entity, params));
+        }
+        ctx.entities_obj=entities_obj;
+  - rename:
+      field: entities_obj
+      target_field: threat_connect.indicator.associated_indicators.data
+      tag: rename_entities_obj
+      ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_size_to_string
+      processor:
+        convert:
+          field: _ingest._value.size
+          tag: convert_associatedIndicators_data_size_to_string
+          target_field: _ingest._value.size
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.size
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_active_to_boolean
+      processor:
+        convert:
+          field: _ingest._value.active
+          tag: convert_associatedIndicators_data_active_to_boolean
+          target_field: _ingest._value._temp.value
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.active
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_activeLocked_to_boolean
+      processor:
+        convert:
+          field: _ingest._value.activeLocked
+          tag: convert_associatedIndicators_data_activeLocked_to_boolean
+          target_field: _ingest._value._temp.locked
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.activeLocked
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_rename_associatedIndicators_data_block
+      processor:
+        rename:
+          field: _ingest._value.Block
+          tag: rename_associatedIndicators_data_block
+          target_field: _ingest._value.block
+          ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_block
+      processor:
+        convert:
+          field: _ingest._value.Block
+          type: ip
+          tag: convert_associatedIndicators_data_block
+          target_field: related.ip
+          ignore_failure: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_confidence_to_long
+      processor:
+        convert:
+          field: _ingest._value.confidence
+          tag: convert_associatedIndicators_data_confidence_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.confidence
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_date_associatedIndicators_data_dateAdded
+      processor:
+        date:
+          field: _ingest._value.dateAdded
+          tag: date_associatedIndicators_data_dateAdded
+          target_field: _ingest._value.date_added
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.dateAdded
+                ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_dnsActive_to_boolean
+      processor:
+        convert:
+          field: _ingest._value.dnsActive
+          tag: convert_associatedIndicators_data_dnsActive_to_boolean
+          target_field: _ingest._value.dns_active
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.dnsActive
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_date_associatedIndicators_data_externalDateAdded
+      processor:
+        date:
+          field: _ingest._value.externalDateAdded
+          tag: date_associatedIndicators_data_externalDateAdded
+          target_field: _ingest._value.external.date.added
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.externalDateAdded
+                ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_date_associatedIndicators_data_externalDateExpires
+      processor:
+        date:
+          field: _ingest._value.externalDateExpires
+          tag: date_associatedIndicators_data_externalDateExpires
+          target_field: _ingest._value.external.date.expires
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.externalDateExpires
+                ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_date_associatedIndicators_data_externalLastModified
+      processor:
+        date:
+          field: _ingest._value.externalLastModified
+          tag: date_associatedIndicators_data_externalLastModified
+          target_field: _ingest._value.external.last_modified
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.externalLastModified
+                ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_date_associatedIndicators_data_firstSeen
+      processor:
+        date:
+          field: _ingest._value.firstSeen
+          tag: date_associatedIndicators_data_firstSeen
+          target_field: _ingest._value.first_seen
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.firstSeen
+                ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_id_to_string
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_associatedIndicators_data_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_ip_to_ip
+      processor:
+        convert:
+          field: _ingest._value.ip
+          tag: convert_associatedIndicators_data_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_append_associatedIndicators_data_ip_into_related_ip
+      processor:
+        append:
+          field: related.ip
+          tag: append_associatedIndicators_data_ip_into_related_ip
+          value: '{{{_ingest._value.value.ip}}}'
+          allow_duplicates: false
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_date_associatedIndicators_data_lastModified
+      processor:
+        date:
+          field: _ingest._value.lastModified
+          tag: date_associatedIndicators_data_lastModified
+          target_field: _ingest._value.last_modified
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.lastModified
+                ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_date_associatedIndicators_data_lastSeen
+      processor:
+        date:
+          field: _ingest._value.lastSeen
+          tag: date_associatedIndicators_data_lastSeen
+          target_field: _ingest._value.last_seen
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.lastSeen
+                ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_ownerId_to_string
+      processor:
+        convert:
+          field: _ingest._value.ownerId
+          tag: convert_associatedIndicators_data_ownerId_to_string
+          target_field: _ingest._value.owner.id
+          type: string
+          ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_rename_associatedIndicators_data_ownerName
+      processor:
+        rename:
+          field: _ingest._value.ownerName
+          tag: rename_associatedIndicators_data_ownerName
+          target_field: _ingest._value.owner.name
+          ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_privateFlag_to_boolean
+      processor:
+        convert:
+          field: _ingest._value.privateFlag
+          tag: convert_associatedIndicators_data_privateFlag_to_boolean
+          target_field: _ingest._value.private_flag
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.privateFlag
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_rating_to_double
+      processor:
+        convert:
+          field: _ingest._value.rating
+          tag: convert_associatedIndicators_data_rating_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.rating
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_rename_associatedIndicators_data_Value_Name
+      processor:
+        rename:
+          field: _ingest._value.Value Name
+          tag: rename_associatedIndicators_data_Value_Name
+          target_field: _ingest._value.value.name
+          ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_rename_associatedIndicators_data_Value_Type
+      processor:
+        rename:
+          field: _ingest._value.Value Type
+          tag: rename_associatedIndicators_data_Value_Type
+          target_field: _ingest._value.value.type
+          ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_convert_associatedIndicators_data_whoisActive_to_boolean
+      processor:
+        convert:
+          field: _ingest._value.whoisActive
+          tag: convert_associatedIndicators_data_whoisActive_to_boolean
+          target_field: _ingest._value.whois_active
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.whoisActive
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_associated_indicators_remove_duplicate_fields
+      processor:
+        remove:
+          field:
+            - _ingest._value.active
+            - _ingest._value.activeLocked
+            - _ingest._value.Block
+            - _ingest._value.dnsActive
+            - _ingest._value.dateAdded
+            - _ingest._value.externalDateAdded
+            - _ingest._value.externalDateExpires
+            - _ingest._value.externalLastModified
+            - _ingest._value.firstSeen
+            - _ingest._value.lastSeen
+            - _ingest._value.lastModified
+            - _ingest._value.ownerId
+            - _ingest._value.privateFlag
+            - _ingest._value.Value Type
+            - _ingest._value.Value Name
+            - _ingest._value.whoisActive
+          tag: remove_duplicate_fields
+          ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.associated_indicators.data
+      if: ctx.threat_connect?.indicator?.associated_indicators?.data != null
+      tag: foreach_rename_temp_to_active
+      processor:
+        rename:
+          field: _ingest._value._temp
+          tag: rename_temp_to_active
+          target_field: _ingest._value.active
+          ignore_missing: true
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_rename_attributes_data_createdBy_firstName
+      processor:
+        rename:
+          field: _ingest._value.createdBy.firstName
+          tag: rename_attributes_data_createdBy_firstName
+          target_field: _ingest._value.created_by.first_name
+          ignore_missing: true
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_append_attributes_data_createdBy_firstName_into_related_user
+      processor:
+        append:
+          field: related.user
+          tag: append_attributes_data_createdBy_firstName_into_related_user
+          value: '{{{_ingest._value.created_by.first_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_convert_attributes_data_createdBy_id_to_string
+      processor:
+        convert:
+          field: _ingest._value.createdBy.id
+          tag: convert_attributes_data_createdBy_id_to_string
+          target_field: _ingest._value.created_by.id
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.default
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_rename_attributes_data_createdBy_lastName
+      processor:
+        rename:
+          field: _ingest._value.createdBy.lastName
+          tag: rename_attributes_data_createdBy_lastName
+          target_field: _ingest._value.created_by.last_name
+          ignore_missing: true
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_append_attributes_data_createdBy_lastName_into_related_user
+      processor:
+        append:
+          field: related.user
+          tag: append_attributes_data_createdBy_lastName_into_related_user
+          value: '{{{_ingest._value.created_by.last_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_rename_attributes_data_createdBy_owner
+      processor:
+        rename:
+          field: _ingest._value.createdBy.owner
+          tag: rename_attributes_data_createdBy_owner
+          target_field: _ingest._value.created_by.owner
+          ignore_missing: true
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_rename_attributes_data_createdBy_pseudonym
+      processor:
+        rename:
+          field: _ingest._value.createdBy.pseudonym
+          tag: rename_attributes_data_createdBy_pseudonym
+          target_field: _ingest._value.created_by.pseudonym
+          ignore_missing: true
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_rename_attributes_data_createdBy_userName
+      processor:
+        rename:
+          field: _ingest._value.createdBy.userName
+          tag: rename_attributes_data_createdBy_userName
+          target_field: _ingest._value.created_by.user_name
+          ignore_missing: true
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_append_attributes_data_createdBy_userName_into_related_user
+      processor:
+        append:
+          field: related.user
+          tag: append_attributes_data_createdBy_userName_into_related_user
+          value: '{{{_ingest._value.created_by.user_name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_date_attributes_data_dateAdded
+      processor:
+        date:
+          field: _ingest._value.dateAdded
+          tag: date_attributes_data_dateAdded
+          target_field: _ingest._value.date_added
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.dateAdded
+                ignore_missing: true
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_convert_attributes_data_default_to_boolean
+      processor:
+        convert:
+          field: _ingest._value.default
+          tag: convert_attributes_data_default_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.default
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_date_attributes_data_lastModified
+      processor:
+        date:
+          field: _ingest._value.lastModified
+          tag: date_attributes_data_lastModified
+          target_field: _ingest._value.last_modified
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.lastModified
+                ignore_missing: true
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_convert_attributes_data_pinned_to_boolean
+      processor:
+        convert:
+          field: _ingest._value.pinned
+          tag: convert_attributes_data_pinned_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.pinned
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.attributes.data
+      if: ctx.json?.attributes?.data != null
+      tag: foreach_convert_attributess_data_id_to_string
+      processor:
+        convert:
+          field: _ingest._value.id
+          tag: convert_attributess_data_id_to_string
+          target_field: _ingest._value.id
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.default
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.attributes.data
+      tag: rename_attributes_data
+      target_field: threat_connect.indicator.attributes.data
+      ignore_missing: true
+  - foreach:
+      field: threat_connect.indicator.attributes.data
+      if: ctx.threat_connect?.indicator?.attributes?.data != null
+      tag: foreach_remove_attributes_duplicate_fields
+      processor:
+        remove:
+          field:
+            - _ingest._value.createdBy.firstName
+            - _ingest._value.createdBy.lastName
+            - _ingest._value.createdBy.id
+            - _ingest._value.lastModified
+            - _ingest._value.dateAdded
+            - _ingest._value.userName
+          tag: remove_attributes_duplicate_fields
+          ignore_missing: true
+  - rename:
+      field: json.Block
+      tag: rename_Block
+      target_field: threat_connect.indicator.block
+      ignore_missing: true
+  - convert:
+      field: json.confidence
+      tag: convert_confidence_to_long
+      target_field: threat_connect.indicator.confidence
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      if: ctx.json?.confidence != null
+      description: Normalize confidence level.
+      source: >
+        def value = ctx.json?.confidence;
+        def confidence = "None";
+        if (value == 0) {
+          confidence = "Not Specified";
+        } if (value > 1 && value < 40) {
+          confidence = "Low";
+        } if (value >= 40.0 && value < 70) {
+          confidence = "Medium";
+        } else if (value >= 70 && value <= 100) {
+          confidence = "High";
+        }
+        ctx.threat.indicator.put("confidence", confidence)
+  - rename:
+      field: json.customAssociations
+      tag: rename_customAssociations
+      target_field: threat_connect.indicator.custom_associations
+      ignore_missing: true
+  - convert:
+      field: json.dnsActive
+      tag: convert_dnsActive_to_boolean
+      target_field: threat_connect.indicator.dns_active
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: threat_connect.indicator.description
+      ignore_missing: true
+  - set:
+      field: threat.indicator.description
+      tag: set_threat_indicator_description_from_indicator_description
+      copy_from: threat_connect.indicator.description
+      ignore_empty_value: true
+  - rename:
+      field: json.dnsResolution
+      tag: rename_dnsResolution
+      target_field: threat_connect.indicator.dns_resolution
+      ignore_missing: true
+  - rename:
+      field: json.enrichment
+      tag: rename_enrichment
+      target_field: threat_connect.indicator.enrichment
+      ignore_missing: true
+  - date:
+      field: json.externalDateAdded
+      tag: date_externalDateAdded
+      target_field: threat_connect.indicator.external.date.added
+      formats:
+        - ISO8601
+      if: ctx.json?.externalDateAdded != null && ctx.json.externalDateAdded != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.externalDateExpires
+      tag: date_externalDateExpires
+      target_field: threat_connect.indicator.external.date.expires
+      formats:
+        - ISO8601
+      if: ctx.json?.externalDateExpires != null && ctx.json.externalDateExpires != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.externalLastModified
+      tag: date_externalLastModified
+      target_field: threat_connect.indicator.external_last.modified
+      formats:
+        - ISO8601
+      if: ctx.json?.externalLastModified != null && ctx.json.externalLastModified != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.modified_at
+      tag: set_threat_indicator_modified_at_from_indicator_external_last_modified
+      copy_from: threat_connect.indicator.external_last.modified
+      ignore_empty_value: true
+  - convert:
+      field: json.falsePositiveReportedByUser
+      tag: convert_falsePositiveReportedByUser_to_boolean
+      target_field: threat_connect.indicator.false_positive_reported_by_user
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.falsePositives
+      tag: convert_falsePositives_to_long
+      target_field: threat_connect.indicator.false_positives
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.fileActions
+      tag: rename_fileActions
+      target_field: threat_connect.indicator.file_actions
+      ignore_missing: true
+  - rename:
+      field: json.fileOccurrences
+      tag: rename_fileOccurrences
+      target_field: threat_connect.indicator.file_occurrences
+      ignore_missing: true
+  - date:
+      field: json.firstSeen
+      tag: date_firstSeen
+      target_field: threat_connect.indicator.first_seen
+      formats:
+        - ISO8601
+      if: ctx.json?.firstSeen != null && ctx.json.firstSeen != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.first_seen
+      tag: set_threat_indicator_first_seen_from_indicator_first_seen
+      copy_from: threat_connect.indicator.first_seen
+      ignore_empty_value: true
+  - rename:
+      field: json.genericCustomIndicatorValues
+      tag: rename_genericCustomIndicatorValues
+      target_field: threat_connect.indicator.generic_custom_indicator_values
+      ignore_missing: true
+  - rename:
+      field: json.geoLocation
+      tag: rename_geoLocation
+      target_field: threat_connect.indicator.geo_location
+      ignore_missing: true
+  - rename:
+      field: json.Hashtag
+      tag: rename_Hashtag
+      target_field: threat_connect.indicator.hashtag
+      ignore_missing: true
+  - rename:
+      field: json.hostName
+      tag: rename_hostName
+      target_field: threat_connect.indicator.host_name
+      ignore_missing: true
+  - set:
+      field: observer.hostname
+      tag: set_observer_hostname_from_indicator_host_name
+      copy_from: threat_connect.indicator.host_name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: convert_hostname_address_to_related_host
+      value: '{{{threat_connect.indicator.host_name}}}'
+      allow_duplicates: false
+      if: ctx.threat_connect?.indicator?.host_name != null
+  - convert:
+      field: json.id
+      tag: convert_id_to_string
+      target_field: threat_connect.indicator.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.investigationLinks
+      tag: rename_investigationLinks
+      target_field: threat_connect.indicator.investigation_links
+      ignore_missing: true
+  - convert:
+      field: json.ip
+      tag: convert_ip_to_ip
+      target_field: threat_connect.indicator.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.ip != null && ctx.json.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: convert_ip_to_related_ip
+      value: '{{{threat_connect.indicator.ip}}}'
+      allow_duplicates: false
+      if: ctx.threat_connect?.indicator?.ip != null
+  - date:
+      field: json.lastFalsePositive
+      tag: date_lastFalsePositive
+      target_field: threat_connect.indicator.last_false_positive
+      formats:
+        - ISO8601
+      if: ctx.json?.lastFalsePositive != null && ctx.json.lastFalsePositive != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.lastModified
+      tag: date_lastModified
+      target_field: threat_connect.indicator.last_modified
+      formats:
+        - ISO8601
+      if: ctx.json?.lastModified != null && ctx.json.lastModified != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_indicator_last_modified
+      copy_from: threat_connect.indicator.last_modified
+      ignore_empty_value: true
+  - date:
+      field: json.lastSeen
+      tag: date_lastSeen
+      target_field: threat_connect.indicator.last_seen
+      formats:
+        - ISO8601
+      if: ctx.json?.lastSeen != null && ctx.json.lastSeen != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.last_seen
+      tag: set_threat_indicator_last_seen_from_indicator_last_seen
+      copy_from: threat_connect.indicator.last_seen
+      ignore_empty_value: true
+  - date:
+      field: json.dateAdded
+      tag: date_dateAdded
+      target_field: threat_connect.indicator.date_added
+      formats:
+        - ISO8601
+      if: ctx.json?.dateAdded != null && ctx.json.dateAdded != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: threat_connect.indicator.type
+      ignore_missing: true
+  - script:
+      description: Add value for event category based on action.
+      tag: script_to_add_category
+      if: ctx.threat_connect?.indicator?.type instanceof String && ctx.threat_connect.indicator.type != ''
+      lang: painless
+      source: >-
+        if (ctx.threat_connect.indicator.type.contains('File')) {
+          ctx.threat.indicator.type = ['file'];
+        } else if (ctx.threat_connect.indicator.type.contains('URL')){
+          ctx.threat.indicator.type = ['url'];
+        } else if (ctx.threat_connect.indicator.type.contains('EmailAddress')){
+          ctx.threat.indicator.type = ['email-addr'];
+        } else if (ctx.threat_connect.indicator.type.contains('Mutex')){
+          ctx.threat.indicator.type = ['mutex'];
+        }  else if (ctx.threat_connect.indicator.type.contains('Registry Key')){
+          ctx.threat.indicator.type = ['windows-registry-key'];
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.ip
+      tag: set_threat_indicator_ip_from_indicator_ip
+      copy_from: threat_connect.indicator.ip
+      ignore_empty_value: true
+      if: ctx.threat_connect?.indicator?.type != null && ctx.threat_connect.indicator.type == 'Address'
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_to_ipv6_addr
+      value: ipv6-addr
+      if: ctx.threat_connect?.indicator?.type != null && ctx.threat_connect.indicator.type == 'Address' && ctx.threat_connect?.indicator?.type != null && ctx.threat_connect.indicator.ip.contains(":")
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_to_ipv4_addr
+      value: ipv4-addr
+      if: ctx.threat_connect?.indicator?.type != null && ctx.threat_connect.indicator.type == 'Address' && ctx.threat_connect?.indicator?.type != null && ctx.threat_connect.indicator.ip.contains(".")
+  - rename:
+      field: json.legacyLink
+      tag: rename_legacyLink
+      target_field: threat_connect.indicator.legacy_link
+      ignore_missing: true
+  - append:
+      field: threat.indicator.reference
+      tag: append_threat_indicator_reference_from_indicator_legacy_link
+      value: '{{{threat_connect.indicator.legacy_link}}}'
+      allow_duplicates: false
+      if: ctx.threat_connect?.indicator?.legacy_link != null
+  - rename:
+      field: json.md5
+      tag: rename_md5
+      target_field: threat_connect.indicator.md5
+      ignore_missing: true
+  - set:
+      field: threat.indicator.file.hash.md5
+      tag: set_threat_indicator_file_hash_md5_from_indicator_md5
+      copy_from: threat_connect.indicator.md5
+      ignore_empty_value: true
+      if: ctx.threat_connect?.indicator?.type instanceof String && ctx.threat_connect.indicator.type.contains('File')
+  - rename:
+      field: json.Key Name
+      tag: rename_Key Name
+      target_field: threat_connect.indicator.key_name
+      ignore_missing: true
+  - set:
+      field: threat.indicator.registry.path
+      tag: set_threat_indicator_registry_path_from_indicator_key_name
+      copy_from: threat_connect.indicator.key_name
+      ignore_empty_value: true
+      if: ctx.threat_connect?.indicator?.type instanceof String && ctx.threat_connect.indicator.type.contains('Registry Key')
+  - append:
+      field: related.hash
+      tag: convert_md5_address_to_related_hash
+      value: '{{{threat_connect.indicator.md5}}}'
+      allow_duplicates: false
+      if: ctx.threat_connect?.indicator?.md5 != null
+  - rename:
+      field: json.Mutex
+      tag: rename_Mutex
+      target_field: threat_connect.indicator.mutex
+      ignore_missing: true
+  - rename:
+      field: json.observations
+      tag: rename_observations
+      target_field: threat_connect.indicator.observations
+      ignore_missing: true
+  - convert:
+      field: json.ownerId
+      tag: convert_ownerId_to_string
+      target_field: threat_connect.indicator.owner.id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.ownerName
+      tag: rename_ownerName
+      target_field: threat_connect.indicator.owner.name
+      ignore_missing: true
+  - convert:
+      field: json.privateFlag
+      tag: convert_privateFlag_to_boolean
+      target_field: threat_connect.indicator.private_flag
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.rating
+      tag: convert_rating_to_double
+      target_field: threat_connect.indicator.rating
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Format security labels dateAdded field
+  - foreach:
+      field: json.securityLabels.data
+      if: ctx.json?.securityLabels?.data != null
+      tag: foreach_date_securityLabels_data_dateAdded
+      processor:
+        date:
+          field: _ingest._value.dateAdded
+          tag: date_securityLabels_data_dateAdded
+          target_field: _ingest._value.date_added
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.dateAdded
+                ignore_missing: true
+  # Extract TLP security labels to store in ES specific field
+  - script:
+      lang: painless
+      description: "Extract TLP and providers from source"
+      if: ctx.json?.securityLabels?.data != null && ctx.json?.securityLabels?.data instanceof List
+      tag: script_securityLabels_data_name
+      source: >-
+        def ecsTlps = ['WHITE','CLEAR','GREEN','AMBER','AMBER+STRICT','RED'];
+        def tlps = new ArrayList();
+        for (def obj : ctx.json.securityLabels.data) {
+          if (obj.containsKey('name')) {
+            if (obj.get('name').contains(':')){
+               def name = obj.get('name').splitOnToken(':')[1];
+               if (ecsTlps.contains(name)) {
+                  tlps.add(name)
+               }
+            }
+          }
+        }
+        if (tlps.size() > 0){
+          if (ctx.threat.indicator.marking == null) {
+            ctx.threat.indicator.marking = new HashMap();
+          }
+          ctx.threat.indicator.marking.tlp = tlps;
+        }
+  # Remove extra fields from security labels that are not needed
+  - foreach:
+      field: json.securityLabels.data
+      if: ctx.json?.securityLabels?.data != null
+      tag: foreach_remove_securityLabels_extra_fields
+      processor:
+        remove:
+          field:
+            - _ingest._value.id
+            - _ingest._value.description
+            - _ingest._value.color
+            - _ingest._value.owner
+            - _ingest._value.dateAdded
+          ignore_missing: true
+  # Rename security labels field to match ES standards
+  - rename:
+      field: json.securityLabels.data
+      tag: rename_securityLabels_data
+      target_field: threat_connect.indicator.security_labels.data
+      ignore_missing: true
+  - rename:
+      field: json.sha1
+      tag: rename_sha1
+      target_field: threat_connect.indicator.sha1
+      ignore_missing: true
+  - set:
+      field: threat.indicator.file.hash.sha1
+      tag: set_threat_indicator_file_hash_sha1_from_indicator_sha1
+      copy_from: threat_connect.indicator.sha1
+      ignore_empty_value: true
+      if: ctx.threat_connect?.indicator?.type instanceof String && ctx.threat_connect.indicator.type.contains('File')
+  - append:
+      field: related.hash
+      tag: convert_sha1_address_to_related_hash
+      value: '{{{threat_connect.indicator.sha1}}}'
+      allow_duplicates: false
+      if: ctx.threat_connect?.indicator?.sha1 != null
+  - rename:
+      field: json.sha256
+      tag: rename_sha256
+      target_field: threat_connect.indicator.sha256
+      ignore_missing: true
+  - set:
+      field: threat.indicator.file.hash.sha256
+      tag: set_threat_indicator_file_hash_sha256_from_indicator_sha256
+      copy_from: threat_connect.indicator.sha256
+      ignore_empty_value: true
+      if: ctx.threat_connect?.indicator?.type instanceof String && ctx.threat_connect.indicator.type.contains('File')
+  - append:
+      field: related.hash
+      tag: convert_sha256_address_to_related_hash
+      value: '{{{threat_connect.indicator.sha256}}}'
+      allow_duplicates: false
+      if: ctx.threat_connect?.indicator?.md5 != null
+  - convert:
+      field: json.size
+      tag: convert_size_to_string
+      target_field: threat_connect.indicator.size
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.source
+      tag: rename_source
+      target_field: threat_connect.indicator.source
+      ignore_missing: true
+  - rename:
+      field: json.Subject
+      tag: rename_Subject
+      target_field: threat_connect.indicator.subject
+      ignore_missing: true
+  - set:
+      field: email.subject
+      tag: set_email_subject_from_indicator_subject
+      copy_from: threat_connect.indicator.subject
+      ignore_empty_value: true
+  - rename:
+      field: json.summary
+      tag: rename_summary
+      target_field: threat_connect.indicator.summary
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_indicator_summary
+      copy_from: threat_connect.indicator.summary
+      ignore_empty_value: true
+# Format last used tag date field per ES standard
+  - foreach:
+      field: json.tags.data
+      if: ctx.json?.tags?.data != null
+      tag: foreach_date_tags_data_lastUsed
+      processor:
+        date:
+          field: _ingest._value.lastUsed
+          tag: date_tags_data_lastUsed
+          target_field: _ingest._value.last_used
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.lastUsed
+                ignore_missing: true
+# Some tags are Attack Patterns, rename the techniqueId to technique.id
+  - foreach:
+      field: json.tags.data
+      if: ctx.json?.tags?.data != null
+      tag: foreach_rename_tags_data_techniqueId
+      processor:
+        rename:
+          field: _ingest._value.techniqueId
+          tag: rename_tags_data_techniqueId
+          target_field: _ingest._value.technique.id
+          ignore_missing: true
+# Append the current attack pattern technique id to the threat.technique.id field to capture the full list
+  - foreach:
+      field: json.tags.data
+      if: ctx.json?.tags?.data != null
+      tag: foreach_append_tags_data_techniqueId
+      processor:
+        append:
+          field: threat.technique.id
+          tag: append_tags_data_techniqueId
+          value: '{{{_ingest._value.technique.id}}}'
+          allow_duplicates: false
+# For Attack pattern tags, capture the platform data and append to os.family
+  - foreach:
+      field: json.tags.data
+      if: ctx.json?.tags?.data != null
+      tag: foreach_tags_data_append_os_family
+      processor:
+        foreach:
+          field: _ingest._value.platforms.data
+          ignore_missing: true
+          tag: foreach_platforms_data
+          processor:
+            append:
+              field: os.family
+              tag: append_tags_platforms_data
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+# Rename the data field to match ES standards
+  - rename:
+      field: json.tags.data
+      tag: rename_tags_data
+      target_field: threat_connect.indicator.tags.data
+      ignore_missing: true
+  # Remove certain fields no longer needed
+  - foreach:
+      field: threat_connect.indicator.tags.data
+      if: ctx.threat_connect?.indicator?.tags?.data != null
+      tag: foreach_remove_tags_duplicate_fields
+      processor:
+        remove:
+          field:
+            - _ingest._value.lastUsed
+            - _ingest._value.id
+            - _ingest._value.description
+            - _ingest._value.techniqueId
+            - _ingest._value.platforms
+            - _ingest._value.owner
+          tag: remove_tags_duplicate_fields
+          ignore_missing: true
+  - rename:
+      field: json.text
+      tag: rename_text
+      target_field: threat_connect.indicator.text
+      ignore_missing: true
+  - set:
+      field: threat.indicator.url.original
+      tag: set_threat_indicator_url_original_from_indicator_text
+      copy_from: threat_connect.indicator.text
+      ignore_empty_value: true
+      if: ctx.threat_connect?.indicator?.type instanceof String && ctx.threat_connect.indicator.type.contains('URL')
+  - convert:
+      field: json.threatAssessConfidence
+      tag: convert_threatAssessConfidence_to_double
+      target_field: threat_connect.indicator.threat_assess.confidence
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.threatAssessRating
+      tag: convert_threatAssessRating_to_double
+      target_field: threat_connect.indicator.threat_assess.rating
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.threatAssessScoreFalsePositive
+      tag: convert_threatAssessScoreFalsePositive_to_long
+      target_field: threat_connect.indicator.threat_assess.score.false_positive
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.threatAssessScoreObserved
+      tag: convert_threatAssessScoreObserved_to_long
+      target_field: threat_connect.indicator.threat_assess.score.observed
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.threatAssessScore
+      tag: convert_threatAssessScore_to_long
+      target_field: threat_connect.indicator.threat_assess.score.value
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.trackedUsers
+      tag: rename_trackedUsers
+      target_field: threat_connect.indicator.tracked_users
+      ignore_missing: true
+  - rename:
+      field: json.User Agent String
+      tag: rename_User Agent String
+      target_field: threat_connect.indicator.user_agent_string
+      ignore_missing: true
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original_from_indicator_user_agent_string
+      copy_from: threat_connect.indicator.user_agent_string
+      ignore_empty_value: true
+  - rename:
+      field: json.Value Name
+      tag: rename_Value Name
+      target_field: threat_connect.indicator.value.name
+      ignore_missing: true
+  - set:
+      field: threat.indicator.registry.value
+      tag: set_threat_indicator_registry_value_from_indicator_value_name
+      copy_from: threat_connect.indicator.value.name
+      ignore_empty_value: true
+      if: ctx.threat_connect?.indicator?.type instanceof String && ctx.threat_connect.indicator.type.contains('Registry Key')
+  - rename:
+      field: json.Value Type
+      tag: rename_Value Type
+      target_field: threat_connect.indicator.value.type
+      ignore_missing: true
+  - set:
+      field: threat.indicator.registry.data.type
+      tag: set_threat_indicator_registry_data_type_from_indicator_value_type
+      copy_from: threat_connect.indicator.value.type
+      ignore_empty_value: true
+      if: ctx.threat_connect?.indicator?.type instanceof String && ctx.threat_connect.indicator.type.contains('Registry Key')
+  - rename:
+      field: json.webLink
+      tag: rename_webLink
+      target_field: threat_connect.indicator.web_link
+      ignore_missing: true
+  - append:
+      field: threat.indicator.reference
+      tag: append_threat_indicator_reference_from_indicator_web_link
+      value: '{{{threat_connect.indicator.web_link}}}'
+      allow_duplicates: false
+      if: ctx.threat_connect?.indicator?.web_link != null
+  - rename:
+      field: json.whoIs
+      tag: rename_whoIs
+      target_field: threat_connect.indicator.who_is
+      ignore_missing: true
+  - convert:
+      field: json.whoisActive
+      tag: convert_whoisActive_to_boolean
+      target_field: threat_connect.indicator.whois_active
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

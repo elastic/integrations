@@ -21,51 +21,57 @@ processors:
       value: [iam]
   - append:
       field: event.category
-      if: ctx.json?.action?.type?.toLowerCase().contains('created') || ctx.json.action.type.toLowerCase().contains('deleted') || ctx.json.action.type.toLowerCase().contains('updated') || ctx.json.action.type.toLowerCase().contains('access_allowed')
+      if: >-
+        ctx.json?.action?.type != null && (
+          ctx.json.action.type.toLowerCase().contains('created') ||
+          ctx.json.action.type.toLowerCase().contains('deleted') ||
+          ctx.json.action.type.toLowerCase().contains('updated') ||
+          ctx.json.action.type.toLowerCase().contains('access_allowed')
+        )
       value: [configuration]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('created')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('created') == true
       value: [creation]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('deleted')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('deleted') == true
       value: [deletion]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('updated')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('updated') == true
       value: [change]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('user')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('user') == true
       value: [user]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('group')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('group') == true
       value: [group]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('allowed')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('allowed') == true
       value: [info]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('denied')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('denied') == true
       value: [denied]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('started')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('started') == true
       value: [start]
   - append:
       field: event.type
-      if: ctx.json?.action?.type?.toLowerCase().contains('access_allowed')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('access_allowed') == true
       value: [access]
   - append:
       field: event.category
-      if: ctx.json?.action?.type?.toLowerCase().contains('password.check_succeeded')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('password.check_succeeded') == true
       value: [authentication]
   - append:
       field: event.category
-      if: ctx.json?.action?.type?.toLowerCase().contains('email')
+      if: ctx.json?.action?.type?.toLowerCase()?.contains('email') == true
       value: [email]
   - set:
       field: event.type

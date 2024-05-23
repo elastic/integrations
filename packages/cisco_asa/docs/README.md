@@ -17,11 +17,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-10-10T12:34:56.000Z",
     "agent": {
-        "ephemeral_id": "9ff3fcbd-3ca0-4634-bbaa-604ac67b8188",
-        "id": "383c6290-eea2-4a18-8adf-2ed05723031e",
+        "ephemeral_id": "bb12e06f-beb2-4447-82ba-7dd497fe6283",
+        "id": "6a762ace-ff7a-4a1f-9fc4-cae4c2122d76",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.3"
+        "version": "8.13.2"
     },
     "cisco": {
         "asa": {
@@ -44,25 +44,27 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "383c6290-eea2-4a18-8adf-2ed05723031e",
+        "id": "6a762ace-ff7a-4a1f-9fc4-cae4c2122d76",
         "snapshot": false,
-        "version": "8.10.3"
+        "version": "8.13.2"
     },
     "event": {
-        "action": "firewall-rule",
+        "action": "nat-slot",
         "agent_id_status": "verified",
         "category": [
-            "network"
+            "network",
+            "configuration"
         ],
         "code": "305011",
         "dataset": "cisco_asa.log",
-        "ingested": "2023-10-17T09:19:55Z",
+        "ingested": "2024-04-23T19:53:14Z",
         "kind": "event",
         "original": "Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:192.168.98.44/8256",
+        "outcome": "success",
         "severity": 6,
         "timezone": "UTC",
         "type": [
-            "info"
+            "creation"
         ]
     },
     "host": {
@@ -74,7 +76,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.208.4:60290"
+            "address": "192.168.192.4:46208"
         }
     },
     "network": {
@@ -123,7 +125,6 @@ An example event for `log` looks as following:
         "forwarded"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -222,6 +223,7 @@ An example event for `log` looks as following:
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.port | Port of the destination. | long |
 | destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| destination.user.email | User email address. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -335,6 +337,7 @@ An example event for `log` looks as following:
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.port | Port of the source. | long |
 | source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | source.user.name.text | Multi-field of `source.user.name`. | match_only_text |

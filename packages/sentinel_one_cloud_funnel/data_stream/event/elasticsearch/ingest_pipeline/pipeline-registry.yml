@@ -16,21 +16,58 @@ processors:
       field: event.type
       value: [change]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && (ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('change') || ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('modif'))
+  - set:
+      field: event.action
+      value: [creation]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null &&
+          (
+            ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regvaluecreate') ||
+            ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regkeycreate')
+          )
+  - set:
+      field: event.action
+      value: [modification]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regvaluemodified')
+  - set:
+      field: event.action
+      value: [deletion]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null &&
+          (
+            ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regvaluedelete') ||
+            ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regkeydelete')
+          )
   - rename:
       field: json.registry.keyPath
       target_field: sentinel_one_cloud_funnel.event.registry.key.path
       ignore_missing: true
   - set:
-      field: registry.key
+      field: registry.path
       copy_from: sentinel_one_cloud_funnel.event.registry.key.path
       ignore_empty_value: true
+  - script:
+      lang: painless
+      if: ctx.registry?.path instanceof String && ctx.registry.path != ""
+      source: |-
+        def idx = ctx.registry.path.lastIndexOf('\\');
+        if (idx >= 0) {
+          ctx.registry.key = ctx.registry.path.substring(0, idx);
+          ctx.registry.value = ctx.registry.path.substring(idx+1);
+        }
   - rename:
       field: json.registry.value
       target_field: sentinel_one_cloud_funnel.event.registry.val
       ignore_missing: true
   - set:
-      field: registry.value
+      field: registry.data.strings
       copy_from: sentinel_one_cloud_funnel.event.registry.val
+      ignore_empty_value: true
+  - rename:
+      field: json.registry.valueType
+      target_field: sentinel_one_cloud_funnel.event.registry.value.type
+      ignore_missing: true
+  - set:
+      field: registry.data.type
+      copy_from: sentinel_one_cloud_funnel.event.registry.value.type
       ignore_empty_value: true
   - rename:
       field: json.registry.keyUid

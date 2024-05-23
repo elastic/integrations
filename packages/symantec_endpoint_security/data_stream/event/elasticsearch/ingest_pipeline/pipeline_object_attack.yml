@@ -1,0 +1,32 @@
+---
+description: Pipeline for processing attack object.
+processors:
+  - foreach:
+      field: ses.attacks
+      if: ctx.ses?.attacks instanceof List
+      tag: foreach_attacks
+      processor:
+        foreach:
+          field: _ingest._value.tactic_ids
+          tag: foreach_tactic_ids
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_attacks_tactic_ids_to_string
+              type: string
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
