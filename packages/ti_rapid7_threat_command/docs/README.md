@@ -189,8 +189,8 @@ An example event for `ioc` looks as following:
 {
     "@timestamp": "2022-05-05T10:39:07.851Z",
     "agent": {
-        "ephemeral_id": "422d9765-2a9e-41cc-ae34-882d2a47860d",
-        "id": "592b8626-202c-4897-b1ed-d4ca2464e536",
+        "ephemeral_id": "9543c524-d0bf-4ae7-9d64-8f703b50342a",
+        "id": "38e9e03d-9975-4ef9-89b3-40391603ded3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.2"
@@ -204,7 +204,7 @@ An example event for `ioc` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "592b8626-202c-4897-b1ed-d4ca2464e536",
+        "id": "38e9e03d-9975-4ef9-89b3-40391603ded3",
         "snapshot": false,
         "version": "8.12.2"
     },
@@ -213,9 +213,9 @@ An example event for `ioc` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2024-05-21T05:44:14.495Z",
+        "created": "2024-05-23T14:16:53.457Z",
         "dataset": "ti_rapid7_threat_command.ioc",
-        "ingested": "2024-05-21T05:44:24Z",
+        "ingested": "2024-05-23T14:17:03Z",
         "kind": "enrichment",
         "module": "ti_rapid7_threat_command",
         "original": "{\"firstSeen\":\"2022-05-04T20:11:04.000Z\",\"lastSeen\":\"2022-05-04T20:11:04.000Z\",\"lastUpdateDate\":\"2022-05-05T10:39:07.851Z\",\"relatedCampaigns\":[],\"relatedMalware\":[\"remcos\"],\"relatedThreatActors\":[],\"reportedFeeds\":[{\"confidenceLevel\":2,\"id\":\"5b68306df84f7c8696047fdd\",\"name\":\"Test Feed\"}],\"score\":13.26086956521739,\"severity\":\"Low\",\"status\":\"Active\",\"tags\":[\"Test\"],\"type\":\"IpAddresses\",\"value\":\"89.160.20.112\",\"whitelisted\":false}",
@@ -436,8 +436,8 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-11-02T10:12:46.260Z",
     "agent": {
-        "ephemeral_id": "dccd0442-fb64-4180-b8bc-52567a9fa7ee",
-        "id": "3914f7c7-e40f-4011-8422-140003a70600",
+        "ephemeral_id": "29658cdb-8327-4e04-8f9b-469c9c194521",
+        "id": "38e9e03d-9975-4ef9-89b3-40391603ded3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.2"
@@ -451,16 +451,16 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3914f7c7-e40f-4011-8422-140003a70600",
+        "id": "38e9e03d-9975-4ef9-89b3-40391603ded3",
         "snapshot": false,
         "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-05-21T11:47:47.724Z",
+        "created": "2024-05-23T13:54:40.863Z",
         "dataset": "ti_rapid7_threat_command.alert",
         "id": "123456789zxcvbnmas8a8q60",
-        "ingested": "2024-05-21T11:47:57Z",
+        "ingested": "2024-05-23T13:54:50Z",
         "kind": "alert",
         "module": "ti_rapid7_threat_command",
         "original": "{\"Assets\":[{\"Type\":\"Domains\",\"Value\":\"example.com\"}],\"Assignees\":[],\"Closed\":{\"IsClosed\":true},\"Details\":{\"Description\":\"A suspicious subdomain 'example.com' was found to have characteristics indicating it may be used to carry out phishing attacks. | Recommendations:  It is recommended to block the domain in your URL filtering and mail systems. This can prevent phishing emails being received by your employees and access to websites attempting to steal sensitive information. Click “Remediate” in order to initiate the takedown process for this domain.\",\"Images\":[],\"Severity\":\"Low\",\"Source\":{\"NetworkType\":\"ClearWeb\",\"Type\":\"WHOIS servers\",\"URL\":\"http://example.com\"},\"SubType\":\"RegisteredSuspiciousDomain\",\"Tags\":[{\"CreatedBy\":\"ProfilingRule\",\"Name\":\"Phishing Domain - Default Detection Rule\",\"_id\":\"1al3p6789z6c2b7m9s8a8q60\"}],\"Title\":\"Suspected Phishing Domain - 'example.com'\",\"Type\":\"Phishing\"},\"FoundDate\":\"2022-11-02T10:12:46.260Z\",\"IsFlagged\":false,\"RelatedIocs\":[\"example.com\"],\"RelatedThreatIDs\":[\"6a4e7t9a111bd0003bcc2a55\"],\"TakedownStatus\":\"NotSent\",\"UpdateDate\":\"2022-11-02T10:12:46.260Z\",\"_id\":\"123456789zxcvbnmas8a8q60\"}",
@@ -612,8 +612,8 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2020-08-24T21:46:48.619Z",
     "agent": {
-        "ephemeral_id": "b9729094-523f-4d27-b222-89844a8f7316",
-        "id": "03f6fed3-d7d0-4fd0-b9d6-ad2de5e5bd18",
+        "ephemeral_id": "9f36d8e6-d431-4e09-b002-eda3f9f3f5fc",
+        "id": "38e9e03d-9975-4ef9-89b3-40391603ded3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.2"
@@ -627,7 +627,7 @@ An example event for `vulnerability` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "03f6fed3-d7d0-4fd0-b9d6-ad2de5e5bd18",
+        "id": "38e9e03d-9975-4ef9-89b3-40391603ded3",
         "snapshot": false,
         "version": "8.12.2"
     },
@@ -637,9 +637,9 @@ An example event for `vulnerability` looks as following:
             "threat",
             "vulnerability"
         ],
-        "created": "2024-05-21T11:24:25.540Z",
+        "created": "2024-05-23T14:12:35.859Z",
         "dataset": "ti_rapid7_threat_command.vulnerability",
-        "ingested": "2024-05-21T11:24:37Z",
+        "ingested": "2024-05-23T14:12:47Z",
         "kind": "event",
         "module": "ti_rapid7_threat_command",
         "original": "{\"cpe\":[{\"Range\":{\"VersionEndExcluding\":\"\",\"VersionEndIncluding\":\"4.0.0\",\"VersionStartExcluding\":\"\",\"VersionStartIncluding\":\"1.0.0\"},\"Title\":\"Php\",\"Value\":\"cpe:2.3:a:php:php:*:*:*:*:*:*:*:*\",\"VendorProduct\":\"php php\"}],\"cveId\":\"CVE-2020-7064\",\"cvssScore\":5.4,\"exploitAvailability\":false,\"firstMentionDate\":\"N/A\",\"intsightsScore\":16,\"lastMentionDate\":\"2020-04-01T04:15:00.000Z\",\"mentionsAmount\":0,\"mentionsPerSource\":{\"ClearWebCyberBlogs\":0,\"CodeRepositories\":0,\"DarkWeb\":0,\"Exploit\":0,\"HackingForum\":0,\"InstantMessage\":0,\"PasteSite\":0,\"SocialMedia\":0},\"publishedDate\":\"2020-04-01T04:15:00.000Z\",\"relatedCampaigns\":[\"SolarWinds\"],\"relatedMalware\":[\"doppeldridex\",\"dridex\"],\"relatedThreatActors\":[\"doppelspider\"],\"severity\":\"Low\",\"updateDate\":\"2020-08-24T21:46:48.619Z\",\"vulnerabilityOrigin\":[\"Qualys\"]}",
