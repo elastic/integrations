@@ -134,6 +134,18 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Set the @timestamp to the maximum of clickTime and threatTime.
+      tag: timestamp-is-maximum
+      if: ctx.proofpoint_tap?.clicks_permitted?.threat?.time instanceof String
+      ignore_failure: true
+      source: |
+        def ts = Instant.parse(ctx['@timestamp']);
+        def threatTime = Instant.parse(ctx.proofpoint_tap.clicks_permitted.threat.time);
+        if (threatTime.isAfter(ts)) {
+          ctx['@timestamp'] = ctx.proofpoint_tap.clicks_permitted.threat.time;
+        }
   - uri_parts:
       field: json.url
       keep_original: false
