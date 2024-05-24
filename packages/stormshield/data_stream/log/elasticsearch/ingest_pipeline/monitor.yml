@@ -19,7 +19,6 @@ processors:
           - Wifi
           - Qid
           - Vlan
-          - Ethernet
         stats:
           - name
           - incoming_throughput
@@ -90,20 +89,16 @@ processors:
           ctx.stormshield.remove(entry.getKey());
         }
 
+
   - script:
-      tag: script_aggregate_devices
+      tag: script_process_ethernet
       lang: painless
-      description: Aggregate device stat fields.
+      description: Process Ethernet stat fields.
       params:
         devices:
-          - agg
-          - ipsec
-          - sslvpn
-          - Wifi
-          - Qid
-          - Vlan
           - Ethernet
         stats:
+          - name
           - incoming_throughput
           - maximum_incoming_throughput
           - outgoing_throughput
@@ -111,24 +106,39 @@ processors:
           - packets_accepted
           - packets_blocked
       source: >-
-        ctx.stormshield.device_aggs = [:];
-        def deviceAggs = ctx.stormshield.device_aggs;
-        params.devices.forEach(d -> {
-          if (ctx.stormshield.device_stats.containsKey(d)) {
-            deviceAggs[d] = [:];
-            params.stats.forEach(s -> {
-              deviceAggs[d][s] = 0;
-              def dev = ctx.stormshield.device_stats[d];
-              for (def agg : dev ) {
-                deviceAggs[d][s] += agg[s];
-              }
-              return true;
-            });
-          }
-          return true;
+        def deviceStats = [:];
+        ctx.stormshield.forEach((k, v) -> {
+          params.devices.forEach(d -> {
+            if (k.startsWith(d)) {
+              deviceStats[k] = [:];
+              deviceStats[k]["value"] = v;
+              deviceStats[k]["stem"] = d;
+            }
+        
+            return true;
+          });
         });
+        
+        if (deviceStats.isEmpty()) {
+          return;
+        }
 
-
+        for (entry in deviceStats.entrySet()) {
+          def entryKey = entry.getKey();
+          def entryValue = entry.getValue();
+          def values = entryValue["value"].splitOnToken(',', 7);
+          def item = [:];
+          item["original"] = entryKey;
+          for (int i = 0; i < values.length; ++i) {
+            if (i == 0) {
+              item[params.stats[i]] = values[i];
+            } else {
+              item[params.stats[i]] = Long.parseLong(values[i]);        
+            }
+          }
+          ctx.stormshield.remove(entryKey);
+          ctx.stormshield[entryKey] = item;
+        }
 
 on_failure:
   - append:

@@ -283,6 +283,806 @@ An example event for `log` looks as following:
 | stormshield.EtherStateConn | Number of stateful statuses for Ethernet exchanges without IP layer. Digital format. Example: EtherStateConn=0 Available from: SNS v4.0.0. | long |
 | stormshield.EtherStateMem | The memory used for ... | long |
 | stormshield.EtherStatePacket | Number of packets for Ethernet traffic without IP layer. Digital format. Example: EtherStatePacket=128 Available from: SNS v4.0.0. | long |
+| stormshield.Ethernet0.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet0.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet0.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet0.name | Name of the interface | keyword |
+| stormshield.Ethernet0.original | Original name of this field | keyword |
+| stormshield.Ethernet0.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet0.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet0.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet1.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet1.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet1.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet1.name | Name of the interface | keyword |
+| stormshield.Ethernet1.original | Original name of this field | keyword |
+| stormshield.Ethernet1.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet1.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet1.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet10.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet10.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet10.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet10.name | Name of the interface | keyword |
+| stormshield.Ethernet10.original | Original name of this field | keyword |
+| stormshield.Ethernet10.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet10.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet10.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet11.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet11.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet11.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet11.name | Name of the interface | keyword |
+| stormshield.Ethernet11.original | Original name of this field | keyword |
+| stormshield.Ethernet11.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet11.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet11.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet12.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet12.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet12.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet12.name | Name of the interface | keyword |
+| stormshield.Ethernet12.original | Original name of this field | keyword |
+| stormshield.Ethernet12.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet12.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet12.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet13.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet13.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet13.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet13.name | Name of the interface | keyword |
+| stormshield.Ethernet13.original | Original name of this field | keyword |
+| stormshield.Ethernet13.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet13.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet13.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet14.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet14.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet14.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet14.name | Name of the interface | keyword |
+| stormshield.Ethernet14.original | Original name of this field | keyword |
+| stormshield.Ethernet14.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet14.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet14.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet15.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet15.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet15.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet15.name | Name of the interface | keyword |
+| stormshield.Ethernet15.original | Original name of this field | keyword |
+| stormshield.Ethernet15.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet15.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet15.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet16.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet16.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet16.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet16.name | Name of the interface | keyword |
+| stormshield.Ethernet16.original | Original name of this field | keyword |
+| stormshield.Ethernet16.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet16.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet16.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet17.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet17.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet17.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet17.name | Name of the interface | keyword |
+| stormshield.Ethernet17.original | Original name of this field | keyword |
+| stormshield.Ethernet17.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet17.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet17.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet18.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet18.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet18.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet18.name | Name of the interface | keyword |
+| stormshield.Ethernet18.original | Original name of this field | keyword |
+| stormshield.Ethernet18.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet18.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet18.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet19.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet19.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet19.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet19.name | Name of the interface | keyword |
+| stormshield.Ethernet19.original | Original name of this field | keyword |
+| stormshield.Ethernet19.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet19.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet19.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet2.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet2.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet2.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet2.name | Name of the interface | keyword |
+| stormshield.Ethernet2.original | Original name of this field | keyword |
+| stormshield.Ethernet2.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet2.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet2.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet20.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet20.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet20.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet20.name | Name of the interface | keyword |
+| stormshield.Ethernet20.original | Original name of this field | keyword |
+| stormshield.Ethernet20.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet20.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet20.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet21.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet21.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet21.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet21.name | Name of the interface | keyword |
+| stormshield.Ethernet21.original | Original name of this field | keyword |
+| stormshield.Ethernet21.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet21.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet21.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet22.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet22.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet22.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet22.name | Name of the interface | keyword |
+| stormshield.Ethernet22.original | Original name of this field | keyword |
+| stormshield.Ethernet22.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet22.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet22.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet23.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet23.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet23.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet23.name | Name of the interface | keyword |
+| stormshield.Ethernet23.original | Original name of this field | keyword |
+| stormshield.Ethernet23.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet23.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet23.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet24.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet24.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet24.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet24.name | Name of the interface | keyword |
+| stormshield.Ethernet24.original | Original name of this field | keyword |
+| stormshield.Ethernet24.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet24.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet24.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet25.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet25.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet25.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet25.name | Name of the interface | keyword |
+| stormshield.Ethernet25.original | Original name of this field | keyword |
+| stormshield.Ethernet25.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet25.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet25.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet26.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet26.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet26.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet26.name | Name of the interface | keyword |
+| stormshield.Ethernet26.original | Original name of this field | keyword |
+| stormshield.Ethernet26.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet26.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet26.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet27.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet27.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet27.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet27.name | Name of the interface | keyword |
+| stormshield.Ethernet27.original | Original name of this field | keyword |
+| stormshield.Ethernet27.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet27.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet27.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet28.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet28.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet28.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet28.name | Name of the interface | keyword |
+| stormshield.Ethernet28.original | Original name of this field | keyword |
+| stormshield.Ethernet28.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet28.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet28.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet29.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet29.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet29.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet29.name | Name of the interface | keyword |
+| stormshield.Ethernet29.original | Original name of this field | keyword |
+| stormshield.Ethernet29.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet29.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet29.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet3.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet3.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet3.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet3.name | Name of the interface | keyword |
+| stormshield.Ethernet3.original | Original name of this field | keyword |
+| stormshield.Ethernet3.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet3.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet3.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet30.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet30.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet30.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet30.name | Name of the interface | keyword |
+| stormshield.Ethernet30.original | Original name of this field | keyword |
+| stormshield.Ethernet30.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet30.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet30.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet31.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet31.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet31.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet31.name | Name of the interface | keyword |
+| stormshield.Ethernet31.original | Original name of this field | keyword |
+| stormshield.Ethernet31.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet31.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet31.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet32.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet32.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet32.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet32.name | Name of the interface | keyword |
+| stormshield.Ethernet32.original | Original name of this field | keyword |
+| stormshield.Ethernet32.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet32.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet32.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet33.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet33.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet33.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet33.name | Name of the interface | keyword |
+| stormshield.Ethernet33.original | Original name of this field | keyword |
+| stormshield.Ethernet33.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet33.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet33.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet34.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet34.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet34.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet34.name | Name of the interface | keyword |
+| stormshield.Ethernet34.original | Original name of this field | keyword |
+| stormshield.Ethernet34.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet34.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet34.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet35.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet35.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet35.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet35.name | Name of the interface | keyword |
+| stormshield.Ethernet35.original | Original name of this field | keyword |
+| stormshield.Ethernet35.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet35.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet35.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet36.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet36.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet36.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet36.name | Name of the interface | keyword |
+| stormshield.Ethernet36.original | Original name of this field | keyword |
+| stormshield.Ethernet36.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet36.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet36.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet37.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet37.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet37.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet37.name | Name of the interface | keyword |
+| stormshield.Ethernet37.original | Original name of this field | keyword |
+| stormshield.Ethernet37.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet37.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet37.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet38.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet38.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet38.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet38.name | Name of the interface | keyword |
+| stormshield.Ethernet38.original | Original name of this field | keyword |
+| stormshield.Ethernet38.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet38.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet38.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet39.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet39.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet39.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet39.name | Name of the interface | keyword |
+| stormshield.Ethernet39.original | Original name of this field | keyword |
+| stormshield.Ethernet39.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet39.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet39.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet4.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet4.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet4.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet4.name | Name of the interface | keyword |
+| stormshield.Ethernet4.original | Original name of this field | keyword |
+| stormshield.Ethernet4.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet4.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet4.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet40.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet40.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet40.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet40.name | Name of the interface | keyword |
+| stormshield.Ethernet40.original | Original name of this field | keyword |
+| stormshield.Ethernet40.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet40.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet40.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet41.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet41.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet41.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet41.name | Name of the interface | keyword |
+| stormshield.Ethernet41.original | Original name of this field | keyword |
+| stormshield.Ethernet41.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet41.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet41.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet42.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet42.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet42.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet42.name | Name of the interface | keyword |
+| stormshield.Ethernet42.original | Original name of this field | keyword |
+| stormshield.Ethernet42.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet42.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet42.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet43.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet43.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet43.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet43.name | Name of the interface | keyword |
+| stormshield.Ethernet43.original | Original name of this field | keyword |
+| stormshield.Ethernet43.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet43.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet43.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet44.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet44.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet44.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet44.name | Name of the interface | keyword |
+| stormshield.Ethernet44.original | Original name of this field | keyword |
+| stormshield.Ethernet44.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet44.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet44.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet45.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet45.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet45.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet45.name | Name of the interface | keyword |
+| stormshield.Ethernet45.original | Original name of this field | keyword |
+| stormshield.Ethernet45.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet45.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet45.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet46.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet46.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet46.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet46.name | Name of the interface | keyword |
+| stormshield.Ethernet46.original | Original name of this field | keyword |
+| stormshield.Ethernet46.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet46.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet46.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet47.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet47.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet47.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet47.name | Name of the interface | keyword |
+| stormshield.Ethernet47.original | Original name of this field | keyword |
+| stormshield.Ethernet47.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet47.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet47.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet48.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet48.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet48.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet48.name | Name of the interface | keyword |
+| stormshield.Ethernet48.original | Original name of this field | keyword |
+| stormshield.Ethernet48.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet48.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet48.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet49.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet49.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet49.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet49.name | Name of the interface | keyword |
+| stormshield.Ethernet49.original | Original name of this field | keyword |
+| stormshield.Ethernet49.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet49.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet49.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet5.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet5.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet5.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet5.name | Name of the interface | keyword |
+| stormshield.Ethernet5.original | Original name of this field | keyword |
+| stormshield.Ethernet5.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet5.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet5.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet50.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet50.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet50.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet50.name | Name of the interface | keyword |
+| stormshield.Ethernet50.original | Original name of this field | keyword |
+| stormshield.Ethernet50.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet50.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet50.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet51.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet51.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet51.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet51.name | Name of the interface | keyword |
+| stormshield.Ethernet51.original | Original name of this field | keyword |
+| stormshield.Ethernet51.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet51.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet51.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet52.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet52.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet52.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet52.name | Name of the interface | keyword |
+| stormshield.Ethernet52.original | Original name of this field | keyword |
+| stormshield.Ethernet52.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet52.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet52.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet53.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet53.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet53.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet53.name | Name of the interface | keyword |
+| stormshield.Ethernet53.original | Original name of this field | keyword |
+| stormshield.Ethernet53.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet53.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet53.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet54.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet54.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet54.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet54.name | Name of the interface | keyword |
+| stormshield.Ethernet54.original | Original name of this field | keyword |
+| stormshield.Ethernet54.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet54.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet54.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet55.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet55.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet55.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet55.name | Name of the interface | keyword |
+| stormshield.Ethernet55.original | Original name of this field | keyword |
+| stormshield.Ethernet55.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet55.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet55.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet56.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet56.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet56.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet56.name | Name of the interface | keyword |
+| stormshield.Ethernet56.original | Original name of this field | keyword |
+| stormshield.Ethernet56.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet56.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet56.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet57.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet57.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet57.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet57.name | Name of the interface | keyword |
+| stormshield.Ethernet57.original | Original name of this field | keyword |
+| stormshield.Ethernet57.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet57.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet57.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet58.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet58.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet58.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet58.name | Name of the interface | keyword |
+| stormshield.Ethernet58.original | Original name of this field | keyword |
+| stormshield.Ethernet58.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet58.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet58.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet59.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet59.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet59.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet59.name | Name of the interface | keyword |
+| stormshield.Ethernet59.original | Original name of this field | keyword |
+| stormshield.Ethernet59.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet59.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet59.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet6.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet6.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet6.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet6.name | Name of the interface | keyword |
+| stormshield.Ethernet6.original | Original name of this field | keyword |
+| stormshield.Ethernet6.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet6.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet6.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet60.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet60.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet60.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet60.name | Name of the interface | keyword |
+| stormshield.Ethernet60.original | Original name of this field | keyword |
+| stormshield.Ethernet60.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet60.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet60.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet61.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet61.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet61.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet61.name | Name of the interface | keyword |
+| stormshield.Ethernet61.original | Original name of this field | keyword |
+| stormshield.Ethernet61.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet61.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet61.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet62.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet62.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet62.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet62.name | Name of the interface | keyword |
+| stormshield.Ethernet62.original | Original name of this field | keyword |
+| stormshield.Ethernet62.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet62.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet62.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet63.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet63.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet63.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet63.name | Name of the interface | keyword |
+| stormshield.Ethernet63.original | Original name of this field | keyword |
+| stormshield.Ethernet63.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet63.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet63.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet64.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet64.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet64.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet64.name | Name of the interface | keyword |
+| stormshield.Ethernet64.original | Original name of this field | keyword |
+| stormshield.Ethernet64.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet64.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet64.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet65.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet65.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet65.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet65.name | Name of the interface | keyword |
+| stormshield.Ethernet65.original | Original name of this field | keyword |
+| stormshield.Ethernet65.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet65.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet65.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet66.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet66.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet66.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet66.name | Name of the interface | keyword |
+| stormshield.Ethernet66.original | Original name of this field | keyword |
+| stormshield.Ethernet66.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet66.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet66.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet67.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet67.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet67.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet67.name | Name of the interface | keyword |
+| stormshield.Ethernet67.original | Original name of this field | keyword |
+| stormshield.Ethernet67.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet67.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet67.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet68.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet68.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet68.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet68.name | Name of the interface | keyword |
+| stormshield.Ethernet68.original | Original name of this field | keyword |
+| stormshield.Ethernet68.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet68.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet68.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet69.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet69.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet69.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet69.name | Name of the interface | keyword |
+| stormshield.Ethernet69.original | Original name of this field | keyword |
+| stormshield.Ethernet69.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet69.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet69.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet7.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet7.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet7.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet7.name | Name of the interface | keyword |
+| stormshield.Ethernet7.original | Original name of this field | keyword |
+| stormshield.Ethernet7.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet7.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet7.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet70.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet70.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet70.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet70.name | Name of the interface | keyword |
+| stormshield.Ethernet70.original | Original name of this field | keyword |
+| stormshield.Ethernet70.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet70.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet70.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet71.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet71.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet71.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet71.name | Name of the interface | keyword |
+| stormshield.Ethernet71.original | Original name of this field | keyword |
+| stormshield.Ethernet71.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet71.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet71.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet72.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet72.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet72.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet72.name | Name of the interface | keyword |
+| stormshield.Ethernet72.original | Original name of this field | keyword |
+| stormshield.Ethernet72.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet72.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet72.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet73.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet73.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet73.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet73.name | Name of the interface | keyword |
+| stormshield.Ethernet73.original | Original name of this field | keyword |
+| stormshield.Ethernet73.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet73.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet73.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet74.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet74.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet74.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet74.name | Name of the interface | keyword |
+| stormshield.Ethernet74.original | Original name of this field | keyword |
+| stormshield.Ethernet74.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet74.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet74.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet75.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet75.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet75.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet75.name | Name of the interface | keyword |
+| stormshield.Ethernet75.original | Original name of this field | keyword |
+| stormshield.Ethernet75.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet75.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet75.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet76.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet76.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet76.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet76.name | Name of the interface | keyword |
+| stormshield.Ethernet76.original | Original name of this field | keyword |
+| stormshield.Ethernet76.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet76.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet76.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet77.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet77.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet77.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet77.name | Name of the interface | keyword |
+| stormshield.Ethernet77.original | Original name of this field | keyword |
+| stormshield.Ethernet77.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet77.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet77.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet78.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet78.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet78.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet78.name | Name of the interface | keyword |
+| stormshield.Ethernet78.original | Original name of this field | keyword |
+| stormshield.Ethernet78.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet78.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet78.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet79.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet79.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet79.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet79.name | Name of the interface | keyword |
+| stormshield.Ethernet79.original | Original name of this field | keyword |
+| stormshield.Ethernet79.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet79.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet79.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet8.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet8.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet8.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet8.name | Name of the interface | keyword |
+| stormshield.Ethernet8.original | Original name of this field | keyword |
+| stormshield.Ethernet8.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet8.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet8.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet80.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet80.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet80.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet80.name | Name of the interface | keyword |
+| stormshield.Ethernet80.original | Original name of this field | keyword |
+| stormshield.Ethernet80.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet80.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet80.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet81.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet81.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet81.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet81.name | Name of the interface | keyword |
+| stormshield.Ethernet81.original | Original name of this field | keyword |
+| stormshield.Ethernet81.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet81.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet81.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet82.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet82.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet82.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet82.name | Name of the interface | keyword |
+| stormshield.Ethernet82.original | Original name of this field | keyword |
+| stormshield.Ethernet82.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet82.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet82.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet83.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet83.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet83.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet83.name | Name of the interface | keyword |
+| stormshield.Ethernet83.original | Original name of this field | keyword |
+| stormshield.Ethernet83.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet83.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet83.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet84.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet84.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet84.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet84.name | Name of the interface | keyword |
+| stormshield.Ethernet84.original | Original name of this field | keyword |
+| stormshield.Ethernet84.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet84.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet84.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet85.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet85.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet85.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet85.name | Name of the interface | keyword |
+| stormshield.Ethernet85.original | Original name of this field | keyword |
+| stormshield.Ethernet85.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet85.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet85.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet86.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet86.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet86.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet86.name | Name of the interface | keyword |
+| stormshield.Ethernet86.original | Original name of this field | keyword |
+| stormshield.Ethernet86.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet86.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet86.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet87.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet87.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet87.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet87.name | Name of the interface | keyword |
+| stormshield.Ethernet87.original | Original name of this field | keyword |
+| stormshield.Ethernet87.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet87.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet87.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet88.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet88.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet88.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet88.name | Name of the interface | keyword |
+| stormshield.Ethernet88.original | Original name of this field | keyword |
+| stormshield.Ethernet88.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet88.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet88.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet89.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet89.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet89.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet89.name | Name of the interface | keyword |
+| stormshield.Ethernet89.original | Original name of this field | keyword |
+| stormshield.Ethernet89.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet89.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet89.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet9.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet9.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet9.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet9.name | Name of the interface | keyword |
+| stormshield.Ethernet9.original | Original name of this field | keyword |
+| stormshield.Ethernet9.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet9.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet9.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet90.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet90.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet90.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet90.name | Name of the interface | keyword |
+| stormshield.Ethernet90.original | Original name of this field | keyword |
+| stormshield.Ethernet90.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet90.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet90.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet91.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet91.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet91.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet91.name | Name of the interface | keyword |
+| stormshield.Ethernet91.original | Original name of this field | keyword |
+| stormshield.Ethernet91.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet91.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet91.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet92.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet92.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet92.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet92.name | Name of the interface | keyword |
+| stormshield.Ethernet92.original | Original name of this field | keyword |
+| stormshield.Ethernet92.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet92.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet92.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet93.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet93.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet93.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet93.name | Name of the interface | keyword |
+| stormshield.Ethernet93.original | Original name of this field | keyword |
+| stormshield.Ethernet93.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet93.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet93.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet94.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet94.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet94.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet94.name | Name of the interface | keyword |
+| stormshield.Ethernet94.original | Original name of this field | keyword |
+| stormshield.Ethernet94.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet94.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet94.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet95.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet95.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet95.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet95.name | Name of the interface | keyword |
+| stormshield.Ethernet95.original | Original name of this field | keyword |
+| stormshield.Ethernet95.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet95.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet95.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet96.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet96.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet96.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet96.name | Name of the interface | keyword |
+| stormshield.Ethernet96.original | Original name of this field | keyword |
+| stormshield.Ethernet96.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet96.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet96.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet97.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet97.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet97.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet97.name | Name of the interface | keyword |
+| stormshield.Ethernet97.original | Original name of this field | keyword |
+| stormshield.Ethernet97.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet97.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet97.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet98.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet98.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet98.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet98.name | Name of the interface | keyword |
+| stormshield.Ethernet98.original | Original name of this field | keyword |
+| stormshield.Ethernet98.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet98.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet98.packets_blocked | Number of packets blocked | long |
+| stormshield.Ethernet99.incoming_throughput | Incoming throughput (bits/second) | long |
+| stormshield.Ethernet99.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
+| stormshield.Ethernet99.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
+| stormshield.Ethernet99.name | Name of the interface | keyword |
+| stormshield.Ethernet99.original | Original name of this field | keyword |
+| stormshield.Ethernet99.outgoing_throughput | Outgoing throughput (bits/second) | long |
+| stormshield.Ethernet99.packets_accepted | Number of packets accepted | long |
+| stormshield.Ethernet99.packets_blocked | Number of packets blocked | long |
 | stormshield.FragMem | Percentage of memory allocated to the treatment of fragmented packets. Value from 0 to 100. | long |
 | stormshield.Fragmented | Number of fragmented packets that have passed through the Firewall. | long |
 | stormshield.HostMem | Percentage of memory allocated to a host processed by the Firewall. Value from 0 to 100. | long |
@@ -370,12 +1170,6 @@ An example event for `log` looks as following:
 | stormshield.device_aggs.CPU.kernel_time | Time consumed by the kernel | long |
 | stormshield.device_aggs.CPU.system_disruption | Time allocated to system disruptions | long |
 | stormshield.device_aggs.CPU.user_time | Time allocated to the management of user processes | long |
-| stormshield.device_aggs.Ethernet.incoming_throughput | Incoming throughput (bits/second) | long |
-| stormshield.device_aggs.Ethernet.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
-| stormshield.device_aggs.Ethernet.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
-| stormshield.device_aggs.Ethernet.outgoing_throughput | Outgoing throughput (bits/second) | long |
-| stormshield.device_aggs.Ethernet.packets_accepted | Number of packets accepted | long |
-| stormshield.device_aggs.Ethernet.packets_blocked | Number of packets blocked | long |
 | stormshield.device_aggs.Qid.incoming_throughput | Incoming throughput (bits/second) | long |
 | stormshield.device_aggs.Qid.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
 | stormshield.device_aggs.Qid.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
@@ -416,14 +1210,6 @@ An example event for `log` looks as following:
 | stormshield.device_stats.CPU.kernel_time | Time consumed by the kernel | long |
 | stormshield.device_stats.CPU.system_disruption | Time allocated to system disruptions | long |
 | stormshield.device_stats.CPU.user_time | Time allocated to the management of user processes | long |
-| stormshield.device_stats.Ethernet.incoming_throughput | Incoming throughput (bits/second) | long |
-| stormshield.device_stats.Ethernet.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
-| stormshield.device_stats.Ethernet.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
-| stormshield.device_stats.Ethernet.name | Name of the interface | keyword |
-| stormshield.device_stats.Ethernet.original | Original name of this field | keyword |
-| stormshield.device_stats.Ethernet.outgoing_throughput | Outgoing throughput (bits/second) | long |
-| stormshield.device_stats.Ethernet.packets_accepted | Number of packets accepted | long |
-| stormshield.device_stats.Ethernet.packets_blocked | Number of packets blocked | long |
 | stormshield.device_stats.Qid.incoming_throughput | Incoming throughput (bits/second) | long |
 | stormshield.device_stats.Qid.maximum_incoming_throughput | Maximum incoming throughput for a given period (bits/second) | long |
 | stormshield.device_stats.Qid.maximum_outgoing_throughput | Maximum outgoing throughput for a given period (bits/second) | long |
