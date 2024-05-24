@@ -23,7 +23,18 @@ program: |
   get(state.url)
   .as(resp, bytes(resp.Body)
   .decode_json().as(body,
-    {"logstash":{"node":{"stats":{
+    {
+      "logstash":{
+        "elasticsearch": has(body.pipelines)
+          ? body.pipelines
+            .map(pipeline_name, pipeline_name != ".monitoring-logstash", {
+              "cluster": has(body.pipelines[pipeline_name].vertices)
+              ? {"id": body.pipelines[pipeline_name].vertices.map(vertex, has(vertex.cluster_uuid), vertex.cluster_uuid) }
+              : {}
+            })
+          : [],
+        "node":{
+          "stats":{
              "events":body.events,
              "jvm":{
                 "uptime_in_millis":body.jvm.uptime_in_millis,
