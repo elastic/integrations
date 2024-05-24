@@ -57,6 +57,7 @@ processors:
       if: ctx.email?.to?.address instanceof String
   - date:
       field: json.clickTime
+      target_field: proofpoint_tap.clicks_permitted.click_time
       if: ctx.json?.clickTime != null && ctx.json.clickTime != ''
       formats:
         - ISO8601
@@ -64,6 +65,11 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: proofpoint_tap.clicks_permitted.click_time
+      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.id
       target_field: event.id
