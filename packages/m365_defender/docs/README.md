@@ -973,7 +973,6 @@ This is the `event` dataset.
 | process.parent.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
 | process.parent.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | process.parent.pe.product | Internal product name of the file, provided at compile-time. | keyword |
-| process.parent.pe.sections.physical_size | PE Section List physical size. | long |
 | process.parent.pid | Process id. | long |
 | process.parent.start | The time the process started. | date |
 | process.pe.company | Internal company name of the file, provided at compile-time. | keyword |
@@ -981,7 +980,6 @@ This is the `event` dataset.
 | process.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
 | process.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | process.pe.product | Internal product name of the file, provided at compile-time. | keyword |
-| process.pe.sections.physical_size | PE Section List physical size. | long |
 | process.pid | Process id. | long |
 | process.start | The time the process started. | date |
 | registry.data.strings | Content when writing string types. Populated as an array when writing string data to the registry. For single string registry types (REG_SZ, REG_EXPAND_SZ), this should be an array with one string. For sequences of string with REG_MULTI_SZ, this array will be variable length. For numeric data, such as REG_DWORD and REG_QWORD, this should be populated with the decimal representation (e.g `"1"`). | wildcard |

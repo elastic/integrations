@@ -1320,12 +1320,6 @@ processors:
       tag: set_process_name
       if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
   - set:
-      field: process.pe.sections.physical_size
-      copy_from: m365_defender.event.file.size
-      ignore_empty_value: true
-      tag: set_process_pe_sections_physical_size
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
-  - set:
       field: process.parent.command_line
       copy_from: m365_defender.event.initiating_process.command_line
       ignore_empty_value: true
@@ -1372,12 +1366,6 @@ processors:
       copy_from: m365_defender.event.initiating_process.file_name
       ignore_empty_value: true
       tag: set_process_parent_name
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
-  - set:
-      field: process.parent.pe.sections.physical_size
-      copy_from: m365_defender.event.initiating_process.file_size
-      ignore_empty_value: true
-      tag: set_process_parent_pe_sections_physical_size
       if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
   - set:
       field: process.parent.executable
@@ -1579,12 +1567,6 @@ processors:
       ignore_empty_value: true
       tag: set_process_name
       if: ctx.event?.category != null && ((ctx.event.category.contains('api') || ctx.event.category.contains('driver')) || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
-  - set:
-      field: process.pe.sections.physical_size
-      copy_from: m365_defender.event.initiating_process.file_size
-      ignore_empty_value: true
-      tag: set_process_pe_sections_physical_size
-      if: ctx.event?.category != null && ((ctx.event.category.contains('api') || ctx.event.category.contains('driver')) || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
   - set:
       field: process.executable
       copy_from: m365_defender.event.initiating_process.folder_path
