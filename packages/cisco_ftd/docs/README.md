@@ -302,6 +302,7 @@ An example event for `log` looks as following:
 | cisco.ftd.termination_user | AAA name of user requesting termination | keyword |
 | cisco.ftd.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.ftd.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
+| cisco.ftd.translation_type | The translation type | keyword |
 | cisco.ftd.tunnel_type | SA type (remote access or L2L) | keyword |
 | cisco.ftd.username |  | keyword |
 | cisco.ftd.webvpn.group_name | The WebVPN group name the user belongs to | keyword |
