@@ -46,9 +46,10 @@ for package in ${PACKAGE_LIST}; do
     fi
 
     packages_to_test=$((packages_to_test+1))
+for iter in $(seq 1 5); do
     cat << EOF >> ${PIPELINE_FILE}
-    - label: "Check integrations ${package}"
-      key: "test-integrations-${package}"
+    - label: "Check integrations ${package} ${iter}"
+      key: "test-integrations-${package}-${iter}"
       command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
       agents:
         provider: gcp
@@ -65,6 +66,7 @@ for package in ${PACKAGE_LIST}; do
         - build/elastic-stack-dump/*/logs/*.log
         - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
 EOF
+done
 done
 
 if [ ${packages_to_test} -eq 0 ]; then
