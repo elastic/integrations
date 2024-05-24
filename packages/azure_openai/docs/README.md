@@ -128,11 +128,15 @@ An example event for `logs` looks as following:
 | azure.open_ai.location | The location. | keyword |
 | azure.open_ai.operation_name | The log action performed. | keyword |
 | azure.open_ai.properties.api_name | The API name of the request. | keyword |
+| azure.open_ai.properties.model_deployment_name | The deployed model name. | keyword |
+| azure.open_ai.properties.model_name | The OpenAI model. | keyword |
+| azure.open_ai.properties.model_version | The OpenAI model version. | keyword |
 | azure.open_ai.properties.object_id | The object id of the request. | keyword |
 | azure.open_ai.properties.request_length | Length of the request. | double |
 | azure.open_ai.properties.request_time | Request time taken. | long |
 | azure.open_ai.properties.response_length | Length of the response. | double |
 | azure.open_ai.properties.response_time | Response time taken. | long |
+| azure.open_ai.properties.stream_type | The stream type of the request. | keyword |
 | azure.open_ai.result_signature | The response status. | keyword |
 | azure.open_ai.tenant | The tenant location. | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
