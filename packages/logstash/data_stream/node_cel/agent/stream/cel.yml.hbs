@@ -25,14 +25,15 @@ program: |
   .decode_json().as(body,
     {
       "logstash":{
-        "elasticsearch": has(body.pipelines)
-          ? body.pipelines
-            .map(pipeline_name, pipeline_name != ".monitoring-logstash", {
-              "cluster": has(body.pipelines[pipeline_name].vertices)
-              ? {"id": body.pipelines[pipeline_name].vertices.map(vertex, has(vertex.cluster_uuid), vertex.cluster_uuid) }
-              : {}
-            })
-          : [],
+        "elasticsearch": has(body.pipelines) 
+        ? {
+            "cluster":{
+              "id":body.pipelines.map(pipeline_name, pipeline_name != ".monitoring-logstash", has(body.pipelines[pipeline_name].vertices)
+                ? body.pipelines[pipeline_name].vertices.map(vertex, has(vertex.cluster_uuid), vertex.cluster_uuid) 
+                : []).flatten(),
+             }
+          }
+        : {},
         "node":{
           "stats":{
              "events":body.events,
