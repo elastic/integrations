@@ -1,3 +1,3 @@
 # Cloud Asset Inventory 
 
-_Technical Preview_
+Discover assets in your Cloud Environment and store within Elastic Search
