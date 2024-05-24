@@ -12,6 +12,9 @@ processors:
       field: process.name
       copy_from: log.syslog.appname
       if: ctx.log?.syslog?.appname != null
+  - set:
+      field: observer.vendor
+      value: Stormshield
 
   #
   # Extract the key=value pairs into nested objects
@@ -102,16 +105,6 @@ processors:
   # Now rename things to ECS
 
   - rename:
-      field: stormshield.dstcontinent
-      target_field: destination.geo.continent_code
-      if: ctx.stormshield?.dstcontinent != null
-
-  - rename:
-      field: stormshield.dstcountry
-      target_field: destination.geo.country_iso_code
-      if: ctx.stormshield?.dstcountry != null
-
-  - rename:
       field: stormshield.dstname
       target_field: destination.domain
       if: ctx.stormshield?.dstname != null
@@ -147,16 +140,6 @@ processors:
       field: stormshield.dstport
       if: ctx.stormshield?.dstport != null
 
-  - rename:
-      field: stormshield.srccontinent
-      target_field: source.geo.continent_code
-      if: ctx.stormshield?.srccontinent != null
-
-  - rename:
-      field: stormshield.srccountry
-      target_field: source.geo.country_iso_code
-      if: ctx.stormshield?.srccountry != null
-
   - convert:
       field: stormshield.src
       target_field: source.ip
@@ -187,6 +170,29 @@ processors:
   - remove:
       field: stormshield.srcport
       if: ctx.stormshield?.srcport != null
+
+  - geoip:
+      tag: geoio_source
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      tag: geoio_destination
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+
+  - remove:
+      tag: remove_source_country_reserved
+      field: source.geo
+      if: ctx.source?.geo?.country_name == 'Reserved'
+  - remove:
+      tag: remove_destination_country_reserved
+      field: destination.geo
+      if: ctx.destination?.geo?.country_name == 'Reserved'
+
+  # ------------------------------------------------------------
+  # Cleanup
 
   - remove:
       field: _temp_

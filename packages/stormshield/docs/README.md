@@ -264,6 +264,7 @@ An example event for `log` looks as following:
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
 | log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
 | log.syslog.version | The version of the Syslog protocol specification. Only applicable for RFC 5424 messages. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -1312,6 +1313,7 @@ An example event for `log` looks as following:
 | stormshield.pktlen | Size of the network packet that activated the alarm (in bytes). Example: "133" | keyword |
 | stormshield.port | Port number (entered only if a vulnerability has been detected). Example: "22" | keyword |
 | stormshield.portname | Standard service corresponding to the port number (entered only if a vulnerability has been detected). String of characters in UTF-8 format. Example: ssh | keyword |
+| stormshield.ports | The network ports found on the device. | keyword |
 | stormshield.pri | Alarm level (configurable by the administrator in certain cases). Values: 1 (major) or  4 (minor). Available from: SNS v1.0.0. | keyword |
 | stormshield.product | Product on which the vulnerability was detected. String of characters in UTF-8 format. Example: JRE_1.6.0_27 | keyword |
 | stormshield.proto | Name of the associated plugin. If this is not available, the name of the standard service corresponding to the port (entered only if a vulnerability has been detected). String of characters in UTF-8 format. Example: ssh Available from: SNS v1.0.0. | keyword |

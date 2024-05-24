@@ -123,11 +123,13 @@ processors:
           return;
         }
 
+        def ports = [];
         for (entry in deviceStats.entrySet()) {
           def entryKey = entry.getKey();
           def entryValue = entry.getValue();
           def values = entryValue["value"].splitOnToken(',', 7);
           def item = [:];
+          ports.add(entryKey);
           item["original"] = entryKey;
           for (int i = 0; i < values.length; ++i) {
             if (i == 0) {
@@ -139,6 +141,8 @@ processors:
           ctx.stormshield.remove(entryKey);
           ctx.stormshield[entryKey] = item;
         }
+        ports.sort((a, b) -> a.compareTo(b));
+        ctx.stormshield.ports = ports;
 
 on_failure:
   - append:
