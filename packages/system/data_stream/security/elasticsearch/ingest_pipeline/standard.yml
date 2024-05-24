@@ -2220,12 +2220,19 @@ processors:
           }
         }
         if (ctx.winlog?.event_data?.AccessList != null) {
+          ArrayList codes = new ArrayList();
           ArrayList results = new ArrayList();
           for (elem in ctx.winlog.event_data.AccessList.splitOnToken(" ")) {
             def code = elem.replace("%%","").trim();
+            if (code != "") {
+              codes.add(code);
+            }
             if (params.descriptions.containsKey(code)) {
               results.add(params.descriptions[code]);
             }
+          }
+          if (codes.length > 0) {
+            ctx.winlog.event_data.AccessList = codes;
           }
           if (results.length > 0) {
             ctx.winlog.event_data.put("AccessListDescription", results);
