@@ -140,6 +140,25 @@ processors:
       field: stormshield.dstport
       if: ctx.stormshield?.dstport != null
 
+  - rename:
+      field: stormshield.dstcontinent
+      target_field: destination.geo.continent_code
+      if: ctx.stormshield?.dstcontinent != null
+
+  - rename:
+      field: stormshield.dstcountry
+      target_field: destination.geo.country_iso_code
+      if: ctx.stormshield?.dstcountry != null
+  - rename:
+      field: stormshield.srccontinent
+      target_field: source.geo.continent_code
+      if: ctx.stormshield?.srccontinent != null
+
+  - rename:
+      field: stormshield.srccountry
+      target_field: source.geo.country_iso_code
+      if: ctx.stormshield?.srccountry != null
+
   - convert:
       field: stormshield.src
       target_field: source.ip
@@ -170,17 +189,6 @@ processors:
   - remove:
       field: stormshield.srcport
       if: ctx.stormshield?.srcport != null
-
-  - geoip:
-      tag: geoio_source
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-  - geoip:
-      tag: geoio_destination
-      field: destination.ip
-      target_field: destination.geo
-      ignore_missing: true
 
   - remove:
       tag: remove_source_country_reserved
