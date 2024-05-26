@@ -1,0 +1,150 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  end_point_type: {{issues_type}}
+  # Keep version in sync with the value in the README.
+  version: "2024-04-29"
+  issues_id: {{issues_id}}
+  api_token: {{api_token}}
+{{#if effective_severity_level}}
+  levels:
+{{#each effective_severity_level as |l|}}
+  - {{l}}
+{{/each}}
+{{/if}}
+{{#if status}}
+  statuses:
+{{#each status as |s|}}
+  - {{s}}
+{{/each}}
+{{/if}}
+{{#if type}}
+  type:
+{{#each type as |t|}}
+  - {{t}}
+{{/each}}
+{{/if}}
+{{#if scan_item_id}}
+  scan_item_id: {{scan_item_id}}
+{{/if}}
+{{#if scan_item_type}}
+  scan_item_type:
+{{#each scan_item_type as |t|}}
+  - {{t}}
+{{/each}}
+{{/if}}
+{{#if ignored}}
+  ignored: {{ignored}}
+{{/if}}
+{{#if first_interval}}
+  lookback: {{first_interval}}
+{{/if}}
+{{#if batch_size}}
+  limit: {{batch_size}}
+{{/if}}
+  want_more: false
+redact:
+  fields:
+    - issues_id
+    - api_token
+program: |
+  state.with(get_request(
+    state.url.trim_right("/") + state.?cursor.next.orValue(
+      state.end_point_type + state.issues_id + "/issues?" + {
+        "version": [state.version],
+        // limit must be multiple of 10 for ... reasons; see spec. Always return a
+        // non-zero value, but otherwise do not ask for more than the user configured.
+        ?"limit":                    has(state.limit) ?
+                                       optional.of([string(max([1, int(state.limit)/10])*10)])
+                                     :
+                                       optional.none(),
+        ?"created_after":            (has(state.?cursor.last_created) && !has(state.?cursor.last_updated)) ?
+                                       optional.of([state.cursor.last_created])
+                                     : has(state.lookback) ?
+                                       optional.of([string(now-duration(state.lookback))])
+                                     :
+                                       optional.none(),
+        ?"effective_severity_level": state.?effective_severity_level,
+        ?"status":                   state.?status,
+        ?"type":                     state.?type,
+        ?"scan_item.id":             has(state.scan_item_id) ?
+                                       optional.of([state.scan_item_id])
+                                     :
+                                       optional.none(),
+        ?"scan_item.type":           state.?scan_item_type,
+        ?"ignored":                  state.?ignored,
+      }.format_query()
+    )
+  ).with({
+    "Header":{
+      "Accept":        ["application/vnd.api+json"],
+      "Authorization": ["Token " + state.api_token],
+    }
+  }).do_request().as(resp, resp.StatusCode != 200 ?
+    {
+      "events": [{
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": size(resp.Body) != 0 ? 
+            string(resp.Body)
+          :
+            string(resp.Status) + ' (' + string(resp.StatusCode) + ')',
+        }
+      }],
+      "want_more": false,
+    }
+  :
+    bytes(resp.Body).decode_json().as(body, !has(body.data) ?
+      {
+        "events":[],
+        "want_more": false,
+      }
+    :
+      {
+        "events": body.data.map(issue, {
+          "message": issue.encode_json(),
+        }),
+        "cursor": {
+          ?"next": body.?links.next,
+          // Always keep last created. This is our next periodic start point.
+          "last_created": body.data.map(d, has(d.?attributes.created_at),
+            timestamp(d.attributes.created_at)
+          ).as(times, size(times) == 0 ? state.?cursor.last_created.orValue(now) : times.max()),
+        },
+        "want_more": has(body.?links.next),
+      }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
