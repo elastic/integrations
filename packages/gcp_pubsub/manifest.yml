@@ -1,14 +1,14 @@
 name: gcp_pubsub
 title: Custom Google Pub/Sub Logs
-version: "1.13.0"
+format_version: "3.0.2"
 description: Collect Logs from Google Pub/Sub topics
-type: integration
+type: input
+version: "2.0.0"
 icons:
   - src: /img/logo_gcp.svg
     title: logo gcp
     size: 32x32
     type: image/svg+xml
-format_version: "3.0.2"
 categories:
   - observability
   - google_cloud
@@ -20,10 +20,102 @@ policy_templates:
   - name: gcp
     title: Custom Google Pub/Sub Logs
     description: Collect Logs from Google Pub/Sub topics
-    inputs:
-      - type: gcp-pubsub
-        title: Custom Google Pub/Sub Logs
-        description: Collect Logs from Google Pub/Sub topics
+    type: logs
+    input: gcp-pubsub
+    template_path: gcp-pubsub.yml.hbs
+    vars:
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: gcp_pubsub.generic
+        required: true
+        show_user: true
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: project_id
+        type: text
+        title: Project ID
+        multi: false
+        required: true
+        show_user: true
+      - name: topic
+        type: text
+        title: Topic
+        multi: false
+        required: true
+        show_user: true
+      - name: subscription_name
+        type: text
+        title: Subscription Name
+        multi: false
+        required: true
+        show_user: true
+      - name: credentials_file
+        type: text
+        title: Credentials File
+        multi: false
+        required: false
+        show_user: true
+        description: Path to a JSON file containing the credentials and key used to subscribe.
+      - name: credentials_json
+        type: password
+        title: Credentials JSON
+        multi: false
+        required: false
+        show_user: true
+        description: JSON blob containing the credentials and key used to subscribe.
+        secret: true
+      - name: subscription_create
+        type: bool
+        title: Subscription Create
+        description: If true, the integration will create the subscription on start.
+        multi: false
+        required: false
+        show_user: true
+      - name: subscription_num_goroutines
+        type: text
+        title: Subscription Num Goroutines
+        description: Number of goroutines created to read from the subscription. This does not limit the number of messages that can be processed concurrently or the maximum number of goroutines the input will create.
+        multi: false
+        required: false
+        show_user: false
+      - name: subscription_max_outstanding_messages
+        type: text
+        title: Subscription Max Outstanding Messages
+        description: The maximum number of unprocessed messages (unacknowledged but not yet expired). If the value is negative, then there will be no limit on the number of unprocessed messages. Default is 1000.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: alternative_host
+        type: text
+        title: Alternative host
+        multi: false
+        required: false
+        show_user: false
 owner:
   github: elastic/security-service-integrations
   type: elastic
