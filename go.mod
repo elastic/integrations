@@ -54,8 +54,8 @@ require (
 	github.com/elastic/go-ucfg v0.8.8 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
-	github.com/elastic/kbncontent v0.1.3 // indirect
-	github.com/elastic/package-spec/v3 v3.1.4 // indirect
+	github.com/elastic/kbncontent v0.1.4 // indirect
+	github.com/elastic/package-spec/v3 v3.1.5 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
@@ -190,7 +190,7 @@ require (
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	helm.sh/helm/v3 v3.15.0 // indirect
+	helm.sh/helm/v3 v3.15.1 // indirect
 	howett.net/plist v1.0.0 // indirect
 	k8s.io/api v0.30.1 // indirect
 	k8s.io/apiextensions-apiserver v0.30.0 // indirect
@@ -209,4 +209,4 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20240523104107-c7a74516fade
+replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20240527090045-302731c49427
