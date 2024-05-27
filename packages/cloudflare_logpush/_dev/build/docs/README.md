@@ -90,11 +90,6 @@ This module has been tested against **Cloudflare version v4**.
   | Spectrum Event             | spectrum_event         |
   | Workers Trace Events       | workers_trace          |
 
-
-**Note**:
-- It is possible to ingest data from Cloudflare R2, an S3-compatible storage service, by setting the parameter `Cloudflare R2`. Using non-AWS S3 compatible buckets requires the use of Access Key ID and Secret Access Key for authentication, as well as the endpoint must be set to replace the default API endpoint. Endpoint should be a full URI, tipically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`, that will be used as the API endpoint of the service.
-- This setting can be also used to ingest data from other S3-compatible storage services.
-
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
 2. To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
@@ -109,6 +104,22 @@ This module has been tested against **Cloudflare version v4**.
   - You can configure a global SQS queue for all data streams or a local SQS queue for each data stream. Configuring
     data stream specific SQS queues will enable better performance and scalability. Data stream specific SQS queues
     will always override any global queue definitions for that specific data stream.
+
+### To collect data from Cloudflare R2 Buckets, follow the below steps:
+- Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/r2/) to push logs to Cloudflare R2.
+
+**Note**:
+- When creating the API token, make sure it has [Admin permissions](https://developers.cloudflare.com/r2/api/s3/tokens/#permissions). This is needed to list buckets and view bucket configuration.
+
+When configuring the integration to read from R2 Buckets, the following steps are required:
+- Enable the toggle `Collect logs via S3 Bucket`.
+- Make sure that the Bucket Name is set.
+- Although you have to create an API token, that token should not be used for authentication with the S3 API. You just have to set the Access Key ID and Secret Access Key.
+- Set the endpoint URL which can be found in Bucket Details. Endpoint should be a full URI, typically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`, that will be used as the API endpoint of the service.
+- Bucket Prefix is optional for each data stream.
+
+**Note**:
+- The AWS region is not a requirement when configuring the R2 Bucket, as the region for any R2 Bucket is `auto` from the [API perspective](https://developers.cloudflare.com/r2/api/s3/api/#bucket-region). However, the error `failed to get AWS region for bucket: operation error S3: GetBucketLocation` may appear when starting the integration. The reason is that `GetBucketLocation` is the first request made to the API when starting the integration, so any configuration, credentials or permissions errors would cause this. Focus on the API response error to identify the original issue.
 
 ### To collect data from GCS Buckets, follow the below steps:
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/google-cloud-storage/) to ingest data into a GCS bucket.
@@ -150,7 +161,7 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 4. Click the **Add Cloudflare Logpush** button to add Cloudflare Logpush integration.
 5. Enable the Integration with the HTTP Endpoint, AWS S3 input or GCS input.
 6. Under the AWS S3 input, there are two types of inputs: using AWS S3 Bucket or using SQS.
-7. Configure Cloudflare to send logs to the Elastic Agent.
+7. Configure Cloudflare to send logs to the Elastic Agent via HTTP Endpoint, or any R2, AWS or GCS Bucket following the specific guides above.
 
 ## Logs reference
 
