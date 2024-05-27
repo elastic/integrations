@@ -641,8 +641,10 @@ An example event for `security` looks as following:
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.caseless | Multi-field of `process.executable`. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.caseless | Multi-field of `process.name`. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.executable | Absolute path to the process executable. | keyword |
 | process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |
