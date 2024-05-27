@@ -4,7 +4,7 @@
 
 Scan cloud environments, discover assets and store it within elastic search.
 
-## Questions 
+### Questions 
 
-reach out to use directly in our [community slack workspace](https://elasticstack.slack.com/) in the `#security` or `#cloud-security` channels.
+In case of questions reach out in our [community slack workspace](https://elasticstack.slack.com/) in the `#security` or `#cloud-security` channels.
 
