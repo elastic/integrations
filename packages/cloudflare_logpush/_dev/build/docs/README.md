@@ -111,11 +111,11 @@ This module has been tested against **Cloudflare version v4**.
 **Note**:
 - When creating the API token, make sure it has [Admin permissions](https://developers.cloudflare.com/r2/api/s3/tokens/#permissions). This is needed to list buckets and view bucket configuration.
 
-When configure the integration to read from R2 Buckets, the following steps are required:
+When configuring the integration to read from R2 Buckets, the following steps are required:
 - Enable the toggle `Collect logs via S3 Bucket`.
 - Make sure that the Bucket Name is set.
 - Although you have to create an API token, that token should not be used for authentication with the S3 API. You just have to set the Access Key ID and Secret Access Key.
-- Set the endpoint URL which can be found in Bucket Details. Endpoint should be a full URI, tipically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`, that will be used as the API endpoint of the service.
+- Set the endpoint URL which can be found in Bucket Details. Endpoint should be a full URI, typically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`, that will be used as the API endpoint of the service.
 - Bucket Prefix is optional for each data stream.
 
 **Note**:
@@ -161,7 +161,7 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 4. Click the **Add Cloudflare Logpush** button to add Cloudflare Logpush integration.
 5. Enable the Integration with the HTTP Endpoint, AWS S3 input or GCS input.
 6. Under the AWS S3 input, there are two types of inputs: using AWS S3 Bucket or using SQS.
-7. Configure Cloudflare to send logs to the Elastic Agent via HTTP endpoint, or any R2, AWS or GCS Bucket following the specific guides above.
+7. Configure Cloudflare to send logs to the Elastic Agent via HTTP Endpoint, or any R2, AWS or GCS Bucket following the specific guides above.
 
 ## Logs reference
 
