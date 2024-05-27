@@ -692,7 +692,7 @@ is_pr_affected() {
 
     echo "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS|docs/|.buildkite/)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
@@ -963,8 +963,6 @@ process_package() {
     fi
 
     echo "${reason}"
-    popd > /dev/null
-    return
 
     use_kind=0
     if kubernetes_service_deployer_used ; then

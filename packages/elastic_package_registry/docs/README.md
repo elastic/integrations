@@ -5,7 +5,6 @@ This Elastic Package Registry integration collects metrics from your [Elastic Pa
 For example, you could use the data from this integration to know the status of your services. For instance, how many packages are indexed, what version
 are running your services, or if there are too many requests with 404 or 500 code status.
 
-
 ## Data streams
 
 The Elastic Package Registry collects one type of data stream: metrics.
