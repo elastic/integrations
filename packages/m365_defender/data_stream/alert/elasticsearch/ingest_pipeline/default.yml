@@ -23,6 +23,21 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - drop:
+      tag: drop_if_event_is_malformed
+      description: |
+        If an empty 'value' array exists, it means the input did not split correctly because we have
+        no more alerts and the event can be ignored.
+      if: ctx.json?.value instanceof List && ctx.json.value.length == 0
+  - fail:
+      tag: fail_if_value_array_has_elements
+      description: |
+        If we get here and the 'value' array has elements it means there is an error in the input 
+        configuration.
+      if: ctx.json?.value instanceof List && ctx.json.value.length > 0
+      message:  |
+        There is an unexpected 'value' array with elements. 
+        This indicates a misconfiguration of the input.
   - fingerprint:
       fields:
         - json.id
