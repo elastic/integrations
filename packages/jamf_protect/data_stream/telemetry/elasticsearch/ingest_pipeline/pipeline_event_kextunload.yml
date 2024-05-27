@@ -1,0 +1,27 @@
+---
+description: Pipeline for Jamf Protect Telemetry events.
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A user attempted to log in using /usr/bin/login
+    - convert:
+        field: jamf_protect.telemetry.event.kextunload.identifier
+        target_field: custom.identifier
+        type: string
+        ignore_missing: true
+        ignore_failure: true
+##########################
+## ECS Process ##
+##########################
+    - append:
+        field: event.type
+        value: change
+    - append:
+        field: event.category
+        value: configuration  
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

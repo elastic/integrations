@@ -1,0 +1,27 @@
+---
+description: Pipeline for Jamf Protect Telemetry events.
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A kernel extension (kext) was unloaded
+    - convert:
+        field: jamf_protect.telemetry.event.kextload.identifier
+        target_field: custom.identifier
+        type: string
+        ignore_missing: true
+        ignore_failure: true
+##########################
+## ECS Process ##
+##########################
+    - append:
+        field: event.type
+        value: change
+    - append:
+        field: event.category
+        value: configuration  
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

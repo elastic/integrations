@@ -1,0 +1,31 @@
+---
+description: Pipeline for Jamf Protect Telemetry events.
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A user logged out from /usr/bin/login
+    - rename:
+        field: jamf_protect.telemetry.event.login_logout.username
+        target_field: user.name
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.login_logout.uid
+        target_field: user.id
+        type: string
+        ignore_missing: true
+        ignore_failure: true
+##########################
+## ECS Process ##
+##########################
+    - append:
+        field: event.type
+        value: end
+    - append:
+        field: event.category
+        value: authentication  
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

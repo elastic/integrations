@@ -1,0 +1,53 @@
+---
+description: Pipeline for Jamf Protect Telemetry events.
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A screensharing session has detached from a graphical session
+    - script:
+        lang: painless
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.screensharing_detach?.success != null) {
+                if (ctx.jamf_protect.telemetry.event.screensharing_detach.success == true) {
+                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                ctx.event.outcome = 'success';
+                } else if (ctx.jamf_protect.telemetry.event.screensharing_detach.success == false) {
+                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                ctx.event.outcome = 'failure';
+                }
+            } else {
+                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                ctx.event.outcome = 'unknown';
+            }
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_detach.graphical_session_id
+        target_field: custom.graphical_session_id
+        type: string
+        ignore_missing: true
+        ignore_failure: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_detach.viewer_appleid
+        target_field: custom.viewer_appleid
+        type: string
+        if: ctx.jamf_protect.telemetry?.event?.screensharing_attach?.viewer_appleid != null
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: jamf_protect.telemetry.event.screensharing_detach.source_address
+        target_field: source.ip
+        ignore_missing: true
+##########################
+## ECS Process ##
+##########################
+    - append:
+        field: event.type
+        value: end
+    - append:
+        field: event.category
+        value: session
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

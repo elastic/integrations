@@ -1,0 +1,46 @@
+---
+description: Pipeline for Jamf Protect Telemetry events.
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A user attempted to log in using /usr/bin/login
+    - script:
+        lang: painless
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.login_login?.success != null) {
+                if (ctx.jamf_protect.telemetry.event.login_login.success == true) {
+                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                ctx.event.outcome = 'success';
+                } else if (ctx.jamf_protect.telemetry.event.login_login.success == false) {
+                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                ctx.event.outcome = 'failure';
+                }
+            } else {
+                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                ctx.event.outcome = 'unknown';
+            }
+    - rename:
+        field: jamf_protect.telemetry.event.login_login.username
+        target_field: user.name
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.login_login.uid
+        target_field: user.id
+        type: string
+        ignore_missing: true
+        ignore_failure: true
+##########################
+## ECS Process ##
+##########################
+    - append:
+        field: event.type
+        value: start
+    - append:
+        field: event.category
+        value: authentication  
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

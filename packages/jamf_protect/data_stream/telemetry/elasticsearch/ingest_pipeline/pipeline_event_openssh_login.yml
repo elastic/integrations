@@ -1,0 +1,50 @@
+---
+description: Pipeline for Jamf Protect Telemetry events.
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A user has logged into the system via OpenSSH
+    - script:
+        lang: painless
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.openssh_login?.success != null) {
+                if (ctx.jamf_protect.telemetry.event.openssh_login.success == true) {
+                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                ctx.event.outcome = 'success';
+                } else if (ctx.jamf_protect.telemetry.event.openssh_login.success == false) {
+                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                ctx.event.outcome = 'failure';
+                }
+            } else {
+                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                ctx.event.outcome = 'unknown';
+            }
+    - convert:
+        field: jamf_protect.telemetry.event.openssh_login.graphical_session_id
+        target_field: custom.graphical_session_id
+        type: string
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: jamf_protect.telemetry.event.openssh_login.username
+        target_field: user.name
+        ignore_missing: true
+##########################
+## ECS Process ##
+##########################
+    - append:
+        field: event.type
+        value: start
+
+    - append:
+        field: event.category
+        value: authentication  
+    - append:
+        field: event.category
+        value: session 
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

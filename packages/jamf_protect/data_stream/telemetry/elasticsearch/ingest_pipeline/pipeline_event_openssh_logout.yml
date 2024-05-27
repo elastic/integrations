@@ -1,0 +1,79 @@
+---
+description: Pipeline for Jamf Protect Telemetry events.
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A user has logged out of an OpenSSH session
+    - convert:
+        field: jamf_protect.telemetry.event.openssh_logout.graphical_session_id
+        target_field: custom.graphical_session_id
+        type: string
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: jamf_protect.telemetry.event.openssh_logout.username
+        target_field: user.name
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.openssh_logout.uid
+        target_field: user.id
+        type: string
+        ignore_missing: true
+        ignore_failure: true
+        
+    - rename:
+        field: jamf_protect.telemetry.event.openssh_logout.source_address
+        target_field: source.ip
+        ignore_missing: true
+    # - script:
+    #     lang: painless
+    #     source: >
+    #         def renameAndMapSourceAddressType(sourceField, targetField) {
+    #             if (ctx.jamf_protect?.telemetry?.event?.openssh_logout?.source_address_type != null) {
+    #             def value = ctx.jamf_protect.telemetry.event.openssh_logout.source_address_type;
+    #             def mappedValue;
+    #             switch (value) {
+    #                 case 0:
+    #                 mappedValue = 'No type identification for the address';
+    #                 break;
+    #                 case 1:
+    #                 mappedValue = 'IPv4';
+    #                 break;
+    #                 case 2:
+    #                 mappedValue = 'IPv6';
+    #                 break;
+    #                 case 3:
+    #                 mappedValue = 'Named UNIX socket';
+    #                 break;
+    #                 default:
+    #                 mappedValue = 'Unknown';
+    #             }
+    #             def targetKeys = targetField.split('\\.');
+    #             def target = ctx;
+    #             for (int i = 0; i < targetKeys.length - 1; i++) {
+    #                 target = target.computeIfAbsent(targetKeys[i], k -> new HashMap<>());
+    #             }
+    #             target.put(targetKeys[targetKeys.length - 1], mappedValue);
+    #             }
+    #         }
+
+    #         renameAndMapSourceAddressType('jamf_protect.telemetry.event.openssh_logout.source_address_type', 'network.type');
+##########################
+## ECS Process ##
+##########################
+    - append:
+        field: event.type
+        value: start
+
+    - append:
+        field: event.category
+        value: authentication
+    - append:
+        field: event.category
+        value: session    
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

@@ -1,0 +1,118 @@
+{{! The aws-s3 input can be configured to read from an SQS queue or an S3 bucket. }}
+
+{{!
+When using an S3 bucket, you can specify only one of the following options:
+- An AWS bucket ARN
+- A non-AWS bucket name
+}}
+
+{{#if collect_s3_logs}}
+{{! shared S3 bucket polling options }}
+{{#if number_of_workers }}
+number_of_workers: {{ number_of_workers }}
+{{/if}}
+
+{{#if bucket_list_prefix }}
+bucket_list_prefix: {{ bucket_list_prefix }}
+{{/if}}
+
+{{#if bucket_list_interval }}
+bucket_list_interval: {{ bucket_list_interval }}
+{{/if}}
+
+{{! AWS S3 bucket ARN options }}
+{{#unless non_aws_bucket_name}}
+{{#if bucket_arn }}
+bucket_arn: {{ bucket_arn }}
+{{/if}}
+{{/unless}}
+
+{{! non-AWS S3 bucket ARN options }}
+{{#unless bucket_arn}}
+{{#if jamf_protect_bucket_name }}
+non_aws_bucket_name: {{jamf_protect_bucket_name}}
+{{else if global_bucket_name}}
+non_aws_bucket_name: {{global_bucket_name}}
+{{/if}}
+{{/unless}}
+
+{{else}}
+
+{{#if queue_url_telemetry}}
+queue_url: {{queue_url_telemetry}}
+{{else if queue_url}}
+queue_url: {{queue_url}}
+{{/if}}
+
+{{#if visibility_timeout}}
+visibility_timeout: {{visibility_timeout}}
+{{/if}}
+
+{{#if api_timeout}}
+api_timeout: {{api_timeout}}
+{{/if}}
+
+{{#if max_number_of_messages}}
+max_number_of_messages: {{max_number_of_messages}}
+{{/if}}
+
+{{#if file_selectors}}
+file_selectors:
+{{file_selectors}}
+{{/if}}
+{{! end SQS queue }}
+
+{{/if}}
+
+{{#if access_key_id}}
+access_key_id: {{access_key_id}}
+{{/if}}
+{{#if secret_access_key}}
+secret_access_key: {{secret_access_key}}
+{{/if}}
+{{#if session_token}}
+session_token: {{session_token}}
+{{/if}}
+{{#if shared_credential_file}}
+shared_credential_file: {{shared_credential_file}}
+{{/if}}
+{{#if credential_profile_name}}
+credential_profile_name: {{credential_profile_name}}
+{{/if}}
+{{#if role_arn}}
+role_arn: {{role_arn}}
+{{/if}}
+{{#if endpoint}}
+endpoint: {{endpoint}}
+{{/if}}
+{{#if default_region}}
+default_region: {{default_region}}
+{{/if}}
+{{#if fips_enabled}}
+fips_enabled: {{fips_enabled}}
+{{/if}}
+{{#if proxy_url}}
+proxy_url: {{proxy_url}}
+{{/if}}
+tags:
+{{#if collect_s3_logs}}
+- collect_s3_logs
+{{else}}
+- collect_sqs_logs
+{{/if}}
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+- preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+- {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
