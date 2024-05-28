@@ -1,7 +1,6 @@
 {
     "attributes": {
         "description": "Overview dashboard for Nagios XI Metrics",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -15,14 +14,27 @@
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
                             "key": "data_stream.dataset",
                             "negate": false,
-                            "params": {
-                                "query": "nagios_xi.service"
-                            },
-                            "type": "phrase"
+                            "params": [
+                                "nagios_xi.host",
+                                "nagios_xi.service"
+                            ],
+                            "type": "phrases"
                         },
                         "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "nagios_xi.service"
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nagios_xi.host"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nagios_xi.service"
+                                        }
+                                    }
+                                ]
                             }
                         }
                     }
@@ -36,6 +48,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -45,18 +59,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
+                                "name": "indexpattern-datasource-layer-c66e6776-9705-4d74-ba53-77ec5a2d5138",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-c66e6776-9705-4d74-ba53-77ec5a2d5138",
+                                "name": "14d7aa0e-bd74-4077-88fd-b251f619fbd7",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "c66e6776-9705-4d74-ba53-77ec5a2d5138": {
                                             "columnOrder": [
@@ -80,9 +95,10 @@
                                                 "5d84e777-d84c-4dd1-8d9a-a4c163139107": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of service.name",
+                                                    "label": "Top 5 values of service.name",
                                                     "operationType": "terms",
                                                     "params": {
+                                                        "accuracyMode": true,
                                                         "missingBucket": false,
                                                         "orderBy": {
                                                             "columnId": "5e50525c-c230-471f-839d-365646cf6e2a",
@@ -113,7 +129,31 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "14d7aa0e-bd74-4077-88fd-b251f619fbd7",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "nagios_xi.service"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nagios_xi.service"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -183,8 +223,7 @@
                 },
                 "panelIndex": "e7f47e8d-9a4b-4c49-9c8f-46146b0c4773",
                 "title": "Top Services based on Hosts [Metrics Nagios XI]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -219,8 +258,7 @@
                 },
                 "panelIndex": "07c9e3f9-8331-44a4-9909-1cc87cb36729",
                 "title": "",
-                "type": "visualization",
-                "version": "8.3.0"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -228,23 +266,14 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-b2abe729-b9c0-47a9-8b0f-5ee6fe222b72",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "7443b3e7-7db0-4c71-9f8b-0c11f0a84141",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "b2abe729-b9c0-47a9-8b0f-5ee6fe222b72": {
                                             "columnOrder": [
@@ -295,6 +324,9 @@
                                                     "isBucketed": false,
                                                     "label": "Part of unique_count(nagios_xi.host.host_object_id)",
                                                     "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "nagios_xi.host.host_object_id"
                                                 }
@@ -304,28 +336,8 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "nagios_xi.host"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "nagios_xi.host"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -334,23 +346,27 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "5b2ce792-03df-4efc-90c8-d710f289e1c4"
-                                        ],
                                         "layerId": "b2abe729-b9c0-47a9-8b0f-5ee6fe222b72",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "legendPosition": "right",
                                         "legendSize": "auto",
-                                        "metric": "e5fde825-d96a-4699-9b21-062a37fdd1aa",
+                                        "metrics": [
+                                            "e5fde825-d96a-4699-9b21-062a37fdd1aa"
+                                        ],
                                         "nestedLegend": false,
                                         "numberDisplay": "value",
+                                        "primaryGroups": [
+                                            "5b2ce792-03df-4efc-90c8-d710f289e1c4"
+                                        ],
                                         "truncateLegend": true
                                     }
                                 ],
                                 "shape": "pie"
                             }
                         },
+                        "title": "Up/Down Hosts [Metrics Nagios XI]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
@@ -365,8 +381,7 @@
                 },
                 "panelIndex": "221d6041-b969-4bcb-b120-8261aa131069",
                 "title": "Up/Down Hosts [Metrics Nagios XI]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -385,7 +400,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "3ed6ff91-5603-4bdb-98c8-33db23ad644f": {
                                             "columnOrder": [
@@ -438,16 +453,18 @@
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "2d0f66e9-7db7-4222-8e63-97855dc27e9f"
-                                        ],
                                         "layerId": "3ed6ff91-5603-4bdb-98c8-33db23ad644f",
                                         "layerType": "data",
                                         "legendDisplay": "default",
                                         "legendSize": "auto",
-                                        "metric": "dfb145a2-3d7d-4fed-860a-c1c569350a68",
+                                        "metrics": [
+                                            "dfb145a2-3d7d-4fed-860a-c1c569350a68"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "value"
+                                        "numberDisplay": "value",
+                                        "primaryGroups": [
+                                            "2d0f66e9-7db7-4222-8e63-97855dc27e9f"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -466,8 +483,7 @@
                 },
                 "panelIndex": "c87edaca-c0e7-496c-ad86-99f15969129e",
                 "title": "Service State [Metrics Nagios XI]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -475,23 +491,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-a95fc1ab-8f65-4448-a99c-c6e66f8e810c",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "5fbcfc2e-0188-45d5-8c3c-e666cf8d9d40",
+                                "name": "2f9ad9b3-493b-4560-bab7-5852ab295d85",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "a95fc1ab-8f65-4448-a99c-c6e66f8e810c": {
                                             "columnOrder": [
@@ -554,7 +566,9 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "key": "event.dataset",
+                                        "field": "event.provider",
+                                        "index": "2f9ad9b3-493b-4560-bab7-5852ab295d85",
+                                        "key": "event.provider",
                                         "negate": false,
                                         "params": {
                                             "query": "nagios_xi.ping"
@@ -563,11 +577,12 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.dataset": "nagios_xi.ping"
+                                            "event.provider": "nagios_xi.ping"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -594,6 +609,8 @@
                                 "rowHeightLines": 1
                             }
                         },
+                        "title": "Average Round Trip Travel Time and Packet Loss by Host Name [Metrics Nagios XI]",
+                        "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
@@ -608,8 +625,7 @@
                 },
                 "panelIndex": "a20ac72e-48a2-46a6-98c2-0f6faa6eb995",
                 "title": "Average Round Trip Travel Time and Packet Loss by Host Name [Metrics Nagios XI]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -617,18 +633,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
+                                "name": "indexpattern-datasource-layer-52807d8e-e5ef-4a85-8faa-85b7e1d096ab",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-52807d8e-e5ef-4a85-8faa-85b7e1d096ab",
+                                "name": "3ce2fb0a-dea7-48e2-ab0d-1e67a0879462",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "52807d8e-e5ef-4a85-8faa-85b7e1d096ab": {
                                             "columnOrder": [
@@ -739,7 +756,9 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "key": "event.dataset",
+                                        "field": "event.provider",
+                                        "index": "3ce2fb0a-dea7-48e2-ab0d-1e67a0879462",
+                                        "key": "event.provider",
                                         "negate": false,
                                         "params": {
                                             "query": "nagios_xi.current_load"
@@ -748,11 +767,12 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.dataset": "nagios_xi.current_load"
+                                            "event.provider": "nagios_xi.current_load"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -810,6 +830,8 @@
                                 "yTitle": "Average Current Load"
                             }
                         },
+                        "title": "Average Current Load [Metrics Nagios XI]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -824,28 +846,21 @@
                 },
                 "panelIndex": "028dd5ab-5862-4399-b160-245ce05f7af5",
                 "title": "Average Current Load [Metrics Nagios XI]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Nagios XI] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-05-23T07:24:41.615Z",
     "id": "nagios_xi-3a61d470-a0fe-11ec-8479-e1ade3344260",
-    "migrationVersion": {
-        "dashboard": "8.3.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "e7f47e8d-9a4b-4c49-9c8f-46146b0c4773:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
@@ -855,17 +870,12 @@
         },
         {
             "id": "logs-*",
-            "name": "221d6041-b969-4bcb-b120-8261aa131069:indexpattern-datasource-current-indexpattern",
+            "name": "e7f47e8d-9a4b-4c49-9c8f-46146b0c4773:14d7aa0e-bd74-4077-88fd-b251f619fbd7",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "221d6041-b969-4bcb-b120-8261aa131069:indexpattern-datasource-layer-b2abe729-b9c0-47a9-8b0f-5ee6fe222b72",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "221d6041-b969-4bcb-b120-8261aa131069:7443b3e7-7db0-4c71-9f8b-0c11f0a84141",
             "type": "index-pattern"
         },
         {
@@ -880,29 +890,25 @@
         },
         {
             "id": "logs-*",
-            "name": "a20ac72e-48a2-46a6-98c2-0f6faa6eb995:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "a20ac72e-48a2-46a6-98c2-0f6faa6eb995:indexpattern-datasource-layer-a95fc1ab-8f65-4448-a99c-c6e66f8e810c",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "a20ac72e-48a2-46a6-98c2-0f6faa6eb995:5fbcfc2e-0188-45d5-8c3c-e666cf8d9d40",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "028dd5ab-5862-4399-b160-245ce05f7af5:indexpattern-datasource-current-indexpattern",
+            "name": "a20ac72e-48a2-46a6-98c2-0f6faa6eb995:2f9ad9b3-493b-4560-bab7-5852ab295d85",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "028dd5ab-5862-4399-b160-245ce05f7af5:indexpattern-datasource-layer-52807d8e-e5ef-4a85-8faa-85b7e1d096ab",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "028dd5ab-5862-4399-b160-245ce05f7af5:3ce2fb0a-dea7-48e2-ab0d-1e67a0879462",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

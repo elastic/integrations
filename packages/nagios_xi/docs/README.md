@@ -1,17 +1,51 @@
 # Nagios XI
 
+## Overview
+
 The Nagios XI integration is used to fetch observability data from [Nagios XI](https://www.nagios.org/documentation/) and ingest it into Elasticsearch.
+
+Use the Nagios XI integration to:
+
+- Collect metrics related to the current load, current users, ping, http, ssh, root partition, swap users, total processes, round-trip time, and packet loss. Additionally, gather logs related to system events.
+- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
+- Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
+
+## Data streams
+
+The Nagios XI integration collects logs and metrics data.
+
+Logs provide insights into operations and events within the Nagios XI environment. The `Log` data stream collected by the Nagios XI integration is events. This allows users to track `system events`, understand their causes, and address issues related to infrastructure monitoring and alert management.
+
+Metrics offer insights into the performance and health of user's Nagios XI instance. The `Metric` data stream collected by the Nagios XI integration are host and service. These enable users to monitor and troubleshoot the performance of hosts and services within their Nagios XI environment, covering aspects such as `network round trip time`, `packet loss`, `service load`, `user count`, and various other critical indicators.
+
+Data streams:
+- `events`: This data stream gives Nagios XI system event logs.
+- `host`: This data stream gives Nagios XI Host Round Trip Travel Time (rta) and Packet Loss (pl) metrics.
+- `service `: This dataset gives Nagios XI services current load, current users, ping, http, ssh, root partition, swap users and total processes metrics by default.
+
+Note:
+- Users can monitor and see the log inside the ingested documents for Nagios XI in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
 
 ## Compatibility
 
 This integration has been tested against `Nagios-XI Version: 5.8.7`
 
-## Requirements
+## Prerequisites
+
+User need Elasticsearch for storing and searching user's data and Kibana for visualizing and managing it. User can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on user's own hardware.
 
 In order to ingest data from Nagios XI:
-- You must know the host for Nagios XI, add that host while configuring the integration package.
+- User must know the host for Nagios XI, add that host while configuring the integration package.
 
-## Logs
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Validation
+
+After the integration is successfully configured, clicking on the Assets tab of the Nagios XI Integration should display a list of available dashboards. Click on the dashboard available for user's configured data stream. It should be populated with the required data.
+
+## Logs reference
 
 ### Event Logs 
 
@@ -99,7 +133,7 @@ An example event for `events` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 
 
-## Metrics
+## Metrics reference
 
 ### Host Metrics
 
@@ -113,8 +147,8 @@ An example event for `host` looks as following:
 {
     "@timestamp": "2022-03-16T07:02:42.000Z",
     "agent": {
-        "ephemeral_id": "1d752756-15f6-4aac-aaa2-6391034ae73e",
-        "id": "2df8b95d-07a9-4337-b3c6-4ce3fd2b33d2",
+        "ephemeral_id": "b2379bff-f69b-45e5-bb54-6f93332d263e",
+        "id": "a16f68ae-89c5-45ac-a89d-586ba604266c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -128,15 +162,15 @@ An example event for `host` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "2df8b95d-07a9-4337-b3c6-4ce3fd2b33d2",
+        "id": "a16f68ae-89c5-45ac-a89d-586ba604266c",
         "snapshot": false,
         "version": "8.12.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-05-20T12:34:19.490Z",
+        "created": "2024-05-22T09:48:52.736Z",
         "dataset": "nagios_xi.host",
-        "ingested": "2024-05-20T12:34:29Z",
+        "ingested": "2024-05-22T09:49:02Z",
         "kind": "metric",
         "module": "nagios_xi",
         "original": "{\"acknowledgement_type\":\"0\",\"action_url\":\"\",\"active_checks_enabled\":\"0\",\"address\":\"www.nagios.org\",\"check_command\":\"check_dummy!0!\\\"No data received yet.\\\"\",\"check_options\":\"0\",\"check_timeperiod_object_id\":\"71\",\"check_type\":\"1\",\"current_check_attempt\":\"1\",\"current_notification_number\":\"0\",\"current_state\":\"0\",\"display_name\":\"www.nagios.org\",\"event_handler\":\"\",\"event_handler_enabled\":\"1\",\"execution_time\":\"0\",\"failure_prediction_enabled\":\"0\",\"flap_detection_enabled\":\"1\",\"has_been_checked\":\"1\",\"host_alias\":\"www.nagios.org\",\"host_name\":\"www.nagios.org\",\"host_object_id\":\"423\",\"hoststatus_id\":\"58\",\"icon_image\":\"passiveobject.png\",\"icon_image_alt\":\"\",\"instance_id\":\"1\",\"is_flapping\":\"0\",\"last_check\":\"2020-08-04 10:07:54\",\"last_hard_state\":\"0\",\"last_hard_state_change\":\"2018-07-12 14:59:46\",\"last_notification\":\"1969-12-31 18:00:00\",\"last_state_change\":\"2015-07-13 21:09:35\",\"last_time_down\":\"1969-12-31 18:00:00\",\"last_time_unreachable\":\"1969-12-31 18:00:00\",\"last_time_up\":\"2020-08-04 10:07:54\",\"latency\":\"0\",\"long_output\":\"\",\"max_check_attempts\":\"5\",\"modified_host_attributes\":\"0\",\"next_check\":\"1969-12-31 18:00:00\",\"next_notification\":\"1969-12-31 18:00:00\",\"no_more_notifications\":\"0\",\"normal_check_interval\":\"5\",\"notes\":\"\",\"notes_url\":\"\",\"notifications_enabled\":\"1\",\"obsess_over_host\":\"1\",\"output\":\"HTTP OK: HTTP/1.1 301 Moved Permanently - 461 bytes in 0.123 second response time\",\"passive_checks_enabled\":\"1\",\"percent_state_change\":\"0\",\"perfdata\":\"time=0.122797s;;;0.000000 size=461B;;;0\",\"problem_has_been_acknowledged\":\"0\",\"process_performance_data\":\"1\",\"retry_check_interval\":\"1\",\"scheduled_downtime_depth\":\"0\",\"should_be_scheduled\":\"0\",\"state_type\":\"1\",\"status_update_time\":\"2022-03-16 07:02:42\"}",

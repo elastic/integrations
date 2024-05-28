@@ -135,29 +135,22 @@ processors:
     ignore_failure: true
 - convert:
     field: json.address
-    target_field: host.ip
     type: ip
     ignore_missing: true
     on_failure:
         - rename:
             field: json.address
             target_field: nagios_xi.host.address
-            ignore_missing: true
-- set:
+- append:
     field: host.ip
-    value: ["{{{host.ip}}}"]
-    ignore_empty_value: true
-- remove:
+    value: '{{{json.address}}}'
+    if: ctx.json?.address != null
+    allow_duplicates: false
+- append:
     field: related.ip
-    ignore_failure: true
-- set:
-    field: related.ip
-    value: "{{{host.ip}}}"
-    if: ctx.host?.ip == null
-- set:
-    field: related.ip
-    value: ["{{{related.ip}}}"]
-    if: ctx.related?.ip != null
+    value: '{{{json.address}}}'
+    if: ctx.json?.address != null
+    allow_duplicates: false
 - convert:
     field: json.normal_check_interval
     target_field: nagios_xi.host.normal_check_interval
