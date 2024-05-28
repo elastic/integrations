@@ -1,0 +1,96 @@
+title: "Collect Snyk Audit Logs"
+type: logs
+streams:
+  - input: cel
+    title: "Collect Snyk Audit Logs"
+    description: "Collect Snyk Audit Logs via the Snyk REST API"
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: audit_type
+        title: Audit Log Type
+        description: Type of Audit logs.
+        type: select
+        multi: false
+        required: true
+        show_user: true
+        options:
+          - text: Organization
+            value: /rest/orgs/
+          - text: Group
+            value: /rest/groups/
+        default: /rest/orgs/
+      - name: audit_id
+        type: text
+        title: Group/Organization ID
+        description: The ID of the Snyk group or organization.
+        multi: false
+        show_user: true
+        required: true
+      - name: user_id
+        type: text
+        title: User ID Filter
+        description: User ID on which to filter events.
+        multi: false
+        show_user: true
+        required: false
+      - name: event
+        type: text
+        title: Event Type Filter
+        description: Event types on which to filter events.
+        multi: true
+        show_user: true
+        required: false
+      - name: project_id
+        type: text
+        title: Project ID Filter
+        description: Project ID on which to filter events.
+        multi: false
+        show_user: true
+        required: false
+      - name: interval
+        type: text
+        title: Interval to query Snyk Events API.
+        description: Go Duration syntax (eg. 10s)
+        multi: false
+        show_user: false
+        required: true
+        default: 10s
+      - name: first_interval
+        type: text
+        title: Initial interval to query Snyk Events API.
+        description: Go Duration syntax (eg. 10s)
+        multi: false
+        show_user: false
+        required: false
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Batch size for the response of the Snyk API. It must be between 1 - 100 if present.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - snyk-audit-logs
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

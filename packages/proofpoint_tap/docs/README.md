@@ -222,6 +222,7 @@ An example event for `clicks_blocked` looks as following:
 | log.offset | Log offset | long |
 | proofpoint_tap.clicks_blocked.campaign_id | An identifier for the campaign of which the threat is a member, if available at the time of the query. Threats can be linked to campaigns even after these events are retrieved. | keyword |
 | proofpoint_tap.clicks_blocked.classification | The threat category of the malicious URL. | keyword |
+| proofpoint_tap.clicks_blocked.click_time | The time the user clicked on the URL. | date |
 | proofpoint_tap.clicks_blocked.sender_ip | The IP address of the sender. | ip |
 | proofpoint_tap.clicks_blocked.threat.id | The unique identifier associated with this threat. It can be used to query the forensics and campaign endpoints. | keyword |
 | proofpoint_tap.clicks_blocked.threat.status | The current state of the threat. | keyword |
@@ -459,6 +460,7 @@ An example event for `clicks_permitted` looks as following:
 | log.offset | Log offset | long |
 | proofpoint_tap.clicks_permitted.campaign_id | An identifier for the campaign of which the threat is a member, if available at the time of the query. Threats can be linked to campaigns even after these events are retrieved. | keyword |
 | proofpoint_tap.clicks_permitted.classification | The threat category of the malicious URL. | keyword |
+| proofpoint_tap.clicks_permitted.click_time | The time the user clicked on the URL. | date |
 | proofpoint_tap.clicks_permitted.sender_ip | The IP address of the sender. | ip |
 | proofpoint_tap.clicks_permitted.threat.id | The unique identifier associated with this threat. It can be used to query the forensics and campaign endpoints. | keyword |
 | proofpoint_tap.clicks_permitted.threat.status | The current state of the threat. | keyword |
