@@ -14,6 +14,7 @@ processors:
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
       field: message
+      tag: remove_message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
@@ -108,6 +109,26 @@ processors:
       tag: date_set_analyzed_at
       copy_from: '@timestamp'
       ignore_empty_value: true
+  - rename:
+      field: json.rule.name
+      tag: rename_rule_name
+      target_field: wiz.cloud_configuration_finding.rule.name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: wiz.cloud_configuration_finding.rule.name
+      ignore_empty_value: true
+  - rename:
+      field: json.resource.name
+      tag: rename_resource_name
+      target_field: wiz.cloud_configuration_finding.resource.name
+      ignore_missing: true
+  - set:
+      field: resource.name
+      tag: set_resource_name
+      copy_from: wiz.cloud_configuration_finding.resource.name
+      ignore_empty_value: true
   - remove:
       field: json
       tag: remove_json
@@ -120,6 +141,8 @@ processors:
         - wiz.cloud_configuration_finding.first_seen_at
         - wiz.cloud_configuration_finding.id
         - wiz.cloud_configuration_finding.rule.description
+        - wiz.cloud_configuration_finding.resource.name
+        - wiz.cloud_configuration_finding.rule.name
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
