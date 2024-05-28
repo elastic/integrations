@@ -59,11 +59,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2022-03-16T07:02:41.000Z",
     "agent": {
-        "ephemeral_id": "51b119f6-cf3c-4fe1-ba07-4f8194106cda",
-        "id": "98cccf9b-3d95-4b93-b4dc-472035898e0f",
+        "ephemeral_id": "790d850b-4350-494f-bc9a-fa00fd887ba7",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.12.0"
     },
     "data_stream": {
         "dataset": "nagios_xi.events",
@@ -74,19 +74,21 @@ An example event for `events` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "98cccf9b-3d95-4b93-b4dc-472035898e0f",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.12.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-05-09T07:14:09.873Z",
+        "created": "2024-05-28T09:49:34.927Z",
         "dataset": "nagios_xi.events",
-        "ingested": "2022-05-09T07:14:10Z",
+        "ingested": "2024-05-28T09:49:45Z",
         "kind": "event",
         "module": "nagios_xi",
         "original": "{\"entry_time\":\"2022-03-16 07:02:41\",\"instance_id\":\"1\",\"logentry_data\":\"Event broker module '/usr/local/nagios/bin/ndo.so' initialized successfully.\",\"logentry_id\":\"211261\",\"logentry_type\":\"262144\"}",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "httpjson"
@@ -147,8 +149,8 @@ An example event for `host` looks as following:
 {
     "@timestamp": "2022-03-16T07:02:42.000Z",
     "agent": {
-        "ephemeral_id": "b2379bff-f69b-45e5-bb54-6f93332d263e",
-        "id": "a16f68ae-89c5-45ac-a89d-586ba604266c",
+        "ephemeral_id": "84e30ad8-df37-4fbf-aefc-ce7580f82ad0",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -162,15 +164,15 @@ An example event for `host` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "a16f68ae-89c5-45ac-a89d-586ba604266c",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "snapshot": false,
         "version": "8.12.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-05-22T09:48:52.736Z",
+        "created": "2024-05-28T09:50:27.235Z",
         "dataset": "nagios_xi.host",
-        "ingested": "2024-05-22T09:49:02Z",
+        "ingested": "2024-05-28T09:50:37Z",
         "kind": "metric",
         "module": "nagios_xi",
         "original": "{\"acknowledgement_type\":\"0\",\"action_url\":\"\",\"active_checks_enabled\":\"0\",\"address\":\"www.nagios.org\",\"check_command\":\"check_dummy!0!\\\"No data received yet.\\\"\",\"check_options\":\"0\",\"check_timeperiod_object_id\":\"71\",\"check_type\":\"1\",\"current_check_attempt\":\"1\",\"current_notification_number\":\"0\",\"current_state\":\"0\",\"display_name\":\"www.nagios.org\",\"event_handler\":\"\",\"event_handler_enabled\":\"1\",\"execution_time\":\"0\",\"failure_prediction_enabled\":\"0\",\"flap_detection_enabled\":\"1\",\"has_been_checked\":\"1\",\"host_alias\":\"www.nagios.org\",\"host_name\":\"www.nagios.org\",\"host_object_id\":\"423\",\"hoststatus_id\":\"58\",\"icon_image\":\"passiveobject.png\",\"icon_image_alt\":\"\",\"instance_id\":\"1\",\"is_flapping\":\"0\",\"last_check\":\"2020-08-04 10:07:54\",\"last_hard_state\":\"0\",\"last_hard_state_change\":\"2018-07-12 14:59:46\",\"last_notification\":\"1969-12-31 18:00:00\",\"last_state_change\":\"2015-07-13 21:09:35\",\"last_time_down\":\"1969-12-31 18:00:00\",\"last_time_unreachable\":\"1969-12-31 18:00:00\",\"last_time_up\":\"2020-08-04 10:07:54\",\"latency\":\"0\",\"long_output\":\"\",\"max_check_attempts\":\"5\",\"modified_host_attributes\":\"0\",\"next_check\":\"1969-12-31 18:00:00\",\"next_notification\":\"1969-12-31 18:00:00\",\"no_more_notifications\":\"0\",\"normal_check_interval\":\"5\",\"notes\":\"\",\"notes_url\":\"\",\"notifications_enabled\":\"1\",\"obsess_over_host\":\"1\",\"output\":\"HTTP OK: HTTP/1.1 301 Moved Permanently - 461 bytes in 0.123 second response time\",\"passive_checks_enabled\":\"1\",\"percent_state_change\":\"0\",\"perfdata\":\"time=0.122797s;;;0.000000 size=461B;;;0\",\"problem_has_been_acknowledged\":\"0\",\"process_performance_data\":\"1\",\"retry_check_interval\":\"1\",\"scheduled_downtime_depth\":\"0\",\"should_be_scheduled\":\"0\",\"state_type\":\"1\",\"status_update_time\":\"2022-03-16 07:02:42\"}",
@@ -342,8 +344,8 @@ An example event for `service` looks as following:
 {
     "@timestamp": "2022-03-17T00:02:42.000Z",
     "agent": {
-        "ephemeral_id": "5a13324b-468b-42d5-b0c3-f7c412dc2f5c",
-        "id": "2df8b95d-07a9-4337-b3c6-4ce3fd2b33d2",
+        "ephemeral_id": "6d73e7be-ccdd-4b48-87c1-9c8fd1720026",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -357,15 +359,15 @@ An example event for `service` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "2df8b95d-07a9-4337-b3c6-4ce3fd2b33d2",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "snapshot": false,
         "version": "8.12.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-05-20T10:51:25.068Z",
+        "created": "2024-05-28T09:51:19.326Z",
         "dataset": "nagios_xi.service",
-        "ingested": "2024-05-20T10:51:35Z",
+        "ingested": "2024-05-28T09:51:29Z",
         "kind": "metric",
         "module": "nagios_xi",
         "original": "{\"acknowledgement_type\":\"0\",\"action_url\":\"\",\"active_checks_enabled\":\"0\",\"check_command\":\"check_dummy!0!\\\"No data received yet.\\\"\",\"check_options\":\"0\",\"check_timeperiod_object_id\":\"71\",\"check_type\":\"1\",\"current_check_attempt\":\"1\",\"current_notification_number\":\"0\",\"current_state\":\"0\",\"display_name\":\"Bandwidth Spike\",\"event_handler\":\"\",\"event_handler_enabled\":\"1\",\"execution_time\":\"0\",\"failure_prediction_enabled\":\"0\",\"flap_detection_enabled\":\"0\",\"has_been_checked\":\"1\",\"host_address\":\"www.nagios.org\",\"host_alias\":\"www.nagios.org\",\"host_name\":\"www.nagios.org\",\"host_object_id\":\"423\",\"icon_image\":\"\",\"icon_image_alt\":\"\",\"instance_id\":\"1\",\"is_flapping\":\"0\",\"last_check\":\"2020-06-17 07:12:02\",\"last_hard_state\":\"0\",\"last_hard_state_change\":\"2020-06-08 12:04:54\",\"last_notification\":\"2020-06-08 12:04:55\",\"last_state_change\":\"2020-06-08 12:04:54\",\"last_time_critical\":\"2020-06-08 12:04:54\",\"last_time_ok\":\"2020-06-17 07:12:02\",\"last_time_unknown\":\"1969-12-31 18:00:00\",\"last_time_warning\":\"2019-04-02 11:23:34\",\"latency\":\"0\",\"long_output\":\"\",\"max_check_attempts\":\"1\",\"modified_service_attributes\":\"0\",\"next_check\":\"1969-12-31 18:00:00\",\"next_notification\":\"1969-12-31 18:00:00\",\"no_more_notifications\":\"0\",\"normal_check_interval\":\"1\",\"notes\":\"\",\"notes_url\":\"\",\"notifications_enabled\":\"1\",\"obsess_over_service\":\"1\",\"output\":\"OK: 21 MB/s reported\",\"passive_checks_enabled\":\"1\",\"percent_state_change\":\"11.58\",\"perfdata\":\"bandwidth=21;80;90\",\"problem_has_been_acknowledged\":\"0\",\"process_performance_data\":\"1\",\"retry_check_interval\":\"1\",\"scheduled_downtime_depth\":\"0\",\"service_description\":\"Bandwidth Spike\",\"service_object_id\":\"999\",\"servicestatus_id\":\"996\",\"should_be_scheduled\":\"0\",\"state_type\":\"1\",\"status_update_time\":\"2022-03-17 00:02:42\"}",
