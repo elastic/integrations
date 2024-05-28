@@ -2,19 +2,19 @@
 
 ## Overview
 
-[Airflow](https://airflow.apache.org/docs/apache-airflow/stable/logging-monitoring/metrics.html) is a platform to programmatically author, schedule and monitor workflows. Airflow is used to author workflows Directed Acyclic Graphs (DAGs) of tasks. The Airflow scheduler executes user's tasks on an array of workers while following the specified dependencies.
+[Airflow](https://airflow.apache.org/docs/apache-airflow/stable/logging-monitoring/metrics.html) is an open-source platform for programmatically authoring, scheduling, and monitoring workflows. It allows users to define workflows as Directed Acyclic Graphs (DAGs) of tasks, which are then executed by the Airflow scheduler on an array of workers while following the specified dependencies.
 
 Use the Airflow integration to:
 
-- Collect detailed metrics from Airflow using statsd to gain a deeper understanding of system performance.
-- Create informative visualizations to track usage trends, measure key logs, and derive actionable business insights.
-- Keep track of your workflows performance and status with real-time monitoring capabilities.
+- Collect detailed metrics from Airflow using StatsD to gain insights into system performance.
+- Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
+- Monitor your workflows' performance and status in real-time.
 
 ## Data streams
 
-The Airflow integration collects metrics data.
+The Airflow integration gathers metric data.
 
-Metrics give you insight into the statistics of the Airflow. The `Metric` data stream collected by the Airflow integration is `statsd` so that the user can monitor and troubleshoot the performance of the Airflow instance.
+Metrics provide insight into the statistics of Airflow. The `Metric` data stream collected by the Airflow integration is `statsd`, enabling users to monitor and troubleshoot the performance of the Airflow instance.
 
 Data stream:
 
@@ -29,9 +29,9 @@ The Airflow module is tested with Airflow `2.4.0`. It should work with versions 
 
 ## Prerequisites
 
-User need Elasticsearch for storing and searching user's data and Kibana for visualizing and managing it. User can use hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on user's own hardware.
+Users require Elasticsearch to store and search user data, and Kibana to visualize and manage it. They can utilize the hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on their own hardware.
 
-In order to ingest data from the Airflow, user must have [statsd](https://github.com/statsd/statsd) to receive statsd metrics.
+To ingest data from Airflow, users must have [StatsD](https://github.com/statsd/statsd) to receive the same.
 
 ## Setup
 
@@ -39,9 +39,9 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 ## Steps to Setup Airflow
 
-To ensure a proper installation of Airflow, please refer to the official [Airflow Installation Guide](https://airflow.apache.org/docs/apache-airflow/stable/installation/index.html).
+Be sure to follow the official [Airflow Installation Guide](https://airflow.apache.org/docs/apache-airflow/stable/installation/index.html) for the correct installation of Airflow.
 
-Add the following lines to user's Airflow configuration file e.g. `airflow.cfg` ensuring `statsd_prefix` is left empty and replace `%HOST%` with the address agent is running:
+Include the following lines in the user's Airflow configuration file (e.g. `airflow.cfg`). Leave `statsd_prefix` empty and replace `%HOST%` with the address where the Agent is running:
 
 ```
 [metrics]
@@ -53,18 +53,18 @@ statsd_prefix =
 
 ## Validation
 
-After the integration is successfully configured, clicking on the Assets tab of the Airflow integration should display a list of available dashboards. Click on the dashboard available for user's configured data stream. It should be populated with the required data.
+Once the integration is set up, you can click on the Assets tab in the Airflow integration to see a list of available dashboards. Choose the dashboard that corresponds to your configured data stream. The dashboard should be populated with the required data.
 
 ## Troubleshooting
 
-- To troubleshoot issues with missing metrics on the monitoring dashboard, verify that the `StatsD` server is properly receiving data from Airflow by examining the logs for potential errors.
-- Verify that the `%HOST%` placeholder in the Airflow configuration file is replaced with the correct address of the machine where the `StatsD` server is running.
-- In case Airflow metrics are not being emitted, confirm that the `[metrics]` section in the `airflow.cfg` file is properly configured as per the instructions above.
+- Check if the StatsD server is receiving data from Airflow by examining the logs for potential errors.
+- Make sure the `%HOST%` placeholder in the Airflow configuration file is replaced with the correct address of the machine where the StatsD server is running.
+- If Airflow metrics are not being emitted, confirm that the `[metrics]` section in the `airflow.cfg` file is properly configured as per the instructions above.
 
 ## Metrics reference
 
 ### Statsd
-This is the `statsd` data stream. This data stream collects metrics related to scheduler activities, pool usage, task execution details, executor performance, and worker states in Airflow.
+This is the `statsd` data stream, which collects metrics related to scheduler activities, pool usage, task execution details, executor performance, and worker states in Airflow.
 
 An example event for `statsd` looks as following:
 
