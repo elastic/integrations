@@ -26,13 +26,24 @@ request.transforms:
       target: body.cmd
       value: 'getdetailedsfdata'
   - set:
-      target: body.data
+      target: body.data.data
       value: 'all'
+  - set:
+      target: body.data.pagesize
+      value: '{{page_size}}'
+  - set:
+      target: body.data.pageindex
+      value: 0
 response.transforms:
   - set:
       target: body.data
       value: '[[.last_response.body]]'
       value_type: json
+response.pagination:
+  - set:
+      target: body.data.pageindex
+      value: '[[if (eq (len .last_response.body) (toInt .body.data.pagesize))]][[add .last_response.page 1]][[end]]'
+      fail_on_template_error: true
 response.split:
   target: body.data
   type: map
