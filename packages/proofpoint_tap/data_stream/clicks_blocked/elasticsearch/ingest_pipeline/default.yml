@@ -15,9 +15,7 @@ processors:
       ignore_failure: true
   - fingerprint:
       fields:
-        - json.GUID
-        - json.clickTime
-        - json.threatTime
+        - event.original
       target_field: _id
       ignore_missing: true
   - append:
@@ -57,6 +55,7 @@ processors:
       if: ctx.email?.to?.address instanceof String
   - date:
       field: json.clickTime
+      target_field: proofpoint_tap.clicks_blocked.click_time
       if: ctx.json?.clickTime != null && ctx.json.clickTime != ''
       formats:
         - ISO8601
@@ -64,6 +63,11 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: proofpoint_tap.clicks_blocked.click_time
+      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.id
       target_field: event.id
@@ -128,6 +132,18 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Set the @timestamp to the maximum of clickTime and threatTime.
+      tag: timestamp-is-maximum
+      if: ctx.proofpoint_tap?.clicks_blocked?.threat?.time instanceof String
+      ignore_failure: true
+      source: |
+        def ts = Instant.parse(ctx['@timestamp']);
+        def threatTime = Instant.parse(ctx.proofpoint_tap.clicks_blocked.threat.time);
+        if (threatTime.isAfter(ts)) {
+          ctx['@timestamp'] = ctx.proofpoint_tap.clicks_blocked.threat.time;
+        }
   - uri_parts:
       field: json.url
       keep_original: false
