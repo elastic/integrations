@@ -1,20 +1,63 @@
 # IBM MQ integration
 
-The IBM MQ Integration is used to fetch observability data from [IBM MQ web endpoints](https://www.ibm.com/docs/en/ibm-mq) and ingest it into Elasticsearch.
+## Overview
+
+[IBM MQ](https://www.ibm.com/docs/en/ibm-mq) is a message-oriented middleware for secure and reliable communication between distributed systems. It supports messaging patterns like queuing, publish/subscribe, and assures message delivery without a direct connection between sender and receiver.
+
+Use the IBM MQ integration to:
+
+- Collect Queue Manager performance metrics and error logs, providing insights into messages, topics, subscriptions, and operational events.
+- Streamline observability by ingesting IBM MQ metrics and logs into Elasticsearch, enabling centralized monitoring and analysis of IBM MQ environments.
+- Enhance system reliability through real-time analysis and proactive alerting based on collected metrics and logs.
+
+## Data streams
+
+The IBM MQ integration collects logs and metrics data.
+
+Logs provide insights into operations and events within the IBM MQ environment. The `Log` data stream collected by the IBM MQ integration is `errorlog`. It's allowing users to track errors and warnings, understand their causes, and address issues related to message handling and processing.
+
+Metrics offer statistics on the performance and health of IBM MQ. The `Metric` data stream collected by the IBM MQ integration cover `qmgr` performance, with details on messages, topics, subscriptions, and calls, enabling users to monitor and optimize the performance and reliability of their IBM MQ instances.
+
+Data streams:
+
+- `errorlog`: Collects error and warning messages from the IBM MQ Queue Manager, providing details like error descriptions, actions, explanations, and error codes.
+- `qmgr`: Collects performance metrics from the Queue Manager, including message throughput, topic and subscription, and other vital operational statistics.
+
+Note:
+- Users can monitor and see the log inside the ingested documents for IBM MQ in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
 
 ## Compatibility
 
 This integration has been tested against `IBM MQ v9.1` and `IBM MQ v9.2`. The ibmmq `qmgr` data stream is compatible with a containerized distribution of IBM MQ (since version 9.1.0).
-The Docker image starts the `runmqserver` process, which spawns the HTTP server exposing metrics in Prometheus format.
 
-## Requirements
+## Prerequisites
+
+User need Elasticsearch for storing and searching user's data and Kibana for visualizing and managing it. User can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on user's own hardware.
 
 In order to ingest data from IBM MQ:
 
 - User should specify Hostname and Port (example: localhost:9157) of Prometheus endpoint (/metrics).
 - User should specify the path of IBM MQ Queue Manager Error logs. (default paths: `/var/mqm/errors/*.LOG` and `/var/mqm/qmgrs/*/errors/*.LOG`)
 
-## Metrics
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Steps to setup Prometheus
+
+Enable Metrics in IBM MQ: Ensure that the `MQ_ENABLE_METRICS` environment variable is set to true for user's IBM MQ service to expose the metrics endpoint.
+
+The Docker image starts the runmqserver process, which spawns the HTTP server exposing metrics in Prometheus format on port `9157`.
+
+## Validation
+
+After the integration is successfully configured, clicking on the Assets tab of the IBM MQ Integration should display a list of available dashboards. Click on the dashboard available for user's configured data stream. It should be populated with the required data.
+
+## Troubleshooting
+
+- `ibmmq.errorlog.error.description` field type has been changed from `text` to `keyword ` in version `1.3.0` of this integration. Hence, it is recommended to update the `ibmmq.errorlog.error.description` field to use the type keyword where it is being used. By using the [Update By Query API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html#docs-update-by-query-api-ingest-pipeline), `ibmmq.errorlog.error.description` field type can be changed from `text` to `keyword` for all the documents which would help to adapt this change.
+
+## Metrics reference
 
 ### Queue Manager performance metrics
 
@@ -406,7 +449,7 @@ An example event for `qmgr` looks as following:
 | tags | List of keywords used to tag each event. | keyword |  |
 
 
-## Logs
+## Logs reference
 
 ### Queue Manager Error logs
 
@@ -514,7 +557,7 @@ An example event for `errorlog` looks as following:
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | ibmmq.errorlog.error.action | Defines what to do when the error occurs. | keyword |
 | ibmmq.errorlog.error.code | Error code. | keyword |
-| ibmmq.errorlog.error.description | Error description. | text |
+| ibmmq.errorlog.error.description | Error description. | keyword |
 | ibmmq.errorlog.error.explanation | Explains the error in more detail. | keyword |
 | ibmmq.errorlog.insert.arith | Changing content based on error.id. | keyword |
 | ibmmq.errorlog.insert.comment | Changing content based on error.id. | keyword |
