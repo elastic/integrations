@@ -220,6 +220,7 @@ An example event for `application_gateway` looks as following:
 | related.ip | All of the IPs seen on your event. | ip |
 | rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
 | rule.description | The description of the rule generating the event. | keyword |
+| rule.matched_data | Specific data found in request that matched the rule. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
 | rule.version | The version / revision of the rule being used for analysis. | keyword |

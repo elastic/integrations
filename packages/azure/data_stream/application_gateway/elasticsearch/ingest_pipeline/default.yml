@@ -248,6 +248,11 @@ processors:
       target_field: rule.description
       ignore_missing: true
   - rename:
+      field: json.properties.details.data
+      target_field: rule.matched_data
+      ignore_missing: true
+      if: 'ctx.json?.properties?.details?.data != null && ["Equals 0", "EQ matched 0"].not.contains(ctx.json.properties.details.message)'
+  - rename:
       field: json.properties.transactionId
       target_field: azure.application_gateway.transaction_id
       ignore_missing: true
