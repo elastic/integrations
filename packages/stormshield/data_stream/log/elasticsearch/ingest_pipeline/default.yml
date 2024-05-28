@@ -91,18 +91,29 @@ processors:
 
   - pipeline:
       name: '{{ IngestPipeline "filterstat" }}'
-      if: ctx.stormshield.logtype == 'filterstat'
+      if: ctx.stormshield?.logtype == 'filterstat'
 
   - pipeline:
       name: '{{ IngestPipeline "monitor" }}'
-      if: ctx.stormshield.logtype == 'monitor'
+      if: ctx.stormshield?.logtype == 'monitor'
 
   - pipeline:
       name: '{{ IngestPipeline "count" }}'
-      if: ctx.stormshield.logtype == 'count'
+      if: ctx.stormshield?.logtype == 'count'
 
   #########################################################
   # Now rename things to ECS
+
+  - rename:
+      field: stormshield.action
+      target_field: event.action
+      if: ctx.stormshield?.action != null
+
+  - convert:
+      field: stormshield.sent
+      target_field: source.bytes
+      type: long
+      if: ctx.stormshield?.sent != null
 
   - rename:
       field: stormshield.dstname
