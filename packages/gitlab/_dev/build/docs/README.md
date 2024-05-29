@@ -28,7 +28,7 @@ Collect logs for HTTP requests made to the GitLab API. Check out the [GitLab API
 
 ### production
 
-Collect logs for Rails controller requests received from GitLab. Check out the [Gitlab production log docs](https://docs.gitlab.com/ee/administration/logs/#production_jsonlog) for more information.
+Collect logs for Rails controller requests received from GitLab. Check out the [GitLab production log docs](https://docs.gitlab.com/ee/administration/logs/#production_jsonlog) for more information.
 
 {{fields "production"}}
 
