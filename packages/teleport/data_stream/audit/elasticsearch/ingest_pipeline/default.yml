@@ -20,6 +20,12 @@ processors:
       field: event.original
       tag: json_original
       target_field: teleport.audit
+  - dot_expander:
+      path: teleport.audit
+      field: addr.remote
+  - dot_expander:
+      path: teleport.audit
+      field: addr.local
   - rename:
       field: teleport.audit.event
       target_field: event.action
@@ -46,9 +52,23 @@ processors:
       field: teleport.audit.user_agent
       target_field: user_agent.original
       ignore_missing: true
-  - rename:
+  - script:
+      lang: painless
+      description: Adds the URI identifier
+      if: ctx?.teleport?.audit?.addr?.remote != null
+      source: |
+        ctx.teleport.audit.addr.remote = "//" + ctx.teleport.audit.addr.remote;
+  - uri_parts:
       field: teleport.audit.addr.remote
-      target_field: source.address
+      tag: split_teleport_audit_remote_address
+      target_field: teleport.audit.remote
+      remove_if_successful: true
+      keep_original: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.remote.domain
+      target_field: client.ip
       ignore_missing: true
   - rename:
       field: teleport.audit.identity.roles
@@ -97,28 +117,28 @@ processors:
       \ object).removeIf(value -> dropEmptyFields(value));\n    return (((List) object).length\
       \ == 0);\n  }\n  return false;\n}\ndropEmptyFields(ctx);\n"
   - geoip:
-      field: source.ip
-      tag: geoip_source_ip
-      target_field: source.geo
+      field: client.ip
+      tag: geoip_client_ip
+      target_field: client.geo
       ignore_missing: true
   - geoip:
       ignore_missing: true
       database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      tag: geoip_source_asn
-      target_field: source.as
+      field: client.ip
+      tag: geoip_client_asn
+      target_field: client.as
       properties:
         - asn
         - organization_name
   - rename:
-      field: source.as.asn
-      tag: rename_source_as_asn
-      target_field: source.as.number
+      field: client.as.asn
+      tag: rename_client_as_asn
+      target_field: client.as.number
       ignore_missing: true
   - rename:
-      field: source.as.organization_name
-      tag: rename_source_as_organization_name
-      target_field: source.as.organization.name
+      field: client.as.organization_name
+      tag: rename_client_as_organization_name
+      target_field: client.as.organization.name
       ignore_missing: true
   - geoip:
       field: destination.ip
