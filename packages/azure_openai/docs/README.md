@@ -28,6 +28,8 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 
 Refer to the [settings](https://docs.elastic.co/integrations/azure#:~:text=*.cloudapp.net-,Settings,-Use%20the%20following) section for more details on the configuration.
 
+#### Logs Reference
+
 An example event for `logs` looks as following:
 
 ```json
@@ -135,6 +137,8 @@ Should return a list of resources.
 If no resource filter is specified, then all Azure OpenAI services inside the entire subscription will be considered.
 
 The primary aggregation value will be retrieved for all the metrics contained in the namespaces. The aggregation options are `avg`, `sum`, `min`, `max`, `total`, `count`.
+
+#### Metrics Reference
 
 An example event for `metrics` looks as following:
 
