@@ -6,7 +6,7 @@ This integration is for ingesting logs from [GitLab](https://about.gitlab.com/).
 
 - `production`: Collect logs for Rails controller requests received from GitLab.
 
-See [Link to docs](https://docs.gitlab.com/ee/administration/logs/) for more information.
+See the GitLab [Log system docs](https://docs.gitlab.com/ee/administration/logs/) for more information.
 
 ## Compatibility
 
