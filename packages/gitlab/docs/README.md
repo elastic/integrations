@@ -2,7 +2,7 @@
 
 This integration is for ingesting logs from [GitLab](https://about.gitlab.com/).
 
-- `api`: Collect logs for HTTP requests made to the Gitlab API
+- `api`: Collect logs for HTTP requests made to the GitLab API
 
 - `production`: Collect logs for Rails controller requests received from GitLab.
 
