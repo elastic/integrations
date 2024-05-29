@@ -20,6 +20,15 @@ processors:
       field: event.original
       tag: json_original
       target_field: teleport.audit
+  - rename:
+      field: teleport.audit.ei
+      target_field: event.sequence
+  - grok:
+      field: teleport.audit.size
+      patterns:
+        - "%{NUMBER:process.tty.columns}:%{NUMBER:process.tty.rows}"
+      ignore_missing: true
+      ignore_failure: true
   - dot_expander:
       path: teleport.audit
       field: addr.remote
@@ -71,7 +80,11 @@ processors:
       target_field: client.ip
       ignore_missing: true
   - rename:
-      field: teleport.audit.remote.domain
+      field: teleport.audit.client_ip
+      target_field: client.ip
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.remote.port
       target_field: client.port
       ignore_missing: true
   - rename:
@@ -102,13 +115,39 @@ processors:
       formats:
         - ISO8601
       if: ctx.teleport?.audit?.session_stop != null
-  - rename:
+  - script:
+      lang: painless
+      description: Adds the URI identifier to make uri_parts processor work
+      if: ctx?.teleport?.audit?.addr?.local != null
+      source: |
+        ctx.teleport.audit.addr.local = "//" + ctx.teleport.audit.addr.local;
+  - uri_parts:
       field: teleport.audit.addr.local
-      target_field: destination.address
+      tag: split_teleport_audit_local_address
+      target_field: teleport.audit.local
+      remove_if_successful: true
+      keep_original: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.local.domain
+      target_field: server.ip
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.local.port
+      target_field: server.port
       ignore_missing: true
   - rename:
       field: teleport.audit.url
       target_field: url.full
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.server_hostname
+      target_field: server.domain
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.proto
+      target_field: network.protocol
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
