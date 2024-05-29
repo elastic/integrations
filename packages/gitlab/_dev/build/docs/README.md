@@ -20,7 +20,7 @@ Refer to the GitLab documentation for the specific filepath(s) for your instance
 
 ### api
 
-Collect logs for HTTP requests made to the Gitlab API. Check out the [Gitlab api log docs](https://docs.gitlab.com/ee/administration/logs/#api_jsonlog) for more information.
+Collect logs for HTTP requests made to the GitLab API. Check out the [GitLab API log docs](https://docs.gitlab.com/ee/administration/logs/#api_jsonlog) for more information.
 
 {{fields "api"}}
 
