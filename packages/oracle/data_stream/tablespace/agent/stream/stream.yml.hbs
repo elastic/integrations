@@ -36,8 +36,8 @@ sql_queries:
          FROM   sys.dba_temp_files),
      spaces
      AS (SELECT b.tablespace_name TB_NAME,
-                tbs_size          TB_SIZE_USED,
-                a.free_space      TB_SIZE_FREE
+              (b.tbs_size - a.free_space) AS TB_SIZE_USED,
+              a.free_space AS TB_SIZE_FREE
          FROM   (SELECT tablespace_name,
                         SUM(bytes) AS free_space
                  FROM   dba_free_space
