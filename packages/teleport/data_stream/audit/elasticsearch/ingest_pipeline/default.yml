@@ -322,6 +322,24 @@ processors:
       allow_duplicates: false
       if: ctx.event?.action == 'user.login' && ctx.teleport?.audit?.success == false
   - append:
+      field: event.type
+      value:
+        - end
+      allow_duplicates: false
+      if: ctx.event?.action == 'user.login' && ctx.teleport?.audit?.success == false
+  - append:
+      field: event.outcome
+      value:
+        - success
+      allow_duplicates: false
+      if: ctx.teleport?.audit?.event?.success == true
+  - append:
+      field: event.outcome
+      value:
+        - failure
+      allow_duplicates: false
+      if: ctx.teleport?.audit?.event?.success == false
+  - append:
       field: related.ip
       value:
         - '{{{teleport.audit.addr.remote}}}'
