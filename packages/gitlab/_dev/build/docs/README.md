@@ -1,4 +1,4 @@
-# gitlab Integration
+# GitLab Integration
 
 This integration is for ingesting logs from [Gitlab](https://about.gitlab.com/).
 
