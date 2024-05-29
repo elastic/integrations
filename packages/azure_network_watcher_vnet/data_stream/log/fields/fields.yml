@@ -1,0 +1,114 @@
+- name: azure_network_watcher_vnet
+  type: group
+  fields:
+    - name: log
+      type: group
+      fields:
+        - name: category
+          type: keyword
+          description: Category of the event.
+        - name: flow_log
+          type: group
+          fields:
+            - name: guid
+              type: keyword
+              description: Resource GUID of the FlowLog resource.
+            - name: resource_id
+              type: keyword
+              description: Resource ID of the FlowLog resource.
+            - name: version
+              type: keyword
+              description: Version of the flow log schema.
+        - name: mac_address
+          type: keyword
+          description: MAC address of the network interface where the event was captured.
+        - name: operation_name
+          type: keyword
+          description: Always FlowLogFlowEvent.
+        - name: records
+          type: group
+          fields:
+            - name: flows
+              type: group
+              fields:
+                - name: acl_id
+                  type: keyword
+                  description: Identifier of the resource that's evaluating traffic, either a network security group or Virtual Network Manager.
+                - name: groups
+                  type: group
+                  fields:
+                    - name: rule
+                      type: keyword
+                      description: Name of the rule that allowed or denied the traffic.
+                    - name: tuples
+                      type: group
+                      fields:
+                        - name: bytes
+                          type: group
+                          fields:
+                            - name: received
+                              type: long
+                              description: Total number of TCP packet bytes sent from destination to source.
+                            - name: sent
+                              type: long
+                              description: Total number of TCP packet bytes sent from source to destination.
+                        - name: destination
+                          type: group
+                          fields:
+                            - name: ip
+                              type: ip
+                              description: Destination IP address.
+                            - name: port
+                              type: long
+                              description: Destination port.
+                        - name: flow
+                          type: group
+                          fields:
+                            - name: direction
+                              type: keyword
+                              description: Direction of the traffic flow.
+                            - name: encryption
+                              type: keyword
+                              description: Encryption state of the flow.
+                            - name: state
+                              type: keyword
+                              description: State of the flow.
+                        - name: packets
+                          type: group
+                          fields:
+                            - name: received
+                              type: long
+                              description: Total number of packets sent from destination to source.
+                            - name: sent
+                              type: long
+                              description: Total number of packets sent from source to destination.
+                        - name: protocol
+                          type: keyword
+                          description: Protocol of the flow.
+                        - name: source
+                          type: group
+                          fields:
+                            - name: ip
+                              type: ip
+                              description: Source IP address.
+                            - name: port
+                              type: long
+                              description: Source port.
+                        - name: timestamp
+                          type: date
+                          description: Time stamp of when the flow occurred in UNIX epoch format.
+                    - name: mac
+                      type: keyword
+                      description: MAC address of the network interface on which the flows are listed.
+                - name: rule
+                  type: keyword
+                  description: Rule for which the flows are listed.
+            - name: version
+              type: keyword
+              description: Version number of the flow log's event schema.
+        - name: target_resource_id
+          type: keyword
+          description: Resource ID of the target resource that's associated with the FlowLog resource.
+        - name: time
+          type: date
+          description: Time in UTC when the event was logged.

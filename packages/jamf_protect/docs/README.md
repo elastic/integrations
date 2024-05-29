@@ -94,13 +94,13 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-23T13:09:29.438Z",
+    "@timestamp": "2024-05-17T00:09:29.807Z",
     "agent": {
-        "ephemeral_id": "c7634b95-67db-4967-ad01-85d28dc0dbdf",
-        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "ephemeral_id": "dd1cb398-e758-40c0-87b6-4ce4fb3611b2",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_protect.alerts",
@@ -111,9 +111,9 @@ An example event for `alerts` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.13.0"
     },
     "event": {
         "action": "CustomURLHandlerCreation",
@@ -124,7 +124,7 @@ An example event for `alerts` looks as following:
         ],
         "dataset": "jamf_protect.alerts",
         "id": "6bdb0697-6d07-47bc-a37d-6c3348a5d953",
-        "ingested": "2024-04-23T13:09:39Z",
+        "ingested": "2024-05-17T00:09:39Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Application that uses custom url handler created",
@@ -389,7 +389,6 @@ An example event for `alerts` looks as following:
 | process.real_group.id | Unique identifier for the group on the system/platform. | keyword |
 | process.real_user.id | Unique identifier of the user. | keyword |
 | process.start | The time the process started. | date |
-| process.tty | Information about the controlling TTY device. If set, the process belongs to an interactive session. | object |
 | process.user.id | Unique identifier of the user. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
@@ -440,11 +439,11 @@ An example event for `telemetry` looks as following:
 {
     "@timestamp": "2024-02-06T16:01:34.442Z",
     "agent": {
-        "ephemeral_id": "7ba7a177-4566-45fe-9758-c69b9c355ef3",
-        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "ephemeral_id": "a0a97e34-86ea-435f-8629-308f4c17a3b1",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_protect.telemetry",
@@ -455,9 +454,9 @@ An example event for `telemetry` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.13.0"
     },
     "error": {
         "code": "0"
@@ -470,7 +469,7 @@ An example event for `telemetry` looks as following:
         ],
         "code": "43190",
         "dataset": "jamf_protect.telemetry",
-        "ingested": "2024-04-23T13:10:38Z",
+        "ingested": "2024-05-17T00:10:39Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -924,13 +923,13 @@ An example event for `web_threat_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-23T13:11:22.675Z",
+    "@timestamp": "2024-05-17T00:11:29.057Z",
     "agent": {
-        "ephemeral_id": "4a387f46-c5b4-42ad-ae2d-1185e75250c2",
-        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "ephemeral_id": "0eddc4c4-e383-459e-925e-3ba00e7abfbf",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_threat_events",
@@ -946,9 +945,9 @@ An example event for `web_threat_events` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.13.0"
     },
     "event": {
         "action": "Detected",
@@ -958,7 +957,7 @@ An example event for `web_threat_events` looks as following:
         ],
         "dataset": "jamf_protect.web_threat_events",
         "id": "013b15c9-8f62-4bf1-948a-d82367af2a10",
-        "ingested": "2024-04-23T13:11:32Z",
+        "ingested": "2024-05-17T00:11:39Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Sideloaded App",
@@ -1136,7 +1135,10 @@ An example event for `web_threat_events` looks as following:
 | process.real_group.id | Unique identifier for the group on the system/platform. | keyword |
 | process.real_user.id | Unique identifier of the user. | keyword |
 | process.start | The time the process started. | date |
-| process.tty | Information about the controlling TTY device. If set, the process belongs to an interactive session. | object |
+| process.tty.char_device.major | The major number identifies the driver associated with the device. The character device's major and minor numbers can be algorithmically combined to produce the more familiar terminal identifiers such as "ttyS0" and "pts/0". For more details, please refer to the Linux kernel documentation. | long |
+| process.tty.char_device.minor | The minor number is used only by the driver specified by the major number; other parts of the kernel don’t use it, and merely pass it along to the driver. It is common for a driver to control several devices; the minor number provides a way for the driver to differentiate among them. | long |
+| process.tty.columns | The number of character columns per line. e.g terminal width Terminal sizes can change, so this value reflects the maximum value for a given IO event. i.e. where event.action = 'text_output' | long |
+| process.tty.rows | The number of character rows in the terminal. e.g terminal height Terminal sizes can change, so this value reflects the maximum value for a given IO event. i.e. where event.action = 'text_output' | long |
 | process.user.id | Unique identifier of the user. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
@@ -1187,13 +1189,13 @@ An example event for `web_traffic_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-23T13:12:19.006Z",
+    "@timestamp": "2024-05-17T00:12:27.062Z",
     "agent": {
-        "ephemeral_id": "2d49edf9-df1a-496e-ad0d-9b4edec5b70d",
-        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "ephemeral_id": "ffca4568-15a9-4780-bc89-e026120c233e",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_traffic_events",
@@ -1216,9 +1218,9 @@ An example event for `web_traffic_events` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bc9c17bf-519a-4e37-80cd-633fcea278e7",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.13.0"
     },
     "event": {
         "action": "DNS Lookup",
@@ -1228,7 +1230,7 @@ An example event for `web_traffic_events` looks as following:
             "network"
         ],
         "dataset": "jamf_protect.web_traffic_events",
-        "ingested": "2024-04-23T13:12:29Z",
+        "ingested": "2024-05-17T00:12:37Z",
         "kind": "event",
         "outcome": [
             "success"
@@ -1250,9 +1252,6 @@ An example event for `web_traffic_events` looks as following:
     },
     "input": {
         "type": "http_endpoint"
-    },
-    "interface": {
-        "name": "WIFI"
     },
     "observer": {
         "product": "Jamf Protect",
@@ -1371,7 +1370,6 @@ An example event for `web_traffic_events` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
-| interface.name | Interface name as reported by the system. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |

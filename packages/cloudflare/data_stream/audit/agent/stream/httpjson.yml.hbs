@@ -5,7 +5,11 @@ request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
 request.tracer.maxbackups: 5
 {{/if}}
 request.method: "GET"
+{{#if per_page}}
+request.url: {{api_url}}/client/v4/accounts/{{account}}/audit_logs?page=1&per_page={{per_page}}&direction=desc
+{{else}}
 request.url: {{api_url}}/client/v4/accounts/{{account}}/audit_logs?page=1&direction=desc
+{{/if}}
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
@@ -30,6 +34,7 @@ request.transforms:
 
 response.split:
   target: body.result
+  ignore_empty_value: true
 response.pagination:
 - set:
     target: url.params.page
