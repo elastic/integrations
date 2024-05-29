@@ -839,7 +839,7 @@ processors:
               if (keyMap.containsKey(key)) {
                 updatedJson[keyMap[key]] = updatedList;
               } else {
-                updatedJson[key] = value;
+                updatedJson[key] = updatedList;
               }
             } else {
               if (keyMap.containsKey(key)) {
@@ -1252,7 +1252,7 @@ processors:
           field: _ingest._value._temp
           tag: rename_temp_to_active
           target_field: _ingest._value.active
-          ignore_missing: true 
+          ignore_missing: true
   - foreach:
       field: json.attributes.data
       if: ctx.json?.attributes?.data != null
@@ -1839,6 +1839,7 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Format security labels dateAdded field
   - foreach:
       field: json.securityLabels.data
       if: ctx.json?.securityLabels?.data != null
@@ -1854,6 +1855,7 @@ processors:
             - remove:
                 field: _ingest._value.dateAdded
                 ignore_missing: true
+  # Extract TLP security labels to store in ES specific field
   - script:
       lang: painless
       description: "Extract TLP and providers from source"
@@ -1878,39 +1880,26 @@ processors:
           }
           ctx.threat.indicator.marking.tlp = tlps;
         }
+  # Remove extra fields from security labels that are not needed
   - foreach:
       field: json.securityLabels.data
       if: ctx.json?.securityLabels?.data != null
-      tag: foreach_convert_securityLables_data_id_to_string
+      tag: foreach_remove_securityLabels_extra_fields
       processor:
-        convert:
-          field: _ingest._value.id
-          tag: convert_securityLables_data_id_to_string
-          target_field: _ingest._value.id
-          type: string
+        remove:
+          field:
+            - _ingest._value.id
+            - _ingest._value.description
+            - _ingest._value.color
+            - _ingest._value.owner
+            - _ingest._value.dateAdded
           ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.default
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Rename security labels field to match ES standards
   - rename:
       field: json.securityLabels.data
       tag: rename_securityLabels_data
       target_field: threat_connect.indicator.security_labels.data
       ignore_missing: true
-  - foreach:
-      field: threat_connect.indicator.security_labels.data
-      if: ctx.threat_connect?.indicator?.security_labels?.data instanceof List
-      tag: foreach_remove_security_labels_duplicates
-      processor:
-        remove:
-          field:
-            - _ingest._value.dateAdded
-          tag: remove_security_labels_duplicate_fields
-          ignore_missing: true
   - rename:
       field: json.sha1
       tag: rename_sha1
@@ -1980,24 +1969,7 @@ processors:
       tag: set_event_id_from_indicator_summary
       copy_from: threat_connect.indicator.summary
       ignore_empty_value: true
-  - foreach:
-      field: json.tags.data
-      if: ctx.json?.tags?.data != null
-      tag: foreach_convert_tags_data_id_to_string
-      processor:
-        convert:
-          field: _ingest._value.id
-          tag: convert_tags_data_id_to_string
-          target_field: _ingest._value.id
-          type: string
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.default
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# Format last used tag date field per ES standard
   - foreach:
       field: json.tags.data
       if: ctx.json?.tags?.data != null
@@ -2013,23 +1985,7 @@ processors:
             - remove:
                 field: _ingest._value.lastUsed
                 ignore_missing: true
-  - foreach:
-      field: json.tags.data
-      if: ctx.json?.tags?.data != null
-      tag: foreach_convert_tags_data_platforms_count_to_long
-      processor:
-        convert:
-          field: _ingest._value.platforms.count
-          tag: convert_tags_data_platforms_count_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value.platforms.count
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+# Some tags are Attack Patterns, rename the techniqueId to technique.id
   - foreach:
       field: json.tags.data
       if: ctx.json?.tags?.data != null
@@ -2040,6 +1996,7 @@ processors:
           tag: rename_tags_data_techniqueId
           target_field: _ingest._value.technique.id
           ignore_missing: true
+# Append the current attack pattern technique id to the threat.technique.id field to capture the full list
   - foreach:
       field: json.tags.data
       if: ctx.json?.tags?.data != null
@@ -2050,6 +2007,7 @@ processors:
           tag: append_tags_data_techniqueId
           value: '{{{_ingest._value.technique.id}}}'
           allow_duplicates: false
+# For Attack pattern tags, capture the platform data and append to os.family
   - foreach:
       field: json.tags.data
       if: ctx.json?.tags?.data != null
@@ -2065,11 +2023,13 @@ processors:
               tag: append_tags_platforms_data
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
+# Rename the data field to match ES standards
   - rename:
       field: json.tags.data
       tag: rename_tags_data
       target_field: threat_connect.indicator.tags.data
       ignore_missing: true
+  # Remove certain fields no longer needed
   - foreach:
       field: threat_connect.indicator.tags.data
       if: ctx.threat_connect?.indicator?.tags?.data != null
@@ -2078,6 +2038,11 @@ processors:
         remove:
           field:
             - _ingest._value.lastUsed
+            - _ingest._value.id
+            - _ingest._value.description
+            - _ingest._value.techniqueId
+            - _ingest._value.platforms
+            - _ingest._value.owner
           tag: remove_tags_duplicate_fields
           ignore_missing: true
   - rename:

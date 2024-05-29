@@ -1,10 +1,10 @@
-# Active Directory Logs
+# Microsoft Entra ID Logs
 
-Azure Active Directory (AAD) logs are records of events and activities that occur within an organization's AAD environment.
+Microsoft Entra ID logs are records of events and activities that occur within a Microsoft Entra ID environment of an organization.
 
 These logs capture important information such as user sign-ins, changes to user accounts, and more. They can be used to monitor and track user activity, identify security threats, troubleshoot issues, and generate reports for compliance purposes.
 
-The Azure Active Directory logs integration contain several data streams:
+The Microsoft Entra ID logs integration contain several data streams:
 
 * **Sign-in logs** – Information about sign-ins and how your users use your resources.
 * **Identity Protection logs** - Information about user risk status and the events that change it.
@@ -82,7 +82,7 @@ https://management.usgovcloudapi.net/
 
 ### Sign-in logs
 
-Retrieves Azure Active Directory sign-in logs. The sign-ins report provides information about the usage of managed applications and user sign-in activities.
+Retrieves Microsoft Entra ID sign-in logs. The sign-ins report provides information about the usage of managed applications and user sign-in activities.
 
 {{event "signinlogs"}}
 
@@ -90,7 +90,7 @@ Retrieves Azure Active Directory sign-in logs. The sign-ins report provides info
 
 ### Identity Protection logs
 
-Retrieves Azure AD Identity Protection logs. The [Azure AD Identity Protection](https://docs.microsoft.com/en-us/azure/active-directory/identity-protection/overview-identity-protection) service analyzes events from AD users' behavior, detects risk situations, and can respond by reporting only or even blocking users at risk, according to policy configurations.
+Retrieves Microsoft Entra ID Protection logs. The [Microsoft Entra ID Protection](https://docs.microsoft.com/en-us/azure/active-directory/identity-protection/overview-identity-protection) service analyzes events from Microsoft Entra ID users' behavior, detects risk situations, and can respond by reporting only or even blocking users at risk, according to policy configurations.
 
 {{event "identity_protection"}}
 
@@ -98,12 +98,12 @@ Retrieves Azure AD Identity Protection logs. The [Azure AD Identity Protection](
 
 ### Provisioning logs
 
-Retrieves Azure Active Directory Provisioning logs. The [Azure AD Provisioning](https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/how-provisioning-works) service syncs AD users and groups to and from external enterprise applications. For example, you can configure the provisioning service to replicate all existing AD users and groups to an external Dropbox Business account or vice-versa.
+Retrieves Microsoft Entra ID Provisioning logs. The [Microsoft Entra ID Provisioning](https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/how-provisioning-works) service syncs Microsoft Entra ID users and groups to and from external enterprise applications. For example, you can configure the provisioning service to replicate all existing Microsoft Entra ID users and groups to an external Dropbox Business account or vice versa.
 
 The Provisioning Logs contain a lot of details about a inbound/outbound sync activity, like:
 
 * User or group details.
-* Source and target systems (e.g., from Azure AD to Dropbox).
+* Source and target systems (for ex., from Microsoft Entra ID to Dropbox).
 * Provisioning status.
 * Provisioning steps (with details for each step).
 
@@ -113,7 +113,7 @@ The Provisioning Logs contain a lot of details about a inbound/outbound sync act
 
 ### Audit logs
 
-Retrieves Azure Active Directory audit logs. The audit logs provide traceability through logs for all changes done by various features within Azure AD. Examples of audit logs include changes made to any resources within Azure AD like adding or removing users, apps, groups, roles and policies.
+Retrieves Microsoft Entra ID audit logs. The audit logs provide traceability through logs for all changes done by various features within Microsoft Entra ID. Examples of audit logs include changes made to any resources within Microsoft Entra ID like adding or removing users, apps, groups, roles and policies.
 
 {{event "auditlogs"}}
 

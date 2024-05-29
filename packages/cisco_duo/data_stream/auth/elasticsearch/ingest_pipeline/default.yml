@@ -12,7 +12,13 @@ processors:
   - json:
       field: event.original
       target_field: json
-      ignore_failure: true
+      on_failure:
+        - set:
+            field: event.kind
+            value: pipeline_error
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - drop:
       if: ctx.json?.response instanceof List && ctx.json.response.length == 0
   - fingerprint:

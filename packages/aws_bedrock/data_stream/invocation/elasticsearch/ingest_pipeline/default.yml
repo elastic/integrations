@@ -1,0 +1,498 @@
+---
+description: Pipeline for AWS Bedrock model invocation logs.
+processors:
+  - rename:
+      field: message
+      target_field: event.original
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - remove:
+      description: Drop fields unrelated to the ingested logs.
+      field:
+        - host
+        - cloud
+        - container
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: aws_bedrock.invocation
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: cloud.service.name
+      value: bedrock
+  - date:
+      field: aws_bedrock.invocation.timestamp
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove:
+      field: aws_bedrock.invocation.timestamp
+      ignore_missing: true
+  - rename:
+      field: aws_bedrock.invocation.operation
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: aws_bedrock.invocation.identity.arn
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: aws_bedrock.invocation.accountId
+      target_field: cloud.account.id
+      ignore_missing: true
+  - rename:
+      field: aws_bedrock.invocation.region
+      target_field: cloud.region
+      ignore_missing: true
+
+  - script:
+      description: Remove massive artifact blobs.
+      if: ctx.aws_bedrock?.invocation?.artifacts instanceof List
+      lang: painless
+      source: |
+        for (int i = 0; i < ctx.aws_bedrock.invocation.artifacts.length; i++) {
+          if (ctx.aws_bedrock.invocation.artifacts[i].base64 instanceof String && ctx.aws_bedrock.invocation.artifacts[i].base64.length() > 32766) {
+            ctx.aws_bedrock.invocation.artifacts[i].base64_massive_hash = ctx.aws_bedrock.invocation.artifacts[i].base64.sha1();
+            ctx.aws_bedrock.invocation.artifacts[i].base64_massive_length = ctx.aws_bedrock.invocation.artifacts[i].base64.length();
+            ctx.aws_bedrock.invocation.artifacts[i].remove("base64");
+          }
+        }
+
+######
+# Proposed LLM fields
+######
+  - set:
+      field: gen_ai.system
+      value: aws
+  - set:
+      field: gen_ai.response.timestamp
+      copy_from: '@timestamp'
+  # Remarshal the request and response.
+  - set:
+      description: Prepare destination for request JSON.
+      field: gen_ai.prompt
+      value: ""
+  - set:
+      description: Prepare destination for response JSON.
+      field: gen_ai.completion
+      value: ""
+  - set:
+      description: Prepare destination for request size.
+      field: gen_ai.performance.request_size
+      value: 0
+  - set:
+      description: Prepare destination for response size.
+      field: gen_ai.performance.response_size
+      value: 0
+  - script:
+      description: Convert bodies back to JSON so that the string fields are valid JSON data.
+      tag: remarshal_bodies
+      lang: painless
+      source: |
+        String json(def val) {
+          if (val == null) {
+            return null;
+          }
+          if (val instanceof Map) {
+            String out = '{';
+            List keyList = new ArrayList(val.keySet());
+            Collections.sort(keyList);
+            for (int i=0; i < keyList.length; i++){
+              if (i != 0) {
+                out += ',';
+              }
+              String key = keyList[i];
+              out += '"' +  key + '"';
+              if (val[key] instanceof String){
+                out += ':"' + val[key] + '"';
+              } else {
+                out += ':' + json(val[key]);
+              }
+            }
+            return out + '}';
+          } else if (val instanceof ArrayList) {
+            String out = '[';
+            for (int i = 0; i < val.length; i++){
+              if (i != 0) {
+                  out += ',';
+              }
+              out = out + json(val[i]);
+            }
+            return out + ']';
+          } else if (val instanceof String) {
+            return '"' + val + '"'; // This may not be valid JSON depending on code points in val. TODO: Add escape helper.
+          }
+          return val.toString();
+        }
+        ctx.gen_ai.prompt = json(ctx.aws_bedrock?.invocation?.input?.inputBodyJson);
+        ctx.gen_ai.completion = json(ctx.aws_bedrock?.invocation?.output?.outputBodyJson);
+
+  # This must come after the JSON remarshal to ensure that the text there is recorded
+  # verbatim, mod field ordering.
+  - script:
+      lang: painless
+      description: Rename the fields under the aws_bedrock objects.
+      params:
+        "modelId": "model_id"
+        "inputBodyJson": "input_body_json"
+        "inputContentType": "input_content_type"
+        "inputTokenCount": "input_token_count"
+        "outputBodyJson": "output_body_json"
+        "outputContentType": "output_content_type"
+        "outputTokenCount": "output_token_count"
+        "requestId": "request_id"
+        "schemaType": "schema_type"
+        "schemaVersion": "schema_version"
+        "errorCode": "error_code"
+        "imageGenerationConfig": "image_generation_config"
+        "cfgScale": "cfg_scale"
+        "numberOfImages": "number_of_images"
+        "imageVariationParams": "image_variation_params"
+        "inputBodyS3Path": "input_body_s3_path"
+        "outputBodyS3Path": "output_body_s3_path"
+        "taskType": "task_type"
+        "finishReason": "finish_reason"
+        "amazon-bedrock-invocationMetrics": "amazon_bedrock_invocation_metrics"
+        "firstByteLatency": "first_byte_latency"
+        "invocationLatency": "invocation_latency"
+        "amazon-bedrock-guardrailAction": "amazon_bedrock_guardrail_action"
+        "amazon-bedrock-trace": "amazon_bedrock_trace"
+        "contentPolicy": "content_policy"
+        "wordPolicy": "word_policy"
+        "topicPolicy": "topic_policy"
+        "customWords": "custom_words"
+        "sensitiveInformationPolicy": "sensitive_information_policy"
+        "piiEntities": "pii_entities"
+        "normalizeIndex": "normalize_index"
+        "latencyMs": "latency_ms"
+        "stopReason": "stop_reason"
+      tag: painless_to_rename_fields_under_aws_bedrock_groups
+      source: |
+        def renameKeys(Map src, Map keyMap) {
+          def dst = new HashMap();
+          for (def entry: src.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                dst[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = updatedList;
+              } else {
+                dst[key] = updatedList;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = value;
+              } else {
+                dst[key] = value;
+              }
+            }
+          }
+          return dst;
+        }
+
+        ctx.aws_bedrock = renameKeys(ctx.aws_bedrock, params)
+
+  - set:
+      if: ctx.aws_bedrock?.invocation?.model_id != null
+      field: gen_ai.request.model.id
+      copy_from: aws_bedrock.invocation.model_id
+      ignore_failure: true
+  - script:
+      tag: get_response_id_type_and_version
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json != null && ctx.gen_ai?.request?.model?.id instanceof String && ctx.gen_ai.request.model.id.contains('.')
+      lang: painless
+      source: |
+        def typ = ctx.gen_ai.request.model.id.substring(0, ctx.gen_ai.request.model.id.indexOf('.'));
+        ctx.gen_ai.request.model.type = typ;
+        ctx.gen_ai.request.model.version = ctx.aws_bedrock.invocation.input.input_body_json[typ+'_version'];
+  - convert:
+      if: ctx.aws_bedrock?.invocation?.input?.input_token_count != null
+      field: aws_bedrock.invocation.input.input_token_count
+      target_field: gen_ai.usage.prompt_tokens
+      type: long
+      ignore_failure: true
+  - convert:
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.top_k != null
+      field: aws_bedrock.invocation.input.input_body_json.top_k
+      target_field: gen_ai.request.top_k
+      type: float
+      ignore_failure: true
+  - convert:
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.top_p != null
+      field: aws_bedrock.invocation.input.input_body_json.top_p
+      target_field: gen_ai.request.top_p
+      type: float
+      ignore_failure: true
+  - convert:
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.temperature != null
+      field: aws_bedrock.invocation.input.input_body_json.temperature
+      target_field: gen_ai.request.temperature
+      type: float
+      ignore_failure: true
+  - convert:
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.max_tokens != null
+      field: aws_bedrock.invocation.input.input_body_json.max_tokens
+      target_field: gen_ai.request.max_tokens
+      type: long
+      ignore_failure: true
+  - convert:
+      if: ctx.aws_bedrock?.invocation?.output?.output_token_count != null
+      field: aws_bedrock.invocation.output.output_token_count
+      target_field: gen_ai.usage.completion_tokens
+      type: long
+      ignore_failure: true
+  - set:
+      if: ctx.aws_bedrock?.invocation?.request_id != null
+      field: gen_ai.request.id
+      copy_from: aws_bedrock.invocation.request_id
+      ignore_failure: true
+  - set:
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.id != null'
+      field: gen_ai.response.id
+      copy_from: aws_bedrock.invocation.output.output_body_json.id
+      ignore_failure: true
+  - script:
+      tag: get_response_id_and_role_from_list
+      if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
+      lang: painless
+      source: |
+        for (def e: ctx.aws_bedrock.invocation.output.output_body_json) {
+          if (e.message?.id != null) {
+            if (ctx.gen_ai == null) {
+              ctx.gen_ai = new HashMap();
+            }
+            if (ctx.gen_ai.response == null) {
+              ctx.gen_ai.response = new HashMap();
+            }
+            ctx.gen_ai.request.model.role = e.message?.role; // Surprisingly this is in the invocation.
+            ctx.gen_ai.response.id = e.message?.id;
+            break;
+          }
+        }
+  - set:
+      tag: get_response_role_from_object
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output?.message?.role != null'
+      field: gen_ai.request.model.role
+      copy_from: aws_bedrock.invocation.output.output_body_json.output.message.role
+  - set:
+      tag: get_stop_reason
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.stop_reason != null'
+      field: gen_ai.response.finish_reasons
+      copy_from: aws_bedrock.invocation.output.output_body_json.stop_reason
+  - script:
+      tag: get_response_time
+      if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
+      lang: painless
+      source: |
+        for (int i = ctx.aws_bedrock.invocation.output.output_body_json.length-1; i >= 0; i--) {
+          def e = ctx.aws_bedrock.invocation.output.output_body_json[i];
+          if (e.amazon_bedrock_invocation_metrics?.invocation_latency != null) {
+            if (ctx.gen_ai == null) {
+              ctx.gen_ai = new HashMap();
+            }
+            if (ctx.gen_ai.performance == null) {
+              ctx.gen_ai.performance = new HashMap();
+            }
+            ctx.gen_ai.performance.start_response_time = e.amazon_bedrock_invocation_metrics.first_byte_latency;
+            ctx.gen_ai.performance.response_time = e.amazon_bedrock_invocation_metrics.invocation_latency;
+            break;
+          }
+        }
+  - set:
+      if: ctx.user?.id != null
+      field: gen_ai.user.id
+      copy_from: user.id
+  - set:
+      if: ctx.aws_bedrock?.invocation?.error_code != null
+      field: gen_ai.response.error_code
+      copy_from: aws_bedrock.invocation.error_code
+      ignore_failure: true
+  - script:
+      tag: get_guardrail_details
+      if: ctx.aws_bedrock?.invocation?.output?.output_body_json != null
+      lang: painless
+      source: |
+        // output_body_json can be either an object or a list of the same shape of object,
+        // so to avoid unnecessary code duplication, raise the object to a list
+        def body = ctx.aws_bedrock.invocation.output.output_body_json;
+        if (!(body instanceof List)) {
+          body = [body];
+        }
+        def actions = new HashSet();
+        def policies = new HashSet();
+        def confidences = new HashSet();
+        def violations = new HashSet();
+        def matches = new HashSet();
+        for (def e: body) {
+          if (e.amazon_bedrock_guardrail_action == 'INTERVENED') {
+            if (ctx.gen_ai == null) {
+              ctx.gen_ai = new HashMap();
+            }
+            if (ctx.gen_ai.policy == null) {
+              ctx.gen_ai.policy = new HashMap();
+            }
+            if (ctx.gen_ai.compliance == null) {
+              ctx.gen_ai.compliance = new HashMap();
+            }
+            ctx.gen_ai.compliance.violation_detected = true;
+            ctx.event.outcome = 'failure';
+            if (!(e.amazon_bedrock_trace?.guardrail?.input instanceof HashMap)) {
+              continue;
+            }
+            for (def o: e.amazon_bedrock_trace.guardrail.input.entrySet()) {
+              for (def i: o.getValue().entrySet()) {
+                String policy_name = i.getKey();
+                policies.add(policy_name);
+                for (def p: i.getValue().entrySet()) {
+                  for (def c: p.getValue()) {
+                    actions.add(c.action);
+                    if (policy_name == 'word_policy' || policy_name == 'sensitive_information_policy') {
+                      matches.add(c);
+                    }
+                    if (c.type != null) {
+                      if (policy_name == 'content_policy') {
+                        violations.add(c.type);
+                        confidences.add(c.confidence);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (actions.size() != 0) {
+          ctx.gen_ai.policy.action = new ArrayList();
+          for (def e: actions) {
+            ctx.gen_ai.policy.action.add(e);
+          }
+          Collections.sort(ctx.gen_ai.policy.action);
+        }
+        if (violations.size() != 0) {
+          ctx.gen_ai.compliance.violation_code = new ArrayList();
+          for (def e: violations) {
+            ctx.gen_ai.compliance.violation_code.add(e);
+          }
+          Collections.sort(ctx.gen_ai.compliance.violation_code);
+        }
+        if (matches.size() != 0) {
+          def match_details = new ArrayList();
+          for (def e: matches) {
+            match_details.add(e);
+          }
+          Collections.sort(match_details);
+          ctx.gen_ai.policy.match_detail = match_details;
+        }
+        if (confidences.size() != 0) {
+          ctx.gen_ai.policy.confidence = new ArrayList();
+          for (def e: confidences) {
+            ctx.gen_ai.policy.confidence.add(e);
+          }
+          Collections.sort(ctx.gen_ai.policy.confidence);
+        }
+        if (policies.size() != 0) {
+          ctx.gen_ai.policy.name = new ArrayList();
+          for (def e: policies) {
+            ctx.gen_ai.policy.name.add(e);
+          }
+          Collections.sort(ctx.gen_ai.policy.name);
+        }
+  - set:
+      if: ctx.gen_ai?.response?.error_code != null
+      field: event.outcome
+      value: failure
+      override: true
+  - set:
+      # If we didn't fail above in either the guardrails check or the response code check, we succeeded.
+      field: event.outcome
+      value: success
+      override: false
+
+  # Remove massive fields only after the fields have been used.
+  - script:
+      description: Remove massive input bodies and keep request perf stats.
+      if: ctx.gen_ai?.prompt instanceof String
+      lang: painless
+      source: |
+        ctx.gen_ai.performance.request_size = ctx.gen_ai.prompt.length();
+        if (ctx.gen_ai.prompt.length() > 32766) {
+          ctx.aws_bedrock.invocation.input.input_body_json_massive_hash = ctx.gen_ai.prompt.sha1();
+          ctx.aws_bedrock.invocation.input.remove("input_body_json");
+          ctx.gen_ai.remove("prompt");
+        }
+  - script:
+      description: Remove massive output bodies and keep response perf stats.
+      if: ctx.gen_ai?.completion instanceof String
+      lang: painless
+      source: |
+        ctx.gen_ai.performance.response_size = ctx.gen_ai.completion.length();
+        if (ctx.gen_ai.completion.length() > 32766) {
+          ctx.aws_bedrock.invocation.output.output_body_json_massive_hash = ctx.gen_ai.completion.sha1();
+          ctx.aws_bedrock.invocation.output.remove("output_body_json");
+          ctx.gen_ai.remove("completion");
+        }
+
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - remove:
+      field:
+        - aws_bedrock.invocation.input.input_body_json
+        - aws_bedrock.invocation.output.output_body_json
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Remove massive event.original if it was wanted.
+      if: ctx.event?.original instanceof String && ctx.event.original.length() > 32766
+      lang: painless
+      source: |
+        ctx.event.original = 'sha1-'+ctx.event.original.sha1()+':'+ctx.event.original.length().toString();
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'

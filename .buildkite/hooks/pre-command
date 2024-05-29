@@ -82,12 +82,6 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-publish" ]]; then
 fi
 
 if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" ]]; then
-    if [[ "${BUILDKITE_STEP_KEY}" == "trigger-publish" ]]; then
-        # TODO: To be removed
-        BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token ${BUILDKITE_API_TOKEN_PATH})
-        export BUILDKITE_API_TOKEN
-    fi
-
     if [[ "${BUILDKITE_STEP_KEY}" == "test-integrations" ]]; then
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
@@ -152,5 +146,7 @@ if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" ]]; then
     export GITHUB_USERNAME_SECRET
     GITHUB_EMAIL_SECRET=$(retry 5 vault kv get -field email ${GITHUB_TOKEN_VAULT_PATH})
     export GITHUB_EMAIL_SECRET
+    GITHUB_TOKEN=$(retry 5 vault kv get -field token "${GITHUB_TOKEN_VAULT_PATH}")
+    export GITHUB_TOKEN
   fi
 fi

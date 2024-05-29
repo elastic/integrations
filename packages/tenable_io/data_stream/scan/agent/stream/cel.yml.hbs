@@ -1,0 +1,65 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  access_key: {{access_key}}
+  secret_key: {{secret_key}}
+redact:
+  fields:
+    - access_key
+    - secret_key
+program: |
+  request("GET", state.url.trim_right("/") + "/scans").with({
+    "Header":{
+      "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
+      "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"]
+    }
+  }).do_request().as(resp,
+    resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body, {
+        "events": has(body.scans) ? body.scans.map(e, { "message": e.encode_json() }) : [{}],
+        "access_key": state.access_key,
+        "secret_key": state.secret_key
+      })
+    :
+      {
+        "events": [{
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": string(resp.Body)
+          }
+        }],
+        "access_key": state.access_key,
+        "secret_key": state.secret_key
+      }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
