@@ -1,12 +1,12 @@
-# gitlab Integration
+# GitLab Integration
 
-This integration is for ingesting logs from [Gitlab](https://about.gitlab.com/).
+This integration is for ingesting logs from [GitLab](https://about.gitlab.com/).
 
 - `api`: Collect logs for HTTP requests made to the Gitlab API
 
 - `production`: Collect logs for Rails controller requests received from GitLab.
 
-See [Link to docs](https://docs.gitlab.com/ee/administration/logs/) for more information.
+See the GitLab [Log system docs](https://docs.gitlab.com/ee/administration/logs/) for more information.
 
 ## Compatibility
 
@@ -14,13 +14,13 @@ The Gitlab module has been developed with and tested against the [community edit
 
 ## Setup
 
-Refer to the Gitlab documentation for the specific filepath(s) for your instance type. Both are provided as default in the configuration setup, but only one will be needed for use. See [API](https://docs.gitlab.com/ee/administration/logs/#api_jsonlog) and [Production](https://docs.gitlab.com/ee/administration/logs/#production_jsonlog). 
+Refer to the GitLab documentation for the specific filepath(s) for your instance type. Both are provided as default in the configuration setup, but only one will be needed for use. See [API](https://docs.gitlab.com/ee/administration/logs/#api_jsonlog) and [Production](https://docs.gitlab.com/ee/administration/logs/#production_jsonlog) for details. 
 
 ## Logs
 
 ### api
 
-Collect logs for HTTP requests made to the Gitlab API. Check out the [Gitlab api log docs](https://docs.gitlab.com/ee/administration/logs/#api_jsonlog) for more information.
+Collect logs for HTTP requests made to the GitLab API. Check out the [GitLab API log docs](https://docs.gitlab.com/ee/administration/logs/#api_jsonlog) for more information.
 
 **Exported fields**
 
@@ -293,7 +293,7 @@ An example event for `api` looks as following:
 
 ### production
 
-Collect logs for Rails controller requests received from GitLab. Check out the [Gitlab production log docs](https://docs.gitlab.com/ee/administration/logs/#production_jsonlog) for more information.
+Collect logs for Rails controller requests received from GitLab. Check out the [GitLab production log docs](https://docs.gitlab.com/ee/administration/logs/#production_jsonlog) for more information.
 
 **Exported fields**
 
