@@ -20,15 +20,82 @@ processors:
       field: event.original
       tag: json_original
       target_field: teleport.audit
+  # all event types
+  - date:
+      field: teleport.audit.time
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.teleport?.audit?.time != null
+  - remove:
+      field: teleport.audit.time
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.error
+      target_field: error.message
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.uid
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.event
+      target_field: event.action
+      ignore_missing: true
   - rename:
       field: teleport.audit.ei
       target_field: event.sequence
-  - grok:
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.sid
+      target_field: teleport.audit.session_id
+      ignore_missing: true
+  - rename:
       field: teleport.audit.size
+      target_field: teleport.audit.terminal_size
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.cluster_name
+      target_field: orchestrator.cluster.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.login
+      target_field: server.user.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.user
+      target_field: user.name
+      ignore_missing: true
+  # exec event type
+  - rename:
+      field: teleport.audit.command
+      target_field: process.command_line
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.exitCode
+      target_field: process.exit_code
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.exitError
+      target_field: error.message
+      ignore_missing: true
+  # resize event type
+  - grok:
+      field: teleport.audit.terminal_size
       patterns:
         - "%{NUMBER:process.tty.columns}:%{NUMBER:process.tty.rows}"
       ignore_missing: true
       ignore_failure: true
+  # scp event type
+  - rename:
+      field: teleport.audit.path
+      target_field: file.path
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.len
+      target_field: file.size
+      ignore_missing: true
+  # the rest of the pipeline
   - dot_expander:
       path: teleport.audit
       field: addr.remote
@@ -36,26 +103,32 @@ processors:
       path: teleport.audit
       field: addr.local
   - rename:
-      field: teleport.audit.event
-      target_field: event.action
+      field: teleport.audit.required_private_key_policy
+      target_field: teleport.audit.policy.required_private_key
       ignore_missing: true
   - rename:
-      field: teleport.audit.uid
-      target_field: event.id
+      field: teleport.audit.method
+      target_field: event.method
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.mfa_device
+      target_field: mfa_device
+      ignore_missing: true
+  - rename:
+      field: mfa_device.mfa_device_uuid
+      target_field: mfa_device.uuid
+      ignore_missing: true
+  - rename:
+      field: mfa_device.mfa_device_name
+      target_field: mfa_device.name
+      ignore_missing: true
+  - rename:
+      field: mfa_device.mfa_device_type
+      target_field: mfa_device.type
       ignore_missing: true
   - rename:
       field: teleport.audit.code
       target_field: event.code
-      ignore_missing: true
-  - date:
-      field: teleport.audit.time
-      target_field: '@timestamp'
-      formats:
-        - ISO8601
-      if: ctx.teleport?.audit?.time != null
-  - rename:
-      field: teleport.audit.user
-      target_field: user.name
       ignore_missing: true
   - rename:
       field: teleport.audit.user_agent
@@ -332,13 +405,19 @@ processors:
       value:
         - success
       allow_duplicates: false
-      if: ctx.teleport?.audit?.event?.success == true
+      if: ctx.teleport?.audit?.success == true
+  - remove:
+      field: teleport.audit.success
+      if: ctx.teleport?.audit?.success == true
   - append:
       field: event.outcome
       value:
         - failure
       allow_duplicates: false
-      if: ctx.teleport?.audit?.event?.success == false
+      if: ctx.teleport?.audit?.success == false
+  - remove:
+      field: teleport.audit.success
+      if: ctx.teleport?.audit?.success == false
   - append:
       field: related.ip
       value:
