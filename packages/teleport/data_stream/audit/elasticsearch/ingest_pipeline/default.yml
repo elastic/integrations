@@ -54,7 +54,7 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      description: Adds the URI identifier
+      description: Adds the URI identifier to make uri_parts processor work
       if: ctx?.teleport?.audit?.addr?.remote != null
       source: |
         ctx.teleport.audit.addr.remote = "//" + ctx.teleport.audit.addr.remote;
@@ -69,6 +69,10 @@ processors:
   - rename:
       field: teleport.audit.remote.domain
       target_field: client.ip
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.remote.domain
+      target_field: client.port
       ignore_missing: true
   - rename:
       field: teleport.audit.identity.roles
