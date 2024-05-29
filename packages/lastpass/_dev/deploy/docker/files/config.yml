@@ -1,11 +1,18 @@
 rules:
   - path: /
     methods: ['POST']
-    request_body: /^\{"cid":"[0-9]+","cmd":"getdetailedsfdata","data":"all","provhash":"[a-zA-Z]+"\}/
+    request_body: /^\{"cid":"[0-9]+","cmd":"getdetailedsfdata","data":\{"data":"all","pageindex":"0","pagesize":"[0-9]+"\},"provhash":"[a-zA-Z]+"\}/
     responses:
       - status_code: 200
         body: |
-          {"101":{"sharedfoldername":"ThisSFName","score":99,"users":[{"username":"joe.user@lastpass.com","readonly":true,"give":false,"can_administer":true,"sites":["aaa.com","bbb.com"]},{"username":"jane.user@lastpass.com","readonly":true,"give":false,"can_administer":false,"sites":["zzz.com"]}]}}
+          {"101":{"sharedfoldername":"ThisSFName","score":99,"users":[{"username":"joe.user@lastpass.com","readonly":true,"give":false,"can_administer":true,"sites":["aaa.com","bbb.com"]},{"username":"jane.user@lastpass.com","readonly":true,"give":false,"can_administer":false,"sites":["zzz.com"]},{"username":"john.user@lastpass.com","readonly":true,"give":false,"can_administer":false,"sites":["ccc.com"]},{"username":"doe.user@lastpass.com","readonly":true,"give":false,"can_administer":false,"sites":["ddd.com"]}]},"102":{"sharedfoldername":"ThatSFName","score":98,"users":[{"username":"john.user@lastpass.com","readonly":true,"give":false,"can_administer":false,"sites":["ccc.com"]},{"username":"doe.user@lastpass.com","readonly":true,"give":false,"can_administer":false,"sites":["ddd.com"]}]}}
+  - path: /
+    methods: ['POST']
+    request_body: /^\{"cid":"[0-9]+","cmd":"getdetailedsfdata","data":\{"data":"all","pageindex":"1","pagesize":"[0-9]+"\},"provhash":"[a-zA-Z]+"\}/
+    responses:
+      - status_code: 200
+        body: |
+          {"103":{"sharedfoldername":"SampleSFName","score":97,"users":[{"username":"sample.user@lastpass.com","readonly":true,"give":false,"can_administer":false,"sites":["sss.com"]},{"username":"sample2.user@lastpass.com","readonly":true,"give":false,"can_administer":false,"sites":["ssss.com"]}]}}
   - path: /
     methods: ['POST']
     request_body: /^\{"cid":"[0-9]+","cmd":"reporting","data":\{[^}]*\},"provhash":"[a-zA-Z]+","user":"allusers"\}/
