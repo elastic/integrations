@@ -10,7 +10,7 @@ See the GitLab [Log system docs](https://docs.gitlab.com/ee/administration/logs/
 
 ## Compatibility
 
-The Gitlab module has been developed with and tested against the [community edition](https://gitlab.com/rluna-gitlab/gitlab-ce) version 16.8.5-ce.0. 
+The GitLab module has been developed with and tested against the [community edition](https://gitlab.com/rluna-gitlab/gitlab-ce) version 16.8.5-ce.0. 
 
 ## Setup
 
@@ -131,11 +131,7 @@ Collect logs for HTTP requests made to the GitLab API. Check out the [GitLab API
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
-| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
-| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
-| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
-| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 
@@ -437,11 +433,7 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
-| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
-| log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
-| log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
-| log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 

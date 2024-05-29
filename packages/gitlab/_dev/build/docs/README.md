@@ -10,7 +10,7 @@ See the GitLab [Log system docs](https://docs.gitlab.com/ee/administration/logs/
 
 ## Compatibility
 
-The Gitlab module has been developed with and tested against the [community edition](https://gitlab.com/rluna-gitlab/gitlab-ce) version 16.8.5-ce.0. 
+The GitLab module has been developed with and tested against the [community edition](https://gitlab.com/rluna-gitlab/gitlab-ce) version 16.8.5-ce.0. 
 
 ## Setup
 
