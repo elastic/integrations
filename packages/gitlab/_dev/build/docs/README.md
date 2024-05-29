@@ -1,6 +1,6 @@
 # GitLab Integration
 
-This integration is for ingesting logs from [Gitlab](https://about.gitlab.com/).
+This integration is for ingesting logs from [GitLab](https://about.gitlab.com/).
 
 - `api`: Collect logs for HTTP requests made to the Gitlab API
 
