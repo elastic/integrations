@@ -1,7 +1,6 @@
 # Azure OpenAI Integration
 
-The Azure OpenAI service provides flexibility to build your own copilot and AI applications. The Azure OpenAI integration collects and aggregates OpenAI related logs, such as audit and request-response logs and metrics from Microsoft.CognitiveServices type resources for analysis, visualization, and alerting.
-Additional Azure API calls will be executed to retrieve information regarding the resources targeted by the user.
+The Azure OpenAI service provides flexibility to build your own copilot and AI applications. The Azure OpenAI integration collects metrics and logs through [azure-monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-metrics/metrics-index) and Azure [event hub](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/stream-monitoring-data-event-hubs) respectively.
 
 ## Data streams
 
