@@ -1,0 +1,144 @@
+title: "Collect Snyk Issues Data"
+type: logs
+streams:
+  - input: cel
+    title: "Collect Snyk Issues Data"
+    description: "Collect Snyk Issues data via the Snyk API"
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: issues_type
+        title: Audit Log Type
+        description: Type of Audit logs.
+        type: select
+        multi: false
+        required: true
+        show_user: true
+        options:
+          - text: Organization
+            value: /rest/orgs/
+          - text: Group
+            value: /rest/groups/
+        default: /rest/orgs/
+      - name: issues_id
+        type: text
+        title: Group/Organization ID
+        description: The ID of the Snyk group or organization.
+        multi: false
+        show_user: true
+        required: true
+      - name: effective_severity_level
+        type: text
+        title: Effective Severity Level
+        multi: true
+        show_user: true
+        required: false
+        description: One or more effective severity levels to filter issues.
+        default:
+          - critical
+          - high
+          - medium
+          - low
+          - info
+      - name: status
+        type: text
+        title: Status
+        multi: true
+        show_user: true
+        required: false
+        description: An issue's status
+        default:
+          - open
+          - resolved
+      - name: ignored
+        title: Ignored
+        description: Filter on whether an issue is ignored or not.
+        type: select
+        multi: false
+        required: true
+        show_user: true
+        options:
+          - text: 'Ignored'
+            value: "true"
+          - text: 'Not Ignored'
+            value: 'false'
+          - text: "Don't Care"
+            value: ''
+        default: ''
+      - name: type
+        type: text
+        title: Types
+        multi: true
+        show_user: true
+        required: false
+        description: The type of issues to filter the results by.
+        default:
+          - package_vulnerability
+          - license
+          - cloud
+          - code
+          - custom
+          - config
+      - name: scan_item_id
+        type: text
+        title: Scan Item
+        multi: false
+        show_user: true
+        required: false
+        description: A scan item id to filter issues through their scan item relationship.
+      - name: scan_item_type
+        type: text
+        title: Scan Item Types
+        multi: true
+        show_user: true
+        required: false
+        description: The scan item type of issues to filter the results by.
+        default:
+          - project
+          - environment
+      - name: interval
+        type: text
+        title: Interval to query Snyk Events API
+        description: Go Duration syntax (eg. 10s)
+        multi: false
+        show_user: false
+        required: true
+        default: 24h
+      - name: first_interval
+        type: text
+        title: Initial interval to query Snyk Events API.
+        description: Go Duration syntax (eg. 10s)
+        multi: false
+        show_user: false
+        required: false
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Batch size for the response of the Snyk API. It must be between 1 - 100 if present.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - snyk-issues
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
