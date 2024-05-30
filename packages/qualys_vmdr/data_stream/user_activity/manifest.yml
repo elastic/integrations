@@ -1,10 +1,10 @@
-title: Collect Asset Host Detection data from Qualys VMDR platform.
+title: Collect User Activity Log data from Qualys VMDR platform.
 type: logs
 streams:
   - input: cel
-    title: Asset Host Detection data
-    description: Collect Asset Host Detection data from Qualys VMDR platform.
-    template_path: input.yml.hbs
+    title: User Activity Log
+    description: Collect User Activity Log data from Qualys VMDR platform.
+    template_path: cel.yml.hbs
     vars:
       - name: url
         type: text
@@ -12,6 +12,15 @@ streams:
         description: Base URL of the Qualys Server API.
         required: true
         show_user: true
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: >-
+          How far back to pull the User Activity log data from Qualys VMDR. Supported units for this parameter are s, m, h.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
       - name: interval
         type: text
         title: Interval
@@ -39,15 +48,6 @@ streams:
         required: true
         show_user: false
         default: 10m
-      - name: input_parameters
-        type: text
-        title: Input Parameters
-        description: >-
-          Input Parameters for the URL. param1=value&param2=value&param3=....*
-        multi: false
-        required: false
-        show_user: true
-        default: ""
       - name: tags
         type: text
         title: Tags
@@ -56,20 +56,12 @@ streams:
         show_user: false
         default:
           - forwarded
-          - qualys_vmdr-asset_host_detection
+          - qualys_vmdr-user_activity
       - name: preserve_duplicate_custom_fields
         required: true
         show_user: false
         title: Preserve duplicate custom fields
-        description: Preserve qualys_vmdr.asset_host_detection fields that were copied to Elastic Common Schema (ECS) fields.
-        type: bool
-        multi: false
-        default: false
-      - name: preserve_original_event
-        required: true
-        show_user: false
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        description: Preserve qualys_vmdr.user_activity fields that were copied to Elastic Common Schema (ECS) fields.
         type: bool
         multi: false
         default: false
