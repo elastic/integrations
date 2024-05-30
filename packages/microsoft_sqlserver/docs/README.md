@@ -20,7 +20,7 @@ Find more details in [Logs](#logs).
 Metric data streams collected by the integration include:
 
 * `performance` metrics gather the list of performance objects available on that server. Each server will have a different list of performance objects depending on the installed software.
-* `transaction_log` metrics collect all usage stats and the total space usage.
+* `transaction_log` metrics collect all usage stats and the total space usage. Microsoft SQL Server 2016 or later is required to collect these metrics.
 
 Find more details in [Metrics](#metrics).
 
