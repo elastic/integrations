@@ -32,10 +32,6 @@ processors:
     field: ecs.version
     value: '8.11.0'
 
-### fix common dumb string/numeric conflicts that we've seen so far, before doing anything else
-### NOTE: given the insanity oozing out of the "defined" BitDefender push notification event type formats,
-### perhaps a script to just convert everything to keyword/string and we do convert when necessary instead of hoping they will send a consistent format?
-
 - convert:
     field: bitdefender.event.status
     type: string
@@ -65,9 +61,6 @@ processors:
     field: bitdefender.event.taskType
     type: string
     ignore_missing: true
-
-### fix timestamps because BitDefender is too inept to format them properly or provide them consistently
-### we do not use any of these for @timestamp due to the lack of consistency with respect to BitDefender providing any of them.
 
 - date:
     if: ctx.bitdefender?.event?.lastAdReportDate != null && ctx.bitdefender?.event?.lastAdReportDate != ""
@@ -179,7 +172,9 @@ processors:
       - ISO8601
       - UNIX
 
-### attempt to parse this pile of garbage to ECS
+################
+## ECS fields ##
+################
 
 ### organization fields
 
@@ -352,7 +347,7 @@ processors:
         ctx.event.type = schema;
       }
 
-# translate module code to a usefule description
+# translate module code to a useful description
 - script:
     lang: painless
     params:
@@ -446,7 +441,7 @@ processors:
     ignore_empty_value: true
     if: ctx.event?.severity == null
 
-### try to determine the action taken by BitDefender from the miriad of fields they use to say the same thing...
+### Determine event.action
 
 - set:
     copy_from: bitdefender.event.final_status
@@ -755,7 +750,7 @@ processors:
     target_field: destination.port
     ignore_missing: true
 
-### user related fields from the quagmire that is the BitDefender fields.
+### user related fields.
 
 - set:
     copy_from: bitdefender.event.user.id
@@ -1042,7 +1037,7 @@ processors:
     ignore_empty_value: true
     if: ctx.threat?.software?.name == null
 
-### MITRE ATT&CK stuff - dubious value given the quality of BitDefender.
+### attack fields
 
 - set:
     copy_from: bitdefender.event.attack_types
@@ -1097,7 +1092,7 @@ processors:
     allow_duplicates: false
 
 
-### message - create something useful if BitDefender didn't give us something useful (hint: they did not.)
+### Create message if it doesn't exist.
 
 - set:
     field: message
