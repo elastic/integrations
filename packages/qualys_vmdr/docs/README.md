@@ -519,8 +519,8 @@ An example event for `user_activity` looks as following:
 {
     "@timestamp": "2024-02-02T13:26:41.000Z",
     "agent": {
-        "ephemeral_id": "79096840-4170-465b-980d-12657dbdf919",
-        "id": "6b5ca4ac-55fe-4a46-a9db-ba6012bf1cb8",
+        "ephemeral_id": "af48395e-458a-458f-861f-054f80ca6927",
+        "id": "4549f0e8-0878-48fa-9db3-e93d9aa2f9c1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.4"
@@ -534,7 +534,7 @@ An example event for `user_activity` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6b5ca4ac-55fe-4a46-a9db-ba6012bf1cb8",
+        "id": "4549f0e8-0878-48fa-9db3-e93d9aa2f9c1",
         "snapshot": false,
         "version": "8.13.4"
     },
@@ -545,7 +545,7 @@ An example event for `user_activity` looks as following:
             "api"
         ],
         "dataset": "qualys_vmdr.user_activity",
-        "ingested": "2024-05-30T03:15:54Z",
+        "ingested": "2024-05-30T03:33:23Z",
         "kind": "event",
         "provider": "auth",
         "type": [
@@ -566,6 +566,14 @@ An example event for `user_activity` looks as following:
             "User_Name": "saand_rn",
             "User_Role": "Manager"
         }
+    },
+    "related": {
+        "ip": [
+            "10.113.195.136"
+        ],
+        "user": [
+            "saand_rn"
+        ]
     },
     "source": {
         "ip": "10.113.195.136"
@@ -607,6 +615,15 @@ An example event for `user_activity` looks as following:
 | qualys_vmdr.user_activity.User_Role |  | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
