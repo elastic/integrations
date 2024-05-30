@@ -35,6 +35,24 @@ processors:
       tag: remove_file_mtime
       ignore_failure: true
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Remove non-strings from file.attributes
+      if: ctx.file?.attributes instanceof List
+      source: |
+        def result = [];
+        for (def v : ctx.file.attributes) {
+          if (v instanceof String) {
+            result.add(v);
+          }
+        }
+        ctx.file.attributes = result;
+      tag: remove_non_strings_from_file_attributes
+  - convert:
+      field: file.size
+      type: long
+      ignore_missing: true
+      tag: file_size_convert
   - rename:
       field: "event.windows_certificate_store_path"
       target_field: tychon.windows_certificate_store_path
@@ -60,6 +78,11 @@ processors:
       target_field: tychon.x509.private_signature_algorithm
       ignore_missing: true
       tag: x509_privsignalgo_rename
+  - convert:
+      field: x509.public_key_size
+      type: long
+      ignore_missing: true
+      tag: x509_pubkeysize_convert
   - rename:
       field: "x509.private_key_size"
       target_field: tychon.x509.private_key_size
@@ -227,6 +250,39 @@ processors:
       target_field: tychon.file.code_signature.subject_name
       ignore_missing: true
       tag: file_codesigsubname_rename
+  - rename:
+      field: "file.version"
+      target_field: tychon.file.version
+      ignore_missing: true
+      tag: file_version_rename
+  - script:
+      lang: painless
+      description: Normalize x509 array fields
+      source: |
+        def fieldset = ctx.x509;
+        if (fieldset != null) {
+          for (String partyName : ["issuer", "subject"]) {
+            def party = fieldset[partyName];
+            if (party != null) {
+              for (String fieldName : [
+                  "common_name",
+                  "country",
+                  "distinguished_name",
+                  "locality",
+                  "organizational_unit",
+                  "organization",
+                  "state_or_province"
+                ]) {
+                def value = party[fieldName];
+                if (value == "") {
+                  party.remove(fieldName);
+                } else if (value instanceof String) {
+                  party[fieldName] = [value];
+                }
+              }
+            }
+          }
+        }
   - set:
       field: '@timestamp'
       value: '{{_ingest.timestamp}}'
