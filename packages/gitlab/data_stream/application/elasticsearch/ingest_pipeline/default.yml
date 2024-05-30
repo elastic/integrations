@@ -1,0 +1,154 @@
+---
+description: Pipeline for processing application logs
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - rename:
+      field: message
+      target_field: event.original
+      tag: rename_message
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      tag: remove_message
+      if: ctx.event?.original != null
+  - drop: 
+      if: ctx.event.original.startsWith('#')
+      description: Drop if logline contains header(s), which startswith `#`.
+  - json:
+      field: event.original
+      tag: 'json_decoding'
+      target_field: gitlab.application
+  - date:
+      field: gitlab.application.time
+      formats:
+        - "ISO8601"
+      target_field: "@timestamp"
+      timezone: "UTC"
+      tag: date_event_created_time_epoch
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.gitlab?.application?.time != null
+  - set:
+      field: event.severity
+      value: 0
+      if: ctx.gitlab?.application?.severity == 'DEBUG'
+      tag: set_severity_0
+  - set:
+      field: event.severity
+      value: 1
+      if: ctx.gitlab?.application?.severity == 'INFO'
+      tag: set_severity_1
+  - set:
+      field: event.severity
+      value: 2
+      if: ctx.gitlab?.application?.severity == 'WARN'
+      tag: set_severity_2
+  - set:
+      field: event.severity
+      value: 3
+      if: ctx.gitlab?.application?.severity == 'ERROR'
+      tag: set_severity_3
+  - set:
+      field: event.severity
+      value: 4
+      if: ctx.gitlab?.application?.severity == 'FATAL'
+      tag: set_severity_4
+  - set:
+      field: event.severity
+      value: 5
+      if: ctx.gitlab?.application?.severity == 'UNKNOWN'
+      tag: set_severity_5
+  - remove:
+      field: gitlab.application.severity
+      ignore_missing: true
+  - rename:
+      field: gitlab.application.correlation_id
+      target_field: event.id
+      ignore_missing: true
+  - dot_expander:
+      path: gitlab.application
+      field: meta.caller_id
+  - dot_expander:
+      path: gitlab.application
+      field: meta.client_id
+  - dot_expander:
+      path: gitlab.application
+      field: meta.feature_category
+  - dot_expander:
+      path: gitlab.application
+      field: meta.remote_ip
+  - convert:
+      field: gitlab.application.meta.remote_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+          - remove:
+              field: gitlab.application.meta.remote_ip
+              ignore_missing: true
+          - append:
+              field: error.message
+              value: '{{{_ingest.on_failure_message}}}'
+  - dot_expander:
+      path: gitlab.application
+      field: meta.user
+  - dot_expander:
+      path: gitlab.application
+      field: meta.user_id
+  - dot_expander:
+      path: gitlab.application
+      field: meta.root_caller_id
+  - dot_expander:
+      path: gitlab.application
+      field: meta.root_namespace
+  - dot_expander:
+      path: gitlab.application
+      field: meta.project
+  - rename:
+      field: gitlab.application.message
+      target_field: message
+  - append:
+      tag: event_type_append
+      field: event.type
+      value:
+        - info
+  - append:
+      field: event.category
+      value:
+        - configuration
+  - remove:
+      field: event.original
+      tag: remove_original_event
+      if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+        in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
