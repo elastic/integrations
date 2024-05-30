@@ -96,13 +96,13 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-03-11T21:06:28.277Z",
+    "@timestamp": "2024-05-28T23:07:00.155Z",
     "agent": {
-        "ephemeral_id": "798665d1-a592-4f07-8517-f7bdcdbda09f",
-        "id": "b7f7fd67-e199-4daf-b640-92e89c091cc6",
+        "ephemeral_id": "fae59c6e-a106-4bba-8002-55ae3e40c46f",
+        "id": "33c44d71-ed50-44dd-be56-70103362ff67",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "qualys_vmdr.asset_host_detection",
@@ -113,9 +113,9 @@ An example event for `asset_host_detection` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b7f7fd67-e199-4daf-b640-92e89c091cc6",
+        "id": "33c44d71-ed50-44dd-be56-70103362ff67",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -123,8 +123,9 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2024-03-11T21:06:40Z",
+        "ingested": "2024-05-28T23:07:12Z",
         "kind": "alert",
+        "original": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE HOST_LIST_VM_DETECTION_OUTPUT SYSTEM \"https://qualysapi.qualys.com/api/2.0/fo/asset/host/vm/detection/dtd/output.dtd\">\n<HOST_LIST_VM_DETECTION_OUTPUT>\n  <RESPONSE>\n    <DATETIME>2023-07-03T06:51:41Z</DATETIME>\n    <HOST_LIST>\n      <HOST>\n        <ID>12048633</ID>\n        <IP>10.50.2.111</IP>\n        <TRACKING_METHOD>IP</TRACKING_METHOD>\n        <OS>\n          <![CDATA[Windows 2016/2019/10]]>\n        </OS>\n        <DNS>\n          <![CDATA[adfssrvr.adfs.local]]>\n        </DNS>\n        <DNS_DATA>\n          <HOSTNAME>\n            <![CDATA[adfssrvr]]>\n          </HOSTNAME>\n          <DOMAIN>\n            <![CDATA[adfs.local]]>\n          </DOMAIN>\n          <FQDN>\n            <![CDATA[adfssrvr.adfs.local]]>\n          </FQDN>\n        </DNS_DATA>\n        <NETBIOS>\n          <![CDATA[ADFSSRVR]]>\n        </NETBIOS>\n        <LAST_SCAN_DATETIME>2023-07-03T06:25:17Z</LAST_SCAN_DATETIME>\n        <LAST_VM_SCANNED_DATE>2023-07-03T06:23:47Z</LAST_VM_SCANNED_DATE>\n        <LAST_VM_SCANNED_DURATION>1113</LAST_VM_SCANNED_DURATION>\n        <LAST_PC_SCANNED_DATE>2023-06-28T09:58:12Z</LAST_PC_SCANNED_DATE>\n        <DETECTION_LIST>\n          <DETECTION>\n            <UNIQUE_VULN_ID>5555555555</UNIQUE_VULN_ID>\n            <QID>197595</QID>\n            <TYPE>Confirmed</TYPE>\n            <SEVERITY>3</SEVERITY>\n            <SSL>0</SSL>\n            <RESULTS><![CDATA[Package Installed Version Required Version\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092]]></RESULTS>\n            <STATUS>Active</STATUS>\n            <FIRST_FOUND_DATETIME>2021-02-05T04:50:45Z</FIRST_FOUND_DATETIME>\n            <LAST_FOUND_DATETIME>2024-03-08T20:15:41Z</LAST_FOUND_DATETIME>\n            <QDS severity=\"LOW\">35</QDS>\n            <QDS_FACTORS>\n              <QDS_FACTOR name=\"CVSS\"><![CDATA[7.7]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_version\"><![CDATA[v3.x]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"epss\"><![CDATA[0.00232]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_vector\"><![CDATA[AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H]]></QDS_FACTOR>\n            </QDS_FACTORS>\n            <TIMES_FOUND>5393</TIMES_FOUND>\n            <LAST_TEST_DATETIME>2024-03-08T20:15:41Z</LAST_TEST_DATETIME>\n            <LAST_UPDATE_DATETIME>2024-03-08T20:15:41Z</LAST_UPDATE_DATETIME>\n            <LAST_FIXED_DATETIME>2022-12-14T06:52:57Z</LAST_FIXED_DATETIME>\n            <IS_IGNORED>0</IS_IGNORED>\n            <IS_DISABLED>0</IS_DISABLED>\n            <AFFECT_RUNNING_KERNEL>0</AFFECT_RUNNING_KERNEL>\n            <LAST_PROCESSED_DATETIME>2024-03-08T20:15:41Z</LAST_PROCESSED_DATETIME>\n          </DETECTION>\n          <DETECTION>\n            <UNIQUE_VULN_ID>6666666666</UNIQUE_VULN_ID>\n            <QID>197597</QID>\n            <TYPE>Confirmed</TYPE>\n            <SEVERITY>5</SEVERITY>\n            <SSL>0</SSL>\n            <RESULTS><![CDATA[Package Installed Version Required Version\nlinux-image-4.15.0  1027-aws_4.15.0-1126.135  1047\nlinux-headers-4.15.0  1027-aws_4.15.0-1126.135  1047\nlinux-modules-4.15.0  1027-aws_4.15.0-1126.135  1047\nlinux-aws-headers-4.15.0  1027_4.15.0-1126.135  1047]]></RESULTS>\n            <STATUS>Active</STATUS>\n            <FIRST_FOUND_DATETIME>2021-02-05T04:50:45Z</FIRST_FOUND_DATETIME>\n            <LAST_FOUND_DATETIME>2024-03-08T20:15:41Z</LAST_FOUND_DATETIME>\n            <QDS severity=\"CRITICAL\">95</QDS>\n            <QDS_FACTORS>\n              <QDS_FACTOR name=\"RTI\"><![CDATA[local]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"exploit_maturity\"><![CDATA[weaponized,poc]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CISA_vuln\"><![CDATA[YES]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS\"><![CDATA[7.8]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_version\"><![CDATA[v3.x]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"epss\"><![CDATA[0.00052]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"trending\"><![CDATA[02222024,02162024,02262024,02152024,02012024,02252024,02212024,02282024,02102024,02062024,02082024,02042024,02052024]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"CVSS_vector\"><![CDATA[AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H]]></QDS_FACTOR>\n              <QDS_FACTOR name=\"mitigation_controls\"><![CDATA[18436,18437]]></QDS_FACTOR>\n            </QDS_FACTORS>\n            <TIMES_FOUND>5393</TIMES_FOUND>\n            <LAST_TEST_DATETIME>2024-03-08T20:15:41Z</LAST_TEST_DATETIME>\n            <LAST_UPDATE_DATETIME>2024-03-08T20:15:41Z</LAST_UPDATE_DATETIME>\n            <LAST_FIXED_DATETIME>2022-12-14T06:52:57Z</LAST_FIXED_DATETIME>\n            <IS_IGNORED>0</IS_IGNORED>\n            <IS_DISABLED>0</IS_DISABLED>\n            <AFFECT_RUNNING_KERNEL>0</AFFECT_RUNNING_KERNEL>\n            <LAST_PROCESSED_DATETIME>2024-03-08T20:15:41Z</LAST_PROCESSED_DATETIME>\n          </DETECTION>\n        </DETECTION_LIST>\n      </HOST>\n    </HOST_LIST>\n  </RESPONSE>\n</HOST_LIST_VM_DETECTION_OUTPUT>",
         "type": [
             "info"
         ]
@@ -213,6 +214,7 @@ An example event for `asset_host_detection` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "qualys_vmdr-asset_host_detection"
@@ -328,11 +330,11 @@ An example event for `knowledge_base` looks as following:
 {
     "@timestamp": "2023-06-29T12:20:46.000Z",
     "agent": {
-        "ephemeral_id": "2680cdd8-c261-48cd-b70d-b958f911b86a",
-        "id": "339b7770-4966-47a8-bc07-60e4a5c83116",
+        "ephemeral_id": "c4d3c4ee-a36e-4fd0-9d4a-dbb192e5ee74",
+        "id": "33c44d71-ed50-44dd-be56-70103362ff67",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "qualys_vmdr.knowledge_base",
@@ -343,9 +345,9 @@ An example event for `knowledge_base` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "339b7770-4966-47a8-bc07-60e4a5c83116",
+        "id": "33c44d71-ed50-44dd-be56-70103362ff67",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -354,8 +356,9 @@ An example event for `knowledge_base` looks as following:
         ],
         "dataset": "qualys_vmdr.knowledge_base",
         "id": "11830",
-        "ingested": "2024-03-17T23:42:53Z",
+        "ingested": "2024-05-28T23:08:57Z",
         "kind": "alert",
+        "original": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n<!DOCTYPE KNOWLEDGE_BASE_VULN_LIST_OUTPUT SYSTEM \"https://qualysapi.qualys.com/api/2.0/fo/knowledge_base/vuln/knowledge_base_vuln_list_output.dtd\">\n<KNOWLEDGE_BASE_VULN_LIST_OUTPUT>\n    <RESPONSE>\n        <DATETIME>2023-07-06T15:02:16Z</DATETIME>\n        <VULN_LIST>\n            <VULN>\n                <QID>11830</QID>\n                <VULN_TYPE>Vulnerability</VULN_TYPE>\n                <SEVERITY_LEVEL>2</SEVERITY_LEVEL>\n                <TITLE>\n                    <![CDATA[HTTP Security Header Not Detected]]>\n                </TITLE>\n                <CVE_LIST>\n                    <CVE>\n                        <ID><![CDATA[CVE-2022-31629]]></ID>\n                        <URL><![CDATA[http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-31629]]></URL>\n                    </CVE>\n                    <CVE>\n                        <ID><![CDATA[CVE-2022-31628]]></ID>\n                        <URL><![CDATA[http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-31628]]></URL>\n                    </CVE>\n                </CVE_LIST>\n                <CATEGORY>CGI</CATEGORY>\n                <LAST_SERVICE_MODIFICATION_DATETIME>2023-06-29T12:20:46Z</LAST_SERVICE_MODIFICATION_DATETIME>\n                <PUBLISHED_DATETIME>2017-06-05T21:34:49Z</PUBLISHED_DATETIME>\n                <PATCHABLE>0</PATCHABLE>\n                <SOFTWARE_LIST>\n                    <SOFTWARE>\n                        <PRODUCT>\n                            <![CDATA[None]]>\n                        </PRODUCT>\n                        <VENDOR>\n                            <![CDATA[multi-vendor]]>\n                        </VENDOR>\n                    </SOFTWARE>\n                </SOFTWARE_LIST>\n                <DIAGNOSIS>\n                    <![CDATA[This QID reports the absence of the following]]>\n                </DIAGNOSIS>\n                <CONSEQUENCE>\n                    <![CDATA[Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.]]>\n                </CONSEQUENCE>\n                <SOLUTION>\n                    <![CDATA[<B>Note:</B> To better debug the results of this QID]]>\n                </SOLUTION>\n                <PCI_FLAG>1</PCI_FLAG>\n                <THREAT_INTELLIGENCE>\n                    <THREAT_INTEL id=\"8\">\n                        <![CDATA[No_Patch]]>\n                    </THREAT_INTEL>\n                </THREAT_INTELLIGENCE>\n                <DISCOVERY>\n                    <REMOTE>1</REMOTE>\n                </DISCOVERY>\n            </VULN>\n        </VULN_LIST>\n    </RESPONSE>\n</KNOWLEDGE_BASE_VULN_LIST_OUTPUT>",
         "type": [
             "info"
         ]
@@ -392,6 +395,7 @@ An example event for `knowledge_base` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "qualys_vmdr-knowledge_base"
