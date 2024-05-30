@@ -47,10 +47,6 @@ processors:
       target_field: event.sequence
       ignore_missing: true
   - rename:
-      field: teleport.audit.sid
-      target_field: teleport.audit.session_id
-      ignore_missing: true
-  - rename:
       field: teleport.audit.size
       target_field: teleport.audit.terminal_size
       ignore_missing: true
@@ -58,14 +54,7 @@ processors:
       field: teleport.audit.cluster_name
       target_field: orchestrator.cluster.name
       ignore_missing: true
-  - rename:
-      field: teleport.audit.login
-      target_field: server.user.name
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.user
-      target_field: user.name
-      ignore_missing: true
+
   # exec event type
   - rename:
       field: teleport.audit.command
@@ -264,6 +253,7 @@ processors:
         - "%{NUMBER:process.tty.columns}:%{NUMBER:process.tty.rows}"
       ignore_missing: true
       ignore_failure: true
+
   # scp event type
   - rename:
       field: teleport.audit.path
@@ -273,7 +263,16 @@ processors:
       field: teleport.audit.len
       target_field: file.size
       ignore_missing: true
+
   # the rest of the pipeline
+  - rename:
+      field: teleport.audit.user.login
+      target_field: server.user.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.user.user
+      target_field: user.name
+      ignore_missing: true
   - dot_expander:
       path: teleport.audit
       field: addr.remote
