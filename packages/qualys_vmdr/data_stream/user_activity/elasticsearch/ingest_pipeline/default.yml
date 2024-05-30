@@ -149,13 +149,16 @@ processors:
       allow_duplicates: false
   - append:
       if: >
-        ['set', 'add', 'create'].contains(ctx.event?.action)
+        ctx.event?.action == 'add'
+        || ctx.event?.action == 'create'
+        || ctx.event?.action == 'set'
       field: event.category
       value: configuration
       allow_duplicates: false
   - append:
       if: >
-        ['set', 'add'].contains(ctx.event?.action)
+        ctx.event?.action == 'add'
+        || ctx.event?.action == 'set'
       field: event.type
       value: change
       allow_duplicates: false
