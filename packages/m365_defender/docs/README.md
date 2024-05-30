@@ -698,7 +698,7 @@ This is the `event` dataset.
 | m365_defender.event.attack_techniques | MITRE ATT&CK techniques associated with the activity that triggered the alert. | keyword |
 | m365_defender.event.authentication_details | List of pass or fail verdicts by email authentication protocols like DMARC, DKIM, SPF or a combination of multiple authentication types (CompAuth). | keyword |
 | m365_defender.event.bulk_complaint_level | Threshold assigned to email from bulk mailers, a high bulk complaint level (BCL) means the email is more likely to generate complaints, and thus more likely to be spam. | long |
-| m365_defender.event.category |  | keyword |
+| m365_defender.event.category | The Advanced Hunting table name with 'AdvancedHunting-' prefix. | keyword |
 | m365_defender.event.certificate.countersignature_time | Date and time the certificate was countersigned. | date |
 | m365_defender.event.certificate.creation_time | Date and time the certificate was created. | date |
 | m365_defender.event.certificate.expiration_time | Date and time the certificate is set to expire. | date |
@@ -913,7 +913,7 @@ This is the `event` dataset.
 | m365_defender.event.threat.family | Malware family that the suspicious or malicious file or process has been classified under. | keyword |
 | m365_defender.event.threat.names | Detection name for malware or other threats found. | keyword |
 | m365_defender.event.threat.types | Verdict from the email filtering stack on whether the email contains malware, phishing, or other threats. | keyword |
-| m365_defender.event.time |  | date |
+| m365_defender.event.time | The time Microsoft Defender received the event. | date |
 | m365_defender.event.timestamp | Date and time when the event was recorded. | date |
 | m365_defender.event.title | Title of the alert. | keyword |
 | m365_defender.event.tunnel_type | Tunneling protocol, if the interface is used for this purpose, for example 6to4, Teredo, ISATAP, PPTP, SSTP, and SSH. | keyword |
