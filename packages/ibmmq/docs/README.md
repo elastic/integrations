@@ -14,17 +14,17 @@ Use the IBM MQ integration to:
 
 The IBM MQ integration collects logs and metrics data.
 
-Logs provide insights into operations and events within the IBM MQ environment. The `Log` data stream collected by the IBM MQ integration is `errorlog`. It's allowing users to track errors and warnings, understand their causes, and address issues related to message handling and processing.
+Logs provide insights into operations and events within the IBM MQ environment. The errorlog data stream collected by the IBM MQ integration enables users to track errors and warnings, understand their causes, and address issues related to message handling and processing.
 
-Metrics offer statistics on the performance and health of IBM MQ. The `Metric` data stream collected by the IBM MQ integration cover `qmgr` performance, with details on messages, topics, subscriptions, and calls, enabling users to monitor and optimize the performance and reliability of their IBM MQ instances.
+Metrics provide statistics on the performance and health of IBM MQ. The qmgr data stream collected by the IBM MQ integration covers Queue Manager performance metrics, including message throughput, topics, subscriptions, and other operational statistics. This allows users to monitor and optimize the performance and reliability of their IBM MQ instances.
 
 Data streams:
 
 - `errorlog`: Collects error and warning messages from the IBM MQ Queue Manager, providing details like error descriptions, actions, explanations, and error codes.
-- `qmgr`: Collects performance metrics from the Queue Manager, including message throughput, topic and subscription, and other vital operational statistics.
+- `qmgr`: Collects performance metrics from the Queue Manager, including message throughput, topics, subscriptions, and other vital operational statistics.
 
 Note:
-- Users can monitor and see the log inside the ingested documents for IBM MQ in the `logs-*` index pattern from `Discover`, and for metrics, the index pattern is `metrics-*`.
+- Users can monitor and view logs within the ingested documents for IBM MQ using the logs-* index pattern in Discover. For metrics, the corresponding index pattern is metrics-*.
 
 ## Compatibility
 
@@ -32,7 +32,7 @@ This integration has been tested against `IBM MQ v9.1` and `IBM MQ v9.2`. The ib
 
 ## Prerequisites
 
-User need Elasticsearch for storing and searching user's data and Kibana for visualizing and managing it. User can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on user's own hardware.
+Users require Elasticsearch for storing and searching their data, and Kibana for visualizing and managing it. They can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on their own hardware.
 
 In order to ingest data from IBM MQ:
 
@@ -55,7 +55,7 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
-- `ibmmq.errorlog.error.description` field type has been changed from `text` to `keyword ` in version `1.3.0` of this integration. Hence, it is recommended to update the `ibmmq.errorlog.error.description` field to use the type keyword where it is being used. By using the [Update By Query API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html#docs-update-by-query-api-ingest-pipeline), `ibmmq.errorlog.error.description` field type can be changed from `text` to `keyword` for all the documents which would help to adapt this change.
+- In version 1.3.0 of this integration, the field type of `ibmmq.errorlog.error.description` has been changed from `text` to `keyword `. It is therefore recommended to update the `ibmmq.errorlog.error.description` field to use the `keyword` type wherever it is being used. This can be achieved by using the [Update By Query API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html#docs-update-by-query-api-ingest-pipeline), allowing for a seamless transition of the field type from  `text` to `keyword` facross all relevant documents.
 
 ## Metrics reference
 
