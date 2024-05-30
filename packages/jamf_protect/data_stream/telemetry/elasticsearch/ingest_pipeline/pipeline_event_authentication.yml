@@ -5,9 +5,31 @@ processors:
 ##########################
 ## ECS Event Specific ##
 ##########################
-    - set:
-        field: event.reason
-        value: A user authentication happened
+    - script:
+        description: Populates event.action with the name of the event
+        lang: painless
+        source: >
+          if (ctx.jamf_protect.telemetry.event.authentication.containsKey('data')) {
+            
+            def eventObject = ctx.jamf_protect.telemetry.event.authentication.data;
+            for (def key : eventObject.keySet()) {
+              if (eventObject[key] != null) {
+                if (!ctx.containsKey('data')) {
+                  ctx.custom = new HashMap();
+                }
+                ctx.custom.authentication_method = key;
+                break;
+              }
+            }
+          }
+        ignore_failure: true
+    # - set:
+    #     field: event.reason
+    #     value: A user authentication happened using {{{ctx.custom.authentication_method}}}
+    - script:
+        lang: painless
+        source: >
+            ctx.event.reason = 'A user authentication happened using ' + ctx.custom.authentication_method;
     - script:
         lang: painless
         source: >
@@ -104,6 +126,45 @@ processors:
         ignore_failure: true
 
     - rename:
+        field: jamf_protect.telemetry.event.authentication.data.od.instigator.is_platform_binary
+        target_field: custom.platform_binary
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.token.instigator.is_platform_binary
+        target_field: custom.platform_binary
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.is_platform_binary
+        target_field: custom.platform_binary
+        ignore_missing: true
+
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.od.instigator.is_es_client
+        target_field: custom.es_client
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.token.instigator.is_es_client
+        target_field: custom.es_client
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.is_es_client
+        target_field: custom.es_client
+        ignore_missing: true
+
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.od.instigator.cdhash
+        target_field: custom.code_directory_hash
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.token.instigator.cdhash
+        target_field: custom.code_directory_hash
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.cdhash
+        target_field: custom.code_directory_hash
+        ignore_missing: true
+
+    - rename:
         field: jamf_protect.telemetry.event.authentication.data.od.instigator.executable.sha1
         target_field: process.hash.sha1
         ignore_missing: true
@@ -144,15 +205,15 @@ processors:
 
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.od.instigator.tty.path
-        target_field: process.tty
+        target_field: custom.tty
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.token.instigator.tty.path
-        target_field: process.tty
+        target_field: custom.tty
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.tty.path
-        target_field: process.tty
+        target_field: custom.tty
         ignore_missing: true
 
     - set:
@@ -424,3 +485,7 @@ processors:
         type: string
         ignore_missing: true
         ignore_failure: true
+
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'
+        if: ctx.jamf_protect?.telemetry?.event?.authentication?.data?.od == null && ctx.jamf_protect?.telemetry?.event?.authentication?.data?.token == null && ctx.jamf_protect?.telemetry?.event?.authentication?.data?.touchid == null

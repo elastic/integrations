@@ -599,7 +599,7 @@ An example event for `telemetry` looks as following:
 | container.runtime | Runtime managing this container. | keyword |
 | custom.attribute_name | The name of the attribute that got set | keyword |
 | custom.attribute_value | The value of the attribute that got set | keyword |
-| custom.authorization_judgement_results | Results of the authorization judgement | array |
+| custom.authorization_judgement_results | Results of the authorization judgement | object |
 | custom.authorization_petition_flags | Flags associated with the authorization petition | integer |
 | custom.authorization_petition_right_count | The count of rights in the authorization petition | integer |
 | custom.authorization_petition_rights | Rights associated with the authorization petition | keyword |
@@ -644,7 +644,6 @@ An example event for `telemetry` looks as following:
 | device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixed for an instance of a (mobile) device.  On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
 | device.manufacturer | The vendor name of the device manufacturer. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |

@@ -94,32 +94,32 @@ processors:
             }
           }
         ignore_failure: true
-    - script:
-        description: Checks if for given event type the petitioner or instigator exists.
-        lang: painless
-        source: >
-          boolean instigator_exists = false;
-          boolean petitioner_exists = false;
-          if (ctx.containsKey('jamf_protect') &&
-              ctx.jamf_protect.containsKey('telemetry') &&
-              ctx.jamf_protect.telemetry.containsKey('event')) {
+    # - script:
+    #     description: Checks if for given event type the petitioner or instigator exists.
+    #     lang: painless
+    #     source: >
+    #       boolean instigator_exists = false;
+    #       boolean petitioner_exists = false;
+    #       if (ctx.containsKey('jamf_protect') &&
+    #           ctx.jamf_protect.containsKey('telemetry') &&
+    #           ctx.jamf_protect.telemetry.containsKey('event')) {
             
-            def eventObject = ctx.jamf_protect.telemetry.event;
+    #         def eventObject = ctx.jamf_protect.telemetry.event;
             
-            for (def key : eventObject.keySet()) {
-              if (eventObject[key].containsKey('instigator')) {
-                instigator_exists = true;
-                break;
-              }
-              if (eventObject[key].containsKey('petitioner')) {
-                petitioner_exists = true;
-                break;
-              }
-            }
-          }
-          ctx.jamf_protect.telemetry.instigator_exists = instigator_exists;
-          ctx.jamf_protect.telemetry.petitioner_exists = petitioner_exists;
-        ignore_failure: true
+    #         for (def key : eventObject.keySet()) {
+    #           if (eventObject[key].containsKey('instigator')) {
+    #             instigator_exists = true;
+    #             break;
+    #           }
+    #           if (eventObject[key].containsKey('petitioner')) {
+    #             petitioner_exists = true;
+    #             break;
+    #           }
+    #         }
+    #       }
+    #       ctx.jamf_protect.telemetry.instigator_exists = instigator_exists;
+    #       ctx.jamf_protect.telemetry.petitioner_exists = petitioner_exists;
+    #     ignore_failure: true
 
 #######################
 ## ECS Host Mapping ##
