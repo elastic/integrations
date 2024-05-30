@@ -51,17 +51,31 @@ processors:
       pattern: ':'
       replacement: '-'
       ignore_missing: true
+      tag: hostmacreformat
+  - split:
+      field: host.mac
+      separator: ','
+      if: ctx.host?.mac instanceof String && ctx.host.mac != ""
+      ignore_missing: true
+      tag: hostmacsplit
   - split:
       field: host.ip
       separator: ','
-      if: ctx.host?.ip instanceof String
+      if: ctx.host?.ip instanceof String && ctx.host.ip != ""
       ignore_missing: true
       tag: hostipsplit
   - split:
       field: host.ipv4
       separator: ','
-      if: ctx.host?.ipv4 instanceof String
+      if: ctx.host?.ipv4 instanceof String && ctx.host.ipv4 != ""
       ignore_missing: true
+      tag: hostipv4split
+  - split:
+      field: host.ipv6
+      separator: ','
+      if: ctx.host?.ipv6 instanceof String && ctx.host.ipv6 != ""
+      ignore_missing: true
+      tag: hostipv6split
   - convert:
       field: host.uptime
       type: string

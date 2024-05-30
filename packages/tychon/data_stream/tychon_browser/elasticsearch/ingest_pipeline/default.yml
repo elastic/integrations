@@ -111,9 +111,29 @@ processors:
         replacement: '-'
         ignore_missing: true
     - split:
+        field: tychon.host.mac
+        separator: ','
+        if: ctx.tychon?.host?.mac instanceof String && ctx.tychon.host.mac != ""
+        ignore_missing: true
+        tag: hostmacsplit
+    - split:
+        field: tychon.host.ip
+        separator: ','
+        if: ctx.tychon?.host?.ip instanceof String && ctx.tychon.host.ip != ""
+        ignore_missing: true
+        tag: hostipsplit
+    - split:
         field: tychon.host.ipv4
         separator: ','
+        if: ctx.tychon?.host?.ipv4 instanceof String && ctx.tychon.host.ipv4 != ""
         ignore_missing: true
+        tag: hostipv4split
+    - split:
+        field: tychon.host.ipv6
+        separator: ','
+        if: ctx.tychon?.host?.ipv6 instanceof String && ctx.tychon.host.ipv6 != ""
+        ignore_missing: true
+        tag: hostipv6split
     - convert:
         field: host.uptime
         type: string
