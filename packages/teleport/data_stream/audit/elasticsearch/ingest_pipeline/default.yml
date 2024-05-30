@@ -80,8 +80,64 @@ processors:
       target_field: error.message
       ignore_missing: true
 
+  # SessionMetadata is a common session event metadata
+  -  rename:
+       field: teleport.audit.session_id
+       target_field: teleport.audit.session.session_id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.with_mfa
+       target_field: teleport.audit.session.with_mfa
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.private_key_policy
+       target_field: teleport.audit.session.private_key_policy
+       ignore_missing: true
+
+  # UserMetadata is a common user event metadata
+  -  rename:
+       field: teleport.audit.user
+       target_field: teleport.audit.user.user
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.login
+       target_field: teleport.audit.user.login
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.impersonator
+       target_field: teleport.audit.user.impersonator
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.aws_role_arn
+       target_field: teleport.audit.user.aws_role_arn
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.access_requests
+       target_field: teleport.audit.user.access_requests
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.azure_identity
+       target_field: teleport.audit.user.azure_identity
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.gcp_service_account
+       target_field: teleport.audit.user.gcp_service_account
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.trusted_device
+       target_field: teleport.audit.user.trusted_device
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.required_private_key_policy
+       target_field: teleport.audit.user.required_private_key_policy
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.user_kind
+       target_field: teleport.audit.user.user_kind
+       ignore_missing: true
+
+  # https://github.com/gravitational/teleport/blob/43b272c546f59ff4e4cc7fb115419839aa4d364e/api/proto/teleport/legacy/types/events/events.proto
   # DatabaseMetadata contains common database information.
-  # https://github.com/gravitational/teleport/blob/43b272c546f59ff4e4cc7fb115419839aa4d364e/api/proto/teleport/legacy/types/events/events.proto#L2880
   - rename:
       field: teleport.audit.db_service
       target_field: teleport.audit.database.service
@@ -130,6 +186,76 @@ processors:
       field: teleport.audit.db_origin
       target_field: teleport.audit.database.origin
       ignore_missing: true
+
+  # KubernetesClusterMetadata contains common metadata for kubernetes-related events.
+  - rename:
+      field: teleport.audit.kubernetes_cluster
+      target_field: teleport.audit.kubernetes.cluster
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_users
+      target_field: teleport.audit.kubernetes.users
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_groups
+      target_field: teleport.audit.kubernetes.groups
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_labels
+      target_field: teleport.audit.kubernetes.labels
+      ignore_missing: true
+
+  # KubernetesPodMetadata contains common metadata for kubernetes pod-related events.
+  - rename:
+      field: teleport.audit.kubernetes_pod_name
+      target_field: teleport.audit.kubernetes_pod.pod_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_pod_namespace
+      target_field: teleport.audit.kubernetes_pod.pod_namespace
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_container_name
+      target_field: teleport.audit.kubernetes_pod.container_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_container_image
+      target_field: teleport.audit.kubernetes_pod.container_image
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_node_name
+      target_field: teleport.audit.kubernetes_pod.node_name
+      ignore_missing: true
+
+  # Server is a server metadata
+  -  rename:
+       field: teleport.audit.namespace
+       target_field: teleport.audit.server.namespace
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_id
+       target_field: teleport.audit.server.server_id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_hostname
+       target_field: teleport.audit.server.server_hostname
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_addr
+       target_field: teleport.audit.server.server_addr
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_labels
+       target_field: teleport.audit.server.server_labels
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.forwarded_by
+       target_field: teleport.audit.server.forwarded_by
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_sub_kind
+       target_field: teleport.audit.server.server_sub_kind
+       ignore_missing: true
 
   # resize event type
   - grok:
