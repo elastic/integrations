@@ -576,13 +576,14 @@ processors:
   -  set:
        field: teleport.audit.network.action
        value: observed
-       if: ctx?.teleport?.audit?.action == 0
+       if: ctx?.audit?.working_directory == null && ctx?.teleport?.audit?.action == 0
   -  set:
        field: teleport.audit.network.action
        value: denied
-       if: ctx?.teleport?.audit?.action == 1
+       if: ctx?.audit?.working_directory == null && ctx?.teleport?.audit?.action == 1
   - remove:
       field: teleport.audit.action
+      if: ctx?.teleport?.audit?.network?.action != null
       ignore_missing: true
   -  rename:
        field: teleport.audit.tx
@@ -612,7 +613,143 @@ processors:
        target_field: teleport.audit.resource.ttl
        ignore_missing: true
 
+  # User login and MFA challenge metadata
+  # See login.yml for field definitions.
+  -  rename:
+       field: teleport.audit.method
+       target_field: teleport.audit.login.method
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.attributes
+       target_field: teleport.audit.login.identity_attributes
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.mfa_device
+       target_field: teleport.audit.login.mfa_device
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.applied_login_rules
+       target_field: teleport.audit.login.applied_login_rules
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.challenge_scope
+       target_field: teleport.audit.login.challenge_scope
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.challenge_allow_reuse
+       target_field: teleport.audit.login.challenge_allow_reuse
+       ignore_missing: true
 
+  # UserCreate is emitted when the user is created or upserted.
+  # See user.yml for field definitions.
+  -  rename:
+       field: teleport.audit.connector
+       target_field: teleport.audit.user.connector
+       ignore_missing: true
+
+  # Access request creation and update metadata
+  # See access_request.yml for field definitions.
+  -  rename:
+       field: teleport.audit.roles
+       target_field: teleport.audit.access_request.roles
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.id
+       target_field: teleport.audit.access_request.id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.state
+       target_field: teleport.audit.access_request.state
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.delegator
+       target_field: teleport.audit.access_request.delegator
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.reason
+       target_field: teleport.audit.access_request.reason
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.annotations
+       target_field: teleport.audit.access_request.annotations
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.reviewer
+       target_field: teleport.audit.access_request.reviewer
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.proposed_state
+       target_field: teleport.audit.access_request.proposed_state
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.resource_ids
+       target_field: teleport.audit.access_request.resource_ids
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.max_duration
+       target_field: teleport.audit.access_request.max_duration
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.promoted_access_list_name
+       target_field: teleport.audit.access_request.promoted_access_list_name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.assume_start_time
+       target_field: teleport.audit.access_request.assume_start_time
+       ignore_missing: true
+
+  # CommandMetadata specifies common command fields
+  # All of these fields are mapped to ECS fields.
+  - rename:
+      field: teleport.audit.command
+      target_field: process.command_line
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.exitCode
+      target_field: process.exit_code
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.exitError
+      target_field: error.message
+      ignore_missing: true
+
+  # SFTP file operations metadata
+  # See sftp.yml for field definitions.
+  -  rename:
+       field: teleport.audit.working_directory
+       target_field: process.working_directory
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.path
+       target_field: file.path
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.target_path
+       target_field: teleport.audit.sftp.target_path
+       ignore_missing: true
+#  -  rename:
+#       field: teleport.audit.flags
+#       target_field: teleport.audit.sftp.flags
+#       ignore_missing: true
+  -  rename:
+       field: teleport.audit.attributes
+       target_field: teleport.audit.sftp.attributes
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.action
+       target_field: teleport.audit.sftp.action
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.error
+       target_field: teleport.audit.sftp.error
+       ignore_missing: true
+
+  # ClientDisconnect is emitted when client is disconnected
+  # by the server due to inactivity or any other reason
+  -  rename:
+       field: teleport.audit.reason
+       target_field: event.reason
+       ignore_missing: true
 
   # DatabaseMetadata contains common database information.
   # See database.yml for field definitions.
@@ -664,6 +801,7 @@ processors:
       field: teleport.audit.db_origin
       target_field: teleport.audit.database.origin
       ignore_missing: true
+
 
 on_failure:
   - append:
