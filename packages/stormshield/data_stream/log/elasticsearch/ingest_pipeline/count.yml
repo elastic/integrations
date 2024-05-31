@@ -38,7 +38,10 @@ processors:
         for (entry in ruleStats.entrySet()) {
           ruleStats[entry.getKey()].sort((a, b) -> a["original"].compareTo(b["original"]));
         }
-        ctx.stormshield.rule_stats = ruleStats;
+        if (!ctx.stormshield.containsKey("metadata")) {
+          ctx.stormshield.metadata = [:];
+        }
+        ctx.stormshield.metadata.rule_stats = ruleStats;
         for (entry in ruleStats.entrySet()) {
           ctx.stormshield.remove(entry.getValue()["original"]);
         }

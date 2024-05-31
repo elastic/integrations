@@ -111,8 +111,13 @@ processors:
 
   - rename:
       field: stormshield.ipproto
-      target_field: network.protocol
+      target_field: network.transport
       if: ctx.stormshield?.ipproto != null
+
+  - rename:
+      field: stormshield.proto
+      target_field: network.protocol
+      if: ctx.stormshield?.proto != null
 
   - rename:
       field: stormshield.ruleid
@@ -206,6 +211,11 @@ processors:
       target_field: source.mac
       if: ctx.stormshield?.srcmac != null && ctx.source?.mac == null
 
+  - remove:
+      field: stormshield.srcmac
+      ignore_missing: true
+
+
   - convert:
       field: stormshield.srcport
       target_field: source.port
@@ -225,6 +235,48 @@ processors:
       field: destination.geo
       if: ctx.destination?.geo?.country_name == 'Reserved'
 
+  - script:
+      tag: script_move_things
+      lang: painless
+      description: Move the list of fields we don't want to drop.
+      params:
+        names:
+            - srcportname
+            - Pvm
+            - auth
+            - authcaptive
+            - authconsole
+            - authipsec
+            - authsslvpn
+            - authtotp
+            - authwebadmin
+            - confid
+            - dstportname
+            - id
+            - ipv
+            - mem
+            - modsrc
+            - modsrcport
+            - pri
+            - rcvd
+            - security
+            - sent
+            - slotlevel
+            - slotname
+            - srcname
+      source: >-
+        if (!ctx.stormshield.containsKey("metadata")) {
+            ctx.stormshield.metadata = [:];
+        }
+        params.names.forEach(k -> {
+            if (ctx.stormshield.containsKey(k)) {
+                ctx.stormshield.metadata[k] = ctx.stormshield[k];
+                ctx.stormshield.remove(k);
+            }
+            return true;
+        });
+        
+
   # ------------------------------------------------------------
   # Cleanup
 
@@ -240,6 +292,10 @@ processors:
       ignore_missing: true
   - remove:
       field: message
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: stormshield.srcportname
       ignore_failure: true
       ignore_missing: true
 

@@ -83,9 +83,12 @@ processors:
         for (entry in result.entrySet()) {
           result[entry.getKey()].sort((a, b) -> a["original"].compareTo(b["original"]));
         }
-        ctx.stormshield.device_stats = result;
+        if (!ctx.stormshield.containsKey("metadata")) {
+          ctx.stormshield["metadata"] = [:];
+        }
+        ctx.stormshield.metadata.device_stats = result;
         for (entry in specialCases.entrySet()) {
-          ctx.stormshield.device_stats[entry.getKey()] = entry.getValue();
+          ctx.stormshield.metadata.device_stats[entry.getKey()] = entry.getValue();
           ctx.stormshield.remove(entry.getKey());
         }
 
@@ -123,6 +126,9 @@ processors:
           return;
         }
 
+        if (!ctx.stormshield.containsKey("metadata")) {
+          ctx.stormshield.metadata = [:];
+        }
         def ports = [];
         for (entry in deviceStats.entrySet()) {
           def entryKey = entry.getKey();
@@ -139,7 +145,7 @@ processors:
             }
           }
           ctx.stormshield.remove(entryKey);
-          ctx.stormshield[entryKey] = item;
+          ctx.stormshield.metadata[entryKey] = item;
         }
         ports.sort((a, b) -> a.compareTo(b));
         ctx.stormshield.ports = ports;
