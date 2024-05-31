@@ -28,6 +28,7 @@ processors:
   # Process the remaining field groups.
   - pipeline:
       name: '{{ IngestPipeline "field-groups" }}'
+      ignore_failure: true
 
 
 
@@ -55,13 +56,7 @@ processors:
       target_field: error.message
       ignore_missing: true
 
-  # resize event type
-  - grok:
-      field: teleport.audit.terminal_size
-      patterns:
-        - "%{NUMBER:process.tty.columns}:%{NUMBER:process.tty.rows}"
-      ignore_missing: true
-      ignore_failure: true
+
 
   # scp event type
   - rename:
@@ -106,31 +101,9 @@ processors:
       field: mfa_device.mfa_device_type
       target_field: mfa_device.type
       ignore_missing: true
-  - script:
-      lang: painless
-      description: Adds the URI identifier to make uri_parts processor work
-      if: ctx?.teleport?.audit?.addr?.remote != null
-      source: |
-        ctx.teleport.audit.addr.remote = "//" + ctx.teleport.audit.addr.remote;
-  - uri_parts:
-      field: teleport.audit.addr.remote
-      tag: split_teleport_audit_remote_address
-      target_field: teleport.audit.remote
-      remove_if_successful: true
-      keep_original: true
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: teleport.audit.remote.domain
-      target_field: client.ip
-      ignore_missing: true
   - rename:
       field: teleport.audit.client_ip
       target_field: client.ip
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.remote.port
-      target_field: client.port
       ignore_missing: true
   - rename:
       field: teleport.audit.identity.roles

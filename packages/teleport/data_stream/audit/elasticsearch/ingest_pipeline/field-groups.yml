@@ -110,20 +110,37 @@ processors:
   # See server.yml for field definitions.
   -  rename:
        field: teleport.audit.namespace
-       target_field: teleport.audit.server.namespace
+       target_field: group.name
        ignore_missing: true
   -  rename:
        field: teleport.audit.server_id
-       target_field: teleport.audit.server.server_id
+       target_field: host.id
        ignore_missing: true
   -  rename:
        field: teleport.audit.server_hostname
-       target_field: teleport.audit.server.hostname
+       target_field: host.hostname
        ignore_missing: true
-  -  rename:
-       field: teleport.audit.server_addr
-       target_field: teleport.audit.server.address
-       ignore_missing: true
+  - script:
+      tag: add_tmp_server_addr
+      lang: painless
+      description: Adds the URI identifier to make uri_parts processor work
+      if: ctx?.teleport?.audit?.server_addr != null
+      source: |
+        ctx.teleport.audit.tmp_server_addr = "//" + ctx.teleport.audit.server_addr;
+  - uri_parts:
+      tag: parse_tmp_server_addr
+      field: teleport.audit.tmp_server_addr
+      target_field: teleport.audit.server.address
+      keep_original: false
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.tmp_server_addr
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.server_addr
+      target_field: teleport.audit.server.address.original
+      ignore_missing: true
   -  rename:
        field: teleport.audit.server_labels
        target_field: teleport.audit.server.labels
@@ -140,23 +157,6 @@ processors:
        field: teleport.audit.server_version
        target_field: teleport.audit.server.version
        ignore_missing: true
-  - script:
-      lang: painless
-      description: Adds the URI identifier to make uri_parts processor work
-      if: ctx?.teleport?.audit?.server?.address != null
-      source: |
-        ctx.teleport.audit.server.address = "//" + ctx.teleport.audit.server.address;
-  - uri_parts:
-      field: teleport.audit.server.address
-      target_field: teleport.audit.server.address
-      remove_if_successful: true
-      keep_original: true
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: teleport.audit.server.hostname
-      target_field: host.hostname
-      ignore_missing: true
   - rename:
       field: teleport.audit.server.address.ip
       target_field: host.ip
@@ -168,65 +168,79 @@ processors:
 
   # Connection contains connection info.
   # See connection.yml for field definitions.
-  - dot_expander:
-      path: teleport.audit
-      field: addr.local
-  - rename:
-      field: teleport.audit.addr.local
-      target_field: teleport.audit.connection.local_address
-      ignore_missing: true
-  - script:
-      lang: painless
-      description: Adds the URI identifier to make uri_parts processor work
-      if: ctx?.teleport?.audit?.connection?.local_address != null
-      source: |
-        ctx.teleport.audit.connection.local_address = "//" + ctx.teleport.audit.connection.local_address;
-  - uri_parts:
-      field: teleport.audit.connection.local_address
-      target_field: teleport.audit.connection.local_address
-      remove_if_successful: true
-      keep_original: true
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: teleport.audit.local.domain
-      target_field: server.ip
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.local.port
-      target_field: server.port
-      ignore_missing: true
-  - dot_expander:
-      path: teleport.audit
-      field: addr.remote
-  - rename:
-      field: teleport.audit.addr.remote
-      target_field: teleport.audit.connection.remote_address
-      ignore_missing: true
-  - script:
-      lang: painless
-      description: Adds the URI identifier to make uri_parts processor work
-      if: ctx?.teleport?.audit?.connection?.remote_address != null
-      source: |
-        ctx.teleport.audit.connection.remote_address = "//" + ctx.teleport.audit.connection.remote_address;
-  - uri_parts:
-      field: teleport.audit.connection.remote_address
-      target_field: teleport.audit.connection.remote_address
-      keep_original: true
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: teleport.audit.remote.domain
-      target_field: client.ip
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.remote.port
-      target_field: client.port
-      ignore_missing: true
   - rename:
       field: teleport.audit.proto
       target_field: network.protocol
       ignore_missing: true
+
+  # Extract data from addr.local field.
+  - dot_expander:
+      path: teleport.audit
+      field: addr.local
+  - script:
+      tag: add_tmp_addr_local
+      lang: painless
+      description: Adds the URI identifier to make uri_parts processor work
+      if: ctx?.teleport?.audit?.addr?.local != null
+      source: |
+        ctx.teleport.audit.tmp_addr_local = "//" + ctx.teleport.audit.addr.local;
+  - uri_parts:
+      tag: parse_tmp_addr_local
+      field: teleport.audit.tmp_addr_local
+      target_field: teleport.audit.connection.local_address
+      keep_original: false
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.tmp_addr_local
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.addr.local
+      target_field: teleport.audit.connection.local_address.original
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.connection.local_address.domain
+      target_field: server.ip
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.connection.local_address.port
+      target_field: server.port
+      ignore_missing: true
+
+  # Extract data from addr.remote field.
+  - dot_expander:
+      path: teleport.audit
+      field: addr.remote
+  - script:
+      tag: add_tmp_addr_remote
+      lang: painless
+      description: Adds the URI identifier to make uri_parts processor work
+      if: ctx?.teleport?.audit?.addr?.remote != null
+      source: |
+        ctx.teleport.audit.tmp_addr_remote = "//" + ctx.teleport.audit.addr.remote;
+  - uri_parts:
+      tag: parse_tmp_addr_remote
+      field: teleport.audit.tmp_addr_remote
+      target_field: teleport.audit.connection.remote_address
+      keep_original: false
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.tmp_addr_remote
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.addr.remote
+      target_field: teleport.audit.connection.remote_address.original
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.connection.remote_address.domain
+      target_field: server.ip
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.connection.remote_address.port
+      target_field: server.port
+      ignore_missing: true
+
 
   # ClientMetadata identifies the originating client for an event.
   # All of these fields are mapped to ECS fields.
@@ -331,6 +345,12 @@ processors:
        field: teleport.audit.size
        target_field: teleport.audit.session.terminal_size
        ignore_missing: true
+  - grok:
+      field: teleport.audit.session.terminal_size
+      patterns:
+        - "%{NUMBER:process.tty.columns}:%{NUMBER:process.tty.rows}"
+      ignore_missing: true
+      ignore_failure: true
   -  rename:
        field: teleport.audit.initial_command
        target_field: teleport.audit.session.initial_command
@@ -360,6 +380,87 @@ processors:
        target_field: teleport.audit.session.end_time
        ignore_missing: true
 
+  # Desktop events metadata
+  # See desktop.yml for field definitions.
+#  -  rename:
+#       field: teleport.audit.message
+#       target_field: teleport.audit.desktop.message
+#       ignore_missing: true
+#  -  rename:
+#       field: teleport.audit.ms
+#       target_field: teleport.audit.desktop.delay_milliseconds
+#       ignore_missing: true
+  -  rename:
+       field: teleport.audit.desktop_addr
+       target_field: teleport.audit.desktop.address
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.length
+       target_field: teleport.audit.desktop.length
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.directory_name
+       target_field: teleport.audit.desktop.directory_name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.directory_id
+       target_field: teleport.audit.desktop.directory_id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.file_path
+       target_field: teleport.audit.desktop.path
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.offset
+       target_field: teleport.audit.desktop.offset
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.windows_desktop_service
+       target_field: teleport.audit.desktop.windows_desktop_service
+       ignore_missing: true
+  - script:
+      tag: add_tmp_desktop_addr
+      lang: painless
+      description: Adds the URI identifier to make uri_parts processor work
+      if: ctx?.teleport?.audit?.desktop_addr != null
+      source: |
+        ctx.teleport.audit.tmp_desktop_addr = "//" + ctx.teleport.audit.desktop_addr;
+  - uri_parts:
+      tag: parse_tmp_desktop_addr
+      field: teleport.audit.tmp_desktop_addr
+      target_field: teleport.audit.desktop.address
+      keep_original: false
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.tmp_desktop_addr
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.desktop_addr
+      target_field: teleport.audit.desktop.address.original
+      ignore_missing: true
+  -  rename:
+       field: teleport.audit.windows_domain
+       target_field: teleport.audit.desktop.windows_domain
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.windows_user
+       target_field: teleport.audit.desktop.windows_user
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.desktop_labels
+       target_field: teleport.audit.desktop.labels
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.desktop_name
+       target_field: teleport.audit.desktop.desktop_name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.allow_user_creation
+       target_field: teleport.audit.desktop.allow_user_creation
+       ignore_missing: true
+  
+  
   # DatabaseMetadata contains common database information.
   # See database.yml for field definitions.
   - rename:
@@ -411,3 +512,11 @@ processors:
       target_field: teleport.audit.database.origin
       ignore_missing: true
 
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+      in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
