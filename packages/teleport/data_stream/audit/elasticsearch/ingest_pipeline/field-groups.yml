@@ -114,7 +114,7 @@ processors:
        ignore_missing: true
   -  rename:
        field: teleport.audit.server_id
-       target_field: teleport.audit.server.id
+       target_field: teleport.audit.server.server_id
        ignore_missing: true
   -  rename:
        field: teleport.audit.server_hostname
@@ -140,6 +140,31 @@ processors:
        field: teleport.audit.server_version
        target_field: teleport.audit.server.version
        ignore_missing: true
+  - script:
+      lang: painless
+      description: Adds the URI identifier to make uri_parts processor work
+      if: ctx?.teleport?.audit?.server?.address != null
+      source: |
+        ctx.teleport.audit.server.address = "//" + ctx.teleport.audit.server.address;
+  - uri_parts:
+      field: teleport.audit.server.address
+      target_field: teleport.audit.server.address
+      remove_if_successful: true
+      keep_original: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.server.hostname
+      target_field: host.hostname
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.server.address.ip
+      target_field: host.ip
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.server.address.port
+      target_field: host.port
+      ignore_missing: true
 
   # Connection contains connection info.
   # See connection.yml for field definitions.
