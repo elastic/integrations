@@ -1,10 +1,14 @@
 ---
 description: Pipeline for processing Teleport audit logs
 processors:
+  # Process the message field.
   - set:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
+  - set:
+      field: event.kind
+      value: event
   - rename:
       field: message
       target_field: event.original
@@ -20,39 +24,21 @@ processors:
       field: event.original
       tag: json_original
       target_field: teleport.audit
+
+  # Process the remaining field groups.
+  - pipeline:
+      name: '{{ IngestPipeline "field-groups" }}'
+
+
+
   # all event types
-  - date:
-      field: teleport.audit.time
-      target_field: '@timestamp'
-      formats:
-        - ISO8601
-      if: ctx.teleport?.audit?.time != null
-  - remove:
-      field: teleport.audit.time
-      ignore_missing: true
   - rename:
       field: teleport.audit.error
       target_field: error.message
       ignore_missing: true
   - rename:
-      field: teleport.audit.uid
-      target_field: event.id
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.event
-      target_field: event.action
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.ei
-      target_field: event.sequence
-      ignore_missing: true
-  - rename:
       field: teleport.audit.size
       target_field: teleport.audit.terminal_size
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.cluster_name
-      target_field: orchestrator.cluster.name
       ignore_missing: true
 
   # exec event type
@@ -68,187 +54,6 @@ processors:
       field: teleport.audit.exitError
       target_field: error.message
       ignore_missing: true
-
-  # SessionMetadata is a common session event metadata
-  -  rename:
-       field: teleport.audit.session_id
-       target_field: teleport.audit.session.session_id
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.with_mfa
-       target_field: teleport.audit.session.with_mfa
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.private_key_policy
-       target_field: teleport.audit.session.private_key_policy
-       ignore_missing: true
-
-  # UserMetadata is a common user event metadata
-  -  rename:
-       field: teleport.audit.user
-       target_field: teleport.audit.user.user
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.login
-       target_field: teleport.audit.user.login
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.impersonator
-       target_field: teleport.audit.user.impersonator
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.aws_role_arn
-       target_field: teleport.audit.user.aws_role_arn
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.access_requests
-       target_field: teleport.audit.user.access_requests
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.azure_identity
-       target_field: teleport.audit.user.azure_identity
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.gcp_service_account
-       target_field: teleport.audit.user.gcp_service_account
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.trusted_device
-       target_field: teleport.audit.user.trusted_device
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.required_private_key_policy
-       target_field: teleport.audit.user.required_private_key_policy
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.user_kind
-       target_field: teleport.audit.user.user_kind
-       ignore_missing: true
-
-  # https://github.com/gravitational/teleport/blob/43b272c546f59ff4e4cc7fb115419839aa4d364e/api/proto/teleport/legacy/types/events/events.proto
-  # DatabaseMetadata contains common database information.
-  - rename:
-      field: teleport.audit.db_service
-      target_field: teleport.audit.database.service
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.db_protocol
-      target_field: teleport.audit.database.protocol
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.db_uri
-      target_field: teleport.audit.database.uri
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.db_name
-      target_field: teleport.audit.database.name
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.db_user
-      target_field: teleport.audit.database.user
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.db_labels
-      target_field: teleport.audit.database.labels
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.db_aws_region
-      target_field: teleport.audit.database.aws.region
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.db_aws_redshift_cluster_id
-      target_field: teleport.audit.database.aws.redshift_cluster_id
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.db_gcp_project_id
-      target_field: teleport.audit.database.gcp.project_id
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.db_gcp_instance_id
-      target_field: teleport.audit.database.gcp.instance_id
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.db_type
-      target_field: teleport.audit.database.type
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.db_origin
-      target_field: teleport.audit.database.origin
-      ignore_missing: true
-
-  # KubernetesClusterMetadata contains common metadata for kubernetes-related events.
-  - rename:
-      field: teleport.audit.kubernetes_cluster
-      target_field: teleport.audit.kubernetes.cluster
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.kubernetes_users
-      target_field: teleport.audit.kubernetes.users
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.kubernetes_groups
-      target_field: teleport.audit.kubernetes.groups
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.kubernetes_labels
-      target_field: teleport.audit.kubernetes.labels
-      ignore_missing: true
-
-  # KubernetesPodMetadata contains common metadata for kubernetes pod-related events.
-  - rename:
-      field: teleport.audit.kubernetes_pod_name
-      target_field: teleport.audit.kubernetes_pod.pod_name
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.kubernetes_pod_namespace
-      target_field: teleport.audit.kubernetes_pod.pod_namespace
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.kubernetes_container_name
-      target_field: teleport.audit.kubernetes_pod.container_name
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.kubernetes_container_image
-      target_field: teleport.audit.kubernetes_pod.container_image
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.kubernetes_node_name
-      target_field: teleport.audit.kubernetes_pod.node_name
-      ignore_missing: true
-
-  # Server is a server metadata
-  -  rename:
-       field: teleport.audit.namespace
-       target_field: teleport.audit.server.namespace
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.server_id
-       target_field: teleport.audit.server.id
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.server_hostname
-       target_field: teleport.audit.server.server.hostname
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.server_addr
-       target_field: teleport.audit.server.address
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.server_labels
-       target_field: teleport.audit.server.labels
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.forwarded_by
-       target_field: teleport.audit.server.forwarded_by
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.server_sub_kind
-       target_field: teleport.audit.server.sub_kind
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.server_version
-       target_field: teleport.audit.server.version
-       ignore_missing: true
 
   # resize event type
   - grok:
@@ -277,12 +82,6 @@ processors:
       field: teleport.audit.user.user
       target_field: user.name
       ignore_missing: true
-  - dot_expander:
-      path: teleport.audit
-      field: addr.remote
-  - dot_expander:
-      path: teleport.audit
-      field: addr.local
   - rename:
       field: teleport.audit.required_private_key_policy
       target_field: teleport.audit.policy.required_private_key
@@ -306,13 +105,6 @@ processors:
   - rename:
       field: mfa_device.mfa_device_type
       target_field: mfa_device.type
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.code
-      target_field: event.code
-      ignore_missing: true
-  - user_agent:
-      field: teleport.audit.user_agent
       ignore_missing: true
   - script:
       lang: painless
@@ -368,28 +160,7 @@ processors:
       formats:
         - ISO8601
       if: ctx.teleport?.audit?.session_stop != null
-  - script:
-      lang: painless
-      description: Adds the URI identifier to make uri_parts processor work
-      if: ctx?.teleport?.audit?.addr?.local != null
-      source: |
-        ctx.teleport.audit.addr.local = "//" + ctx.teleport.audit.addr.local;
-  - uri_parts:
-      field: teleport.audit.addr.local
-      tag: split_teleport_audit_local_address
-      target_field: teleport.audit.local
-      remove_if_successful: true
-      keep_original: true
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: teleport.audit.local.domain
-      target_field: server.ip
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.local.port
-      target_field: server.port
-      ignore_missing: true
+
   - rename:
       field: teleport.audit.url
       target_field: url.full
@@ -397,10 +168,6 @@ processors:
   - rename:
       field: teleport.audit.server_hostname
       target_field: server.domain
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.proto
-      target_field: network.protocol
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively.

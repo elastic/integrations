@@ -1,0 +1,308 @@
+---
+description: >
+  Pipeline to group Teleport audit fields into metadata groups.
+  See https://github.com/gravitational/teleport/blob/master/api/proto/teleport/legacy/types/events/events.proto
+processors:
+
+  # Metadata is a common event metadata.
+  # All of these fields are mapped to ECS fields.
+  - rename:
+      field: teleport.audit.ei
+      target_field: event.sequence
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.event
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.uid
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.code
+      target_field: event.code
+      ignore_missing: true
+  - date:
+      field: teleport.audit.time
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      if: ctx.teleport?.audit?.time != null
+  - remove:
+      field: teleport.audit.time
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.cluster_name
+      target_field: orchestrator.cluster.name
+      ignore_missing: true
+
+  # SessionMetadata is a common session event metadata
+  # See session.yml for field definitions.
+  -  rename:
+       field: teleport.audit.sid
+       target_field: teleport.audit.session.session_id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.with_mfa
+       target_field: teleport.audit.session.mfa_device_id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.private_key_policy
+       target_field: teleport.audit.session.private_key_policy
+       ignore_missing: true
+
+  # UserMetadata is a common user event metadata
+  # See user.yml for field definitions.
+  -  rename:
+       field: teleport.audit.user
+       target_field: user.name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.login
+       target_field: teleport.audit.user.os_login
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.impersonator
+       target_field: teleport.audit.user.impersonator
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.aws_role_arn
+       target_field: teleport.audit.user.aws_role_arn
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.access_requests
+       target_field: teleport.audit.user.access_requests
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.azure_identity
+       target_field: teleport.audit.user.azure_identity
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.gcp_service_account
+       target_field: teleport.audit.user.gcp_service_account
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.trusted_device
+       target_field: teleport.audit.user.trusted_device
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.required_private_key_policy
+       target_field: teleport.audit.user.required_private_key_policy
+       ignore_missing: true
+  -  set:
+       field: teleport.audit.user.kind
+       value: unspecified
+       if: ctx.teleport?.audit?.user_kind == 0
+  -  set:
+       field: teleport.audit.user.kind
+       value: human
+       if: ctx.teleport?.audit?.user_kind == 1
+  -  set:
+       field: teleport.audit.user.kind
+       value: bot
+       if: ctx.teleport?.audit?.user_kind == 2
+  - remove:
+      field: teleport.audit.user_kind
+      ignore_missing: true
+      if: ctx.teleport?.audit?.user?.kind != null
+
+  # Server is a server metadata
+  # See server.yml for field definitions.
+  -  rename:
+       field: teleport.audit.namespace
+       target_field: teleport.audit.server.namespace
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_id
+       target_field: teleport.audit.server.id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_hostname
+       target_field: teleport.audit.server.hostname
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_addr
+       target_field: teleport.audit.server.address
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_labels
+       target_field: teleport.audit.server.labels
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.forwarded_by
+       target_field: teleport.audit.server.forwarded_by
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_sub_kind
+       target_field: teleport.audit.server.sub_kind
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_version
+       target_field: teleport.audit.server.version
+       ignore_missing: true
+
+  # Connection contains connection info.
+  # See connection.yml for field definitions.
+  - dot_expander:
+      path: teleport.audit
+      field: addr.local
+  - rename:
+      field: teleport.audit.addr.local
+      target_field: teleport.audit.connection.local_address
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Adds the URI identifier to make uri_parts processor work
+      if: ctx?.teleport?.audit?.connection?.local_address != null
+      source: |
+        ctx.teleport.audit.connection.local_address = "//" + ctx.teleport.audit.connection.local_address;
+  - uri_parts:
+      field: teleport.audit.connection.local_address
+      target_field: teleport.audit.connection.local_address
+      remove_if_successful: true
+      keep_original: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.local.domain
+      target_field: server.ip
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.local.port
+      target_field: server.port
+      ignore_missing: true
+  - dot_expander:
+      path: teleport.audit
+      field: addr.remote
+  - rename:
+      field: teleport.audit.addr.remote
+      target_field: teleport.audit.connection.remote_address
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Adds the URI identifier to make uri_parts processor work
+      if: ctx?.teleport?.audit?.connection?.remote_address != null
+      source: |
+        ctx.teleport.audit.connection.remote_address = "//" + ctx.teleport.audit.connection.remote_address;
+  - uri_parts:
+      field: teleport.audit.connection.remote_address
+      target_field: teleport.audit.connection.remote_address
+      keep_original: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: teleport.audit.remote.domain
+      target_field: client.ip
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.remote.port
+      target_field: client.port
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.proto
+      target_field: network.protocol
+      ignore_missing: true
+
+  # ClientMetadata identifies the originating client for an event.
+  # All of these fields are mapped to ECS fields.
+  - rename:
+      field: teleport.audit.user_agent
+      target_field: user_agent
+      ignore_missing: true
+  - user_agent:
+      field: user_agent
+      ignore_missing: true
+
+  # KubernetesClusterMetadata contains common metadata for kubernetes-related events.
+  # See kubernetes.yml for field definitions.
+  - rename:
+      field: teleport.audit.kubernetes_cluster
+      target_field: teleport.audit.kubernetes.cluster
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_users
+      target_field: teleport.audit.kubernetes.users
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_groups
+      target_field: teleport.audit.kubernetes.groups
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_labels
+      target_field: teleport.audit.kubernetes.labels
+      ignore_missing: true
+
+  # KubernetesPodMetadata contains common metadata for kubernetes pod-related events.
+  # See kubernetes_pod.yml for field definitions.
+  - rename:
+      field: teleport.audit.kubernetes_pod_name
+      target_field: teleport.audit.kubernetes_pod.pod_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_pod_namespace
+      target_field: teleport.audit.kubernetes_pod.pod_namespace
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_container_name
+      target_field: teleport.audit.kubernetes_pod.container_name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_container_image
+      target_field: teleport.audit.kubernetes_pod.container_image
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.kubernetes_node_name
+      target_field: teleport.audit.kubernetes_pod.node_name
+      ignore_missing: true
+
+  # DatabaseMetadata contains common database information.
+  # See database.yml for field definitions.
+  - rename:
+      field: teleport.audit.db_service
+      target_field: teleport.audit.database.service
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_protocol
+      target_field: teleport.audit.database.protocol
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_uri
+      target_field: teleport.audit.database.uri
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_name
+      target_field: teleport.audit.database.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_user
+      target_field: teleport.audit.database.user
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_labels
+      target_field: teleport.audit.database.labels
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_aws_region
+      target_field: teleport.audit.database.aws.region
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_aws_redshift_cluster_id
+      target_field: teleport.audit.database.aws.redshift_cluster_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_gcp_project_id
+      target_field: teleport.audit.database.gcp.project_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_gcp_instance_id
+      target_field: teleport.audit.database.gcp.instance_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_type
+      target_field: teleport.audit.database.type
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.db_origin
+      target_field: teleport.audit.database.origin
+      ignore_missing: true
+
