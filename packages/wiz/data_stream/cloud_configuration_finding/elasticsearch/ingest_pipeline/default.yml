@@ -110,6 +110,16 @@ processors:
       copy_from: '@timestamp'
       ignore_empty_value: true
   - rename:
+      field: json.rule.id
+      tag: rename_rule_id
+      target_field: wiz.cloud_configuration_finding.rule.id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id
+      copy_from: wiz.cloud_configuration_finding.rule.id
+      ignore_empty_value: true
+  - rename:
       field: json.rule.name
       tag: rename_rule_name
       target_field: wiz.cloud_configuration_finding.rule.name
@@ -118,6 +128,16 @@ processors:
       field: rule.name
       tag: set_rule_name
       copy_from: wiz.cloud_configuration_finding.rule.name
+      ignore_empty_value: true
+  - rename:
+      field: json.resource.id
+      tag: rename_resource_id
+      target_field: wiz.cloud_configuration_finding.resource.id
+      ignore_missing: true
+  - set:
+      field: resource.id
+      tag: set_resource_id
+      copy_from: wiz.cloud_configuration_finding.resource.id
       ignore_empty_value: true
   - rename:
       field: json.resource.name
@@ -143,6 +163,8 @@ processors:
         - wiz.cloud_configuration_finding.rule.description
         - wiz.cloud_configuration_finding.resource.name
         - wiz.cloud_configuration_finding.rule.name
+        - wiz.cloud_configuration_finding.resource.id
+        - wiz.cloud_configuration_finding.rule.id
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
