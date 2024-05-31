@@ -802,6 +802,36 @@ processors:
       target_field: teleport.audit.database.origin
       ignore_missing: true
 
+  # Kubernetes API request event metadata
+  # See kubernetes.resource.yml for field definitions.
+  -  rename:
+       field: teleport.audit.request_path
+       target_field: url.path
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.verb
+       target_field: http.method
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.resource_api_group
+       target_field: teleport.audit.kubernetes.resource.api_group
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.resource_namespace
+       target_field: teleport.audit.kubernetes.resource.namespace
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.resource_kind
+       target_field: teleport.audit.kubernetes.resource.kind
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.resource_name
+       target_field: teleport.audit.kubernetes.resource.name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.response_code
+       target_field: http.response.status_code
+       ignore_missing: true
 
 on_failure:
   - append:
