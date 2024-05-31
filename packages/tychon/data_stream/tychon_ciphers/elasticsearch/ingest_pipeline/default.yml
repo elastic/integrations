@@ -39,11 +39,34 @@ processors:
       tag: remove_file_mtime
       ignore_failure: true
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Remove non-strings from file.attributes
+      if: ctx.file?.attributes instanceof List
+      source: |
+        def result = [];
+        for (def v : ctx.file.attributes) {
+          if (v instanceof String) {
+            result.add(v);
+          }
+        }
+        ctx.file.attributes = result;
+      tag: remove_non_strings_from_file_attributes
+  - convert:
+      field: file.size
+      type: long
+      ignore_missing: true
+      tag: file_size_convert
   - rename:
       field: "server.ip"
       target_field: tychon.server.ip
       ignore_missing: true
       tag: server_ip_rename
+  - convert:
+      field: server.port
+      type: long
+      ignore_missing: true
+      tag: server_port_convert
   - rename:
       field: "process.information_source"
       target_field: tychon.process.information_source
@@ -59,11 +82,21 @@ processors:
       target_field: process.user.name
       ignore_missing: true
       tag: process_owner_rename
+  - convert:
+      field: process.pid
+      type: long
+      ignore_missing: true
+      tag: process_pid_convert
   - rename:
       field: "process.ppid"
       target_field: process.parent.pid
       ignore_missing: true
       tag: process_ppid_rename
+  - convert:
+      field: process.parent.pid
+      type: long
+      ignore_missing: true
+      tag: process_parent_pid_convert
   - rename:
       field: "service.description"
       target_field: tychon.service.description
@@ -95,6 +128,16 @@ processors:
       ignore_missing: true
       tag: file_codesigsubname_rename
   - rename:
+      field: "file.code_signature.friendly_name"
+      target_field: tychon.file.code_signature.friendly_name
+      ignore_missing: true
+      tag: file_csfn_rename
+  - rename:
+      field: "file.version"
+      target_field: tychon.file.version
+      ignore_missing: true
+      tag: file_version_rename
+  - rename:
       field: "tls.server.supported_cipher.name"
       target_field: tls.server.supported_ciphers
       ignore_missing: true
@@ -109,11 +152,6 @@ processors:
       target_field: tychon.tls.server.cipher.weight
       ignore_missing: true
       tag: tls_cipherweight_rename
-  - rename:
-      field: "file.code_signature.friendly_name"
-      target_field: tychon.file.code_signature.friendly_name
-      ignore_missing: true
-      tag: file_csfn_rename
   - rename:
       field: "tls.server.protocol.weight"
       target_field: tychon.tls.server.protocol.weight
