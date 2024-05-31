@@ -353,7 +353,7 @@ processors:
       ignore_failure: true
   -  rename:
        field: teleport.audit.initial_command
-       target_field: teleport.audit.session.initial_command
+       target_field: process.command_line
        ignore_missing: true
   -  rename:
        field: teleport.audit.session_recording
@@ -373,11 +373,11 @@ processors:
        ignore_missing: true
   -  rename:
        field: teleport.audit.session_start
-       target_field: teleport.audit.session.start_time
+       target_field: event.start
        ignore_missing: true
   -  rename:
        field: teleport.audit.session_stop
-       target_field: teleport.audit.session.end_time
+       target_field: event.end
        ignore_missing: true
 
   # Desktop events metadata
@@ -390,10 +390,6 @@ processors:
 #       field: teleport.audit.ms
 #       target_field: teleport.audit.desktop.delay_milliseconds
 #       ignore_missing: true
-  -  rename:
-       field: teleport.audit.desktop_addr
-       target_field: teleport.audit.desktop.address
-       ignore_missing: true
   -  rename:
        field: teleport.audit.length
        target_field: teleport.audit.desktop.length
@@ -460,7 +456,96 @@ processors:
        target_field: teleport.audit.desktop.allow_user_creation
        ignore_missing: true
   
-  
+  # FileTransferRequestEvent happens when a FileTransferRequest is created, updated, approved, or denied.
+  # See file_transfer_request.yml for field definitions.
+  - rename:
+      field: teleport.audit.requestID
+      target_field: teleport.audit.file_transfer_request.request_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.approvers
+      target_field: teleport.audit.file_transfer_request.approvers
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.requester
+      target_field: teleport.audit.file_transfer_request.requester
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.location
+      target_field: teleport.audit.file_transfer_request.location
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.download
+      target_field: teleport.audit.file_transfer_request.is_download
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.filename
+      target_field: teleport.audit.file_transfer_request.filename
+      ignore_missing: true
+
+  # Process metadata
+  # See process.yml for field definitions.
+  -  rename:
+       field: teleport.audit.pid
+       target_field: process.pid
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.cgroup_id
+       target_field: teleport.audit.process.cgroup_id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.program
+       target_field: process.executable
+       ignore_missing: true
+  - append:
+      field: event.outcome
+      value:
+        - success
+      allow_duplicates: false
+      if: ctx.teleport?.audit?.success == true
+  - remove:
+      field: teleport.audit.success
+      if: ctx.teleport?.audit?.success == true
+  - append:
+      field: event.outcome
+      value:
+        - failure
+      allow_duplicates: false
+      if: ctx.teleport?.audit?.success == false
+  - remove:
+      field: teleport.audit.success
+      if: ctx.teleport?.audit?.success == false
+  -  rename:
+       field: teleport.audit.error
+       target_field: error.id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.message
+       target_field: error.message
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.ppid
+       target_field: process.ppid
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.path
+       target_field: file.path
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.argv
+       target_field: process.args
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.return_code
+       target_field: process.exit_code
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.flags
+       target_field: teleport.audit.process.flags
+       ignore_missing: true
+
+
+
   # DatabaseMetadata contains common database information.
   # See database.yml for field definitions.
   - rename:

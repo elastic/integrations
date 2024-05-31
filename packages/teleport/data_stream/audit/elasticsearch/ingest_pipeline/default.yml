@@ -86,29 +86,27 @@ processors:
       target_field: event.method
       ignore_missing: true
   - rename:
-      field: teleport.audit.mfa_device
-      target_field: mfa_device
+      field: teleport.audit.mfa_device.mfa_device_uuid
+      target_field: teleport.audit.mfa_device.uuid
       ignore_missing: true
   - rename:
-      field: mfa_device.mfa_device_uuid
-      target_field: mfa_device.uuid
+      field: teleport.audit.mfa_device.mfa_device_name
+      target_field: teleport.audit.mfa_device.name
       ignore_missing: true
   - rename:
-      field: mfa_device.mfa_device_name
-      target_field: mfa_device.name
-      ignore_missing: true
-  - rename:
-      field: mfa_device.mfa_device_type
-      target_field: mfa_device.type
+      field: teleport.audit.mfa_device.mfa_device_type
+      target_field: teleport.audit.mfa_device.type
       ignore_missing: true
   - rename:
       field: teleport.audit.client_ip
       target_field: client.ip
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: teleport.audit.identity.roles
       target_field: user.roles
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: teleport.audit.identity.route_to_database.protocol
       target_field: network.protocol
@@ -324,24 +322,6 @@ processors:
         - end
       allow_duplicates: false
       if: ctx.event?.action == 'user.login' && ctx.teleport?.audit?.success == false
-  - append:
-      field: event.outcome
-      value:
-        - success
-      allow_duplicates: false
-      if: ctx.teleport?.audit?.success == true
-  - remove:
-      field: teleport.audit.success
-      if: ctx.teleport?.audit?.success == true
-  - append:
-      field: event.outcome
-      value:
-        - failure
-      allow_duplicates: false
-      if: ctx.teleport?.audit?.success == false
-  - remove:
-      field: teleport.audit.success
-      if: ctx.teleport?.audit?.success == false
   - append:
       field: related.ip
       value:
