@@ -1,6 +1,6 @@
 name: okta
 title: Okta
-version: "2.9.0"
+version: "2.10.0"
 description: Collect and parse event logs from Okta API with Elastic Agent.
 type: integration
 format_version: "3.0.2"
@@ -62,9 +62,16 @@ policy_templates:
             required: false
             show_user: true
             description: |
-              This is the API Key of your Okta service application. This is only required for the standard api key based authentication.
-              Do not use this field if you are using OAuth2 authentication.
+              This is the API Key of your Okta service application. This is required for standard api key based authentication and Okta Integration Network (OIN) app authentication.
+              Do not use this field if you are using standard OAuth2 authentication.
             secret: true
+          - name: oin_app
+            type: bool
+            title: Use Okta Integration Network (OIN) Authentication
+            multi: false
+            required: false
+            show_user: true
+            description: Use the API Key as the OIN client secret.
           - name: okta_domain_url
             type: text
             title: Okta Domain URL
@@ -73,7 +80,8 @@ policy_templates:
             show_user: true
             description: |
               This is the URL of your Okta domain. For example, https://dev-123456.okta.com.
-              This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+              This is only required for OAuth2 authentication. This is required for standard OAuth2 authentication and OIN app authentication.
+              Do not use this field if you are using API Key based authentication without OIN authentication.
           - name: client_id
             type: text
             title: Client ID
@@ -81,8 +89,8 @@ policy_templates:
             required: false
             show_user: true
             description: |
-              This is the Client ID of your Okta service application. This is only required for OAuth2 authentication.
-              Do not use this field if you are using API Key based authentication.
+              This is the Client ID of your Okta service application. This is required for standard OAuth2 authentication and OIN app authentication.
+              Do not use this field if you are using API Key based authentication without OIN authentication.
           - name: jwk_json
             type: password
             title: JWK JSON
