@@ -544,6 +544,74 @@ processors:
        target_field: teleport.audit.process.flags
        ignore_missing: true
 
+  # Network metadata
+  # See network.yml for field definitions.
+  -  rename:
+       field: teleport.audit.src_addr
+       target_field: source.ip
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.dst_addr
+       target_field: destination.ip
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.dst_port
+       target_field: destination.port
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.version
+       target_field: teleport.audit.network.tcp_version
+       ignore_missing: true
+  -  set:
+       field: teleport.audit.network.operation
+       value: connect
+       if: ctx?.teleport?.audit?.operation == 0
+  -  set:
+       field: teleport.audit.network.operation
+       value: send
+       if: ctx?.teleport?.audit?.operation == 1
+  - remove:
+      field: teleport.audit.operation
+      ignore_missing: true
+  -  set:
+       field: teleport.audit.network.action
+       value: observed
+       if: ctx?.teleport?.audit?.action == 0
+  -  set:
+       field: teleport.audit.network.action
+       value: denied
+       if: ctx?.teleport?.audit?.action == 1
+  - remove:
+      field: teleport.audit.action
+      ignore_missing: true
+  -  rename:
+       field: teleport.audit.tx
+       target_field: teleport.audit.network.bytes_transmitted
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.rx
+       target_field: teleport.audit.network.bytes_received
+       ignore_missing: true
+
+  # Resource metadata
+  # See resource.yml for field definitions.
+  -  rename:
+       field: teleport.audit.name
+       target_field: teleport.audit.resource.name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.expires
+       target_field: teleport.audit.resource.expires
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.updated_by
+       target_field: teleport.audit.resource.updated_by
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.ttl
+       target_field: teleport.audit.resource.ttl
+       ignore_missing: true
+
 
 
   # DatabaseMetadata contains common database information.
