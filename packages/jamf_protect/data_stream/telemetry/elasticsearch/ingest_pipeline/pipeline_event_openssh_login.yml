@@ -33,6 +33,42 @@ processors:
         field: jamf_protect.telemetry.event.openssh_login.username
         target_field: user.name
         ignore_missing: true
+    - script:
+        lang: painless
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.openssh_login?.source_address_type != null) {
+                def itemType = ctx.jamf_protect.telemetry.event.openssh_login.source_address_type;
+                def itemTypeMap = [
+                0: 'Unknown',
+                1: 'IPv4',
+                2: 'IPv6',
+                3: 'UNIX Socket'
+                ];
+                def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
+                ctx.custom = ctx.custom != null ? ctx.custom : new HashMap();
+                ctx.custom.source_address_type = itemTypeString;
+            }
+    - script:
+        lang: painless
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.openssh_login?.result_type != null) {
+            def itemType = ctx.jamf_protect.telemetry.event.openssh_login.result_type;
+            def itemTypeMap = [
+                0: 'Exceeded maximum attempts',
+                1: 'Denied by root',
+                2: 'Success',
+                3: 'no reason',
+                4: 'Password',
+                5: 'kbdint',
+                6: 'public key',
+                7: 'Host based',
+                8: 'gss api',
+                9: 'invalid user'
+            ];
+            def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
+            ctx.custom = ctx.custom != null ? ctx.custom : new HashMap();
+            ctx.custom.authentication_result_type = itemTypeString;
+            }
 ##########################
 ## ECS Process ##
 ##########################

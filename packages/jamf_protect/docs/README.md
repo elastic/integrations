@@ -94,13 +94,13 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-27T11:16:41.134Z",
+    "@timestamp": "2024-05-27T14:43:17.317Z",
     "agent": {
-        "ephemeral_id": "a0dc76d5-6c00-43cc-802a-9597c2628a58",
-        "id": "ec47e112-b8ff-4262-b56a-783943737be8",
+        "ephemeral_id": "a159207a-eee9-43af-95dd-4bc3fb4163d2",
+        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.13.2"
     },
     "data_stream": {
         "dataset": "jamf_protect.alerts",
@@ -111,9 +111,9 @@ An example event for `alerts` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ec47e112-b8ff-4262-b56a-783943737be8",
+        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.13.2"
     },
     "event": {
         "action": "CustomURLHandlerCreation",
@@ -124,7 +124,7 @@ An example event for `alerts` looks as following:
         ],
         "dataset": "jamf_protect.alerts",
         "id": "6bdb0697-6d07-47bc-a37d-6c3348a5d953",
-        "ingested": "2024-05-27T11:16:51Z",
+        "ingested": "2024-05-27T14:43:27Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Application that uses custom url handler created",
@@ -437,13 +437,13 @@ An example event for `telemetry` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-27T11:18:22.248Z",
+    "@timestamp": "2024-05-27T14:44:58.617Z",
     "agent": {
-        "ephemeral_id": "28ca36c2-1bd7-4127-8c60-2856a09a62a1",
-        "id": "ec47e112-b8ff-4262-b56a-783943737be8",
+        "ephemeral_id": "9db22e40-43c9-4aff-bdee-32cd1242930e",
+        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.13.2"
     },
     "data_stream": {
         "dataset": "jamf_protect.telemetry",
@@ -458,9 +458,9 @@ An example event for `telemetry` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ec47e112-b8ff-4262-b56a-783943737be8",
+        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.13.2"
     },
     "event": {
         "action": "exec",
@@ -471,7 +471,7 @@ An example event for `telemetry` looks as following:
         "code": "9",
         "dataset": "jamf_protect.telemetry",
         "id": "1755D61B-373E-4F35-9D27-DE8AAA395BC3",
-        "ingested": "2024-05-27T11:18:32Z",
+        "ingested": "2024-05-27T14:45:08Z",
         "kind": "event",
         "provider": "Jamf Protect",
         "reason": "A new process has been executed.",
@@ -597,8 +597,11 @@ An example event for `telemetry` looks as following:
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
 | container.runtime | Runtime managing this container. | keyword |
+| custom.account_type | Defines if it's a user or group | keyword |
 | custom.attribute_name | The name of the attribute that got set | keyword |
 | custom.attribute_value | The value of the attribute that got set | keyword |
+| custom.authentication_method | Method used to authenticate | keyword |
+| custom.authentication_result_type | Defines the source address type | keyword |
 | custom.authorization_judgement_results | Results of the authorization judgement | object |
 | custom.authorization_petition_flags | Flags associated with the authorization petition | integer |
 | custom.authorization_petition_right_count | The count of rights in the authorization petition | integer |
@@ -612,10 +615,15 @@ An example event for `telemetry` looks as following:
 | custom.btm_item_type | Type of the BTM item | keyword |
 | custom.btm_item_url | URL of the BTM item | keyword |
 | custom.btm_item_user_uid | UID of the user associated with the BTM item | keyword |
+| custom.code_directory_hash | Code directory hash of a application bundle | keyword |
 | custom.env_count | Count of environment variables | integer |
+| custom.error_message | Contains the event specific error message | keyword |
+| custom.es_client | Set to true if the process is an Endpoint Security client | boolean |
+| custom.event_allowed_by_esclient | Value to indicate if the event was allowed or denied | boolean |
 | custom.from_username | Username from which an action originated | keyword |
 | custom.graphical_session_id | ID of the graphical session | keyword |
 | custom.identifier | Identifier for an entity or action | keyword |
+| custom.platform_binary | This is set to true for all binaries that are shipped with macOS | boolean |
 | custom.profile_display_name | Display name of the profile | keyword |
 | custom.profile_identifier | Identifier of the profile | keyword |
 | custom.profile_install_source | Source from which the profile was installed | keyword |
@@ -625,7 +633,9 @@ An example event for `telemetry` looks as following:
 | custom.profile_uuid | UUID of the profile | keyword |
 | custom.record_name | Name of the record | keyword |
 | custom.shell | Shell associated with the user or process | keyword |
+| custom.source_address_type | Defines the source address type | keyword |
 | custom.to_username | Username to which an action is directed | keyword |
+| custom.tty | Software terminal device file that the process is associated with | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -757,7 +767,6 @@ An example event for `telemetry` looks as following:
 | process.real_user.id | Unique identifier of the user. | keyword |
 | process.start | The time the process started. | date |
 | process.thread.id | Thread ID. | long |
-| process.tty | Information about the controlling TTY device. If set, the process belongs to an interactive session. | object |
 | process.user.id | Unique identifier of the user. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
@@ -811,13 +820,13 @@ An example event for `web_threat_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-27T11:21:45.841Z",
+    "@timestamp": "2024-05-27T14:48:17.391Z",
     "agent": {
-        "ephemeral_id": "d118aa5c-4c66-4a1c-b3df-004f29d5a7dd",
-        "id": "ec47e112-b8ff-4262-b56a-783943737be8",
+        "ephemeral_id": "b5e5f8c5-4b25-4872-92c2-7855dea53eee",
+        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.13.2"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_threat_events",
@@ -833,9 +842,9 @@ An example event for `web_threat_events` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ec47e112-b8ff-4262-b56a-783943737be8",
+        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.13.2"
     },
     "event": {
         "action": "Detected",
@@ -845,7 +854,7 @@ An example event for `web_threat_events` looks as following:
         ],
         "dataset": "jamf_protect.web_threat_events",
         "id": "013b15c9-8f62-4bf1-948a-d82367af2a10",
-        "ingested": "2024-05-27T11:21:55Z",
+        "ingested": "2024-05-27T14:48:27Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Sideloaded App",
@@ -1078,13 +1087,13 @@ An example event for `web_traffic_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-27T11:23:26.046Z",
+    "@timestamp": "2024-05-27T14:49:56.561Z",
     "agent": {
-        "ephemeral_id": "0c6d49c3-6222-42b4-9638-ef5cfa4bef7e",
-        "id": "ec47e112-b8ff-4262-b56a-783943737be8",
+        "ephemeral_id": "b9db18e8-fd3b-4ed9-8e1f-dc345cdc362c",
+        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.13.2"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_traffic_events",
@@ -1107,9 +1116,9 @@ An example event for `web_traffic_events` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ec47e112-b8ff-4262-b56a-783943737be8",
+        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.13.2"
     },
     "event": {
         "action": "DNS Lookup",
@@ -1119,7 +1128,7 @@ An example event for `web_traffic_events` looks as following:
             "network"
         ],
         "dataset": "jamf_protect.web_traffic_events",
-        "ingested": "2024-05-27T11:23:36Z",
+        "ingested": "2024-05-27T14:50:06Z",
         "kind": "event",
         "outcome": [
             "success"

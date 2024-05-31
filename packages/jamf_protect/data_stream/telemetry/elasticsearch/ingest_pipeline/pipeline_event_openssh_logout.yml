@@ -29,39 +29,21 @@ processors:
         field: jamf_protect.telemetry.event.openssh_logout.source_address
         target_field: source.ip
         ignore_missing: true
-    # - script:
-    #     lang: painless
-    #     source: >
-    #         def renameAndMapSourceAddressType(sourceField, targetField) {
-    #             if (ctx.jamf_protect?.telemetry?.event?.openssh_logout?.source_address_type != null) {
-    #             def value = ctx.jamf_protect.telemetry.event.openssh_logout.source_address_type;
-    #             def mappedValue;
-    #             switch (value) {
-    #                 case 0:
-    #                 mappedValue = 'No type identification for the address';
-    #                 break;
-    #                 case 1:
-    #                 mappedValue = 'IPv4';
-    #                 break;
-    #                 case 2:
-    #                 mappedValue = 'IPv6';
-    #                 break;
-    #                 case 3:
-    #                 mappedValue = 'Named UNIX socket';
-    #                 break;
-    #                 default:
-    #                 mappedValue = 'Unknown';
-    #             }
-    #             def targetKeys = targetField.split('\\.');
-    #             def target = ctx;
-    #             for (int i = 0; i < targetKeys.length - 1; i++) {
-    #                 target = target.computeIfAbsent(targetKeys[i], k -> new HashMap<>());
-    #             }
-    #             target.put(targetKeys[targetKeys.length - 1], mappedValue);
-    #             }
-    #         }
-
-    #         renameAndMapSourceAddressType('jamf_protect.telemetry.event.openssh_logout.source_address_type', 'network.type');
+    - script:
+        lang: painless
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.openssh_logout?.source_address_type != null) {
+                def itemType = ctx.jamf_protect.telemetry.event.openssh_logout.source_address_type;
+                def itemTypeMap = [
+                0: 'Unknown',
+                1: 'IPv4',
+                2: 'IPv6',
+                3: 'UNIX Socket'
+                ];
+                def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
+                ctx.custom = ctx.custom != null ? ctx.custom : new HashMap();
+                ctx.custom.source_address_type = itemTypeString;
+            }
 ##########################
 ## ECS Process ##
 ##########################
