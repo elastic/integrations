@@ -223,19 +223,19 @@ processors:
        ignore_missing: true
   -  rename:
        field: teleport.audit.server_id
-       target_field: teleport.audit.server.server_id
+       target_field: teleport.audit.server.id
        ignore_missing: true
   -  rename:
        field: teleport.audit.server_hostname
-       target_field: teleport.audit.server.server_hostname
+       target_field: teleport.audit.server.server.hostname
        ignore_missing: true
   -  rename:
        field: teleport.audit.server_addr
-       target_field: teleport.audit.server.server_addr
+       target_field: teleport.audit.server.address
        ignore_missing: true
   -  rename:
        field: teleport.audit.server_labels
-       target_field: teleport.audit.server.server_labels
+       target_field: teleport.audit.server.labels
        ignore_missing: true
   -  rename:
        field: teleport.audit.forwarded_by
@@ -243,7 +243,11 @@ processors:
        ignore_missing: true
   -  rename:
        field: teleport.audit.server_sub_kind
-       target_field: teleport.audit.server.server_sub_kind
+       target_field: teleport.audit.server.sub_kind
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.server_version
+       target_field: teleport.audit.server.version
        ignore_missing: true
 
   # resize event type
@@ -307,9 +311,8 @@ processors:
       field: teleport.audit.code
       target_field: event.code
       ignore_missing: true
-  - rename:
+  - user_agent:
       field: teleport.audit.user_agent
-      target_field: user_agent.original
       ignore_missing: true
   - script:
       lang: painless
@@ -640,15 +643,15 @@ processors:
   - append:
       field: related.hosts
       value:
-        - '{{{teleport.audit.server_hostname}}}'
+        - '{{{teleport.audit.server.hostname}}}'
       allow_duplicates: false
-      if: ctx?.teleport?.audit?.server_hostname != null
+      if: ctx?.teleport?.audit?.server.hostname != null
   - append:
       field: related.hosts
       value:
-        - '{{{teleport.audit.server_labels.hostname}}}'
+        - '{{{teleport.audit.server.labels.hostname}}}'
       allow_duplicates: false
-      if: ctx?.teleport?.audit?.server_labels?.hostname != null
+      if: ctx?.teleport?.audit?.server.labels?.hostname != null
   - append:
       field: related.hosts
       value:
