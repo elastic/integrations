@@ -31,49 +31,7 @@ processors:
       ignore_failure: true
 
 
-
-  # all event types
-  - rename:
-      field: teleport.audit.error
-      target_field: error.message
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.size
-      target_field: teleport.audit.terminal_size
-      ignore_missing: true
-
-  # exec event type
-
-
-
-
-  # scp event type
-  - rename:
-      field: teleport.audit.path
-      target_field: file.path
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.len
-      target_field: file.size
-      ignore_missing: true
-
   # the rest of the pipeline
-  - rename:
-      field: teleport.audit.user.login
-      target_field: server.user.name
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.user.user
-      target_field: user.name
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.required_private_key_policy
-      target_field: teleport.audit.policy.required_private_key
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.method
-      target_field: event.method
-      ignore_missing: true
   - rename:
       field: teleport.audit.client_ip
       target_field: client.ip
@@ -88,35 +46,8 @@ processors:
       field: teleport.audit.identity.route_to_database.protocol
       target_field: network.protocol
       ignore_missing: true
-  - rename:
-      field: teleport.audit.tx
-      target_field: source.bytes
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.rx
-      target_field: destination.bytes
-      ignore_missing: true
-  - date:
-      field: teleport.audit.session_start
-      target_field: event.start
-      formats:
-        - ISO8601
-      if: ctx.teleport?.audit?.session_start != null
-  - date:
-      field: teleport.audit.session_stop
-      target_field: event.end
-      formats:
-        - ISO8601
-      if: ctx.teleport?.audit?.session_stop != null
 
-  - rename:
-      field: teleport.audit.url
-      target_field: url.full
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.server_hostname
-      target_field: server.domain
-      ignore_missing: true
+
   - script:
       description: Drops null/empty values recursively.
       tag: script_drop_null_empty_values
@@ -179,6 +110,7 @@ processors:
       tag: rename_destination_as_organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+
   - append:
       field: event.type
       value:
@@ -359,12 +291,14 @@ processors:
         - '{{{teleport.audit.server_addr}}}'
       allow_duplicates: false
       if: ctx?.teleport?.audit?.server_addr != null
+
   - remove:
       field: event.original
       tag: remove_original_event
       if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
       ignore_failure: true
       ignore_missing: true
+
 on_failure:
   - append:
       field: error.message

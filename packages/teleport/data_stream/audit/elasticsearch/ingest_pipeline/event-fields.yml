@@ -371,14 +371,28 @@ processors:
        field: teleport.audit.participants
        target_field: teleport.audit.session.participants
        ignore_missing: true
-  -  rename:
-       field: teleport.audit.session_start
-       target_field: event.start
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.session_stop
-       target_field: event.end
-       ignore_missing: true
+  - date:
+      field: teleport.audit.session_start
+      target_field: event.start
+      formats:
+        - ISO8601
+      if: ctx.teleport?.audit?.session_start != null
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.session_start
+      ignore_missing: true
+      if: ctx.event?.start != null
+  - date:
+      field: teleport.audit.session_stop
+      target_field: event.end
+      formats:
+        - ISO8601
+      if: ctx.teleport?.audit?.session_stop != null
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.session_stop
+      ignore_missing: true
+      if: ctx.event?.end != null
 
   # Desktop events metadata
   # See desktop.yml for field definitions.
@@ -543,11 +557,11 @@ processors:
       ignore_missing: true
   -  rename:
        field: teleport.audit.tx
-       target_field: teleport.audit.network.bytes_transmitted
+       target_field: source.bytes
        ignore_missing: true
   -  rename:
        field: teleport.audit.rx
-       target_field: teleport.audit.network.bytes_received
+       target_field: destination.bytes
        ignore_missing: true
 
   # Resource metadata
