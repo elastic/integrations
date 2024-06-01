@@ -66,3 +66,59 @@
       type: keyword
       description: >
         DatabaseOrigin is the database origin source.  
+    - name: query
+      type: keyword
+      description: >
+        DatabaseQuery is the executed query string.
+    - name: query_parameters
+      type: keyword
+      description: >
+        DatabaseQueryParameters are the query parameters for prepared statements.
+    - name: permission_summary
+      type: object
+      description: >
+        PermissionSummary is a summary of applied permissions.
+    - name: affected_object_counts
+      type: object
+      description: >
+        AffectedObjectCounts counts how many distinct objects of each kind were affected.
+    - name: user_change
+      type: group
+      description: >
+        Provision, disable or delete the user.
+      fields:
+      - name: username
+        type: object
+        description: >
+          Username is the username chosen for the database user. Due to database limitations (e.g. username length, allowed charset) it may differ from Teleport username.
+      - name: is_deleted
+        type: boolean
+        description: >
+          Delete indicates if the user was deleted entirely or merely disabled.
+
+    - name: postgres
+      type: group
+      description: >
+        Postgres related metadata    
+
+      fields:
+        - name: statement_name
+          type: keyword
+          description: >
+            StatementName is the prepared statement name.
+        - name: portal_name
+          type: keyword
+          description: >
+            PortalName is the destination portal name that binds statement to parameters.
+        - name: parameters
+          type: keyword
+          description: >
+            Parameters are the query bind parameters.
+        - name: function_oid
+          type: keyword
+          description: >
+            FunctionOID is the Postgres object ID of the called function.
+        - name: function_args
+          type: keyword
+          description: >
+            FunctionArgs contains formatted function arguments.  

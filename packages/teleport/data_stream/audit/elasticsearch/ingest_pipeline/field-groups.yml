@@ -410,52 +410,8 @@ processors:
        field: teleport.audit.offset
        target_field: teleport.audit.desktop.offset
        ignore_missing: true
-  -  rename:
-       field: teleport.audit.windows_desktop_service
-       target_field: teleport.audit.desktop.windows_desktop_service
-       ignore_missing: true
-  - script:
-      tag: add_tmp_desktop_addr
-      lang: painless
-      description: Adds the URI identifier to make uri_parts processor work
-      if: ctx?.teleport?.audit?.desktop_addr != null
-      source: |
-        ctx.teleport.audit.tmp_desktop_addr = "//" + ctx.teleport.audit.desktop_addr;
-  - uri_parts:
-      tag: parse_tmp_desktop_addr
-      field: teleport.audit.tmp_desktop_addr
-      target_field: teleport.audit.desktop.address
-      keep_original: false
-      ignore_missing: true
-      ignore_failure: true
-  - remove:
-      field: teleport.audit.tmp_desktop_addr
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.desktop_addr
-      target_field: teleport.audit.desktop.address.original
-      ignore_missing: true
-  -  rename:
-       field: teleport.audit.windows_domain
-       target_field: teleport.audit.desktop.windows_domain
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.windows_user
-       target_field: teleport.audit.desktop.windows_user
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.desktop_labels
-       target_field: teleport.audit.desktop.labels
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.desktop_name
-       target_field: teleport.audit.desktop.desktop_name
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.allow_user_creation
-       target_field: teleport.audit.desktop.allow_user_creation
-       ignore_missing: true
-  
+
+
   # FileTransferRequestEvent happens when a FileTransferRequest is created, updated, approved, or denied.
   # See file_transfer_request.yml for field definitions.
   - rename:
@@ -804,6 +760,113 @@ processors:
   -  rename:
        field: teleport.audit.db_origin
        target_field: teleport.audit.database.origin
+       ignore_missing: true
+
+  # DatabaseSessionQuery is emitted when a user executes a database query.
+  -  rename:
+       field: teleport.audit.db_query
+       target_field: teleport.audit.database.query
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.db_query_parameters
+       target_field: teleport.audit.database.query_parameters
+       ignore_missing: true
+
+  # DatabasePermissionUpdate is emitted when a user database permissions are updated.
+  -  rename:
+       field: teleport.audit.permission_summary
+       target_field: teleport.audit.database.permission_summary
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.affected_object_counts
+       target_field: teleport.audit.database.affected_object_counts
+       ignore_missing: true
+
+  # DatabaseUserCreate is emitted when a database user is provisioned.
+  -  rename:
+       field: teleport.audit.username
+       target_field: teleport.audit.database.user_change.username
+       ignore_missing: true
+
+  # DatabaseUserDeactivate is emitted when a database user is disabled or deleted.
+  -  rename:
+       field: teleport.audit.delete
+       target_field: teleport.audit.database.user_change.is_deleted
+       ignore_missing: true
+
+  # Postgres related metadata
+  # See database.yml for field definitions.
+  -  rename:
+       field: teleport.audit.statement_name
+       target_field: teleport.audit.database.postgres.statement_name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.query
+       target_field: teleport.audit.database.query
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.portal_name
+       target_field: teleport.audit.database.postgres.portal_name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.parameters
+       target_field: teleport.audit.database.postgres.parameters
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.function_oid
+       target_field: teleport.audit.database.postgres.function_oid
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.function_args
+       target_field: teleport.audit.database.postgres.function_args
+       ignore_missing: true
+
+  # WindowsDesktopSessionStart is emitted when a user connects to a desktop.
+  # See desktop.yml for field definitions.
+  -  rename:
+       field: teleport.audit.windows_desktop_service
+       target_field: teleport.audit.desktop.windows_desktop_service
+       ignore_missing: true
+  - script:
+      tag: add_tmp_desktop_addr
+      lang: painless
+      description: Adds the URI identifier to make uri_parts processor work
+      if: ctx?.teleport?.audit?.desktop_addr != null
+      source: |
+        ctx.teleport.audit.tmp_desktop_addr = "//" + ctx.teleport.audit.desktop_addr;
+  - uri_parts:
+      tag: parse_tmp_desktop_addr
+      field: teleport.audit.tmp_desktop_addr
+      target_field: teleport.audit.desktop.address
+      keep_original: false
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.tmp_desktop_addr
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.desktop_addr
+      target_field: teleport.audit.desktop.address.original
+      ignore_missing: true
+  -  rename:
+       field: teleport.audit.windows_domain
+       target_field: teleport.audit.desktop.windows_domain
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.windows_user
+       target_field: teleport.audit.desktop.windows_user
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.desktop_labels
+       target_field: teleport.audit.desktop.labels
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.desktop_name
+       target_field: teleport.audit.desktop.desktop_name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.allow_user_creation
+       target_field: teleport.audit.desktop.allow_user_creation
        ignore_missing: true
 
 
