@@ -87,14 +87,13 @@ Event fields are grouped into logical categories.
 | teleport.audit.database.user | DatabaseUser is the database username used to connect. | keyword |
 | teleport.audit.database.user_change.is_deleted | Delete indicates if the user was deleted entirely or merely disabled. | boolean |
 | teleport.audit.database.user_change.username | Username is the username chosen for the database user. Due to database limitations (e.g. username length, allowed charset) it may differ from Teleport username. | keyword |
-| teleport.audit.desktop.address | DesktopAddr is the address of the desktop being accessed. | object |
 | teleport.audit.desktop.allow_user_creation | AllowUserCreation indicates whether automatic local user creation is allowed for this session. | boolean |
-| teleport.audit.desktop.desktop_name | DesktopName is the name of the desktop resource. | keyword |
 | teleport.audit.desktop.directory_id | DirectoryID is the ID of the directory being shared (unique to the Windows Desktop Session). | unsigned_long |
 | teleport.audit.desktop.directory_name | DirectoryName is the name of the directory being shared. | keyword |
 | teleport.audit.desktop.is_recorded | Recorded is true if the session was recorded, false otherwise. | boolean |
 | teleport.audit.desktop.labels | DesktopLabels are the labels on the desktop resource. | object |
 | teleport.audit.desktop.length | Length is the number of bytes of data received from the remote clipboard or sent from a user's workstation to Teleport. | unsigned_long |
+| teleport.audit.desktop.name | DesktopName is the name of the desktop resource. | keyword |
 | teleport.audit.desktop.offset | Offset is the offset the bytes were read from or written to. | unsigned_long |
 | teleport.audit.desktop.path | Path is the path within the shared directory where the file is located. | keyword |
 | teleport.audit.desktop.windows_desktop_service | WindowsDesktopService is the name of the service proxying the RDP session. | keyword |
@@ -169,6 +168,10 @@ Event fields are grouped into logical categories.
 | teleport.audit.sftp.action | Action is what kind of file operation | keyword |
 | teleport.audit.sftp.attributes | Attributes is file metadata that the user requested to be changed | object |
 | teleport.audit.sftp.target_path | TargetPath is the new path in file renames, or the path of the symlink when creating symlinks. | keyword |
+| teleport.audit.unknown.code | UnknownCode is the event code extracted from the unknown event. | keyword |
+| teleport.audit.unknown.data | Data is the serialized JSON data of the unknown event. | wildcard |
+| teleport.audit.unknown.event_type | UnknownType is the event type extracted from the unknown event. | keyword |
+| teleport.audit.unknown.metadata | Metadata is a common event metadata. | object |
 | teleport.audit.user.access_requests | AccessRequests are the IDs of access requests created by the user | keyword |
 | teleport.audit.user.aws_role_arn | AWSRoleARN is AWS IAM role user assumes when accessing AWS console. | keyword |
 | teleport.audit.user.azure_identity | AzureIdentity is the Azure identity user assumes when accessing Azure API. | keyword |
