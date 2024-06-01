@@ -1062,6 +1062,26 @@ processors:
        target_field: teleport.audit.join.token_expires
        ignore_missing: true
 
+  # Unknown is a fallback event used when we don't recognize an event from the backend.
+  # See unknown.yml for field definitions.
+  -  rename:
+       field: teleport.audit.metadata
+       target_field: teleport.audit.unknown.metadata
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.unknown_event
+       target_field: teleport.audit.unknown.event_type
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.unknown_code
+       target_field: teleport.audit.unknown.code
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.data
+       target_field: teleport.audit.unknown.data
+       ignore_missing: true
+
+
 # What to do if the processing fails.
 on_failure:
   - append:
