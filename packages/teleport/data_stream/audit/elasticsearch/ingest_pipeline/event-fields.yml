@@ -167,11 +167,7 @@ processors:
       ignore_missing: true
 
   # Connection contains connection info.
-  # See connection.yml for field definitions.
-  - rename:
-      field: teleport.audit.proto
-      target_field: network.protocol
-      ignore_missing: true
+  # All of these fields are mapped to ECS fields.
 
   # Extract data from addr.local field.
   - dot_expander:
@@ -196,7 +192,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.addr.local
-      target_field: teleport.audit.connection.local_address.original
+      target_field: server.address
       ignore_missing: true
   - rename:
       field: teleport.audit.connection.local_address.domain
@@ -230,7 +226,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.addr.remote
-      target_field: teleport.audit.connection.remote_address.original
+      target_field: client.address
       ignore_missing: true
   - rename:
       field: teleport.audit.connection.remote_address.domain
@@ -241,6 +237,14 @@ processors:
       target_field: client.port
       ignore_missing: true
 
+  # The last field and cleanup.
+  - rename:
+      field: teleport.audit.proto
+      target_field: network.protocol
+      ignore_missing: true
+  - remove:
+      field: teleport.connection
+      ignore_missing: true
 
   # ClientMetadata identifies the originating client for an event.
   # All of these fields are mapped to ECS fields.
