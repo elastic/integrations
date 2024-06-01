@@ -707,6 +707,100 @@ processors:
        target_field: event.reason
        ignore_missing: true
 
+
+  # Kubernetes API request event metadata
+  # See kubernetes.resource.yml for field definitions.
+  -  rename:
+       field: teleport.audit.request_path
+       target_field: url.path
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.verb
+       target_field: http.method
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.resource_api_group
+       target_field: teleport.audit.kubernetes.resource.api_group
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.resource_namespace
+       target_field: teleport.audit.kubernetes.resource.namespace
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.resource_kind
+       target_field: teleport.audit.kubernetes.resource.kind
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.resource_name
+       target_field: teleport.audit.kubernetes.resource.name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.response_code
+       target_field: http.response.status_code
+       ignore_missing: true
+
+  # Common application information
+  # See app.yml for field definitions.
+  -  rename:
+       field: teleport.audit.app_uri
+       target_field: url.full
+       ignore_missing: true
+  - rename:
+      field: teleport.audit.public_addr
+      target_field: teleport.audit.app.public_address
+      ignore_missing: true
+  -  rename:
+       field: teleport.audit.app_labels
+       target_field: teleport.audit.app.labels
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.app_name
+       target_field: teleport.audit.app.name
+       ignore_missing: true
+
+  # App session related metadata
+  # See app.yml for field definitions.
+  -  rename:
+       field: teleport.audit.session_chunk_id
+       target_field: teleport.audit.app.session.session_chunk_id
+       ignore_missing: true
+
+  # App session request related metadata
+  -  rename:
+       field: teleport.audit.status_code
+       target_field: http.response.status_code
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.path
+       target_field: url.path
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.raw_query
+       target_field: url.query
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.method
+       target_field: http.request.method
+       ignore_missing: true
+
+  # AWS related metadata
+  -  rename:
+       field: teleport.audit.aws_region
+       target_field: teleport.audit.app.aws.region
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.aws_service
+       target_field: teleport.audit.app.aws.service
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.aws_host
+       target_field: teleport.audit.app.aws.host
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.aws_assumed_role
+       target_field: teleport.audit.app.aws.assumed_role
+       ignore_missing: true
+
   # DatabaseMetadata contains common database information
   # See database.yml for field definitions.
   -  rename:
@@ -869,58 +963,77 @@ processors:
        target_field: teleport.audit.desktop.allow_user_creation
        ignore_missing: true
 
-
-  # Kubernetes API request event metadata
-  # See kubernetes.resource.yml for field definitions.
-  -  rename:
-       field: teleport.audit.request_path
-       target_field: url.path
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.verb
-       target_field: http.method
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.resource_api_group
-       target_field: teleport.audit.kubernetes.resource.api_group
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.resource_namespace
-       target_field: teleport.audit.kubernetes.resource.namespace
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.resource_kind
-       target_field: teleport.audit.kubernetes.resource.kind
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.resource_name
-       target_field: teleport.audit.kubernetes.resource.name
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.response_code
-       target_field: http.response.status_code
-       ignore_missing: true
-
-  # Common application information
-  # See app.yml for field definitions.
-  -  rename:
-       field: teleport.audit.app_uri
-       target_field: url.full
-       ignore_missing: true
+  # MFADeviceMetadata is a common MFA device metadata.
   - rename:
-      field: teleport.audit.public_addr
-      target_field: teleport.audit.app.public_address
+      field: teleport.audit.mfa_device_uuid
+      target_field: teleport.audit.mfa_device.uuid
       ignore_missing: true
+  - rename:
+      field: teleport.audit.mfa_device_name
+      target_field: teleport.audit.mfa_device.name
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.mfa_device_type
+      target_field: teleport.audit.mfa_device.type
+      ignore_missing: true
+
+  # WindowsDesktopSessionEnd is emitted when a user ends a Windows desktop session.
+  - rename:
+      field: teleport.audit.recorded
+      target_field: teleport.audit.mfa_device.is_recorded
+      ignore_missing: true
+
+  # Certificate issuance metadata
+  # See certificate.yml for field definitions.
   -  rename:
-       field: teleport.audit.app_labels
-       target_field: teleport.audit.app.labels
+       field: teleport.audit.cert_type
+       target_field: teleport.audit.certificate.type
        ignore_missing: true
   -  rename:
-       field: teleport.audit.app_name
-       target_field: teleport.audit.app.name
+       field: teleport.audit.identity
+       target_field: teleport.audit.certificate.identity
        ignore_missing: true
 
+  # Join event metadata
+  # See join.yml for field definitions.
+  -  rename:
+       field: teleport.audit.bot_name
+       target_field: teleport.audit.join.bot_name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.method
+       target_field: teleport.audit.join.method
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.token_name
+       target_field: teleport.audit.join.token_name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.attributes
+       target_field: teleport.audit.join.attributes
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.user_name
+       target_field: teleport.audit.join.user_name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.host_id
+       target_field: host.id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.node_name
+       target_field: host.name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.role
+       target_field: teleport.audit.join.role
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.token_expires
+       target_field: teleport.audit.join.token_expires
+       ignore_missing: true
 
+# What to do if the processing fails.
 on_failure:
   - append:
       field: error.message
