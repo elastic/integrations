@@ -113,7 +113,7 @@ processors:
       value: ['process', 'host']
       if: 'ctx.event?.action.startsWith("kube.")'
 
-  # Events related to lock management.
+  # Events related to Teleport lock management.
   - set:
       field: event.category
       value: ['configuration', 'iam']
@@ -123,7 +123,7 @@ processors:
   - set:
       field: event.category
       value: ['authentication', 'iam']
-      if: 'ctx.event?.action.startsWith  ("login_rule.")'
+      if: 'ctx.event?.action.startsWith("login_rule.")'
 
   # Events related to multi-factor authentication.
   - set:
@@ -242,7 +242,7 @@ processors:
   # Events related to Windows desktop sessions.
   - set:
       field: event.category
-      value: 'host'
+      value: ['host', 'session']
       if: 'ctx.event?.action.startsWith("windows.")'
 
   # Events related to X11 forwarding.
@@ -256,3 +256,9 @@ processors:
       field: event.category
       value: 'unknown'
       if: 'ctx.event?.action.startsWith("unknown")'
+
+  # Events not in this list.
+  - set:
+      field: event.category
+      value: 'unknown'
+      if: ctx.event?.category == null
