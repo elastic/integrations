@@ -242,6 +242,12 @@ Event fields are grouped into logical categories.
   - [Description of event types](https://github.com/gravitational/teleport/blob/master/web/packages/teleport/src/services/audit/makeEvent.ts)
   - [List of example events](https://github.com/gravitational/teleport/blob/master/web/packages/teleport/src/Audit/fixtures/index.ts)
 
+IP replacement:
+
+```shell
+sed -e "s/1.1.1./67.43.156.1/g;s/2.2.2./67.43.156./g;s/198.51.100./175.16.199./g;s/172.10.1./67.43.156./g;s/100.104.52.89/81.2.69.192/g;s/190.58.129.4/89.160.20.112/g;s/192.000.0.000/89.160.20.128/g;s/50.34.48.113/81.2.69.193/g;s/54-162-177-255/175-16-199-255/g;s/\[::1\]/2a02:cf40::/g;s/198.51.100./1.128.0./g" -i bak data_stream/audit/_dev/test/pipeline/test-teleport-all-events.log
+```
+
 ### How the ingest pipeline was generated
 
 With OpenAI and the generated text list of events, we
