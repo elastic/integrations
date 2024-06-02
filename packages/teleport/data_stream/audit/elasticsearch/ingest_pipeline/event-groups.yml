@@ -12,7 +12,7 @@ processors:
        ignore_missing: true
   -  rename:
        field: teleport.audit.with_mfa
-       target_field: teleport.audit.session.mfa_device_id
+       target_field: teleport.audit.mfa_device.uuid
        ignore_missing: true
   -  rename:
        field: teleport.audit.private_key_policy
@@ -129,6 +129,10 @@ processors:
       field: teleport.audit.server.address.ip
       target_field: host.ip
       ignore_missing: true
+  - convert:
+      field: teleport.audit.server.address.port
+      type: long
+      ignore_missing: true
   - rename:
       field: teleport.audit.server.address.port
       target_field: host.port
@@ -166,6 +170,10 @@ processors:
       field: teleport.audit.connection.local_address.domain
       target_field: server.ip
       ignore_missing: true
+  - convert:
+      field: teleport.audit.connection.local_address.port
+      type: long
+      ignore_missing: true
   - rename:
       field: teleport.audit.connection.local_address.port
       target_field: server.port
@@ -199,6 +207,10 @@ processors:
   - rename:
       field: teleport.audit.connection.remote_address.domain
       target_field: client.ip
+      ignore_missing: true
+  - convert:
+      field: teleport.audit.connection.remote_address.port
+      type: long
       ignore_missing: true
   - rename:
       field: teleport.audit.connection.remote_address.port
@@ -496,6 +508,10 @@ processors:
        field: teleport.audit.dst_addr
        target_field: destination.ip
        ignore_missing: true
+  - convert:
+      field: teleport.audit.dst_port
+      type: long
+      ignore_missing: true
   -  rename:
        field: teleport.audit.dst_port
        target_field: destination.port
@@ -566,8 +582,16 @@ processors:
        target_field: teleport.audit.login.identity_attributes
        ignore_missing: true
   -  rename:
-       field: teleport.audit.mfa_device
-       target_field: teleport.audit.login.mfa_device
+       field: teleport.audit.mfa_device.mfa_device_name
+       target_field: teleport.audit.mfa_device.name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.mfa_device.mfa_device_type
+       target_field: teleport.audit.mfa_device.type
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.mfa_device.mfa_device_uuid
+       target_field: teleport.audit.mfa_device.uuid
        ignore_missing: true
   -  rename:
        field: teleport.audit.applied_login_rules
@@ -646,6 +670,11 @@ processors:
       field: teleport.audit.command
       target_field: process.command_line
       ignore_missing: true
+  - convert:
+      field: teleport.audit.exitCode
+      type: long
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: teleport.audit.exitCode
       target_field: process.exit_code
@@ -932,6 +961,10 @@ processors:
       field: teleport.audit.desktop.address.ip
       target_field: destination.ip
       ignore_missing: true
+  - convert:
+      field: teleport.audit.desktop.address.port
+      type: long
+      ignore_missing: true
   - rename:
       field: teleport.audit.desktop.address.port
       target_field: destination.port
@@ -961,6 +994,7 @@ processors:
        ignore_missing: true
 
   # MFADeviceMetadata is a common MFA device metadata.
+  # See mfa-device.yml for field definitions.
   - rename:
       field: teleport.audit.mfa_device_uuid
       target_field: teleport.audit.mfa_device.uuid
