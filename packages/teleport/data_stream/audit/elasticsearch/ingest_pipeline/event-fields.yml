@@ -1081,6 +1081,80 @@ processors:
        target_field: teleport.audit.unknown.data
        ignore_missing: true
 
+  # DeviceMetadata groups device information for events.
+  # See device.yml for field definitions.
+  -  rename:
+       field: teleport.audit.device_id
+       target_field: teleport.audit.device.id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.os_type
+       target_field: teleport.audit.device.os_type
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.asset_tag
+       target_field: teleport.audit.device.asset_tag
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.credential_id
+       target_field: teleport.audit.device.credential_id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.device_origin
+       target_field: teleport.audit.device.origin
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.web_authentication
+       target_field: teleport.audit.device.web_authentication
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.web_session_id
+       target_field: teleport.audit.device.web_session_id
+       ignore_missing: true
+
+  # SessionUpload is a session upload
+  -  rename:
+       field: teleport.audit.url
+       target_field: url.full
+       ignore_missing: true
+
+  # Identity is the identity associated with the certificate, as interpreted by Teleport.
+  # See certificate.yml for field definitions.
+  -  rename:
+       field: teleport.audit.identity
+       target_field: teleport.audit.certificate.identity
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.certificate.identity.mfa_device_uuid
+       target_field: teleport.audit.mfa_device.uuid
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.certificate.identity.client_ip
+       target_field: client.ip
+       ignore_missing: true
+
+  # AccessRequestResourceSearch is emitted when a user searches for resources as part of a search-based access request
+  # See access_request.resource_search.yml for field definitions.
+  -  rename:
+       field: teleport.audit.search_as_roles
+       target_field: teleport.audit.access_request.resource_search.search_as_roles
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.resource_type
+       target_field: teleport.audit.access_request.resource_search.resource_type
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.labels
+       target_field: teleport.audit.access_request.resource_search.labels
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.predicate_expression
+       target_field: teleport.audit.access_request.resource_search.predicate_expression
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.search_keywords
+       target_field: teleport.audit.access_request.resource_search.search_keywords
+       ignore_missing: true
 
 # What to do if the processing fails.
 on_failure:

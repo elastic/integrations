@@ -51,6 +51,11 @@ Event fields are grouped into logical categories.
 | teleport.audit.access_request.proposed_state | ProposedState is the state proposed by a review. | keyword |
 | teleport.audit.access_request.reason | Reason is an optional description of why the request is being created or updated. | keyword |
 | teleport.audit.access_request.resource_ids | RequestedResourceIDs is the set of resources to which access is being requested. | object |
+| teleport.audit.access_request.resource_search.labels | Labels is the label-based matcher used for the search. | object |
+| teleport.audit.access_request.resource_search.predicate_expression | PredicateExpression is the list of boolean conditions that were used for the search. | keyword |
+| teleport.audit.access_request.resource_search.resource_type | ResourceType is the type of resource being searched for. | keyword |
+| teleport.audit.access_request.resource_search.search_as_roles | SearchAsRoles is the list of roles the search was performed as. | keyword |
+| teleport.audit.access_request.resource_search.search_keywords | SearchKeywords is the list of search keywords used to match against resource field values. | keyword |
 | teleport.audit.access_request.reviewer | Reviewer is the author of the review. | keyword |
 | teleport.audit.access_request.roles | Roles is a list of roles for the user. | keyword |
 | teleport.audit.access_request.state | RequestState is access request state | keyword |
@@ -62,7 +67,44 @@ Event fields are grouped into logical categories.
 | teleport.audit.app.name | AppName is the configured application name. | keyword |
 | teleport.audit.app.public_address | AppPublicAddr is the configured application public address. | keyword |
 | teleport.audit.app.session.session_chunk_id | SessionChunkID is the ID of the session that was created for this 5 minute application log chunk. | keyword |
-| teleport.audit.certificate.identity | Identity is the identity associated with the certificate, as interpreted by Teleport. | object |
+| teleport.audit.certificate.identity.access_requests | AccessRequests is a list of UUIDs of active requests for this Identity. | keyword |
+| teleport.audit.certificate.identity.allowed_resource_ids | AllowedResourceIDs is the list of resources which the identity will be allowed to access. An empty list indicates that no resource-specific restrictions will be applied. | keyword |
+| teleport.audit.certificate.identity.aws_role_arns | AWSRoleARNs is a list of allowed AWS role ARNs user can assume. | keyword |
+| teleport.audit.certificate.identity.azure_identities | AzureIdentities is a list of allowed Azure identities user can assume. | keyword |
+| teleport.audit.certificate.identity.bot_name | BotName indicates the name of the Machine ID bot this identity was issued to, if any. | keyword |
+| teleport.audit.certificate.identity.database_names | DatabaseNames is a list of allowed database names. | keyword |
+| teleport.audit.certificate.identity.database_users | DatabaseUsers is a list of allowed database users. | keyword |
+| teleport.audit.certificate.identity.device_extensions.asset_tag | AssetTag is the device inventory identifier. | keyword |
+| teleport.audit.certificate.identity.device_extensions.credential_id | CredentialID is the identifier for the credential used by the device to authenticate itself. | keyword |
+| teleport.audit.certificate.identity.device_extensions.device_id | DeviceID is the trusted device identifier. | keyword |
+| teleport.audit.certificate.identity.disallow_reissue | DisallowReissue is a flag that, if set, instructs the auth server to deny any attempts to reissue new certificates while authenticated with this certificate. | boolean |
+| teleport.audit.certificate.identity.expires | Expires specifies whenever the session will expire | date |
+| teleport.audit.certificate.identity.gcp_service_accounts | GCPServiceAccounts is a list of allowed GCP service accounts user can assume. | keyword |
+| teleport.audit.certificate.identity.impersonator | Impersonator is a username of a user impersonating this user | keyword |
+| teleport.audit.certificate.identity.kubernetes_cluster | KubernetesCluster specifies the target kubernetes cluster for TLS identities. | keyword |
+| teleport.audit.certificate.identity.kubernetes_groups | KubernetesGroups is a list of Kubernetes groups allowed | keyword |
+| teleport.audit.certificate.identity.kubernetes_users | KubernetesUsers is a list of Kubernetes users allowed | keyword |
+| teleport.audit.certificate.identity.logins | Logins is a list of Unix logins allowed. | keyword |
+| teleport.audit.certificate.identity.prev_identity_expires | PreviousIdentityExpires is the expiry time of the identity/cert that this identity/cert was derived from. | date |
+| teleport.audit.certificate.identity.private_key_policy | PrivateKeyPolicy is the private key policy of the user's private key. | keyword |
+| teleport.audit.certificate.identity.roles | Roles is a list of groups (Teleport roles) encoded in the identity | keyword |
+| teleport.audit.certificate.identity.route_to_app.aws_role_arn | AWSRoleARN is the AWS role to assume when accessing AWS API. | keyword |
+| teleport.audit.certificate.identity.route_to_app.azure_identity | AzureIdentity is the Azure identity ot assume when accessing Azure API. | keyword |
+| teleport.audit.certificate.identity.route_to_app.cluster_name | ClusterName is the cluster where the application resides. | keyword |
+| teleport.audit.certificate.identity.route_to_app.gcp_service_account | GCPServiceAccount is the GCP service account to assume when accessing GCP API. | keyword |
+| teleport.audit.certificate.identity.route_to_app.name | Name is the application name certificate is being requested for. | keyword |
+| teleport.audit.certificate.identity.route_to_app.public_addr | PublicAddr is the application public address. | keyword |
+| teleport.audit.certificate.identity.route_to_app.session_id | SessionID is the ID of the application session. | keyword |
+| teleport.audit.certificate.identity.route_to_cluster | RouteToCluster specifies the target cluster if present in the session | keyword |
+| teleport.audit.certificate.identity.route_to_database.database | Database is an optional database name to embed. | keyword |
+| teleport.audit.certificate.identity.route_to_database.protocol | Protocol is the type of the database the cert is for. | keyword |
+| teleport.audit.certificate.identity.route_to_database.roles | Roles is an optional list of database roles to embed. | keyword |
+| teleport.audit.certificate.identity.route_to_database.service_name | ServiceName is the Teleport database proxy service name the cert is for. | keyword |
+| teleport.audit.certificate.identity.route_to_database.username | Username is an optional database username to embed. | keyword |
+| teleport.audit.certificate.identity.teleport_cluster | TeleportCluster is the name of the teleport cluster that this identity originated from. | keyword |
+| teleport.audit.certificate.identity.traits | Traits hold claim data used to populate a role at runtime. | object |
+| teleport.audit.certificate.identity.usage | Usage is a list of usage restrictions encoded in the identity | keyword |
+| teleport.audit.certificate.identity.user | User is a username or name of the node connection | keyword |
 | teleport.audit.certificate.type | CertificateType is the type of certificate that was just issued. | keyword |
 | teleport.audit.database.affected_object_counts | AffectedObjectCounts counts how many distinct objects of each kind were affected. | object |
 | teleport.audit.database.aws.redshift_cluster_id | DatabaseAWSRedshiftClusterID is cluster ID for Redshift databases. | keyword |
@@ -99,6 +141,13 @@ Event fields are grouped into logical categories.
 | teleport.audit.desktop.windows_desktop_service | WindowsDesktopService is the name of the service proxying the RDP session. | keyword |
 | teleport.audit.desktop.windows_domain | Domain is the Active Directory domain of the desktop being accessed. | keyword |
 | teleport.audit.desktop.windows_user | WindowsUser is the Windows username used to connect. | keyword |
+| teleport.audit.device.asset_tag | Device inventory identifier. | keyword |
+| teleport.audit.device.credential_id | Device credential identifier. | keyword |
+| teleport.audit.device.id | ID of the device. | keyword |
+| teleport.audit.device.origin | Device origin. | keyword |
+| teleport.audit.device.os_type | OS of the device. | keyword |
+| teleport.audit.device.web_authentication | True if web authentication, aka on-behalf-of device authentication, was performed. | boolean |
+| teleport.audit.device.web_session_id | Web Session ID associated with the device. | keyword |
 | teleport.audit.file_transfer_request.approvers | Approvers is a slice containing the Teleport users who have approved the request | keyword |
 | teleport.audit.file_transfer_request.filename | Filename is the name of the file to be uploaded to the Location. Only present in uploads. | keyword |
 | teleport.audit.file_transfer_request.is_download | Download is true if the requested file transfer is a download, false if an upload | boolean |
