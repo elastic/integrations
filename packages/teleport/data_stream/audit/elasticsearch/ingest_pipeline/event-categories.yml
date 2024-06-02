@@ -1,0 +1,258 @@
+---
+description: Pipeline for setting the categorization fields
+processors:
+  - set:
+      field: event.kind
+      value: event
+
+  # Events related to access list activity.
+  - set:
+      field: event.category
+      value: ['configuration', 'iam']
+      if: 'ctx.event?.action.startsWith("access_list.")'
+
+  # Events related to access requests.
+  - set:
+      field: event.category
+      value: ['session', 'iam']
+      if: 'ctx.event?.action.startsWith("access_request.")'
+
+  # Events related to application activity.
+  - set:
+      field: event.category
+      value: ['process', 'host']
+      if: 'ctx.event?.action.startsWith("app.")'
+
+  # Events related to authentication.
+  - set:
+      field: event.category
+      value: 'authentication'
+      if: 'ctx.event?.action.startsWith("auth")'
+
+  # Events related to billing information.
+  - set:
+      field: event.category
+      value: ['configuration', 'iam']
+      if: 'ctx.event?.action.startsWith("billing.")'
+
+  # Events related to bot activity.
+  - set:
+      field: event.category
+      value: ['process', 'host']
+      if: 'ctx.event?.action.startsWith("bot.")'
+
+  # Events related to certificate issuance.
+  - set:
+      field: event.category
+      value: ['configuration', 'iam']
+      if: 'ctx.event?.action.startsWith("cert.")'
+
+  # Events related to client disconnection.
+  - set:
+      field: event.category
+      value: 'network'
+      if: 'ctx.event?.action.startsWith("client.")'
+
+  # Events related to cluster networking configuration.
+  - set:
+      field: event.category
+      value: 'configuration'
+      if: 'ctx.event?.action.startsWith("cluster_networking_config.")'
+
+  # Events related to database activity.
+  - set:
+      field: event.category
+      value: 'database'
+      if: 'ctx.event?.action.startsWith("db.")'
+
+  # Events related to desktop activity.
+  - set:
+      field: event.category
+      value: ['host', 'file']
+      if: 'ctx.event?.action.startsWith("desktop.")'
+
+  # Events related to device management.
+  - set:
+      field: event.category
+      value: ['configuration', 'iam']
+      if: 'ctx.event?.action.startsWith("device.")'
+
+  # Events related to command execution.
+  - set:
+      field: event.category
+      value: ['process', 'host']
+      if: 'ctx.event?.action.startsWith("exec")'
+
+  # Events related to external audit storage.
+  - set:
+      field: event.category
+      value: 'configuration'
+      if: 'ctx.event?.action.startsWith("external_audit_storage.")'
+
+  # Events related to GitHub auth connectors.
+  - set:
+      field: event.category
+      value: ['authentication', 'iam']
+      if: 'ctx.event?.action.startsWith("github.")'
+
+  # Events related to instance joining.
+  - set:
+      field: event.category
+      value: ['network', 'host']
+      if: 'ctx.event?.action.startsWith("instance.")'
+
+  # Events related to join token creation.
+  - set:
+      field: event.category
+      value: ['session', 'iam']
+      if: 'ctx.event?.action.startsWith("join_token.")'
+
+  # Events related to Kubernetes activity.
+  - set:
+      field: event.category
+      value: ['process', 'host']
+      if: 'ctx.event?.action.startsWith("kube.")'
+
+  # Events related to lock management.
+  - set:
+      field: event.category
+      value: ['configuration', 'iam']
+      if: 'ctx.event?.action.startsWith("lock.")'
+
+  # Events related to login rules.
+  - set:
+      field: event.category
+      value: ['authentication', 'iam']
+      if: 'ctx.event?.action.startsWith  ("login_rule.")'
+
+  # Events related to multi-factor authentication.
+  - set:
+      field: event.category
+      value: ['authentication', 'iam']
+      if: 'ctx.event?.action.startsWith("mfa.")'
+
+  # Events related to OIDC auth connectors.
+  - set:
+      field: event.category
+      value: ['authentication', 'iam']
+      if: 'ctx.event?.action.startsWith("oidc.")'
+
+  # Events related to Okta synchronization and assignment.
+  - set:
+      field: event.category
+      value: ['iam', 'process']
+      if: 'ctx.event?.action.startsWith("okta.")'
+
+  # Events related to port forwarding.
+  - set:
+      field: event.category
+      value: 'network'
+      if: 'ctx.event?.action.startsWith("port")'
+
+  # Events related to privilege tokens.
+  - set:
+      field: event.category
+      value: ['session', 'iam']
+      if: 'ctx.event?.action.startsWith("privilege_token.")'
+
+  # Events related to recovery codes and tokens.
+  - set:
+      field: event.category
+      value: ['session', 'iam']
+      if: 'ctx.event?.action.startsWith("recovery_")'
+
+  # Events related to terminal resizing.
+  - set:
+      field: event.category
+      value: 'process'
+      if: 'ctx.event?.action.startsWith("resize")'
+
+  # Events related to roles.
+  - set:
+      field: event.category
+      value: 'iam'
+      if: 'ctx.event?.action.startsWith("role.")'
+
+  # Events related to SAML connectors.
+  - set:
+      field: event.category
+      value: ['authentication', 'iam']
+      if: 'ctx.event?.action.startsWith("saml.")'
+
+  # Events related to SCP file transfers.
+  - set:
+      field: event.category
+      value: 'file'
+      if: 'ctx.event?.action.startsWith("scp.")'
+
+  # Events related to security reports.
+  - set:
+      field: event.category
+      value: 'threat'
+      if: 'ctx.event?.action.startsWith("secreports.")'
+
+  # Events related to sessions.
+  - set:
+      field: event.category
+      value: 'session'
+      if: 'ctx.event?.action.startsWith("session.")'
+
+  # Events related to session recording configuration.
+  - set:
+      field: event.category
+      value: 'configuration'
+      if: 'ctx.event?.action.startsWith("session_recording_config.")'
+
+  # Events related to SFTP file transfers.
+  - set:
+      field: event.category
+      value: 'file'
+      if: 'ctx.event?.action.startsWith("sftp.")'
+
+  # Events related to SPIFFE SVID issuance.
+  - set:
+      field: event.category
+      value: ['iam', 'process']
+      if: 'ctx.event?.action.startsWith("spiffe.")'
+
+  # Events related to SSM command execution.
+  - set:
+      field: event.category
+      value: 'process'
+      if: 'ctx.event?.action.startsWith("ssm.")'
+
+  # Events related to subsystem requests.
+  - set:
+      field: event.category
+      value: 'process'
+      if: 'ctx.event?.action.startsWith("subsystem")'
+
+  # Events related to trusted clusters.
+  - set:
+      field: event.category
+      value: ['network', 'host']
+      if: 'ctx.event?.action.startsWith("trusted_cluster.")'
+
+  # Events related to users.
+  - set:
+      field: event.category
+      value: 'iam'
+      if: 'ctx.event?.action.startsWith("user.")'
+
+  # Events related to Windows desktop sessions.
+  - set:
+      field: event.category
+      value: 'host'
+      if: 'ctx.event?.action.startsWith("windows.")'
+
+  # Events related to X11 forwarding.
+  - set:
+      field: event.category
+      value: 'network'
+      if: 'ctx.event?.action.startsWith("x11-")'
+
+  # Events not clearly categorized.
+  - set:
+      field: event.category
+      value: 'unknown'
+      if: 'ctx.event?.action.startsWith("unknown")'

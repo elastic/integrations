@@ -4,38 +4,6 @@ description: >
   See https://github.com/gravitational/teleport/blob/master/api/proto/teleport/legacy/types/events/events.proto
 processors:
 
-  # Metadata is a common event metadata.
-  # All of these fields are mapped to ECS fields.
-  - rename:
-      field: teleport.audit.ei
-      target_field: event.sequence
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.event
-      target_field: event.action
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.uid
-      target_field: event.id
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.code
-      target_field: event.code
-      ignore_missing: true
-  - date:
-      field: teleport.audit.time
-      target_field: '@timestamp'
-      formats:
-        - ISO8601
-      if: ctx.teleport?.audit?.time != null
-  - remove:
-      field: teleport.audit.time
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.cluster_name
-      target_field: orchestrator.cluster.name
-      ignore_missing: true
-
   # SessionMetadata is a common session event metadata
   # See session.yml for field definitions.
   -  rename:
