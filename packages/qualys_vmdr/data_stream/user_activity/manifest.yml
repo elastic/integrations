@@ -1,0 +1,84 @@
+title: Collect User Activity Log data from Qualys VMDR platform.
+type: logs
+streams:
+  - input: cel
+    title: User Activity Log
+    description: Collect User Activity Log data from Qualys VMDR platform.
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: URL
+        description: Base URL of the Qualys Server API.
+        required: true
+        show_user: true
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: >-
+          How far back to pull the User Activity log data from Qualys VMDR. Supported units for this parameter are s, m, h.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: interval
+        type: text
+        title: Interval
+        description: >-
+          Interval between two REST API calls. User can choose interval as per their plan mentioned in [Qualys API Limits](https://www.qualys.com/docs/qualys-api-limits.pdf). Supported units for this parameter are h/m/s.
+        default: 4h
+        multi: false
+        required: true
+        show_user: true
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: >-
+          Batch size for the response of the Qualys Server API. This parameter specifies the truncation limit for the response. Specify 0 for no truncation limit.
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: >-
+          Duration before declaring that the HTTP client connection has timed out. Give a timeout of more than 1 minute when retrieving data which is more than 15 days old. Supported time units are ns, us, ms, s, m, h. Requests may take significant time, so short timeouts are not recommended.
+        multi: false
+        required: true
+        show_user: false
+        default: 10m
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - qualys_vmdr-user_activity
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve qualys_vmdr.user_activity fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the data is parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+

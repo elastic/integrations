@@ -1,0 +1,139 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  end_point_type: {{audit_type}}
+  # Keep version in sync with the value in the README.
+  version: "2024-04-29"
+  audit_id: {{audit_id}}
+  api_token: {{api_token}}
+{{#if first_interval}}
+  lookback: {{first_interval}}
+{{/if}}
+{{#if user_id}}
+  user_id: {{user_id}}
+{{/if}}
+{{#if project_id}}
+  project_id: {{project_id}}
+{{/if}}
+{{#if event}}
+  event_filter:
+{{#each event as |e|}}
+  - {{e}}
+{{/each}}
+{{/if}}
+{{#if batch_size}}
+  size: {{batch_size}}
+{{/if}}
+  want_more: false
+redact:
+  fields:
+    - audit_id
+    - api_token
+program: |
+  state.with(get_request(
+    state.url.trim_right("/") + state.?cursor.next.orValue(
+      state.end_point_type + state.audit_id + "/audit_logs/search?" + {
+        "version":     [state.version],
+        "sort_order":  ['ASC'],
+        ?"from":       has(state.?cursor.last_created) ?
+                         optional.of([string(state.cursor.last_created)])
+                       : has(state.lookback) ? 
+                         optional.of([string(now-duration(state.lookback))])
+                       :
+                         optional.none(),
+        ?"size":       has(state.size) ?
+                         optional.of([string(int(state.size))])
+                       :
+                         optional.none(),
+        ?"user_id":    has(state.user_id) ?
+                         optional.of([state.user_id])
+                       :
+                         optional.none(),
+        ?"project_id": has(state.project_id) ?
+                         optional.of([state.project_id])
+                       :
+                         optional.none(),
+        ?"events":     state.?event_filter,
+      }.format_query()
+    )
+  ).with({
+    "Header":{
+      "Accept":        ["application/vnd.api+json"],
+      "Authorization": ["Token " + state.api_token],
+    }
+  }).do_request().as(resp, resp.StatusCode != 200 ?
+    {
+      "events": [{
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": size(resp.Body) != 0 ? 
+            string(resp.Body)
+          :
+            string(resp.Status) + ' (' + string(resp.StatusCode) + ')',
+        }
+      }],
+      "want_more": false,
+    }
+  :
+    // Remove unnecessary bytes conversion when kibana.version is at least v8.15.0.
+    bytes(resp.Body).decode_json().as(body, !has(body.?data.items) ?
+      {
+        "events":[],
+        "want_more": false,
+      }
+    :
+      {
+        "events": body.data.items.map(item, {
+          "message": item.encode_json()
+        }),
+        "cursor": {
+          ?"next": body.?links.next,
+          // This could be
+          //
+          //  size(body.data.items) == 0 ?
+          //    [state.?cursor.last_created.orValue(now)]
+          //  :
+          //    body.data.items[size(body.data.items)-1]
+          //
+          // if sort_order=ASC is reliable.
+          "last_created": body.data.items.map(item,
+            has(item.created), timestamp(item.created)
+          ).as(times, size(times) == 0 ? state.?cursor.last_created.orValue(now) : times.max()),
+        },
+        "want_more": has(body.?links.next),
+      }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

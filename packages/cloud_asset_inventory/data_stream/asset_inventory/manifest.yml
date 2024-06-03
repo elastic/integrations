@@ -1,0 +1,60 @@
+title: Cloud Assets Inventory
+# Not clear which one fits the best https://github.com/elastic/package-spec/blob/main/spec/integration/data_stream/manifest.spec.yml#L475
+type: logs
+dataset: cloud_asset_inventory.asset_inventory
+dataset_is_prefix: true
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: true
+streams:
+  - input: cloudbeat/asset_inventory_aws
+    title: AWS Asset Inventory
+    description: Asset Inventory Discovery for AWS
+    template_path: aws.yml.hbs
+    enabled: true
+    vars:
+      - name: access_key_id
+        type: text
+        title: Access Key ID
+        multi: false
+        required: false
+        show_user: true
+      - name: secret_access_key
+        type: text
+        title: Secret Access Key
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: session_token
+        type: text
+        title: Session Token
+        multi: false
+        required: false
+        show_user: true
+      - name: shared_credential_file
+        type: text
+        title: Shared Credential File
+        multi: false
+        required: false
+        show_user: false
+        description: Directory of the shared credentials file
+      - name: credential_profile_name
+        type: text
+        title: Credential Profile Name
+        multi: false
+        required: false
+        show_user: false
+      - name: role_arn
+        type: text
+        title: ARN Role
+        multi: false
+        required: false
+        show_user: false
+      - name: aws.credentials.type
+        type: text
+        title: Credentials type
+        multi: false
+        required: false
+        show_user: false

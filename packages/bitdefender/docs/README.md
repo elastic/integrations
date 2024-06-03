@@ -70,7 +70,7 @@ The BitDefender documentation for how to do this is [here](https://www.bitdefend
 
 You should use the "qradar" format option.
 
-**NOTE**: The "jsonrpc" format that BitDefender's documentation presents as the default and best option, should **NOT** be used, due to limitations in the filebeat "http_endpoint" input and available processors at this point.
+**NOTE**: The `jsonrpc` format that BitDefender's documentation presents as the default and best option, should **NOT** be used, due to limitations in the filebeat "http_endpoint" input and available processors at this point. The [`http_endpoint` input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html) can only collect events if the incoming body is either an object or an array of objects at the root. But as `jsonrpc` format sends the array of events bundled inside `params.events` JSON key, the input is currently unable to collect them.
 
 An example using cURL, as the official documentation is unclear at times what to do and how to do it.
 
