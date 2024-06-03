@@ -16,7 +16,7 @@ see the {{ url "getting-started-observability" "Getting started" }} guide.
 The Teleport Audit data stream `audit` provides events from Teleport audit logs.
 Event fields are grouped into logical categories.
 
-{ { event "audit"}}
+{{ event "audit" }}
 
-{{fields "audit"}}
+{{ fields "audit" }}
 
