@@ -62,7 +62,7 @@ processors:
       if: 'ctx.event.action == "access_request.review"'
   - set:
       field: event.type
-      value: ['access']
+      value: ['info']
       if: 'ctx.event.action == "access_request.search"'
   - set:
       field: event.type
@@ -72,9 +72,8 @@ processors:
   # Events related to application activity.
   - set:
       field: event.category
-      value: ['process', 'host']
+      value: ['process', 'configuration']
       if: 'ctx.event.action.startsWith("app.")'
-
   - set:
       field: event.type
       value: ['creation']
@@ -139,11 +138,11 @@ processors:
       if: 'ctx.event.action.startsWith("bot.")'
   - set:
       field: event.type
-      value: ['creation']
+      value: ['start']
       if: 'ctx.event.action == "bot.create"'
   - set:
       field: event.type
-      value: ['deletion']
+      value: ['end']
       if: 'ctx.event.action == "bot.delete"'
   - set:
       field: event.type
@@ -187,11 +186,11 @@ processors:
       if: 'ctx.event.action.startsWith("db.")'
   - set:
       field: event.type
-      value: ['creation']
+      value: ['change']
       if: 'ctx.event.action == "db.create"'
   - set:
       field: event.type
-      value: ['deletion']
+      value: ['change']
       if: 'ctx.event.action == "db.delete"'
   - set:
       field: event.type
@@ -199,15 +198,15 @@ processors:
       if: 'ctx.event.action == "db.session.cassandra.batch" || ctx.event.action == "db.session.cassandra.execute" || ctx.event.action == "db.session.cassandra.prepare" || ctx.event.action == "db.session.cassandra.register" || ctx.event.action == "db.session.dynamodb.request" || ctx.event.action == "db.session.elasticsearch.request" || ctx.event.action == "db.session.opensearch.request" || ctx.event.action == "db.session.permissions.update" || ctx.event.action == "db.session.postgres.function" || ctx.event.action == "db.session.postgres.statements.bind" || ctx.event.action == "db.session.postgres.statements.close" || ctx.event.action == "db.session.postgres.statements.execute" || ctx.event.action == "db.session.postgres.statements.parse" || ctx.event.action == "db.session.query" || ctx.event.action == "db.session.spanner.rpc" || ctx.event.action == "db.session.sqlserver.rpc_request" || ctx.event.action == "db.session.start" || ctx.event.action == "db.session.user.create" || ctx.event.action == "db.session.user.deactivate"'
   - set:
       field: event.type
-      value: ['end']
+      value: ['info']
       if: 'ctx.event.action == "db.session.end"'
   - set:
       field: event.type
       value: ['error']
-      if: 'ctx.event.action == "db.session.malformed_packet" || ctx.event.action == "db.session.query.failed" || ctx.event.action == "db.session.spanner.rpc" || ctx.event.action == "db.session.user.create" || ctx.event.action == "db.session.user.deactivate"'
+      if: 'ctx.event.action == "db.session.malformed_packet" || ctx.event.action == "db.session.query.failed"'
   - set:
       field: event.type
-      value: ['start']
+      value: ['info']
       if: 'ctx.event.action == "db.session.start"'
   - set:
       field: event.type
@@ -319,11 +318,11 @@ processors:
       if: 'ctx.event.action.startsWith("kube.")'
   - set:
       field: event.type
-      value: ['creation']
+      value: ['start']
       if: 'ctx.event.action == "kube.create"'
   - set:
       field: event.type
-      value: ['deletion']
+      value: ['end']
       if: 'ctx.event.action == "kube.delete"'
   - set:
       field: event.type
@@ -410,11 +409,11 @@ processors:
   - set:
       field: event.type
       value: ['change']
-      if: 'ctx.event.action.startsWith("okta.assignment") || ctx.event.action.endsWith(".update")'
+      if: 'ctx.event.action.startsWith("okta.assignment") || ctx.event.action.startsWith("okta.") && ctx.event.action.endsWith(".update")'
   - set:
       field: event.type
       value: ['info']
-      if: 'ctx.event.action.endsWith(".sync")'
+      if: 'ctx.event.action == "okta.sync"'
 
   # Events related to port forwarding.
   - set:
@@ -444,7 +443,7 @@ processors:
   - set:
       field: event.type
       value: ['creation']
-      if: 'ctx.event.action == "recovery_code.generated" || ctx.event.action.endsWith(".create")'
+      if: 'ctx.event.action == "recovery_code.generated" || ctx.event.action == "recovery_token.create" || ctx.event.action == "reset_password_token.create"'
   - set:
       field: event.type
       value: ['change']
@@ -513,7 +512,7 @@ processors:
       if: 'ctx.event.action.startsWith("secreports.")'
   - set:
       field: event.type
-      value: ['info']
+      value: ['indicator']
       if: 'ctx.event.action == "secreports.audit.query.run" || ctx.event.action == "secreports.report.run"'
 
   # Events related to sessions.
