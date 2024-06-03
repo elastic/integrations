@@ -600,8 +600,12 @@ processors:
   # Events related to users.
   - set:
       field: event.category
+      value: ['iam']
+      if: 'ctx.event.action.startsWith("user.") && ctx.event.action != "user.login"'
+  - set:
+      field: event.category
       value: ['authentication']
-      if: 'ctx.event.action.startsWith("user.")'
+      if: 'ctx.event.action == "user.login"'
   - set:
       field: event.type
       value: ['creation']
@@ -642,3 +646,9 @@ processors:
       field: event.type
       value: ['start']
       if: 'ctx.event.action == "x11-forward"'
+
+  # Additional processing based on event code.
+  - set:
+      field: event.outcome
+      value: [ 'failure' ]
+      if: 'ctx.event.code.endsWith("E") || ctx.event.code.endsWith("W")'
