@@ -21,10 +21,15 @@ processors:
 
   # UserMetadata is a common user event metadata
   # See user.yml for field definitions.
+  -  remove:
+       description: 'Fix an issue where "user": {"user": message} is present'
+       field: teleport.audit.user.user
+       ignore_missing: true
   -  rename:
        field: teleport.audit.user
        target_field: user.name
        ignore_missing: true
+       ignore_failure: true
   -  rename:
        field: teleport.audit.login
        target_field: teleport.audit.user.os_login
