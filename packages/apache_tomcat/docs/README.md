@@ -841,7 +841,8 @@ An example event for `connection_pool` looks as following:
 | apache_tomcat.connection_pool.connection.time_betwen_eviction_run.time.ms | The total amount of time in milliseconds to sleep between runs of the idle connection validation/cleaner thread. | double | ms | gauge |
 | apache_tomcat.connection_pool.connection.validate | Validate connections from this pool. | double |  | gauge |
 | apache_tomcat.connection_pool.lifo | Last In First Out connections. | boolean |  |  |
-| apache_tomcat.connection_pool.max.total | Maximum total of connection pool. | double |  | gauge |
+| apache_tomcat.connection_pool.max.active | The maximum number of active connections that can be allocated from a pool at the same time. | double |  | gauge |
+| apache_tomcat.connection_pool.max.total | The maximum number of database connections in pool. | double |  | gauge |
 | apache_tomcat.connection_pool.prepared_statements | Validate connections from this pool. | boolean |  |  |
 | apache_tomcat.connection_pool.test_on_borrow | The indication of whether objects will be validated before being borrowed from the pool. | boolean |  |  |
 | apache_tomcat.connection_pool.test_on_create | Property determines whether or not the pool will validate objects immediately after they are created by the pool. | boolean |  |  |
