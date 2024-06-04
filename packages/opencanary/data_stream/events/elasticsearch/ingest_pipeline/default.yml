@@ -158,7 +158,6 @@ processors:
       type: long
       ignore_missing: true
       ignore_failure: true
-      
 
   # MSSQL Events
   - rename:
@@ -374,7 +373,7 @@ processors:
       description: Set event.category according to event details
       tag: set_event_category
       field: event.category
-      value: 
+      value:
         - network
         - intrusion_detection
       ignore_failure: true
@@ -466,7 +465,7 @@ processors:
       target_field: host.name
       ignore_missing: true
       ignore_failure: true
-      
+
 
   #################################
   ## Parse Source Details to ECS ##
@@ -525,7 +524,7 @@ processors:
       patterns:
         - "%{MAC:destination.mac}-%{MAC:source.mac}%{GREEDYDATA}"
       pattern_definitions:
-        MAC: "[0-9A-F-]{17}"
+        MAC: "(?:(?:[0-9A-F]{2}-){5}[0-9A-F]{2})"
       ignore_missing: true
       ignore_failure: true
   - remove:
@@ -629,7 +628,7 @@ processors:
       tag: redact_event_original
       if: 'ctx.tags?.contains("redact_passwords") && ctx.event?.original =~ /\"PASSWORD\": \"/'
       field: event.original
-      patterns: 
+      patterns:
         - '"PASSWORD": "%{DATA:REDACTED}"'
       prefix: '"PASSWORD": "<'
       suffix: '>"'
@@ -689,7 +688,7 @@ processors:
       value: '{{{source.domain}}}'
       allow_duplicates: false
       ignore_failure: true
-  
+
 
   ##############
   ## Clean Up ##
@@ -697,7 +696,7 @@ processors:
   - remove:
       description: Remove fields that have no meaningful value to the events
       tag: remove_clean_up
-      field: 
+      field:
         - opencanary.local_time
         - opencanary.local_time_adjusted
         - opencanary.logdata.HOSTNAME
@@ -719,6 +718,15 @@ processors:
       if: ctx.destination?.port == -1
       ignore_missing: true
       ignore_failure: true
+  - foreach:
+      description: Lowercase all fields under opencanary.logdata
+      tag: foreach_lowercase_opencanary_logdata
+      if: ctx.opencanary?.logdata instanceof Map
+      field: opencanary.logdata
+      processor:
+        lowercase:
+          field: _ingest._key
+          ignore_failure: true
   - script:
       description: Drops null/empty values recursively.
       tag: script_empty_values
