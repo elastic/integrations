@@ -2107,7 +2107,9 @@ An example event for `powershell_operational` looks as following:
 | powershell.engine.new_state | New state of the PowerShell engine. | keyword |
 | powershell.engine.previous_state | Previous state of the PowerShell engine. | keyword |
 | powershell.engine.version | Version of the PowerShell engine version used to execute the command. | keyword |
+| powershell.file.script_block_hash | A hash of the script to be used in rules. | keyword |
 | powershell.file.script_block_id | Id of the executed script block. | keyword |
+| powershell.file.script_block_signature | If present in the script, the script signature. | keyword |
 | powershell.file.script_block_text | Text of the executed script block. | text |
 | powershell.id | Shell Id. | keyword |
 | powershell.pipeline_id | Pipeline id. | keyword |
