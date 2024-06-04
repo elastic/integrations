@@ -93,27 +93,21 @@ processors:
        field: teleport.audit.server_hostname
        target_field: host.hostname
        ignore_missing: true
-  - script:
-      tag: add_tmp_server_addr
-      lang: painless
-      description: Adds the URI identifier to make uri_parts processor work
-      if: ctx?.teleport?.audit?.server_addr != null
-      source: |
-        ctx.teleport.audit.tmp_server_addr = "//" + ctx.teleport.audit.server_addr;
-  - uri_parts:
-      tag: parse_tmp_server_addr
-      field: teleport.audit.tmp_server_addr
-      target_field: teleport.audit.server.address
-      keep_original: false
+  - grok:
+      field: teleport.audit.server_addr
       ignore_missing: true
       ignore_failure: true
+      patterns:
+        - '^(%{IPORHOST:server.address}|\[%{IP:server.ip}\])(:%{POSINT:server.port:long})?$'
   - remove:
-      field: teleport.audit.tmp_server_addr
-      ignore_missing: true
-  - rename:
       field: teleport.audit.server_addr
-      target_field: teleport.audit.server.address.original
       ignore_missing: true
+  - grok:
+      field: server.address
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^(%{IP:server.ip}|%{HOSTNAME:server.domain})$
   -  rename:
        field: teleport.audit.server_labels
        target_field: teleport.audit.server.labels
@@ -130,18 +124,6 @@ processors:
        field: teleport.audit.server_version
        target_field: teleport.audit.server.version
        ignore_missing: true
-  - rename:
-      field: teleport.audit.server.address.ip
-      target_field: host.ip
-      ignore_missing: true
-  - convert:
-      field: teleport.audit.server.address.port
-      type: long
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.server.address.port
-      target_field: host.port
-      ignore_missing: true
 
   # Connection contains connection info.
   # All of these fields are mapped to ECS fields.
@@ -150,77 +132,42 @@ processors:
   - dot_expander:
       path: teleport.audit
       field: addr.local
-  - script:
-      tag: add_tmp_addr_local
-      lang: painless
-      description: Adds the URI identifier to make uri_parts processor work
-      if: ctx?.teleport?.audit?.addr?.local != null
-      source: |
-        ctx.teleport.audit.tmp_addr_local = "//" + ctx.teleport.audit.addr.local;
-  - uri_parts:
-      tag: parse_tmp_addr_local
-      field: teleport.audit.tmp_addr_local
-      target_field: teleport.audit.connection.local_address
-      keep_original: false
+  - grok:
+      field: teleport.audit.addr.local
       ignore_missing: true
       ignore_failure: true
+      patterns:
+        - '^(%{IPORHOST:server.address}|\[%{IP:server.ip}\])(:%{POSINT:server.port:long})?$'
   - remove:
-      field: teleport.audit.tmp_addr_local
-      ignore_missing: true
-  - rename:
       field: teleport.audit.addr.local
-      target_field: server.address
       ignore_missing: true
-  - rename:
-      field: teleport.audit.connection.local_address.domain
-      target_field: server.ip
+  - grok:
+      field: server.address
       ignore_missing: true
-  - convert:
-      field: teleport.audit.connection.local_address.port
-      type: long
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.connection.local_address.port
-      target_field: server.port
-      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^(%{IP:server.ip}|%{HOSTNAME:server.domain})$
+
 
   # Extract data from addr.remote field.
   - dot_expander:
       path: teleport.audit
       field: addr.remote
-  - script:
-      tag: add_tmp_addr_remote
-      lang: painless
-      description: Adds the URI identifier to make uri_parts processor work
-      if: ctx?.teleport?.audit?.addr?.remote != null
-      source: |
-        ctx.teleport.audit.tmp_addr_remote = "//" + ctx.teleport.audit.addr.remote;
-  - uri_parts:
-      tag: parse_tmp_addr_remote
-      field: teleport.audit.tmp_addr_remote
-      target_field: teleport.audit.connection.remote_address
-      keep_original: false
+  - grok:
+      field: teleport.audit.addr.remote
       ignore_missing: true
       ignore_failure: true
+      patterns:
+        - '^(%{IPORHOST:client.address}|\[%{IP:client.ip}\])(:%{POSINT:client.port:long})?$'
   - remove:
-      field: teleport.audit.tmp_addr_remote
-      ignore_missing: true
-  - rename:
       field: teleport.audit.addr.remote
-      target_field: client.address
       ignore_missing: true
-  - rename:
-      field: teleport.audit.connection.remote_address.domain
-      target_field: client.ip
+  - grok:
+      field: client.address
       ignore_missing: true
-  - convert:
-      field: teleport.audit.connection.remote_address.port
-      type: long
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.connection.remote_address.port
-      target_field: client.port
-      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^(%{IP:client.ip}|%{HOSTNAME:client.domain})$
 
   # The last field and cleanup.
   - rename:
@@ -1029,42 +976,21 @@ processors:
        field: teleport.audit.windows_desktop_service
        target_field: teleport.audit.desktop.windows_desktop_service
        ignore_missing: true
-  - script:
-      tag: add_tmp_desktop_addr
-      lang: painless
-      description: Adds the URI identifier to make uri_parts processor work
-      if: ctx?.teleport?.audit?.desktop_addr != null
-      source: |
-        ctx.teleport.audit.tmp_desktop_addr = "//" + ctx.teleport.audit.desktop_addr;
-  - uri_parts:
-      tag: parse_tmp_desktop_addr
-      field: teleport.audit.tmp_desktop_addr
-      target_field: teleport.audit.desktop.address
-      keep_original: false
+  - grok:
+      field: teleport.audit.desktop_addr
       ignore_missing: true
       ignore_failure: true
+      patterns:
+        - '^(%{IPORHOST:destination.address}|\[%{IP:destination.ip}\])(:%{POSINT:destination.port:long})?$'
   - remove:
-      field: teleport.audit.tmp_desktop_addr
-      ignore_missing: true
-  - rename:
       field: teleport.audit.desktop_addr
-      target_field: destination.address
       ignore_missing: true
-  - rename:
-      field: teleport.audit.desktop.address.ip
-      target_field: destination.ip
+  - grok:
+      field: destination.address
       ignore_missing: true
-  - convert:
-      field: teleport.audit.desktop.address.port
-      type: long
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.desktop.address.port
-      target_field: destination.port
-      ignore_missing: true
-  - remove:
-      field: teleport.audit.desktop.address
-      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^(%{IP:destination.ip}|%{HOSTNAME:destination.domain})$
   -  rename:
        field: teleport.audit.windows_domain
        target_field: teleport.audit.desktop.windows_domain

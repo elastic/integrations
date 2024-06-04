@@ -306,7 +306,6 @@ An example event for `audit` looks as following:
 | teleport.audit.saml_idp_service_provider.attribute_mapping | AttributeMapping is a map of attribute name and value which will be asserted in SAML response. | object |
 | teleport.audit.saml_idp_service_provider.entity_id | ServiceProviderEntityID is the entity ID of the service provider. | keyword |
 | teleport.audit.saml_idp_service_provider.shortcut | ServiceProviderShortcut is the shortcut name of a service provider. | keyword |
-| teleport.audit.server.address | ServerAddr is the address of the server the session occurred on. | object |
 | teleport.audit.server.forwarded_by | ForwardedBy tells us if the metadata was sent by the node itself or by another node in its place. | keyword |
 | teleport.audit.server.labels | ServerLabels are the labels (static and dynamic) of the server the session occurred on. | object |
 | teleport.audit.server.sub_kind | ServerSubKind is the sub kind of the server the session occurred on. | keyword |
