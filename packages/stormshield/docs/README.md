@@ -255,6 +255,7 @@ An example event for `log` looks as following:
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
 | input.type | Type of input. | keyword |
 | log.source.address | Source address for the log. | keyword |
 | log.syslog.appname | The device or application that originated the Syslog message, if available. | keyword |
