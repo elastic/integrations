@@ -1,21 +1,9 @@
 ---
 description: Pipeline for mapping falco fields to ECS / falco-namespaced fields
 processors:
-# - set:
-#     field: data_stream.type
-#     value: 'logs'
-# - set:
-#     field: observer.product
-#     value: 'falco'
-# - set:
-#     field: observer.type
-#     value: 'sensor'
-# - set:
-#     field: observer.vendor
-#     value: 'sysdig'
-# - set:
-#     field: event.kind
-#     value: 'alert'
+- set:
+    field: event.kind
+    value: 'alert'
 - json:
     field: message
     target_field: Falco
@@ -23,7 +11,6 @@ processors:
     field: '*'
     path: Falco.output_fields
 
-# TODO Falco seems to omit this field in many of its rules, we may need to set this another way when the field is missing
 - script:
     lang: painless
     tag: 'painless_map_event_category'
@@ -137,7 +124,6 @@ processors:
             ctx['event.type'] = ['info'];
         }
 
-# TODO need test cases for these
 - set:
     field: event.outcome
     value: success
@@ -169,12 +155,11 @@ processors:
             }
         }
 
-# TODO test this flag
 - set:
     field: event.original
     copy_from: message
     ignore_empty_value: true
-    if: ctx['tags'] == null || !(ctx['tags'].contains('preserve_original_event'))
+    if: ctx['tags'] != null && ctx['tags'].contains('preserve_original_event')
 
 - script:
     lang: painless
@@ -235,14 +220,11 @@ processors:
     copy_from: Falco.output_fields.proc.exepath
     ignore_empty_value: true
 
-# TODO need test case for this
 - set:
     field: file.path
     value: '{{Falco.output_fields.fd.name}}'
     if: ctx.Falco.output_fields.fd?.type != null && (ctx.Falco.output_fields.fd.type == 'file' || ctx.Falco.output_fields.fd.type == 'directory')
     tag: 'painless_set_file_path'
-
-# TODO need test case for this
 - set:
     field: file.type
     value: '{{Falco.output_fields.fd.type}}'
@@ -262,7 +244,7 @@ processors:
     copy_from: Falco.output_fields.proc.pname
     ignore_empty_value: true
 
-# TODO need test case for this - our array formatting may not be correct
+# TODO need sample data and test for this - our array formatting may not be correct
 - set:
     field: process.args
     value: ['{{Falco.output_fields.proc.exepath}}{{Falco.output_fields.proc.args}}']
@@ -516,38 +498,6 @@ processors:
     field: file.inode
     copy_from: Falco.output_fields.fd.ino
     ignore_empty_value: true
-# TODO it is unclear when/if falco uses these syslog fields
-# - set:
-#     field: log.syslog.facility.name
-#     copy_from: syslog.facility.str
-#     ignore_empty_value: true
-# - set:
-#     field: log.syslog.facility.code
-#     copy_from: syslog.facility
-#     ignore_empty_value: true
-# - set:
-#     field: log.syslog.severity.name
-#     copy_from: syslog.severity.str
-#     ignore_empty_value: true
-# - set:
-#     field: log.syslog.severity.code
-#     copy_from: syslog.severity
-#     ignore_empty_value: true
-# - script:
-#     lang: painless
-#     source: |
-#       if (ctx.containsKey('syslog.facility')) {
-#         if (ctx.syslog.facility instanceof Map) {
-#           ctx['Falco.syslog.facility'] = ctx['syslog.facility'];
-#         } else {
-#           ctx['Falco.syslog.facility'] = ctx['syslog.facility'];
-#           ctx['Falco.syslog.facility.str'] = ctx['syslog.facility.str'];
-#         }
-#       }
-#     ignore_failure: true
-# - remove:
-#     field: syslog.facility
-#     ignore_missing: true
 
 # TODO need test case for these
 - set:
@@ -610,12 +560,11 @@ processors:
 - remove:
     field: ['message','Falco.output_fields.evt.arg.flags','Falco.output_fields.proc.aname[2]','Falco.output_fields.proc.aname[3]','Falco.output_fields.proc.aname[4]','Falco.output_fields.proc.aname[5]','Falco.output_fields.proc.aname[6]','Falco.output_fields.proc.aname[7]']
     ignore_missing: true
+- remove:
+    field: ['Falco','Falco.output','Falco.priority','Falco.rule','Falco.evt.num','Falco.evt.time','Falco.evt.source','Falco.evt.hostname','Falco.proc.exepath','Falco.proc.pexepath','Falco.proc.name','Falco.proc.pname','Falco.proc.cmdline','Falco.proc.pcmdline','Falco.proc.cmdnargs','Falco.proc.env','Falco.proc.cwd','Falco.proc.pid','Falco.proc.ppid','Falco.proc.vpid','Falco.proc.pvpid','Falco.proc.sid','Falco.proc.sname','Falco.proc.sid.exepath','Falco.proc.vpgid','Falco.proc.vpgid.name','Falco.proc.vpgid.exepath','Falco.proc.duration','Falco.proct.ppid.duration','Falco.proc.pid.ts','Falco.proc.ppid.ts','Falco.proc.is_sid_leader','Falco.proc.is_vpgid_leader','Falco.thread.cap_permitted','Falco.thread.cap_effective','Falco.thread.tid','Falco.user.uid','Falco.user.name','Falco.group.gid','Falco.group.name','Falco.container.id','Falco.container.name','Falco.container.image','Falco.container.type','Falco.container.privileged','Falco.container.image.digest','Falco.container.ip','Falco.fd.directory','Falco.fd.filename','Falco.fd.cip','Falco.fd.sip','Falco.fd.lip','Falco.fd.rip','Falco.fd.cport','Falco.fd.sport','Falco.fd.lport','Falco.fd.rport','Falco.fd.cip.name','Falco.fd.sip.name','Falco.fd.lip.name','Falco.fd.rip.name','Falco.fd.ino','Falco.syslog.facility.str','Falco.syslog.severity.str','Falco.syslog.severity','Falco.k8s.ns.name','Falco.k8s.pod.name','Falco.k8s.pod.uid','Falco.k8s.pod.labels','Falco.k8s.pod.ip']
+    if: ctx['tags'] == null || !(ctx['tags'].contains('preserve_falco_fields'))
+    ignore_missing: true
 
-# TODO test this
-# - remove:
-#     field: ['Falco.output','Falco.priority','Falco.rule','Falco.evt.num','Falco.evt.time','Falco.evt.source','Falco.evt.hostname','Falco.proc.exepath','Falco.proc.pexepath','Falco.proc.name','Falco.proc.pname','Falco.proc.cmdline','Falco.proc.pcmdline','Falco.proc.cmdnargs','Falco.proc.env','Falco.proc.cwd','Falco.proc.pid','Falco.proc.ppid','Falco.proc.vpid','Falco.proc.pvpid','Falco.proc.sid','Falco.proc.sname','Falco.proc.sid.exepath','Falco.proc.vpgid','Falco.proc.vpgid.name','Falco.proc.vpgid.exepath','Falco.proc.duration','Falco.proct.ppid.duration','Falco.proc.pid.ts','Falco.proc.ppid.ts','Falco.proc.is_sid_leader','Falco.proc.is_vpgid_leader','Falco.thread.cap_permitted','Falco.thread.cap_effective','Falco.thread.tid','Falco.user.uid','Falco.user.name','Falco.group.gid','Falco.group.name','Falco.container.id','Falco.container.name','Falco.container.image','Falco.container.type','Falco.container.privileged','Falco.container.image.digest','Falco.container.ip','Falco.fd.directory','Falco.fd.filename','Falco.fd.cip','Falco.fd.sip','Falco.fd.lip','Falco.fd.rip','Falco.fd.cport','Falco.fd.sport','Falco.fd.lport','Falco.fd.rport','Falco.fd.cip.name','Falco.fd.sip.name','Falco.fd.lip.name','Falco.fd.rip.name','Falco.fd.ino','Falco.syslog.facility.str','Falco.syslog.severity.str','Falco.syslog.severity','Falco.k8s.ns.name','Falco.k8s.pod.name','Falco.k8s.pod.uid','Falco.k8s.pod.labels','Falco.k8s.pod.ip']
-#     if: ctx['tags'] == null || !(ctx['tags'].contains('preserve_falco_fields'))
-#     ignore_missing: true
 on_failure:
 - append:
     field: error.message
