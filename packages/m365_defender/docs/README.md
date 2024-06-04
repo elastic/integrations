@@ -1579,7 +1579,7 @@ An example event for `incident` looks as following:
 | m365_defender.incident.alert.last_update_datetime | Time when the alert was last updated at Microsoft 365 Defender. | date |
 | m365_defender.incident.alert.mitre_techniques | The attack techniques, as aligned with the MITRE ATT&CK framework. | keyword |
 | m365_defender.incident.alert.provider_alert_id | The ID of the alert as it appears in the security provider product that generated the alert. | keyword |
-| m365_defender.incident.alert.recommended_actions | Recommended response and remediation actions to take in the event this alert was generated. | keyword |
+| m365_defender.incident.alert.recommended_actions | Recommended response and remediation actions to take in the event this alert was generated. | match_only_text |
 | m365_defender.incident.alert.resolved_datetime | Time when the alert was resolved. | date |
 | m365_defender.incident.alert.service_source | The service or product that created this alert. Possible values are: microsoftDefenderForEndpoint, microsoftDefenderForIdentity, microsoftCloudAppSecurity, microsoftDefenderForOffice365, microsoft365Defender, aadIdentityProtection, appGovernance, dataLossPrevention. | keyword |
 | m365_defender.incident.alert.severity | Indicates the possible impact on assets. The higher the severity the bigger the impact. Typically higher severity items require the most immediate attention. Possible values are: unknown, informational, low, medium, high, unknownFutureValue. | keyword |

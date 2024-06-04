@@ -331,12 +331,20 @@ processors:
       copy_from: eset_protect.detection.object_hash_sha1
       ignore_empty_value: true
       if: ctx.eset_protect?.detection?.object_type_name == "File"
+  - lowercase:
+      field: file.hash.sha1
+      tag: lowercase_file_hash_sha1
+      ignore_missing: true
   - append:
       field: related.hash
       tag: append_object_hash_sha1_into_related_hash
       value: "{{{eset_protect.detection.object_hash_sha1}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.detection?.object_hash_sha1 != null
+  - lowercase:
+      field: related.hash
+      tag: lowercase_related_hash
+      ignore_missing: true
   - rename:
       field: json.objectName
       tag: rename_objectName

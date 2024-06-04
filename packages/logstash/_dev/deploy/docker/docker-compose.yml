@@ -2,10 +2,20 @@ version: "2.3"
 services:
   logstash:
     user: root
-    image: "docker.elastic.co/logstash/logstash:${ELASTIC_VERSION:-8.6.0}"
+    image: "docker.elastic.co/logstash/logstash:${ELASTIC_VERSION:-8.12.2}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://127.0.0.1:9600/"]
+      retries: 300
+      interval: 1s
     volumes:
       - "./pipeline:/usr/share/logstash/pipeline"
       - "./config:/usr/share/logstash/config"
       - ${SERVICE_LOGS_DIR}:/usr/share/logstash/logs
     ports:
       - "127.0.0.1:9600:9600"
+  logstash_is_ready:
+    image: tianon/true
+    platform: linux/amd64
+    depends_on:
+      logstash:
+        condition: service_healthy

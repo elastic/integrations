@@ -35,7 +35,7 @@ Datastores are logical containers, analogous to file systems, that hide specific
 
 ## Logs
 
-To access the logs, from the Kibana UI, you have to specify the network-accessible IP address of the host where the Elastic Agent will be deployed. 
+To collect logs, a syslog daemon is used. First, you must configure the listening host/IP address (default: localhost) and host port (default: 9525) in the integration. Then, configure vSphere to send logs to a remote syslog host and provide the configured hostname/IP and port of the Elastic Agent host.
 
 ### vSphere Logs
 

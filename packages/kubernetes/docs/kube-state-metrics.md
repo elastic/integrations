@@ -193,16 +193,15 @@ An example event for `state_container` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.cpu.limit.cores | Container CPU cores limit | float |  | gauge |
-| kubernetes.container.cpu.limit.nanocores | Container CPU nanocores limit | long |  | gauge |
 | kubernetes.container.cpu.request.cores | Container CPU requested cores | float |  | gauge |
-| kubernetes.container.cpu.request.nanocores | Container CPU requested nanocores | long |  | gauge |
 | kubernetes.container.id | Container id | keyword |  |  |
 | kubernetes.container.memory.limit.bytes | Container memory limit in bytes | long | byte | gauge |
 | kubernetes.container.memory.request.bytes | Container requested memory in bytes | long | byte | gauge |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.container.status.last_terminated_reason | The last reason the container was in terminated state (Completed, ContainerCannotRun, Error or OOMKilled). | keyword |  |  |
 | kubernetes.container.status.phase | Container phase (running, waiting, terminated) | keyword |  |  |
 | kubernetes.container.status.ready | Container ready status | boolean |  |  |
-| kubernetes.container.status.reason | Waiting (ContainerCreating, CrashLoopBackoff, ErrImagePull, ImagePullBackoff) or termination (Completed, ContainerCannotRun, Error, OOMKilled) reason. | keyword |  |  |
+| kubernetes.container.status.reason | The reason the container is currently in waiting (ContainerCreating, CrashLoopBackoff, ErrImagePull, ImagePullBackoff) or terminated (Completed, ContainerCannotRun, Error, OOMKilled) state. | keyword |  |  |
 | kubernetes.container.status.restarts | Container restarts count | integer |  | counter |
 | kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |  |
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
@@ -1121,6 +1120,8 @@ An example event for `state_namespace` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
+| kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.state_namespace.created.sec | Epoch seconds since the namespace was created. | double | s | gauge |
 | kubernetes.state_namespace.status.active | Whether the namespace is active (true or false). | boolean |  |  |

@@ -1,8 +1,8 @@
 # Microsoft Graph Activity Logs
 
-Microsoft Graph Activity Logs provide an audit trail of all HTTP requests that the Microsoft Graph service received and processed for a tenant. Microsoft Graph Activity Logs gives full visibility into all transactions made by applications and other API clients that you have consented to in the tenant. Refer to [Microsoft Graph Activity Common Usecases](https://learn.microsoft.com/en-us/graph/microsoft-graph-activity-logs-overview#common-use-cases-for-microsoft-graph-activity-logs) for more use cases.
+Microsoft Graph Activity Logs provide an audit trail of all HTTP requests that the Microsoft Graph service has received and processed for a tenant. Microsoft Graph Activity Logs gives full visibility into all transactions made by applications and other API clients that you have consented to in the tenant. Refer to [Microsoft Graph Activity Common Usecases](https://learn.microsoft.com/en-us/graph/microsoft-graph-activity-logs-overview#common-use-cases-for-microsoft-graph-activity-logs) for more use cases.
 
-Tenant administrators can configure the collection and storage destinations of Microsoft Graph Activity Logs through Diagnostic Setting in the Entra Portal. This integrtaion uses Azure Event Hubs destination to stream Microsoft Graph Activity Logs to Elastic.
+Tenant administrators can configure the collection and storage destinations of Microsoft Graph Activity Logs through Diagnostic Setting in the Entra Portal. This integration uses Azure Event Hubs destination to stream Microsoft Graph Activity Logs to Elastic.
 
 ## Requirements and Setup
 
@@ -27,7 +27,7 @@ Refer to [Microsoft Graph Activity Limitations](https://learn.microsoft.com/en-u
 
 `eventhub` :
   _string_
-It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
+It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You _can_ use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -55,7 +55,7 @@ The storage account container where the integration stores the checkpoint data f
 
 `resource_manager_endpoint` :
 _string_
-Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
+Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different Azure environment.
 
 Resource manager endpoints:
 

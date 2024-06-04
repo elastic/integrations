@@ -1205,7 +1205,7 @@ An example event for `model_breach_alert` looks as following:
 | darktrace.model_breach_alert.triggered_components.triggered_filters.trigger.tag.data.description |  | keyword |
 | darktrace.model_breach_alert.triggered_components.triggered_filters.trigger.tag.data.visibility |  | keyword |
 | darktrace.model_breach_alert.triggered_components.triggered_filters.trigger.tag.expiry | nan | long |
-| darktrace.model_breach_alert.triggered_components.triggered_filters.trigger.tag.isReferenced | nan | boolean |
+| darktrace.model_breach_alert.triggered_components.triggered_filters.trigger.tag.is_referenced | nan | boolean |
 | darktrace.model_breach_alert.triggered_components.triggered_filters.trigger.tag.name | nan | keyword |
 | darktrace.model_breach_alert.triggered_components.triggered_filters.trigger.tag.restricted | nan | boolean |
 | darktrace.model_breach_alert.triggered_components.triggered_filters.trigger.tag.thid | nan | long |

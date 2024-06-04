@@ -6,11 +6,18 @@ processors:
       value: [network]
   - set:
       field: event.type
-      value: [info]
+      value: [info, protocol]
+  - set:
+      field: event.action
+      value: [lookup_requested]
   - rename:
       field: json.event.dns.request
       target_field: sentinel_one_cloud_funnel.event.dns.request
       ignore_missing: true
+  - set:
+      field: dns.question.name
+      copy_from: sentinel_one_cloud_funnel.event.dns.request
+      ignore_empty_value: true
   - rename:
       field: json.event.dns.response
       target_field: sentinel_one_cloud_funnel.event.dns.response

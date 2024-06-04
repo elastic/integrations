@@ -231,7 +231,6 @@ An example event for `log` looks as following:
         "name": "user"
     }
 }
-
 ```
 
 **Exported fields**
@@ -242,7 +241,6 @@ An example event for `log` looks as following:
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
 | client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
-| client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
 | client.geo.country_iso_code | Country ISO code. | keyword |
@@ -320,9 +318,11 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dhcp.decline.message |  | keyword |
 | infoblox_nios.log.dhcp.discover.message |  | keyword |
 | infoblox_nios.log.dhcp.duid |  | keyword |
+| infoblox_nios.log.dhcp.forward_name |  | keyword |
 | infoblox_nios.log.dhcp.iaid |  | keyword |
 | infoblox_nios.log.dhcp.inform.message |  | keyword |
 | infoblox_nios.log.dhcp.interface.ip |  | ip |
+| infoblox_nios.log.dhcp.ip |  | ip |
 | infoblox_nios.log.dhcp.lease.duration |  | long |
 | infoblox_nios.log.dhcp.lease.message |  | keyword |
 | infoblox_nios.log.dhcp.lease_query.message |  | keyword |
@@ -371,6 +371,7 @@ An example event for `log` looks as following:
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| server.port | Port of the server. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |

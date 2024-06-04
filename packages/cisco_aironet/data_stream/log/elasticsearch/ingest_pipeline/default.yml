@@ -15,6 +15,7 @@ processors:
       patterns:
         - "%{SYSLOG_HEADER}:\\s%%{GREEDYDATA:_temp_.full_message}"
         - "%{SYSLOGFACILITY}%{INT}: AP:%{MAC:host.mac}: \\*%{AIRONET_DATE:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
+        - "%{SYSLOGFACILITY}%{INT}: %{AIRONET_DATE:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
         - "%{SYSLOGFACILITY}%{DATA:host.name}: -%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
         SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{AIRONET_DATE:_temp_.raw_date}"
@@ -36,6 +37,7 @@ processors:
       ignore_failure: true
       patterns:
         - "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.action}: %{DATA}:%{INT} %{GREEDYDATA:message}"
+        - "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.action}: %{GREEDYDATA:message}"
   - grok:
       field: _temp_.full_message
       ignore_failure: true

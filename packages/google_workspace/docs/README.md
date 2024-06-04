@@ -1550,6 +1550,7 @@ An example event for `alert` looks as following:
 | google_workspace.alert.data.messages.md5.hash.subject | The MD5 Hash of email's subject (only available for reported emails). | keyword |
 | google_workspace.alert.data.messages.message_body_snippet | The snippet of the message body text (only available for reported emails). | keyword |
 | google_workspace.alert.data.messages.recipient | The recipient of this email. | keyword |
+| google_workspace.alert.data.messages.recipient_email |  | keyword |
 | google_workspace.alert.data.messages.subject_text | The email subject text (only available for reported emails). | keyword |
 | google_workspace.alert.data.name | Rule name. | keyword |
 | google_workspace.alert.data.next_update_time | Timestamp by which the next update is expected to arrive. | date |
@@ -1574,7 +1575,7 @@ An example event for `alert` looks as following:
 | google_workspace.alert.data.rule.violation_info.suppressed.action.types | Actions suppressed due to other actions with higher priority. | keyword |
 | google_workspace.alert.data.rule.violation_info.trigger.user.email | Email of the user who caused the violation. Value could be empty if not applicable, for example, a violation found by drive continuous scan. | keyword |
 | google_workspace.alert.data.rule.violation_info.trigger.value | Trigger of the rule. | keyword |
-| google_workspace.alert.data.rule.violation_info.triggered.action.info | Metadata related to the triggered actions. | nested |
+| google_workspace.alert.data.rule.violation_info.triggered.action.info.object |  | keyword |
 | google_workspace.alert.data.rule.violation_info.triggered.action.types | Actions applied as a consequence of the rule being triggered. | keyword |
 | google_workspace.alert.data.rule_description | Description of the rule. | text |
 | google_workspace.alert.data.source.ip | The source IP address of the malicious email. | ip |

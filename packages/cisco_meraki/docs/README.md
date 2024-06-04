@@ -62,6 +62,20 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.8021x_deauth |  | flattened |
 | cisco_meraki.8021x_eap_failure |  | flattened |
 | cisco_meraki.8021x_eap_success |  | flattened |
+| cisco_meraki.anyconnect_vpn_session_manager.action |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.bytes_in |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.bytes_out |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.conn_id |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.duration |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.filter |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.ip |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.peer_ip |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.reason |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.session_id |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.session_type |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.tunnel_id |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.tunnel_type |  | keyword |
+| cisco_meraki.anyconnect_vpn_session_manager.user_name |  | keyword |
 | cisco_meraki.aps_association_reject |  | flattened |
 | cisco_meraki.association |  | flattened |
 | cisco_meraki.bssid |  | keyword |
@@ -78,6 +92,11 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.firewall.pattern |  | keyword |
 | cisco_meraki.firewall.rule |  | keyword |
 | cisco_meraki.flows |  | flattened |
+| cisco_meraki.martian_vlan.Client |  | keyword |
+| cisco_meraki.martian_vlan.MAC |  | keyword |
+| cisco_meraki.martian_vlan.VLAN |  | keyword |
+| cisco_meraki.martian_vlan.details |  | text |
+| cisco_meraki.martian_vlan.summary |  | text |
 | cisco_meraki.multiple_dhcp_servers_detected |  | flattened |
 | cisco_meraki.mxport |  | keyword |
 | cisco_meraki.new_port_status |  | keyword |
@@ -274,6 +293,7 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.full_name | User's full name, if available. | keyword |

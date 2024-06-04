@@ -236,8 +236,10 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | box.source.parent.name | The name of the folder | keyword |
 | box.source.parent.sequence_id | A numeric identifier that represents the most recent user event that has been applied to this item (parent) | keyword |
 | box.source.parent.type | Value is always `folder` | keyword |
+| box.source.path_collection.entries.etag | The HTTP etag of this folder | keyword |
 | box.source.path_collection.entries.id | The unique identifier that represent a folder. This field is an array | keyword |
 | box.source.path_collection.entries.name | The name of the parent folder. This field is an array | keyword |
+| box.source.path_collection.entries.sequence_id | A numeric identifier that represents the most recent user event that has been applied to this item | keyword |
 | box.source.path_collection.entries.type | Value is always `folder`. This field is an array | keyword |
 | box.source.path_collection.total_count | The number of folders in this list | long |
 | box.source.phone | Phone number | boolean |
@@ -330,6 +332,9 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
+| threat.enrichments.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| threat.enrichments.indicator.as.organization.name | Organization name. | keyword |
+| threat.enrichments.indicator.as.organization.name.text | Multi-field of `threat.enrichments.indicator.as.organization.name`. | match_only_text |
 | threat.enrichments.indicator.description | Describes the type of action conducted by the threat. | keyword |
 | threat.enrichments.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.enrichments.indicator.geo.city_name | City name. | keyword |
@@ -341,6 +346,7 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | threat.enrichments.indicator.geo.region_name | Region name. | keyword |
 | threat.enrichments.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.enrichments.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.enrichments.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.enrichments.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
 | threat.enrichments.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |

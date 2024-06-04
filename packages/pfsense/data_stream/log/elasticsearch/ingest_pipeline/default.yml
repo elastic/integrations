@@ -36,7 +36,8 @@ processors:
         SYSLOG_TIMESTAMP_FORMAT: '%{TIMESTAMP_ISO8601:_tmp.timestamp8601}%{SPACE}%{OBSERVER}%{SPACE}%{PROCESS}%{SPACE}(%{POSINT:process.pid:long}|-) - (-|%{META})'
         TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
         OBSERVER: '(?:%{IP:observer.ip}|%{HOSTNAME:observer.name})'
-        PROCESS: '(\(%{DATA:process.name}\)|(?:%{UNIXPATH}*/)?%{BASEPATH:process.name})'
+        UNIXPATH: '(/([\w_%!$@:.,+~-]+|\\.)*)*'
+        PROCESS: '(\(%{DATA:process.name}\)|(?:%{UNIXPATH})%{BASEPATH:process.name})'
         BASEPATH: '[[[:alnum:]]_%!$@:.,+~-]+'
         META: '\[[^\]]*\]'
   - date:

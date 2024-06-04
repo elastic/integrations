@@ -1,7 +1,7 @@
 format_version: "3.0.2"
 name: carbon_black_cloud
 title: VMware Carbon Black Cloud
-version: "1.20.0"
+version: "2.1.0"
 description: Collect logs from VMWare Carbon Black Cloud with Elastic Agent.
 type: integration
 categories:
@@ -26,8 +26,8 @@ policy_templates:
     description: Collect Logs from Carbon Black Cloud.
     inputs:
       - type: httpjson
-        title: Collect Carbon Black Cloud logs via API
-        description: Collect Carbon Black Cloud logs via API.
+        title: Collect Carbon Black Cloud logs via API using HTTPJSON [Legacy]
+        description: Collect Carbon Black Cloud logs via API using HTTPJSON.
         vars:
           - name: hostname
             type: text
@@ -104,6 +104,74 @@ policy_templates:
               #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
+      - type: cel
+        title: Collect Carbon Black Cloud logs via API using CEL [Beta]
+        description: Collect Carbon Black Cloud logs via API using CEL.
+        vars:
+          - name: hostname
+            type: text
+            title: Hostname
+            description: Carbon Black Cloud console Hostname. Find hostname in the console dashboard at the beginning of the web address (Add https:// before the hostname).
+            required: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+          - name: org_key
+            type: text
+            title: Organization Key
+            description: Organization Key.
+            required: true
+          - name: custom_api_id
+            type: text
+            title: Custom API ID
+            description: API ID with Custom Access Level type.
+            required: true
+          - name: custom_api_secret_key
+            type: password
+            title: Custom API Secret Key
+            description: API Secret Key with Custom Access Level type.
+            required: true
+            secret: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
       - type: aws-s3
         title: Collect Carbon Black Cloud logs via AWS S3 or AWS SQS
         description: Collect Carbon Black Cloud logs via AWS S3 or AWS SQS.
@@ -125,11 +193,14 @@ policy_templates:
             description: It is a required parameter for collecting logs via the AWS S3 Bucket.
           - name: queue_url
             type: text
-            title: "[SQS] Queue URL"
+            title: "[Global][SQS] Queue URL"
             multi: false
             required: false
             show_user: true
-            description: URL of the AWS SQS queue that messages will be received from. It is a required parameter for collecting logs via the AWS SQS.
+            description: |-
+              URL of the AWS SQS queue that messages will be received from.
+              This is only required if you want to collect logs via AWS SQS.
+              This is a global queue URL, i.e this can be overridden by specific local queue URLs for each data stream if required.
           - name: access_key_id
             type: password
             title: Access Key ID

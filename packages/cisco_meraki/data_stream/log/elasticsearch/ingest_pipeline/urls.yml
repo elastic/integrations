@@ -2,6 +2,10 @@
 description: Pipeline for Cisco Meraki urls type
 processors:
 - dissect:
+    field: event.original
+    pattern: "%{} urls %{message}"
+    ignore_failure: true
+- dissect:
     description: Determine the security event type
     field: event.original
     pattern: "%{} urls %{*src}=%{&src} %{*dst}=%{&dst} %{*mac}=%{&mac} request: %{http.request.method} %{url.original}"
@@ -72,6 +76,15 @@ processors:
 # user_agent processing
 - user_agent:
     field: user_agent.original
+    ignore_missing: true
+# url processing
+- uri_parts:
+    field: url.original
+    target_field: url
+    if: ctx.url?.original != null && ctx.url.original != ""
+- registered_domain:
+    field: url.domain
+    target_field: url
     ignore_missing: true
 on_failure:
 - set:

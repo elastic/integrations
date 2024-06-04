@@ -2,17 +2,23 @@
 
 ThreatConnect is a widely used Threat Intelligence Platform (TIP) designed to assist organizations in aggregating, analyzing, and sharing information related to cybersecurity threats. The platform provides tools and features that enable security teams to collaborate on threat intelligence, manage incidents, and make informed decisions to enhance their overall cybersecurity posture. This ThreatConnect integration enables you to consume and analyze ThreatConnect data within Elastic Security, including indicator events, providing you with visibility and context for your cloud environments within Elastic Security.
 
-## Data streams
+## Data stream
 
-The ThreatConnect integration collects a single type of data: Indicator.
+The ThreatConnect Integration collects indicators as the primary data type. Associated groups and associated indicators are brought in via Elastic custom mapping fields.
 
-**Indicator** is used to retrieve atomic piece of information that has some intelligence value via the [ThreatConnect](https://docs.threatconnect.com/en/latest/rest_api/v3/indicators/indicators.html)
+An **Indicator** inside [ThreatConnect](https://docs.threatconnect.com/en/latest/rest_api/v3/indicators/indicators.html) represents an atomic piece of information that has some intelligence value.
 
 Reference for [REST APIs](https://docs.threatconnect.com/en/latest/rest_api/rest_api.html#getting-started) of ThreatConnect.
 
 ## Requirements
 
 Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+
+### Versions
+
+The minimum required versions for the Elastic Stack is **8.12.0**.
+
+The minimum required ThreatConnect Platform version is 7.3.1 This integration module uses the ThreatConnect V3 API.
 
 ### Installing and managing an Elastic Agent:
 
@@ -34,6 +40,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 The minimum **kibana.version** required is **8.11.0**.
 This module has been tested against the **ThreatConnect API Version v3**.
+The minimum required ThreatConnect Platform version needs to be **7.3.1**.
 
 ## Setup
 
@@ -55,12 +62,12 @@ To create an API user account, please refer to [this](https://knowledge.threatco
 
 ## Indicators Expiration
 
-The ingested indicators expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active indicators be available to the end users. Since we want to retain only valuable information and avoid duplicated data, the ThreatConnect Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_threatconnect_latest.dest_indicator-*`.
+The ingested indicators expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to facilitate only active indicators be available to the end users. Since we want to retain only valuable information and avoid duplicated data, the ThreatConnect Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_threatconnect_latest.dest_indicator-*`.
 **Please, refer to this index in order to set alerts and so on.**
 
 #### Handling Orphaned Indicators
 
-Some ThreatConnect indicators may never expire and will continue to stay in the latest destination index. To avoid any false positives from such orphaned indicators, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination index `logs-ti_threatconnect_latest.dest_indicator` after this specified duration is reached. Users must pull entire feed instead of incremental feed when this expiration happens so that the indicators get reset.
+In order to prevent orphaned indicators that may never expire in the destination index users can configure IOC Expiration Duration parameter while setting up the integration. This parameter deletes all data inside the destination index logs-ti_threatconnect_latest.dest_indicator after this specified duration is reached.
 
 ### How it works
 
@@ -82,11 +89,11 @@ An example event for `indicator` looks as following:
 {
     "@timestamp": "2023-12-05T06:38:53.000Z",
     "agent": {
-        "ephemeral_id": "73eb1fd1-6255-48b8-b68b-6a818934f210",
-        "id": "76879be1-c9e8-439d-9738-d2d596fe4eb9",
+        "ephemeral_id": "43b1a042-a9b3-4d01-b836-a9349883688b",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_threatconnect.indicator",
@@ -97,9 +104,9 @@ An example event for `indicator` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "76879be1-c9e8-439d-9738-d2d596fe4eb9",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -107,8 +114,8 @@ An example event for `indicator` looks as following:
             "threat"
         ],
         "dataset": "ti_threatconnect.indicator",
-        "id": "736758",
-        "ingested": "2024-01-16T12:47:02Z",
+        "id": "test.user@elastic.co",
+        "ingested": "2024-05-16T22:35:04Z",
         "kind": "enrichment",
         "original": "{\"active\":true,\"activeLocked\":false,\"address\":\"test.user@elastic.co\",\"associatedGroups\":{\"data\":[{\"createdBy\":{\"firstName\":\"test\",\"id\":69,\"lastName\":\"user\",\"owner\":\"Elastic\",\"pseudonym\":\"testW\",\"userName\":\"test.user@elastic.co\"},\"dateAdded\":\"2023-12-05T06:38:33Z\",\"downVoteCount\":\"0\",\"id\":609427,\"lastModified\":\"2023-12-05T06:43:21Z\",\"legacyLink\":\"https://app.threatconnect.com/auth/vulnerability/vulnerability.xhtml?vulnerability=609427\",\"name\":\"Test2 \",\"ownerId\":51,\"ownerName\":\"Elastic\",\"type\":\"Vulnerability\",\"upVoteCount\":\"0\",\"webLink\":\"https://app.threatconnect.com/#/details/groups/609427/overview\"},{\"createdBy\":{\"firstName\":\"test\",\"id\":69,\"lastName\":\"user\",\"owner\":\"Elastic\",\"pseudonym\":\"testW\",\"userName\":\"test.user@elastic.co\"},\"dateAdded\":\"2023-12-04T07:18:52Z\",\"documentDateAdded\":\"2023-12-04T07:18:53Z\",\"documentType\":\"PDF\",\"downVoteCount\":\"0\",\"fileName\":\"testthreatgroup.pdf\",\"fileSize\":24467,\"generatedReport\":true,\"id\":601237,\"lastModified\":\"2023-12-05T06:38:46Z\",\"legacyLink\":\"https://app.threatconnect.com/auth/report/report.xhtml?report=601237\",\"name\":\"TestThreatGroup\",\"ownerId\":51,\"ownerName\":\"Elastic\",\"status\":\"Success\",\"type\":\"Report\",\"upVoteCount\":\"0\",\"webLink\":\"https://app.threatconnect.com/#/details/groups/601237/overview\"}]},\"associatedIndicators\":{\"data\":[{\"active\":true,\"activeLocked\":false,\"address\":\"testing@poverts.com\",\"confidence\":61,\"dateAdded\":\"2023-08-25T12:57:24Z\",\"id\":891599,\"lastModified\":\"2023-12-05T06:50:06Z\",\"legacyLink\":\"https://app.threatconnect.com/auth/indicators/details/emailaddress.xhtml?emailaddress=testing%40poverts.com\\u0026owner=Elastic\",\"ownerId\":51,\"ownerName\":\"Elastic\",\"privateFlag\":false,\"rating\":3,\"summary\":\"testing@poverts.com\",\"type\":\"EmailAddress\",\"webLink\":\"https://app.threatconnect.com/#/details/indicators/891599/overview\"},{\"active\":true,\"activeLocked\":false,\"dateAdded\":\"2023-08-24T06:28:17Z\",\"id\":738667,\"lastModified\":\"2023-12-05T06:47:59Z\",\"legacyLink\":\"https://app.threatconnect.com/auth/indicators/details/url.xhtml?orgid=738667\\u0026owner=Elastic\",\"ownerId\":51,\"ownerName\":\"Elastic\",\"privateFlag\":false,\"summary\":\"http://www.testingmcafeesites.com/testcat_pc.html\",\"text\":\"http://www.testingmcafeesites.com/testcat_pc.html\",\"type\":\"URL\",\"webLink\":\"https://app.threatconnect.com/#/details/indicators/738667/overview\"}]},\"attributes\":{},\"dateAdded\":\"2023-08-24T06:19:58Z\",\"id\":736758,\"lastModified\":\"2023-12-05T06:38:53Z\",\"legacyLink\":\"https://app.threatconnect.com/auth/indicators/details/emailaddress.xhtml?emailaddress=test.user%40elastic.co\\u0026owner=Elastic\",\"ownerId\":51,\"ownerName\":\"Elastic\",\"privateFlag\":false,\"securityLabels\":{\"data\":[{\"color\":\"FFC000\",\"dateAdded\":\"2016-08-31T00:00:00Z\",\"description\":\"This security label is used for information that requires support to be effectively acted upon, yet carries risks to privacy, reputation, or operations if shared outside of the organizations involved. Information with this label can be shared with members of an organization and its clients.\",\"id\":3,\"name\":\"TLP:AMBER\",\"owner\":\"System\"}]},\"summary\":\"test.user@elastic.co\",\"tags\":{\"data\":[{\"description\":\"Adversaries may steal monetary resources from targets through extortion, social engineering, technical theft, or other methods aimed at their own financial gain at the expense of the availability of these resources for victims. Financial theft is the ultimate objective of several popular campaign types including extortion by ransomware,(Citation: FBI-ransomware) business email compromise (BEC) and fraud,(Citation: FBI-BEC) \\\"pig butchering,\\\"(Citation: wired-pig butchering) bank hacking,(Citation: DOJ-DPRK Heist) and exploiting cryptocurrency networks.(Citation: BBC-Ronin) \\n\\nAdversaries may [Compromise Accounts](https://attack.mitre.org/techniques/T1586) to conduct unauthorized transfers of funds.(Citation: Internet crime report 2022) In the case of business email compromise or email fraud, an adversary may utilize [Impersonation](https://attack.mitre.org/techniques/T1656) of a trusted entity. Once the social engineering is successful, victims can be deceived into sending money to financial accounts controlled by an adversary.(Citation: FBI-BEC) This creates the potential for multiple victims (i.e., compromised accounts as well as the ultimate monetary loss) in incidents involving financial theft.(Citation: VEC)\\n\\nExtortion by ransomware may occur, for example, when an adversary demands payment from a victim after [Data Encrypted for Impact](https://attack.mitre.org/techniques/T1486) (Citation: NYT-Colonial) and [Exfiltration](https://attack.mitre.org/tactics/TA0010) of data, followed by threatening public exposure unless payment is made to the adversary.(Citation: Mandiant-leaks)\\n\\nDue to the potentially immense business impact of financial theft, an adversary may abuse the possibility of financial theft and seeking monetary gain to divert attention from their true goals such as [Data Destruction](https://attack.mitre.org/techniques/T1485) and business disruption.(Citation: AP-NotPetya)\",\"id\":463701,\"lastUsed\":\"2023-12-04T06:44:44Z\",\"name\":\"Financial Theft\",\"platforms\":{\"count\":6,\"data\":[\"Linux\",\"macOS\",\"Windows\",\"Office 365\",\"SaaS\",\"Google Workspace\"]},\"techniqueId\":\"T1657\"}]},\"threatAssessConfidence\":0,\"threatAssessRating\":0,\"threatAssessScore\":281,\"threatAssessScoreFalsePositive\":0,\"threatAssessScoreObserved\":0,\"type\":\"EmailAddress\",\"webLink\":\"https://app.threatconnect.com/#/details/indicators/736758/overview\"}",
         "type": [
@@ -291,12 +298,8 @@ An example event for `indicator` looks as following:
             "security_labels": {
                 "data": [
                     {
-                        "color": "FFC000",
                         "date_added": "2016-08-31T00:00:00.000Z",
-                        "description": "This security label is used for information that requires support to be effectively acted upon, yet carries risks to privacy, reputation, or operations if shared outside of the organizations involved. Information with this label can be shared with members of an organization and its clients.",
-                        "id": "3",
-                        "name": "TLP:AMBER",
-                        "owner": "System"
+                        "name": "TLP:AMBER"
                     }
                 ]
             },
@@ -304,21 +307,8 @@ An example event for `indicator` looks as following:
             "tags": {
                 "data": [
                     {
-                        "description": "Adversaries may steal monetary resources from targets through extortion, social engineering, technical theft, or other methods aimed at their own financial gain at the expense of the availability of these resources for victims. Financial theft is the ultimate objective of several popular campaign types including extortion by ransomware,(Citation: FBI-ransomware) business email compromise (BEC) and fraud,(Citation: FBI-BEC) \"pig butchering,\"(Citation: wired-pig butchering) bank hacking,(Citation: DOJ-DPRK Heist) and exploiting cryptocurrency networks.(Citation: BBC-Ronin) \n\nAdversaries may [Compromise Accounts](https://attack.mitre.org/techniques/T1586) to conduct unauthorized transfers of funds.(Citation: Internet crime report 2022) In the case of business email compromise or email fraud, an adversary may utilize [Impersonation](https://attack.mitre.org/techniques/T1656) of a trusted entity. Once the social engineering is successful, victims can be deceived into sending money to financial accounts controlled by an adversary.(Citation: FBI-BEC) This creates the potential for multiple victims (i.e., compromised accounts as well as the ultimate monetary loss) in incidents involving financial theft.(Citation: VEC)\n\nExtortion by ransomware may occur, for example, when an adversary demands payment from a victim after [Data Encrypted for Impact](https://attack.mitre.org/techniques/T1486) (Citation: NYT-Colonial) and [Exfiltration](https://attack.mitre.org/tactics/TA0010) of data, followed by threatening public exposure unless payment is made to the adversary.(Citation: Mandiant-leaks)\n\nDue to the potentially immense business impact of financial theft, an adversary may abuse the possibility of financial theft and seeking monetary gain to divert attention from their true goals such as [Data Destruction](https://attack.mitre.org/techniques/T1485) and business disruption.(Citation: AP-NotPetya)",
-                        "id": "463701",
                         "last_used": "2023-12-04T06:44:44.000Z",
                         "name": "Financial Theft",
-                        "platforms": {
-                            "count": 6,
-                            "data": [
-                                "Linux",
-                                "macOS",
-                                "Windows",
-                                "Office 365",
-                                "SaaS",
-                                "Google Workspace"
-                            ]
-                        },
                         "technique": {
                             "id": "T1657"
                         }
@@ -390,7 +380,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.associated_groups.data.file.name | The file name of the Document. | keyword |
 | threat_connect.indicator.associated_groups.data.file.size | The File size of the document. | keyword |
 | threat_connect.indicator.associated_groups.data.file.text | The file text of the Signature. | keyword |
-| threat_connect.indicator.associated_groups.data.file.type | The file type of the SignaturePossible values are Bro, ClamAV, CybOX, Iris Search Hash, KQL, OpenIOC, Regex, SPL, Sigma, Snort, Suricata, TQL Query and YARA. | keyword |
+| threat_connect.indicator.associated_groups.data.file.type | The file type of the SignaturePossible values are Bro,ClamAV,CybOX,Iris Search Hash,KQL,OpenIOC,Regex,SPL,Sigma,Snort,Suricata,TQL Query,YARA. | keyword |
 | threat_connect.indicator.associated_groups.data.first_seen | The date and time when the Group was first seen. | date |
 | threat_connect.indicator.associated_groups.data.from | The Emails subject. | keyword |
 | threat_connect.indicator.associated_groups.data.generated_report | Indicates whether the report is generated. | boolean |
@@ -411,7 +401,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.associated_groups.data.status | The status of the Group type. | keyword |
 | threat_connect.indicator.associated_groups.data.subject | The Emails From field. | keyword |
 | threat_connect.indicator.associated_groups.data.to | The receiver email address. | keyword |
-| threat_connect.indicator.associated_groups.data.type | The type of Group being created. Possiblevalues :Adversary, AttackPattern, Campaign, CourseofAction, Document, Email, Event, Incident, IntrusionSet, Malware, Report, Signature, Tactic, Task, Threat, Tool and Vulnerability. | keyword |
+| threat_connect.indicator.associated_groups.data.type | The type of Group being created.Possiblevalues:Adversary,AttackPattern,Campaign,CourseofAction,Document,Email,Event,Incident,IntrusionSet,Malware,Report,Signature,Tactic,Task,Threat,Tool, Vulnerability. | keyword |
 | threat_connect.indicator.associated_groups.data.up_vote | Use this field to update the Groups Intel Rating. | boolean |
 | threat_connect.indicator.associated_groups.data.up_vote_count | Upvote Intel Rating. | keyword |
 | threat_connect.indicator.associated_groups.data.web_link | Link to the group's details in the ThreatConnect web application. | keyword |
@@ -452,7 +442,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.associated_indicators.data.type | Type of the indicator. | keyword |
 | threat_connect.indicator.associated_indicators.data.user_agent_string | The characteristic identification string associated with the User Agent Indicator. | keyword |
 | threat_connect.indicator.associated_indicators.data.value.name | The registry value associated with the Registry Key Indicator. | keyword |
-| threat_connect.indicator.associated_indicators.data.value.type | Possible values: REG_NONE, REG_BINARY, REG_DWORD, REG_DWORD_LITTLE_ENDIAN, REG_DWORD_BIG_ENDIAN, REG_EXPAND_SZ, REG_LINK, REG_MULTI_SZ, REG_QWORD, REG_QWORD_LITTLE_ENDIAN and REG_SZ. | keyword |
+| threat_connect.indicator.associated_indicators.data.value.type | Possible values:REG_NONE,REG_BINARY,REG_DWORD,REG_DWORD_LITTLE_ENDIAN,REG_DWORD_BIG_ENDIAN,REG_EXPAND_SZ,REG_LINK,REG_MULTI_SZ,REG_QWORD,REG_QWORD_LITTLE_ENDIAN,REG_SZ. | keyword |
 | threat_connect.indicator.associated_indicators.data.web_link | Link to the indicator's details in the ThreatConnect web application. | keyword |
 | threat_connect.indicator.associated_indicators.data.whois_active | Indicates whether the Whois feature is active for the Host Indicator. | boolean |
 | threat_connect.indicator.attributes.data.created_by.first_name | First name of the user who created the victim attribute. | keyword |
@@ -506,10 +496,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.owner.name | Name of the organization that owns the indicator. | keyword |
 | threat_connect.indicator.private_flag | Indicates whether the indicator is marked as private. | boolean |
 | threat_connect.indicator.rating | The Indicators Threat Rating. | double |
-| threat_connect.indicator.security_labels.data.color | Color associated with the security label. | keyword |
 | threat_connect.indicator.security_labels.data.date_added | The date and time when the security label was added. | date |
-| threat_connect.indicator.security_labels.data.description | Description of the security label. | keyword |
-| threat_connect.indicator.security_labels.data.id | Unique identifier for the security label. | keyword |
 | threat_connect.indicator.security_labels.data.name | Actual name or label of the security classification. | keyword |
 | threat_connect.indicator.security_labels.data.owner | The entity or system that owns or manages the security label. | keyword |
 | threat_connect.indicator.security_labels.data.source | The source of the security label. | keyword |
@@ -519,8 +506,6 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.source | The Indicators source. | keyword |
 | threat_connect.indicator.subject | The subject line of the email associated with the Email Subject Indicator. | keyword |
 | threat_connect.indicator.summary | Summary or description of the indicator. | keyword |
-| threat_connect.indicator.tags.data.description | The Tags description. | keyword |
-| threat_connect.indicator.tags.data.id | Unique Identifier of tag. | keyword |
 | threat_connect.indicator.tags.data.last_used | Date and time when tag was last used. | date |
 | threat_connect.indicator.tags.data.name | Name of tag. | keyword |
 | threat_connect.indicator.tags.data.owner | The Organization, Community, or Source to which the Tag belongs. | keyword |
@@ -537,7 +522,7 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.type | Type of the indicator (e.g., File, IP address). | keyword |
 | threat_connect.indicator.user_agent_string | The characteristic identification string associated with the User Agent Indicator. | keyword |
 | threat_connect.indicator.value.name | The registry value associated with the Registry Key Indicator. | keyword |
-| threat_connect.indicator.value.type | Possible values: REG_NONE, REG_BINARY, REG_DWORD, REG_DWORD_LITTLE_ENDIAN, REG_DWORD_BIG_ENDIAN, REG_EXPAND_SZ, REG_LINK, REG_MULTI_SZ, REG_QWORD, REG_QWORD_LITTLE_ENDIAN and REG_SZ. | keyword |
+| threat_connect.indicator.value.type | Possible values:REG_NONE,REG_BINARY,REG_DWORD,REG_DWORD_LITTLE_ENDIAN,REG_DWORD_BIG_ENDIAN,REG_EXPAND_SZ,REG_LINK,REG_MULTI_SZ,REG_QWORD,REG_QWORD_LITTLE_ENDIAN,REG_SZ. | keyword |
 | threat_connect.indicator.web_link | Link to the indicator's details in the ThreatConnect web application. | keyword |
 | threat_connect.indicator.who_is | Includes WhoIs information related to the Host indicators. | flattened |
 | threat_connect.indicator.whois_active | Indicates whether the Whois feature is active for the Host Indicator. | boolean |

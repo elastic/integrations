@@ -14,7 +14,7 @@ even though it can get expensive with dealing with a very large number of files.
 3.  If any major error occurs that stops the main thread, the logs will be appropriately generated, describing said error.
 
 
-NOTE: Currently only `JSON` is supported with respect to object/file formats. We also support gzipped JSON objects/files. As for authentication types, we currently have support for `JSON credential keys` and `credential files`. If a download for a file/object fails or gets interrupted, the download is retried for 2 times. This is currently not user-configurable.
+NOTE: Currently only `JSON` is supported with respect to object/file formats. We also support gzipped JSON objects/files. As for authentication types, we currently have support for `JSON credential keys` and `credential files`. If a download for a file/object fails or gets interrupted, the download is retried two times which equates to a maximum of three tries for a particular file/object. This is behavior currently not user-configurable.
 
 ## The GCS credentials key file:
 This is a one-time download JSON key file that you get after adding a key to a GCP service account. 

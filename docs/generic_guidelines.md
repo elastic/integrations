@@ -18,6 +18,21 @@ Starting with ECS 1.6, ECS is going to start using Basic types for some fields. 
 
 All fields produced by an integration must be mapped by `fields.yml`. This guarantees that their index mapping is correct, and Kibana has enough info to deal with all fields.
 
+##### Field limits
+
+By default, data streams will have a `total_fields.limit` setting of 1000. Besides defined custom fields, this also includes dynamically generated ECS fields. If your data stream is expected to eventually house more than 1000 fields, set an explicit limit in the `manifest.yml` of the data stream:
+```yaml
+elasticsearch:
+  index_template:
+    settings:
+      index:
+        mapping:
+          total_fields:
+            limit: 5000
+```
+
+Note: For backwards compatibility, the limit is automatically bumped to 10000 fields if there are more than 500 fields explicitly defined for a data stream, however newly created integrations should not rely on this behavior but instead assume a fixed limit of 1000 fields.
+
 ##### Specify metric types and units
 
 As part of the field definition, there are two settings that add metadata which will help Kibana graphing it:

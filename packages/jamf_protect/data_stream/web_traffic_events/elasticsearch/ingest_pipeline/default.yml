@@ -1,0 +1,271 @@
+---
+description: Pipeline for parsing Jamf Protect Web Protection traffic logs
+processors:
+    - set:
+        field: ecs.version
+        value: '8.11.0'
+    - json:
+        field: message
+        target_field: jamf_protect.traffic
+        if: ctx.message != null
+    - rename:
+        field: json
+        target_field: jamf_protect.traffic
+        if: ctx.json != null
+
+##########################
+## ECS Observer Mapping ##
+##########################
+    - set:
+        field: observer.product
+        value: Jamf Protect
+    - set:
+        field: observer.vendor
+        value: Jamf
+
+#######################
+## ECS Event Mapping ##
+#######################
+    - set:
+        field: event.kind
+        value: event
+    - set:
+        field: event.provider
+        value: Jamf Protect
+    - rename:
+        field: jamf_protect.traffic.event.timestamp
+        target_field: event.start
+        if: ctx.jamf_protect?.traffic?.event?.timestamp != null
+    - append:
+        field: event.category
+        value: host
+    - append:
+        field: event.category
+        value: network
+    - append:
+        field: event.type
+        value: connection
+    - append:
+        field: event.category
+        value: malware
+        if: ctx.jamf_protect?.traffic?.event?.threat?.types == 'malware'
+    - set:
+        field: event.action
+        value: '{{jamf_protect.traffic.event.signatureId.name}}'
+        if: ctx.jamf_protect?.traffic?.event?.signatureId?.name != null
+    - set:
+        field: event.reason
+        value: '{{jamf_protect.traffic.event.threat.result}}'
+        if: ctx.jamf_protect?.traffic?.event?.threat?.result != null
+    - append:
+        field: event.outcome
+        value: failure
+        if: ctx.jamf_protect?.traffic?.event?.blocked == true
+    - append:
+        field: event.outcome
+        value: success
+        if: ctx.jamf_protect?.traffic?.event?.blocked == false
+        # ignore_missing: true
+
+
+#######################
+## ECS Rule Mapping ##
+#######################
+    - set:
+        field: rule.name
+        value: '{{jamf_protect.traffic.event.signatureId.name}}'
+        if: ctx.jamf_protect?.traffic?.event?.signatureId?.name != null
+        # ignore_missing: true
+    - rename:
+        field: jamf_protect.traffic.event.signatureId.id.toString()
+        target_field: rule.id
+        if: ctx.jamf_protect?.traffic?.event?.signatureId?.id != null
+        ignore_missing: true
+
+
+#######################
+## ECS Host Mapping ##
+#######################
+    - rename:
+        field: jamf_protect.traffic.event.device.userDeviceName
+        target_field: host.hostname
+        ignore_missing: true
+        if: ctx.jamf_protect?.traffic?.event?.device?.userDeviceName != null
+    - rename:
+        field: jamf_protect.traffic.event.device.deviceName
+        target_field: host.hostname
+        ignore_missing: true
+        if: ctx.jamf_protect?.traffic?.event?.device?.deviceName == null && ctx.jamf_protect?.traffic?.event?.device?.userDeviceName != null
+    - rename:
+        field: jamf_protect.traffic.event.device.deviceId
+        target_field: host.id
+        ignore_missing: true
+        if: ctx.jamf_protect?.traffic?.event?.device?.deviceId != null
+    # - rename:
+    #     field: jamf_protect.traffic.event.host.ips
+    #     target_field: host.ip
+    #     ignore_missing: true
+    #     if: ctx.jamf_protect?.traffic?.event?.host?.ips != null && ctx.jamf_protect?.traffic?.event?.host?.ips != ""
+    - rename:
+        field: jamf_protect.traffic.event.device.os
+        target_field: host.os.full
+        if: ctx.jamf_protect?.traffic?.event?.device?.os != null
+        ignore_missing: true
+    - append:
+        field: host.os.type
+        value: ios
+        if: ctx.jamf_protect?.traffic?.event?.device?.osType == "IOS"
+    - append:
+        field: host.os.type
+        value: macos
+        if: ctx.jamf_protect?.traffic?.event?.device?.osType == "MAC_OS"
+
+
+########################
+## ECS User Mapping ##
+########################
+
+    - rename:
+          field: jamf_protect.traffic.event.user.name
+          target_field: user.name
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.user?.name != null
+    - rename:
+          field: jamf_protect.traffic.event.user.email
+          target_field: user.email
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.user?.email != null
+
+
+########################
+## ECS DNS Mapping ##
+########################
+    - rename:
+          field: jamf_protect.traffic.event.tld
+          target_field: dns.question.top_level_domain
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.tld != null
+    - rename:
+          field: jamf_protect.traffic.event.domain
+          target_field: dns.question.registered_domain
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.domain != null
+    - rename:
+          field: jamf_protect.traffic.event.hostName
+          target_field: dns.question.name
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.hostName != null
+
+
+    - rename:
+          field: jamf_protect.traffic.event.dns.responseStatus
+          target_field: dns.response_code
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.dns?.responseStatus != null
+    - rename:
+          field: jamf_protect.traffic.event.dns.recordType
+          target_field: dns.answers.type
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.dns?.recordType != null
+    - rename:
+          field: jamf_protect.traffic.event.dns.ttl
+          target_field: dns.answers.ttl
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.dns?.ttl != null
+    - set:
+          field: dns.resolved_ip
+          value: '{{jamf_protect.traffic.event.destination.ip}}'
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.destination?.ip != null
+
+########################
+## ECS GEO Mapping ##
+########################
+    - rename:
+          field: jamf_protect.traffic.event.location
+          target_field: host.geo.country_iso_code
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.location != null
+
+
+#######################
+## ECS Destination Mapping ##
+#######################
+    - rename:
+          field: jamf_protect.traffic.event.destination.ip
+          target_field: destination.address
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.destination?.ip != null
+    - rename:
+          field: jamf_protect.traffic.event.destination.name
+          target_field: destination.domain
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.destination?.name != null
+    - rename:
+          field: jamf_protect.traffic.event.destination.port
+          target_field: destination.port
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.destination?.port != null
+
+
+#######################
+## ECS Source Mapping ##
+#######################
+    - rename:
+          field: jamf_protect.traffic.event.source.ip
+          target_field: source.address
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.destination?.ip != null
+    - rename:
+          field: jamf_protect.traffic.event.source.port
+          target_field: source.port
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.source?.port != null
+
+# ########################
+# # ECS Organization Mapping ##
+# ########################
+    - rename:
+          field: jamf_protect.traffic.event.account.customerId
+          target_field: organization.id
+          ignore_missing: true
+          if: ctx.jamf_protect?.traffic?.event?.account?.customerId != null
+
+#############
+## Cleanup ##
+#############
+    - remove:
+        field:
+        - jamf_protect.traffic
+        - jamf_protect
+        - message
+        ignore_missing: true
+    - remove:
+        field: event.original
+        if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+        ignore_failure: true
+    - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+            boolean dropEmptyFields(Object object) {
+            if (object == null || object == '') {
+                return true;
+            } else if (object instanceof Map) {
+                ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+                return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+                ((List) object).removeIf(value -> dropEmptyFields(value));
+                return (((List) object).length == 0);
+            }
+            return false;
+            }
+            dropEmptyFields(ctx);
+
+on_failure:
+    - set:
+        field: event.kind
+        value: pipeline_error
+    - append:
+        field: error.message
+        value: '{{{ _ingest.on_failure_message }}}'

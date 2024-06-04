@@ -1,8 +1,8 @@
 # Microsoft Graph Activity Logs
 
-Microsoft Graph Activity Logs provide an audit trail of all HTTP requests that the Microsoft Graph service received and processed for a tenant. Microsoft Graph Activity Logs gives full visibility into all transactions made by applications and other API clients that you have consented to in the tenant. Refer to [Microsoft Graph Activity Common Usecases](https://learn.microsoft.com/en-us/graph/microsoft-graph-activity-logs-overview#common-use-cases-for-microsoft-graph-activity-logs) for more use cases.
+Microsoft Graph Activity Logs provide an audit trail of all HTTP requests that the Microsoft Graph service has received and processed for a tenant. Microsoft Graph Activity Logs gives full visibility into all transactions made by applications and other API clients that you have consented to in the tenant. Refer to [Microsoft Graph Activity Common Usecases](https://learn.microsoft.com/en-us/graph/microsoft-graph-activity-logs-overview#common-use-cases-for-microsoft-graph-activity-logs) for more use cases.
 
-Tenant administrators can configure the collection and storage destinations of Microsoft Graph Activity Logs through Diagnostic Setting in the Entra Portal. This integrtaion uses Azure Event Hubs destination to stream Microsoft Graph Activity Logs to Elastic.
+Tenant administrators can configure the collection and storage destinations of Microsoft Graph Activity Logs through Diagnostic Setting in the Entra Portal. This integration uses Azure Event Hubs destination to stream Microsoft Graph Activity Logs to Elastic.
 
 ## Requirements and Setup
 
@@ -27,7 +27,7 @@ Refer to [Microsoft Graph Activity Limitations](https://learn.microsoft.com/en-u
 
 `eventhub` :
   _string_
-It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
+It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You _can_ use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets). Elastic also recommends using a separate event hub for each log type as the field mappings of each log type differ.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -55,7 +55,7 @@ The storage account container where the integration stores the checkpoint data f
 
 `resource_manager_endpoint` :
 _string_
-Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
+Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different Azure environment.
 
 Resource manager endpoints:
 
@@ -220,9 +220,9 @@ An example event for `graphactivitylogs` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID | keyword |
-| azure.graphactivitylogs.category | Azure Event Category. For example, Graph Activity Logs has value `MicrosoftGraphActivityLogs` | keyword |
-| azure.graphactivitylogs.operation_name | Operation name | keyword |
+| azure.correlation_id | Correlation ID. | keyword |
+| azure.graphactivitylogs.category | Azure Event Category. For example, Graph Activity Logs has value `MicrosoftGraphActivityLogs`. | keyword |
+| azure.graphactivitylogs.operation_name | Operation name. | keyword |
 | azure.graphactivitylogs.operation_version | The Graph API version of the event. | keyword |
 | azure.graphactivitylogs.properties.api_version | The API version of the event. | keyword |
 | azure.graphactivitylogs.properties.app_id | The identifier for the application. | keyword |
@@ -231,28 +231,31 @@ An example event for `graphactivitylogs` looks as following:
 | azure.graphactivitylogs.properties.client_auth_method | Indicates how the client was authenticated. For a public client, the value is 0. If client ID and client secret are used, the value is 1. If a client certificate was used for authentication, the value is 2. | integer |
 | azure.graphactivitylogs.properties.client_request_id | The client request identifier when sent. If no client request identifier is sent, the value will be equal to the operation identifier. | keyword |
 | azure.graphactivitylogs.properties.identity_provider | The identity provider that authenticated the subject of the token. | keyword |
-| azure.graphactivitylogs.properties.is_billable | The record size in bytes. | boolean |
+| azure.graphactivitylogs.properties.is_billable | Specifies whether ingesting the data is billable. When _IsBillable is false ingestion isn't billed to your Azure account. | boolean |
 | azure.graphactivitylogs.properties.operation_id | The identifier for the batch. For non-batched requests, this will be unique per request. For batched requests, this will be the same for all requests in the batch. | keyword |
 | azure.graphactivitylogs.properties.request_uri | The URI of the request. | keyword |
 | azure.graphactivitylogs.properties.roles | The roles in token claims. | keyword |
 | azure.graphactivitylogs.properties.scopes | The scopes in token claims. | keyword |
 | azure.graphactivitylogs.properties.service_principal_id | The identifier of the servicePrincipal making the request. | keyword |
 | azure.graphactivitylogs.properties.sign_in_activity_id | The identifier representing the sign-in activitys. | keyword |
-| azure.graphactivitylogs.properties.source_system | The type of agent the event was collected by. For example, OpsManager for Windows agent, either direct connect or Operations Manager, Linux for all Linux agents, or Azure for Azure Diagnostics | keyword |
+| azure.graphactivitylogs.properties.source_system | The type of agent the event was collected by. For example, OpsManager for Windows agent, either direct connect or Operations Manager, Linux for all Linux agents, or Azure for Azure Diagnostics. | keyword |
 | azure.graphactivitylogs.properties.time_generated | The date and time the request was received. | date |
 | azure.graphactivitylogs.properties.token_issued_at | The timestamp the token was issued at. | date |
 | azure.graphactivitylogs.properties.type | The name of the table. | keyword |
 | azure.graphactivitylogs.properties.user_agent | The user agent information related to request. | keyword |
 | azure.graphactivitylogs.properties.wids | Denotes the tenant-wide roles assigned to this user. | keyword |
-| azure.graphactivitylogs.result_signature | Result signature | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.graphactivitylogs.result_signature | Result signature. | keyword |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | Resource group. | keyword |
+| azure.resource.id | Resource ID. | keyword |
+| azure.resource.name | Name. | keyword |
+| azure.resource.namespace | Resource type/namespace. | keyword |
+| azure.resource.provider | Resource type/namespace. | keyword |
+| azure.subscription_id | Azure subscription ID. | keyword |
+| azure.tenant_id | tenant ID. | keyword |
+| client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| client.as.organization.name | Organization name. | keyword |
+| client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
 | client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
 | client.geo.country_iso_code | Country ISO code. | keyword |
@@ -317,6 +320,9 @@ An example event for `graphactivitylogs` looks as following:
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |

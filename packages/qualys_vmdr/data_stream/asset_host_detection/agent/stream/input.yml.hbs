@@ -20,6 +20,7 @@ state:
   password: {{password}}
   batch_size: {{batch_size}}
   params: {{input_parameters}}
+  keep_xml: {{preserve_original_event}}
 redact:
   fields:
     - password
@@ -35,10 +36,13 @@ program: |
           "X-Requested-With": ["curl"],
           "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
       }
-  }).do_request().as(resp, bytes(resp.Body).decode_xml('qualys_api_2_0').as(body, {
-      "events": body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(e, {
-        "message": e.encode_json(),
-      }),
+  }).do_request().as(resp, resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_2_0').as(body, {
+      "events": body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.map(h, 
+        h.DETECTION_LIST.DETECTION.map(v, {
+          ?"xml":    state.keep_xml ? optional.of(string(xml)) : optional.none(),
+          "message": h.with({"DETECTION_LIST": v}).encode_json(),
+        })
+      ).flatten(),
       "url": (
         has(body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING) && has(body.doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL)
         ?
@@ -51,8 +55,11 @@ program: |
       "batch_size": state.batch_size,
       "user": state.user,
       "password": state.password,
-  }))
+  })))
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#if preserve_duplicate_custom_fields}}
   - preserve_duplicate_custom_fields
 {{/if}}

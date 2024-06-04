@@ -28,11 +28,11 @@ An example event for `archive_search` looks as following:
 {
     "@timestamp": "2021-03-18T18:35:49.000Z",
     "agent": {
-        "ephemeral_id": "ef42d9ea-67ec-4494-bad4-9d47b9ed68d2",
-        "id": "f81bb806-77be-4e89-9f08-d426b37fd611",
+        "ephemeral_id": "33b422bb-ff57-4039-80c8-23c64e5f54d7",
+        "id": "5e5700e6-bb04-40f9-b6fc-e5adb94ec6b5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.12.1"
     },
     "data_stream": {
         "dataset": "mimecast.archive_search_logs",
@@ -87,7 +87,6 @@ An example event for `archive_search` looks as following:
         "name": "admin_dhamilton"
     }
 }
-
 ```
 
 **Exported fields**
@@ -217,7 +216,6 @@ An example event for `audit_events` looks as following:
         "name": "johndoe"
     }
 }
-
 ```
 
 **Exported fields**
@@ -372,7 +370,6 @@ An example event for `dlp` looks as following:
         "mimecast-dlp-logs"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -444,11 +441,11 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2021-11-12T12:15:46.000Z",
     "agent": {
-        "ephemeral_id": "c6e5221f-b305-4a75-acb4-7a43547a1e6d",
-        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "ephemeral_id": "9e414d8d-fe0d-4db1-a95f-aed984c0eef9",
+        "id": "a26821e0-e36a-4513-a137-0df112893aba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.12.1"
     },
     "data_stream": {
         "dataset": "mimecast.siem_logs",
@@ -459,9 +456,9 @@ An example event for `siem` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c0ee214c-57e5-4a60-80ba-e4dc247eb02e",
+        "id": "a26821e0-e36a-4513-a137-0df112893aba",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.12.1"
     },
     "email": {
         "direction": "internal",
@@ -481,7 +478,7 @@ An example event for `siem` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-12T12:15:46+0000",
         "dataset": "mimecast.siem_logs",
-        "ingested": "2023-07-27T14:59:24Z",
+        "ingested": "2024-04-07T21:50:35Z",
         "original": "{\"Content-Disposition\":\"attachment; filename=\\\"jrnl_20211018093329655.json\\\"\",\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
         "outcome": "unknown"
     },
@@ -500,7 +497,6 @@ An example event for `siem` looks as following:
         "mimecast-siem-logs"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -583,12 +579,13 @@ An example event for `siem` looks as following:
 | mimecast.IPThreadDict | For emails subject to Targeted Threat Protection - Impersonation Protect, if the content of the email was detected to contain words in the Mimecast threat dictionary. | keyword |
 | mimecast.InternalName | The email was detected to be from an internal user name. | keyword |
 | mimecast.Latency | The time in milliseconds that the delivery attempt took. | long |
-| mimecast.MimecastIP | The source IP is one of the Mimecast' IPs e.g. Mimecast Personal Portal. | keyword |
+| mimecast.MimecastIP | The source IP is one of the Mimecast' IPs e.g. Mimecast Personal Portal. | keyword |
 | mimecast.MsgId | The internet message id of the email. | keyword |
 | mimecast.MsgSize | The total size of the email. | long |
 | mimecast.RcptActType | Action after reception. | keyword |
 | mimecast.RcptHdrType | Type of the receipt header. | keyword |
 | mimecast.ReceiptAck | The receipt acknowledgment message received by Mimecast from the receiving mail server. | keyword |
+| mimecast.Recipient | The recipient of the original message. | keyword |
 | mimecast.ReplyMismatch | The reply address does not correspond to the senders address. | keyword |
 | mimecast.Route | Email route. | keyword |
 | mimecast.ScanResultInfo | The reason that the click was blocked. | keyword |
@@ -715,7 +712,6 @@ An example event for `threat_intel_malware_customer` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -872,7 +868,6 @@ An example event for `threat_intel_malware_grid` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -1037,7 +1032,6 @@ An example event for `ttp_ap` looks as following:
         "mimecast-ttp-ap"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1204,7 +1198,6 @@ An example event for `ttp_ip` looks as following:
         "mimecast-ttp-ip"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1386,7 +1379,6 @@ An example event for `ttp_url` looks as following:
         ]
     }
 }
-
 ```
 
 **Exported fields**

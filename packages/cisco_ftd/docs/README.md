@@ -215,6 +215,7 @@ An example event for `log` looks as following:
 | cisco.ftd.connection_type | The VPN connection type | keyword |
 | cisco.ftd.dap_records | The assigned DAP records | keyword |
 | cisco.ftd.destination_interface | Destination interface for the flow or event. | keyword |
+| cisco.ftd.destination_user_or_sgt | The destination user or security group tag. | keyword |
 | cisco.ftd.destination_username | Name of the user that is the destination for this event. | keyword |
 | cisco.ftd.icmp_code | ICMP code. | short |
 | cisco.ftd.icmp_type | ICMP type. | short |
@@ -295,6 +296,7 @@ An example event for `log` looks as following:
 | cisco.ftd.security_event.web_application |  | keyword |
 | cisco.ftd.session_type | Session type (for example, IPsec or UDP). | keyword |
 | cisco.ftd.source_interface | Source interface for the flow or event. | keyword |
+| cisco.ftd.source_user_or_sgt | The source user or security group tag. | keyword |
 | cisco.ftd.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.ftd.suffix | Optional suffix after %FTD identifier. | keyword |
 | cisco.ftd.termination_user | AAA name of user requesting termination | keyword |

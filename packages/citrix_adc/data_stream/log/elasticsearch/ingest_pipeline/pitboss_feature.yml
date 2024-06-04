@@ -1,0 +1,72 @@
+---
+description: Pipeline for Citrix Native messages of PITBOSS feature.
+processors:
+  - grok:
+      description: Extract fields from message of PITBOSS feature.
+      tag: grok_pitboss_feature
+      field: citrix.extended.message
+      patterns:
+        - '^Adding pitboss watch on \(%{INT:citrix_adc.log.watch_id}\)$'
+        - '^Deleting watch on \(%{INT:citrix_adc.log.watch_id}\)$'
+        - '^proc \(%{INT:citrix_adc.log.process.id}\) \(%{DATA:citrix_adc.log.process.name}\) has had its maximum number of restarts \(%{INT:citrix_adc.log.max_restarts}\), rebooting the system$'
+        - '^Restarting process old pid \(%{INT:citrix_adc.log.old_pid}\) action \(%{DATA:citrix_adc.log.action}\)$'
+        - '%{GREEDYDATA:citrix_adc.log.message}'
+      ignore_failure: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_action
+      copy_from: citrix_adc.log.action
+      ignore_empty_value: true
+  - set:
+      field: process.name
+      tag: set_process_name_from_process_name
+      copy_from: citrix_adc.log.process.name
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.process.id
+      tag: convert_process_id_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.pid
+      tag: set_process_pid_from_process_id
+      copy_from: citrix_adc.log.process.id
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.max_restarts
+      tag: convert_max_restarts_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.old_pid
+      tag: convert_old_pid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.watch_id
+      tag: convert_watch_id_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

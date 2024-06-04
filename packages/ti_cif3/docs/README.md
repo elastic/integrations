@@ -2,6 +2,21 @@
 
 This integration connects with the [REST API from the running CIFv3 instance](https://github.com/csirtgadgets/bearded-avenger-deploymentkit/wiki/REST-API) to retrieve indicators.
 
+## Expiration of Indicators of Compromise (IOCs)
+Indicators are expired after a certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for a source index to allow only active indicators to be available to the end users. The transform creates a destination index named `logs-ti_cif3_latest.dest_feed*` which only contains active and unexpired indicators. Destination indices are aliased to `logs-ti_cif3_latest.feed`. The indicator match rules and dashboards are updated to show only active indicators.
+
+| Indicator Type    | Indicator Expiration Duration                  |
+|:------------------|:------------------------------------------------|
+| `ipv4-addr`       | `45d`                                           |
+| `ipv6-addr`       | `45d`                                           |
+| `domain-name`     | `90d`                                           |
+| `url`             | `365d`                                          |
+| `file`            | `365d`                                          |
+| All Other Types   | Derived from `IOC Expiration Duration` setting  |
+
+### ILM Policy
+To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_cif3.feed-*` are allowed to contain duplicates. ILM policy `logs-ti_cif3.feed-default_policy` is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
+
 ## Data Streams
 
 ### Feed
@@ -29,7 +44,9 @@ CIFv3 `confidence` field values (0..10) are converted to ECS confidence (None, L
 | cif3.city | GeoIP city information. | keyword |
 | cif3.confidence | The confidence on a scale of 0-10 that the tags appropriately contextualize the indicator. | float |
 | cif3.count | The number of times the same indicator has been reported with the same metadata by the same provider. | integer |
+| cif3.deleted_at | The indicator expiration timestamp. | date |
 | cif3.description | A description of the indicator. | keyword |
+| cif3.expiration_duration | The configured expiration duration. | keyword |
 | cif3.indicator | The value of the indicator, for example if the type is fqdn, this would be the value. | keyword |
 | cif3.indicator_iprange | IPv4 or IPv6 IP Range. | ip_range |
 | cif3.indicator_ipv4 | IPv4 address. | ip |
@@ -67,6 +84,8 @@ CIFv3 `confidence` field values (0..10) are converted to ECS confidence (None, L
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
@@ -74,6 +93,7 @@ CIFv3 `confidence` field values (0..10) are converted to ECS confidence (None, L
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
@@ -99,6 +119,7 @@ CIFv3 `confidence` field values (0..10) are converted to ECS confidence (None, L
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+| threat.indicator.name | The display name indicator in an UI friendly format URL, IP address, email address, registry key, port number, hash value, or other relevant name can serve as the display name. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
 | threat.indicator.sightings | Number of times this indicator was observed conducting threat activity. | long |
@@ -120,15 +141,18 @@ An example event for `feed` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-08-08T18:44:20.288Z",
+    "@timestamp": "2024-04-10T04:46:58.281Z",
     "agent": {
-        "ephemeral_id": "01cfb0f6-6879-48c3-a90f-2f8c5274de1f",
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "ephemeral_id": "94c530db-5c8f-407c-939b-cd1d21d547fc",
+        "id": "28f0e936-c71c-4f75-8919-506fed4d20e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.12.1"
     },
     "cif3": {
+        "deleted_at": "2022-09-03T20:25:53.000Z",
+        "expiration_duration": "45d",
+        "indicator": "20.206.75.106",
         "itype": "ipv4",
         "portlist": "443",
         "uuid": "ac240898-1443-4d7e-a98a-1daed220c162"
@@ -142,18 +166,18 @@ An example event for `feed` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0a5c1566-c6fd-4e91-b96d-4083445a000e",
+        "id": "28f0e936-c71c-4f75-8919-506fed4d20e7",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.12.1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2023-08-08T18:44:20.288Z",
+        "created": "2024-04-10T04:46:58.281Z",
         "dataset": "ti_cif3.feed",
-        "ingested": "2023-08-08T18:44:23Z",
+        "ingested": "2024-04-10T04:47:10Z",
         "kind": "enrichment",
         "original": "{\"application\":\"https\",\"asn\":8075,\"asn_desc\":\"microsoft-corp-msn-as-block\",\"cc\":\"br\",\"city\":\"campinas\",\"confidence\":10,\"count\":1,\"firsttime\":\"2022-07-20T20:25:53.000000Z\",\"group\":[\"everyone\"],\"indicator\":\"20.206.75.106\",\"indicator_ipv4\":\"20.206.75.106\",\"itype\":\"ipv4\",\"lasttime\":\"2022-07-20T20:25:53.000000Z\",\"latitude\":-22.9035,\"location\":[-47.0565,-22.9035],\"longitude\":-47.0565,\"portlist\":\"443\",\"protocol\":\"tcp\",\"provider\":\"sslbl.abuse.ch\",\"reference\":\"https://sslbl.abuse.ch/blacklist/sslipblacklist.csv\",\"region\":\"sao paulo\",\"reporttime\":\"2022-07-21T20:33:26.585967Z\",\"tags\":[\"botnet\"],\"timezone\":\"america/sao_paulo\",\"tlp\":\"white\",\"uuid\":\"ac240898-1443-4d7e-a98a-1daed220c162\"}",
         "type": [
@@ -187,7 +211,7 @@ An example event for `feed` looks as following:
                 }
             },
             "confidence": "High",
-            "first_seen": "2022-07-20T20:25:53.000000Z",
+            "first_seen": "2022-07-20T20:25:53.000Z",
             "geo": {
                 "country_iso_code": "br",
                 "location": {
@@ -198,11 +222,12 @@ An example event for `feed` looks as following:
                 "timezone": "america/sao_paulo"
             },
             "ip": "20.206.75.106",
-            "last_seen": "2022-07-20T20:25:53.000000Z",
+            "last_seen": "2022-07-20T20:25:53.000Z",
             "marking": {
                 "tlp": "WHITE"
             },
             "modified_at": "2022-07-21T20:33:26.585967Z",
+            "name": "20.206.75.106",
             "provider": "sslbl.abuse.ch",
             "reference": "https://sslbl.abuse.ch/blacklist/sslipblacklist.csv",
             "sightings": 1,
@@ -210,5 +235,4 @@ An example event for `feed` looks as following:
         }
     }
 }
-
 ```

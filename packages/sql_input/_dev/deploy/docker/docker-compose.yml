@@ -1,21 +1,27 @@
 version: '2.3'
 services:
   sql_input_mysql:
-    image: mysql:8.0.13
+    build: .
     ports:
       - 3306
-    environment:
-      - MYSQL_ROOT_PASSWORD=test
   sql_input_postgresql:
     image: postgres:15.3
     ports:
       - 5432
     environment:
       - POSTGRES_PASSWORD=mysecretpassword
+    healthcheck:
+      interval: 10s
+      retries: 6
+      test: ["CMD", "psql", "-h", "localhost", "-U", "postgres", "-l"]
   sql_input_mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
       - 1433
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=yourStrong(!)Password
+      - MSSQL_SA_PASSWORD=1234_asdf
+    healthcheck:
+      interval: 10s
+      retries: 5
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-U", "SA", "-P", "1234_asdf", "-Q", "select 1"]

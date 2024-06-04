@@ -47,13 +47,13 @@ An example event for `alert` looks as following:
 
 ```json
 {
-    "@timestamp": "2030-04-30T00:01:16.000Z",
+    "@timestamp": "2023-04-30T00:01:16.000Z",
     "agent": {
-        "ephemeral_id": "09688ce3-63c0-496e-9418-213fd243a44c",
-        "id": "f86f831a-cae2-454f-a985-4f579b0ee515",
+        "ephemeral_id": "0d7a0409-56a0-4b49-9a61-d020f4466176",
+        "id": "633dac72-aecd-41d9-88df-dd066a3b83ea",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "trend_micro_vision_one.alert",
@@ -64,21 +64,21 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f86f831a-cae2-454f-a985-4f579b0ee515",
+        "id": "633dac72-aecd-41d9-88df-dd066a3b83ea",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "email"
         ],
-        "created": "2023-09-27T08:38:40.325Z",
+        "created": "2024-04-03T23:51:51.124Z",
         "dataset": "trend_micro_vision_one.alert",
         "id": "WB-9002-20200427-0002",
-        "ingested": "2023-09-27T08:38:44Z",
+        "ingested": "2024-04-03T23:52:03Z",
         "kind": "alert",
-        "original": "{\"alertProvider\":\"SAE\",\"createdDateTime\":\"2020-04-30T00:01:15Z\",\"description\":\"A backdoor was possibly implanted after a user received a possible spear phishing email message.\",\"id\":\"WB-9002-20200427-0002\",\"impactScope\":{\"accountCount\":0,\"desktopCount\":0,\"emailAddressCount\":0,\"entities\":[{\"entityId\":\"5257b401-2fd7-469c-94fa-39a4f11eb925\",\"entityType\":\"host\",\"entityValue\":\"user@email.com\",\"provenance\":[\"Alert\"],\"relatedEntities\":[\"CODERED\\\\\\\\user\"],\"relatedIndicatorIds\":[1]}],\"serverCount\":0},\"indicators\":[{\"field\":\"request url\",\"filterIds\":[\"f862df72-7f5e-4b2b-9f7f-9148e875f908\"],\"id\":1,\"provenance\":[\"Alert\"],\"relatedEntities\":[\"user@example.com\"],\"type\":\"url\",\"value\":\"http://www.example.com/ab001.zip\"}],\"investigationStatus\":\"New\",\"matchedRules\":[{\"id\":\"5f52d1f1-53e7-411a-b74f-745ee81fa30b\",\"matchedFilters\":[{\"id\":\"ccf86fc1-688f-4131-a46f-1d7a6ee2f88e\",\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"matchedEvents\":[{\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"type\":\"TELEMETRY_REGISTRY\",\"uuid\":\"fa9ff47c-e1b8-459e-a3d0-a5b104b854a5\"}],\"mitreTechniqueIds\":[\"T1192\"],\"name\":\"(T1192) Spearphishing Link\"}],\"name\":\"Possible SpearPhishing Email\"}],\"model\":\"Possible APT Attack\",\"schemaVersion\":\"1.0\",\"score\":63,\"severity\":\"critical\",\"updatedDateTime\":\"2030-04-30T00:01:16Z\",\"workbenchLink\":\"https://THE_WORKBENCH_URL\"}",
+        "original": "{\"alertProvider\":\"SAE\",\"createdDateTime\":\"2020-04-30T00:01:15Z\",\"description\":\"A backdoor was possibly implanted after a user received a possible spear phishing email message.\",\"id\":\"WB-9002-20200427-0002\",\"impactScope\":{\"accountCount\":0,\"desktopCount\":0,\"emailAddressCount\":0,\"entities\":[{\"entityId\":\"5257b401-2fd7-469c-94fa-39a4f11eb925\",\"entityType\":\"host\",\"entityValue\":\"user@email.com\",\"provenance\":[\"Alert\"],\"relatedEntities\":[\"CODERED\\\\\\\\user\"],\"relatedIndicatorIds\":[1]}],\"serverCount\":0},\"indicators\":[{\"field\":\"request url\",\"filterIds\":[\"f862df72-7f5e-4b2b-9f7f-9148e875f908\"],\"id\":1,\"provenance\":[\"Alert\"],\"relatedEntities\":[\"user@example.com\"],\"type\":\"url\",\"value\":\"http://www.example.com/ab001.zip\"}],\"investigationStatus\":\"New\",\"matchedRules\":[{\"id\":\"5f52d1f1-53e7-411a-b74f-745ee81fa30b\",\"matchedFilters\":[{\"id\":\"ccf86fc1-688f-4131-a46f-1d7a6ee2f88e\",\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"matchedEvents\":[{\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"type\":\"TELEMETRY_REGISTRY\",\"uuid\":\"fa9ff47c-e1b8-459e-a3d0-a5b104b854a5\"}],\"mitreTechniqueIds\":[\"T1192\"],\"name\":\"(T1192) Spearphishing Link\"}],\"name\":\"Possible SpearPhishing Email\"}],\"model\":\"Possible APT Attack\",\"schemaVersion\":\"1.0\",\"score\":63,\"severity\":\"critical\",\"updatedDateTime\":\"2023-04-30T00:01:16Z\",\"workbenchLink\":\"https://THE_WORKBENCH_URL\"}",
         "severity": 63,
         "type": [
             "info"
@@ -179,7 +179,6 @@ An example event for `alert` looks as following:
         "scheme": "https"
     }
 }
-
 ```
 
 **Exported fields**
@@ -244,6 +243,11 @@ An example event for `alert` looks as following:
 | trend_micro_vision_one.alert.impact_scope.account_count | Count of affected account. | long |
 | trend_micro_vision_one.alert.impact_scope.desktop_count | Count of affected desktop. | long |
 | trend_micro_vision_one.alert.impact_scope.email_address_count | Count of affected email address. | long |
+| trend_micro_vision_one.alert.impact_scope.entities.id |  | keyword |
+| trend_micro_vision_one.alert.impact_scope.entities.provenance |  | keyword |
+| trend_micro_vision_one.alert.impact_scope.entities.related_entities |  | keyword |
+| trend_micro_vision_one.alert.impact_scope.entities.related_indicator_id |  | keyword |
+| trend_micro_vision_one.alert.impact_scope.entities.type |  | keyword |
 | trend_micro_vision_one.alert.impact_scope.entities.value.account_value | Account or emailAddress. | keyword |
 | trend_micro_vision_one.alert.impact_scope.entities.value.guid | GUID. | keyword |
 | trend_micro_vision_one.alert.impact_scope.entities.value.id | Impact scope entity id. | keyword |
@@ -254,6 +258,7 @@ An example event for `alert` looks as following:
 | trend_micro_vision_one.alert.impact_scope.entities.value.type | Impact scope entity type. | keyword |
 | trend_micro_vision_one.alert.impact_scope.server_count | Count of affected server. | long |
 | trend_micro_vision_one.alert.indicators.field | Detailed description of the indicator. | keyword |
+| trend_micro_vision_one.alert.indicators.fields | Detailed description of the indicator. | keyword |
 | trend_micro_vision_one.alert.indicators.filter_id | Related matched filter ids. | keyword |
 | trend_micro_vision_one.alert.indicators.first_seen_date | First seen date times from related entities, datetime in ISO 8601 format (yyyy-MM-ddThh:mm:ssZ in UTC). | date |
 | trend_micro_vision_one.alert.indicators.id | Indicator ID. | keyword |
@@ -272,7 +277,8 @@ An example event for `alert` looks as following:
 | trend_micro_vision_one.alert.matched_indicators_pattern.tags | Tags defined by STIX. | keyword |
 | trend_micro_vision_one.alert.matched_rule.filter.date | Datetime in ISO 8601 format (yyyy-MM-ddThh:mm:ssZ in UTC). | date |
 | trend_micro_vision_one.alert.matched_rule.filter.events.date | Matched event date. | date |
-| trend_micro_vision_one.alert.matched_rule.filter.events.event_uuid | Matched event uuid. | keyword |
+| trend_micro_vision_one.alert.matched_rule.filter.events.type | Matched event type. | keyword |
+| trend_micro_vision_one.alert.matched_rule.filter.events.uuid | Matched event uuid. | keyword |
 | trend_micro_vision_one.alert.matched_rule.filter.id | Matched filter id. | keyword |
 | trend_micro_vision_one.alert.matched_rule.filter.mitre_technique_id | Mitre technique id. | keyword |
 | trend_micro_vision_one.alert.matched_rule.filter.name | Filter name. | keyword |

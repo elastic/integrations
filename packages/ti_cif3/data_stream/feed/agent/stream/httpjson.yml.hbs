@@ -70,10 +70,18 @@ request.transforms:
 
 response.split:
   target: body.data
+  ignore_empty_value: true
 
 cursor:
   last_requested_at:
     value: '[[ formatDate (now) "RFC3339" ]]'
+
+{{#if ioc_expiration_duration}}
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiration_duration: "{{ioc_expiration_duration}}"
+{{/if}}
 
 tags:
 {{#if preserve_original_event}}

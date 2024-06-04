@@ -1,0 +1,33 @@
+---
+description: Pipeline for Jamf Protect Telemetry identity_object audit logs.
+processors:
+  - rename:
+      field: json.identity.cd_hash
+      target_field: jamf_protect.telemetry.identity.cd_hash
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{jamf_protect.telemetry.identity.cd_hash}}}'
+      if: ctx.jamf_compliance_reporter?.log?.identity?.cd_hash != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.identity.signer_id
+      target_field: process.code_signature.signing_id
+      ignore_missing: true
+  - convert:
+      field: json.identity.signer_id_truncated
+      target_field: jamf_protect.telemetry.identity.signer.id_truncated
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.identity.signer_type
+      target_field: jamf_protect.telemetry.identity.signer.type
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.identity.team_id
+      target_field: process.code_signature.team_id
+      ignore_missing: true

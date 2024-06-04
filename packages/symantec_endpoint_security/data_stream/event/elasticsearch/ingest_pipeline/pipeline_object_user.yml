@@ -1,0 +1,86 @@
+---
+description: Pipeline for processing user object.
+processors:
+  - convert:
+      field: ses.user.account_disabled
+      tag: convert_user_account_disabled_to_boolean
+      type: boolean
+      if: ctx.ses?.user?.account_disabled != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.user.account_disabled
+            ignore_missing: true
+  - append:
+      field: user.domain
+      tag: append_user_domain_from_user_domain
+      value: '{{{ses.user.domain}}}'
+      allow_duplicates: false
+      if: ctx.ses?.user?.domain != null
+  - convert:
+      field: ses.user.is_admin
+      tag: convert_user_is_admin_to_boolean
+      type: boolean
+      if: ctx.ses?.user?.is_admin != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.user.is_admin
+            ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_user_name
+      copy_from: ses.user.name
+      ignore_empty_value: true
+  - convert:
+      field: ses.user.password_expires
+      tag: convert_user_password_expires_to_boolean
+      type: boolean
+      if: ctx.ses?.user?.password_expires != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.user.password_expires
+            ignore_missing: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_user_uid
+      copy_from: ses.user.uid
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_related_user_from_user_uid
+      value: '{{{ses.user.uid}}}'
+      allow_duplicates: false
+      if: ctx.ses?.user?.uid != null && ctx.ses.user.uid != ''
+  - append:
+      field: related.user
+      tag: append_related_user_from_user_name
+      value: '{{{ses.user.name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.user?.name != null && ctx.ses.user.name != ''
+  - remove:
+      field:
+        - ses.user.domain
+        - ses.user.name
+        - ses.user.uid
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

@@ -1,0 +1,25 @@
+---
+description: Pipeline for processing email events
+processors:
+  - foreach:
+      field: eti._patterns
+      processor:
+        grok:
+          field: _ingest._value
+          patterns:
+            - "^\\[?email-message:from_ref.value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.email.address}'\\]?"
+          ignore_failure: true
+  - foreach:
+      field: eti._patterns
+      if: ctx.threat?.indicator?.email?.address != null
+      processor:
+        grok:
+          field: _ingest._value
+          patterns:
+            - "^\\[?email-message:to_refs\\[\\*\\].value%{SPACE}=%{SPACE}'%{DATA:threat.indicator.email.address}'\\]?"
+          ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx.threat?.indicator?.email?.address != null
+      source: >
+        ctx.threat.indicator.email.address = ctx.threat.indicator.email.address.splitOnToken(' ');

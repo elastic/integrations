@@ -1,0 +1,26 @@
+_meta:
+  fleet_transform_version: 0.1.0
+  managed: true
+description: Latest ESET Domains IoC data
+dest:
+  index: logs-ti_eset_latest.dest_domains-1
+  aliases:
+    - alias: logs-ti_eset_latest.domains
+      move_on_creation: true
+frequency: 30s
+latest:
+  sort: '@timestamp'
+  unique_key:
+    - event.dataset
+    - eset.id
+retention_policy:
+  time:
+    field: eset.valid_until
+    max_age: 1m
+source:
+  index:
+    - logs-ti_eset.domains-*
+sync:
+  time:
+    delay: 120s
+    field: event.ingested

@@ -1,0 +1,90 @@
+- name: winlog
+  type: group
+  description: >
+    All fields specific to the Windows Event Tracing are defined here.
+
+  fields:
+    - name: activity_guid
+      type: keyword
+      description: >
+        A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. Deprectad in favor of `winlog.activity_id` from 8.14.0, it will be removed in future releases.
+
+    - name: activity_id
+      type: keyword
+      description: >
+        A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity.
+
+    - name: channel
+      type: keyword
+      description: >
+        Used to enable special event processing. Channel values below 16 are reserved for use by Microsoft to enable special treatment by the ETW runtime. Channel values 16 and above will be ignored by the ETW runtime (treated the same as channel 0) and can be given user-defined semantics.
+
+    - name: event_data
+      type: object
+      object_type: keyword
+      description: >
+        The event-specific data. The content of this object is specific to any provider and event.
+
+    - name: event_data
+      type: group
+      description: >
+        This is a non-exhaustive list of parameters that are used in Windows events. By having these fields defined in the template they can be used in dashboards and machine-learning jobs.
+
+      fields:
+        - name: Address
+          type: keyword
+        - name: AddressLength
+          type: keyword
+        - name: DynamicAddress
+          type: keyword
+        - name: Index
+          type: keyword
+        - name: Interface
+          type: keyword
+        - name: TotalServerCount
+          type: keyword
+    - name: flags
+      type: keyword
+      description: >
+        Flags that provide information about the event such as the type of session it was logged to and if the event contains extended data.
+
+    - name: keywords
+      type: keyword
+      description: >
+        The keywords are used to indicate an event's membership in a set of event categories.
+
+    - name: opcode
+      type: keyword
+      description: >
+        The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged.
+
+    - name: process_id
+      type: keyword
+      description: >
+        Identifies the process that generated the event.
+
+    - name: provider_guid
+      type: keyword
+      description: >
+        A globally unique identifier that identifies the provider that logged the event.
+
+    - name: session
+      type: keyword
+      description: >
+        Configured session to forward ETW events from providers to consumers.
+
+    - name: task
+      type: keyword
+      description: >
+        The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged.
+
+    - name: thread_id
+      type: keyword
+      description: >
+        Identifies the thread that generated the event.
+
+    - name: version
+      type: long
+      description: >
+        Specify the version of a manifest-based event.
+

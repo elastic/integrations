@@ -68,7 +68,6 @@ redact:
     - base.tenant_id
 
 program: |
-  now().as(now, // Prevent now time skew. Remove this and the closing parenthesis when kibana.version is 8.10.1 or higher.
   "{{content_types}}".split(",").map(content_type_raw,
       content_type_raw.trim_space()
   ).map(content_type,
@@ -128,42 +127,79 @@ program: |
                               has(list_contents_resp_body[0].contentUri) && list_contents_resp_body[0].contentUri != "" &&
                               has(list_contents_resp_body[0].contentCreated) && list_contents_resp_body[0].contentCreated != ""
                           ) ?
-                              // contents exist to consume
-                              list_contents_resp_body.map(l1, 
-                                  request("GET", l1.contentUri).do_request().as(content_resp,
-                                      bytes(content_resp.Body).decode_json()
-                                  ).map(content_resp_body, 
-                                      content_resp_body.with({"copy": {"o365audit": content_resp_body}})
-                                  ).map(content_resp_body_with_copy,
-                                      content_resp_body_with_copy.copy)
-                                  ).flatten().drop_empty().as(contents, {
-                                      "events_per_content_type": contents,
-                                      "content_type": content_type,
-                                      "content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max(),
-                                      "next_page": (
-                                          (has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) ) ?
-                                              list_contents_resp.Header.NextPageUri[0]
-                                          : (has(list_contents_resp.Header) && has(list_contents_resp.Header.Nextpageuri)) ?
-                                              list_contents_resp.Header.Nextpageuri[0]
-                                          :
-                                              ""
-                                      ),
-                                      // keep fetching more if (nextpageuri exists) or (max time returned date != today's date)
-                                      "want_more_content": (
-                                          (
-                                              has(list_contents_resp.Header) && (
-                                                  (has(list_contents_resp.Header.NextPageUri) && (list_contents_resp.Header.NextPageUri.size() > 0)) ||
-                                                  (has(list_contents_resp.Header.Nextpageuri) && (list_contents_resp.Header.Nextpageuri.size() > 0))
-                                              )
-                                          ) ||
-                                          (
-                                              {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().split('T')[0] != now.format("2006-01-02")
-                                          )
-                                      )
-                                  })
+                            // contents exist to consume
+                            list_contents_resp_body.map(l1, 
+                                (has(l1.contentExpiration) && (l1.contentExpiration.parse_time(time_layout.RFC3339) >= now)) ?
+                                    (
+                                        request("GET", l1.contentUri).do_request().as(content_resp,
+                                            (has(content_resp.StatusCode) && content_resp.StatusCode == 200) ?
+                                                (
+                                                    bytes(content_resp.Body).decode_json()
+                                                    .map(content_resp_body, 
+                                                        content_resp_body.with({"copy": {"o365audit": content_resp_body}}))
+                                                    .map(content_resp_body_with_copy,
+                                                        content_resp_body_with_copy.copy)
+                                                    .flatten().drop_empty().as(contents, {
+                                                        "events_per_content_type": contents,
+                                                        "content_type": content_type,
+                                                        // if 'contentCreated' is older than 167h55m, change it to 167h55m.
+                                                        "content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, temp_max.parse_time(time_layout.RFC3339) > (now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
+                                                        "next_page": (
+                                                            (has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) ) ?
+                                                                list_contents_resp.Header.NextPageUri[0]
+                                                            : (has(list_contents_resp.Header) && has(list_contents_resp.Header.Nextpageuri)) ?
+                                                                list_contents_resp.Header.Nextpageuri[0]
+                                                            :
+                                                                ""
+                                                        ),
+                                                        // keep fetching more if (nextpageuri exists) or (max time returned date != today's date)
+                                                        "want_more_content": (
+                                                            (
+                                                                has(list_contents_resp.Header) && (
+                                                                    (has(list_contents_resp.Header.NextPageUri) && (list_contents_resp.Header.NextPageUri.size() > 0)) ||
+                                                                    (has(list_contents_resp.Header.Nextpageuri) && (list_contents_resp.Header.Nextpageuri.size() > 0))
+                                                                )
+                                                            ) ||
+                                                            (
+                                                                {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().split('T')[0] != now.format("2006-01-02")
+                                                            )
+                                                        )
+                                                    })
+                                                )
+                                            : 
+                                                {
+                                                    "events_per_content_type": [],
+                                                    "content_type": content_type,
+                                                    "content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, temp_max.parse_time(time_layout.RFC3339) > (now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
+                                                    "next_page": (
+                                                        (has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) ) ?
+                                                            list_contents_resp.Header.NextPageUri[0]
+                                                        : (has(list_contents_resp.Header) && has(list_contents_resp.Header.Nextpageuri)) ?
+                                                            list_contents_resp.Header.Nextpageuri[0]
+                                                        :
+                                                            ""
+                                                    )
+                                                }
+                                        )
+                                    )
+                                : 
+                                    {
+                                        "events_per_content_type": [],
+                                        "content_type": content_type,
+                                        "content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, temp_max.parse_time(time_layout.RFC3339) > (now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
+                                        "next_page": (
+                                            (has(list_contents_resp.Header) && has(list_contents_resp.Header.NextPageUri) ) ?
+                                                list_contents_resp.Header.NextPageUri[0]
+                                            : (has(list_contents_resp.Header) && has(list_contents_resp.Header.Nextpageuri)) ?
+                                                list_contents_resp.Header.Nextpageuri[0]
+                                            :
+                                                ""
+                                        )
+                                    }
+                            )
                           :
                               // contents does not exist, or is empty array
-                              list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().as(reqQuery, {
+                              list_contents_resp.Request.URL.parse_url().RawQuery.parse_query().as(reqQuery, [{
                                   "events_per_content_type": size(list_contents_resp_body) == 0 ? [] : [list_contents_resp_body],
                                   "content_type": content_type,
                                   "content_created_at": (
@@ -185,12 +221,12 @@ program: |
                                       has(list_contents_resp.StatusCode) && list_contents_resp.StatusCode == 200 &&
                                       (reqQuery.endTime[0].split('T')[0] != now.format("2006-01-02"))
                                   )
-                              })
+                              }])
                       )
                   )
               :
                   // When start-subscription API produces error, such as Authentication error.
-                  {
+                  [{
                       "events_per_content_type": [],
                       "content_type": content_type,
                       "content_created_at": 
@@ -201,7 +237,7 @@ program: |
                       ,
                       "next_page": "",
                       "want_more_content": false
-                  }
+                  }]
           )
       )
   ).flatten().drop_empty().as(events_list, {
@@ -212,7 +248,6 @@ program: |
           "content_types_state_as_list": events_list.drop(["events_per_content_type"]),
       }
   })
-  ) // Remove when kibana.version is 8.10.1+.
 
 {{#if tags}}
 tags:
