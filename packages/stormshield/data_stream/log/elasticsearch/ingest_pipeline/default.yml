@@ -101,15 +101,49 @@ processors:
       name: '{{ IngestPipeline "count" }}'
       if: ctx.stormshield?.logtype == 'count'
 
-  - script:
-      tag: handle_nat_things
-      lang: painless
-      description: Make sure we properly handle NAT source/destination fields.
-      source:
-        if (ctx.stormshield.containsKey("origdst")) {
-            ctx.destination.ip = ctx.stormshield.origdst;
-            ctx.destination.nat.ip = ctx.stormshield.dst;
-        }
+  - convert:
+      field: stormshield.origsrc
+      target_field: source.ip
+      type: ip
+      if: ctx.stormshield?.origsrc != null
+  - convert:
+      field: stormshield.src
+      target_field: source.ip
+      type: ip
+      if: ctx.stormshield?.origsrc == null && ctx.stormshield?.src != null
+  - convert:
+      field: stormshield.src
+      target_field: source.nat.ip
+      type: ip
+      if: ctx.stormshield?.origsrc != null && ctx.stormshield?.src != null
+  - remove:
+      field: stormshield.src
+      if: ctx.stormshield?.src != null
+  - remove:
+      field: stormshield.origsrc
+      if: ctx.stormshield?.origsrc != null
+
+  - convert:
+      field: stormshield.origdst
+      target_field: destination.ip
+      type: ip
+      if: ctx.stormshield?.origdst != null
+  - convert:
+      field: stormshield.dst
+      target_field: destination.ip
+      type: ip
+      if: ctx.stormshield?.origdst == null && ctx.stormshield?.dst != null
+  - convert:
+      field: stormshield.dst
+      target_field: destination.nat.ip
+      type: ip
+      if: ctx.stormshield?.origdst != null && ctx.stormshield?.dst != null
+  - remove:
+      field: stormshield.dst
+      if: ctx.stormshield?.dst != null
+  - remove:
+      field: stormshield.origdst
+      if: ctx.stormshield?.origdst != null
 
   - geoip:
       field: destination.ip
@@ -194,8 +228,7 @@ processors:
       if: ctx.stormshield?.dstname != null
 
   - convert:
-      field: stormshield.dst
-      target_field: destination.ip
+      field: destination.ip
       type: ip
       if: ctx.stormshield?.dst != null && ctx.destination?.ip == null
 
@@ -227,31 +260,21 @@ processors:
   - rename:
       field: stormshield.dstcontinent
       target_field: destination.geo.continent_code
-      if: ctx.stormshield?.dstcontinent != null
+      if: ctx.stormshield?.dstcontinent != null && ctx.destination?.geo?.continent_code == null
 
   - rename:
       field: stormshield.dstcountry
       target_field: destination.geo.country_iso_code
-      if: ctx.stormshield?.dstcountry != null
+      if: ctx.stormshield?.dstcountry != null && ctx.destination?.geo?.country_iso_code == null
   - rename:
       field: stormshield.srccontinent
       target_field: source.geo.continent_code
-      if: ctx.stormshield?.srccontinent != null
+      if: ctx.stormshield?.srccontinent != null && ctx.source?.geo?.continent_code == null
 
   - rename:
       field: stormshield.srccountry
       target_field: source.geo.country_iso_code
-      if: ctx.stormshield?.srccountry != null
-
-  - convert:
-      field: stormshield.src
-      target_field: source.ip
-      type: ip
-      if: ctx.stormshield?.src != null && ctx.source?.ip == null
-
-  - remove:
-      field: stormshield.src
-      if: ctx.stormshield?.src != null
+      if: ctx.stormshield?.srccountry != null && ctx.source?.geo?.country_iso_code == null
 
   - uppercase:
       field: stormshield.srcmac
@@ -268,10 +291,21 @@ processors:
       field: stormshield.srcmac
       ignore_missing: true
 
-  - rename:
-      field: stormshield.duration
-      target_field: event.duration
-      ignore_missing: true
+  - script:
+      tag: convert_duration_to_nanoseconds
+      lang: painless
+      description: Convert SNS duration field from float (in seconds) to long (in nanoseconds).
+      source: >-
+        if (ctx.stormshield?.duration != null) {
+            def duration = Float.parseFloat(ctx.stormshield.duration);
+            duration *= 1000000000; // 10^9 nanoseconds per second
+            if (!ctx.containsKey("event")) {
+                ctx.event = [:];
+            }
+
+            ctx.event.duration = (int)duration;
+            ctx.stormshield.remove("duration");
+        }
 
   - convert:
       field: stormshield.srcport
@@ -296,6 +330,7 @@ processors:
       tag: rename_user_name
       field: stormshield.user
       target_field: user.name
+      if: ctx.stormshield?.user != null
 
   - script:
       tag: handle_ipv_fields
@@ -305,17 +340,11 @@ processors:
       source: >-
         if (ctx.stormshield.ipv == "4") {
             ctx.network.type = "ipv4";
-        } else if (ctx.stormshield.ipv.compare)
-        if (!ctx.stormshield.containsKey("metadata")) {
-            ctx.stormshield.metadata = [:];
+            ctx.stormshield.remove("ipv");
+        } else if (ctx.stormshield.ipv == "6") {
+            ctx.network.type = "ipv6";
+            ctx.stormshield.remove("ipv");
         }
-        params.names.forEach(k -> {
-            if (ctx.stormshield.containsKey(k)) {
-                ctx.stormshield.metadata[k] = ctx.stormshield[k];
-                ctx.stormshield.remove(k);
-            }
-            return true;
-        });
         
   - script:
       tag: script_move_things
@@ -334,6 +363,7 @@ processors:
             - authwebadmin
             - confid
             - dstportname
+            - dstcountry
             - id
             - mem
             - modsrc
@@ -360,6 +390,22 @@ processors:
 
   # ------------------------------------------------------------
   # Cleanup
+
+  - remove:
+      field: destination.geo.city_name
+      ignore_missing: true
+  - remove:
+      field: destination.geo.continent_name
+      ignore_missing: true
+  - remove:
+      field: destination.geo.location
+      ignore_missing: true
+  - remove:
+      field: destination.geo.region_iso_code
+      ignore_missing: true
+  - remove:
+      field: destination.geo.region_name
+      ignore_missing: true
 
   - remove:
       field: _temp_

@@ -256,6 +256,7 @@ An example event for `log` looks as following:
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.country_name | Country name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
@@ -271,6 +272,7 @@ An example event for `log` looks as following:
 | log.syslog.version | The version of the Syslog protocol specification. Only applicable for RFC 5424 messages. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
@@ -285,6 +287,7 @@ An example event for `log` looks as following:
 | source.geo.country_name | Country name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
 | source.port | Port of the source. | long |
 | stormshield.dstif | Name of the destination interface. String of characters in UTF-8 format. Example: Ethernet 1 Available from: SNS v1.0.0. | keyword |
 | stormshield.dstifname | Name of the object representing the traffics destination interface. String of characters in UTF-8 format. Example: dmz1 Available from: SNS v1.0.0. | keyword |
