@@ -14,9 +14,9 @@ Use the Nagios XI integration to:
 
 The Nagios XI integration collects logs and metrics data.
 
-Logs provide insights into operations and events within the Nagios XI environment. The `Log` data stream collected by the Nagios XI integration is events. This allows users to track `system events`, understand their causes, and address issues related to infrastructure monitoring and alert management.
+Logs provide insights into operations and events within the Nagios XI environment. The log data stream collected by the Nagios XI integration is `events`. This allows you to track system events, understand their causes, and address issues related to infrastructure monitoring and alert management.
 
-Metrics offer insights into the performance and health of user's Nagios XI instance. The `Metric` data stream collected by the Nagios XI integration are host and service. These enable users to monitor and troubleshoot the performance of hosts and services within their Nagios XI environment, covering aspects such as `network round trip time`, `packet loss`, `service load`, `user count`, and various other critical indicators.
+Metrics provide insights into the performance and health of your Nagios XI instance. The Nagios XI integration collects `host` and `service` metric data streams. These metrics enable you to monitor and troubleshoot the performance of hosts and services within your Nagios XI environment, covering aspects such as `network round trip time`, `packet loss`, `service load`, `user count`, and other critical indicators.
 
 Data streams:
 - `events`: Provides Nagios XI system event logs.
@@ -24,18 +24,21 @@ Data streams:
 - `service `: Provides Nagios XI service metrics by default, including current load, current users, ping, HTTP, SSH, root partition, swap users, and total processes.
 
 Note:
-- Users can monitor and view logs from the ingested documents for Nagios XI in the `logs-*` index pattern in `Discover`. For metrics, the index pattern is `metrics-*`.
+You can monitor and view logs from the ingested documents for Nagios XI in the `logs-*` index pattern in `Discover`. For metrics, the index pattern is `metrics-*`.
 
 ## Compatibility
 
 This integration has been tested against `Nagios-XI Version: 5.8.7`
 
-## Prerequisites
+## Prerequisites:
+- Elasticsearch: For storing and searching data.
+- Kibana: For visualizing and managing data.
 
-Users need Elasticsearch for storing and searching their data and Kibana for visualizing and managing it. They can either use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on their own hardware.  
+You have two options for deploying Elasticsearch and Kibana:
+1. Elastic Cloud (Recommended): Fully managed and hosted by Elastic.
+2. Self-Managed: Deploy and manage the Elastic Stack on your own hardware.
 
-In order to ingest data from Nagios XI:
-- Users must know the host for Nagios XI and add that host when configuring the integration package.
+In order to ingest data from Nagios XI, you must know the host for Nagios XI and add that host when configuring the integration package.
 
 ## Setup
 
@@ -43,7 +46,10 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 ## Validation
 
-After the integration is successfully configured, clicking on the Assets tab of the Nagios XI Integration should display a list of available dashboards. Click on the dashboard available for user's configured data stream. It should be populated with the required data.
+1. After configuring the integration, go to the **Assets** tab in the Nagios XI Integration.
+2. You should see a list of available dashboards.
+3. Click on the dashboard corresponding to your configured data stream.
+4. Verify that the dashboard is populated with the expected data.
 
 ## Logs reference
 
