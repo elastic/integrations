@@ -222,10 +222,6 @@ processors:
       ignore_missing: true
       if: ctx.file?.extension == null
   - rename:
-      field: fortinet.firewall.hostname
-      target_field: url.domain
-      ignore_missing: true
-  - rename:
       field: fortinet.firewall.ipaddr
       target_field: dns.resolved_ip
       ignore_missing: true
@@ -287,6 +283,14 @@ processors:
   - uri_parts:
       field: fortinet.firewall.url
       target_field: url
+      ignore_missing: true
+  - rename:
+      field: fortinet.firewall.hostname
+      target_field: url.domain
+      ignore_missing: true
+      override: true
+  - remove:
+      field: fortinet.firewall.url
       ignore_missing: true
   - rename:
       field: fortinet.firewall.xid
