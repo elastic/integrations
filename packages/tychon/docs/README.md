@@ -1519,6 +1519,7 @@ TYCHON searches the computer and hard drive for certificate files that stored in
 | tychon.certificate.location.trust_category | NATO country code designation. | keyword |
 | tychon.certificate.name | Host Os Feature Name. | keyword |
 | tychon.certificate.type | Host Os Feature Type. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.file.code_signature.issuer_name | The issuer of this certificate | keyword |
 | tychon.file.code_signature.subject_name | The Subject Name of the signing certificate | keyword |
 | tychon.file.code_signature.thumbprint | The unique ID thumbprint of this signing cert | keyword |
@@ -1562,6 +1563,12 @@ TYCHON searches the computer and hard drive for certificate files that stored in
 | x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
 | x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
 | x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| x509.subject.country | List of country \(C) code | keyword |
+| x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
+| x509.subject.locality | List of locality names (L) | keyword |
+| x509.subject.organization | List of organizations (O) of subject. | keyword |
+| x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | x509.version_number | Version of x509 format. | keyword |
 
 
@@ -1666,6 +1673,7 @@ TYCHON connects to open ports on the computer and reports back if it is hosting 
 | script.version | Scanner Script Version. | version |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | server.port | Port of the server. | long |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | service.protocol.name | The protocol used by the listening service | keyword |
 | service.state | Current state of the service. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
@@ -1673,6 +1681,7 @@ TYCHON connects to open ports on the computer and reports back if it is hosting 
 | tls.server.supported_ciphers | Array of ciphers offered by the server during the client hello. | keyword |
 | tls.server.supported_ciphers_mac | Array of cipher macs offered by the server during the client hello. | keyword |
 | tychon.connection.state | The current state of the connection tested | keyword |
+| tychon.data.version | The Tychon data version | keyword |
 | tychon.file.code_signature.friendly_name | The friendly name of the certificate or cipher | keyword |
 | tychon.file.code_signature.issuer_name | The issuer of this certificate | keyword |
 | tychon.file.code_signature.subject_name | The Subject Name of the signing certificate | keyword |
@@ -1684,11 +1693,11 @@ TYCHON connects to open ports on the computer and reports back if it is hosting 
 | tychon.server.ip | The ip or domain of the site hosting the cipher | keyword |
 | tychon.service.description | The description of the service | keyword |
 | tychon.service.display_name | The friendly name of the service | keyword |
-| tychon.tls.is_nist_approved | Cipher is NIST approved for Quantum resistance | boolean |
+| tychon.tls.server.cipher.is_nist_approved | Cipher is NIST approved for Quantum resistance | boolean |
 | tychon.tls.server.cipher.weight | The risk weight of the cipher | integer |
 | tychon.tls.server.protocol.weight | The risk weight of the protocol | integer |
 | tychon.tls.server.signature_hash.weight | The risk weight of the signature hash | integer |
-| tychon.tls.supported_cipher_mac | Message Authentication Code Algorithms. | keyword |
+| tychon.tls.server.supported_cipher_mac | Message Authentication Code Algorithms. | keyword |
 | url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
 | url.full.text | Multi-field of `url.full`. | match_only_text |
 | x509.version_number | Version of x509 format. | keyword |
@@ -1750,12 +1759,20 @@ TYCHON checks local browser configuration settings.
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.offset | Log Offset. | long |
+| package.architecture | Package architecture. | keyword |
+| package.installed | Time when package was installed. | date |
 | package.name | Package name | keyword |
+| package.path | Path where the package is installed. | keyword |
+| package.size | Package size in bytes. | long |
+| package.type | Type of package. This should contain the package file type, rather than the package manager name. Examples: rpm, dpkg, brew, npm, gem, nupkg, jar. | keyword |
+| package.version | Package version | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | tychon.data.version | Tychon Data version. | keyword |
 | tychon.edition | The product edition | keyword |
+| tychon.event.reason | Event reason. | keyword |
 | tychon.host.biossn | Host BIOS Serial Number. | keyword |
+| tychon.host.cloud.compute.location | The location of this cloud asset. | keyword |
 | tychon.host.cloud.compute.name | The cloud based name of this asset | keyword |
 | tychon.host.cloud.compute.resource_group_name | The resource group name given to this cloud asset | keyword |
 | tychon.host.cloud.compute.resource_id | The cloud resource id assignd to this cloud asset. | keyword |
@@ -1772,16 +1789,24 @@ TYCHON checks local browser configuration settings.
 | tychon.host.hardware.manufacturer | Host BIOS Manufacturer. | keyword |
 | tychon.host.hardware.owner | Host BIOS Owner. | keyword |
 | tychon.host.hardware.serial_number | Host BIOS Serial Number. | keyword |
+| tychon.host.hostname | Hostname. | keyword |
+| tychon.host.id | Host ID. | keyword |
+| tychon.host.ip | Host IP addresses. | ip |
 | tychon.host.ipv4 | Host IPv4 addresses. | ip |
 | tychon.host.ipv6 | Host IPv6 addresses. | keyword |
+| tychon.host.mac | Host mac addresses. | keyword |
 | tychon.host.oem.manufacturer | Host OEM Manufacturer. | keyword |
 | tychon.host.oem.model | Host OEM Model. | keyword |
 | tychon.host.os.build | Host OS Build. | keyword |
 | tychon.host.os.description | Host OS Description. | text |
+| tychon.host.os.family | Host OS Family. | keyword |
+| tychon.host.os.name | Host OS Name. | keyword |
 | tychon.host.os.organization | Host OS Organization. | keyword |
+| tychon.host.os.version | Host OS Version. | keyword |
 | tychon.host.workgroup | Host Workgroup Network Name. | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 | tychon.package.cpe | The cpe value for this application | keyword |
+| tychon.package.edition | The edition of this application | keyword |
 | tychon.package.publisher | The publisher of this application | keyword |
 | tychon.package.uninstall | Uninstall command to remove the package. | text |
 | tychon.package.version_build | The build version of this application | keyword |
@@ -1794,4 +1819,6 @@ TYCHON checks local browser configuration settings.
 | tychon.script.start | Scanner Start datetime. | date |
 | tychon.script.type | Scanner Script Type. | keyword |
 | tychon.script.version | Scanner Script Version. | version |
+| tychon.tychon.data.version | Data Version. | version |
+| tychon.tychon.id | ID. | keyword |
 
