@@ -101,6 +101,59 @@ processors:
       name: '{{ IngestPipeline "count" }}'
       if: ctx.stormshield?.logtype == 'count'
 
+  - script:
+      tag: handle_nat_things
+      lang: painless
+      description: Make sure we properly handle NAT source/destination fields.
+      source:
+        if (ctx.stormshield.containsKey("origdst")) {
+            ctx.destination.ip = ctx.stormshield.origdst;
+            ctx.destination.nat.ip = ctx.stormshield.dst;
+        }
+
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+      if: ctx.destination?.geo == null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      if: ctx.source?.geo == null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
   #########################################################
   # Now rename things to ECS
 
