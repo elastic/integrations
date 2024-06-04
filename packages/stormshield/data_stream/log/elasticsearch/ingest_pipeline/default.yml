@@ -258,18 +258,9 @@ processors:
       if: ctx.stormshield?.dstport != null
 
   - rename:
-      field: stormshield.dstcontinent
-      target_field: destination.geo.continent_code
-      if: ctx.stormshield?.dstcontinent != null && ctx.destination?.geo?.continent_code == null
-
-  - rename:
       field: stormshield.dstcountry
       target_field: destination.geo.country_iso_code
       if: ctx.stormshield?.dstcountry != null && ctx.destination?.geo?.country_iso_code == null
-  - rename:
-      field: stormshield.srccontinent
-      target_field: source.geo.continent_code
-      if: ctx.stormshield?.srccontinent != null && ctx.source?.geo?.continent_code == null
 
   - rename:
       field: stormshield.srccountry
@@ -354,6 +345,8 @@ processors:
         names:
             - srcportname
             - Pvm
+            - address
+            - alarmid
             - auth
             - authcaptive
             - authconsole
@@ -361,9 +354,12 @@ processors:
             - authsslvpn
             - authtotp
             - authwebadmin
+            - class
             - confid
             - dstportname
             - dstcountry
+            - dstcontinent
+            - error
             - id
             - mem
             - modsrc
@@ -372,9 +368,11 @@ processors:
             - rcvd
             - security
             - sent
+            - sessionid
             - slotlevel
             - slotname
             - srcname
+            - version
       source: >-
         if (!ctx.stormshield.containsKey("metadata")) {
             ctx.stormshield.metadata = [:];
