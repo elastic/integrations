@@ -1,0 +1,952 @@
+- name: teleport.audit.access_request
+  type: group
+  description: "Access request creation and update metadata"
+  fields:
+    - name: roles
+      type: keyword
+      description: "Roles is a list of roles for the user."
+    - name: id
+      type: keyword
+      description: "RequestID is access request ID"
+    - name: state
+      type: keyword
+      description: "RequestState is access request state"
+    - name: delegator
+      type: keyword
+      description: "Delegator is used by teleport plugins to indicate the identity which caused them to update state."
+    - name: reason
+      type: keyword
+      description: "Reason is an optional description of why the request is being created or updated."
+    - name: annotations
+      type: object
+      object_type: keyword
+      description: "Annotations is an optional set of attributes supplied by a plugin during approval/denial of the request."
+    - name: reviewer
+      type: keyword
+      description: "Reviewer is the author of the review."
+    - name: proposed_state
+      type: keyword
+      description: "ProposedState is the state proposed by a review."
+    - name: resource_ids
+      type: object
+      object_type: keyword
+      description: "RequestedResourceIDs is the set of resources to which access is being requested."
+    - name: max_duration
+      type: date
+      description: "MaxDuration indicates how long the access should be granted for."
+    - name: promoted_access_list_name
+      type: keyword
+      description: "PromotedAccessListName is the name of the access list that this request was promoted to."
+    - name: assume_start_time
+      type: date
+      description: "AssumeStartTime is the time the requested roles can be assumed."
+    - name: resource_search
+      type: group
+      description: "Access Request Resource Search metadata"
+      fields:
+        - name: search_as_roles
+          type: keyword
+          description: "SearchAsRoles is the list of roles the search was performed as."
+        - name: resource_type
+          type: keyword
+          description: "ResourceType is the type of resource being searched for."
+        - name: labels
+          type: object
+          object_type: keyword
+          description: "Labels is the label-based matcher used for the search."
+        - name: predicate_expression
+          type: keyword
+          description: "PredicateExpression is the list of boolean conditions that were used for the search."
+        - name: search_keywords
+          type: keyword
+          description: "SearchKeywords is the list of search keywords used to match against resource field values."
+- name: teleport.audit.app
+  type: group
+  description: "Common application information"
+  fields:
+    - name: public_address
+      type: keyword
+      description: "AppPublicAddr is the configured application public address."
+    - name: labels
+      type: object
+      object_type: keyword
+      description: "AppLabels are the configured application labels."
+    - name: name
+      type: keyword
+      description: "AppName is the configured application name."
+    - name: session
+      type: group
+      description: "Session related metadata"
+      fields:
+        - name: session_chunk_id
+          type: keyword
+          description: "SessionChunkID is the ID of the session that was created for this 5 minute application log chunk."
+    - name: aws
+      type: group
+      description: "AWS related metadata"
+      fields:
+        - name: region
+          type: keyword
+          description: >
+            AWSRegion is the requested AWS region.
+
+        - name: service
+          type: keyword
+          description: >
+            AWSService is the requested AWS service name.
+
+        - name: host
+          type: keyword
+          description: >
+            AWSHost is the requested host of the AWS service.
+
+        - name: assumed_role
+          type: keyword
+          description: "AWSAssumedRole is the assumed role that signed this request."
+- name: teleport.audit.certificate
+  type: group
+  description: "Certificate issuance metadata"
+  fields:
+    - name: type
+      type: keyword
+      description: CertificateType is the type of certificate that was just issued.
+    - name: identity
+      type: group
+      description: Identity is the identity associated with the certificate, as interpreted by Teleport.
+      fields:
+        - name: user
+          type: keyword
+          description: >
+            User is a username or name of the node connection
+
+        - name: impersonator
+          type: keyword
+          description: >
+            Impersonator is a username of a user impersonating this user
+
+        - name: roles
+          type: keyword
+          description: >
+            Roles is a list of groups (Teleport roles) encoded in the identity
+
+        - name: usage
+          type: keyword
+          description: >
+            Usage is a list of usage restrictions encoded in the identity
+
+        - name: logins
+          type: keyword
+          description: >
+            Logins is a list of Unix logins allowed.
+
+        - name: kubernetes_groups
+          type: keyword
+          description: >
+            KubernetesGroups is a list of Kubernetes groups allowed
+
+        - name: kubernetes_users
+          type: keyword
+          description: >
+            KubernetesUsers is a list of Kubernetes users allowed
+
+        - name: expires
+          type: date
+          description: >
+            Expires specifies whenever the session will expire
+
+        - name: route_to_cluster
+          type: keyword
+          description: >
+            RouteToCluster specifies the target cluster if present in the session
+
+        - name: kubernetes_cluster
+          type: keyword
+          description: >
+            KubernetesCluster specifies the target kubernetes cluster for TLS identities.
+
+        - name: traits
+          type: object
+          object_type: keyword
+          description: >
+            Traits hold claim data used to populate a role at runtime.
+
+        - name: route_to_app
+          type: group
+          description: >
+            RouteToApp holds routing information for applications.
+
+          fields:
+            - name: name
+              type: keyword
+              description: >
+                Name is the application name certificate is being requested for.
+
+            - name: session_id
+              type: keyword
+              description: >
+                SessionID is the ID of the application session.
+
+            - name: public_addr
+              type: keyword
+              description: >
+                PublicAddr is the application public address.
+
+            - name: cluster_name
+              type: keyword
+              description: >
+                ClusterName is the cluster where the application resides.
+
+            - name: aws_role_arn
+              type: keyword
+              description: >
+                AWSRoleARN is the AWS role to assume when accessing AWS API.
+
+            - name: azure_identity
+              type: keyword
+              description: >
+                AzureIdentity is the Azure identity ot assume when accessing Azure API.
+
+            - name: gcp_service_account
+              type: keyword
+              description: >
+                GCPServiceAccount is the GCP service account to assume when accessing GCP API.
+
+        - name: teleport_cluster
+          type: keyword
+          description: >
+            TeleportCluster is the name of the teleport cluster that this identity originated from.
+
+        - name: route_to_database
+          type: group
+          description: >
+            RouteToDatabase contains routing information for databases.
+
+          fields:
+            - name: service_name
+              type: keyword
+              description: >
+                ServiceName is the Teleport database proxy service name the cert is for.
+
+            - name: protocol
+              type: keyword
+              description: >
+                Protocol is the type of the database the cert is for.
+
+            - name: username
+              type: keyword
+              description: >
+                Username is an optional database username to embed.
+
+            - name: database
+              type: keyword
+              description: >
+                Database is an optional database name to embed.
+
+            - name: roles
+              type: keyword
+              description: >
+                Roles is an optional list of database roles to embed.
+
+        - name: database_names
+          type: keyword
+          description: >
+            DatabaseNames is a list of allowed database names.
+
+        - name: database_users
+          type: keyword
+          description: >
+            DatabaseUsers is a list of allowed database users.
+
+        - name: aws_role_arns
+          type: keyword
+          description: >
+            AWSRoleARNs is a list of allowed AWS role ARNs user can assume.
+
+        - name: access_requests
+          type: keyword
+          description: >
+            AccessRequests is a list of UUIDs of active requests for this Identity.
+
+        - name: disallow_reissue
+          type: boolean
+          description: >
+            DisallowReissue is a flag that, if set, instructs the auth server to deny any attempts to reissue new certificates while authenticated with this certificate.
+
+        - name: allowed_resource_ids
+          type: keyword
+          description: >
+            AllowedResourceIDs is the list of resources which the identity will be allowed to access. An empty list indicates that no resource-specific restrictions will be applied.
+
+        - name: prev_identity_expires
+          type: date
+          description: >
+            PreviousIdentityExpires is the expiry time of the identity/cert that this identity/cert was derived from.
+
+        - name: azure_identities
+          type: keyword
+          description: >
+            AzureIdentities is a list of allowed Azure identities user can assume.
+
+        - name: gcp_service_accounts
+          type: keyword
+          description: >
+            GCPServiceAccounts is a list of allowed GCP service accounts user can assume.
+
+        - name: private_key_policy
+          type: keyword
+          description: >
+            PrivateKeyPolicy is the private key policy of the user's private key.
+
+        - name: bot_name
+          type: keyword
+          description: >
+            BotName indicates the name of the Machine ID bot this identity was issued to, if any.
+
+        - name: device_extensions
+          type: group
+          description: >
+            DeviceExtensions holds the device trust device extensions for the identity, if any.
+
+          fields:
+            - name: device_id
+              type: keyword
+              description: >
+                DeviceID is the trusted device identifier.
+
+            - name: asset_tag
+              type: keyword
+              description: >
+                AssetTag is the device inventory identifier.
+
+            - name: credential_id
+              type: keyword
+              description: "CredentialID is the identifier for the credential used by the device to authenticate itself."
+- name: teleport.audit.database
+  type: group
+  description: "Common database information"
+  fields:
+    - name: service
+      type: keyword
+      description: >
+        DatabaseService is the name of the database service proxying the database.
+
+    - name: protocol
+      type: keyword
+      description: >
+        DatabaseProtocol is the database type, e.g. postgres or mysql.
+
+    - name: name
+      type: keyword
+      description: >
+        DatabaseName is the name of the database a user is connecting to.
+
+    - name: user
+      type: keyword
+      description: >
+        DatabaseUser is the database username used to connect.
+
+    - name: labels
+      type: object
+      object_type: keyword
+      description: >
+        DatabaseLabels is the database resource labels.
+
+    - name: aws
+      type: group
+      description: >
+        AWS specific fields.
+
+      fields:
+        - name: region
+          type: keyword
+          description: >
+            DatabaseAWSRegion is AWS regions for AWS hosted databases.
+
+        - name: redshift_cluster_id
+          type: keyword
+          description: >
+            DatabaseAWSRedshiftClusterID is cluster ID for Redshift databases.
+
+    - name: gcp
+      type: group
+      description: >
+        GCP specific fields.
+
+      fields:
+        - name: project_id
+          type: keyword
+          description: >
+            DatabaseGCPProjectID is project ID for GCP hosted databases.
+
+        - name: instance_id
+          type: keyword
+          description: >
+            DatabaseGCPInstanceID is instance ID for GCP hosted databases.
+
+    - name: roles
+      type: keyword
+      description: >
+        DatabaseRoles is a list of database roles for auto-provisioned users.
+
+    - name: type
+      type: keyword
+      description: >
+        DatabaseType is the database type.
+
+    - name: origin
+      type: keyword
+      description: "DatabaseOrigin is the database origin source."
+    - name: query
+      type: keyword
+      description: >
+        DatabaseQuery is the executed query string.
+
+    - name: query_parameters
+      type: keyword
+      description: >
+        DatabaseQueryParameters are the query parameters for prepared statements.
+
+    - name: permission_summary
+      type: object
+      object_type: keyword
+      description: >
+        PermissionSummary is a summary of applied permissions.
+
+    - name: affected_object_counts
+      type: object
+      object_type: long
+      description: >
+        AffectedObjectCounts counts how many distinct objects of each kind were affected.
+
+    - name: user_change
+      type: group
+      description: >
+        Provision, disable or delete the user.
+
+      fields:
+        - name: username
+          type: keyword
+          description: >
+            Username is the username chosen for the database user. Due to database limitations (e.g. username length, allowed charset) it may differ from Teleport username.
+
+        - name: is_deleted
+          type: boolean
+          description: >
+            Delete indicates if the user was deleted entirely or merely disabled.
+
+    - name: postgres
+      type: group
+      description: "Postgres related metadata"
+      fields:
+        - name: statement_name
+          type: keyword
+          description: >
+            StatementName is the prepared statement name.
+
+        - name: portal_name
+          type: keyword
+          description: >
+            PortalName is the destination portal name that binds statement to parameters.
+
+        - name: parameters
+          type: keyword
+          description: >
+            Parameters are the query bind parameters.
+
+        - name: function_oid
+          type: keyword
+          description: >
+            FunctionOID is the Postgres object ID of the called function.
+
+        - name: function_args
+          type: keyword
+          description: "FunctionArgs contains formatted function arguments."
+- name: teleport.audit.desktop
+  type: group
+  description: Desktop events metadata
+  fields:
+    - name: length
+      type: unsigned_long
+      description: "Length is the number of bytes of data received from the remote clipboard or sent from a user's workstation to Teleport."
+    - name: directory_name
+      type: keyword
+      description: "DirectoryName is the name of the directory being shared."
+    - name: directory_id
+      type: unsigned_long
+      description: "DirectoryID is the ID of the directory being shared (unique to the Windows Desktop Session)."
+    - name: path
+      type: keyword
+      description: "Path is the path within the shared directory where the file is located."
+    - name: offset
+      type: unsigned_long
+      description: "Offset is the offset the bytes were read from or written to."
+    - name: windows_desktop_service
+      type: keyword
+      description: >
+        WindowsDesktopService is the name of the service proxying the RDP session.
+
+    - name: windows_domain
+      type: keyword
+      description: >
+        Domain is the Active Directory domain of the desktop being accessed.
+
+    - name: windows_user
+      type: keyword
+      description: >
+        WindowsUser is the Windows username used to connect.
+
+    - name: labels
+      type: object
+      object_type: keyword
+      description: >
+        DesktopLabels are the labels on the desktop resource.
+
+    - name: name
+      type: keyword
+      description: >
+        DesktopName is the name of the desktop resource.
+
+    - name: allow_user_creation
+      type: boolean
+      description: "AllowUserCreation indicates whether automatic local user creation is allowed for this session."
+    - name: is_recorded
+      type: boolean
+      description: >
+        Recorded is true if the session was recorded, false otherwise.
+
+- name: teleport.audit.device
+  type: group
+  description: "Device metadata  "
+  fields:
+    - name: id
+      type: keyword
+      description: "ID of the device."
+    - name: os_type
+      type: keyword
+      description: "OS of the device."
+    - name: asset_tag
+      type: keyword
+      description: "Device inventory identifier."
+    - name: credential_id
+      type: keyword
+      description: "Device credential identifier."
+    - name: origin
+      type: keyword
+      description: "Device origin."
+    - name: web_authentication
+      type: boolean
+      description: "True if web authentication, aka on-behalf-of device authentication, was performed."
+    - name: web_session_id
+      type: keyword
+      description: "Web Session ID associated with the device."
+- name: teleport.audit.file_transfer_request
+  type: group
+  description: "FileTransferRequestEvent happens when a FileTransferRequest is created, updated, approved, or denied. "
+  fields:
+    - name: request_id
+      type: keyword
+      description: >
+        RequestID is the ID for the FileTransferRequest
+
+    - name: approvers
+      type: keyword
+      description: >
+        Approvers is a slice containing the Teleport users who have approved the request
+
+    - name: requester
+      type: keyword
+      description: >
+        Requester is the Teleport user who requested the file transfer
+
+    - name: location
+      type: keyword
+      description: >
+        Location is the location of the file to be downloaded, or the directory of the upload
+
+    - name: is_download
+      type: boolean
+      description: >
+        Download is true if the requested file transfer is a download, false if an upload
+
+    - name: filename
+      type: keyword
+      description: "Filename is the name of the file to be uploaded to the Location. Only present in uploads."
+- name: teleport.audit.join
+  type: group
+  description: "Join event metadata"
+  fields:
+    - name: bot_name
+      type: keyword
+      description: "BotName is the name of the bot which has joined."
+    - name: method
+      type: keyword
+      description: "Method is the event field indicating what join method was used."
+    - name: token_name
+      type: keyword
+      description: "TokenName is the name of the provision token used to join."
+    - name: attributes
+      type: object
+      object_type: keyword
+      description: "Attributes is a map of attributes received from the join method provider."
+    - name: user_name
+      type: keyword
+      description: "UserName is the name of the user associated with the bot which has joined."
+    - name: role
+      type: keyword
+      description: "Role is the role that the node requested when attempting to join."
+    - name: token_expires
+      type: date
+      description: "TokenExpires contain information about token expiration time."
+- name: teleport.audit.kubernetes
+  type: group
+  description: >
+    Common metadata for kubernetes-related events.
+
+  fields:
+    - name: cluster
+      type: keyword
+      description: >
+        KubernetesCluster is a Kubernetes cluster name.
+
+    - name: users
+      type: flattened
+      description: >
+        KubernetesUsers is a list of Kubernetes usernames for the user.
+
+    - name: groups
+      type: flattened
+      description: >
+        KubernetesGroups is a list of Kubernetes groups for the user.
+
+    - name: labels
+      type: object
+      object_type: keyword
+      description: "KubernetesLabels are the labels (static and dynamic) of the Kubernetes cluster the session occurred on."
+    - name: pod
+      type: group
+      description: >
+        Common metadata for kubernetes pod-related events.
+
+      fields:
+        - name: pod_name
+          type: flattened
+          description: >
+            KubernetesPodName is the name of the pod.
+
+        - name: pod_namespace
+          type: keyword
+          description: >
+            KubernetesPodNamespace is the namespace of the pod.
+
+        - name: container_name
+          type: flattened
+          description: >
+            KubernetesContainerName is the name of the container within the pod.
+
+        - name: container_image
+          type: flattened
+          description: >
+            KubernetesContainerImage is the image of the container within the pod.
+
+        - name: node_name
+          type: keyword
+          description: "KubernetesNodeName is the node that runs the pod."
+    - name: resource
+      type: group
+      description: "Kubernetes API request event metadata"
+      fields:
+        - name: api_group
+          type: keyword
+          description: >
+            ResourceAPIGroup is the resource API group.
+
+        - name: namespace
+          type: keyword
+          description: >
+            ResourceNamespace is the resource namespace.
+
+        - name: kind
+          type: keyword
+          description: >
+            ResourceKind is the API resource kind (e.g. "pod", "service", etc).
+
+        - name: name
+          type: keyword
+          description: >
+            ResourceName is the API resource name.
+
+#        - name: response_code
+#          type: long
+#          description: >
+#            ResponseCode is the HTTP response code for this request.
+- name: teleport.audit.login
+  type: group
+  description: "User login and MFA challenge metadata"
+  fields:
+    - name: method
+      type: keyword
+      description: "Method is the event field indicating how the login was performed"
+    - name: identity_attributes
+      type: object
+      object_type: keyword
+      description: "IdentityAttributes is a map of user attributes received from identity provider"
+    - name: applied_login_rules
+      type: keyword
+      description: "AppliedLoginRules stores the name of each login rule that was applied during the login."
+    - name: challenge_scope
+      type: keyword
+      description: "ChallengeScope is the authorization scope for this MFA challenge."
+    - name: challenge_allow_reuse
+      type: boolean
+      description: "ChallengeAllowReuse defines whether the MFA challenge allows reuse."
+- name: teleport.audit.mfa_device
+  type: group
+  description: >
+    MFA is the MFA device used.
+
+  fields:
+    - name: name
+      type: keyword
+      description: >
+        Name is the user-specified name of the MFA device.
+
+    - name: uuid
+      type: keyword
+      description: >
+        ID is the UUID of the MFA device generated by Teleport.
+
+    - name: type
+      type: keyword
+      description: >
+        Type is the type of this MFA device.
+
+- name: teleport.audit.network
+  type: group
+  description: "Network metadata"
+  fields:
+    - name: tcp_version
+      type: integer
+      description: "TCPVersion is the version of TCP (4 or 6)."
+    - name: operation
+      type: keyword
+      description: "Operation denotes what network operation was performed (e.g. connect)"
+    - name: action
+      type: keyword
+      description: "Action denotes what happened in response to the event"
+- name: teleport.audit.okta
+  type: group
+  description: "Okta related events metadata. "
+  fields:
+    - name: resources_updated
+      type: group
+      description: "OktaResourcesUpdatedMetadata contains common metadata for Okta resources updated events."
+      fields:
+        - name: added
+          type: integer
+          description: "Added is the number of resources added."
+        - name: updated
+          type: integer
+          description: "Updated is the number of resources updated."
+        - name: deleted
+          type: integer
+          description: "Deleted is the number of resources deleted."
+    - name: assignment
+      type: group
+      description: "OktaAssignmentMetadata contains common metadata for Okta assignment events."
+      fields:
+        - name: source
+          type: keyword
+          description: "Source is the source of the Okta assignment."
+        - name: user
+          type: keyword
+          description: "User is the user the Okta assignment is for."
+        - name: starting_status
+          type: keyword
+          description: "StartingStatus is the starting status of the assignment."
+        - name: ending_status
+          type: keyword
+          description: "EndingStatus is the ending status of the assignment."
+- name: teleport.audit.process
+  type: group
+  description: "Process metadata"
+  fields:
+    - name: cgroup_id
+      type: long
+      description: "CgroupID is the internal cgroupv2 ID of the event."
+    - name: flags
+      type: long
+      description: >
+        Flags are the flags passed to open.
+
+- name: teleport.audit.resource
+  type: group
+  description: "Resource metadata"
+  fields:
+    - name: name
+      type: keyword
+      description: "ResourceName is a resource name"
+    - name: expires
+      type: date
+      description: "Expires is set if resource expires"
+    - name: updated_by
+      type: keyword
+      description: "UpdatedBy if set indicates the user who modified the resource"
+    - name: ttl
+      type: keyword
+      description: "TTL is a TTL of reset password token represented as duration, e.g. \"10m\""
+- name: teleport.audit.saml_idp_service_provider
+  type: group
+  description: "SAMLIdPServiceProviderMetadata contains common metadata for SAML IdP service provider events."
+  fields:
+    - name: entity_id
+      type: keyword
+      description: "ServiceProviderEntityID is the entity ID of the service provider."
+    - name: shortcut
+      type: keyword
+      description: "ServiceProviderShortcut is the shortcut name of a service provider."
+    - name: attribute_mapping
+      type: object
+      object_type: keyword
+      description: "AttributeMapping is a map of attribute name and value which will be asserted in SAML response."
+- name: teleport.audit.server
+  type: group
+  description: "Server metadata"
+  fields:
+    - name: address
+      type: object
+      object_type: keyword
+      description: >
+        ServerAddr is the address of the server the session occurred on.
+
+    - name: labels
+      type: object
+      object_type: keyword
+      description: >
+        ServerLabels are the labels (static and dynamic) of the server the session occurred on.
+
+    - name: forwarded_by
+      type: keyword
+      description: >
+        ForwardedBy tells us if the metadata was sent by the node itself or by another node in its place.
+
+    - name: sub_kind
+      type: keyword
+      description: "ServerSubKind is the sub kind of the server the session occurred on."
+    - name: version
+      type: keyword
+      description: "ServerVersion is the component version the session occurred on."
+- name: teleport.audit.session
+  type: group
+  description: "Session related events metadata. "
+  fields:
+    - name: id
+      type: keyword
+      description: >
+        SessionID is a unique UUID of the session.
+
+    - name: private_key_policy
+      type: keyword
+      description: >
+        PrivateKeyPolicy is the private key policy of the private key used to start this session.
+
+    - name: terminal_size
+      type: keyword
+      description: >
+        TerminalSize is expressed as 'W:H'
+
+    - name: session_recording
+      type: keyword
+      description: "SessionRecording is the type of session recording."
+    - name: enhanced_recording
+      type: boolean
+      description: "EnhancedRecording is used to indicate if the recording was an enhanced recording or not."
+    - name: interactive
+      type: boolean
+      description: "Interactive is used to indicate if the session was interactive (has PTY attached) or not (exec session)."
+    - name: participants
+      type: keyword
+      description: "Participants is a list of participants in the session."
+- name: teleport.audit.sftp
+  type: group
+  description: "SFTP file operations metadata"
+  fields:
+    - name: target_path
+      type: keyword
+      description: "TargetPath is the new path in file renames, or the path of the symlink when creating symlinks."
+    - name: attributes
+      type: object
+      object_type: keyword
+      description: "Attributes is file metadata that the user requested to be changed"
+    - name: action
+      type: keyword
+      description: "Action is what kind of file operation"
+- name: teleport.audit.unknown
+  type: group
+  description: "Unknown is a fallback event used when we don't recognize an event from the backend."
+  fields:
+    - name: metadata
+      type: object
+      object_type: keyword
+      description: "Metadata is a common event metadata."
+    - name: event_type
+      type: keyword
+      description: "UnknownType is the event type extracted from the unknown event."
+    - name: code
+      type: keyword
+      description: "UnknownCode is the event code extracted from the unknown event."
+    - name: data
+      type: wildcard
+      description: "Data is the serialized JSON data of the unknown event."
+- name: teleport.audit.user
+  type: group
+  description: "Common user event metadata"
+  fields:
+    - name: os_login
+      type: keyword
+      description: >
+        Login is OS login
+
+    - name: impersonator
+      type: keyword
+      description: >
+        Impersonator is a user acting on behalf of another user
+
+    - name: aws_role_arn
+      type: keyword
+      description: >
+        AWSRoleARN is AWS IAM role user assumes when accessing AWS console.
+
+    - name: access_requests
+      type: keyword
+      description: >
+        AccessRequests are the IDs of access requests created by the user
+
+    - name: azure_identity
+      type: keyword
+      description: "AzureIdentity is the Azure identity user assumes when accessing Azure API."
+    - name: gcp_service_account
+      type: keyword
+      description: >
+        GCPServiceAccount is the GCP service account user
+
+    - name: trusted_device
+      type: object
+      object_type: keyword
+      description: >
+        TrustedDevice contains information about the users' trusted device. Requires a registered and enrolled device to be used during authentication.
+
+    - name: required_private_key_policy
+      type: keyword
+      description: >
+        RequiredPrivateKeyPolicy is the private key policy enforced for this login.
+
+    - name: kind
+      type: keyword
+      description: >
+        RequiredPrivateKeyPolicy is the private key policy enforced for this login.
+
+    - name: connector
+      type: keyword
+      description: >
+        Connector is the connector used to create the user.
+

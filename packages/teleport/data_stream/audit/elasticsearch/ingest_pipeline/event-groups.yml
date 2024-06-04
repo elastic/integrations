@@ -5,7 +5,7 @@ description: >
 processors:
 
   # SessionMetadata is a common session event metadata
-  # See session.yml for field definitions.
+  # See teleport.audit.session group for field definitions.
   -  rename:
        field: teleport.audit.sid
        target_field: teleport.audit.session.id
@@ -20,7 +20,7 @@ processors:
        ignore_missing: true
 
   # UserMetadata is a common user event metadata
-  # See user.yml for field definitions.
+  # See teleport.audit.user group for field definitions.
   -  remove:
        description: 'Fix an issue where "user": {"user": message} is present'
        field: teleport.audit.user.user
@@ -80,7 +80,7 @@ processors:
       if: ctx.teleport?.audit?.user?.kind != null
 
   # Server is a server metadata
-  # See server.yml for field definitions.
+  # See teleport.audit.server group for field definitions.
   -  rename:
        field: teleport.audit.namespace
        target_field: group.name
@@ -242,7 +242,7 @@ processors:
       ignore_missing: true
 
   # KubernetesClusterMetadata contains common metadata for kubernetes-related events.
-  # See kubernetes.yml for field definitions.
+  # See teleport.audit.kubernetes group for field definitions.
   - rename:
       field: teleport.audit.kubernetes_cluster
       target_field: teleport.audit.kubernetes.cluster
@@ -261,7 +261,7 @@ processors:
       ignore_missing: true
 
   # KubernetesPodMetadata contains common metadata for kubernetes pod-related events.
-  # See kubernetes.pod.yml for field definitions.
+  # See teleport.audit.kubernetes.pod group for field definitions.
   - rename:
       field: teleport.audit.kubernetes_pod_name
       target_field: teleport.audit.kubernetes.pod.pod_name
@@ -284,7 +284,7 @@ processors:
       ignore_missing: true
 
   # SAMLIdPServiceProviderMetadata contains common metadata for SAML IdP service provider events.
-  # See saml-idp-service-provider.yml for field definitions.
+  # See teleport.audit.saml-idp-service-provider group for field definitions.
   -  rename:
        field: teleport.audit.service_provider_entity_id
        target_field: teleport.audit.saml_idp_service_provider.entity_id
@@ -299,7 +299,7 @@ processors:
        ignore_missing: true
 
   # Okta related events metadata.
-  # See okta.yml for field definitions.
+  # See teleport.audit.okta group for field definitions.
   -  rename:
        field: teleport.audit.added
        target_field: teleport.audit.okta.resources_updated.added
@@ -329,7 +329,7 @@ processors:
   # LockMetadata, skipped.
 
   # Session related events metadata.
-  # See session.yml for field definitions.
+  # See teleport.audit.session group for field definitions.
   -  rename:
        field: teleport.audit.size
        target_field: teleport.audit.session.terminal_size
@@ -384,7 +384,7 @@ processors:
       if: ctx.event?.end != null
 
   # Desktop events metadata
-  # See desktop.yml for field definitions.
+  # See teleport.audit.desktop group for field definitions.
 #  -  rename:
 #       field: teleport.audit.message
 #       target_field: teleport.audit.desktop.message
@@ -416,7 +416,7 @@ processors:
 
 
   # FileTransferRequestEvent happens when a FileTransferRequest is created, updated, approved, or denied.
-  # See file-transfer-request.yml for field definitions.
+  # See teleport.audit.file-transfer-request group for field definitions.
   - rename:
       field: teleport.audit.requestID
       target_field: teleport.audit.file_transfer_request.request_id
@@ -443,7 +443,7 @@ processors:
       ignore_missing: true
 
   # Process metadata
-  # See process.yml for field definitions.
+  # See teleport.audit.process group for field definitions.
   -  rename:
        field: teleport.audit.pid
        target_field: process.pid
@@ -504,7 +504,7 @@ processors:
        ignore_missing: true
 
   # Network metadata
-  # See network.yml for field definitions.
+  # See teleport.audit.network group for field definitions.
   -  rename:
        field: teleport.audit.src_addr
        target_field: source.ip
@@ -558,7 +558,7 @@ processors:
        ignore_missing: true
 
   # Resource metadata
-  # See resource.yml for field definitions.
+  # See teleport.audit.resource group for field definitions.
   -  rename:
        field: teleport.audit.name
        target_field: teleport.audit.resource.name
@@ -577,7 +577,7 @@ processors:
        ignore_missing: true
 
   # User login and MFA challenge metadata
-  # See login.yml for field definitions.
+  # See teleport.audit.login group for field definitions.
   -  rename:
        field: teleport.audit.method
        target_field: teleport.audit.login.method
@@ -612,14 +612,14 @@ processors:
        ignore_missing: true
 
   # UserCreate is emitted when the user is created or upserted.
-  # See user.yml for field definitions.
+  # See teleport.audit.user group for field definitions.
   -  rename:
        field: teleport.audit.connector
        target_field: teleport.audit.user.connector
        ignore_missing: true
 
   # Access request creation and update metadata
-  # See access_request.yml for field definitions.
+  # See teleport.audit.access_request group for field definitions.
   -  rename:
        field: teleport.audit.roles
        target_field: teleport.audit.access_request.roles
@@ -690,7 +690,7 @@ processors:
       ignore_missing: true
 
   # SFTP file operations metadata
-  # See sftp.yml for field definitions.
+  # See teleport.audit.sftp group for field definitions.
   -  rename:
        field: teleport.audit.working_directory
        target_field: process.working_directory
@@ -817,7 +817,7 @@ processors:
 
 
   # Kubernetes API request event metadata
-  # See kubernetes.resource.yml for field definitions.
+  # See teleport.audit.kubernetes.resource group for field definitions.
   -  rename:
        field: teleport.audit.request_path
        target_field: url.path
@@ -848,7 +848,7 @@ processors:
        ignore_missing: true
 
   # Common application information
-  # See app.yml for field definitions.
+  # See teleport.audit.app group for field definitions.
   -  rename:
        field: teleport.audit.app_uri
        target_field: url.full
@@ -867,7 +867,7 @@ processors:
        ignore_missing: true
 
   # App session related metadata
-  # See app.yml for field definitions.
+  # See teleport.audit.app group for field definitions.
   -  rename:
        field: teleport.audit.session_chunk_id
        target_field: teleport.audit.app.session.session_chunk_id
@@ -910,7 +910,7 @@ processors:
        ignore_missing: true
 
   # DatabaseMetadata contains common database information
-  # See database.yml for field definitions.
+  # See teleport.audit.database group for field definitions.
   -  rename:
        field: teleport.audit.db_service
        target_field: teleport.audit.database.service
@@ -997,7 +997,7 @@ processors:
        ignore_missing: true
 
   # Postgres related metadata
-  # See database.yml for field definitions.
+  # See teleport.audit.database group for field definitions.
   -  rename:
        field: teleport.audit.statement_name
        target_field: teleport.audit.database.postgres.statement_name
@@ -1024,7 +1024,7 @@ processors:
        ignore_missing: true
 
   # WindowsDesktopSessionStart is emitted when a user connects to a desktop.
-  # See desktop.yml for field definitions.
+  # See teleport.audit.desktop group for field definitions.
   -  rename:
        field: teleport.audit.windows_desktop_service
        target_field: teleport.audit.desktop.windows_desktop_service
@@ -1087,7 +1087,7 @@ processors:
        ignore_missing: true
 
   # MFADeviceMetadata is a common MFA device metadata.
-  # See mfa-device.yml for field definitions.
+  # See teleport.audit.mfa-device group for field definitions.
   - rename:
       field: teleport.audit.mfa_device_uuid
       target_field: teleport.audit.mfa_device.uuid
@@ -1108,7 +1108,7 @@ processors:
       ignore_missing: true
 
   # Certificate issuance metadata
-  # See certificate.yml for field definitions.
+  # See teleport.audit.certificate group for field definitions.
   -  rename:
        field: teleport.audit.cert_type
        target_field: teleport.audit.certificate.type
@@ -1119,7 +1119,7 @@ processors:
        ignore_missing: true
 
   # Join event metadata
-  # See join.yml for field definitions.
+  # See teleport.audit.join group for field definitions.
   -  rename:
        field: teleport.audit.bot_name
        target_field: teleport.audit.join.bot_name
@@ -1158,7 +1158,7 @@ processors:
        ignore_missing: true
 
   # Unknown is a fallback event used when we don't recognize an event from the backend.
-  # See unknown.yml for field definitions.
+  # See teleport.audit.unknown group for field definitions.
   -  rename:
        field: teleport.audit.metadata
        target_field: teleport.audit.unknown.metadata
@@ -1177,7 +1177,7 @@ processors:
        ignore_missing: true
 
   # DeviceMetadata groups device information for events.
-  # See device.yml for field definitions.
+  # See teleport.audit.device group for field definitions.
   -  rename:
        field: teleport.audit.device_id
        target_field: teleport.audit.device.id
@@ -1239,7 +1239,7 @@ processors:
        ignore_missing: true
 
   # Identity is the identity associated with the certificate, as interpreted by Teleport.
-  # See certificate.yml for field definitions.
+  # See teleport.audit.certificate group for field definitions.
   -  rename:
        field: teleport.audit.identity
        target_field: teleport.audit.certificate.identity
@@ -1254,7 +1254,7 @@ processors:
        ignore_missing: true
 
   # AccessRequestResourceSearch is emitted when a user searches for resources as part of a search-based access request
-  # See access_request.resource_search.yml for field definitions.
+  # See teleport.audit.access_request.resource_search group for field definitions.
   -  rename:
        field: teleport.audit.search_as_roles
        target_field: teleport.audit.access_request.resource_search.search_as_roles
