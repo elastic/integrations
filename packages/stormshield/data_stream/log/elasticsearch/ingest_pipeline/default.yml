@@ -239,6 +239,31 @@ processors:
       field: destination.geo
       if: ctx.destination?.geo?.country_name == 'Reserved'
 
+  - rename:
+      tag: rename_user_name
+      field: stormshield.user
+      target_field: user.name
+
+  - script:
+      tag: handle_ipv_fields
+      lang: painless
+      description: Set the network.type for some things.
+      if: ctx.stormshield?.ipv != null
+      source: >-
+        if (ctx.stormshield.ipv == "4") {
+            ctx.network.type = "ipv4";
+        } else if (ctx.stormshield.ipv.compare)
+        if (!ctx.stormshield.containsKey("metadata")) {
+            ctx.stormshield.metadata = [:];
+        }
+        params.names.forEach(k -> {
+            if (ctx.stormshield.containsKey(k)) {
+                ctx.stormshield.metadata[k] = ctx.stormshield[k];
+                ctx.stormshield.remove(k);
+            }
+            return true;
+        });
+        
   - script:
       tag: script_move_things
       lang: painless
@@ -257,7 +282,6 @@ processors:
             - confid
             - dstportname
             - id
-            - ipv
             - mem
             - modsrc
             - modsrcport
@@ -303,255 +327,6 @@ processors:
       ignore_failure: true
       ignore_missing: true
 
-  - convert:
-      field: stormshield.Accepted
-      type: long
-      if: ctx.stormshield?.Accepted != null
-
-  - convert:
-      field: stormshield.AssocMem
-      type: long
-      if: ctx.stormshield?.AssocMem != null
-
-  - convert:
-      field: stormshield.Blocked
-      type: long
-      if: ctx.stormshield?.Blocked != null
-
-  - convert:
-      field: stormshield.ConnMem
-      type: long
-      if: ctx.stormshield?.ConnMem != null
-
-  - convert:
-      field: stormshield.DTrackMem
-      type: long
-      if: ctx.stormshield?.DTrackMem != null
-
-  - convert:
-      field: stormshield.DynamicMem
-      type: long
-      if: ctx.stormshield?.DynamicMem != null
-
-  - convert:
-      field: stormshield.EtherStateConn
-      type: long
-      if: ctx.stormshield?.EtherStateConn != null
-
-  - convert:
-      field: stormshield.EtherStateMem
-      type: long
-      if: ctx.stormshield?.EtherStateMem != null
-
-  - convert:
-      field: stormshield.EtherStatePacket
-      type: long
-      if: ctx.stormshield?.EtherStatePacket != null
-
-  - convert:
-      field: stormshield.FragMem
-      type: long
-      if: ctx.stormshield?.FragMem != null
-
-  - convert:
-      field: stormshield.Fragmented
-      type: long
-      if: ctx.stormshield?.Fragmented != null
-
-  - convert:
-      field: stormshield.HostMem
-      type: long
-      if: ctx.stormshield?.HostMem != null
-
-  - convert:
-      field: stormshield.HostrepMax
-      type: long
-      if: ctx.stormshield?.HostrepMax != null
-
-  - convert:
-      field: stormshield.HostrepRequests
-      type: long
-      if: ctx.stormshield?.HostrepRequests != null
-
-  - convert:
-      field: stormshield.HostrepScore
-      type: long
-      if: ctx.stormshield?.HostrepScore != null
-
-  - convert:
-      field: stormshield.ICMPMem
-      type: long
-      if: ctx.stormshield?.ICMPMem != null
-
-  - convert:
-      field: stormshield.ICMPPacket
-      type: long
-      if: ctx.stormshield?.ICMPPacket != null
-
-  - convert:
-      field: stormshield.IPStateConn
-      type: long
-      if: ctx.stormshield?.IPStateConn != null
-
-  - convert:
-      field: stormshield.IPStateConnNatDst
-      type: long
-      if: ctx.stormshield?.IPStateConnNatDst != null
-
-  - convert:
-      field: stormshield.IPStateConnNatSrc
-      type: long
-      if: ctx.stormshield?.IPStateConnNatSrc != null
-
-  - convert:
-      field: stormshield.IPStateConnNoNatDst
-      type: long
-      if: ctx.stormshield?.IPStateConnNoNatDst != null
-
-  - convert:
-      field: stormshield.IPStateConnNoNatSrc
-      type: long
-      if: ctx.stormshield?.IPStateConnNoNatSrc != null
-
-  - convert:
-      field: stormshield.IPStateMem
-      type: long
-      if: ctx.stormshield?.IPStateMem != null
-
-  - convert:
-      field: stormshield.IPStatePacket
-      type: long
-      if: ctx.stormshield?.IPStatePacket != null
-
-  - convert:
-      field: stormshield.LogOverflow
-      type: long
-      if: ctx.stormshield?.LogOverflow != null
-
-  - convert:
-      field: stormshield.Logged
-      type: long
-      if: ctx.stormshield?.Logged != null
-
-  - convert:
-      field: stormshield.PvmFacts
-      type: long
-      if: ctx.stormshield?.PvmFacts != null
-
-  - convert:
-      field: stormshield.PvmOverflow
-      type: long
-      if: ctx.stormshield?.PvmOverflow != null
-
-  - convert:
-      field: stormshield.SCTPAssoc
-      type: long
-      if: ctx.stormshield?.SCTPAssoc != null
-
-  - convert:
-      field: stormshield.SCTPAssocPacket
-      type: long
-      if: ctx.stormshield?.SCTPAssocPacket != null
-
-  - convert:
-      field: stormshield.SavedEvaluation
-      type: long
-      if: ctx.stormshield?.SavedEvaluation != null
-
-  - convert:
-      field: stormshield.TCPConn
-      type: long
-      if: ctx.stormshield?.TCPConn != null
-
-  - convert:
-      field: stormshield.TCPConnNatDst
-      type: long
-      if: ctx.stormshield?.TCPConnNatDst != null
-
-  - convert:
-      field: stormshield.TCPConnNatSrc
-      type: long
-      if: ctx.stormshield?.TCPConnNatSrc != null
-
-  - convert:
-      field: stormshield.TCPConnNoNatDst
-      type: long
-      if: ctx.stormshield?.TCPConnNoNatDst != null
-
-  - convert:
-      field: stormshield.TCPConnNoNatSrc
-      type: long
-      if: ctx.stormshield?.TCPConnNoNatSrc != null
-
-  - convert:
-      field: stormshield.TCPPacket
-      type: long
-      if: ctx.stormshield?.TCPPacket != null
-
-  - convert:
-      field: stormshield.TLSCertCacheEntriesNb
-      type: long
-      if: ctx.stormshield?.TLSCertCacheEntriesNb != null
-
-  - convert:
-      field: stormshield.TLSCertCacheExpiredNb
-      type: long
-      if: ctx.stormshield?.TLSCertCacheExpiredNb != null
-
-  - convert:
-      field: stormshield.TLSCertCacheFlushOp
-      type: long
-      if: ctx.stormshield?.TLSCertCacheFlushOp != null
-
-  - convert:
-      field: stormshield.TLSCertCacheFlushedNb
-      type: long
-      if: ctx.stormshield?.TLSCertCacheFlushedNb != null
-
-  - convert:
-      field: stormshield.TLSCertCacheInsert
-      type: long
-      if: ctx.stormshield?.TLSCertCacheInsert != null
-
-  - convert:
-      field: stormshield.TLSCertCachePurgeOp
-      type: long
-      if: ctx.stormshield?.TLSCertCachePurgeOp != null
-
-  - convert:
-      field: stormshield.TLSCertCachePurgedNb
-      type: long
-      if: ctx.stormshield?.TLSCertCachePurgedNb != null
-
-  - convert:
-      field: stormshield.UDPConn
-      type: long
-      if: ctx.stormshield?.UDPConn != null
-
-  - convert:
-      field: stormshield.UDPConnNatDst
-      type: long
-      if: ctx.stormshield?.UDPConnNatDst != null
-
-  - convert:
-      field: stormshield.UDPConnNatSrc
-      type: long
-      if: ctx.stormshield?.UDPConnNatSrc != null
-
-  - convert:
-      field: stormshield.UDPConnNoNatDst
-      type: long
-      if: ctx.stormshield?.UDPConnNoNatDst != null
-
-  - convert:
-      field: stormshield.UDPConnNoNatSrc
-      type: long
-      if: ctx.stormshield?.UDPConnNoNatSrc != null
-
-  - convert:
-      field: stormshield.UDPPacket
-      type: long
-      if: ctx.stormshield?.UDPPacket != null
 
 on_failure:
 - append:
