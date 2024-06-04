@@ -290,6 +290,30 @@ processors:
       ignore_failure: true
       ignore_missing: true
       if: ctx?.winlog?.event_data?.ScriptBlockText != ""
+  - trim:
+      field: powershell.file.script_block_text
+      ignore_missing: true
+  - dissect:
+      field: powershell.file.script_block_text
+      pattern: "# SIG # Begin signature block%{powershell.file.script_block_signature}# SIG # End signature block"
+      ignore_missing: true
+      ignore_failure: true
+  - gsub:
+      field: powershell.file.script_block_signature
+      pattern: "\\n# "
+      replacement: ""
+      ignore_missing: true
+  - gsub:
+      field: powershell.file.script_block_text
+      target_field: _temp.script_block_no_space
+      pattern: "\\s"
+      replacement: ""
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - _temp.script_block_no_space
+      target_field: powershell.file.script_block_hash
+      ignore_missing: true
 
   - split:
       description: Split Event 4103 command invocation details.
