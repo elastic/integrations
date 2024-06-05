@@ -147,7 +147,7 @@ processors:
       patterns:
         - '%%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}:\s+(\w+\d+(/\d+)?\:\s+)?([a-zA-Z0-9_]+\:\s+)?%{GREEDYDATA:message}'
       ignore_missing: true
-      if: ctx.cisco?.ios?.facility == 'IOSXE' && ctx.event?.code == 'PLATFORM'
+      if: "ctx.cisco?.ios?.facility == 'IOSXE' && ctx.event?.code == 'PLATFORM' && ctx.message.indexOf('%') != -1"
   - grok:
       field: message
       tag: grok_audit_details

@@ -20,6 +20,7 @@ state:
   password: {{password}}
   params: {{input_parameters}}
   initial_interval: {{initial_interval}}
+  keep_xml: {{preserve_original_event}}
 redact:
   fields:
     - password
@@ -36,13 +37,12 @@ program: |
           "X-Requested-With": ["curl"],
           "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
       }
-  }).do_request().as(resp, bytes(resp.Body).decode_xml('qualys_api_2_0').as(body, {
+  }).do_request().as(resp, resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_2_0').as(body, {
       "events": (has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST) ?
           body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, {
-            "message": e.with({"CVE_LIST": has(e.CVE_LIST) && has(e.CVE_LIST.CVE) ?
-                e.CVE_LIST.CVE.map(c, c.ID)
-              :
-                []
+            ?"xml":    state.keep_xml ? optional.of(string(xml)) : optional.none(),
+            "message": e.with({
+              "CVE_LIST": has(e.CVE_LIST) && has(e.CVE_LIST.CVE) ? e.CVE_LIST.CVE.map(c, c.ID) : [],
             }).encode_json()
           })
         :
@@ -68,8 +68,11 @@ program: |
       "password": state.password,
       "params": has(state.params) ? state.params : "",
       "initial_interval": state.initial_interval
-  }))
+  })))
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#if preserve_duplicate_custom_fields}}
   - preserve_duplicate_custom_fields
 {{/if}}
