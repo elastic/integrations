@@ -168,11 +168,6 @@
             },
             "http": {
                 "request": {
-                    "body": {
-                        "content": {
-                            "TableName": "test-table"
-                        }
-                    },
                     "method": "POST"
                 },
                 "response": {
@@ -199,11 +194,16 @@
                             "target": "DynamoDB_20120810.Scan"
                         },
                         "protocol": "dynamodb",
+                        "request_body": {
+                            "TableName": "test-table"
+                        },
                         "service": "ddb1",
                         "user": "DynamoDBRole"
-                    },
-                    "uri": "dynamodb.us-west-2.amazonaws.com"
+                    }
                 }
+            },
+            "url": {
+                "full": "dynamodb.us-west-2.amazonaws.com"
             },
             "user": {
                 "name": "alice@example.com"
@@ -233,11 +233,6 @@
             },
             "http": {
                 "request": {
-                    "body": {
-                        "content": {
-                            "TableName": "test-table"
-                        }
-                    },
                     "method": "POST"
                 },
                 "response": {
@@ -264,11 +259,16 @@
                             "target": "DynamoDB_20120810.Scan"
                         },
                         "protocol": "dynamodb",
+                        "request_body": {
+                            "TableName": "test-table"
+                        },
                         "service": "ddb1",
                         "user": "DynamoDBRole"
-                    },
-                    "uri": "dynamodb.us-west-2.amazonaws.com"
+                    }
                 }
+            },
+            "url": {
+                "full": "dynamodb.us-west-2.amazonaws.com"
             },
             "user": {
                 "name": "alice@example.com"
@@ -2067,9 +2067,6 @@
             "ecs": {
                 "version": "8.11.0"
             },
-            "error": {
-                "message": "exit status 1"
-            },
             "event": {
                 "action": "scp",
                 "code": "T3004E",
@@ -2114,6 +2111,7 @@
             ],
             "teleport": {
                 "audit": {
+                    "error_message": "exit status 1",
                     "session": {
                         "id": "8ff117ec-70a2-4481-8e359cf6"
                     },
@@ -2303,9 +2301,9 @@
             "teleport": {
                 "audit": {
                     "app": {
-                        "name": "ponger"
+                        "name": "ponger",
+                        "public_address": "ponger.root.gravitational.io"
                     },
-                    "app_public_addr": "ponger.root.gravitational.io",
                     "session": {
                         "id": "11c328b4-5a1e-4adc-b7cb-206389e5f130"
                     }
@@ -4914,11 +4912,6 @@
             },
             "http": {
                 "request": {
-                    "body": {
-                        "content": {
-                            "TableName": "test-table"
-                        }
-                    },
                     "method": "POST"
                 },
                 "response": {
@@ -4947,14 +4940,17 @@
                             "service": "dynamodb"
                         },
                         "name": "dyno1",
+                        "public_address": "dynamodb.root.com",
                         "session": {
                             "session_chunk_id": "3a54f32d-210f-4338-abf5-133bfe19ccc0"
                         }
                     },
-                    "app_public_addr": "dynamodb.root.com",
                     "database": {
                         "dynamodb": {
                             "target": "DynamoDB_20120810.Scan"
+                        },
+                        "request_body": {
+                            "TableName": "test-table"
                         }
                     },
                     "user": {
@@ -4994,11 +4990,6 @@
             },
             "http": {
                 "request": {
-                    "body": {
-                        "content": {
-                            "TableName": "test-table"
-                        }
-                    },
                     "method": "POST"
                 },
                 "response": {
@@ -5027,11 +5018,16 @@
                             "service": "dynamodb"
                         },
                         "name": "dyno2",
+                        "public_address": "dynamodb.root.com",
                         "session": {
                             "session_chunk_id": "3a54f32d-210f-4338-abf5-133bfe19ccc0"
                         }
                     },
-                    "app_public_addr": "dynamodb.root.com",
+                    "database": {
+                        "request_body": {
+                            "TableName": "test-table"
+                        }
+                    },
                     "user": {
                         "aws_role_arn": "arn:aws:iam::123456789012:role/GavinDynamoDBRole"
                     }
@@ -8332,9 +8328,6 @@
             },
             "http": {
                 "request": {
-                    "body": {
-                        "content": "CnsKICAicXVlcnkiOiB7CiAgICAidGVybSI6IHsKICAgICAgInVzZXIuaWQiOiAia2ltY2h5IgogICAgfQogIH0KfQo="
-                    },
                     "method": "GET"
                 }
             },
@@ -8360,6 +8353,7 @@
                         },
                         "protocol": "elasticsearch",
                         "query": "{\"term\":{\"user.id\":\"bob\"}}",
+                        "request_body": "CnsKICAicXVlcnkiOiB7CiAgICAidGVybSI6IHsKICAgICAgInVzZXIuaWQiOiAia2ltY2h5IgogICAgfQogIH0KfQo=",
                         "service": "myelastic",
                         "user": "elasticuser"
                     },
@@ -8416,9 +8410,6 @@
             },
             "http": {
                 "request": {
-                    "body": {
-                        "content": "CnsKICAicXVlcnkiOiB7CiAgICAidGVybSI6IHsKICAgICAgInVzZXIuaWQiOiAia2ltY2h5IgogICAgfQogIH0KfQo="
-                    },
                     "method": "GET"
                 }
             },
@@ -8443,6 +8434,7 @@
                         },
                         "protocol": "elasticsearch",
                         "query": "{\"term\":{\"user.id\":\"bob\"}}",
+                        "request_body": "CnsKICAicXVlcnkiOiB7CiAgICAidGVybSI6IHsKICAgICAgInVzZXIuaWQiOiAia2ltY2h5IgogICAgfQogIH0KfQo=",
                         "service": "myelastic",
                         "user": "elasticuser"
                     },
@@ -9721,6 +9713,7 @@
                 "id": "d053a9a4-6362-4d46-8868-55d83b7b338f",
                 "kind": "event",
                 "original": "{\"account_id\":\"278576220453\",\"cluster_name\":\"localhost\",\"code\":\"TDS00I\",\"command_id\":\"e8a5f3ba-e9e5-4cbd-979b-18fd1e7ad00f\",\"ei\":0,\"event\":\"ssm.run\",\"exit_code\":0,\"instance_id\":\"i-057d0ffe877128673\",\"region\":\"eu-central-1\",\"status\":\"Success\",\"time\":\"2022-09-14T14:45:38.122Z\",\"uid\":\"d053a9a4-6362-4d46-8868-55d83b7b338f\"}",
+                "outcome": "success",
                 "sequence": 0,
                 "type": [
                     "start"
@@ -9745,8 +9738,7 @@
                             "instance_id": "i-057d0ffe877128673",
                             "region": "eu-central-1",
                             "ssm_run": {
-                                "command_id": "e8a5f3ba-e9e5-4cbd-979b-18fd1e7ad00f",
-                                "status": "Success"
+                                "command_id": "e8a5f3ba-e9e5-4cbd-979b-18fd1e7ad00f"
                             }
                         }
                     }
@@ -9767,9 +9759,7 @@
                 "id": "ad123558-1d20-42dd-bf82-a7c544d76550",
                 "kind": "event",
                 "original": "{\"account_id\":\"278576220453\",\"cluster_name\":\"localhost\",\"code\":\"TDS00W\",\"command_id\":\"c2936d68-fc0c-4c16-a860-916a97f57644\",\"ei\":0,\"event\":\"ssm.run\",\"exit_code\":1,\"instance_id\":\"i-057d0ffe877128673\",\"region\":\"eu-central-1\",\"status\":\"Failure\",\"time\":\"2022-09-14T14:45:38.122Z\",\"uid\":\"ad123558-1d20-42dd-bf82-a7c544d76550\"}",
-                "outcome": [
-                    "failure"
-                ],
+                "outcome": "failure",
                 "sequence": 0,
                 "type": [
                     "start"
@@ -9794,8 +9784,7 @@
                             "instance_id": "i-057d0ffe877128673",
                             "region": "eu-central-1",
                             "ssm_run": {
-                                "command_id": "c2936d68-fc0c-4c16-a860-916a97f57644",
-                                "status": "Failure"
+                                "command_id": "c2936d68-fc0c-4c16-a860-916a97f57644"
                             }
                         }
                     }
@@ -9936,15 +9925,6 @@
             ],
             "teleport": {
                 "audit": {
-                    "database": {
-                        "aws": {
-                            "ssm_run": {
-                                "status": {
-                                    "success": true
-                                }
-                            }
-                        }
-                    },
                     "device": {
                         "asset_tag": "M2CQVQV64R",
                         "device_id": "99d39707-efdd-436c-94f3-6a1aeef1fbf2",
@@ -9981,15 +9961,6 @@
             ],
             "teleport": {
                 "audit": {
-                    "database": {
-                        "aws": {
-                            "ssm_run": {
-                                "status": {
-                                    "success": false
-                                }
-                            }
-                        }
-                    },
                     "device": {
                         "asset_tag": "M2CQVQV64R",
                         "device_id": "99d39707-efdd-436c-94f3-6a1aeef1fbf2",
@@ -10939,7 +10910,9 @@
                     "saml_idp_service_provider": {
                         "entity_id": "valid-entity-id"
                     },
-                    "session_id": "123456"
+                    "session": {
+                        "id": "123456"
+                    }
                 }
             },
             "user": {
@@ -10981,7 +10954,9 @@
                         "entity_id": "valid-entity-id",
                         "shortcut": "shortcut"
                     },
-                    "session_id": "123456"
+                    "session": {
+                        "id": "123456"
+                    }
                 }
             },
             "user": {
@@ -11022,7 +10997,9 @@
                     "saml_idp_service_provider": {
                         "shortcut": "shortcut"
                     },
-                    "session_id": "123456"
+                    "session": {
+                        "id": "123456"
+                    }
                 }
             },
             "user": {

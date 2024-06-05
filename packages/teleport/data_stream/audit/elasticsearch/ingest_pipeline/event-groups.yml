@@ -244,6 +244,12 @@ processors:
        field: teleport.audit.attribute_mapping
        target_field: teleport.audit.saml_idp_service_provider.attribute_mapping
        ignore_missing: true
+  -  rename:
+       description: 'Fix an issue where "session_id" is present in this event.'
+       field: teleport.audit.session_id
+       target_field: teleport.audit.session.id
+       ignore_missing: true
+       if: ctx.event.action.startsWith('saml.')
 
   # Okta related events metadata.
   # See teleport.audit.okta group for field definitions.
@@ -665,7 +671,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.exitError
-      target_field: error.message
+      target_field: teleport.audit.error_message
       ignore_missing: true
 
   # SFTP file operations metadata
@@ -833,9 +839,14 @@ processors:
        target_field: url.full
        ignore_missing: true
   - rename:
+      field: teleport.audit.app_public_addr
+      target_field: teleport.audit.app.public_address
+      ignore_missing: true
+  - rename:
       field: teleport.audit.public_addr
       target_field: teleport.audit.app.public_address
       ignore_missing: true
+      ignore_failure: true
   -  rename:
        field: teleport.audit.app_labels
        target_field: teleport.audit.app.labels
@@ -880,6 +891,12 @@ processors:
        field: teleport.audit.db_protocol
        target_field: teleport.audit.database.protocol
        ignore_missing: true
+  -  rename:
+       description: 'Fix an issue where "uri" is present in this event.'
+       field: teleport.audit.uri
+       target_field: teleport.audit.db_uri
+       ignore_missing: true
+       if: ctx.event.action.startsWith('db.')
   -  rename:
        field: teleport.audit.db_uri
        target_field: url.full
@@ -1121,7 +1138,7 @@ processors:
   # See teleport.audit.device group for field definitions.
   -  rename:
        field: teleport.audit.device_id
-       target_field: teleport.audit.device.id
+       target_field: teleport.audit.device.device_id
        ignore_missing: true
   - set:
       field: teleport.audit.device.os_type
@@ -1270,6 +1287,10 @@ processors:
 
   # Elasticsearch related events
   -  rename:
+       field: teleport.audit.body
+       target_field: teleport.audit.database.request_body
+       ignore_missing: true
+  -  rename:
        field: teleport.audit.headers
        target_field: teleport.audit.request.headers
        ignore_missing: true
@@ -1380,9 +1401,16 @@ processors:
        field: teleport.audit.exit_code
        target_field: process.exit_code
        ignore_missing: true
-  -  rename:
+  - set:
+      field: event.outcome
+      value: 'success'
+      if: 'ctx.teleport.audit.status == "Success"'
+  - set:
+      field: event.outcome
+      value: 'failure'
+      if: 'ctx.teleport.audit.status == "Failure"'
+  -  remove:
        field: teleport.audit.status
-       target_field: teleport.audit.database.aws.ssm_run.status
        ignore_missing: true
   -  rename:
        field: teleport.audit.account_id

@@ -274,6 +274,7 @@ An example event for `audit` looks as following:
 | teleport.audit.database.protocol | DatabaseProtocol is the database type, e.g. postgres or mysql. | keyword |
 | teleport.audit.database.query | DatabaseQuery is the executed query string. | keyword |
 | teleport.audit.database.query_parameters | DatabaseQueryParameters are the query parameters for prepared statements. | keyword |
+| teleport.audit.database.request_body | Body is the request HTTP body (as JSON, unlike http.request.body.contents). | flattened |
 | teleport.audit.database.roles | DatabaseRoles is a list of database roles for auto-provisioned users. | keyword |
 | teleport.audit.database.service | DatabaseService is the name of the database service proxying the database. | keyword |
 | teleport.audit.database.spanner.rpc.args | Args are the RPC arguments. | flattened |
@@ -296,7 +297,7 @@ An example event for `audit` looks as following:
 | teleport.audit.desktop.windows_user | WindowsUser is the Windows username used to connect. | keyword |
 | teleport.audit.device.asset_tag | Device inventory identifier. | keyword |
 | teleport.audit.device.credential_id | Device credential identifier. | keyword |
-| teleport.audit.device.id | ID of the device. | keyword |
+| teleport.audit.device.device_id | ID of the device. | keyword |
 | teleport.audit.device.origin | Device origin. | keyword |
 | teleport.audit.device.os_type | OS of the device. | keyword |
 | teleport.audit.device.web_authentication | True if web authentication, aka on-behalf-of device authentication, was performed. | boolean |
@@ -337,6 +338,7 @@ An example event for `audit` looks as following:
 | teleport.audit.kubernetes.resource.name | ResourceName is the API resource name. | keyword |
 | teleport.audit.kubernetes.resource.namespace | ResourceNamespace is the resource namespace. | keyword |
 | teleport.audit.kubernetes.users | KubernetesUsers is a list of Kubernetes usernames for the user. | flattened |
+| teleport.audit.lock.target | Method is the event field indicating how the login was performed | flattened |
 | teleport.audit.login.applied_login_rules | AppliedLoginRules stores the name of each login rule that was applied during the login. | keyword |
 | teleport.audit.login.challenge_allow_reuse | ChallengeAllowReuse defines whether the MFA challenge allows reuse. | boolean |
 | teleport.audit.login.challenge_scope | ChallengeScope is the authorization scope for this MFA challenge. | keyword |
