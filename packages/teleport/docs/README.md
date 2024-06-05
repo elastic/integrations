@@ -65,6 +65,10 @@ An example event for `audit` looks as following:
     "network": {
         "protocol": "ssh"
     },
+    "observer": {
+        "ip": "::",
+        "port": 3022
+    },
     "orchestrator": {
         "cluster": {
             "name": "teleport.ericbeahan.com"
