@@ -272,7 +272,32 @@ processors:
        target_field: teleport.audit.okta.assignment.ending_status
        ignore_missing: true
 
-  # AccessListMember, AccessListReviewMembershipRequirementsChanged, AccessListReviewMetadata,
+  # Access list member metadata
+  -  rename:
+       field: teleport.audit.access_list_name
+       target_field: teleport.audit.access_list.name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.members
+       target_field: teleport.audit.access_list.members
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.roles
+       target_field: teleport.audit.access_list.membership_requirements_changed.roles
+       ignore_missing: true
+       if: ctx.teleport.audit.event?.action == 'access_list.review'
+  -  rename:
+       field: teleport.audit.traits
+       target_field: teleport.audit.access_list.membership_requirements_changed.traits
+       ignore_missing: true
+       if: ctx.teleport.audit.event?.action == 'access_list.review'
+  -  rename:
+       field: teleport.audit.message
+       target_field: teleport.audit.access_list.review_message
+       ignore_missing: true
+       if: ctx.teleport.audit.event?.action == 'access_list.review'
+
+
   # LockMetadata, skipped.
 
   # Session related events metadata.

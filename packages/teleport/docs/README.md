@@ -147,6 +147,18 @@ An example event for `audit` looks as following:
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| teleport.audit.access_list.members.joined_on | JoinedOn is the date that the member joined. | date |
+| teleport.audit.access_list.members.member_name | MemberName is the name of the member. | keyword |
+| teleport.audit.access_list.members.reason | Reason is the reason that the member was added, modified, or removed. | keyword |
+| teleport.audit.access_list.members.removed_on | RemovedOn is the date that the access list member was removed. Will only be populated for deletion. | date |
+| teleport.audit.access_list.membership_requirements_changed.roles | Roles are the roles that changed as part of a review. | keyword |
+| teleport.audit.access_list.membership_requirements_changed.traits | Traits are the traits that changed as part of a review. | flattened |
+| teleport.audit.access_list.name | AccessListName is the name of the access list the members are being added to or removed from. | keyword |
+| teleport.audit.access_list.removed_members | RemovedMembers are the members that were removed as part of the review. | keyword |
+| teleport.audit.access_list.review_day_of_month_changed | ReviewDayOfMonthChanged is populated if the review day of month has changed. | keyword |
+| teleport.audit.access_list.review_frequency_changed | ReviewFrequencyChanged is populated if the review frequency has changed. | keyword |
+| teleport.audit.access_list.review_id | ReviewID is the ID of the review. | keyword |
+| teleport.audit.access_list.review_message | Message is the message that was supplied during the review. | keyword |
 | teleport.audit.access_path_change.id | ChangeID is the id of the change. | keyword |
 | teleport.audit.access_path_change.resource.name | AffectedResourceName is the name of the affected resource. | keyword |
 | teleport.audit.access_path_change.resource.source | AffectedResourceSource is the source of the affected resource, ex: Teleport, AWS, GitLab, etc. | keyword |

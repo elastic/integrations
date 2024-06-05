@@ -5,8 +5,83 @@
 - name: teleport.audit.error_message
   type: text
   description: UserMessage is a user-friendly message for successfull or unsuccessfull auth attempt
-
 # Field subgroups
+- name: teleport.audit.access_list
+  type: group
+  description: >
+    Contains common metadata for access list member resource events
+
+  fields:
+    - name: name
+      type: keyword
+      description: >
+        AccessListName is the name of the access list the members are being added to or removed from.
+
+    - name: members
+      type: group
+      description: >
+        Members are all members affected by the access list membership change.
+
+      fields:
+        - name: joined_on
+          type: date
+          description: >
+            JoinedOn is the date that the member joined.
+
+        - name: removed_on
+          type: date
+          description: >
+            RemovedOn is the date that the access list member was removed. Will only be populated for deletion.
+
+        - name: reason
+          type: keyword
+          description: >
+            Reason is the reason that the member was added, modified, or removed.
+
+        - name: member_name
+          type: keyword
+          description: >
+            MemberName is the name of the member.
+
+    - name: membership_requirements_changed
+      type: group
+      description: >
+        MembershipRequirementsChanged is populated if the membership requirements have changed.
+
+      fields:
+        - name: roles
+          type: keyword
+          description: >
+            Roles are the roles that changed as part of a review.
+
+        - name: traits
+          type: flattened
+          description: >
+            Traits are the traits that changed as part of a review.
+
+    - name: review_message
+      type: keyword
+      description: >
+        Message is the message that was supplied during the review.
+
+    - name: review_id
+      type: keyword
+      description: >
+        ReviewID is the ID of the review.
+
+    - name: review_frequency_changed
+      type: keyword
+      description: >
+        ReviewFrequencyChanged is populated if the review frequency has changed.
+
+    - name: review_day_of_month_changed
+      type: keyword
+      description: >
+        ReviewDayOfMonthChanged is populated if the review day of month has changed.
+
+    - name: removed_members
+      type: keyword
+      description: "RemovedMembers are the members that were removed as part of the review.  \n"
 - name: teleport.audit.access_path_change
   type: group
   description: "Access path change event details.  \n"
