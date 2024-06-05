@@ -1318,6 +1318,19 @@ processors:
        ignore_missing: true
        if: 'ctx.event.action.startsWith("db.session.dynamodb")'
 
+  # UpgradeWindowStartMetadata contains common upgrade window information.
+  # See upgradewindow.yml for field definitions.
+  -  rename:
+       field: teleport.audit.upgrade_window_start
+       target_field: teleport.audit.upgradewindow.start
+       ignore_missing: true
+
+  # KubeClusterMetadata contains common kubernetes cluster information.
+  # This was called 'kubernetes_labels' in a different message.
+  - rename:
+      field: teleport.audit.kube_labels
+      target_field: teleport.audit.kubernetes.labels
+      ignore_missing: true
 
   # App session request related metadata
   # The HTTP-related fields are used for other events as well. They work as catch-all
