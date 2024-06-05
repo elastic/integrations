@@ -22,7 +22,7 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2024-02-23T18:57:27.101Z",
     "client": {
-        "address": "175.16.199.196:50343",
+        "address": "175.16.199.196",
         "geo": {
             "city_name": "Changchun",
             "continent_name": "Asia",
@@ -60,8 +60,7 @@ An example event for `audit` looks as following:
     },
     "host": {
         "hostname": "ip-175.16.199.98.us-east-2.compute.internal",
-        "id": "b321c207-fd08-46c8-b248-0c20436feb62",
-        "port": 3022
+        "id": "b321c207-fd08-46c8-b248-0c20436feb62"
     },
     "network": {
         "protocol": "ssh"
@@ -86,7 +85,7 @@ An example event for `audit` looks as following:
         ]
     },
     "server": {
-        "address": "175.16.199.98:443",
+        "address": "175.16.199.98",
         "ip": "175.16.199.98",
         "port": 443
     },
@@ -96,10 +95,6 @@ An example event for `audit` looks as following:
     "teleport": {
         "audit": {
             "server": {
-                "address": {
-                    "domain": "[::]",
-                    "original": "[::]:3022"
-                },
                 "labels": {
                     "hostname": "ip-175.16.199.98.us-east-2.compute.internal"
                 }
