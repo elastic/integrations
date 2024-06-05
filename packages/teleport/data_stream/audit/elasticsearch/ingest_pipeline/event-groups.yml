@@ -298,7 +298,13 @@ processors:
        if: ctx.teleport.audit.event?.action == 'access_list.review'
 
 
-  # LockMetadata, skipped.
+  # LockMetadata contains common metadata for lock resource events.
+  -  rename:
+       field: teleport.audit.target
+       tag: lock_target_field
+       target_field: teleport.audit.lock.target
+       ignore_missing: true
+       if: "ctx.event.action.startsWith('lock.')"
 
   # Session related events metadata.
   # See teleport.audit.session group for field definitions.
