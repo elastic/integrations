@@ -1238,6 +1238,10 @@ processors:
        ignore_missing: true
 
   # Elasticsearch related events
+  -  rename:
+       field: teleport.audit.headers
+       target_field: teleport.audit.request.headers
+       ignore_missing: true
   -  set:
        field: teleport.audit.database.elasticsearch.category
        value: 'GENERAL'
@@ -1443,6 +1447,12 @@ processors:
        field: teleport.audit.total_data_scanned_in_bytes
        target_field: teleport.audit.sec_report.total_data_scanned_in_bytes
        ignore_missing: true
+       if: ctx.event.action == 'secreports.report.run'
+  -  rename:
+       field: teleport.audit.data_scanned_in_bytes
+       target_field: teleport.audit.sec_report.total_data_scanned_in_bytes
+       ignore_missing: true
+       ignore_failure: true
        if: ctx.event.action == 'secreports.report.run'
   - rename:
       field: teleport.audit.sec_report.audit_queries

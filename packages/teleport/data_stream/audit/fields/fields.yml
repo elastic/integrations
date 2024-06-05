@@ -1,27 +1,26 @@
 - name: teleport.audit.access_path_change
   type: group
-  description: >
-    Access path change event details.  
-
+  description: "Access path change event details.  \n"
   fields:
     - name: id
       type: keyword
       description: >
         ChangeID is the id of the change.
+
     - name: resource
       type: group
       description: >
         Resource data
+
       fields:
         - name: name
           type: keyword
           description: >
             AffectedResourceName is the name of the affected resource.
+
         - name: source
           type: keyword
-          description: >
-            AffectedResourceSource is the source of the affected resource, ex: Teleport, AWS, GitLab, etc.  
-
+          description: "AffectedResourceSource is the source of the affected resource, ex: Teleport, AWS, GitLab, etc.  \n"
 - name: teleport.audit.access_request
   type: group
   description: "Access request creation and update metadata"
@@ -42,8 +41,7 @@
       type: keyword
       description: "Reason is an optional description of why the request is being created or updated."
     - name: annotations
-      type: object
-      object_type: keyword
+      type: flattened
       description: "Annotations is an optional set of attributes supplied by a plugin during approval/denial of the request."
     - name: reviewer
       type: keyword
@@ -52,8 +50,7 @@
       type: keyword
       description: "ProposedState is the state proposed by a review."
     - name: resource_ids
-      type: object
-      object_type: keyword
+      type: flattened
       description: "RequestedResourceIDs is the set of resources to which access is being requested."
     - name: max_duration
       type: date
@@ -75,8 +72,7 @@
           type: keyword
           description: "ResourceType is the type of resource being searched for."
         - name: labels
-          type: object
-          object_type: keyword
+          type: flattened
           description: "Labels is the label-based matcher used for the search."
         - name: predicate_expression
           type: keyword
@@ -92,8 +88,7 @@
       type: keyword
       description: "AppPublicAddr is the configured application public address."
     - name: labels
-      type: object
-      object_type: keyword
+      type: flattened
       description: "AppLabels are the configured application labels."
     - name: name
       type: keyword
@@ -127,34 +122,33 @@
         - name: assumed_role
           type: keyword
           description: "AWSAssumedRole is the assumed role that signed this request."
-
 - name: teleport.audit.audit_query
   type: group
-  description: >
-    Additional query information.  
-
+  description: "Additional query information.  \n"
   fields:
     - name: name
       type: keyword
       description: >
         Name is the name of the query.
+
     - name: query
       type: keyword
       description: >
         Query is the query that was run.
+
     - name: days
       type: integer
       description: >
         Days is the number of days time range for the query.
+
     - name: total_execution_time_in_millis
       type: long
       description: >
         ExecutionTimeInMillis is the total execution time of the query.
+
     - name: data_scanned_in_bytes
       type: long
-      description: >
-        DataScannedInBytes is the amount of data scanned by the query.  
-
+      description: "DataScannedInBytes is the amount of data scanned by the query.  \n"
 - name: teleport.audit.certificate
   type: group
   description: "Certificate issuance metadata"
@@ -217,8 +211,7 @@
             KubernetesCluster specifies the target kubernetes cluster for TLS identities.
 
         - name: traits
-          type: object
-          object_type: keyword
+          type: flattened
           description: >
             Traits hold claim data used to populate a role at runtime.
 
@@ -398,8 +391,7 @@
         DatabaseUser is the database username used to connect.
 
     - name: labels
-      type: object
-      object_type: keyword
+      type: flattened
       description: >
         DatabaseLabels is the database resource labels.
 
@@ -431,31 +423,31 @@
 
         - name: ssm_run
           type: group
-          description: >
-            AWS SSM document execution metadata  
-
+          description: "AWS SSM document execution metadata  \n"
           fields:
             - name: command_id
               type: keyword
               description: >
                 CommandID is the id of the SSM command that was run.
+
             - name: stdout
               type: text
               description: >
                 StandardOutput contains the stdout of the executed command. Only the first 24000 chars are returned.
+
             - name: stderr
               type: text
               description: >
                 StandardError contains the stderr of the executed command. Only the first 24000 chars are returned.
+
             - name: status
               type: keyword
               description: >
                 Status represents the success or failure status of a script run.
+
             - name: invocation_url
               type: keyword
-              description: >
-                InvocationURL is a link to AWS Web Console for this invocation. An invocation is the execution of a Command in an Instance.  
-
+              description: "InvocationURL is a link to AWS Web Console for this invocation. An invocation is the execution of a Command in an Instance.  \n"
     - name: gcp
       type: group
       description: >
@@ -496,8 +488,7 @@
         DatabaseQueryParameters are the query parameters for prepared statements.
 
     - name: permission_summary
-      type: object
-      object_type: keyword
+      type: flattened
       description: >
         PermissionSummary is a summary of applied permissions.
 
@@ -545,62 +536,58 @@
         - name: function_args
           type: keyword
           description: "FunctionArgs contains formatted function arguments."
-
     - name: mysql
       type: group
-      description: >
-        MySQL related events  
-
+      description: "MySQL related events  \n"
       fields:
         - name: statement_id
           type: long
           description: >
             StatementID is the identifier of the prepared statement.
+
         - name: schema_name
           type: keyword
           description: >
             SchemaName is the name of the schema to use/create/drop.
+
         - name: process_id
           type: long
           description: >
             ProcessID is the process ID of a connection.
+
         - name: subcommand
           type: keyword
           description: >
             Subcommand is the string representation of the subcommand.
+
         - name: parameter_id
           type: integer
           description: >
             ParameterID is the identifier of the parameter.
+
         - name: data_size
           type: integer
           description: >
             DataSize is the size of the data.
+
         - name: rows_count
           type: integer
-          description: >
-            RowsCount is the number of rows to fetch.  
-
+          description: "RowsCount is the number of rows to fetch.  \n"
     - name: proc_name
       type: keyword
-      description: >
-        Procname is the RPC SQL Server procedure name.  
-
+      description: "Procname is the RPC SQL Server procedure name.  \n"
     - name: payload
       type: binary
-      description: >
-        Payload is the malformed packet payload.  
-
+      description: "Payload is the malformed packet payload.  \n"
     - name: elasticsearch
       type: group
-      description: >
-        Elasticsearch related events  
-
+      description: "Elasticsearch related events  \n"
       fields:
         - name: category
           type: keyword
           description: >
             Category represents the category if API being accessed in a given request.
+
         - name: target
           type: keyword
           description: >
@@ -608,30 +595,23 @@
 
     - name: opensearch
       type: group
-      description: >
-        OpenSearch related events    
-
+      description: "OpenSearch related events    \n"
       fields:
         - name: category
           type: keyword
           description: >
             Category represents the category if API being accessed in a given request.
+
         - name: target
           type: keyword
-          description: >
-            Target is an optional field indicating the target index or set of indices used as a subject of request.  
-
+          description: "Target is an optional field indicating the target index or set of indices used as a subject of request.  \n"
     - name: dynamodb
       type: group
-      description: >
-        DynamoDB related events    
-
+      description: "DynamoDB related events    \n"
       fields:
         - name: target
           type: keyword
-          description: >
-            Target is the API target in the X-Amz-Target header.  
-
+          description: "Target is the API target in the X-Amz-Target header.  \n"
     - name: cassandra
       type: group
       description: >
@@ -642,43 +622,42 @@
           type: keyword
           description: >
             Keyspace is the keyspace the statement is in.
+
         - name: query_id
           type: keyword
           description: >
             QueryId is the prepared query id to execute.
+
         - name: consistency
           type: keyword
           description: >
             Consistency is the consistency level to use.
+
         - name: batch_type
           type: keyword
           description: >
             BatchType is the type of batch.
+
         - name: children
-          type: object
+          type: flattened
           description: >
             Children is batch children statements.
+
         - name: event_types
           type: keyword
-          description: >
-            EventTypes is the list of event types to register for.  
-
+          description: "EventTypes is the list of event types to register for.  \n"
     - name: spanner.rpc
       type: group
-      description: >
-        Spanner RPC event details.  
-
+      description: "Spanner RPC event details.  \n"
       fields:
         - name: procedure
           type: keyword
           description: >
             Procedure is the name of the remote procedure.
+
         - name: args
-          type: object
-          description: >
-            Args are the RPC arguments.  
-
-
+          type: flattened
+          description: "Args are the RPC arguments.  \n"
 - name: teleport.audit.desktop
   type: group
   description: Desktop events metadata
@@ -714,8 +693,7 @@
         WindowsUser is the Windows username used to connect.
 
     - name: labels
-      type: object
-      object_type: keyword
+      type: flattened
       description: >
         DesktopLabels are the labels on the desktop resource.
 
@@ -731,7 +709,6 @@
       type: boolean
       description: >
         Recorded is true if the session was recorded, false otherwise.
-
 
 - name: teleport.audit.device
   type: group
@@ -758,51 +735,53 @@
     - name: web_session_id
       type: keyword
       description: "Web Session ID associated with the device."
-
 - name: teleport.audit.external_audit_storage
   type: group
-  description: >
-    External Audit Storage configuration details.  
-
+  description: "External Audit Storage configuration details.  \n"
   fields:
     - name: integration_name
       type: keyword
       description: >
         IntegrationName is the name of the AWS OIDC integration used.
+
     - name: session_recordings_uri
       type: keyword
       description: >
         SessionsRecordingsURI is the S3 path used to store session recordings.
+
     - name: athena_workgroup
       type: keyword
       description: >
         AthenaWorkgroup is the workgroup used for Athena audit log queries.
+
     - name: glue_database
       type: keyword
       description: >
         GlueDatabase is the database used for Athena audit log queries.
+
     - name: glue_table
       type: keyword
       description: >
         GlueTable is the table used for Athena audit log queries.
+
     - name: audit_events_long_term_uri
       type: keyword
       description: >
         AuditEventsLongTermURI is the S3 path used to store batched parquet files with audit events, partitioned by event date.
+
     - name: athena_results_uri
       type: keyword
       description: >
         AthenaResultsURI is the S3 path used to store temporary results generated by Athena.
+
     - name: policy_name
       type: keyword
       description: >
         PolicyName is the name of the IAM policy attached to the OIDC integration role.
+
     - name: region
       type: keyword
-      description: >
-        Region is the AWS region where the infrastructure is hosted.  
-
-
+      description: "Region is the AWS region where the infrastructure is hosted.  \n"
 - name: teleport.audit.file_transfer_request
   type: group
   description: "FileTransferRequestEvent happens when a FileTransferRequest is created, updated, approved, or denied. "
@@ -849,8 +828,7 @@
       type: keyword
       description: "TokenName is the name of the provision token used to join."
     - name: attributes
-      type: object
-      object_type: keyword
+      type: flattened
       description: "Attributes is a map of attributes received from the join method provider."
     - name: user_name
       type: keyword
@@ -883,10 +861,8 @@
         KubernetesGroups is a list of Kubernetes groups for the user.
 
     - name: labels
-      type: object
-      object_type: keyword
+      type: flattened
       description: "KubernetesLabels are the labels (static and dynamic) of the Kubernetes cluster the session occurred on."
-
     - name: pod
       type: group
       description: >
@@ -940,7 +916,6 @@
           description: >
             ResourceName is the API resource name.
 
-
 - name: teleport.audit.login
   type: group
   description: "User login and MFA challenge metadata"
@@ -949,8 +924,7 @@
       type: keyword
       description: "Method is the event field indicating how the login was performed"
     - name: identity_attributes
-      type: object
-      object_type: keyword
+      type: flattened
       description: "IdentityAttributes is a map of user attributes received from identity provider"
     - name: applied_login_rules
       type: keyword
@@ -1003,26 +977,32 @@
       type: keyword
       description: >
         OrgUrl is the URL of the Okta organization being synced to.
+
     - name: app_id
       type: keyword
       description: >
         AppId is the optional ID of an Okta Application that Teleport is using as its gateway into Okta.
+
     - name: num_users_created
       type: integer
       description: >
         NumUsersCreated is the number of Teleport users created in this synchronization pass.
+
     - name: num_users_deleted
       type: integer
       description: >
         NumUsersDeleted is the number of Teleport users deleted in this synchronization pass.
+
     - name: num_users_modified
       type: integer
       description: >
         NumUserModified is the number of Teleport users modified in this synchronization pass.
+
     - name: num_users_total
       type: integer
       description: >
         NumUsersTotal is the total number of Teleport users managed by the Okta integration at the end of the synchronization pass.
+
     - name: resources_updated
       type: group
       description: "OktaResourcesUpdatedMetadata contains common metadata for Okta resources updated events."
@@ -1080,6 +1060,13 @@
     - name: ttl
       type: keyword
       description: "TTL is a TTL of reset password token represented as duration, e.g. \"10m\""
+- name: teleport.audit.request
+  type: group
+  description: Request metadata not contained in ECS
+  fields:
+    - name: headers
+      type: flattened
+      description: Headers are the HTTP request headers.
 - name: teleport.audit.saml_idp_service_provider
   type: group
   description: "SAMLIdPServiceProviderMetadata contains common metadata for SAML IdP service provider events."
@@ -1091,41 +1078,38 @@
       type: keyword
       description: "ServiceProviderShortcut is the shortcut name of a service provider."
     - name: attribute_mapping
-      type: object
-      object_type: keyword
+      type: flattened
       description: "AttributeMapping is a map of attribute name and value which will be asserted in SAML response."
-
 - name: teleport.audit.sec_report
   type: group
-  description: >
-    Access Monitoring Report information.  
-
+  description: "Access Monitoring Report information.  \n"
   fields:
     - name: name
       type: keyword
       description: >
         Name is the name of the Access Monitoring Report.
+
     - name: version
       type: keyword
       description: >
         Version is the version of security report.
+
     - name: total_execution_time_in_millis
       type: long
       description: >
         TotalExecutionTimeInMillis is the total execution time of the query.
+
     - name: total_data_scanned_in_bytes
       type: long
       description: >
         TotalDataScannedInBytes is the amount of data scanned by the query.
-
 
 - name: teleport.audit.server
   type: group
   description: "Server metadata"
   fields:
     - name: labels
-      type: object
-      object_type: keyword
+      type: flattened
       description: >
         ServerLabels are the labels (static and dynamic) of the server the session occurred on.
 
@@ -1185,39 +1169,38 @@
     - name: action
       type: keyword
       description: "Action is what kind of file operation"
-
 - name: teleport.audit.svid
   type: group
-  description: >
-    SPIFFE SVID issued event details.  
-
+  description: "SPIFFE SVID issued event details.  \n"
   fields:
     - name: spiffe_id
       type: keyword
       description: >
         SPIFFEID is the SPIFFE ID of the issued SVID.
+
     - name: dns_sans
       type: keyword
       description: >
         DNSSANs is the list of DNS SANs in the issued SVID.
+
     - name: ip_sans
       type: keyword
       description: >
         IPSANs is the list of IP SANs in the issued SVID.
+
     - name: type
       type: keyword
       description: >
         SVIDType is `jwt` or `x509.
+
     - name: serial_number
       type: keyword
       description: >
         SerialNumber is the serial number of the issued SVID.
+
     - name: hint
       type: keyword
-      description: >
-        Hint is the hint of the issued SVID.  
-
-
+      description: "Hint is the hint of the issued SVID.  \n"
 - name: teleport.audit.unknown
   type: group
   description: "Unknown is a fallback event used when we don't recognize an event from the backend."
@@ -1235,18 +1218,13 @@
     - name: data
       type: wildcard
       description: "Data is the serialized JSON data of the unknown event."
-
 - name: teleport.audit.upgradewindow
   type: group
-  description: >
-    Upgrade window metadata  
-
+  description: "Upgrade window metadata  \n"
   fields:
     - name: start
       type: keyword
-      description: >
-        UpgradeWindowStart is the upgrade window time.  
-
+      description: "UpgradeWindowStart is the upgrade window time.  \n"
 - name: teleport.audit.user
   type: group
   description: "Common user event metadata"
