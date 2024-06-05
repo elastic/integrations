@@ -1396,6 +1396,59 @@ processors:
        target_field: teleport.audit.database.cassandra.event_types
        ignore_missing: true
 
+  # AuditQueryRun is emitted when a user runs an audit query.
+  -  rename:
+       field: teleport.audit.name
+       target_field: teleport.audit.audit_query.name
+       ignore_missing: true
+       if: ctx.event.action == 'secreports.audit.query.run'
+  -  rename:
+       field: teleport.audit.query
+       target_field: teleport.audit.audit_query.query
+       ignore_missing: true
+       if: ctx.event.action == 'secreports.audit.query.run'
+  -  rename:
+       field: teleport.audit.days
+       target_field: teleport.audit.audit_query.days
+       ignore_missing: true
+       if: ctx.event.action == 'secreports.audit.query.run'
+  -  rename:
+       field: teleport.audit.total_execution_time_in_millis
+       target_field: teleport.audit.audit_query.total_execution_time_in_millis
+       ignore_missing: true
+       if: ctx.event.action == 'secreports.audit.query.run'
+  -  rename:
+       field: teleport.audit.data_scanned_in_bytes
+       target_field: teleport.audit.audit_query.data_scanned_in_bytes
+       ignore_missing: true
+       if: ctx.event.action == 'secreports.audit.query.run'
+
+  # SecurityReportRun is emitted when a user runs an audit query.
+  -  rename:
+       field: teleport.audit.name
+       target_field: teleport.audit.sec_report.name
+       ignore_missing: true
+       if: ctx.event.action == 'secreports.report.run'
+  -  rename:
+       field: teleport.audit.version
+       target_field: teleport.audit.sec_report.version
+       ignore_missing: true
+       if: ctx.event.action == 'secreports.report.run'
+  -  rename:
+       field: teleport.audit.total_execution_time_in_millis
+       target_field: teleport.audit.sec_report.total_execution_time_in_millis
+       ignore_missing: true
+       if: ctx.event.action == 'secreports.report.run'
+  -  rename:
+       field: teleport.audit.total_data_scanned_in_bytes
+       target_field: teleport.audit.sec_report.total_data_scanned_in_bytes
+       ignore_missing: true
+       if: ctx.event.action == 'secreports.report.run'
+  - rename:
+      field: teleport.audit.sec_report.audit_queries
+      target_field: teleport.audit.audit_query
+      ignore_missing: true
+      if: ctx.event.action == 'secreports.report.run'
 
   # App session request related metadata
   # The HTTP-related fields are used for other events as well. They work as catch-all
