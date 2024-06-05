@@ -59,10 +59,34 @@ processors:
       name: '{{ IngestPipeline "event-categories" }}'
       ignore_failure: true
 
-  # Process the remaining field groups.
+  # Process most of the field groups.
   - pipeline:
       name: '{{ IngestPipeline "event-groups" }}'
       ignore_failure: true
+
+  # App session request related metadata
+  # The HTTP-related fields are used for other events as well. They work as catch-all
+  # fields and should be at the end of the group processing.
+  -  rename:
+       field: teleport.audit.status_code
+       target_field: http.response.status_code
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.path
+       target_field: url.path
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.raw_query
+       target_field: url.query
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.method
+       target_field: http.request.method
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.body
+       target_field: http.request.body.content
+       ignore_missing: true
 
   # Enrich geo fields.
   - geoip:
