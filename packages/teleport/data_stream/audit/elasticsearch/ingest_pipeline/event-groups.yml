@@ -821,25 +821,6 @@ processors:
        target_field: teleport.audit.app.session.session_chunk_id
        ignore_missing: true
 
-  # App session request related metadata
-  # The HTTP-related fields are used for other events as well.
-  -  rename:
-       field: teleport.audit.status_code
-       target_field: http.response.status_code
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.path
-       target_field: url.path
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.raw_query
-       target_field: url.query
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.method
-       target_field: http.request.method
-       ignore_missing: true
-
   # AWS related metadata
   -  rename:
        field: teleport.audit.aws_region
@@ -1056,6 +1037,7 @@ processors:
        field: teleport.audit.method
        target_field: teleport.audit.join.method
        ignore_missing: true
+       if: 'ctx.event.action?.endsWith(".join")'
   -  rename:
        field: teleport.audit.token_name
        target_field: teleport.audit.join.token_name
@@ -1256,11 +1238,6 @@ processors:
        ignore_missing: true
 
   # Elasticsearch related events
-  -  rename:
-       field: teleport.audit.body
-       target_field: http.request.body.content
-       ignore_missing: true
-       if: 'ctx.event.action.startsWith("db.session.elasticsearch")'
   -  set:
        field: teleport.audit.database.elasticsearch.category
        value: 'GENERAL'
@@ -1298,11 +1275,6 @@ processors:
        if: 'ctx.event.action.startsWith("db.session.elasticsearch")'
 
   # OpenSearch related events
-  -  rename:
-       field: teleport.audit.body
-       target_field: http.request.body.content
-       ignore_missing: true
-       if: 'ctx.event.action.startsWith("db.session.opensearch")'
   -  set:
        field: teleport.audit.database.opensearch.category
        value: 'GENERAL'
@@ -1339,6 +1311,37 @@ processors:
        ignore_missing: true
        if: 'ctx.event.action.startsWith("db.session.opensearch")'
 
+  # DynamoDB related events
+  -  rename:
+       field: teleport.audit.target
+       target_field: teleport.audit.database.dynamodb.target
+       ignore_missing: true
+       if: 'ctx.event.action.startsWith("db.session.dynamodb")'
+
+
+  # App session request related metadata
+  # The HTTP-related fields are used for other events as well. They work as catch-all
+  # fields and shoud be at the end.
+  -  rename:
+       field: teleport.audit.status_code
+       target_field: http.response.status_code
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.path
+       target_field: url.path
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.raw_query
+       target_field: url.query
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.method
+       target_field: http.request.method
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.body
+       target_field: http.request.body.content
+       ignore_missing: true
 
 # What to do if the processing fails.
 on_failure:
