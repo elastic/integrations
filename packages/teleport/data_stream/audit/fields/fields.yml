@@ -367,6 +367,43 @@
           description: >
             DatabaseAWSRedshiftClusterID is cluster ID for Redshift databases.
 
+        - name: instance_id
+          type: keyword
+          description: >
+            InstanceID is the id of the EC2 instance the command was run on.
+
+        - name: account_id
+          type: keyword
+          description: >
+            AccountID is the id of the AWS account that ran the command.
+
+        - name: ssm_run
+          type: group
+          description: >
+            AWS SSM document execution metadata  
+
+          fields:
+            - name: command_id
+              type: keyword
+              description: >
+                CommandID is the id of the SSM command that was run.
+            - name: stdout
+              type: text
+              description: >
+                StandardOutput contains the stdout of the executed command. Only the first 24000 chars are returned.
+            - name: stderr
+              type: text
+              description: >
+                StandardError contains the stderr of the executed command. Only the first 24000 chars are returned.
+            - name: status
+              type: keyword
+              description: >
+                Status represents the success or failure status of a script run.
+            - name: invocation_url
+              type: keyword
+              description: >
+                InvocationURL is a link to AWS Web Console for this invocation. An invocation is the execution of a Command in an Instance.  
+
     - name: gcp
       type: group
       description: >
@@ -957,6 +994,8 @@
     - name: action
       type: keyword
       description: "Action is what kind of file operation"
+
+
 - name: teleport.audit.unknown
   type: group
   description: "Unknown is a fallback event used when we don't recognize an event from the backend."
