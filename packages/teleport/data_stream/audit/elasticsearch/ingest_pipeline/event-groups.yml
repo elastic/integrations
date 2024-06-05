@@ -959,7 +959,7 @@ processors:
        ignore_missing: true
   -  rename:
        field: teleport.audit.parameters
-       target_field: teleport.audit.database.postgres.parameters
+       target_field: teleport.audit.database.query_parameters
        ignore_missing: true
   -  rename:
        field: teleport.audit.function_oid
@@ -1201,6 +1201,58 @@ processors:
        field: teleport.audit.search_keywords
        target_field: teleport.audit.access_request.resource_search.search_keywords
        ignore_missing: true
+
+  # MySQL related events
+  # See teleport.audit.database.mysql group for field definitions.
+  -  rename:
+       field: teleport.audit.query
+       target_field: teleport.audit.database.query
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.statement_id
+       target_field: teleport.audit.database.mysql.statement_id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.parameters
+       target_field: teleport.audit.database.query_parameters
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.schema_name
+       target_field: teleport.audit.database.mysql.schema_name
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.process_id
+       target_field: teleport.audit.database.mysql.process_id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.subcommand
+       target_field: teleport.audit.database.mysql.subcommand
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.parameter_id
+       target_field: teleport.audit.database.mysql.parameter_id
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.data_size
+       target_field: teleport.audit.database.mysql.data_size
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.rows_count
+       target_field: teleport.audit.database.mysql.rows_count
+       ignore_missing: true
+
+  # SQLServerRPCRequest is emitted when a user executes a MSSQL Server RPC command.
+  - rename:
+      field: teleport.audit.proc_name
+      target_field: teleport.audit.database.proc_name
+      ignore_missing: true
+
+  # DatabaseSessionMalformedPacket is emitted when a database sends a malformed packet.
+  -  rename:
+       field: teleport.audit.payload
+       target_field: teleport.audit.database.payload
+       ignore_missing: true
+
 
 # What to do if the processing fails.
 on_failure:
