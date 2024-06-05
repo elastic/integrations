@@ -144,6 +144,12 @@ processors:
   - remove:
       field: stormshield.origdst
       if: ctx.stormshield?.origdst != null
+  - remove:
+      field: destination.geo
+      ignore_missing: true
+  - remove:
+      field: source.geo
+      ignore_missing: true
 
   - geoip:
       field: destination.ip
@@ -260,12 +266,12 @@ processors:
   - rename:
       field: stormshield.dstcountry
       target_field: destination.geo.country_iso_code
-      if: ctx.stormshield?.dstcountry != null && ctx.destination?.geo?.country_iso_code == null
+      if: ctx.stormshield?.dstcountry != null && ctx.destination?.geo == null
 
   - rename:
       field: stormshield.srccountry
       target_field: source.geo.country_iso_code
-      if: ctx.stormshield?.srccountry != null && ctx.source?.geo?.country_iso_code == null
+      if: ctx.stormshield?.srccountry != null && ctx.source?.geo == null
 
   - uppercase:
       field: stormshield.srcmac
