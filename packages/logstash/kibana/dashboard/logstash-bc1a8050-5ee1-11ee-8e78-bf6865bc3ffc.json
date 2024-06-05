@@ -41,7 +41,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation** \n\n**Logstash Overview**\n\n[Overview](/app/dashboards#/view/logstash-79270240-48ee-11ee-8cb5-99927777c522)  \n[Nodes Overview](/app/dashboards#/view/logstash-ee860840-41ed-11ee-874b-fdb94cc3273a)  \n[Node Overview](/app/dashboards#/view/logstash-9d450b10-4680-11ee-9ddc-919f87fe352d)  \n[Node Overview Advanced View](/app/dashboards#/view/logstash-a42d7060-45e6-11ee-957b-3720c0b0fbc5)  \n\n[Pipelines Overview](/app/dashboards#/view/logstash-c0594170-526a-11ee-9ecc-31444cb79548)  \n**[Pipeline Details Overview](/app/dashboards#/view/logstash-bc1a8050-5ee1-11ee-8e78-bf6865bc3ffc)**  \n\n\nOverview\n\nThis Dashboard gives a detailed view of a Logstash pipeline.  \n   \nUse the filters to drill down on individual nodes and pipelines.\n  \nPlugin drilldowns are available by clicking on the plugin in the table views for inputs, filters and outputs.    \n\nSpecialized drilldowns are available for the dissect and grok filters, and the elasticsearch output.  \n\n",
+                            "markdown": "**Navigation** \n\n**Logstash Overview**\n\n[Overview](/app/dashboards#/view/logstash-79270240-48ee-11ee-8cb5-99927777c522)  \n[Nodes Overview](/app/dashboards#/view/logstash-ee860840-41ed-11ee-874b-fdb94cc3273a)  \n[Node Overview](/app/dashboards#/view/logstash-9d450b10-4680-11ee-9ddc-919f87fe352d)  \n[Node Overview Advanced View](/app/dashboards#/view/logstash-a42d7060-45e6-11ee-957b-3720c0b0fbc5)  \n\n[Pipelines Overview](/app/dashboards#/view/logstash-c0594170-526a-11ee-9ecc-31444cb79548)  \n**[Pipeline Details Overview](/app/dashboards#/view/logstash-bc1a8050-5ee1-11ee-8e78-bf6865bc3ffc)**  \n\n\nOverview\n\nThis Dashboard gives a detailed view of a Logstash pipeline.\n   \nUse the filters to drill down on individual nodes and pipelines. This view works best when focused on a single pipeline.\n  \nPlugin drilldowns are available by clicking on the plugin in the table views for inputs, filters and outputs.    \n\nSpecialized drilldowns are available for the dissect and grok filters, and the elasticsearch output.  \n\n",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -418,6 +418,211 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logstash-sm-metrics",
+                                    "layers": {
+                                        "4d13c1a7-6b92-47fe-8baf-7ca505bd9fda": {
+                                            "columnOrder": [
+                                                "31515c2b-a1f2-4da6-a5f7-f6f2ad8bc7d3",
+                                                "1c9f4a0d-3d6f-4126-afbb-ba4745e565d5",
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececf",
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX0",
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX1"
+                                            ],
+                                            "columns": {
+                                                "1c9f4a0d-3d6f-4126-afbb-ba4745e565d5": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "31515c2b-a1f2-4da6-a5f7-f6f2ad8bc7d3": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Pipeline Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "filter": {
+                                                                "language": "kuery",
+                                                                "query": "\"logstash.pipeline.total.flow.worker_utilization.last_1_minute\": *"
+                                                            },
+                                                            "isBucketed": false,
+                                                            "label": "Last value of logstash.pipeline.total.flow.worker_utilization.last_1_minute",
+                                                            "operationType": "last_value",
+                                                            "params": {
+                                                                "sortField": "@timestamp"
+                                                            },
+                                                            "scale": "ratio",
+                                                            "sourceField": "logstash.pipeline.total.flow.worker_utilization.last_1_minute"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "logstash.host.name"
+                                                },
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececf": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Worker Utilization",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "last_value(logstash.pipeline.total.flow.worker_utilization.last_1_minute)/100",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"logstash.pipeline.total.flow.worker_utilization.last_1_minute\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Part of Worker Utilization",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "logstash.pipeline.total.flow.worker_utilization.last_1_minute"
+                                                },
+                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Worker Utilization",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX0",
+                                                                100
+                                                            ],
+                                                            "location": {
+                                                                "max": 77,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "last_value(logstash.pipeline.total.flow.worker_utilization.last_1_minute)/100",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "d9cd1ee6-586c-41b4-9d5f-976cd8eececfX0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logstash-sm-metrics",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d9cd1ee6-586c-41b4-9d5f-976cd8eececf"
+                                        ],
+                                        "layerId": "4d13c1a7-6b92-47fe-8baf-7ca505bd9fda",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "31515c2b-a1f2-4da6-a5f7-f6f2ad8bc7d3",
+                                        "xAccessor": "1c9f4a0d-3d6f-4126-afbb-ba4745e565d5"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Average Time processed per event (ms)",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "6f7df80f-6315-417a-8b95-bbcdc938e4df",
+                    "w": 40,
+                    "x": 8,
+                    "y": 5
+                },
+                "panelIndex": "6f7df80f-6315-417a-8b95-bbcdc938e4df",
+                "title": "Worker Utilization (%)",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logstash-sm-metrics",
+                                "name": "indexpattern-datasource-layer-4d13c1a7-6b92-47fe-8baf-7ca505bd9fda",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
                                     "layers": {
                                         "4d13c1a7-6b92-47fe-8baf-7ca505bd9fda": {
                                             "columnOrder": [
@@ -647,7 +852,7 @@
                     "i": "7d85767a-5dbb-4704-8716-1d4c30a5f675",
                     "w": 40,
                     "x": 8,
-                    "y": 5
+                    "y": 17
                 },
                 "panelIndex": "7d85767a-5dbb-4704-8716-1d4c30a5f675",
                 "title": "Average Time processed per event (ms)",
@@ -809,7 +1014,7 @@
                     "i": "f03395de-a163-4204-ac82-83c0ea542eeb",
                     "w": 20,
                     "x": 8,
-                    "y": 17
+                    "y": 29
                 },
                 "panelIndex": "f03395de-a163-4204-ac82-83c0ea542eeb",
                 "title": "Events received per second",
@@ -1051,7 +1256,7 @@
                     "i": "5171ef08-d301-4a9c-832b-40f41c9ad24d",
                     "w": 20,
                     "x": 28,
-                    "y": 17
+                    "y": 29
                 },
                 "panelIndex": "5171ef08-d301-4a9c-832b-40f41c9ad24d",
                 "title": "Persistent Queue utilization (%)",
@@ -1213,7 +1418,7 @@
                     "i": "4fad1f03-99d3-4834-a6c4-bea283178567",
                     "w": 20,
                     "x": 8,
-                    "y": 26
+                    "y": 38
                 },
                 "panelIndex": "4fad1f03-99d3-4834-a6c4-bea283178567",
                 "title": "Events emitted per second",
@@ -1380,7 +1585,7 @@
                     "i": "a3444242-6e3e-4959-8815-43e65b3e8d69",
                     "w": 20,
                     "x": 28,
-                    "y": 26
+                    "y": 38
                 },
                 "panelIndex": "a3444242-6e3e-4959-8815-43e65b3e8d69",
                 "title": "Persistent Queue size (events)",
@@ -1416,7 +1621,7 @@
                     "i": "681d5f97-e2f4-4a74-9710-7e75bb73fea8",
                     "w": 24,
                     "x": 16,
-                    "y": 35
+                    "y": 47
                 },
                 "panelIndex": "681d5f97-e2f4-4a74-9710-7e75bb73fea8",
                 "title": "Plugins",
@@ -1947,7 +2152,7 @@
                     "i": "9a34af7e-5f12-49b4-86e0-5577203711eb",
                     "w": 40,
                     "x": 8,
-                    "y": 39
+                    "y": 51
                 },
                 "panelIndex": "9a34af7e-5f12-49b4-86e0-5577203711eb",
                 "type": "lens"
@@ -2150,7 +2355,7 @@
                     "i": "f94ee279-63d8-45de-bfa0-9c93416b9752",
                     "w": 40,
                     "x": 8,
-                    "y": 46
+                    "y": 58
                 },
                 "panelIndex": "f94ee279-63d8-45de-bfa0-9c93416b9752",
                 "title": "Time spent pushing to queues",
@@ -2358,7 +2563,7 @@
                     "i": "1eabaf75-95dd-4cae-95d5-f00efe978872",
                     "w": 20,
                     "x": 8,
-                    "y": 55
+                    "y": 67
                 },
                 "panelIndex": "1eabaf75-95dd-4cae-95d5-f00efe978872",
                 "title": "Events emitted per second",
@@ -2528,7 +2733,7 @@
                     "i": "3470dd76-7ebd-4b19-a3de-fa0082a72ee5",
                     "w": 20,
                     "x": 28,
-                    "y": 55
+                    "y": 67
                 },
                 "panelIndex": "3470dd76-7ebd-4b19-a3de-fa0082a72ee5",
                 "title": "Input Flow",
@@ -2565,7 +2770,7 @@
                     "i": "7f5bcb0f-394c-4bbd-b17a-c163a28a9315",
                     "w": 24,
                     "x": 16,
-                    "y": 64
+                    "y": 76
                 },
                 "panelIndex": "7f5bcb0f-394c-4bbd-b17a-c163a28a9315",
                 "title": "Plugins",
@@ -3257,7 +3462,7 @@
                     "i": "97bcb728-f0e5-4047-aade-2ef56bd33c22",
                     "w": 40,
                     "x": 8,
-                    "y": 68
+                    "y": 80
                 },
                 "panelIndex": "97bcb728-f0e5-4047-aade-2ef56bd33c22",
                 "type": "lens"
@@ -3542,7 +3747,7 @@
                     "i": "f8033492-7353-4564-83d5-6715e387f9ac",
                     "w": 40,
                     "x": 8,
-                    "y": 82
+                    "y": 94
                 },
                 "panelIndex": "f8033492-7353-4564-83d5-6715e387f9ac",
                 "title": "Average time spent processing each event",
@@ -3750,7 +3955,7 @@
                     "i": "d6db9db8-7da0-435c-8118-9d0c36d2573d",
                     "w": 20,
                     "x": 8,
-                    "y": 92
+                    "y": 104
                 },
                 "panelIndex": "d6db9db8-7da0-435c-8118-9d0c36d2573d",
                 "title": "Events received per second",
@@ -3955,7 +4160,7 @@
                     "i": "03d92828-8549-4cd9-a7ea-12f25502cef1",
                     "w": 20,
                     "x": 28,
-                    "y": 92
+                    "y": 104
                 },
                 "panelIndex": "03d92828-8549-4cd9-a7ea-12f25502cef1",
                 "title": "Worker utilization",
@@ -4163,7 +4368,7 @@
                     "i": "55b1238e-1f8e-4b73-8dfc-906aa2eecbb6",
                     "w": 20,
                     "x": 8,
-                    "y": 103
+                    "y": 115
                 },
                 "panelIndex": "55b1238e-1f8e-4b73-8dfc-906aa2eecbb6",
                 "title": "Events emitted per second",
@@ -4352,7 +4557,7 @@
                     "i": "48f64446-f5ca-451d-8a59-bb12b4807381",
                     "w": 20,
                     "x": 28,
-                    "y": 103
+                    "y": 115
                 },
                 "panelIndex": "48f64446-f5ca-451d-8a59-bb12b4807381",
                 "title": "Worker milliseconds per event",
@@ -4389,7 +4594,7 @@
                     "i": "cfd22405-6008-4373-ad69-94e70427e259",
                     "w": 24,
                     "x": 17,
-                    "y": 114
+                    "y": 126
                 },
                 "panelIndex": "cfd22405-6008-4373-ad69-94e70427e259",
                 "title": "Plugins",
@@ -5047,7 +5252,7 @@
                     "i": "5ea51e10-bede-40f6-9842-f840617bcc8b",
                     "w": 40,
                     "x": 8,
-                    "y": 118
+                    "y": 130
                 },
                 "panelIndex": "5ea51e10-bede-40f6-9842-f840617bcc8b",
                 "type": "lens"
@@ -5331,7 +5536,7 @@
                     "i": "bb1876b7-7faa-4c37-a8af-c79a70149922",
                     "w": 40,
                     "x": 8,
-                    "y": 134
+                    "y": 146
                 },
                 "panelIndex": "bb1876b7-7faa-4c37-a8af-c79a70149922",
                 "title": "Average time spent processing event (ms)",
@@ -5539,7 +5744,7 @@
                     "i": "c49e6ec7-e4a6-4938-b39b-d0c49b1ae114",
                     "w": 20,
                     "x": 8,
-                    "y": 145
+                    "y": 157
                 },
                 "panelIndex": "c49e6ec7-e4a6-4938-b39b-d0c49b1ae114",
                 "title": "Events received per second",
@@ -5744,7 +5949,7 @@
                     "i": "1c17de77-a7e5-4265-ada5-a7aaf0b6c972",
                     "w": 20,
                     "x": 28,
-                    "y": 145
+                    "y": 157
                 },
                 "panelIndex": "1c17de77-a7e5-4265-ada5-a7aaf0b6c972",
                 "title": "Worker utilization",
@@ -5952,7 +6157,7 @@
                     "i": "231824a2-a183-439f-8e08-e1bad6c5e9db",
                     "w": 20,
                     "x": 8,
-                    "y": 156
+                    "y": 168
                 },
                 "panelIndex": "231824a2-a183-439f-8e08-e1bad6c5e9db",
                 "title": "Events emitted per second",
@@ -6157,7 +6362,7 @@
                     "i": "09cd3d58-f4a5-4033-a011-15002b6649e7",
                     "w": 20,
                     "x": 28,
-                    "y": 156
+                    "y": 168
                 },
                 "panelIndex": "09cd3d58-f4a5-4033-a011-15002b6649e7",
                 "title": "Worker millseconds per event",
@@ -6195,7 +6400,7 @@
                     "i": "31278c59-d923-4beb-800b-a8107e9064c5",
                     "w": 24,
                     "x": 16,
-                    "y": 167
+                    "y": 179
                 },
                 "panelIndex": "31278c59-d923-4beb-800b-a8107e9064c5",
                 "title": "Plugins",
@@ -6781,7 +6986,7 @@
                     "i": "46fbd106-9dba-4c2c-b359-fd04c22e1314",
                     "w": 40,
                     "x": 8,
-                    "y": 171
+                    "y": 183
                 },
                 "panelIndex": "46fbd106-9dba-4c2c-b359-fd04c22e1314",
                 "type": "lens"
@@ -6792,7 +6997,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-06-05T19:27:03.795Z",
+    "created_at": "2024-06-05T20:40:13.197Z",
     "id": "logstash-bc1a8050-5ee1-11ee-8e78-bf6865bc3ffc",
     "managed": false,
     "references": [
@@ -6814,6 +7019,11 @@
         {
             "id": "logstash-sm-metrics",
             "name": "6da9466a-ede0-44b6-a2e7-d704065bb90b:indexpattern-datasource-layer-d6fe4fea-e92e-4042-9c92-0663b598a523",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logstash-sm-metrics",
+            "name": "6f7df80f-6315-417a-8b95-bbcdc938e4df:indexpattern-datasource-layer-4d13c1a7-6b92-47fe-8baf-7ca505bd9fda",
             "type": "index-pattern"
         },
         {
