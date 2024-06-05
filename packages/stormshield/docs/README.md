@@ -303,11 +303,13 @@ An example event for `log` looks as following:
 | stormshield.dstifname | Name of the object representing the traffics destination interface. String of characters in UTF-8 format. Example: dmz1 Available from: SNS v1.0.0. | keyword |
 | stormshield.duration | Duration of the connection in seconds. Decimal format.  Example: "173.15" | keyword |
 | stormshield.fw | firewall's ID This is the name entered by the administrator or, by default, its serial number. String of characters in UTF-8 format.  Example: firewall_name or V50XXXXXXXXXXXX Available from: SNS v1.0.0. | keyword |
+| stormshield.in_bytes | Count of bytes coming into the firewall | long |
 | stormshield.logtype | The specific type of log this is from. | keyword |
 | stormshield.metadata | Flattened metadata | flattened |
 | stormshield.msg | Text message explaining the alarm.  String of characters in UTF-8 format. Example: Port probe | keyword |
 | stormshield.origdst | Original IP address of the destination host (before translation or the application of a virtual connection).  Decimal format. Example: 192.168.0.1 Available from: SNS v1.0.0. | keyword |
 | stormshield.origdstport | Original port number of the destination TCP/UDP port (before translation or the application of a virtual connection). Example: "80" Available from: SNS v1.0.0. | keyword |
+| stormshield.out_bytes | Count of bytes leaving the firewall | long |
 | stormshield.ports | The network ports found on the device | keyword |
 | stormshield.service | Service (product with a dedicated port) on which the vulnerability was detected.  String of characters in UTF-8 format. Example: OpenSSH_5.4 | keyword |
 | stormshield.srcif | Internal name of the interface at the source of the traffic. String of characters in UTF-8 format. Example: Ethernet0 Available from: SNS v1.0.0. | keyword |
