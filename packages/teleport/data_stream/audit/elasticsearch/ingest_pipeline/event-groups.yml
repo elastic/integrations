@@ -528,6 +528,7 @@ processors:
   -  rename:
        field: teleport.audit.method
        target_field: teleport.audit.login.method
+       if: ctx.event.action == 'user.login'
        ignore_missing: true
   -  rename:
        field: teleport.audit.attributes
@@ -821,6 +822,7 @@ processors:
        ignore_missing: true
 
   # App session request related metadata
+  # The HTTP-related fields are used for other events as well.
   -  rename:
        field: teleport.audit.status_code
        target_field: http.response.status_code
@@ -1252,6 +1254,48 @@ processors:
        field: teleport.audit.payload
        target_field: teleport.audit.database.payload
        ignore_missing: true
+
+  # Elasticsearch related events
+  -  rename:
+       field: teleport.audit.body
+       target_field: http.request.body.content
+       ignore_missing: true
+       if: 'ctx.event.action.startsWith("db.session.elasticsearch")'
+  -  set:
+       field: teleport.audit.database.elasticsearch.category
+       value: 'GENERAL'
+       if: 'ctx.teleport?.audit?.category == 0 && ctx.event.action.startsWith("db.session.elasticsearch")'
+  -  set:
+       field: teleport.audit.database.elasticsearch.category
+       value: 'SECURITY'
+       if: 'ctx.teleport?.audit?.category == 1 && ctx.event.action.startsWith("db.session.elasticsearch")'
+  -  set:
+       field: teleport.audit.database.elasticsearch.category
+       value: 'SEARCH'
+       if: 'ctx.teleport?.audit?.category == 2 && ctx.event.action.startsWith("db.session.elasticsearch")'
+  -  set:
+       field: teleport.audit.database.elasticsearch.category
+       value: 'SQL'
+       if: 'ctx.teleport?.audit?.category == 3 && ctx.event.action.startsWith("db.session.elasticsearch")'
+  - remove:
+      field: teleport.audit.category
+      ignore_missing: true
+      if: 'ctx.teleport?.audit?.database?.elasticsearch?.category != null && ctx.event.action.startsWith("db.session.elasticsearch")'
+  -  convert:
+       field: teleport.audit.category
+       type: string
+       ignore_missing: true
+       if: 'ctx.event.action.startsWith("db.session.elasticsearch")'
+  -  rename:
+       field: teleport.audit.category
+       target_field: teleport.audit.database.elasticsearch.category
+       if: 'ctx.event.action.startsWith("db.session.elasticsearch")'
+       ignore_missing: true
+  -  rename:
+       field: teleport.audit.target
+       target_field: teleport.audit.database.elasticsearch.target
+       ignore_missing: true
+       if: 'ctx.event.action.startsWith("db.session.elasticsearch")'
 
 
 # What to do if the processing fails.
