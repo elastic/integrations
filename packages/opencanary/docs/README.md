@@ -228,19 +228,19 @@ An example event for `events` looks as following:
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
-| opencanary.logdata.CWR |  | keyword |
-| opencanary.logdata.DF |  | keyword |
-| opencanary.logdata.ECE |  | keyword |
-| opencanary.logdata.ID |  | long |
-| opencanary.logdata.LEN |  | keyword |
-| opencanary.logdata.PREC |  | keyword |
-| opencanary.logdata.RES |  | keyword |
-| opencanary.logdata.SESSION |  | keyword |
-| opencanary.logdata.SYN |  | keyword |
-| opencanary.logdata.TOS |  | keyword |
-| opencanary.logdata.TTL |  | long |
-| opencanary.logdata.URGP |  | long |
-| opencanary.logdata.WINDOW |  | long |
+| opencanary.logdata.cwr |  | keyword |
+| opencanary.logdata.df |  | keyword |
+| opencanary.logdata.ece |  | keyword |
+| opencanary.logdata.id |  | long |
+| opencanary.logdata.len |  | keyword |
+| opencanary.logdata.prec |  | keyword |
+| opencanary.logdata.res |  | keyword |
+| opencanary.logdata.session |  | keyword |
+| opencanary.logdata.syn |  | keyword |
+| opencanary.logdata.tos |  | keyword |
+| opencanary.logdata.ttl |  | long |
+| opencanary.logdata.urgp |  | long |
+| opencanary.logdata.window |  | long |
 | opencanary.mssql.client.app |  | keyword |
 | opencanary.mssql.client.hostname |  | keyword |
 | opencanary.mssql.client.interface_library |  | keyword |
