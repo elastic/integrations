@@ -40,19 +40,23 @@
             ],
             "teleport": {
                 "audit": {
-                    "args": {
-                        "database": "projects/project-id/instances/instance-id/databases/prod-db",
-                        "session_count": 100
-                    },
                     "database": {
                         "name": "prod-db",
                         "origin": "dynamic",
                         "protocol": "spanner",
                         "service": "teleport-spanner",
+                        "spanner": {
+                            "rpc": {
+                                "args": {
+                                    "database": "projects/project-id/instances/instance-id/databases/prod-db",
+                                    "session_count": 100
+                                },
+                                "procedure": "BatchCreateSessions"
+                            }
+                        },
                         "type": "spanner",
                         "user": "some-user"
                     },
-                    "procedure": "BatchCreateSessions",
                     "session": {
                         "id": "04364984-a6d0-4e2c-93c7-5c44e2359502"
                     }
@@ -101,34 +105,38 @@
             ],
             "teleport": {
                 "audit": {
-                    "args": {
-                        "seqno": 1,
-                        "session": "projects/project-id/instances/instance-id/databases/dev-db/sessions/ABCDEF1234567890Aye8_QwuELYD9rxa74YTWc-lu9LNuDDADbi4EOGm2C2j0ixe",
-                        "sql": "select * from TestTable",
-                        "transaction": {
-                            "Selector": {
-                                "SingleUse": {
-                                    "Mode": {
-                                        "ReadOnly": {
-                                            "TimestampBound": {
-                                                "Strong": true
-                                            },
-                                            "return_read_timestamp": true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
                     "database": {
                         "name": "dev-db",
                         "origin": "dynamic",
                         "protocol": "spanner",
                         "service": "teleport-spanner",
+                        "spanner": {
+                            "rpc": {
+                                "args": {
+                                    "seqno": 1,
+                                    "session": "projects/project-id/instances/instance-id/databases/dev-db/sessions/ABCDEF1234567890Aye8_QwuELYD9rxa74YTWc-lu9LNuDDADbi4EOGm2C2j0ixe",
+                                    "sql": "select * from TestTable",
+                                    "transaction": {
+                                        "Selector": {
+                                            "SingleUse": {
+                                                "Mode": {
+                                                    "ReadOnly": {
+                                                        "TimestampBound": {
+                                                            "Strong": true
+                                                        },
+                                                        "return_read_timestamp": true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "procedure": "ExecuteStreamingSql"
+                            }
+                        },
                         "type": "spanner",
                         "user": "some-user"
                     },
-                    "procedure": "ExecuteStreamingSql",
                     "session": {
                         "id": "406b9883-0e16-42f2-9d0b-b3bd956f9cd4"
                     }
