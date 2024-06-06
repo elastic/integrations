@@ -25,6 +25,7 @@ processors:
         Process the ctx?.sentinel_one_cloud_funnel?.event?.dns?.request field that contains the DNS question.
         Example: "type: 1 cloudflare.com"
       lang: painless
+      tag: script_dnsFieldParsing_to_ecs
       if: >-
         (ctx.sentinel_one_cloud_funnel?.event?.dns?.response != null && ctx.sentinel_one_cloud_funnel.event.dns.response != "") ||
         (ctx.sentinel_one_cloud_funnel?.event?.dns?.request != null && ctx.sentinel_one_cloud_funnel.event.dns.request != "")
@@ -157,6 +158,11 @@ processors:
         if (dns != null) {
           ctx.dns = dns;
         }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
 on_failure:
   - append:
       field: error.message
