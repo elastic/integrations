@@ -1,0 +1,791 @@
+---
+description: Ingest Pipeline for OpenCanary Honey Pot Logs
+processors:
+  ######################################
+  ## Rename Message to event.original ##
+  ######################################
+  - rename:
+      description: Rename message to event.original
+      tag: rename_message_event_original
+      if: ctx.event?.original == null
+      field: message
+      target_field: event.original
+  - remove:
+      description: Remove "message"
+      tag: remove_message
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+
+  ######################################
+  ## Parse JSON message to opencanary ##
+  ######################################
+  - json:
+      description: Parse JSON from event.original to opencanary
+      tag: json_event_original_opencanary
+      field: event.original
+      target_field: opencanary
+
+  #############################
+  ## Parse Date from Message ##
+  #############################
+  - date:
+      description: Parse the event's timestamp to proper date format
+      tag: date_opencanary_utc_time_timestamp
+      field: opencanary.utc_time
+      target_field: '@timestamp'
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+      ignore_failure: true
+
+  #############################
+  ## Parse OpenCanary Fields ##
+  #############################
+  - rename:
+      description: Parse OpenCanary msg to Message
+      tag: rename_opencanary_logdata_msg_logdata_message
+      field: opencanary.logdata.msg.logdata
+      target_field: message
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      # https://github.com/thinkst/opencanary/blob/bcb83f99058398b4e4d29523851fc96143d6feaa/opencanary/logger.py#L56-L103
+      description: Translate numeric opencanary.logtype to log.logger string
+      tag: script_opencanary_logtype_log_logger
+      if: ctx.opencanary?.logtype != null
+      lang: painless
+      params:
+        "1000": "LOG_BASE_BOOT"
+        "1001": "LOG_BASE_MSG"
+        "1002": "LOG_BASE_DEBUG"
+        "1003": "LOG_BASE_ERROR"
+        "1004": "LOG_BASE_PING"
+        "1005": "LOG_BASE_CONFIG_SAVE"
+        "1006": "LOG_BASE_EXAMPLE"
+        "2000": "LOG_FTP_LOGIN_ATTEMPT"
+        "3000": "LOG_HTTP_GET"
+        "3001": "LOG_HTTP_POST_LOGIN_ATTEMPT"
+        "4000": "LOG_SSH_NEW_CONNECTION"
+        "4001": "LOG_SSH_REMOTE_VERSION_SENT"
+        "4002": "LOG_SSH_LOGIN_ATTEMPT"
+        "5000": "LOG_SMB_FILE_OPEN"
+        "5001": "LOG_PORT_SYN"
+        "5002": "LOG_PORT_NMAPOS"
+        "5003": "LOG_PORT_NMAPNULL"
+        "5004": "LOG_PORT_NMAPXMAS"
+        "5005": "LOG_PORT_NMAPFIN"
+        "6001": "LOG_TELNET_LOGIN_ATTEMPT"
+        "7001": "LOG_HTTPPROXY_LOGIN_ATTEMPT"
+        "8001": "LOG_MYSQL_LOGIN_ATTEMPT"
+        "9001": "LOG_MSSQL_LOGIN_SQLAUTH"
+        "9002": "LOG_MSSQL_LOGIN_WINAUTH"
+        "10001": "LOG_TFTP"
+        "11001": "LOG_NTP_MONLIST"
+        "12001": "LOG_VNC"
+        "13001": "LOG_SNMP_CMD"
+        "14001": "LOG_RDP"
+        "15001": "LOG_SIP_REQUEST"
+        "16001": "LOG_GIT_CLONE_REQUEST"
+        "17001": "LOG_REDIS_COMMAND"
+        "18001": "LOG_TCP_BANNER_CONNECTION_MADE"
+        "18002": "LOG_TCP_BANNER_KEEP_ALIVE_CONNECTION_MADE"
+        "18003": "LOG_TCP_BANNER_KEEP_ALIVE_SECRET_RECEIVED"
+        "18004": "LOG_TCP_BANNER_KEEP_ALIVE_DATA_RECEIVED"
+        "18005": "LOG_TCP_BANNER_DATA_RECEIVED"
+        "99000": "LOG_USER_0"
+        "99001": "LOG_USER_1"
+        "99002": "LOG_USER_2"
+        "99003": "LOG_USER_3"
+        "99004": "LOG_USER_4"
+        "99005": "LOG_USER_5"
+        "99006": "LOG_USER_6"
+        "99007": "LOG_USER_7"
+        "99008": "LOG_USER_8"
+        "99009": "LOG_USER_9"
+      source: >
+        def logType = ctx.opencanary.logtype;
+        if (ctx.log == null) {
+          ctx.log = new HashMap();
+        }
+        if (params.get(logType.toString()) == null) {
+          ctx.log['logger'] = logType;
+        } else {
+          ctx.log['logger'] = params.get(logType.toString());
+        }
+        ctx.opencanary.remove('logtype');
+  - rename:
+      description: Rename node_id to opencanary.node.id
+      tag: rename_opencanary_node_id
+      field: opencanary.node_id
+      target_field: opencanary.node.id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename SKIN to opencanary.skin
+      tag: rename_opencanary_logdata_SKIN
+      field: opencanary.logdata.SKIN
+      target_field: opencanary.skin
+      ignore_missing: true
+      ignore_failure: true
+
+  # Convert some field types
+  - convert:
+      description: Convert opencanary.logdata.ID to long
+      tag: convert_opencanary_logdata_ID
+      field: opencanary.logdata.ID
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      description: Convert opencanary.logdata.TTL to long
+      tag: convert_opencanary_logdata_TTL
+      field: opencanary.logdata.TTL
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      description: Convert opencanary.logdata.URGP to long
+      tag: convert_opencanary_logdata_URGP
+      field: opencanary.logdata.URGP
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      description: Convert opencanary.logdata.WINDOW to long
+      tag: convert_opencanary_logdata_WINDOW
+      field: opencanary.logdata.WINDOW
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+
+  # MSSQL Events
+  - rename:
+      description: Rename MSSQL event opencanary.logdata.AppName to opencanary.mssql.client.app fields.
+      tag: rename_opencanary_logdata_AppName
+      if: ctx.log?.logger == 'LOG_MSSQL_LOGIN_SQLAUTH'
+      field: opencanary.logdata.AppName
+      target_field: opencanary.mssql.client.app
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename MSSQL event opencanary.logdata.HostName to opencanary.mssql.client.hostname
+      tag: rename_opencanary_logdata_HostName
+      if: ctx.log.logger == 'LOG_MSSQL_LOGIN_SQLAUTH'
+      field: opencanary.logdata.HostName
+      target_field: opencanary.mssql.client.hostname
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename MSSQL event opencanary.logdata.CltIntName to opencanary.mssql.client.interface_library fields.
+      tag: rename_opencanary_logdata_CltIntName
+      if: ctx.log.logger == 'LOG_MSSQL_LOGIN_SQLAUTH'
+      field: opencanary.logdata.CltIntName
+      target_field: opencanary.mssql.client.interface_library
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename MSSQL event opencanary.logdata.Database to opencanary.mssql.database
+      tag: rename_opencanary_logdata_Database
+      if: ctx.log.logger == 'LOG_MSSQL_LOGIN_SQLAUTH'
+      field: opencanary.logdata.Database
+      target_field: opencanary.mssql.database
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      description: Remove opencanary.logdata.ServerName since it is the same as destination.ip
+      tag: remove_opencanary_logdata_ServerName
+      if: ctx.log.logger == 'LOG_MSSQL_LOGIN_SQLAUTH'
+      field: opencanary.logdata.ServerName
+      ignore_missing: true
+      ignore_failure: true
+
+  # Redis Events
+  - rename:
+      description: Rename Redis event opencanary.logdata.ARGS to opencanary.redis.args
+      tag: rename_opencanary_logdata_ARGS
+      if: ctx.log.logger == 'LOG_REDIS_COMMAND'
+      field: opencanary.logdata.ARGS
+      target_field: opencanary.redis.args
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename Redis event opencanary.logdata.CMD to opencanary.redis.command
+      tag: rename_opencanary_logdata_CMD
+      if: ctx.log.logger == 'LOG_REDIS_COMMAND'
+      field: opencanary.logdata.CMD
+      target_field: opencanary.redis.command
+      ignore_missing: true
+      ignore_failure: true
+
+  # SMB Events
+  - rename:
+      description: Rename opencanary.logdata.AUDITACTION to event.action
+      tag: rename_opencanary_logdata_AUDITACTION
+      field: opencanary.logdata.AUDITACTION
+      target_field: event.action
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename opencanary.logdata.FILENAME to opencanary.smb.filename
+      tag: rename_opencanary_logdata_FILENAME
+      field: opencanary.logdata.FILENAME
+      target_field: opencanary.smb.filename
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename opencanary.logdata.SHARENAME to opencanary.smb.share_name
+      tag: rename_opencanary_logdata_SHARENAME
+      field: opencanary.logdata.SHARENAME
+      target_field: opencanary.smb.share_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename opencanary.logdata.SMBARCH to opencanary.smb.smb_arch
+      tag: rename_opencanary_logdata_SMBARCH
+      field: opencanary.logdata.SMBARCH
+      target_field: opencanary.smb.smb_arch
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename opencanary.logdata.SMBVER to opencanary.smb.smb_version
+      tag: rename_opencanary_logdata_SMBVER
+      field: opencanary.logdata.SMBVER
+      target_field: opencanary.smb.smb_version
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename opencanary.logdata.STATUS to opencanary.smb.status
+      tag: rename_opencanary_logdata_STATUS
+      field: opencanary.logdata.STATUS
+      target_field: opencanary.smb.status
+      ignore_missing: true
+      ignore_failure: true
+
+  # SSH Events
+  - rename:
+      description: Rename SSH event opencanary.logdata.LOCALVERSION to opencanary.ssh.local_version
+      tag: rename_opencanary_logdata_LOCALVERSION
+      if: >-
+        ctx.log?.logger != null && (
+          ctx.log.logger == 'LOG_SSH_NEW_CONNECTION' ||
+          ctx.log.logger == 'LOG_SSH_LOGIN_ATTEMPT' ||
+          ctx.log.logger == 'LOG_SSH_REMOTE_VERSION_SENT'
+        )
+      field: opencanary.logdata.LOCALVERSION
+      target_field: opencanary.ssh.local_version
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename SSH event opencanary.logdata.REMOTEVERSION to opencanary.ssh.remote_version
+      tag: rename_opencanary_logdata_REMOTEVERSION
+      if: >-
+        ctx.log?.logger != null && (
+          ctx.log.logger == 'LOG_SSH_NEW_CONNECTION' ||
+          ctx.log.logger == 'LOG_SSH_LOGIN_ATTEMPT' ||
+          ctx.log.logger == 'LOG_SSH_REMOTE_VERSION_SENT'
+        )
+      field: opencanary.logdata.REMOTEVERSION
+      target_field: opencanary.ssh.remote_version
+      ignore_missing: true
+      ignore_failure: true
+
+  # TCP Banner Events
+  - rename:
+      description: Rename TCP banner BANNER_ID field to opencanary.tcp_banner.banner_id
+      tag: rename_opencanary_logdata_BANNER_ID
+      if: >-
+        ctx.log?.logger != null && (
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_CONNECTION_MADE' ||
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_SECRET_RECEIVED' ||
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_SECRET_RECEIVED'
+        )
+      field: opencanary.logdata.BANNER_ID
+      target_field: opencanary.tcp_banner.banner_id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename TCP banner DATA field to opencanary.tcp_banner.data
+      tag: rename_opencanary_logdata_DATA
+      if: >-
+        ctx.log?.logger != null && (
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_CONNECTION_MADE' ||
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_SECRET_RECEIVED' ||
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_SECRET_RECEIVED'
+        )
+      field: opencanary.logdata.DATA
+      target_field: opencanary.tcp_banner.data
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename TCP banner FUNCTION field to opencanary.tcp_banner.function
+      tag: rename_opencanary_logdata_FUNCTION
+      if: >-
+        ctx.log?.logger != null && (
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_CONNECTION_MADE' ||
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_SECRET_RECEIVED' ||
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_SECRET_RECEIVED'
+        )
+      field: opencanary.logdata.FUNCTION
+      target_field: opencanary.tcp_banner.function
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename TCP banner SECRET_STRING field to opencanary.tcp_banner.secret_string
+      tag: rename_opencanary_logdata_SECRET_STRING
+      if: >-
+        ctx.log?.logger != null && (
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_CONNECTION_MADE' ||
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_SECRET_RECEIVED' ||
+          ctx.log.logger == 'LOG_TCP_BANNER_KEEP_ALIVE_SECRET_RECEIVED'
+        )
+      field: opencanary.logdata.SECRET_STRING
+      target_field: opencanary.tcp_banner.secret_string
+      ignore_missing: true
+      ignore_failure: true
+
+  # TFTP Events
+  - rename:
+      description: Rename TFTP FILENAME field to opencanary.tftp.filename
+      tag: rename_opencanary_logdata_FILENAME
+      if: ctx.log.logger == 'LOG_TFTP'
+      field: opencanary.logdata.FILENAME
+      target_field: opencanary.tftp.filename
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename TFTP MODE field to opencanary.tftp.node
+      tag: rename_opencanary_logdata_MODE
+      if: ctx.log.logger == 'LOG_TFTP'
+      field: opencanary.logdata.MODE
+      target_field: opencanary.tftp.node
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename TFTP OPCODE field to opencanary.tftp.opcode
+      tag: rename_opencanary_logdata_OPCODE
+      if: ctx.log.logger == 'LOG_TFTP'
+      field: opencanary.logdata.OPCODE
+      target_field: opencanary.tftp.opcode
+      ignore_missing: true
+      ignore_failure: true
+
+  # VNC Events
+  - rename:
+      description: Rename VNC 'VNC Client Response' field to opencanary.vnc.client_response
+      tag: rename_opencanary.logdata.VNC_Client_Response
+      if: ctx.log?.logger == 'LOG_VNC'
+      field: 'opencanary.logdata.VNC Client Response'
+      target_field: opencanary.tftp.vnc.client_response
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename VNC 'VNC Password' field to opencanary.vnc.password
+      tag: rename_opencanary_logdata_VNC_Password
+      if: ctx.log?.logger == 'LOG_VNC'
+      field: 'opencanary.logdata.VNC Password'
+      target_field: opencanary.tftp.vnc.password
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename VNC 'VNC Server Challenge' field to opencanary.vnc.server_challenge
+      tag: rename_opencanary_logdata_VNC_Server_Challenge
+      if: ctx.log?.logger == 'LOG_VNC'
+      field: 'opencanary.logdata.VNC Server Challenge'
+      target_field: opencanary.tftp.vnc.server_challenge
+      ignore_missing: true
+      ignore_failure: true
+
+  ################################
+  ## Parse Event Details to ECS ##
+  ################################
+  - set:
+      description: Set event.category according to event details
+      tag: set_event_category
+      field: event.category
+      value:
+        - network
+        - intrusion_detection
+      ignore_failure: true
+  - set:
+      description: Copy event.created from @timestamp
+      tag: set_event_created
+      field: event.created
+      copy_from: '@timestamp'
+      ignore_failure: true
+  - set:
+      description: Set event.kind
+      tag: set_event_kind
+      field: event.kind
+      value:
+        - alert
+      ignore_failure: true
+  - set:
+      description: Set event.provider from log.logger
+      tag: set_event_provider
+      field: event.provider
+      copy_from: log.logger
+      ignore_empty_value: true
+      ignore_failure: true
+  - set:
+      description: Set event.start from @timestamp
+      tag: set_event_start
+      field: event.start
+      copy_from: '@timestamp'
+      ignore_failure: true
+  - set:
+      description: Set event.type
+      tag: set_event_type
+      field: event.type
+      value:
+        - connection
+
+  ######################################
+  ## Parse Destination Details to ECS ##
+  ######################################
+  - rename:
+      description: Rename dst_port to destination.port
+      tag: rename_dst_port_destination_port
+      field: opencanary.dst_port
+      target_field: destination.port
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      description: Convert destination.port to integer
+      tag: convert_destination_port
+      field: destination.port
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename dst_host to destination.address
+      tag: rename_dst_host
+      field: opencanary.dst_host
+      target_field: destination.address
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      description: Copy destination.address to either destination.ip or destination.domain
+      tag: convert_destination_address
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - set:
+            copy_from: destination.address
+            field: destination.domain
+            override: true
+  - rename:
+      description: Rename opencanary.logdata.LOCALNAME to destination.domain
+      tag: rename_opencanary_logdata_LOCALNAME
+      field: opencanary.logdata.LOCALNAME
+      target_field: destination.domain
+      ignore_missing: true
+      ignore_failure: true
+
+
+  ###############################
+  ## Parse Host Details to ECS ##
+  ###############################
+  - rename:
+      description: Rename opencanary.logdata.HOSTNAME to host.name
+      tag: rename_opencanary_logdata_HOSTNAME
+      field: opencanary.logdata.HOSTNAME
+      target_field: host.name
+      ignore_missing: true
+      ignore_failure: true
+
+
+  #################################
+  ## Parse Source Details to ECS ##
+  #################################
+  - rename:
+      description: Rename src_port to source.port
+      tag: rename_src_port_source_port
+      field: opencanary.src_port
+      target_field: source.port
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      description: Convert source.port to integer
+      tag: convert_source_port
+      field: source.port
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename src_host to source.address
+      tag: rename_src_host
+      field: opencanary.src_host
+      target_field: source.address
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      description: Copy source.address to either source.ip or source.domain
+      tag: convert_source_address
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - set:
+            copy_from: source.address
+            field: source.domain
+            override: true
+  - gsub:
+      description: Replace ':' characters with '-' for MAC addresses
+      tag: gsub_opencanary_logdata_MAC
+      field: opencanary.logdata.MAC
+      pattern: ":"
+      replacement: "-"
+      ignore_missing: true
+      ignore_failure: true
+  - uppercase:
+      description: Uppercase MAC addresses for standardization
+      tag: uppercase_opencanary_logdata_MAC
+      field: opencanary.logdata.MAC
+      ignore_missing: true
+      ignore_failure: true
+  - grok:
+      description: Parse source and destination MAC addresses from opencanary.logdata.MAC if present
+      tag: gsub_opencanary_logdata_MAC
+      field: opencanary.logdata.MAC
+      patterns:
+        - "%{MAC:destination.mac}-%{MAC:source.mac}%{GREEDYDATA}"
+      pattern_definitions:
+        MAC: "(?:(?:[0-9A-F]{2}-){5}[0-9A-F]{2})"
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      description: Remove opencanary.logdata.MAC if MAC addresses were parsed out
+      tag: remove_opencanary_logdata_MAC
+      if: ctx.source?.mac != null && ctx.destination?.mac != null
+      field: opencanary.logdata.MAC
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename opencanary.logdata.REMOTENAME to source.domain
+      tag: rename_opencanary_logdata_REMOTENAME
+      field: opencanary.logdata.REMOTENAME
+      target_field: source.domain
+      ignore_missing: true
+      ignore_failure: true
+
+
+  ##################################
+  ## Parse Network Details to ECS ##
+  ##################################
+  - rename:
+      description: Rename opencanary.logdata.PROTO to network.transport
+      tag: rename_opencanary_logdata_PROTO
+      field: opencanary.logdata.PROTO
+      target_field: network.transport
+      ignore_missing: true
+      ignore_failure: true
+  - network_direction:
+      description: Determine network direction from source and destination IP's
+      tag: network_direction
+      internal_networks:
+        - loopback
+        - unicast
+        - multicast
+        - interface_local_multicast
+        - link_local_unicast
+        - link_local_multicast
+        - private
+        - unspecified
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename opencanary.logdata.IN to observer.ingress.interface.name
+      tag: rename_opencanary_logdata_IN
+      field: opencanary.logdata.IN
+      target_field: observer.ingress.interface.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename opencanary.logdata.OUT to observer.egress.interface.name
+      tag: rename_opencanary_logdata_OUT
+      field: opencanary.logdata.OUT
+      target_field: observer.egress.interface.name
+      ignore_missing: true
+      ignore_failure: true
+
+  ##############################
+  ## Parse URL Details to ECS ##
+  ##############################
+  - uri_parts:
+      description: Parse URL data to ECS URL fields
+      tag: uri_parts_opencanary_logdata_PATH
+      field: opencanary.logdata.PATH
+      remove_if_successful: true
+      ignore_missing: true
+      ignore_failure: true
+
+  ###############################
+  ## Parse User Details to ECS ##
+  ###############################
+  - rename:
+      description: Rename opencanary.logdata.USERNAME to user.name
+      tag: rename_opencanary_logdata_USERNAME
+      field: opencanary.logdata.USERNAME
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename opencanary.logdata.USER to user.name
+      tag: rename_opencanary_logdata_USER
+      field: opencanary.logdata.USER
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename opencanary.logdata.UserName to user.name
+      tag: rename_opencanary_logdata_UserName
+      field: opencanary.logdata.UserName
+      target_field: user.name
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      description: Remove opencanary.logdata.PASSWORD field
+      tag: remove_opencanary_logdata_PASSWORD
+      field: opencanary.logdata.PASSWORD
+      ignore_missing: true
+      ignore_failure: true
+  - redact:
+      description: Redact any passwords in the log data
+      tag: redact_event_original
+      if: 'ctx.tags?.contains("redact_passwords") && ctx.event?.original =~ /\"PASSWORD\": \"/'
+      field: event.original
+      patterns:
+        - '"PASSWORD": "%{DATA:REDACTED}"'
+      prefix: '"PASSWORD": "<'
+      suffix: '>"'
+      ignore_missing: true
+  - rename:
+      description: Rename opencanary.logdata.DOMAIN to user.domain
+      tag: rename_opencanary_logdata_DOMAIN
+      field: opencanary.logdata.DOMAIN
+      target_field: user.domain
+      ignore_missing: true
+      ignore_failure: true
+
+  #####################################
+  ## Parse User Agent Details to ECS ##
+  #####################################
+  - user_agent:
+      description: Parse user agent details to user_agent.*
+      tag: user_agent_opencanary_logdata_USERAGENT
+      field: opencanary.logdata.USERAGENT
+      ignore_missing: true
+
+  ##########################
+  ## Parse Related Fields ##
+  ##########################
+  - append:
+      description: Append destination.ip to related.ip
+      tag: append_destination_ip_related
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      description: Append source.ip to related.ip
+      tag: append_source_ip_related
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      description: Append user.name to related.user
+      tag: append_user_name_related
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      description: Append destination.domain to related.hosts
+      tag: append_destination_domain_related
+      field: related.hosts
+      value: '{{{destination.domain}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      description: Append source.domain to related.hosts
+      tag: append_source_domain_related
+      field: related.hosts
+      value: '{{{source.domain}}}'
+      allow_duplicates: false
+      ignore_failure: true
+
+
+  ##############
+  ## Clean Up ##
+  ##############
+  - remove:
+      description: Remove fields that have no meaningful value to the events
+      tag: remove_clean_up
+      field:
+        - opencanary.local_time
+        - opencanary.local_time_adjusted
+        - opencanary.logdata.HOSTNAME
+        - opencanary.logdata.USERAGENT
+        - opencanary.utc_time
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      description: Remove malformed source.* fields for LOG_BASE_MSG events
+      tag: remove_source_port
+      field: source
+      if: ctx.source?.port == -1
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      description: Remove malformed destination.* fields for LOG_BASE_MSG events
+      tag: remove_destination_port
+      field: destination
+      if: ctx.destination?.port == -1
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      description: Lowercase all fields under opencanary.logdata
+      tag: foreach_lowercase_opencanary_logdata
+      if: ctx.opencanary?.logdata instanceof Map
+      field: opencanary.logdata
+      processor:
+        lowercase:
+          field: _ingest._key
+          ignore_failure: true
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_empty_values
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == 'undefined') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - remove:
+      description: Remove event.original if it has not been requested
+      tag: remove_event_original
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message {{ _ingest.on_failure_message }}'
