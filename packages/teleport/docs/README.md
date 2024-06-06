@@ -50,7 +50,7 @@ An example event for `audit` looks as following:
         "code": "T1000I",
         "dataset": "teleport.audit",
         "id": "173d6b6e-d613-44be-8ff6-f9f893791ef2",
-        "ingested": "2024-06-06T15:24:12Z",
+        "ingested": "2024-06-06T17:46:47Z",
         "kind": "event",
         "original": "{\"code\":\"T1000I\",\"event\":\"user.login\",\"method\":\"local\",\"success\":true,\"time\":\"2019-04-22T00:49:03Z\",\"uid\":\"173d6b6e-d613-44be-8ff6-f9f893791ef2\",\"user\":\"admin@example.com\"}",
         "outcome": [
@@ -66,7 +66,7 @@ An example event for `audit` looks as following:
     "log": {
         "file": {
             "device_id": "35",
-            "inode": "49",
+            "inode": "51",
             "path": "/tmp/service_logs/test-teleport-all-events.log"
         },
         "offset": 9010
