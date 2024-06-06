@@ -327,7 +327,7 @@ An example event for `audit` looks as following:
 | teleport.audit.request.headers | Headers are the HTTP request headers. | flattened |
 | teleport.audit.resource.expires | Expires is set if resource expires | date |
 | teleport.audit.resource.name | ResourceName is a resource name | keyword |
-| teleport.audit.resource.ttl | TTL is a TTL of reset password token represented as duration, e.g. "10m" | keyword |
+| teleport.audit.resource.ttl | TTL is a TTL of reset password token represented as duration, e.g. \"10m\ | keyword |
 | teleport.audit.resource.updated_by | UpdatedBy if set indicates the user who modified the resource | keyword |
 | teleport.audit.saml_idp_service_provider.attribute_mapping | AttributeMapping is a map of attribute name and value which will be asserted in SAML response. | flattened |
 | teleport.audit.saml_idp_service_provider.entity_id | ServiceProviderEntityID is the entity ID of the service provider. | keyword |
