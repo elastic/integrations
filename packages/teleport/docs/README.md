@@ -20,106 +20,78 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-02-23T18:57:27.101Z",
-    "client": {
-        "address": "175.16.199.196",
-        "geo": {
-            "city_name": "Changchun",
-            "continent_name": "Asia",
-            "country_iso_code": "CN",
-            "country_name": "China",
-            "location": {
-                "lat": 43.88,
-                "lon": 125.3228
-            },
-            "region_iso_code": "CN-22",
-            "region_name": "Jilin Sheng"
-        },
-        "ip": "175.16.199.196",
-        "port": 50343
+    "@timestamp": "2019-04-22T00:49:03.000Z",
+    "agent": {
+        "ephemeral_id": "95e8f477-0c7a-449f-8b48-f13f37f31c21",
+        "id": "06a11acd-be94-446b-ac33-7fbc1d731d66",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.4"
+    },
+    "data_stream": {
+        "dataset": "teleport.audit",
+        "namespace": "ep",
+        "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "06a11acd-be94-446b-ac33-7fbc1d731d66",
+        "snapshot": false,
+        "version": "8.13.4"
+    },
     "event": {
-        "action": "session.start",
+        "action": "user.login",
+        "agent_id_status": "verified",
         "category": [
-            "session"
+            "authentication"
         ],
-        "code": "T2000I",
-        "id": "74986446-ee50-4f28-827a-e4cd79c76276",
+        "code": "T1000I",
+        "dataset": "teleport.audit",
+        "id": "173d6b6e-d613-44be-8ff6-f9f893791ef2",
+        "ingested": "2024-06-06T12:48:15Z",
         "kind": "event",
-        "original": "{\"ei\":0,\"event\":\"session.start\",\"uid\":\"74986446-ee50-4f28-827a-e4cd79c76276\",\"code\":\"T2000I\",\"time\":\"2024-02-23T18:57:27.101Z\",\"cluster_name\":\"teleport.ericbeahan.com\",\"user\":\"teleport-admin\",\"login\":\"ec2-user\",\"user_kind\":1,\"sid\":\"0f9b4848-b0a5-411e-bcd1-bc3d04eb8cbf\",\"private_key_policy\":\"none\",\"namespace\":\"default\",\"server_id\":\"b321c207-fd08-46c8-b248-0c20436feb62\",\"server_hostname\":\"ip-175.16.199.98.us-east-2.compute.internal\",\"server_addr\":\"[::]:3022\",\"server_labels\":{\"hostname\":\"ip-175.16.199.98.us-east-2.compute.internal\"},\"addr.local\":\"175.16.199.98:443\",\"addr.remote\":\"175.16.199.196:50343\",\"proto\":\"ssh\",\"size\":\"80:25\",\"initial_command\":[\"\"],\"session_recording\":\"node\"}",
-        "sequence": 0,
+        "original": "{\"code\":\"T1000I\",\"event\":\"user.login\",\"method\":\"local\",\"success\":true,\"time\":\"2019-04-22T00:49:03Z\",\"uid\":\"173d6b6e-d613-44be-8ff6-f9f893791ef2\",\"user\":\"admin@example.com\"}",
+        "outcome": [
+            "success"
+        ],
         "type": [
             "start"
         ]
     },
-    "group": {
-        "name": "default"
+    "input": {
+        "type": "filestream"
     },
-    "host": {
-        "hostname": "ip-175.16.199.98.us-east-2.compute.internal",
-        "id": "b321c207-fd08-46c8-b248-0c20436feb62"
-    },
-    "network": {
-        "protocol": "ssh"
-    },
-    "observer": {
-        "ip": "::",
-        "port": 3022
-    },
-    "orchestrator": {
-        "cluster": {
-            "name": "teleport.ericbeahan.com"
-        }
-    },
-    "process": {
-        "tty": {
-            "columns": 80,
-            "rows": 25
-        }
+    "log": {
+        "file": {
+            "device_id": "33",
+            "inode": "133",
+            "path": "/tmp/service_logs/test-teleport-all-events.log"
+        },
+        "offset": 9010
     },
     "related": {
-        "hosts": [
-            "ip-175.16.199.98.us-east-2.compute.internal"
-        ],
         "user": [
-            "teleport-admin"
+            "admin@example.com"
         ]
     },
-    "server": {
-        "address": "175.16.199.98",
-        "ip": "175.16.199.98",
-        "port": 443
-    },
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "forwarded",
+        "teleport-audit"
     ],
     "teleport": {
         "audit": {
-            "server": {
-                "labels": {
-                    "hostname": "ip-175.16.199.98.us-east-2.compute.internal"
-                }
-            },
-            "session": {
-                "id": "0f9b4848-b0a5-411e-bcd1-bc3d04eb8cbf",
-                "private_key_policy": "none",
-                "session_recording": "node",
-                "terminal_size": "80:25"
-            },
-            "user": {
-                "kind": "human",
-                "os_login": "ec2-user"
+            "login": {
+                "method": "local"
             }
         }
     },
     "user": {
-        "name": "teleport-admin"
+        "name": "admin@example.com"
     }
 }
-
 ```
 
 **Exported fields**
@@ -127,16 +99,11 @@ An example event for `audit` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| container.labels | Image labels. | object |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
@@ -179,8 +146,6 @@ An example event for `audit` looks as following:
 | teleport.audit.access_request.roles | Roles is a list of roles for the user. | keyword |
 | teleport.audit.access_request.state | RequestState is access request state | keyword |
 | teleport.audit.app.aws.assumed_role | AWSAssumedRole is the assumed role that signed this request. | keyword |
-| teleport.audit.app.aws.host | AWSHost is the requested host of the AWS service. | keyword |
-| teleport.audit.app.aws.region | AWSRegion is the requested AWS region. | keyword |
 | teleport.audit.app.aws.service | AWSService is the requested AWS service name. | keyword |
 | teleport.audit.app.labels | AppLabels are the configured application labels. | flattened |
 | teleport.audit.app.name | AppName is the configured application name. | keyword |
@@ -231,10 +196,7 @@ An example event for `audit` looks as following:
 | teleport.audit.certificate.identity.user | User is a username or name of the node connection | keyword |
 | teleport.audit.certificate.type | CertificateType is the type of certificate that was just issued. | keyword |
 | teleport.audit.database.affected_object_counts | AffectedObjectCounts counts how many distinct objects of each kind were affected. | object |
-| teleport.audit.database.aws.account_id | AccountID is the id of the AWS account that ran the command. | keyword |
-| teleport.audit.database.aws.instance_id | InstanceID is the id of the EC2 instance the command was run on. | keyword |
 | teleport.audit.database.aws.redshift_cluster_id | DatabaseAWSRedshiftClusterID is cluster ID for Redshift databases. | keyword |
-| teleport.audit.database.aws.region | DatabaseAWSRegion is AWS regions for AWS hosted databases. | keyword |
 | teleport.audit.database.aws.ssm_run.command_id | CommandID is the id of the SSM command that was run. | keyword |
 | teleport.audit.database.aws.ssm_run.invocation_url | InvocationURL is a link to AWS Web Console for this invocation. An invocation is the execution of a Command in an Instance. | keyword |
 | teleport.audit.database.aws.ssm_run.status | Status represents the success or failure status of a script run. | keyword |
@@ -249,8 +211,6 @@ An example event for `audit` looks as following:
 | teleport.audit.database.dynamodb.target | Target is the API target in the X-Amz-Target header. | keyword |
 | teleport.audit.database.elasticsearch.category | Category represents the category if API being accessed in a given request. | keyword |
 | teleport.audit.database.elasticsearch.target | Target is an optional field indicating the target index or set of indices used as a subject of request. | keyword |
-| teleport.audit.database.gcp.instance_id | DatabaseGCPInstanceID is instance ID for GCP hosted databases. | keyword |
-| teleport.audit.database.gcp.project_id | DatabaseGCPProjectID is project ID for GCP hosted databases. | keyword |
 | teleport.audit.database.labels | DatabaseLabels is the database resource labels. | flattened |
 | teleport.audit.database.mysql.data_size | DataSize is the size of the data. | integer |
 | teleport.audit.database.mysql.parameter_id | ParameterID is the identifier of the parameter. | integer |
@@ -302,7 +262,7 @@ An example event for `audit` looks as following:
 | teleport.audit.device.os_type | OS of the device. | keyword |
 | teleport.audit.device.web_authentication | True if web authentication, aka on-behalf-of device authentication, was performed. | boolean |
 | teleport.audit.device.web_session_id | Web Session ID associated with the device. | keyword |
-| teleport.audit.error_message | UserMessage is a user-friendly message for successfull or unsuccessfull auth attempt | text |
+| teleport.audit.error.message | Error includes system error message for the failed attempt | wildcard |
 | teleport.audit.external_audit_storage.athena_results_uri | AthenaResultsURI is the S3 path used to store temporary results generated by Athena. | keyword |
 | teleport.audit.external_audit_storage.athena_workgroup | AthenaWorkgroup is the workgroup used for Athena audit log queries. | keyword |
 | teleport.audit.external_audit_storage.audit_events_long_term_uri | AuditEventsLongTermURI is the S3 path used to store batched parquet files with audit events, partitioned by event date. | keyword |
@@ -310,7 +270,6 @@ An example event for `audit` looks as following:
 | teleport.audit.external_audit_storage.glue_table | GlueTable is the table used for Athena audit log queries. | keyword |
 | teleport.audit.external_audit_storage.integration_name | IntegrationName is the name of the AWS OIDC integration used. | keyword |
 | teleport.audit.external_audit_storage.policy_name | PolicyName is the name of the IAM policy attached to the OIDC integration role. | keyword |
-| teleport.audit.external_audit_storage.region | Region is the AWS region where the infrastructure is hosted. | keyword |
 | teleport.audit.external_audit_storage.session_recordings_uri | SessionsRecordingsURI is the S3 path used to store session recordings. | keyword |
 | teleport.audit.file_transfer_request.approvers | Approvers is a slice containing the Teleport users who have approved the request | keyword |
 | teleport.audit.file_transfer_request.filename | Filename is the name of the file to be uploaded to the Location. Only present in uploads. | keyword |
@@ -391,7 +350,6 @@ An example event for `audit` looks as following:
 | teleport.audit.sftp.action | Action is what kind of file operation | keyword |
 | teleport.audit.sftp.attributes | Attributes is file metadata that the user requested to be changed | object |
 | teleport.audit.sftp.target_path | TargetPath is the new path in file renames, or the path of the symlink when creating symlinks. | keyword |
-| teleport.audit.status_message | Error includes system error message for the failed attempt | text |
 | teleport.audit.svid.dns_sans | DNSSANs is the list of DNS SANs in the issued SVID. | keyword |
 | teleport.audit.svid.hint | Hint is the hint of the issued SVID. | keyword |
 | teleport.audit.svid.ip_sans | IPSANs is the list of IP SANs in the issued SVID. | keyword |

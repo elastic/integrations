@@ -68,6 +68,17 @@ processors:
   # The HTTP-related fields are used for other events as well. They work as catch-all
   # fields and should be at the end of the group processing.
   -  rename:
+       field: teleport.audit.error
+       target_field: teleport.audit.tmp_error
+       ignore_missing: true
+  - remove:
+      field: teleport.audit.error
+      ignore_missing: true
+  -  rename:
+       field: teleport.audit.tmp_error
+       target_field: teleport.audit.error.message
+       ignore_missing: true
+  -  rename:
        field: teleport.audit.status_code
        target_field: http.response.status_code
        ignore_missing: true

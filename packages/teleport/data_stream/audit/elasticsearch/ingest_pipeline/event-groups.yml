@@ -445,12 +445,8 @@ processors:
       field: teleport.audit.success
       if: ctx.teleport?.audit?.success == false
   -  rename:
-       field: teleport.audit.error
-       target_field: teleport.audit.error_message
-       ignore_missing: true
-  -  rename:
        field: teleport.audit.message
-       target_field: teleport.audit.status_message
+       target_field: message
        ignore_missing: true
   -  rename:
        field: teleport.audit.ppid
@@ -657,7 +653,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.exitError
-      target_field: teleport.audit.error_message
+      target_field: process.io.text
       ignore_missing: true
 
   # SFTP file operations metadata
@@ -774,10 +770,6 @@ processors:
        target_field: teleport.audit.sftp.action
        ignore_missing: true
        if: 'ctx.teleport?.audit?.sftp?.action == null'
-  -  rename:
-       field: teleport.audit.error
-       target_field: teleport.audit.sftp.error
-       ignore_missing: true
 
   # ClientDisconnect is emitted when client is disconnected
   # by the server due to inactivity or any other reason
