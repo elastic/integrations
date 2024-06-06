@@ -1130,7 +1130,8 @@ processors:
       copy_from: m365_defender.event.folder_path
       ignore_empty_value: true
       tag: set_file_path
-      if: ctx.event?.category != null && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && 
+        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - script:
       description: Adds file information.
       lang: painless
@@ -1161,31 +1162,36 @@ processors:
       copy_from: m365_defender.event.md5
       ignore_empty_value: true
       tag: set_file_hash_md5
-      if: ctx.event?.category != null && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && 
+        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - set:
       field: file.hash.sha1
       copy_from: m365_defender.event.sha1
       ignore_empty_value: true
       tag: set_file_hash_sha1
-      if: ctx.event?.category != null && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && 
+        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - set:
       field: file.hash.sha256
       copy_from: m365_defender.event.sha256
       ignore_empty_value: true
       tag: set_file_hash_sha256
-      if: ctx.event?.category != null && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && 
+        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - set:
       field: file.name
       copy_from: m365_defender.event.file.name
       ignore_empty_value: true
       tag: set_file_name
-      if: ctx.event?.category != null && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && 
+        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - set:
       field: file.size
       copy_from: m365_defender.event.file.size
       ignore_empty_value: true
       tag: set_file_size
-      if: ctx.event?.category != null && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: ctx.event?.category != null && 
+        !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
   - set:
       field: file.x509.not_after
       copy_from: m365_defender.event.certificate.expiration_time
@@ -1286,177 +1292,285 @@ processors:
       tag: set_dll_pe_size
       if: ctx.event?.category != null && ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents')
 
-  # Process mappings (Only when its Process or DeviceEvent or api or driver category, else it means something else)
-  # Fields like InitatingProcess* related to process.* unless the Type in ['DeviceProcessEvent', 'DeviceEvent'], then it relates to process.parent.*
-  ## DeviceProcessEvent/DeviceEvent map to process.parent.*
+  # Process mappings (Only when event.category is in ['process', 'deviceevents', 'api', 'driver'], else it means something else)
+  # Fields like InitatingProcess* are mapped to process.* unless the Type is in ['DeviceProcessEvent', 'DeviceEvent'], then it maps to process.parent.*
+  ## Even when Type is DeviceProcessEvent or DeviceEvent, certain event.action values still map to process.*, rest of them maps to process.parent.* (https://github.com/elastic/integrations/issues/9993)
+  ## Firstly, mapping process.parent.* below.
+  - set:
+      field: _temp_deviceevents_that_map_process
+      tag: set_temp_deviceevents_that_map_process_true
+      description: Temporary variable for some DeviceEvent's event.action values that should map to process.* instead of process.parent.*
+      value: true
+      if: >-
+        ctx.m365_defender?.event?.category != null 
+        && ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') 
+        && ctx.m365_defender?.event?.action?.type != null && ['namedpipeevent', 'dpapiaccessed', 'ntallocatevirtualmemoryapicall', 'getclipboarddata', 'ntprotectvirtualmemoryapicall', 'browserlaunchedtoopenurl', 'processprimarytokenmodified', 'powershellcommand', 'clrunbackedmoduleloaded', 'ldapsearch', 'dnsqueryresponse', 'ntallocatevirtualmemoryremoteapicall', 'memoryremoteprotect', 'screenshottaken', 'antivirusscancompleted', 'exploitguardwin32systemcallblocked', 'getasynckeystateapicall', 'appguardcreatecontainer', 'exploitguardacgenforced', 'writetolsassprocessmemory', 'antivirusscancancelled', 'controlflowguardviolation', 'appcontrolpolicyapplied', 'createremotethreadapicall', 'auditpolicymodification', 'ntmapviewofsectionremoteapicall', 'appguardlaunchedwithurl', 'appguardresumecontainer', 'smartscreenurlwarning', 'appguardbrowsetourl', 'otheralertrelatedactivity', 'antivirusscanfailed'].contains(ctx.m365_defender.event.action.type.toLowerCase())
+  - set:
+      field: _temp_deviceevents_that_map_process
+      tag: set_temp_deviceevents_that_map_process_false
+      description: Temporary variable for some DeviceEvent's event.action values that should map to process.* instead of process.parent.*
+      value: false
+      if: >-
+        ctx._temp_deviceevents_that_map_process == null 
+        && ctx.m365_defender?.event?.category != null 
+        && ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') 
   - set:
       field: process.executable
       copy_from: m365_defender.event.folder_path
       ignore_empty_value: true
       tag: set_process_executable
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.hash.md5
       copy_from: m365_defender.event.md5
       ignore_empty_value: true
       tag: set_process_hash_md5
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.hash.sha1
       copy_from: m365_defender.event.sha1
       ignore_empty_value: true
       tag: set_process_hash_sha1
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.hash.sha256
       copy_from: m365_defender.event.sha256
       ignore_empty_value: true
       tag: set_process_hash_sha256
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.name
       copy_from: m365_defender.event.file.name
       ignore_empty_value: true
       tag: set_process_name
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceimageloadevents') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.command_line
       copy_from: m365_defender.event.initiating_process.command_line
       ignore_empty_value: true
       tag: set_process_parent_command_line
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.hash.md5
       copy_from: m365_defender.event.initiating_process.md5
       ignore_empty_value: true
       tag: set_process_parent_hash_md5
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.hash.sha1
       copy_from: m365_defender.event.initiating_process.sha1
       ignore_empty_value: true
       tag: set_process_parent_hash_sha1
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.hash.sha256
       copy_from: m365_defender.event.initiating_process.sha256
       ignore_empty_value: true
       tag: set_process_parent_hash_sha256
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.group_leader.pid
       copy_from: m365_defender.event.initiating_process.parent_id
       ignore_empty_value: true
       tag: set_process_parent_group_leader_pid
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.pid
       copy_from: m365_defender.event.initiating_process.id
       ignore_empty_value: true
       tag: set_process_parent_pid
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.start
       copy_from: m365_defender.event.initiating_process.creation_time
       ignore_empty_value: true
       tag: set_process_parent_start
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.name
       copy_from: m365_defender.event.initiating_process.file_name
       ignore_empty_value: true
       tag: set_process_parent_name
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.executable
       copy_from: m365_defender.event.initiating_process.folder_path
       ignore_empty_value: true
       tag: set_process_parent_executable
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.group_leader.start
       copy_from: m365_defender.event.initiating_process.parent_creation_time
       ignore_empty_value: true
       tag: set_process_parent_group_leader_start
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.group_leader.name
       copy_from: m365_defender.event.initiating_process.parent_file_name
       ignore_empty_value: true
       tag: set_process_parent_group_leader_name
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.pe.company
       copy_from: m365_defender.event.initiating_process.version_info_company_name
       ignore_empty_value: true
       tag: set_process_parent_pe_company
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.pe.description
       copy_from: m365_defender.event.initiating_process.version_info_file_description
       ignore_empty_value: true
       tag: set_process_parent_pe_description
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.pe.original_file_name
       copy_from: m365_defender.event.initiating_process.version_info_original_file_name
       ignore_empty_value: true
       tag: set_process_parent_pe_original_file_name
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.pe.product
       copy_from: m365_defender.event.initiating_process.version_info_product_name
       ignore_empty_value: true
       tag: set_process_parent_pe_product
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.pe.file_version
       copy_from: m365_defender.event.initiating_process.version_info_product_version
       ignore_empty_value: true
       tag: set_process_parent_pe_file_version
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.code_signature.status
       copy_from: m365_defender.event.initiating_process.signature_status
       tag: set_process_code_signature_status
       ignore_empty_value: true
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
   - set:
       field: process.parent.code_signature.exists
       value: true
       tag: set_process_code_signature_exists_true
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')) && ctx.m365_defender?.event?.initiating_process?.signature_status == "Valid"
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
+        && ctx.m365_defender?.event?.initiating_process?.signature_status == "Valid"
   - set:
       field: process.parent.code_signature.exists
       value: false
       tag: set_process_code_signature_exists_false
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')) && ctx.m365_defender?.event?.initiating_process?.signature_status == "Unsigned"
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
+        && ctx.m365_defender?.event?.initiating_process?.signature_status == "Unsigned"
   - set:
       field: process.parent.code_signature.status
       value: trusted
       tag: set_process_code_signature_status_trusted
       override: true
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')) && ctx.m365_defender?.event?.initiating_process?.signature_status == "Valid"
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
+        && ctx.m365_defender?.event?.initiating_process?.signature_status == "Valid"
   - set:
       field: process.parent.code_signature.trusted
       value: true
       tag: set_process_code_signature_trusted_true
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')) && ctx.m365_defender?.event?.initiating_process?.signature_status == "Valid"
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
+        && ctx.m365_defender?.event?.initiating_process?.signature_status == "Valid"
   - set:
       field: process.parent.code_signature.trusted
       value: false
       tag: set_process_code_signature_trusted_false
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')) && ctx.m365_defender?.event?.initiating_process?.signature_status == "Unsigned"
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') 
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == false))
+        && ctx.m365_defender?.event?.initiating_process?.signature_status == "Unsigned"
   - set:
       field: process.Ext.token.integrity_level_name
       copy_from: m365_defender.event.initiating_process.integrity_level
       tag: set_process_Ext_token_integrity_level_name
-      if: ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') || ctx.event.category.contains('library'))
+      if: >-
+        ctx.event?.category != null && !ctx.event.category.contains('api') && !ctx.event.category.contains('driver') 
+        && (ctx.event.category.contains('process') || ctx.m365_defender.event.category.toLowerCase().contains('deviceevents') || ctx.event.category.contains('library'))
       ignore_empty_value: true
   - script:
       description: Make temp variable for adding process.Ext.api.name when event.category is 'api'.
       lang: painless
-      if: ctx.event?.category != null && ctx.event.category.contains('api')
+      if: >-
+        ctx.event?.category != null && ctx.event.category.contains('api')
       source: |
         String actiontype = ctx.m365_defender.event.action.type;
         def idx = actiontype.toLowerCase().lastIndexOf('apicall');
@@ -1470,13 +1584,15 @@ processors:
       field: m365_defender.event.additional_fields.RegionSize
       target_field: process.Ext.api.parameters.size
       tag: rename_process_Ext_api_parameters_size
-      if: ctx.event?.category != null && ctx.event.category.contains('api')
+      if: >-
+        ctx.event?.category != null && ctx.event.category.contains('api')
       ignore_missing: true
   - rename:
       field: m365_defender.event.additional_fields.ProtectionMask
       target_field: process.Ext.api.parameters.protection
       tag: rename_process_Ext_api_parameters_protection
-      if: ctx.event?.category != null && ctx.event.category.contains('api')
+      if: >-
+        ctx.event?.category != null && ctx.event.category.contains('api')
       ignore_missing: true
   - convert:
       field: process.Ext.api.parameters.protection
@@ -1488,13 +1604,15 @@ processors:
       field: m365_defender.event.additional_fields.BaseAddress
       target_field: process.Ext.api.parameters.address
       tag: rename_process_Ext_api_parameters_address
-      if: ctx.event?.category != null && ctx.event.category.contains('api')
+      if: >-
+        ctx.event?.category != null && ctx.event.category.contains('api')
       ignore_missing: true
   - rename:
       field: m365_defender.event.additional_fields.DesiredAccess
       target_field: process.Ext.api.parameters.desired_access_numeric
       tag: rename_process_Ext_api_parameters_desired_access_numeric
-      if: ctx.event?.category != null && ctx.event.category.contains('api')
+      if: >-
+        ctx.event?.category != null && ctx.event.category.contains('api')
       ignore_missing: true
   # Add Target.process.* when remote API call i.e., ActionType: (CreateRemoteThreadApiCall or ReadProcessMemoryApiCall or ntallocatevirtualmemoryremoteapicall or OpenProcessApiCall)
   - set:
@@ -1516,7 +1634,8 @@ processors:
       tag: set_Target_process_executable
       if: ctx.event?.category != null && ctx.event.category.contains('api') && (ctx.m365_defender?.event?.action?.type != null && ['createremotethreadapicall', 'readprocessmemoryapicall', 'ntallocatevirtualmemoryremoteapicall', 'openprocessapicall'].contains(ctx.m365_defender.event.action.type.toLowerCase()))
       ignore_empty_value: true
-
+## Even when Type is DeviceProcessEvent or DeviceEvent, certain event.action values still map to process.*, rest of them maps to process.parent.* (https://github.com/elastic/integrations/issues/9993)
+  ## Secondly, mapping process.* below.
   ## All other DeviceEvent types that is not DeviceProcessEvent or DeviceEvent map InitiatingProcess* to process.* rather than process.parent.*
   ## Also, if event.category in ["api", "driver"] (a subset of DeviceEvent), then use process.* instead of process.parent.*
   - set:
@@ -1524,140 +1643,234 @@ processors:
       copy_from: m365_defender.event.initiating_process.command_line
       ignore_empty_value: true
       tag: set_process_command_line
-      if: ctx.event?.category != null && ((ctx.event.category.contains('api') || ctx.event.category.contains('driver')) || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
+
   - set:
       field: process.hash.md5
       copy_from: m365_defender.event.initiating_process.md5
       ignore_empty_value: true
       tag: set_process_hash_md5
-      if: ctx.event?.category != null && ((ctx.event.category.contains('api') || ctx.event.category.contains('driver')) || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver')
+            || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.hash.sha1
       copy_from: m365_defender.event.initiating_process.sha1
       ignore_empty_value: true
       tag: set_process_hash_sha1
-      if: ctx.event?.category != null && ((ctx.event.category.contains('api') || ctx.event.category.contains('driver')) || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.hash.sha256
       copy_from: m365_defender.event.initiating_process.sha256
       ignore_empty_value: true
       tag: set_process_hash_sha256
-      if: ctx.event?.category != null && ((ctx.event.category.contains('api') || ctx.event.category.contains('driver')) || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.parent.pid
       copy_from: m365_defender.event.initiating_process.parent_id
       ignore_empty_value: true
       tag: set_process_parent_pid
-      if: ctx.event?.category != null && ((ctx.event.category.contains('api') || ctx.event.category.contains('driver')) || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.pid
       copy_from: m365_defender.event.initiating_process.id
       ignore_empty_value: true
       tag: set_process_pid
-      if: ctx.event?.category != null && ((ctx.event.category.contains('api') || ctx.event.category.contains('driver')) || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.start
       copy_from: m365_defender.event.initiating_process.creation_time
       ignore_empty_value: true
       tag: set_process_start
-      if: ctx.event?.category != null && ((ctx.event.category.contains('api') || ctx.event.category.contains('driver')) || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.name
       copy_from: m365_defender.event.initiating_process.file_name
       ignore_empty_value: true
       tag: set_process_name
-      if: ctx.event?.category != null && ((ctx.event.category.contains('api') || ctx.event.category.contains('driver')) || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.executable
       copy_from: m365_defender.event.initiating_process.folder_path
       ignore_empty_value: true
       tag: set_process_executable
-      if: ctx.event?.category != null && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+      if: >-
+        ctx.event?.category != null 
+        && (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.executable
       value: >-
         {{{m365_defender.event.initiating_process.folder_path}}}\{{{m365_defender.event.initiating_process.file_name}}}
       ignore_empty_value: true
       tag: set_process_executable_api
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
+      if: >-
+        ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
   - set:
       field: process.parent.name
       copy_from: m365_defender.event.initiating_process.parent_file_name
       ignore_empty_value: true
       tag: set_process_parent_parent_name
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
+      if: >-
+        ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
   - set:
       field: process.parent.pid
       copy_from: m365_defender.event.initiating_process.parent_id
       ignore_empty_value: true
       tag: set_process_parent_parent_id
-      if: ctx.event?.category != null && (ctx.event.category.contains('api')|| ctx.event.category.contains('driver'))
+      if: >-
+        ctx.event?.category != null && (ctx.event.category.contains('api')|| ctx.event.category.contains('driver'))
   - set:
       field: process.parent.start
       copy_from: m365_defender.event.initiating_process.parent_creation_time
       ignore_empty_value: true
       tag: set_process_parent_start
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver') || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.parent.name
       copy_from: m365_defender.event.initiating_process.parent_file_name
       ignore_empty_value: true
       tag: set_process_parent_name
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver') || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.group_leader.pid
       copy_from: m365_defender.event.initiating_process.parent_id
       ignore_empty_value: true
       tag: set_process_group_leader_pid
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
+      if: >-
+        ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
   - set:
       field: process.group_leader.name
       copy_from: m365_defender.event.initiating_process.parent_file_name
       ignore_empty_value: true
       tag: set_process_group_leader_name
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
+      if: >-
+        ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
   - set:
       field: process.group_leader.start
       copy_from: m365_defender.event.initiating_process.parent_creation_time
       ignore_empty_value: true
       tag: set_process_group_leader_start
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
+      if: >-
+        ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
   - set:
       field: process.pe.company
       copy_from: m365_defender.event.initiating_process.version_info_company_name
       ignore_empty_value: true
       tag: set_process_pe_company
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver') || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.pe.description
       copy_from: m365_defender.event.initiating_process.version_info_file_description
       ignore_empty_value: true
       tag: set_process_pe_description
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver') || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.pe.original_file_name
       copy_from: m365_defender.event.initiating_process.version_info_original_file_name
       ignore_empty_value: true
       tag: set_process_pe_original_file_name
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver') || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.pe.product
       copy_from: m365_defender.event.initiating_process.version_info_product_name
       ignore_empty_value: true
       tag: set_process_pe_product
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver') || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.pe.file_version
       copy_from: m365_defender.event.initiating_process.version_info_product_version
       ignore_empty_value: true
       tag: set_process_pe_file_version
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver') || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || ctx.event.category.contains('driver') 
+            || (!ctx.event.category.contains('library') && !ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.code_signature.status
       copy_from: m365_defender.event.initiating_process.signature_status
       tag: set_process_code_signature_status
       ignore_empty_value: true
-      if: ctx.event?.category != null && (ctx.event.category.contains('api') || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents')))
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') 
+            || (!ctx.event.category.contains('process') && !ctx.m365_defender.event.category.toLowerCase().contains('deviceevents'))
+            || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
+  ### Remove the temporary variable 
+  - remove:
+      field: _temp_deviceevents_that_map_process
+      description: Remove temporary variable created in tag set_temp_deviceevents_that_map_process*
+      ignore_missing: true
   ## m365_defender.event.process* fields will always map to process.*, so these do not require any logic.
   - set:
       field: process.command_line
