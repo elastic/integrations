@@ -1,0 +1,99 @@
+---
+description: Pipeline for parsing azure open_ai logs.
+processors:
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      target_field: azure.open_ai
+  - rename:
+      field: azure.open_ai.resourceId
+      target_field: azure.resource.id
+      ignore_missing: true
+  - drop:
+      description: Drop non Azure OpenAI logs.
+      if: "ctx.azure.open_ai.category != 'Audit' && ctx.azure.open_ai.category != 'RequestResponse'"
+      ignore_failure: true
+  - json:
+      tag: json-extract-stringly-Properties
+      field: azure.open_ai.properties
+      if: ctx.azure?.open_ai?.properties instanceof String
+      on_failure:
+        - remove:
+            field: azure.open_ai.properties
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Convert Azure JSON keys to snake case.
+      tag: azure-json-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def out = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            out.put(k, v);
+          }
+
+          return out;
+        }
+
+        ctx.azure['open_ai'] = keysToSnakeCase(ctx.azure.open_ai);
+  - date:
+      field: azure.open_ai.time
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove:
+      field: azure.open_ai.time
+      ignore_missing: true
+  - rename:
+      field: azure.open_ai.duration_ms
+      target_field: event.duration
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
+        * params.param_nano;}
+      params:
+        param_nano: 1000000
+      ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+      ignore_failure: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

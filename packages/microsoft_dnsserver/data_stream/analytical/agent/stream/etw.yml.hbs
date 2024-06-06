@@ -1,0 +1,28 @@
+condition: ${host.platform} == 'windows'
+
+{{#if logfile}}
+file: {{logfile}}
+{{else}}
+provider.name: "Microsoft-Windows-DNSServer"
+match_any_keyword: "0x8000000000000000"
+{{/if}}
+{{#if session_name}}
+session_name: {{session_name}}
+{{/if}}
+{{#if trace_level}}
+trace_level: {{trace_level}}
+{{/if}}
+{{#if match_all_keyword}}
+match_all_keyword: "{{match_all_keyword}}"
+{{/if}}
+tags:
+{{#if preserve_duplicate_custom_fields}}
+- preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+- {{tag}}
+{{/each}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

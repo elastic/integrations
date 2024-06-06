@@ -1,0 +1,589 @@
+---
+description: Pipeline for processing Fortinet Fortiproxy logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.original
+      copy_from: message
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [ network ]
+  - set:
+      field: observer.vendor
+      value: Fortinet
+  - set:
+      field: observer.product
+      value: FortiProxy
+  - set:
+      field: observer.type
+      value: proxy
+
+# ------------------------------------------------------------------------------
+# Message processing
+
+  - grok:
+      tag: grok_syslog_priority
+      field: message
+      patterns:
+        - "^(?:%{SYSLOG_PRI})?%{GREEDYDATA:message}$"
+      pattern_definitions:
+        SYSLOG_PRI: "<%{NONNEGINT:log.syslog.priority:int}>"
+  - script:
+      tag: script_syslog_priority
+      lang: painless
+      source: >-
+        if (ctx.log?.syslog?.priority == null) {
+          return;
+        }
+        def severity = [:];
+        severity['code'] = ctx.log.syslog.priority&0x7;
+        ctx.log.syslog['severity'] = severity;
+        def facility = [:];
+        facility['code'] = ctx.log.syslog.priority>>3;
+        ctx.log.syslog['facility'] = facility;
+  - gsub:
+      tag: gsub_sanitize_message
+      field: message
+      pattern: "[\u0000-\u001F\u007F]"
+      replacement: ""
+  - script:
+      tag: script_kv_parse
+      description: Parse key/value pairs from message.
+      lang: painless
+      source: >-
+        ctx["_fields_"] = [:];
+
+        def kvStart = 0;
+        def kvSplit = 0;
+        def inQuote = false;
+        
+        Pattern wsPattern = /^\"|\"$/;
+        Pattern wordPattern = /\W+/;
+
+        for (int i = 0, n = ctx["message"].length(); i < n; ++i) {
+          char c = ctx["message"].charAt(i);
+          if (c == (char)'"') {
+            inQuote = !inQuote;
+          }
+          if (inQuote) {
+            continue;
+          }
+          if (c == (char)'=') {
+            kvSplit = i;
+          }
+          if (c == (char)' ' || i == n - 1) {
+            if (i != kvStart) {
+              def endIndex = i == n - 1 ? i + 1 : i;
+              def key = ctx["message"].substring(kvStart, kvSplit);
+              def value = wsPattern.matcher(ctx["message"].substring(kvSplit + 1, endIndex)).replaceAll("");
+
+              if (value != "N/A" && !wordPattern.matcher(key).find()) {
+                ctx["_fields_"].put(key, value);
+              }
+            }
+
+            kvStart = i + 1;
+            kvSplit = i + 1;
+          }
+        }
+
+# ------------------------------------------------------------------------------
+# Date and Time.
+
+  - rename:
+      tag: rename_timezone
+      target_field: event.timezone
+      field: _fields_.tz
+      ignore_missing: true
+  - set:
+      tag: set_temp_timestamp_with_tz
+      field: '_temp_.timestamp'
+      value: '{{{_fields_.date}}} {{{_fields_.time}}} {{{event.timezone}}}'
+      if: ctx.event.timezone instanceof String
+  - set:
+      tag: set_temp_timestamp
+      field: '_temp_.timestamp'
+      value: '{{{_fields_.date}}} {{{_fields_.time}}}'
+      if: '!(ctx.event.timezone instanceof String)'
+  - date:
+      tag: date_timestamp
+      field: _temp_.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss Z
+        - yyyy-MM-dd HH:mm:ss
+  - remove:
+      field:
+        - _fields_.date
+        - _fields_.time
+        - message
+
+# ------------------------------------------------------------------------------
+# Convert fields.
+  - convert:
+      tag: convert_count
+      field: _fields_.count
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_craction
+      field: _fields_.craction
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_crscore
+      field: _fields_.crscore
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_dstip
+      field: _fields_.dstip
+      type: ip
+      ignore_missing: true
+  - convert:
+      tag: convert_dstport
+      field: _fields_.dstport
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_duration
+      field: _fields_.duration
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_filesize
+      field: _fields_.filesize
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_pdstport
+      field: _fields_.pdstport
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_psrcport
+      field: _fields_.psrcport
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_rcvdbyte
+      field: _fields_.rcvdbyte
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_rcvdpkt
+      field: _fields_.rcvdpkt
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_sentbyte
+      field: _fields_.sentbyte
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_srcip
+      field: _fields_.srcip
+      type: ip
+      ignore_missing: true
+  - convert:
+      tag: convert_srcport
+      field: _fields_.srcport
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_vrf
+      field: _fields_.vrf
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_wanin
+      field: _fields_.wanin
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_wanout
+      field: _fields_.wanout
+      type: long
+      ignore_missing: true
+
+# ------------------------------------------------------------------------------
+# Enrich fields.
+
+  - gsub:
+      tag: gsub_eventtime_truncate_ns
+      field: _fields_.eventtime
+      pattern: "\\d{6}$"
+      replacement: ""
+      if: ctx._fields_.eventtime instanceof String && ctx._fields_.eventtime.length() == 19
+  - date:
+      tag: date_eventtime_ms
+      field: _fields_.eventtime
+      target_field: _fields_.eventtime
+      if: ctx._fields_.eventtime instanceof String && ctx._fields_.eventtime.length() == 13
+      formats:
+        - UNIX_MS
+  - date:
+      tag: date_eventtime
+      field: _fields_.eventtime
+      target_field: _fields_.eventtime
+      if: ctx._fields_.eventtime instanceof String && ctx._fields_.eventtime.length() == 10
+      formats:
+        - UNIX
+  - date:
+      tag: date_eventtime_ms_tz
+      field: _fields_.eventtime
+      target_field: _fields_.eventtime
+      timezone: "{{{event.timezone}}}"
+      if: ctx.event.timezone != null && ctx._fields_.eventtime instanceof String && ctx._fields_.eventtime.length() == 13
+      formats:
+        - UNIX_MS
+  - date:
+      tag: date_eventtime_tz
+      field: _fields_.eventtime
+      target_field: _fields_.eventtime
+      timezone: "{{{event.timezone}}}"
+      if: ctx.event.timezone != null && ctx._fields_.eventtime instanceof String && ctx._fields_.eventtime.length() == 10
+      formats:
+        - UNIX
+
+  - script:
+      tag: script_duration
+      description: Converts and sets the duration.
+      lang: painless
+      source: >-
+        if (ctx._fields_.duration == null) {
+          return;
+        }        
+        ctx._fields_.duration = ctx._fields_.duration * 1000000000
+
+  - lowercase:
+      field: _fields_.service
+      ignore_missing: true
+  - script:
+      tag: script_network_proto
+      description: Sets network.transport based on the IANA number.
+      lang: painless
+      params:
+        "1": icmp
+        "2": igmp
+        "4": ipv4
+        "6": tcp
+        "8": egp
+        "9": igp
+        "12": pup
+        "17": udp
+        "27": rdp
+        "28": irtp
+        "33": dccp
+        "35": idpr
+        "41": ipv6
+        "43": ipv6-route
+        "44": ipv6-frag
+        "46": rsvp
+        "47": gre
+        "50": esp
+        "58": ipv6-icmp
+        "59": ipv6-nonxt
+        "60": ipv6-opts
+      source: >-
+        
+        if (ctx._fields_.proto instanceof String) {
+          if (ctx.network == null) {
+            ctx.network = [:];
+          }
+          ctx.network.transport = params[ctx._fields_.proto];
+        }
+
+  - user_agent:
+      tag: user_agent
+      field: _fields_.agent
+      ignore_missing: true
+
+  - gsub:
+      tag: convert_dstmac
+      field: _fields_.dstmac
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      tag: uppercase_dstmac
+      field: _fields_.dstmac
+      ignore_missing: true
+  - gsub:
+      tag: convert_srcmac
+      field: _fields_.srcmac
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      tag: uppercase_srcmac
+      field: _fields_.srcmac
+      ignore_missing: true
+
+  - gsub:
+      tag: gsub_appcat
+      field: _fields_.appcat
+      pattern: "\\."
+      replacement: "-"
+      ignore_missing: true
+
+# ------------------------------------------------------------------------------
+# Move fields to ECS.
+  - rename:
+      tag: rename_action
+      field: _fields_.action
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      tag: rename_appcat
+      field: _fields_.appcat
+      target_field: rule.category
+      ignore_missing: true
+  - rename:
+      tag: rename_devid
+      field: _fields_.devid
+      target_field: observer.serial_number
+      ignore_missing: true
+  - rename:
+      tag: rename_devname
+      field: _fields_.devname
+      target_field: observer.hostname
+      ignore_missing: true
+  - rename:
+      tag: rename_direction
+      field: _fields_.direction
+      target_field: network.direction
+      ignore_missing: true
+  - rename:
+      tag: rename_dstcountry
+      field: _fields_.dstcountry
+      target_field: destination.geo.country_name
+      ignore_missing: true
+  - rename:
+      tag: rename_dstintf
+      field: _fields_.dstintf
+      target_field: observer.egress.interface.name
+      ignore_missing: true
+  - rename:
+      tag: rename_dstip
+      field: _fields_.dstip
+      target_field: destination.ip
+      ignore_missing: true
+  - rename:
+      tag: rename_dstport
+      field: _fields_.dstport
+      target_field: destination.port
+      ignore_missing: true
+  - rename:
+      tag: rename_duration
+      field: _fields_.duration
+      target_field: event.duration
+      ignore_missing: true
+  - rename:
+      tag: rename_eventtime
+      field: _fields_.eventtime
+      target_field: event.start
+      ignore_missing: true
+  - rename:
+      tag: rename_group
+      field: _fields_.group
+      target_field: source.user.group.name
+      ignore_missing: true
+  - rename:
+      tag: rename_hostname
+      field: _fields_.hostname
+      target_field: url.domain
+      ignore_missing: true
+  - rename:
+      tag: rename_httpmethod
+      field: _fields_.httpmethod
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      tag: rename_level
+      field: _fields_.level
+      target_field: log.level
+      ignore_missing: true
+  - rename:
+      tag: rename_logid
+      field: _fields_.logid
+      target_field: event.code
+      ignore_missing: true
+  - rename:
+      tag: rename_msg
+      field: _fields_.msg
+      target_field: message
+      ignore_missing: true
+  - rename:
+      tag: rename_policyid
+      field: _fields_.policyid
+      target_field: rule.id
+      ignore_missing: true
+  - rename:
+      tag: rename_policytype
+      field: _fields_.policytype
+      target_field: rule.ruleset
+      ignore_missing: true
+  - rename:
+      tag: rename_poluuid
+      field: _fields_.poluuid
+      target_field: rule.uuid
+      ignore_missing: true
+  - rename:
+      tag: rename_proto
+      field: _fields_.proto
+      target_field: network.iana_number
+      ignore_missing: true
+  - rename:
+      tag: rename_rcvdbyte
+      field: _fields_.rcvdbyte
+      target_field: destination.bytes
+      ignore_missing: true
+  - rename:
+      tag: rename_rcvdpkt
+      field: _fields_.rcvdpkt
+      target_field: destination.packets
+      ignore_missing: true
+  - rename:
+      tag: rename_sentbyte
+      field: _fields_.sentbyte
+      target_field: source.bytes
+      ignore_missing: true
+  - rename:
+      tag: rename_service
+      field: _fields_.service
+      target_field: network.protocol
+      ignore_missing: true
+  - rename:
+      tag: rename_srccountry
+      field: _fields_.srccountry
+      target_field: source.geo.country_name
+      ignore_missing: true
+  - rename:
+      tag: rename_srcintf
+      field: _fields_.srcintf
+      target_field: observer.ingress.interface.name
+      ignore_missing: true
+  - rename:
+      tag: rename_srcip
+      field: _fields_.srcip
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      tag: rename_srcmac
+      field: _fields_.srcmac
+      target_field: source.mac
+      ignore_missing: true
+  - rename:
+      tag: rename_srcname
+      field: _fields_.srcname
+      target_field: host.name
+      ignore_missing: true
+  - rename:
+      tag: rename_srcport
+      field: _fields_.srcport
+      target_field: source.port
+      ignore_missing: true
+
+# ------------------------------------------------------------------------------
+# Dispatch to sub-pipelines.
+
+  - pipeline:
+      name: '{{ IngestPipeline "event" }}'
+      if: ctx._fields_?.type == 'event'
+  - pipeline:
+      name: '{{ IngestPipeline "traffic" }}'
+      if: ctx._fields_?.type == 'traffic'
+  - pipeline:
+      name: '{{ IngestPipeline "utm" }}'
+      if: ctx._fields_?.type == 'utm'
+
+# ------------------------------------------------------------------------------
+# Enrich remaining fields.
+
+  - script:
+      tag: script_network_compute_stats
+      lang: painless
+      source: >-
+        if (ctx.destination?.bytes == null
+          && ctx.source?.bytes == null
+          && ctx.destination?.packets == null
+          && ctx.source?.packets == null
+        ) {
+          return;
+        }
+        if (ctx.network == null) {
+          ctx.network = [:];
+        }
+        if (ctx.destination?.bytes instanceof Number && ctx.source?.bytes instanceof Number) {
+          ctx.network.bytes = ctx.destination.bytes + ctx.source.bytes;
+        }
+        if (ctx.destination?.packets instanceof Number && ctx.source?.packets instanceof Number) {
+          ctx.network.packets = ctx.destination.packets + ctx.source.packets;
+        }
+
+  - geoip:
+      tag: geoio_source
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      tag: geoio_destination
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+
+  - remove:
+      tag: remove_source_country_reserved
+      field: source.geo
+      if: ctx.source?.geo?.country_name == 'Reserved'
+  - remove:
+      tag: remove_destination_country_reserved
+      field: destination.geo
+      if: ctx.destination?.geo?.country_name == 'Reserved'
+
+  - set:
+      tag: copy_destination_server
+      copy_from: destination
+      field: server
+      if: ctx.destination != null
+  - set:
+      tag: copy_source_client
+      copy_from: source
+      field: client
+      if: ctx.source != null
+
+  - set:
+      tag: set_client_ip
+      copy_from: _fields_.clientip
+      field: client.ip
+      if: ctx._fields_.clientip != null
+
+# ------------------------------------------------------------------------------
+# Cleanup.
+
+  - remove:
+      field:
+        - _fields_.agent
+        - _fields_.clientip
+        - _fields_.duration
+      ignore_missing: true
+  - rename:
+      field: _fields_
+      target_field: fortinet.proxy
+  - remove:
+      field:
+        - _temp_
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
