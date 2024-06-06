@@ -1,17 +1,57 @@
 # Nagios XI
 
+## Overview
+
 The Nagios XI integration is used to fetch observability data from [Nagios XI](https://www.nagios.org/documentation/) and ingest it into Elasticsearch.
+
+Use the Nagios XI integration to:
+
+- Collect metrics on current load, users, ping, HTTP, SSH, root partition, swap users, total processes, round-trip time, and packet loss, along with system event logs.
+- Create visualizations to monitor, measure, and analyze usage trends and key data for business insights.
+- Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
+
+## Data streams
+
+The Nagios XI integration collects logs and metrics data.
+
+Logs provide insights into operations and events within the Nagios XI environment. The log data stream collected by the Nagios XI integration is `events`. This allows you to track system events, understand their causes, and address issues related to infrastructure monitoring and alert management.
+
+Metrics provide insights into the performance and health of your Nagios XI instance. The Nagios XI integration collects `host` and `service` metric data streams. These metrics enable you to monitor and troubleshoot the performance of hosts and services within your Nagios XI environment, covering aspects such as `network round trip time`, `packet loss`, `service load`, `user count`, and other critical indicators.
+
+Data streams:
+- `events`: Provides Nagios XI system event logs.
+- `host`: Provides Nagios XI Host Round Trip Travel Time (rta) and Packet Loss (pl) metrics.
+- `service `: Provides Nagios XI service metrics by default, including current load, current users, ping, HTTP, SSH, root partition, swap users, and total processes.
+
+Note:
+You can monitor and view logs from the ingested documents for Nagios XI in the `logs-*` index pattern in `Discover`. For metrics, the index pattern is `metrics-*`.
 
 ## Compatibility
 
 This integration has been tested against `Nagios-XI Version: 5.8.7`
 
-## Requirements
+## Prerequisites:
+- Elasticsearch: For storing and searching data.
+- Kibana: For visualizing and managing data.
 
-In order to ingest data from Nagios XI:
-- You must know the host for Nagios XI, add that host while configuring the integration package.
+You have two options for deploying Elasticsearch and Kibana:
+1. Elastic Cloud (Recommended): Fully managed and hosted by Elastic.
+2. Self-Managed: Deploy and manage the Elastic Stack on your own hardware.
 
-## Logs
+In order to ingest data from Nagios XI, you must know the host for Nagios XI and add that host when configuring the integration package.
+
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Validation
+
+1. After configuring the integration, go to the **Assets** tab in the Nagios XI Integration.
+2. You should see a list of available dashboards.
+3. Click on the dashboard corresponding to your configured data stream.
+4. Verify that the dashboard is populated with the expected data.
+
+## Logs reference
 
 ### Event Logs 
 
@@ -25,11 +65,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2022-03-16T07:02:41.000Z",
     "agent": {
-        "ephemeral_id": "51b119f6-cf3c-4fe1-ba07-4f8194106cda",
-        "id": "98cccf9b-3d95-4b93-b4dc-472035898e0f",
+        "ephemeral_id": "790d850b-4350-494f-bc9a-fa00fd887ba7",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.12.0"
     },
     "data_stream": {
         "dataset": "nagios_xi.events",
@@ -40,19 +80,21 @@ An example event for `events` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "98cccf9b-3d95-4b93-b4dc-472035898e0f",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.12.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-05-09T07:14:09.873Z",
+        "created": "2024-05-28T09:49:34.927Z",
         "dataset": "nagios_xi.events",
-        "ingested": "2022-05-09T07:14:10Z",
+        "ingested": "2024-05-28T09:49:45Z",
         "kind": "event",
         "module": "nagios_xi",
         "original": "{\"entry_time\":\"2022-03-16 07:02:41\",\"instance_id\":\"1\",\"logentry_data\":\"Event broker module '/usr/local/nagios/bin/ndo.so' initialized successfully.\",\"logentry_id\":\"211261\",\"logentry_type\":\"262144\"}",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "httpjson"
@@ -99,7 +141,7 @@ An example event for `events` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 
 
-## Metrics
+## Metrics reference
 
 ### Host Metrics
 
@@ -113,11 +155,11 @@ An example event for `host` looks as following:
 {
     "@timestamp": "2022-03-16T07:02:42.000Z",
     "agent": {
-        "ephemeral_id": "a8300647-0cfb-4d68-8f1f-ac4fbf423edf",
-        "id": "98cccf9b-3d95-4b93-b4dc-472035898e0f",
+        "ephemeral_id": "84e30ad8-df37-4fbf-aefc-ce7580f82ad0",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.12.0"
     },
     "data_stream": {
         "dataset": "nagios_xi.host",
@@ -128,19 +170,21 @@ An example event for `host` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "98cccf9b-3d95-4b93-b4dc-472035898e0f",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.12.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-05-09T07:14:52.511Z",
+        "created": "2024-05-28T09:50:27.235Z",
         "dataset": "nagios_xi.host",
-        "ingested": "2022-05-09T07:14:53Z",
+        "ingested": "2024-05-28T09:50:37Z",
         "kind": "metric",
         "module": "nagios_xi",
         "original": "{\"acknowledgement_type\":\"0\",\"action_url\":\"\",\"active_checks_enabled\":\"0\",\"address\":\"www.nagios.org\",\"check_command\":\"check_dummy!0!\\\"No data received yet.\\\"\",\"check_options\":\"0\",\"check_timeperiod_object_id\":\"71\",\"check_type\":\"1\",\"current_check_attempt\":\"1\",\"current_notification_number\":\"0\",\"current_state\":\"0\",\"display_name\":\"www.nagios.org\",\"event_handler\":\"\",\"event_handler_enabled\":\"1\",\"execution_time\":\"0\",\"failure_prediction_enabled\":\"0\",\"flap_detection_enabled\":\"1\",\"has_been_checked\":\"1\",\"host_alias\":\"www.nagios.org\",\"host_name\":\"www.nagios.org\",\"host_object_id\":\"423\",\"hoststatus_id\":\"58\",\"icon_image\":\"passiveobject.png\",\"icon_image_alt\":\"\",\"instance_id\":\"1\",\"is_flapping\":\"0\",\"last_check\":\"2020-08-04 10:07:54\",\"last_hard_state\":\"0\",\"last_hard_state_change\":\"2018-07-12 14:59:46\",\"last_notification\":\"1969-12-31 18:00:00\",\"last_state_change\":\"2015-07-13 21:09:35\",\"last_time_down\":\"1969-12-31 18:00:00\",\"last_time_unreachable\":\"1969-12-31 18:00:00\",\"last_time_up\":\"2020-08-04 10:07:54\",\"latency\":\"0\",\"long_output\":\"\",\"max_check_attempts\":\"5\",\"modified_host_attributes\":\"0\",\"next_check\":\"1969-12-31 18:00:00\",\"next_notification\":\"1969-12-31 18:00:00\",\"no_more_notifications\":\"0\",\"normal_check_interval\":\"5\",\"notes\":\"\",\"notes_url\":\"\",\"notifications_enabled\":\"1\",\"obsess_over_host\":\"1\",\"output\":\"HTTP OK: HTTP/1.1 301 Moved Permanently - 461 bytes in 0.123 second response time\",\"passive_checks_enabled\":\"1\",\"percent_state_change\":\"0\",\"perfdata\":\"time=0.122797s;;;0.000000 size=461B;;;0\",\"problem_has_been_acknowledged\":\"0\",\"process_performance_data\":\"1\",\"retry_check_interval\":\"1\",\"scheduled_downtime_depth\":\"0\",\"should_be_scheduled\":\"0\",\"state_type\":\"1\",\"status_update_time\":\"2022-03-16 07:02:42\"}",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "httpjson"
@@ -174,6 +218,7 @@ An example event for `host` looks as following:
             "last_hard_state": "0",
             "last_hard_state_change": "2018-07-12T14:59:46.000Z",
             "last_notification": "1969-12-31T18:00:00.000Z",
+            "last_state_change": "2015-07-13T21:09:35.000Z",
             "last_time_down": "1969-12-31T18:00:00.000Z",
             "last_time_unreachable": "1969-12-31T18:00:00.000Z",
             "last_time_up": "2020-08-04T10:07:54.000Z",
@@ -305,11 +350,11 @@ An example event for `service` looks as following:
 {
     "@timestamp": "2022-03-17T00:02:42.000Z",
     "agent": {
-        "ephemeral_id": "d0a9190e-82f3-40f0-956b-9c37209e3203",
-        "id": "98cccf9b-3d95-4b93-b4dc-472035898e0f",
+        "ephemeral_id": "6d73e7be-ccdd-4b48-87c1-9c8fd1720026",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.12.0"
     },
     "data_stream": {
         "dataset": "nagios_xi.service",
@@ -320,19 +365,22 @@ An example event for `service` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "98cccf9b-3d95-4b93-b4dc-472035898e0f",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.12.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-05-09T07:15:37.790Z",
-        "dataset": "nagios_xi.custom",
-        "ingested": "2022-05-09T07:15:38Z",
+        "created": "2024-05-28T09:51:19.326Z",
+        "dataset": "nagios_xi.service",
+        "ingested": "2024-05-28T09:51:29Z",
         "kind": "metric",
         "module": "nagios_xi",
         "original": "{\"acknowledgement_type\":\"0\",\"action_url\":\"\",\"active_checks_enabled\":\"0\",\"check_command\":\"check_dummy!0!\\\"No data received yet.\\\"\",\"check_options\":\"0\",\"check_timeperiod_object_id\":\"71\",\"check_type\":\"1\",\"current_check_attempt\":\"1\",\"current_notification_number\":\"0\",\"current_state\":\"0\",\"display_name\":\"Bandwidth Spike\",\"event_handler\":\"\",\"event_handler_enabled\":\"1\",\"execution_time\":\"0\",\"failure_prediction_enabled\":\"0\",\"flap_detection_enabled\":\"0\",\"has_been_checked\":\"1\",\"host_address\":\"www.nagios.org\",\"host_alias\":\"www.nagios.org\",\"host_name\":\"www.nagios.org\",\"host_object_id\":\"423\",\"icon_image\":\"\",\"icon_image_alt\":\"\",\"instance_id\":\"1\",\"is_flapping\":\"0\",\"last_check\":\"2020-06-17 07:12:02\",\"last_hard_state\":\"0\",\"last_hard_state_change\":\"2020-06-08 12:04:54\",\"last_notification\":\"2020-06-08 12:04:55\",\"last_state_change\":\"2020-06-08 12:04:54\",\"last_time_critical\":\"2020-06-08 12:04:54\",\"last_time_ok\":\"2020-06-17 07:12:02\",\"last_time_unknown\":\"1969-12-31 18:00:00\",\"last_time_warning\":\"2019-04-02 11:23:34\",\"latency\":\"0\",\"long_output\":\"\",\"max_check_attempts\":\"1\",\"modified_service_attributes\":\"0\",\"next_check\":\"1969-12-31 18:00:00\",\"next_notification\":\"1969-12-31 18:00:00\",\"no_more_notifications\":\"0\",\"normal_check_interval\":\"1\",\"notes\":\"\",\"notes_url\":\"\",\"notifications_enabled\":\"1\",\"obsess_over_service\":\"1\",\"output\":\"OK: 21 MB/s reported\",\"passive_checks_enabled\":\"1\",\"percent_state_change\":\"11.58\",\"perfdata\":\"bandwidth=21;80;90\",\"problem_has_been_acknowledged\":\"0\",\"process_performance_data\":\"1\",\"retry_check_interval\":\"1\",\"scheduled_downtime_depth\":\"0\",\"service_description\":\"Bandwidth Spike\",\"service_object_id\":\"999\",\"servicestatus_id\":\"996\",\"should_be_scheduled\":\"0\",\"state_type\":\"1\",\"status_update_time\":\"2022-03-17 00:02:42\"}",
-        "type": "info"
+        "provider": "nagios_xi.custom",
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "httpjson"
@@ -348,9 +396,6 @@ An example event for `service` looks as following:
             "current_check_attempt": "1",
             "current_notification_number": "0",
             "current_state": "Up/Pending",
-            "custom": {
-                "performance_data": "bandwidth=21;80;90"
-            },
             "event_handler_enabled": "1",
             "execution_time": 0,
             "failure_prediction_enabled": "0",
@@ -419,6 +464,7 @@ An example event for `service` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.ip | Host ip addresses. | ip |
 | input.type | Type of Filebeat input. | keyword |
@@ -446,7 +492,7 @@ An example event for `service` looks as following:
 | nagios_xi.service.flap_detection_enabled | This is used to determine whether or not flap detection is enabled for this host. More information on flap detection can be found here. Values=\> 0 = disable host flap detection, 1 = enable host flap detection. | keyword |
 | nagios_xi.service.has_been_checked | Refers to a flag or attribute that indicates whether a particular service has been checked during the current monitoring cycle. | keyword |
 | nagios_xi.service.host_address | Refers to the IP address or network address associated with a specific host that is being monitored. | keyword |
-| nagios_xi.service.host_alias |  | keyword |
+| nagios_xi.service.host_alias | This is used to define a longer name or description used to identify the host. | keyword |
 | nagios_xi.service.host_name | This is used to define a short name used to identify the host. It is used in host group and service definitions to reference this particular host. | keyword |
 | nagios_xi.service.host_object_id | Refers to the unique identifier assigned to a host object within the monitoring system. | keyword |
 | nagios_xi.service.http.performance_data | Exact output of check_command. | keyword |
