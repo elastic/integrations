@@ -126,6 +126,7 @@ An example event for `log` looks as following:
             "dstportname": "http",
             "rcvd": "0",
             "id": "firewall",
+            "srccontinent": "oc",
             "srcportname": "ephemeral_fw_tcp",
             "sent": "0"
         },
@@ -137,7 +138,6 @@ An example event for `log` looks as following:
         "dstif": "Ethernet0",
         "dstifname": "out",
         "startime": "2024-06-06 04:32:19",
-        "srccontinent": "oc",
         "time": "2024-06-06 04:32:19"
     },
     "event": {
