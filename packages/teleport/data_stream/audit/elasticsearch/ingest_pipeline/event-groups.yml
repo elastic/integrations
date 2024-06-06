@@ -102,12 +102,6 @@ processors:
   - remove:
       field: teleport.audit.server_addr
       ignore_missing: true
-  - grok:
-      field: server.address
-      ignore_missing: true
-      ignore_failure: true
-      patterns:
-        - ^(%{IP:server.ip}|%{HOSTNAME:server.domain})$
   -  rename:
        field: teleport.audit.server_labels
        target_field: teleport.audit.server.labels
@@ -137,16 +131,18 @@ processors:
       ignore_missing: true
       ignore_failure: true
       patterns:
-        - '^(%{IPORHOST:server.address}|\[%{IP:server.ip}\])(:%{POSINT:server.port:long})?$'
-  - remove:
-      field: teleport.audit.addr.local
-      ignore_missing: true
+        - '^(%{IPORHOST:destination.address}|\[%{IP:destination.ip}\])(:%{POSINT:destination.port:long})?$'
+      if: ctx.server?.address != null
   - grok:
-      field: server.address
+      field: teleport.audit.addr.local
       ignore_missing: true
       ignore_failure: true
       patterns:
-        - ^(%{IP:server.ip}|%{HOSTNAME:server.domain})$
+        - '^(%{IPORHOST:server.address}|\[%{IP:server.ip}\])(:%{POSINT:server.port:long})?$'
+      if: ctx.server?.address == null
+  - remove:
+      field: teleport.audit.addr.local
+      ignore_missing: true
 
 
   # Extract data from addr.remote field.
@@ -162,12 +158,6 @@ processors:
   - remove:
       field: teleport.audit.addr.remote
       ignore_missing: true
-  - grok:
-      field: client.address
-      ignore_missing: true
-      ignore_failure: true
-      patterns:
-        - ^(%{IP:client.ip}|%{HOSTNAME:client.domain})$
 
   # The last field and cleanup.
   - rename:
@@ -1028,12 +1018,6 @@ processors:
   - remove:
       field: teleport.audit.desktop_addr
       ignore_missing: true
-  - grok:
-      field: destination.address
-      ignore_missing: true
-      ignore_failure: true
-      patterns:
-        - ^(%{IP:destination.ip}|%{HOSTNAME:destination.domain})$
   -  rename:
        field: teleport.audit.windows_domain
        target_field: teleport.audit.desktop.windows_domain

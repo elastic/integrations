@@ -84,7 +84,13 @@ processors:
        target_field: http.request.method
        ignore_missing: true
 
-  # Enrich geo fields.
+  # Enrich address fields.
+  - grok:
+      field: client.address
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^(%{IP:client.ip}|%{HOSTNAME:client.domain})$
   - geoip:
       field: client.ip
       tag: geoip_client_ip
@@ -111,6 +117,44 @@ processors:
       tag: rename_client_as_organization_name
       target_field: client.as.organization.name
       ignore_missing: true
+  - grok:
+      field: server.address
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^(%{IP:server.ip}|%{HOSTNAME:server.domain})$
+  - geoip:
+      field: server.ip
+      tag: geoip_server_ip
+      target_field: server.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      ignore_missing: true
+      database_file: GeoLite2-ASN.mmdb
+      field: server.ip
+      tag: geoip_server_asn
+      target_field: server.as
+      ignore_failure: true
+      properties:
+        - asn
+        - organization_name
+  - rename:
+      field: server.as.asn
+      tag: rename_server_as_asn
+      target_field: server.as.number
+      ignore_missing: true
+  - rename:
+      field: server.as.organization_name
+      tag: rename_server_as_organization_name
+      target_field: server.as.organization.name
+      ignore_missing: true
+  - grok:
+      field: destination.address
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^(%{IP:destination.ip}|%{HOSTNAME:destination.domain})$
   - geoip:
       field: destination.ip
       tag: geoip_destination_ip
