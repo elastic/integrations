@@ -860,9 +860,13 @@ processors:
        ignore_missing: true
 
   # AWS related metadata
+  - set:
+        field: cloud.provider
+        value: aws
+        if: ctx.teleport?.audit?.aws_region != null
   -  rename:
        field: teleport.audit.aws_region
-       target_field: teleport.audit.app.aws.region
+       target_field: cloud.region
        ignore_missing: true
   -  rename:
        field: teleport.audit.aws_service
@@ -870,7 +874,7 @@ processors:
        ignore_missing: true
   -  rename:
        field: teleport.audit.aws_host
-       target_field: teleport.audit.app.aws.host
+       target_field: cloud.instance.id
        ignore_missing: true
   -  rename:
        field: teleport.audit.aws_assumed_role
@@ -909,21 +913,33 @@ processors:
        field: teleport.audit.db_labels
        target_field: teleport.audit.database.labels
        ignore_missing: true
+  - set:
+      field: cloud.provider
+      value: aws
+      if: ctx.teleport?.audit?.db_aws_region != null
   -  rename:
        field: teleport.audit.db_aws_region
-       target_field: teleport.audit.database.aws.region
+       target_field: cloud.region
        ignore_missing: true
+  - set:
+      field: cloud.provider
+      value: aws
+      if: ctx.teleport?.audit?.redshift_cluster_id != null
   -  rename:
        field: teleport.audit.db_aws_redshift_cluster_id
        target_field: teleport.audit.database.aws.redshift_cluster_id
        ignore_missing: true
+  - set:
+      field: cloud.provider
+      value: gcp
+      if: ctx.teleport?.audit?.db_gcp_project_id != null
   -  rename:
        field: teleport.audit.db_gcp_project_id
-       target_field: teleport.audit.database.gcp.project_id
+       target_field: cloud.project_id
        ignore_missing: true
   -  rename:
        field: teleport.audit.db_gcp_instance_id
-       target_field: teleport.audit.database.gcp.instance_id
+       target_field: cloud.instance_id
        ignore_missing: true
   -  rename:
        field: teleport.audit.db_roles
@@ -1385,13 +1401,17 @@ processors:
       ignore_missing: true
 
   # SSMRun is emitted after an AWS SSM document completes execution.
+  - set:
+      field: cloud.provider
+      value: aws
+      if: ctx.teleport?.audit?.command_id != null
   -  rename:
        field: teleport.audit.command_id
        target_field: teleport.audit.database.aws.ssm_run.command_id
        ignore_missing: true
   -  rename:
        field: teleport.audit.instance_id
-       target_field: teleport.audit.database.aws.instance_id
+       target_field: cloud.instance_id
        ignore_missing: true
   -  rename:
        field: teleport.audit.exit_code
@@ -1410,11 +1430,11 @@ processors:
        ignore_missing: true
   -  rename:
        field: teleport.audit.account_id
-       target_field: teleport.audit.database.aws.account_id
+       target_field: cloud.account.id
        ignore_missing: true
   -  rename:
        field: teleport.audit.region
-       target_field: teleport.audit.database.aws.region
+       target_field: cloud.region
        ignore_missing: true
   -  rename:
        field: teleport.audit.stdout
@@ -1547,10 +1567,6 @@ processors:
   -  rename:
        field: teleport.audit.policy_name
        target_field: teleport.audit.external_audit_storage.policy_name
-       ignore_missing: true
-  -  rename:
-       field: teleport.audit.region
-       target_field: teleport.audit.external_audit_storage.region
        ignore_missing: true
 
   # Okta user sync event details.
