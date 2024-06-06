@@ -1294,7 +1294,7 @@ processors:
 
   # Process mappings (Only when event.category is in ['process', 'deviceevents', 'api', 'driver'], else it means something else)
   # Fields like InitatingProcess* are mapped to process.* unless the Type is in ['DeviceProcessEvent', 'DeviceEvent'], then it maps to process.parent.*
-  ## Even when Type is DeviceProcessEvent or DeviceEvent, certain event.action values still map to process.*, rest of them maps to process.parent.* (https://github.com/elastic/integrations/issues/9993)
+  ## Even when Type is DeviceEvent, certain event.action values still map to process.*, rest of them maps to process.parent.* (https://github.com/elastic/integrations/issues/9993)
   ## Firstly, mapping process.parent.* below.
   - set:
       field: _temp_deviceevents_that_map_process
@@ -1634,9 +1634,9 @@ processors:
       tag: set_Target_process_executable
       if: ctx.event?.category != null && ctx.event.category.contains('api') && (ctx.m365_defender?.event?.action?.type != null && ['createremotethreadapicall', 'readprocessmemoryapicall', 'ntallocatevirtualmemoryremoteapicall', 'openprocessapicall'].contains(ctx.m365_defender.event.action.type.toLowerCase()))
       ignore_empty_value: true
-## Even when Type is DeviceProcessEvent or DeviceEvent, certain event.action values still map to process.*, rest of them maps to process.parent.* (https://github.com/elastic/integrations/issues/9993)
-  ## Secondly, mapping process.* below.
+  ## Then, mapping process.* below.
   ## All other DeviceEvent types that is not DeviceProcessEvent or DeviceEvent map InitiatingProcess* to process.* rather than process.parent.*
+  ## Even when Type is DeviceEvent, certain event.action values still map to process.* (https://github.com/elastic/integrations/issues/9993)
   ## Also, if event.category in ["api", "driver"] (a subset of DeviceEvent), then use process.* instead of process.parent.*
   - set:
       field: process.command_line
