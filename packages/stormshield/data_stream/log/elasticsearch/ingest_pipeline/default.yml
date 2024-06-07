@@ -268,7 +268,12 @@ processors:
       field: stormshield.dstport
       target_field: destination.nat.port
       type: long
-      if: ctx.stormshield?.dstport != null && ctx.stormshield?.dstport != ctx.stormshield?.origdstport
+      if: ctx.stormshield?.dstport != null && ctx.destination?.nat?.ip != null
+  - convert:
+      field: stormshield.dstport
+      target_field: destination.port
+      type: long
+      if: ctx.stormshield?.dstport != null && ctx.destination?.nat?.ip == null
 
   - remove:
       field: stormshield.dstport
