@@ -491,6 +491,25 @@ processors:
       target_field: teleport.audit.network.tcp_version
       ignore_missing: true
   - set:
+      field: network.type
+      value: ipv4
+      if: ctx.teleport?.audit?.network?.tcp_version == 4
+  - set:
+      field: network.type
+      value: ipv6
+      if: ctx.teleport?.audit?.network?.tcp_version == 6
+  - remove:
+      field: teleport.audit.network.tcp_version
+      if:  ctx.teleport?.audit?.network?.tcp_version == 4 ||  ctx.teleport?.audit?.network?.tcp_version == 6
+  - convert:
+      field: teleport.audit.network.tcp_version
+      type: string
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.network.tcp_version
+      target_field: network.type
+      ignore_missing: true
+  - set:
       field: teleport.audit.network.operation
       value: connect
       if: ctx?.teleport?.audit?.operation == 0

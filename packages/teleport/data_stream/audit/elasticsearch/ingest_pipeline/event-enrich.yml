@@ -211,6 +211,18 @@ processors:
   - append:
       field: related.user
       value:
+        - '{{{teleport.audit.resource.name}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.resource?.name != null && ctx.event.action.startsWith("user.")
+  - append:
+      field: related.user
+      value:
+        - '{{{teleport.audit.resource.updated_by}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.resource?.updated_by != null
+  - append:
+      field: related.user
+      value:
         - '{{{teleport.audit.user.os_login}}}'
       allow_duplicates: false
       if: ctx?.teleport.audit.user?.os_login != null
