@@ -50,7 +50,7 @@ An example event for `log` looks as following:
         "port": 51452,
         "user": {
             "group": {
-                "name": "JUSTID-INTERNET"
+                "name": "TEST-GROUP"
             }
         }
     },
@@ -86,7 +86,7 @@ An example event for `log` looks as following:
         "duration": 71000000000,
         "ingested": "2024-05-09T17:17:56Z",
         "kind": "event",
-        "original": "<189>date=2024-04-10 time=19:56:18 devname=\"TEST-PXY01\" devid=\"FPXTESTPXY01\" eventtime=1712771778239212444 tz=\"+0200\" logid=\"0010000099\" type=\"traffic\" subtype=\"http-transaction\" level=\"notice\" vd=\"KA\" srcip=10.10.10.10 dstip=67.43.156.13 tranip=172.16.200.2 clientip=10.10.10.10 scheme=\"https\" srcport=51452 dstport=443 tranport=8091 hostname=\"qnl-play-fetch.s3.amazonaws.com\" url=\"https://qnl-play-fetch.s3.amazonaws.com/\" prefetch=0 policyid=1 sessionid=433606097 transid=33559030 reqlength=247 resplength=0 rcvdbyte=39 sentbyte=247 resptype=\"normal\" user=\"TESTUSER\" group=\"JUSTID-INTERNET\" httpmethod=\"CONNECT\" agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0\" statuscode=\"200\" rawdata=\"Time=71ms|Header-Host=qnl-play-fetch.s3.amazonaws.com:443\" reqtime=1712771778 resptime=1712771778 respfinishtime=1712771778 duration=71 appcat=\"unscanned\"",
+        "original": "<189>date=2024-04-10 time=19:56:18 devname=\"TEST-PXY01\" devid=\"FPXTESTPXY01\" eventtime=1712771778239212444 tz=\"+0200\" logid=\"0010000099\" type=\"traffic\" subtype=\"http-transaction\" level=\"notice\" vd=\"KA\" srcip=10.10.10.10 dstip=67.43.156.13 tranip=172.16.200.2 clientip=10.10.10.10 scheme=\"https\" srcport=51452 dstport=443 tranport=8091 hostname=\"qnl-play-fetch.s3.amazonaws.com\" url=\"https://qnl-play-fetch.s3.amazonaws.com/\" prefetch=0 policyid=1 sessionid=433606097 transid=33559030 reqlength=247 resplength=0 rcvdbyte=39 sentbyte=247 resptype=\"normal\" user=\"TESTUSER\" group=\"TEST-GROUP\" httpmethod=\"CONNECT\" agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0\" statuscode=\"200\" rawdata=\"Time=71ms|Header-Host=qnl-play-fetch.s3.amazonaws.com:443\" reqtime=1712771778 resptime=1712771778 respfinishtime=1712771778 duration=71 appcat=\"unscanned\"",
         "start": "2024-04-10T17:56:18.239Z",
         "timezone": "+0200"
     },
@@ -176,7 +176,7 @@ An example event for `log` looks as following:
         "port": 51452,
         "user": {
             "group": {
-                "name": "JUSTID-INTERNET"
+                "name": "TEST-GROUP"
             }
         }
     },
