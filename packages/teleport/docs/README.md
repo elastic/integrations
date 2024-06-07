@@ -339,7 +339,6 @@ An example event for `audit` looks as following:
 | teleport.audit.session.private_key_policy | PrivateKeyPolicy is the private key policy of the private key used to start this session. | keyword |
 | teleport.audit.session.session_recording | SessionRecording is the type of session recording. | keyword |
 | teleport.audit.session.terminal_size | TerminalSize is expressed as 'W:H' | keyword |
-| teleport.audit.sftp.action | Action is what kind of file operation | keyword |
 | teleport.audit.sftp.attributes | Attributes is file metadata that the user requested to be changed | object |
 | teleport.audit.sftp.target_path | TargetPath is the new path in file renames, or the path of the symlink when creating symlinks. | keyword |
 | teleport.audit.svid.dns_sans | DNSSANs is the list of DNS SANs in the issued SVID. | keyword |

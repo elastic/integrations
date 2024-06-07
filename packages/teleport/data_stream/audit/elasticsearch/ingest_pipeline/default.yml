@@ -118,6 +118,18 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "event-enrich" }}'
       ignore_failure: true
+  - append:
+      field: event.code
+      value:
+        - '{{{event.action}}}'
+      if: ctx.event?.action != null
+  - remove:
+      field: event.action
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.sftp.action
+      target_field: event.action
+      ignore_missing: true
   # Final steps.
   - remove:
       field: event.original
