@@ -70,7 +70,11 @@ processors:
   - set:
       field: event.category
       value: ['process', 'configuration']
-      if: 'ctx.event.action.startsWith("app.")'
+      if: 'ctx.event.action.startsWith("app.") && !ctx.event.action.startsWith("app.session.")'
+  - set:
+      field: event.category
+      value: ['session']
+      if: 'ctx.event.action.startsWith("app.session.")'
   - set:
       field: event.type
       value: ['creation']
