@@ -20,66 +20,8 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2019-04-22T19:41:23.000Z",
+    "@timestamp": "2020-11-12T20:35:44.978Z",
     "client": {
-        "address": "127.0.0.1",
-        "ip": "127.0.0.1",
-        "port": 41106
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "event": {
-        "action": [
-            "FSTAT"
-        ],
-        "category": [
-            "file",
-            "network"
-        ],
-        "code": [
-            "TS006I",
-            "sftp"
-        ],
-        "id": "16bfdc34-2766-a5d3-dfd6f7ff7ad6",
-        "kind": "event",
-        "original": "{\"action\":6,\"addr.local\":\"2a02:cf40:::3022\",\"addr.remote\":\"127.0.0.1:41106\",\"cluster_name\":\"im-a-cluster-name\",\"code\":\"TS006I\",\"ei\":0,\"event\":\"sftp\",\"login\":\"root\",\"namespace\":\"default\",\"path\":\"/tmp/file\",\"server_hostname\":\"im-a-server-hostname\",\"server_id\":\"e106fdd0-51db-4efa-a9ab-c3afa7a1565a\",\"sid\":\"\",\"time\":\"2019-04-22T19:41:23Z\",\"uid\":\"16bfdc34-2766-a5d3-dfd6f7ff7ad6\",\"user\":\"root\",\"working_directory\":\"/root\"}",
-        "sequence": 0
-    },
-    "file": {
-        "path": "/tmp/file"
-    },
-    "group": {
-        "name": "default"
-    },
-    "host": {
-        "hostname": "im-a-server-hostname",
-        "id": "e106fdd0-51db-4efa-a9ab-c3afa7a1565a"
-    },
-    "orchestrator": {
-        "cluster": {
-            "name": "im-a-cluster-name"
-        }
-    },
-    "process": {
-        "user": {
-            "name": "root"
-        },
-        "working_directory": "/root"
-    },
-    "related": {
-        "hosts": [
-            "im-a-server-hostname"
-        ],
-        "ip": [
-            "127.0.0.1",
-            "2a02:cf40::"
-        ],
-        "user": [
-            "root"
-        ]
-    },
-    "server": {
         "address": "2a02:cf40::",
         "geo": {
             "continent_name": "Europe",
@@ -91,13 +33,85 @@ An example event for `audit` looks as following:
             }
         },
         "ip": "2a02:cf40::",
-        "port": 3022
+        "port": 43026
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "category": [
+            "process",
+            "host"
+        ],
+        "code": [
+            "T3009I",
+            "kube.request"
+        ],
+        "id": "8c1459a8-9199-4d25-bc5d-38e000ddd9ab",
+        "kind": "event",
+        "original": "{\"addr.local\":\"127.0.0.1:3027\",\"addr.remote\":\"2a02:cf40:::43026\",\"code\":\"T3009I\",\"ei\":0,\"event\":\"kube.request\",\"kubernetes_cluster\":\"gke_teleport-a\",\"login\":\"awly\",\"namespace\":\"default\",\"proto\":\"kube\",\"request_path\":\"/api/v1/namespaces/teletest/pods/test-pod\",\"resource_api_group\":\"core/v1\",\"resource_kind\":\"pods\",\"resource_name\":\"test-pod\",\"resource_namespace\":\"teletest\",\"response_code\":200,\"server_id\":\"9b67377e-d61e-4865-96d6-fa71989fd9e9\",\"time\":\"2020-11-12T20:35:44.978Z\",\"uid\":\"8c1459a8-9199-4d25-bc5d-38e000ddd9ab\",\"user\":\"alex\",\"verb\":\"GET\"}",
+        "sequence": 0,
+        "type": [
+            "info"
+        ]
+    },
+    "group": {
+        "name": "default"
+    },
+    "host": {
+        "id": "9b67377e-d61e-4865-96d6-fa71989fd9e9"
+    },
+    "http": {
+        "request": {
+            "method": "GET"
+        },
+        "response": {
+            "status_code": 200
+        }
+    },
+    "network": {
+        "protocol": "kube"
+    },
+    "orchestrator": {
+        "api_version": "core/v1",
+        "cluster": {
+            "name": "gke_teleport-a"
+        },
+        "namespace": "teletest",
+        "resource": {
+            "name": "test-pod",
+            "type": "pods"
+        },
+        "type": "kubernetes"
+    },
+    "process": {
+        "user": {
+            "name": "awly"
+        }
+    },
+    "related": {
+        "ip": [
+            "2a02:cf40::",
+            "127.0.0.1"
+        ],
+        "user": [
+            "alex",
+            "awly"
+        ]
+    },
+    "server": {
+        "address": "127.0.0.1",
+        "ip": "127.0.0.1",
+        "port": 3027
     },
     "tags": [
         "preserve_original_event"
     ],
+    "url": {
+        "path": "/api/v1/namespaces/teletest/pods/test-pod"
+    },
     "user": {
-        "name": "root"
+        "name": "alex"
     }
 }
 
