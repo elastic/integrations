@@ -359,7 +359,6 @@ An example event for `audit` looks as following:
 | teleport.audit.user.gcp_service_account | GCPServiceAccount is the GCP service account user | keyword |
 | teleport.audit.user.impersonator | Impersonator is a user acting on behalf of another user | keyword |
 | teleport.audit.user.kind | UserKind indicates what type of user this is, e.g. a human or Machine ID bot user. | keyword |
-| teleport.audit.user.os_login | Login is OS login | keyword |
 | teleport.audit.user.required_private_key_policy | RequiredPrivateKeyPolicy is the private key policy enforced for this login. | keyword |
 | teleport.audit.user.trusted_device | TrustedDevice contains information about the users' trusted device. Requires a registered and enrolled device to be used during authentication. | flattened |
 
