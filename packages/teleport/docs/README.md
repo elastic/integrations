@@ -20,78 +20,119 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2019-04-22T00:49:03.000Z",
-    "agent": {
-        "ephemeral_id": "785c5ad7-0c49-4756-a64d-dd9d32f41f63",
-        "id": "06a11acd-be94-446b-ac33-7fbc1d731d66",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.13.4"
-    },
-    "data_stream": {
-        "dataset": "teleport.audit",
-        "namespace": "ep",
-        "type": "logs"
+    "@timestamp": "2024-02-23T18:57:27.101Z",
+    "client": {
+        "address": "175.16.199.196",
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.196",
+        "port": 50343
     },
     "ecs": {
         "version": "8.11.0"
     },
-    "elastic_agent": {
-        "id": "06a11acd-be94-446b-ac33-7fbc1d731d66",
-        "snapshot": false,
-        "version": "8.13.4"
-    },
     "event": {
-        "action": "user.login",
-        "agent_id_status": "verified",
+        "action": "session.start",
         "category": [
-            "authentication"
+            "session"
         ],
-        "code": "T1000I",
-        "dataset": "teleport.audit",
-        "id": "173d6b6e-d613-44be-8ff6-f9f893791ef2",
-        "ingested": "2024-06-07T18:53:56Z",
+        "code": "T2000I",
+        "id": "74986446-ee50-4f28-827a-e4cd79c76276",
         "kind": "event",
-        "original": "{\"code\":\"T1000I\",\"event\":\"user.login\",\"method\":\"local\",\"success\":true,\"time\":\"2019-04-22T00:49:03Z\",\"uid\":\"173d6b6e-d613-44be-8ff6-f9f893791ef2\",\"user\":\"admin@example.com\"}",
-        "outcome": [
-            "success"
-        ],
+        "original": "{\"ei\":0,\"event\":\"session.start\",\"uid\":\"74986446-ee50-4f28-827a-e4cd79c76276\",\"code\":\"T2000I\",\"time\":\"2024-02-23T18:57:27.101Z\",\"cluster_name\":\"teleport.ericbeahan.com\",\"user\":\"teleport-admin\",\"login\":\"ec2-user\",\"user_kind\":1,\"sid\":\"0f9b4848-b0a5-411e-bcd1-bc3d04eb8cbf\",\"private_key_policy\":\"none\",\"namespace\":\"default\",\"server_id\":\"b321c207-fd08-46c8-b248-0c20436feb62\",\"server_hostname\":\"ip-175.16.199.98.us-east-2.compute.internal\",\"server_addr\":\"[::]:3022\",\"server_labels\":{\"hostname\":\"ip-175.16.199.98.us-east-2.compute.internal\"},\"addr.local\":\"175.16.199.98:443\",\"addr.remote\":\"175.16.199.196:50343\",\"proto\":\"ssh\",\"size\":\"80:25\",\"initial_command\":[\"\"],\"session_recording\":\"node\"}",
+        "sequence": 0,
         "type": [
             "start"
         ]
     },
-    "input": {
-        "type": "filestream"
+    "group": {
+        "name": "default"
     },
-    "log": {
-        "file": {
-            "device_id": "35",
-            "inode": "71",
-            "path": "/tmp/service_logs/test-teleport-all-events.log"
-        },
-        "offset": 9010
+    "host": {
+        "hostname": "ip-175.16.199.98.us-east-2.compute.internal",
+        "id": "b321c207-fd08-46c8-b248-0c20436feb62"
+    },
+    "network": {
+        "protocol": "ssh"
+    },
+    "orchestrator": {
+        "cluster": {
+            "name": "teleport.ericbeahan.com"
+        }
+    },
+    "process": {
+        "tty": {
+            "columns": 80,
+            "rows": 25
+        }
     },
     "related": {
+        "hosts": [
+            "ip-175.16.199.98.us-east-2.compute.internal"
+        ],
+        "ip": [
+            "175.16.199.196",
+            "175.16.199.98"
+        ],
         "user": [
-            "admin@example.com"
+            "teleport-admin",
+            "ec2-user"
         ]
     },
+    "server": {
+        "address": "175.16.199.98",
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.98",
+        "port": 443
+    },
     "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "teleport-audit"
+        "preserve_original_event"
     ],
     "teleport": {
         "audit": {
-            "login": {
-                "method": "local"
+            "server": {
+                "labels": {
+                    "hostname": "ip-175.16.199.98.us-east-2.compute.internal"
+                }
+            },
+            "session": {
+                "id": "0f9b4848-b0a5-411e-bcd1-bc3d04eb8cbf",
+                "private_key_policy": "none",
+                "session_recording": "node",
+                "terminal_size": "80:25"
+            },
+            "user": {
+                "kind": "human",
+                "os_login": "ec2-user"
             }
         }
     },
     "user": {
-        "name": "admin@example.com"
+        "name": "teleport-admin"
     }
 }
+
 ```
 
 **Exported fields**
