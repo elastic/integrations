@@ -9,10 +9,6 @@ processors:
       field: event.original
       ignore_failure: true 
   - set:
-      field: process.name
-      copy_from: log.syslog.appname
-      if: ctx.log?.syslog?.appname != null
-  - set:
       field: observer.vendor
       value: Stormshield
 
@@ -105,7 +101,8 @@ processors:
       field: stormshield.origsrc
       target_field: source.ip
       type: ip
-      if: ctx.stormshield?.origsrc != null
+      ignore_missing: true
+
   - convert:
       field: stormshield.src
       target_field: source.ip
@@ -118,16 +115,16 @@ processors:
       if: ctx.stormshield?.origsrc != null && ctx.stormshield?.src != null
   - remove:
       field: stormshield.src
-      if: ctx.stormshield?.src != null
+      ignore_missing: true
   - remove:
       field: stormshield.origsrc
-      if: ctx.stormshield?.origsrc != null
+      ignore_missing: true
 
   - convert:
       field: stormshield.origdst
       target_field: destination.ip
       type: ip
-      if: ctx.stormshield?.origdst != null
+      ignore_missing: true
   - convert:
       field: stormshield.dst
       target_field: destination.ip
@@ -140,15 +137,9 @@ processors:
       if: ctx.stormshield?.origdst != null && ctx.stormshield?.dst != null
   - remove:
       field: stormshield.dst
-      if: ctx.stormshield?.dst != null
-  - remove:
-      field: stormshield.origdst
-      if: ctx.stormshield?.origdst != null
-  - remove:
-      field: destination.geo
       ignore_missing: true
   - remove:
-      field: source.geo
+      field: stormshield.origdst
       ignore_missing: true
 
   - geoip:
@@ -200,47 +191,47 @@ processors:
   - rename:
       field: stormshield.action
       target_field: event.action
-      if: ctx.stormshield?.action != null
+      ignore_missing: true
 
   - rename:
       field: stormshield.ipproto
       target_field: network.transport
-      if: ctx.stormshield?.ipproto != null
+      ignore_missing: true
 
   - rename:
       field: stormshield.proto
       target_field: network.protocol
-      if: ctx.stormshield?.proto != null
+      ignore_missing: true
 
   - rename:
       field: stormshield.ruleid
       target_field: rule.id
-      if: ctx.stormshield?.ruleid != null
+      ignore_missing: true
 
   - rename:
       field: stormshield.rulename
       target_field: rule.name
-      if: ctx.stormshield?.rulename != null
+      ignore_missing: true
 
   - convert:
       field: stormshield.sent
       target_field: source.bytes
       type: long
-      if: ctx.stormshield?.sent != null
+      ignore_missing: true
 
   - rename:
       field: stormshield.dstname
       target_field: destination.domain
-      if: ctx.stormshield?.dstname != null
+      ignore_missing: true
 
   - convert:
       field: destination.ip
       type: ip
-      if: ctx.stormshield?.dst != null && ctx.destination?.ip == null
+      ignore_missing: true
 
   - remove:
       field: stormshield.dst
-      if: ctx.stormshield?.dst != null
+      ignore_missing: true
 
   - uppercase:
       field: stormshield.dstmac
@@ -251,27 +242,31 @@ processors:
       pattern: ':'
       replacement: '-'
       target_field: destination.mac
-      if: ctx.stormshield?.dstmac != null && ctx.destination?.mac == null
+      ignore_missing: true
+      if: ctx.destination?.mac == null
 
   - convert:
       field: stormshield.dstport
       target_field: destination.port
       type: long
-      if: ctx.stormshield?.dstport != null && ctx.destination?.port == null
+      ignore_missing: true
+      if: ctx.destination?.port == null
 
   - remove:
       field: stormshield.dstport
-      if: ctx.stormshield?.dstport != null
+      ignore_missing: true
 
   - rename:
       field: stormshield.dstcountry
       target_field: destination.geo.country_iso_code
-      if: ctx.stormshield?.dstcountry != null && ctx.destination?.geo == null
+      if: ctx.destination?.geo == null
+      ignore_missing: true
 
   - rename:
       field: stormshield.srccountry
       target_field: source.geo.country_iso_code
-      if: ctx.stormshield?.srccountry != null && ctx.source?.geo == null
+      if: ctx.source?.geo == null
+      ignore_missing: true
 
   - uppercase:
       field: stormshield.srcmac
@@ -282,7 +277,8 @@ processors:
       pattern: ':'
       replacement: '-'
       target_field: source.mac
-      if: ctx.stormshield?.srcmac != null && ctx.source?.mac == null
+      ignore_missing: true
+      if: ctx.source?.mac == null
 
   - remove:
       field: stormshield.srcmac
@@ -308,11 +304,12 @@ processors:
       field: stormshield.srcport
       target_field: source.port
       type: long
-      if: ctx.stormshield?.srcport != null && ctx.source?.port == null
+      if: ctx.source?.port == null
+      ignore_missing: true
 
   - remove:
       field: stormshield.srcport
-      if: ctx.stormshield?.srcport != null
+      ignore_missing: true
 
   - remove:
       tag: remove_source_country_reserved
@@ -327,7 +324,7 @@ processors:
       tag: rename_user_name
       field: stormshield.user
       target_field: user.name
-      if: ctx.stormshield?.user != null
+      ignore_missing: true
 
   - script:
       tag: handle_ipv_fields
