@@ -170,9 +170,13 @@ processors:
       ignore_missing: true
   # KubernetesClusterMetadata contains common metadata for kubernetes-related events.
   # See teleport.audit.kubernetes group for field definitions.
+  - set:
+        field: orchestrator.type
+        value: kubernetes
+        if: ctx.teleport.audit.kubernetes_cluster != null
   - rename:
       field: teleport.audit.kubernetes_cluster
-      target_field: teleport.audit.kubernetes.cluster
+      target_field: orchestrator.cluster.name
       ignore_missing: true
   - rename:
       field: teleport.audit.kubernetes_users
@@ -190,11 +194,11 @@ processors:
   # See teleport.audit.kubernetes.pod group for field definitions.
   - rename:
       field: teleport.audit.kubernetes_pod_name
-      target_field: teleport.audit.kubernetes.pod.pod_name
+      target_field: orchestrator.resource.name
       ignore_missing: true
   - rename:
       field: teleport.audit.kubernetes_pod_namespace
-      target_field: teleport.audit.kubernetes.pod.pod_namespace
+      target_field: orchestrator.namespace
       ignore_missing: true
   - rename:
       field: teleport.audit.kubernetes_container_name
@@ -232,15 +236,15 @@ processors:
   # See teleport.audit.okta group for field definitions.
   - rename:
       field: teleport.audit.added
-      target_field: teleport.audit.okta.resources_updated.added
+      target_field: teleport.audit.okta.resources.added
       ignore_missing: true
   - rename:
       field: teleport.audit.updated
-      target_field: teleport.audit.okta.resources_updated.updated
+      target_field: teleport.audit.okta.resources.updated
       ignore_missing: true
   - rename:
       field: teleport.audit.deleted
-      target_field: teleport.audit.okta.resources_updated.deleted
+      target_field: teleport.audit.okta.resources.deleted
       ignore_missing: true
   - rename:
       field: teleport.audit.source
@@ -385,7 +389,7 @@ processors:
   # See teleport.audit.file-transfer-request group for field definitions.
   - rename:
       field: teleport.audit.requestID
-      target_field: teleport.audit.file_transfer_request.request_id
+      target_field: teleport.audit.file_transfer_request.id
       ignore_missing: true
   - rename:
       field: teleport.audit.approvers
@@ -397,7 +401,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.location
-      target_field: teleport.audit.file_transfer_request.location
+      target_field: file.path
       ignore_missing: true
   - rename:
       field: teleport.audit.download
@@ -405,7 +409,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.filename
-      target_field: teleport.audit.file_transfer_request.filename
+      target_field: file.name
       ignore_missing: true
   # Process metadata
   # See teleport.audit.process group for field definitions.
@@ -559,7 +563,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.applied_login_rules
-      target_field: teleport.audit.login.applied_login_rules
+      target_field: teleport.audit.login.applied_rules
       ignore_missing: true
   - rename:
       field: teleport.audit.challenge_scope
@@ -592,10 +596,6 @@ processors:
   - rename:
       field: teleport.audit.delegator
       target_field: teleport.audit.access_request.delegator
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.reason
-      target_field: teleport.audit.access_request.reason
       ignore_missing: true
   - rename:
       field: teleport.audit.annotations
@@ -658,10 +658,6 @@ processors:
       field: teleport.audit.target_path
       target_field: teleport.audit.sftp.target_path
       ignore_missing: true
-      #  -  rename:
-      #       field: teleport.audit.flags
-      #       target_field: teleport.audit.sftp.flags
-      #       ignore_missing: true
   - rename:
       field: teleport.audit.attributes
       target_field: teleport.audit.sftp.attributes
@@ -776,19 +772,19 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.resource_api_group
-      target_field: teleport.audit.kubernetes.resource.api_group
+      target_field: orchestrator.api_version
       ignore_missing: true
   - rename:
       field: teleport.audit.resource_namespace
-      target_field: teleport.audit.kubernetes.resource.namespace
+      target_field: orchestrator.namespace
       ignore_missing: true
   - rename:
       field: teleport.audit.resource_kind
-      target_field: teleport.audit.kubernetes.resource.kind
+      target_field: orchestrator.resource.type
       ignore_missing: true
   - rename:
       field: teleport.audit.resource_name
-      target_field: teleport.audit.kubernetes.resource.name
+      target_field: orchestrator.resource.name
       ignore_missing: true
   - rename:
       field: teleport.audit.response_code
@@ -821,7 +817,7 @@ processors:
   # See teleport.audit.app group for field definitions.
   - rename:
       field: teleport.audit.session_chunk_id
-      target_field: teleport.audit.app.session.session_chunk_id
+      target_field: teleport.audit.app.session.chunk_id
       ignore_missing: true
   # AWS related metadata
   - set:
@@ -834,7 +830,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.aws_service
-      target_field: teleport.audit.app.aws.service
+      target_field: cloud.service.name
       ignore_missing: true
   - rename:
       field: teleport.audit.aws_host
@@ -857,7 +853,7 @@ processors:
   - rename:
       description: 'Fix an issue where "uri" is present in this event.'
       field: teleport.audit.uri
-      target_field: teleport.audit.db_uri
+      target_field: url.full
       ignore_missing: true
       if: ctx.event.action.startsWith('db.')
   - rename:
@@ -999,7 +995,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.desktop_name
-      target_field: destination.name
+      target_field: teleport.audit.desktop.name
       ignore_missing: true
   - rename:
       field: teleport.audit.allow_user_creation
@@ -1022,7 +1018,7 @@ processors:
   # WindowsDesktopSessionEnd is emitted when a user ends a Windows desktop session.
   - rename:
       field: teleport.audit.recorded
-      target_field: teleport.audit.mfa_device.is_recorded
+      target_field: teleport.audit.desktop.is_recorded
       ignore_missing: true
   # Certificate issuance metadata
   # See teleport.audit.certificate group for field definitions.
@@ -1087,9 +1083,12 @@ processors:
       field: teleport.audit.unknown_code
       target_field: teleport.audit.unknown.code
       ignore_missing: true
-  - rename:
+  - json:
       field: teleport.audit.data
       target_field: teleport.audit.unknown.data
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.data
       ignore_missing: true
   # DeviceMetadata groups device information for events.
   # See teleport.audit.device group for field definitions.
@@ -1153,10 +1152,6 @@ processors:
       ignore_missing: true
   # Identity is the identity associated with the certificate, as interpreted by Teleport.
   # See teleport.audit.certificate group for field definitions.
-  - rename:
-      field: teleport.audit.identity
-      target_field: teleport.audit.certificate.identity
-      ignore_missing: true
   - rename:
       field: teleport.audit.certificate.identity.mfa_device_uuid
       target_field: teleport.audit.mfa_device.uuid
@@ -1238,7 +1233,7 @@ processors:
   # Elasticsearch related events
   - rename:
       field: teleport.audit.headers
-      target_field: teleport.audit.request.headers
+      target_field: teleport.audit.http.request.headers
       ignore_missing: true
   - set:
       field: teleport.audit.database.elasticsearch.category
@@ -1505,19 +1500,19 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.num_users_created
-      target_field: teleport.audit.okta.num_users_created
+      target_field: teleport.audit.okta.users.created
       ignore_missing: true
   - rename:
       field: teleport.audit.num_users_deleted
-      target_field: teleport.audit.okta.num_users_deleted
+      target_field: teleport.audit.okta.users.deleted
       ignore_missing: true
   - rename:
       field: teleport.audit.num_users_modified
-      target_field: teleport.audit.okta.num_users_modified
+      target_field: teleport.audit.okta.users.modified
       ignore_missing: true
   - rename:
       field: teleport.audit.num_users_total
-      target_field: teleport.audit.okta.num_users_total
+      target_field: teleport.audit.okta.users.total
       ignore_missing: true
   # SPIFFE SVID issued event details.
   - rename:

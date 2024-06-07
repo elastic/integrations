@@ -5171,7 +5171,7 @@
                     "app": {
                         "name": "test",
                         "session": {
-                            "session_chunk_id": "3a54f32d-210f-4338-abf5-133bfe19ccc0"
+                            "chunk_id": "3a54f32d-210f-4338-abf5-133bfe19ccc0"
                         }
                     },
                     "session": {
@@ -5274,7 +5274,7 @@
                     "app": {
                         "name": "aws-console",
                         "session": {
-                            "session_chunk_id": "3a54f32d-210f-4338-abf5-133bfe19ccc0"
+                            "chunk_id": "3a54f32d-210f-4338-abf5-133bfe19ccc0"
                         }
                     },
                     "session": {
@@ -5296,7 +5296,10 @@
                     "id": "dynamodb.us-west-2.amazonaws.com"
                 },
                 "provider": "aws",
-                "region": "us-west-2"
+                "region": "us-west-2",
+                "service": {
+                    "name": "dynamodb"
+                }
             },
             "ecs": {
                 "version": "8.11.0"
@@ -5346,13 +5349,10 @@
             "teleport": {
                 "audit": {
                     "app": {
-                        "aws": {
-                            "service": "dynamodb"
-                        },
                         "name": "dyno1",
                         "public_address": "dynamodb.root.com",
                         "session": {
-                            "session_chunk_id": "3a54f32d-210f-4338-abf5-133bfe19ccc0"
+                            "chunk_id": "3a54f32d-210f-4338-abf5-133bfe19ccc0"
                         }
                     },
                     "database": {
@@ -5382,7 +5382,10 @@
                     "id": "dynamodb.us-west-2.amazonaws.com"
                 },
                 "provider": "aws",
-                "region": "us-west-2"
+                "region": "us-west-2",
+                "service": {
+                    "name": "dynamodb"
+                }
             },
             "ecs": {
                 "version": "8.11.0"
@@ -5432,13 +5435,10 @@
             "teleport": {
                 "audit": {
                     "app": {
-                        "aws": {
-                            "service": "dynamodb"
-                        },
                         "name": "dyno2",
                         "public_address": "dynamodb.root.com",
                         "session": {
-                            "session_chunk_id": "3a54f32d-210f-4338-abf5-133bfe19ccc0"
+                            "chunk_id": "3a54f32d-210f-4338-abf5-133bfe19ccc0"
                         }
                     },
                     "database": {
@@ -5615,6 +5615,12 @@
             "network": {
                 "protocol": "kube"
             },
+            "orchestrator": {
+                "cluster": {
+                    "name": "clusterOne"
+                },
+                "type": "kubernetes"
+            },
             "related": {
                 "user": [
                     "alex"
@@ -5630,9 +5636,6 @@
             ],
             "teleport": {
                 "audit": {
-                    "kubernetes": {
-                        "cluster": "clusterOne"
-                    },
                     "session": {
                         "id": "8d57a9d5-3848-5ce2-a326-85eb4a6d2eed"
                     }
@@ -5693,6 +5696,18 @@
             "network": {
                 "protocol": "kube"
             },
+            "orchestrator": {
+                "api_version": "core/v1",
+                "cluster": {
+                    "name": "gke_teleport-a"
+                },
+                "namespace": "teletest",
+                "resource": {
+                    "name": "test-pod",
+                    "type": "pods"
+                },
+                "type": "kubernetes"
+            },
             "related": {
                 "user": [
                     "alex"
@@ -5708,15 +5723,6 @@
             ],
             "teleport": {
                 "audit": {
-                    "kubernetes": {
-                        "cluster": "gke_teleport-a",
-                        "resource": {
-                            "api_group": "core/v1",
-                            "kind": "pods",
-                            "name": "test-pod",
-                            "namespace": "teletest"
-                        }
-                    },
                     "user": {
                         "os_login": "awly"
                     }
@@ -6898,7 +6904,6 @@
                     "region_name": "England"
                 },
                 "ip": "81.2.69.192",
-                "name": "desktop-name",
                 "port": 3389,
                 "user": {
                     "domain": "desktopaccess.com",
@@ -6949,6 +6954,7 @@
                             "env": "prod",
                             "foo": "bar"
                         },
+                        "name": "desktop-name",
                         "windows_desktop_service": "ba17ae92-5519-476a-954e-c225cf751de1"
                     },
                     "session": {
@@ -6977,7 +6983,6 @@
                     "region_name": "England"
                 },
                 "ip": "81.2.69.192",
-                "name": "desktop-name",
                 "port": 3389,
                 "user": {
                     "domain": "desktopaccess.com",
@@ -7022,6 +7027,7 @@
                             "env": "prod",
                             "foo": "bar"
                         },
+                        "name": "desktop-name",
                         "windows_desktop_service": "ba17ae92-5519-476a-954e-c225cf751de1"
                     },
                     "session": {
@@ -7050,7 +7056,6 @@
                     "region_name": "England"
                 },
                 "ip": "81.2.69.192",
-                "name": "desktop-name",
                 "port": 3389,
                 "user": {
                     "domain": "desktopaccess.com",
@@ -7098,6 +7103,7 @@
                             "env": "prod",
                             "foo": "bar"
                         },
+                        "name": "desktop-name",
                         "windows_desktop_service": "ba17ae92-5519-476a-954e-c225cf751de1"
                     },
                     "session": {
@@ -8767,14 +8773,16 @@
                         "service": "myelastic",
                         "user": "elasticuser"
                     },
-                    "request": {
-                        "headers": {
-                            "Accept": [
-                                "*/*"
-                            ],
-                            "User-Agent": [
-                                "curl/7.79.1"
-                            ]
+                    "http": {
+                        "request": {
+                            "headers": {
+                                "Accept": [
+                                    "*/*"
+                                ],
+                                "User-Agent": [
+                                    "curl/7.79.1"
+                                ]
+                            }
                         }
                     },
                     "session": {
@@ -8851,20 +8859,22 @@
                         "service": "myelastic",
                         "user": "elasticuser"
                     },
-                    "request": {
-                        "headers": {
-                            "Accept": [
-                                "*/*"
-                            ],
-                            "Content-Length": [
-                                "68"
-                            ],
-                            "Content-Type": [
-                                "application/json"
-                            ],
-                            "User-Agent": [
-                                "curl/7.79.1"
-                            ]
+                    "http": {
+                        "request": {
+                            "headers": {
+                                "Accept": [
+                                    "*/*"
+                                ],
+                                "Content-Length": [
+                                    "68"
+                                ],
+                                "Content-Type": [
+                                    "application/json"
+                                ],
+                                "User-Agent": [
+                                    "curl/7.79.1"
+                                ]
+                            }
                         }
                     },
                     "session": {
@@ -8941,20 +8951,22 @@
                         "service": "myelastic",
                         "user": "elasticuser"
                     },
-                    "request": {
-                        "headers": {
-                            "Accept": [
-                                "*/*"
-                            ],
-                            "Content-Length": [
-                                "68"
-                            ],
-                            "Content-Type": [
-                                "application/json"
-                            ],
-                            "User-Agent": [
-                                "curl/7.79.1"
-                            ]
+                    "http": {
+                        "request": {
+                            "headers": {
+                                "Accept": [
+                                    "*/*"
+                                ],
+                                "Content-Length": [
+                                    "68"
+                                ],
+                                "Content-Type": [
+                                    "application/json"
+                                ],
+                                "User-Agent": [
+                                    "curl/7.79.1"
+                                ]
+                            }
                         }
                     },
                     "session": {
@@ -9023,17 +9035,19 @@
                         "service": "opensearch-aws",
                         "user": "arn:aws:iam::1234567890:role/teleport-db-role"
                     },
-                    "request": {
-                        "headers": {
-                            "Accept-Encoding": [
-                                "gzip"
-                            ],
-                            "Content-Type": [
-                                "application/json"
-                            ],
-                            "User-Agent": [
-                                "Go-http-client/1.1"
-                            ]
+                    "http": {
+                        "request": {
+                            "headers": {
+                                "Accept-Encoding": [
+                                    "gzip"
+                                ],
+                                "Content-Type": [
+                                    "application/json"
+                                ],
+                                "User-Agent": [
+                                    "Go-http-client/1.1"
+                                ]
+                            }
                         }
                     },
                     "session": {
@@ -9104,17 +9118,19 @@
                         "service": "opensearch-aws",
                         "user": "arn:aws:iam::1234567890:role/does-not-exist"
                     },
-                    "request": {
-                        "headers": {
-                            "Accept-Encoding": [
-                                "gzip"
-                            ],
-                            "Content-Type": [
-                                "application/json"
-                            ],
-                            "User-Agent": [
-                                "Go-http-client/1.1"
-                            ]
+                    "http": {
+                        "request": {
+                            "headers": {
+                                "Accept-Encoding": [
+                                    "gzip"
+                                ],
+                                "Content-Type": [
+                                    "application/json"
+                                ],
+                                "User-Agent": [
+                                    "Go-http-client/1.1"
+                                ]
+                            }
                         }
                     },
                     "session": {
@@ -11826,7 +11842,7 @@
             "teleport": {
                 "audit": {
                     "okta": {
-                        "resources_updated": {
+                        "resources": {
                             "added": 5,
                             "deleted": 7,
                             "updated": 1
@@ -11858,7 +11874,7 @@
             "teleport": {
                 "audit": {
                     "okta": {
-                        "resources_updated": {
+                        "resources": {
                             "added": 5,
                             "deleted": 7,
                             "updated": 1
@@ -12078,9 +12094,11 @@
             "teleport": {
                 "audit": {
                     "okta": {
-                        "num_users_created": 5,
-                        "num_users_deleted": 1,
-                        "num_users_modified": 7
+                        "users": {
+                            "created": 5,
+                            "deleted": 1,
+                            "modified": 7
+                        }
                     }
                 }
             }

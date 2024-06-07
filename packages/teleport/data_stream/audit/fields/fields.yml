@@ -26,11 +26,6 @@
           description: >
             RemovedOn is the date that the access list member was removed. Will only be populated for deletion.
 
-        - name: reason
-          type: keyword
-          description: >
-            Reason is the reason that the member was added, modified, or removed.
-
         - name: member_name
           type: keyword
           description: >
@@ -114,9 +109,6 @@
     - name: delegator
       type: keyword
       description: Delegator is used by teleport plugins to indicate the identity which caused them to update state.
-    - name: reason
-      type: keyword
-      description: Reason is an optional description of why the request is being created or updated.
     - name: annotations
       type: flattened
       description: Annotations is an optional set of attributes supplied by a plugin during approval/denial of the request.
@@ -174,18 +166,13 @@
       type: group
       description: Session related metadata
       fields:
-        - name: session_chunk_id
+        - name: chunk_id
           type: keyword
           description: SessionChunkID is the ID of the session that was created for this 5 minute application log chunk.
     - name: aws
       type: group
       description: AWS related metadata
       fields:
-        - name: service
-          type: keyword
-          description: >
-            AWSService is the requested AWS service name.
-
         - name: assumed_role
           type: keyword
           description: AWSAssumedRole is the assumed role that signed this request.
@@ -497,11 +484,6 @@
               description: >
                 StandardError contains the stderr of the executed command. Only the first 24000 chars are returned.
 
-            - name: status
-              type: keyword
-              description: >
-                Status represents the success or failure status of a script run.
-
             - name: invocation_url
               type: keyword
               description: InvocationURL is a link to AWS Web Console for this invocation. An invocation is the execution of a Command in an Instance.
@@ -703,6 +685,11 @@
   type: group
   description: Desktop events metadata
   fields:
+    - name: name
+      type: keyword
+      description: >
+        DesktopName is the name of the desktop resource.
+
     - name: length
       type: unsigned_long
       description: Length is the number of bytes of data received from the remote clipboard or sent from a user's workstation to Teleport.
@@ -719,11 +706,6 @@
       type: keyword
       description: >
         WindowsDesktopService is the name of the service proxying the RDP session.
-
-    - name: windows_user
-      type: keyword
-      description: >
-        WindowsUser is the Windows username used to connect.
 
     - name: labels
       type: flattened
@@ -763,6 +745,12 @@
     - name: web_session_id
       type: keyword
       description: Web Session ID associated with the device.
+- name: teleport.audit.error
+  type: group
+  fields:
+    - name: message
+      type: wildcard
+      description: Error includes system error message for the failed attempt
 - name: teleport.audit.external_audit_storage
   type: group
   description: External Audit Storage configuration details.
@@ -811,7 +799,7 @@
   type: group
   description: FileTransferRequestEvent happens when a FileTransferRequest is created, updated, approved, or denied.
   fields:
-    - name: request_id
+    - name: id
       type: keyword
       description: >
         RequestID is the ID for the FileTransferRequest
@@ -826,25 +814,18 @@
       description: >
         Requester is the Teleport user who requested the file transfer
 
-    - name: location
-      type: keyword
-      description: >
-        Location is the location of the file to be downloaded, or the directory of the upload
-
     - name: is_download
       type: boolean
       description: >
         Download is true if the requested file transfer is a download, false if an upload
 
-    - name: filename
-      type: keyword
-      description: Filename is the name of the file to be uploaded to the Location. Only present in uploads.
-- name: teleport.audit.error
+- name: teleport.audit.http.request
   type: group
+  description: Request metadata not contained in ECS
   fields:
-    - name: message
-      type: wildcard
-      description: Error includes system error message for the failed attempt
+    - name: headers
+      type: flattened
+      description: Headers are the HTTP request headers.
 - name: teleport.audit.join
   type: group
   description: Join event metadata
@@ -876,11 +857,6 @@
     Common metadata for kubernetes-related events.
 
   fields:
-    - name: cluster
-      type: keyword
-      description: >
-        KubernetesCluster is a Kubernetes cluster name.
-
     - name: users
       type: flattened
       description: >
@@ -900,16 +876,6 @@
         Common metadata for kubernetes pod-related events.
 
       fields:
-        - name: pod_name
-          type: flattened
-          description: >
-            KubernetesPodName is the name of the pod.
-
-        - name: pod_namespace
-          type: keyword
-          description: >
-            KubernetesPodNamespace is the namespace of the pod.
-
         - name: container_name
           type: flattened
           description: >
@@ -923,30 +889,6 @@
         - name: node_name
           type: keyword
           description: KubernetesNodeName is the node that runs the pod.
-    - name: resource
-      type: group
-      description: Kubernetes API request event metadata
-      fields:
-        - name: api_group
-          type: keyword
-          description: >
-            ResourceAPIGroup is the resource API group.
-
-        - name: namespace
-          type: keyword
-          description: >
-            ResourceNamespace is the resource namespace.
-
-        - name: kind
-          type: keyword
-          description: >
-            ResourceKind is the API resource kind (e.g. "pod", "service", etc).
-
-        - name: name
-          type: keyword
-          description: >
-            ResourceName is the API resource name.
-
 - name: teleport.audit.lock
   type: group
   description: Common metadata for lock resource events.
@@ -964,7 +906,7 @@
     - name: identity_attributes
       type: flattened
       description: IdentityAttributes is a map of user attributes received from identity provider
-    - name: applied_login_rules
+    - name: applied_rules
       type: keyword
       description: AppliedLoginRules stores the name of each login rule that was applied during the login.
     - name: challenge_scope
@@ -1021,27 +963,30 @@
       description: >
         AppId is the optional ID of an Okta Application that Teleport is using as its gateway into Okta.
 
-    - name: num_users_created
-      type: integer
-      description: >
-        NumUsersCreated is the number of Teleport users created in this synchronization pass.
+    - name: users
+      type: group
+      fields:
+        - name: created
+          type: integer
+          description: >
+            NumUsersCreated is the number of Teleport users created in this synchronization pass.
 
-    - name: num_users_deleted
-      type: integer
-      description: >
-        NumUsersDeleted is the number of Teleport users deleted in this synchronization pass.
+        - name: deleted
+          type: integer
+          description: >
+            NumUsersDeleted is the number of Teleport users deleted in this synchronization pass.
 
-    - name: num_users_modified
-      type: integer
-      description: >
-        NumUserModified is the number of Teleport users modified in this synchronization pass.
+        - name: modified
+          type: integer
+          description: >
+            NumUserModified is the number of Teleport users modified in this synchronization pass.
 
-    - name: num_users_total
-      type: integer
-      description: >
-        NumUsersTotal is the total number of Teleport users managed by the Okta integration at the end of the synchronization pass.
+        - name: total
+          type: integer
+          description: >
+            NumUsersTotal is the total number of Teleport users managed by the Okta integration at the end of the synchronization pass.
 
-    - name: resources_updated
+    - name: resources
       type: group
       description: OktaResourcesUpdatedMetadata contains common metadata for Okta resources updated events.
       fields:
@@ -1098,13 +1043,6 @@
     - name: ttl
       type: keyword
       description: TTL is a TTL of reset password token represented as duration, e.g. \"10m\
-- name: teleport.audit.request
-  type: group
-  description: Request metadata not contained in ECS
-  fields:
-    - name: headers
-      type: flattened
-      description: Headers are the HTTP request headers.
 - name: teleport.audit.saml_idp_service_provider
   type: group
   description: SAMLIdPServiceProviderMetadata contains common metadata for SAML IdP service provider events.
@@ -1254,7 +1192,7 @@
       type: keyword
       description: UnknownCode is the event code extracted from the unknown event.
     - name: data
-      type: wildcard
+      type: flattened
       description: Data is the serialized JSON data of the unknown event.
 - name: teleport.audit.upgradewindow
   type: group
@@ -1296,8 +1234,7 @@
         GCPServiceAccount is the GCP service account user
 
     - name: trusted_device
-      type: object
-      object_type: keyword
+      type: flattened
       description: >
         TrustedDevice contains information about the users' trusted device. Requires a registered and enrolled device to be used during authentication.
 
@@ -1309,7 +1246,7 @@
     - name: kind
       type: keyword
       description: >
-        RequiredPrivateKeyPolicy is the private key policy enforced for this login.
+        UserKind indicates what type of user this is, e.g. a human or Machine ID bot user.
 
     - name: connector
       type: keyword

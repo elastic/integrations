@@ -115,7 +115,6 @@ An example event for `audit` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | teleport.audit.access_list.members.joined_on | JoinedOn is the date that the member joined. | date |
 | teleport.audit.access_list.members.member_name | MemberName is the name of the member. | keyword |
-| teleport.audit.access_list.members.reason | Reason is the reason that the member was added, modified, or removed. | keyword |
 | teleport.audit.access_list.members.removed_on | RemovedOn is the date that the access list member was removed. Will only be populated for deletion. | date |
 | teleport.audit.access_list.membership_requirements_changed.roles | Roles are the roles that changed as part of a review. | keyword |
 | teleport.audit.access_list.membership_requirements_changed.traits | Traits are the traits that changed as part of a review. | flattened |
@@ -135,7 +134,6 @@ An example event for `audit` looks as following:
 | teleport.audit.access_request.max_duration | MaxDuration indicates how long the access should be granted for. | date |
 | teleport.audit.access_request.promoted_access_list_name | PromotedAccessListName is the name of the access list that this request was promoted to. | keyword |
 | teleport.audit.access_request.proposed_state | ProposedState is the state proposed by a review. | keyword |
-| teleport.audit.access_request.reason | Reason is an optional description of why the request is being created or updated. | keyword |
 | teleport.audit.access_request.resource_ids | RequestedResourceIDs is the set of resources to which access is being requested. | flattened |
 | teleport.audit.access_request.resource_search.labels | Labels is the label-based matcher used for the search. | flattened |
 | teleport.audit.access_request.resource_search.predicate_expression | PredicateExpression is the list of boolean conditions that were used for the search. | keyword |
@@ -146,11 +144,10 @@ An example event for `audit` looks as following:
 | teleport.audit.access_request.roles | Roles is a list of roles for the user. | keyword |
 | teleport.audit.access_request.state | RequestState is access request state | keyword |
 | teleport.audit.app.aws.assumed_role | AWSAssumedRole is the assumed role that signed this request. | keyword |
-| teleport.audit.app.aws.service | AWSService is the requested AWS service name. | keyword |
 | teleport.audit.app.labels | AppLabels are the configured application labels. | flattened |
 | teleport.audit.app.name | AppName is the configured application name. | keyword |
 | teleport.audit.app.public_address | AppPublicAddr is the configured application public address. | keyword |
-| teleport.audit.app.session.session_chunk_id | SessionChunkID is the ID of the session that was created for this 5 minute application log chunk. | keyword |
+| teleport.audit.app.session.chunk_id | SessionChunkID is the ID of the session that was created for this 5 minute application log chunk. | keyword |
 | teleport.audit.audit_query.data_scanned_in_bytes | DataScannedInBytes is the amount of data scanned by the query. | long |
 | teleport.audit.audit_query.days | Days is the number of days time range for the query. | integer |
 | teleport.audit.audit_query.name | Name is the name of the query. | keyword |
@@ -199,7 +196,6 @@ An example event for `audit` looks as following:
 | teleport.audit.database.aws.redshift_cluster_id | DatabaseAWSRedshiftClusterID is cluster ID for Redshift databases. | keyword |
 | teleport.audit.database.aws.ssm_run.command_id | CommandID is the id of the SSM command that was run. | keyword |
 | teleport.audit.database.aws.ssm_run.invocation_url | InvocationURL is a link to AWS Web Console for this invocation. An invocation is the execution of a Command in an Instance. | keyword |
-| teleport.audit.database.aws.ssm_run.status | Status represents the success or failure status of a script run. | keyword |
 | teleport.audit.database.aws.ssm_run.stderr | StandardError contains the stderr of the executed command. Only the first 24000 chars are returned. | text |
 | teleport.audit.database.aws.ssm_run.stdout | StandardOutput contains the stdout of the executed command. Only the first 24000 chars are returned. | text |
 | teleport.audit.database.cassandra.batch_type | BatchType is the type of batch. | keyword |
@@ -248,9 +244,9 @@ An example event for `audit` looks as following:
 | teleport.audit.desktop.is_recorded | Recorded is true if the session was recorded, false otherwise. | boolean |
 | teleport.audit.desktop.labels | DesktopLabels are the labels on the desktop resource. | flattened |
 | teleport.audit.desktop.length | Length is the number of bytes of data received from the remote clipboard or sent from a user's workstation to Teleport. | unsigned_long |
+| teleport.audit.desktop.name | DesktopName is the name of the desktop resource. | keyword |
 | teleport.audit.desktop.offset | Offset is the offset the bytes were read from or written to. | unsigned_long |
 | teleport.audit.desktop.windows_desktop_service | WindowsDesktopService is the name of the service proxying the RDP session. | keyword |
-| teleport.audit.desktop.windows_user | WindowsUser is the Windows username used to connect. | keyword |
 | teleport.audit.device.asset_tag | Device inventory identifier. | keyword |
 | teleport.audit.device.credential_id | Device credential identifier. | keyword |
 | teleport.audit.device.device_id | ID of the device. | keyword |
@@ -268,11 +264,10 @@ An example event for `audit` looks as following:
 | teleport.audit.external_audit_storage.policy_name | PolicyName is the name of the IAM policy attached to the OIDC integration role. | keyword |
 | teleport.audit.external_audit_storage.session_recordings_uri | SessionsRecordingsURI is the S3 path used to store session recordings. | keyword |
 | teleport.audit.file_transfer_request.approvers | Approvers is a slice containing the Teleport users who have approved the request | keyword |
-| teleport.audit.file_transfer_request.filename | Filename is the name of the file to be uploaded to the Location. Only present in uploads. | keyword |
+| teleport.audit.file_transfer_request.id | RequestID is the ID for the FileTransferRequest | keyword |
 | teleport.audit.file_transfer_request.is_download | Download is true if the requested file transfer is a download, false if an upload | boolean |
-| teleport.audit.file_transfer_request.location | Location is the location of the file to be downloaded, or the directory of the upload | keyword |
-| teleport.audit.file_transfer_request.request_id | RequestID is the ID for the FileTransferRequest | keyword |
 | teleport.audit.file_transfer_request.requester | Requester is the Teleport user who requested the file transfer | keyword |
+| teleport.audit.http.request.headers | Headers are the HTTP request headers. | flattened |
 | teleport.audit.join.attributes | Attributes is a map of attributes received from the join method provider. | flattened |
 | teleport.audit.join.bot_name | BotName is the name of the bot which has joined. | keyword |
 | teleport.audit.join.method | Method is the event field indicating what join method was used. | keyword |
@@ -280,21 +275,14 @@ An example event for `audit` looks as following:
 | teleport.audit.join.token_expires | TokenExpires contain information about token expiration time. | date |
 | teleport.audit.join.token_name | TokenName is the name of the provision token used to join. | keyword |
 | teleport.audit.join.user_name | UserName is the name of the user associated with the bot which has joined. | keyword |
-| teleport.audit.kubernetes.cluster | KubernetesCluster is a Kubernetes cluster name. | keyword |
 | teleport.audit.kubernetes.groups | KubernetesGroups is a list of Kubernetes groups for the user. | flattened |
 | teleport.audit.kubernetes.labels | KubernetesLabels are the labels (static and dynamic) of the Kubernetes cluster the session occurred on. | flattened |
 | teleport.audit.kubernetes.pod.container_image | KubernetesContainerImage is the image of the container within the pod. | flattened |
 | teleport.audit.kubernetes.pod.container_name | KubernetesContainerName is the name of the container within the pod. | flattened |
 | teleport.audit.kubernetes.pod.node_name | KubernetesNodeName is the node that runs the pod. | keyword |
-| teleport.audit.kubernetes.pod.pod_name | KubernetesPodName is the name of the pod. | flattened |
-| teleport.audit.kubernetes.pod.pod_namespace | KubernetesPodNamespace is the namespace of the pod. | keyword |
-| teleport.audit.kubernetes.resource.api_group | ResourceAPIGroup is the resource API group. | keyword |
-| teleport.audit.kubernetes.resource.kind | ResourceKind is the API resource kind (e.g. "pod", "service", etc). | keyword |
-| teleport.audit.kubernetes.resource.name | ResourceName is the API resource name. | keyword |
-| teleport.audit.kubernetes.resource.namespace | ResourceNamespace is the resource namespace. | keyword |
 | teleport.audit.kubernetes.users | KubernetesUsers is a list of Kubernetes usernames for the user. | flattened |
 | teleport.audit.lock.target | Method is the event field indicating how the login was performed | flattened |
-| teleport.audit.login.applied_login_rules | AppliedLoginRules stores the name of each login rule that was applied during the login. | keyword |
+| teleport.audit.login.applied_rules | AppliedLoginRules stores the name of each login rule that was applied during the login. | keyword |
 | teleport.audit.login.challenge_allow_reuse | ChallengeAllowReuse defines whether the MFA challenge allows reuse. | boolean |
 | teleport.audit.login.challenge_scope | ChallengeScope is the authorization scope for this MFA challenge. | keyword |
 | teleport.audit.login.identity_attributes | IdentityAttributes is a map of user attributes received from identity provider | flattened |
@@ -310,17 +298,16 @@ An example event for `audit` looks as following:
 | teleport.audit.okta.assignment.source | Source is the source of the Okta assignment. | keyword |
 | teleport.audit.okta.assignment.starting_status | StartingStatus is the starting status of the assignment. | keyword |
 | teleport.audit.okta.assignment.user | User is the user the Okta assignment is for. | keyword |
-| teleport.audit.okta.num_users_created | NumUsersCreated is the number of Teleport users created in this synchronization pass. | integer |
-| teleport.audit.okta.num_users_deleted | NumUsersDeleted is the number of Teleport users deleted in this synchronization pass. | integer |
-| teleport.audit.okta.num_users_modified | NumUserModified is the number of Teleport users modified in this synchronization pass. | integer |
-| teleport.audit.okta.num_users_total | NumUsersTotal is the total number of Teleport users managed by the Okta integration at the end of the synchronization pass. | integer |
 | teleport.audit.okta.org_url | OrgUrl is the URL of the Okta organization being synced to. | keyword |
-| teleport.audit.okta.resources_updated.added | Added is the number of resources added. | integer |
-| teleport.audit.okta.resources_updated.deleted | Deleted is the number of resources deleted. | integer |
-| teleport.audit.okta.resources_updated.updated | Updated is the number of resources updated. | integer |
+| teleport.audit.okta.resources.added | Added is the number of resources added. | integer |
+| teleport.audit.okta.resources.deleted | Deleted is the number of resources deleted. | integer |
+| teleport.audit.okta.resources.updated | Updated is the number of resources updated. | integer |
+| teleport.audit.okta.users.created | NumUsersCreated is the number of Teleport users created in this synchronization pass. | integer |
+| teleport.audit.okta.users.deleted | NumUsersDeleted is the number of Teleport users deleted in this synchronization pass. | integer |
+| teleport.audit.okta.users.modified | NumUserModified is the number of Teleport users modified in this synchronization pass. | integer |
+| teleport.audit.okta.users.total | NumUsersTotal is the total number of Teleport users managed by the Okta integration at the end of the synchronization pass. | integer |
 | teleport.audit.process.cgroup_id | CgroupID is the internal cgroupv2 ID of the event. | long |
 | teleport.audit.process.flags | Flags are the flags passed to open. | long |
-| teleport.audit.request.headers | Headers are the HTTP request headers. | flattened |
 | teleport.audit.resource.expires | Expires is set if resource expires | date |
 | teleport.audit.resource.name | ResourceName is a resource name | keyword |
 | teleport.audit.resource.ttl | TTL is a TTL of reset password token represented as duration, e.g. \"10m\ | keyword |
@@ -353,7 +340,7 @@ An example event for `audit` looks as following:
 | teleport.audit.svid.spiffe_id | SPIFFEID is the SPIFFE ID of the issued SVID. | keyword |
 | teleport.audit.svid.type | SVIDType is `jwt` or `x509. | keyword |
 | teleport.audit.unknown.code | UnknownCode is the event code extracted from the unknown event. | keyword |
-| teleport.audit.unknown.data | Data is the serialized JSON data of the unknown event. | wildcard |
+| teleport.audit.unknown.data | Data is the serialized JSON data of the unknown event. | flattened |
 | teleport.audit.unknown.event_type | UnknownType is the event type extracted from the unknown event. | keyword |
 | teleport.audit.unknown.metadata | Metadata is a common event metadata. | object |
 | teleport.audit.upgradewindow.start | UpgradeWindowStart is the upgrade window time. | keyword |
@@ -363,9 +350,9 @@ An example event for `audit` looks as following:
 | teleport.audit.user.connector | Connector is the connector used to create the user. | keyword |
 | teleport.audit.user.gcp_service_account | GCPServiceAccount is the GCP service account user | keyword |
 | teleport.audit.user.impersonator | Impersonator is a user acting on behalf of another user | keyword |
-| teleport.audit.user.kind | RequiredPrivateKeyPolicy is the private key policy enforced for this login. | keyword |
+| teleport.audit.user.kind | UserKind indicates what type of user this is, e.g. a human or Machine ID bot user. | keyword |
 | teleport.audit.user.os_login | Login is OS login | keyword |
 | teleport.audit.user.required_private_key_policy | RequiredPrivateKeyPolicy is the private key policy enforced for this login. | keyword |
-| teleport.audit.user.trusted_device | TrustedDevice contains information about the users' trusted device. Requires a registered and enrolled device to be used during authentication. | object |
+| teleport.audit.user.trusted_device | TrustedDevice contains information about the users' trusted device. Requires a registered and enrolled device to be used during authentication. | flattened |
 
 
