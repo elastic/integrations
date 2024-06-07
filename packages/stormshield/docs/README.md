@@ -7,11 +7,11 @@ Use the Stormshield SNS integration to ingest log data into Elastic Security and
 
 ## Data streams
 
-The Stormshield SNS integration collects audit, traffic, and connection (including NAT) logs. Available log types are available here: https://documentation.stormshield.eu/SNS/v4/en/Content/Description_of_Audit_logs/Configure_logs.htm .
+The Stormshield SNS integration collects audit, traffic, and connection (including NAT) logs. Available log types are available [here](https://documentation.stormshield.eu/SNS/v4/en/Content/Description_of_Audit_logs/Configure_logs.htm) .
 
 
 **Logs** help you keep a record of events happening in your firewalls.
-The SNS integration handles activity logs and firewall (filter and NAT) logs. See more details in the [Logs](#logs-reference).
+The SNS integration handles activity logs and firewall (filter and NAT) logs. SNS can send realtime events and also periodic statistics audit logs. The dashboard is tailored to display results of the realtime events and not the statistics logs.
 
 ## Requirements
 
