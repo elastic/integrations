@@ -102,26 +102,38 @@ processors:
       if: ctx.stormshield?.logtype == 'count'
 
   - convert:
-      field: stormshield.origsrc
-      target_field: source.ip
+      field: stormshield.modsrc
+      target_field: source.nat.ip
       type: ip
-      ignore_missing: true
+      if: ctx.stormshield?.modsrc != null && ctx.stormshield?.modsrc != ctx.stormshield?.src
 
   - convert:
       field: stormshield.src
       target_field: source.ip
       type: ip
-      if: ctx.stormshield?.origsrc == null && ctx.stormshield?.src != null
-  - convert:
-      field: stormshield.src
-      target_field: source.nat.ip
-      type: ip
-      if: ctx.stormshield?.origsrc != null && ctx.stormshield?.src != null
+      ignore_missing: true
   - remove:
       field: stormshield.src
       ignore_missing: true
   - remove:
-      field: stormshield.origsrc
+      field: stormshield.modsrc
+      ignore_missing: true
+
+  - convert:
+      field: stormshield.modsrcport
+      target_field: source.nat.port
+      type: long
+      if: ctx.stormshield?.modsrcport != null && ctx.stormshield?.modsrcport != ctx.stormshield?.srcport
+  - convert:
+      field: stormshield.srcport
+      target_field: source.port
+      type: long
+      ignore_missing: true
+  - remove:
+      field: stormshield.srcport
+      ignore_missing: true
+  - remove:
+      field: stormshield.modsrcport
       ignore_missing: true
 
   - convert:
@@ -138,7 +150,7 @@ processors:
       field: stormshield.dst
       target_field: destination.nat.ip
       type: ip
-      if: ctx.stormshield?.origdst != null && ctx.stormshield?.dst != null
+      if: ctx.stormshield?.origdst != null && ctx.stormshield?.dst != null && ctx.stormshield?.origdst != ctx.stormshield?.dst
   - remove:
       field: stormshield.dst
       ignore_missing: true
@@ -248,14 +260,21 @@ processors:
       if: ctx.destination?.mac == null
 
   - convert:
-      field: stormshield.dstport
+      field: stormshield.origdstport
       target_field: destination.port
       type: long
       ignore_missing: true
-      if: ctx.destination?.port == null
+  - convert:
+      field: stormshield.dstport
+      target_field: destination.nat.port
+      type: long
+      if: ctx.stormshield?.dstport != null && ctx.stormshield?.dstport != ctx.stormshield?.origdstport
 
   - remove:
       field: stormshield.dstport
+      ignore_missing: true
+  - remove:
+      field: stormshield.origdstport
       ignore_missing: true
 
   - rename:
@@ -351,6 +370,7 @@ processors:
             - Pvm
             - address
             - alarmid
+            - arg
             - auth
             - authcaptive
             - authconsole
@@ -368,8 +388,10 @@ processors:
             - mem
             - modsrc
             - modsrcport
+            - op
             - pri
             - rcvd
+            - result
             - security
             - sent
             - sessionid
