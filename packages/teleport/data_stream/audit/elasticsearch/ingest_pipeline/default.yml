@@ -247,21 +247,69 @@ processors:
   - append:
       field: related.ip
       value:
-        - '{{{teleport.audit.addr.remote}}}'
+        - '{{{client.ip}}}'
       allow_duplicates: false
-      if: ctx?.teleport?.audit?.addr?.remote != null
+      if: ctx?.client?.ip != null
   - append:
       field: related.ip
       value:
-        - '{{{teleport.audit.addr.local}}}'
+        - '{{{destination.ip}}}'
       allow_duplicates: false
-      if: ctx?.teleport?.audit?.addr?.local != null
+      if: ctx?.destination?.ip != null
   - append:
       field: related.ip
       value:
-        - '{{{teleport.audit.identity.client_ip}}}'
+        - '{{{server.ip}}}'
       allow_duplicates: false
-      if: ctx?.teleport?.audit?.identity?.client_ip != null
+      if: ctx?.server?.ip != null
+  - append:
+      field: related.ip
+      value:
+        - '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx?.source?.ip != null
+  - append:
+      field: related.ip
+      value:
+        - '{{{teleport.audit.certificate.identity.client_ip}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.certificate?.identity?.client_ip != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{host.hostname}}}'
+      allow_duplicates: false
+      if: ctx?.host?.hostname != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{client.domain}}}'
+      allow_duplicates: false
+      if: ctx?.client?.domain != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{destination.domain}}}'
+      allow_duplicates: false
+      if: ctx?.destination?.domain != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{server.domain}}}'
+      allow_duplicates: false
+      if: ctx?.server?.domain != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{source.domain}}}'
+      allow_duplicates: false
+      if: ctx?.source?.domain != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{teleport.audit.app.public_address}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.app?.public_address != null
   - append:
       field: related.user
       value:
@@ -271,39 +319,57 @@ processors:
   - append:
       field: related.user
       value:
-        - '{{{teleport.audit.identity.user}}}'
+        - '{{{teleport.audit.user.os_login}}}'
       allow_duplicates: false
-      if: ctx?.teleport?.audit?.identity?.user != null
+      if: ctx?.teleport.audit.user?.os_login != null
   - append:
       field: related.user
       value:
-        - '{{{teleport.audit.identity.logins}}}'
+        - '{{{teleport.audit.database.user}}}'
       allow_duplicates: false
-      if: ctx?.teleport?.audit?.identity?.logins != null
+      if: ctx?.teleport.audit.database?.user != null
   - append:
       field: related.user
       value:
-        - '{{{teleport.audit.participants}}}'
+        - '{{{teleport.audit.database.user_change.username}}}'
       allow_duplicates: false
-      if: ctx?.teleport?.audit?.participants != null
+      if: ctx?.teleport.audit.database?.user_change?.username != null
   - append:
-      field: related.hosts
+      field: related.user
       value:
-        - '{{{teleport.audit.server.hostname}}}'
+        - '{{{teleport.audit.certificate.identity.user}}}'
       allow_duplicates: false
-      if: ctx?.teleport?.audit?.server?.hostname != null
+      if: ctx?.teleport?.audit?.certificate?.identity?.user != null
+  - append:
+      field: related.user
+      value:
+        - '{{{teleport.audit.certificate.identity.logins}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.certificate?.identity?.logins != null
+  - append:
+      field: related.user
+      value:
+        - '{{{teleport.audit.certificate.identity.impersonator}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.certificate?.identity?.impersonator != null
+  - append:
+      field: related.user
+      value:
+        - '{{{teleport.audit.certificate.identity.participants}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.certificate?.identity?.participants != null
+  - append:
+      field: related.user
+      value:
+        - '{{{teleport.audit.certificate.identity.database_users}}}'
+      allow_duplicates: false
+      if: ctx?.teleport?.audit?.certificate?.identity?.database_users != null
   - append:
       field: related.hosts
       value:
         - '{{{teleport.audit.server.labels.hostname}}}'
       allow_duplicates: false
       if: ctx?.teleport?.audit?.server?.labels?.hostname != null
-  - append:
-      field: related.hosts
-      value:
-        - '{{{teleport.audit.server_addr}}}'
-      allow_duplicates: false
-      if: ctx?.teleport?.audit?.server_addr != null
   # Final steps.
   - remove:
       field: event.original
