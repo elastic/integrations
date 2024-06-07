@@ -20,23 +20,23 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-02-23T18:57:27.101Z",
+    "@timestamp": "2019-04-22T19:39:26.676Z",
     "client": {
-        "address": "175.16.199.196",
-        "geo": {
-            "city_name": "Changchun",
-            "continent_name": "Asia",
-            "country_iso_code": "CN",
-            "country_name": "China",
-            "location": {
-                "lat": 43.88,
-                "lon": 125.3228
-            },
-            "region_iso_code": "CN-22",
-            "region_name": "Jilin Sheng"
+        "address": "67.43.156.11",
+        "as": {
+            "number": 35908
         },
-        "ip": "175.16.199.196",
-        "port": 50343
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.11",
+        "port": 51454
     },
     "ecs": {
         "version": "8.11.0"
@@ -47,9 +47,9 @@ An example event for `audit` looks as following:
             "session"
         ],
         "code": "T2000I",
-        "id": "74986446-ee50-4f28-827a-e4cd79c76276",
+        "id": "84c07a99-856c-419f-9de5-15560451a116",
         "kind": "event",
-        "original": "{\"ei\":0,\"event\":\"session.start\",\"uid\":\"74986446-ee50-4f28-827a-e4cd79c76276\",\"code\":\"T2000I\",\"time\":\"2024-02-23T18:57:27.101Z\",\"cluster_name\":\"teleport.ericbeahan.com\",\"user\":\"teleport-admin\",\"login\":\"ec2-user\",\"user_kind\":1,\"sid\":\"0f9b4848-b0a5-411e-bcd1-bc3d04eb8cbf\",\"private_key_policy\":\"none\",\"namespace\":\"default\",\"server_id\":\"b321c207-fd08-46c8-b248-0c20436feb62\",\"server_hostname\":\"ip-175.16.199.98.us-east-2.compute.internal\",\"server_addr\":\"[::]:3022\",\"server_labels\":{\"hostname\":\"ip-175.16.199.98.us-east-2.compute.internal\"},\"addr.local\":\"175.16.199.98:443\",\"addr.remote\":\"175.16.199.196:50343\",\"proto\":\"ssh\",\"size\":\"80:25\",\"initial_command\":[\"\"],\"session_recording\":\"node\"}",
+        "original": "{\"addr.local\":\"172.31.28.130:3022\",\"addr.remote\":\"67.43.156.11:51454\",\"code\":\"T2000I\",\"ei\":0,\"event\":\"session.start\",\"login\":\"root\",\"namespace\":\"default\",\"server_id\":\"de3800ea-69d9-4d72-a108-97e57f8eb393\",\"sid\":\"56408539-6536-11e9-80a1-427cfde50f5a\",\"size\":\"80:25\",\"time\":\"2019-04-22T19:39:26.676Z\",\"uid\":\"84c07a99-856c-419f-9de5-15560451a116\",\"user\":\"admin@example.com\"}",
         "sequence": 0,
         "type": [
             "start"
@@ -59,16 +59,7 @@ An example event for `audit` looks as following:
         "name": "default"
     },
     "host": {
-        "hostname": "ip-175.16.199.98.us-east-2.compute.internal",
-        "id": "b321c207-fd08-46c8-b248-0c20436feb62"
-    },
-    "network": {
-        "protocol": "ssh"
-    },
-    "orchestrator": {
-        "cluster": {
-            "name": "teleport.ericbeahan.com"
-        }
+        "id": "de3800ea-69d9-4d72-a108-97e57f8eb393"
     },
     "process": {
         "tty": {
@@ -77,59 +68,36 @@ An example event for `audit` looks as following:
         }
     },
     "related": {
-        "hosts": [
-            "ip-175.16.199.98.us-east-2.compute.internal"
-        ],
         "ip": [
-            "175.16.199.196",
-            "175.16.199.98"
+            "67.43.156.11",
+            "172.31.28.130"
         ],
         "user": [
-            "teleport-admin",
-            "ec2-user"
+            "admin@example.com",
+            "root"
         ]
     },
     "server": {
-        "address": "175.16.199.98",
-        "geo": {
-            "city_name": "Changchun",
-            "continent_name": "Asia",
-            "country_iso_code": "CN",
-            "country_name": "China",
-            "location": {
-                "lat": 43.88,
-                "lon": 125.3228
-            },
-            "region_iso_code": "CN-22",
-            "region_name": "Jilin Sheng"
-        },
-        "ip": "175.16.199.98",
-        "port": 443
+        "address": "172.31.28.130",
+        "ip": "172.31.28.130",
+        "port": 3022
     },
     "tags": [
         "preserve_original_event"
     ],
     "teleport": {
         "audit": {
-            "server": {
-                "labels": {
-                    "hostname": "ip-175.16.199.98.us-east-2.compute.internal"
-                }
-            },
             "session": {
-                "id": "0f9b4848-b0a5-411e-bcd1-bc3d04eb8cbf",
-                "private_key_policy": "none",
-                "session_recording": "node",
+                "id": "56408539-6536-11e9-80a1-427cfde50f5a",
                 "terminal_size": "80:25"
             },
             "user": {
-                "kind": "human",
-                "os_login": "ec2-user"
+                "os_login": "root"
             }
         }
     },
     "user": {
-        "name": "teleport-admin"
+        "name": "admin@example.com"
     }
 }
 
