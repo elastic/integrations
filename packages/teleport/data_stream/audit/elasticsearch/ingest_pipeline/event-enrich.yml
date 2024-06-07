@@ -199,6 +199,9 @@ processors:
         - '{{{teleport.audit.app.public_address}}}'
       allow_duplicates: false
       if: ctx?.teleport?.audit?.app?.public_address != null
+  - set:
+      field: related.user
+      value: ""
   - append:
       field: related.user
       value:
@@ -229,30 +232,27 @@ processors:
         - '{{{teleport.audit.certificate.identity.user}}}'
       allow_duplicates: false
       if: ctx?.teleport?.audit?.certificate?.identity?.user != null
-  - append:
-      field: related.user
-      value:
-        - '{{{teleport.audit.certificate.identity.logins}}}'
-      allow_duplicates: false
-      if: ctx?.teleport?.audit?.certificate?.identity?.logins != null
+  - script:
+      description: >
+        Add lists of related users.
+      tag: script_add_related_user_lists
+      lang: painless
+      source: |
+        if (ctx.teleport?.audit?.certificate?.identity?.logins != null) {
+          ctx.related.user.addAll(ctx.teleport.audit.certificate.identity.logins);
+        }
+        if (ctx.teleport?.audit?.certificate?.identity?.participants != null) {
+          ctx.related.user.addAll(ctx.teleport.audit.certificate.identity.participants);
+        }
+        if (ctx.teleport?.audit?.certificate?.identity?.database_users != null) {
+          ctx.related.user.addAll(ctx.teleport.audit.certificate.identity.database_users);
+        }
   - append:
       field: related.user
       value:
         - '{{{teleport.audit.certificate.identity.impersonator}}}'
       allow_duplicates: false
       if: ctx?.teleport?.audit?.certificate?.identity?.impersonator != null
-  - append:
-      field: related.user
-      value:
-        - '{{{teleport.audit.certificate.identity.participants}}}'
-      allow_duplicates: false
-      if: ctx?.teleport?.audit?.certificate?.identity?.participants != null
-  - append:
-      field: related.user
-      value:
-        - '{{{teleport.audit.certificate.identity.database_users}}}'
-      allow_duplicates: false
-      if: ctx?.teleport?.audit?.certificate?.identity?.database_users != null
   - append:
       field: related.hosts
       value:
