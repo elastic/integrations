@@ -44,7 +44,11 @@ processors:
           if (c == (char)' ' || (i == n - 1)) {
             if (kvStart != kvSplit) {
               def key = ctx["message"].substring(kvStart, kvSplit);
-              def value = ctx["message"].substring(kvSplit + 1, i).replace("\"", "");
+              def end = i;
+              if (i == n - 1)  {
+                  end = n;
+              }
+              def value = ctx["message"].substring(kvSplit + 1, end).replace("\"", "");
               ctx["stormshield"][key] = value;
             }
 
@@ -145,8 +149,7 @@ processors:
   - geoip:
       field: destination.ip
       target_field: destination.geo
-      ignore_missing: true
-      if: ctx.destination?.geo == null
+      if: ctx.destination?.geo == null && ctx.destination?.ip != null
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -166,8 +169,7 @@ processors:
   - geoip:
       field: source.ip
       target_field: source.geo
-      ignore_missing: true
-      if: ctx.source?.geo == null
+      if: ctx.source?.geo == null && ctx.source?.ip != null
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
