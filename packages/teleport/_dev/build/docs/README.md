@@ -1,6 +1,5 @@
 # Teleport Audit Events Integration
 
-
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
@@ -19,4 +18,3 @@ Event fields are grouped into logical categories.
 {{ event "audit" }}
 
 {{ fields "audit" }}
-
