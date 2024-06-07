@@ -103,21 +103,20 @@ processors:
       field: teleport.audit.status_code
       target_field: http.response.status_code
       ignore_missing: true
-  - rename:
-      field: teleport.audit.error
-      target_field: teleport.audit.tmp_error
-      ignore_missing: true
+  - append:
+      field: message
+      value:
+        - '{{{teleport.audit.error}}}'
+      allow_duplicates: false
+      if: ctx.teleport?.audit?.error != null
   - remove:
       field: teleport.audit.error
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.tmp_error
-      target_field: teleport.audit.error.message
       ignore_missing: true
   # Enrich the fields.
   - pipeline:
       name: '{{ IngestPipeline "event-enrich" }}'
       ignore_failure: true
+  # Rename the action field.
   - append:
       field: event.code
       value:
