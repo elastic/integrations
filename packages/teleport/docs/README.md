@@ -1,6 +1,5 @@
 # Teleport Audit Events Integration
 
-
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
@@ -332,7 +331,7 @@ An example event for `audit` looks as following:
 | teleport.audit.process.flags | Flags are the flags passed to open. | long |
 | teleport.audit.resource.expires | Expires is set if resource expires | date |
 | teleport.audit.resource.name | ResourceName is a resource name | keyword |
-| teleport.audit.resource.ttl | TTL is a TTL of reset password token represented as duration, e.g. \"10m\ | keyword |
+| teleport.audit.resource.ttl | TTL is a TTL of reset password token represented as duration, e.g. '10m' | keyword |
 | teleport.audit.resource.updated_by | UpdatedBy if set indicates the user who modified the resource | keyword |
 | teleport.audit.saml_idp_service_provider.attribute_mapping | AttributeMapping is a map of attribute name and value which will be asserted in SAML response. | flattened |
 | teleport.audit.saml_idp_service_provider.entity_id | ServiceProviderEntityID is the entity ID of the service provider. | keyword |
@@ -359,7 +358,7 @@ An example event for `audit` looks as following:
 | teleport.audit.svid.ip_sans | IPSANs is the list of IP SANs in the issued SVID. | keyword |
 | teleport.audit.svid.serial_number | SerialNumber is the serial number of the issued SVID. | keyword |
 | teleport.audit.svid.spiffe_id | SPIFFEID is the SPIFFE ID of the issued SVID. | keyword |
-| teleport.audit.svid.type | SVIDType is `jwt` or `x509. | keyword |
+| teleport.audit.svid.type | SVIDType is `jwt` or `x509`. | keyword |
 | teleport.audit.unknown.code | UnknownCode is the event code extracted from the unknown event. | keyword |
 | teleport.audit.unknown.data | Data is the serialized JSON data of the unknown event. | flattened |
 | teleport.audit.unknown.event_type | UnknownType is the event type extracted from the unknown event. | keyword |
@@ -374,5 +373,4 @@ An example event for `audit` looks as following:
 | teleport.audit.user.kind | UserKind indicates what type of user this is, e.g. a human or Machine ID bot user. | keyword |
 | teleport.audit.user.required_private_key_policy | RequiredPrivateKeyPolicy is the private key policy enforced for this login. | keyword |
 | teleport.audit.user.trusted_device | TrustedDevice contains information about the users' trusted device. Requires a registered and enrolled device to be used during authentication. | flattened |
-
 
