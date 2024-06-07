@@ -99,6 +99,7 @@ This is the `Event` dataset.
 | ocsf.actor.authorizations.decision | Authorization Result/outcome, e.g. allowed, denied. | keyword |
 | ocsf.actor.authorizations.policy.desc | The description of the policy. | keyword |
 | ocsf.actor.authorizations.policy.group.desc | The group description. | keyword |
+| ocsf.actor.authorizations.policy.group.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.authorizations.policy.group.name | The group name. | keyword |
 | ocsf.actor.authorizations.policy.group.privileges | The group privileges. | keyword |
 | ocsf.actor.authorizations.policy.group.type | The type of the group or account. | keyword |
@@ -142,6 +143,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.accessor.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.file.accessor.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.file.accessor.groups.desc | The group description. | keyword |
+| ocsf.actor.process.file.accessor.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.file.accessor.groups.name | The group name. | keyword |
 | ocsf.actor.process.file.accessor.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.accessor.groups.type | The type of the group or account. | keyword |
@@ -170,6 +172,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.creator.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.file.creator.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.file.creator.groups.desc | The group description. | keyword |
+| ocsf.actor.process.file.creator.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.file.creator.groups.name | The group name. | keyword |
 | ocsf.actor.process.file.creator.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.creator.groups.type | The type of the group or account. | keyword |
@@ -200,6 +203,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.modifier.email_addr | The image name. For example: elixir. | keyword |
 | ocsf.actor.process.file.modifier.full_name | The user's email address. | keyword |
 | ocsf.actor.process.file.modifier.groups.desc | The group description. | keyword |
+| ocsf.actor.process.file.modifier.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.file.modifier.groups.name | The group name. | keyword |
 | ocsf.actor.process.file.modifier.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.modifier.groups.type | The type of the group or account. | keyword |
@@ -223,6 +227,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.owner.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.file.owner.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.file.owner.groups.desc | The group description. | keyword |
+| ocsf.actor.process.file.owner.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.file.owner.groups.name | The group name. | keyword |
 | ocsf.actor.process.file.owner.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.owner.groups.type | The type of the group or account. | keyword |
@@ -261,6 +266,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.signature.certificate.issuer | The certificate issuer distinguished name. | keyword |
 | ocsf.actor.process.file.signature.certificate.serial_number | The serial number of the certificate used to create the digital signature. | keyword |
 | ocsf.actor.process.file.signature.certificate.subject | The certificate subject distinguished name. | keyword |
+| ocsf.actor.process.file.signature.certificate.uid | The unique identifier of the certificate. | keyword |
 | ocsf.actor.process.file.signature.certificate.version | The certificate version. | keyword |
 | ocsf.actor.process.file.signature.created_time | The time when the digital signature was created. | date |
 | ocsf.actor.process.file.signature.created_time_dt | The time when the digital signature was created. | date |
@@ -318,6 +324,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.accessor.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.parent_process.file.accessor.groups.desc | The group description. | keyword |
+| ocsf.actor.process.parent_process.file.accessor.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.groups.name | The group name. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.groups.type | The type of the group or account. | keyword |
@@ -346,6 +353,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.creator.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.parent_process.file.creator.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.parent_process.file.creator.groups.desc | The group description. | keyword |
+| ocsf.actor.process.parent_process.file.creator.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.parent_process.file.creator.groups.name | The group name. | keyword |
 | ocsf.actor.process.parent_process.file.creator.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.creator.groups.type | The type of the group or account. | keyword |
@@ -376,6 +384,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.modifier.email_addr | The image name. For example: elixir. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.full_name | The user's email address. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.groups.desc | The group description. | keyword |
+| ocsf.actor.process.parent_process.file.modifier.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.groups.name | The group name. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.groups.type | The type of the group or account. | keyword |
@@ -399,6 +408,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.owner.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.parent_process.file.owner.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.parent_process.file.owner.groups.desc | The group description. | keyword |
+| ocsf.actor.process.parent_process.file.owner.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.parent_process.file.owner.groups.name | The group name. | keyword |
 | ocsf.actor.process.parent_process.file.owner.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.owner.groups.type | The type of the group or account. | keyword |
@@ -437,6 +447,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.signature.certificate.issuer | The certificate issuer distinguished name. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.serial_number | The serial number of the certificate used to create the digital signature. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.subject | The certificate subject distinguished name. | keyword |
+| ocsf.actor.process.parent_process.file.signature.certificate.uid | The unique identifier of the certificate. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.version | The certificate version. | keyword |
 | ocsf.actor.process.parent_process.file.signature.created_time | The time when the digital signature was created. | date |
 | ocsf.actor.process.parent_process.file.signature.created_time_dt | The time when the digital signature was created. | date |
@@ -488,6 +499,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.user.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.parent_process.user.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.parent_process.user.groups.desc | The group description. | keyword |
+| ocsf.actor.process.parent_process.user.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.parent_process.user.groups.name | The group name. | keyword |
 | ocsf.actor.process.parent_process.user.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.user.groups.type | The type of the group or account. | keyword |
@@ -527,6 +539,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.user.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.user.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.user.groups.desc | The group description. | keyword |
+| ocsf.actor.process.user.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.user.groups.name | The group name. | keyword |
 | ocsf.actor.process.user.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.user.groups.type | The type of the group or account. | keyword |
@@ -541,15 +554,21 @@ This is the `Event` dataset.
 | ocsf.actor.process.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.user.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.xattributes | An unordered collection of zero or more name/value pairs that represent a process extended attribute. | flattened |
+| ocsf.actor.session.count | The number of identical sessions spawned from the same source IP, destination IP, application, and content/threat type seen over a period of time. | integer |
 | ocsf.actor.session.created_time | The time when the session was created. | date |
 | ocsf.actor.session.created_time_dt | The time when the session was created. | date |
 | ocsf.actor.session.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
+| ocsf.actor.session.expiration_reason | The reason which triggered the session expiration. | keyword |
 | ocsf.actor.session.expiration_time | The session expiration time. | date |
 | ocsf.actor.session.expiration_time_dt | The session expiration time. | date |
+| ocsf.actor.session.is_mfa | Indicates whether Multi Factor Authentication was used during authentication. | boolean |
 | ocsf.actor.session.is_remote | The indication of whether the session is remote. | boolean |
+| ocsf.actor.session.is_vpn | The indication of whether the session is a VPN session. | boolean |
 | ocsf.actor.session.issuer | The identifier of the session issuer. | keyword |
 | ocsf.actor.session.mfa |  | boolean |
+| ocsf.actor.session.terminal | The Pseudo Terminal associated with the session. Ex, the tty or pts value. | keyword |
 | ocsf.actor.session.uid | The unique identifier of the session. | keyword |
+| ocsf.actor.session.uid_alt | The alternate unique identifier of the session. e.g. AWS ARN - arn:aws:sts::123344444444:assumed-role/Admin/example-session. | keyword |
 | ocsf.actor.session.uuid | The universally unique identifier of the session. | keyword |
 | ocsf.actor.user.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.user.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
@@ -560,10 +579,60 @@ This is the `Event` dataset.
 | ocsf.actor.user.email_addr | The user's email address. | keyword |
 | ocsf.actor.user.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.user.groups.desc | The group description. | keyword |
+| ocsf.actor.user.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.user.groups.name | The group name. | keyword |
 | ocsf.actor.user.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.user.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.user.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.user.ldap_person.cost_center | The cost center associated with the user. | keyword |
+| ocsf.actor.user.ldap_person.created_time | The timestamp when the user was created. | date |
+| ocsf.actor.user.ldap_person.deleted_time | The timestamp when the user was deleted. | date |
+| ocsf.actor.user.ldap_person.email_addrs | A list of additional email addresses for the user. | keyword |
+| ocsf.actor.user.ldap_person.employee_uid | The employee identifier assigned to the user by the organization. | keyword |
+| ocsf.actor.user.ldap_person.given_name | The given or first name of the user. | keyword |
+| ocsf.actor.user.ldap_person.hire_time | The timestamp when the user was or will be hired by the organization. | date |
+| ocsf.actor.user.ldap_person.job_title | The user's job title. | keyword |
+| ocsf.actor.user.ldap_person.labels | The labels associated with the user. For example in AD this could be the userType, employeeType. | keyword |
+| ocsf.actor.user.ldap_person.last_login_time | The last time when the user logged in. | date |
+| ocsf.actor.user.ldap_person.ldap_cn | The LDAP and X.500 commonName attribute, typically the full name of the person. For example, John Doe. | keyword |
+| ocsf.actor.user.ldap_person.ldap_dn | The X.500 Distinguished Name (DN) is a structured string that uniquely identifies an entry, such as a user, in an X.500 directory service For example, cn=John Doe,ou=People,dc=example,dc=com. | keyword |
+| ocsf.actor.user.ldap_person.leave_time | The timestamp when the user left or will be leaving the organization. | date |
+| ocsf.actor.user.ldap_person.location.city | The name of the city. | keyword |
+| ocsf.actor.user.ldap_person.location.continent | The name of the continent. | keyword |
+| ocsf.actor.user.ldap_person.location.coordinates | A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON. | geo_point |
+| ocsf.actor.user.ldap_person.location.country | The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized. | keyword |
+| ocsf.actor.user.ldap_person.location.desc | The description of the geographical location. | keyword |
+| ocsf.actor.user.ldap_person.location.is_on_premises | The indication of whether the location is on premises. | boolean |
+| ocsf.actor.user.ldap_person.location.isp | The name of the Internet Service Provider (ISP). | keyword |
+| ocsf.actor.user.ldap_person.location.postal_code | The postal code of the location. | keyword |
+| ocsf.actor.user.ldap_person.location.provider | The provider of the geographical location data. | keyword |
+| ocsf.actor.user.ldap_person.location.region | The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US. | keyword |
+| ocsf.actor.user.ldap_person.manager.account.name | The name of the account (e.g. GCP Account Name). | keyword |
+| ocsf.actor.user.ldap_person.manager.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
+| ocsf.actor.user.ldap_person.manager.account.type_id | The normalized account type identifier. | integer |
+| ocsf.actor.user.ldap_person.manager.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
+| ocsf.actor.user.ldap_person.manager.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
+| ocsf.actor.user.ldap_person.manager.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
+| ocsf.actor.user.ldap_person.manager.email_addr | The user's email address. | keyword |
+| ocsf.actor.user.ldap_person.manager.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
+| ocsf.actor.user.ldap_person.manager.groups.desc | The group description. | keyword |
+| ocsf.actor.user.ldap_person.manager.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
+| ocsf.actor.user.ldap_person.manager.groups.name | The group name. | keyword |
+| ocsf.actor.user.ldap_person.manager.groups.privileges | The group privileges. | keyword |
+| ocsf.actor.user.ldap_person.manager.groups.type | The type of the group or account. | keyword |
+| ocsf.actor.user.ldap_person.manager.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.user.ldap_person.manager.name | The username. For example, janedoe1. | keyword |
+| ocsf.actor.user.ldap_person.manager.org.name | The name of the organization. For example, Widget, Inc. | keyword |
+| ocsf.actor.user.ldap_person.manager.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
+| ocsf.actor.user.ldap_person.manager.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
+| ocsf.actor.user.ldap_person.manager.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.user.ldap_person.manager.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
+| ocsf.actor.user.ldap_person.manager.type_id | The account type identifier. | integer |
+| ocsf.actor.user.ldap_person.manager.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
+| ocsf.actor.user.ldap_person.manager.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
+| ocsf.actor.user.ldap_person.modified_time | The timestamp when the user entry was last modified. | date |
+| ocsf.actor.user.ldap_person.office_location | The primary office location associated with the user. This could be any string and isn't a specific address. | keyword |
+| ocsf.actor.user.ldap_person.surname | The last or family name for the user. | keyword |
 | ocsf.actor.user.name | The username. For example, janedoe1. | keyword |
 | ocsf.actor.user.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.actor.user.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
@@ -1424,6 +1493,7 @@ This is the `Event` dataset.
 | ocsf.metadata.extension.uid | The schema extension unique identifier. For example: 999. | keyword |
 | ocsf.metadata.extension.version | The schema extension version. For example: 1.0.0-alpha.2. | keyword |
 | ocsf.metadata.labels | The list of category labels attached to the event or specific attributes. Labels are user defined tags or aliases added at normalization time. | keyword |
+| ocsf.metadata.log_level | The log level of the event. | keyword |
 | ocsf.metadata.log_name | The event log name. For example, syslog file name or Windows logging subsystem: Security. | keyword |
 | ocsf.metadata.log_provider | The logging provider or logging service that logged the event. For example, Microsoft-Windows-Security-Auditing. | keyword |
 | ocsf.metadata.log_version | The event log schema version that specifies the format of the original event. For example syslog version or Cisco Log Schema Version. | keyword |
@@ -1434,6 +1504,7 @@ This is the `Event` dataset.
 | ocsf.metadata.original_time | The original event time as reported by the event source. For example, the time in the original format from system event log such as Syslog on Unix/Linux and the System event file on Windows. Omit if event is generated instead of collected via logs. | keyword |
 | ocsf.metadata.processed_time | The event processed time, such as an ETL operation. | date |
 | ocsf.metadata.processed_time_dt | The event processed time, such as an ETL operation. | date |
+| ocsf.metadata.product.cpe_name | The Common Platform Enumeration (CPE) name as described by (NIST) For example, cpe:/a:apple:safari:16.2. | keyword |
 | ocsf.metadata.product.feature.name | The name of the feature. | keyword |
 | ocsf.metadata.product.feature.uid | The unique identifier of the feature. | keyword |
 | ocsf.metadata.product.feature.version | The version of the feature. | keyword |
@@ -1446,6 +1517,7 @@ This is the `Event` dataset.
 | ocsf.metadata.product.version | The version of the product, as defined by the event source. For example: 2013.1.3-beta. | keyword |
 | ocsf.metadata.profiles | The list of profiles used to create the event. | keyword |
 | ocsf.metadata.sequence | Sequence number of the event. The sequence number is a value available in some events, to make the exact ordering of events unambiguous, regardless of the event time precision. | long |
+| ocsf.metadata.tenant_uid | The audit level at which an event was generated. | keyword |
 | ocsf.metadata.uid | The logging system-assigned unique identifier of an event instance. | keyword |
 | ocsf.metadata.version | The version of the OCSF schema, using Semantic Versioning Specification (SemVer). For example: 1.0.0. Event consumers use the version to determine the available event attributes. | keyword |
 | ocsf.module.base_address | The memory address where the module was loaded. | keyword |
@@ -1862,24 +1934,74 @@ This is the `Event` dataset.
 | ocsf.url.url_string | The URL string. See RFC 1738. | keyword |
 | ocsf.user.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.user.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.user.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.user.account.type_id | The normalized account type identifier. | integer |
 | ocsf.user.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.user.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.user.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
 | ocsf.user.email_addr | The user's email address. | keyword |
 | ocsf.user.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.user.groups.desc | The group description. | keyword |
+| ocsf.user.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.user.groups.name | The group name. | keyword |
 | ocsf.user.groups.privileges | The group privileges. | keyword |
 | ocsf.user.groups.type | The type of the group or account. | keyword |
 | ocsf.user.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.user.ldap_person.cost_center | The cost center associated with the user. | keyword |
+| ocsf.user.ldap_person.created_time | The timestamp when the user was created. | date |
+| ocsf.user.ldap_person.deleted_time | The timestamp when the user was deleted. | date |
+| ocsf.user.ldap_person.email_addrs | A list of additional email addresses for the user. | keyword |
+| ocsf.user.ldap_person.employee_uid | The employee identifier assigned to the user by the organization. | keyword |
+| ocsf.user.ldap_person.given_name | The given or first name of the user. | keyword |
+| ocsf.user.ldap_person.hire_time | The timestamp when the user was or will be hired by the organization. | date |
+| ocsf.user.ldap_person.job_title | The user's job title. | keyword |
+| ocsf.user.ldap_person.labels | The labels associated with the user. For example in AD this could be the userType, employeeType. | keyword |
+| ocsf.user.ldap_person.last_login_time | The last time when the user logged in. | date |
+| ocsf.user.ldap_person.ldap_cn | The LDAP and X.500 commonName attribute, typically the full name of the person. For example, John Doe. | keyword |
+| ocsf.user.ldap_person.ldap_dn | The X.500 Distinguished Name (DN) is a structured string that uniquely identifies an entry, such as a user, in an X.500 directory service For example, cn=John Doe,ou=People,dc=example,dc=com. | keyword |
+| ocsf.user.ldap_person.leave_time | The timestamp when the user left or will be leaving the organization. | date |
+| ocsf.user.ldap_person.location.city | The name of the city. | keyword |
+| ocsf.user.ldap_person.location.continent | The name of the continent. | keyword |
+| ocsf.user.ldap_person.location.coordinates | A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON. | geo_point |
+| ocsf.user.ldap_person.location.country | The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized. | keyword |
+| ocsf.user.ldap_person.location.desc | The description of the geographical location. | keyword |
+| ocsf.user.ldap_person.location.is_on_premises | The indication of whether the location is on premises. | boolean |
+| ocsf.user.ldap_person.location.isp | The name of the Internet Service Provider (ISP). | keyword |
+| ocsf.user.ldap_person.location.postal_code | The postal code of the location. | keyword |
+| ocsf.user.ldap_person.location.provider | The provider of the geographical location data. | keyword |
+| ocsf.user.ldap_person.location.region | The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US. | keyword |
+| ocsf.user.ldap_person.manager.account.name | The name of the account (e.g. GCP Account Name). | keyword |
+| ocsf.user.ldap_person.manager.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
+| ocsf.user.ldap_person.manager.account.type_id | The normalized account type identifier. | integer |
+| ocsf.user.ldap_person.manager.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
+| ocsf.user.ldap_person.manager.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
+| ocsf.user.ldap_person.manager.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
+| ocsf.user.ldap_person.manager.email_addr | The user's email address. | keyword |
+| ocsf.user.ldap_person.manager.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
+| ocsf.user.ldap_person.manager.groups.desc | The group description. | keyword |
+| ocsf.user.ldap_person.manager.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
+| ocsf.user.ldap_person.manager.groups.name | The group name. | keyword |
+| ocsf.user.ldap_person.manager.groups.privileges | The group privileges. | keyword |
+| ocsf.user.ldap_person.manager.groups.type | The type of the group or account. | keyword |
+| ocsf.user.ldap_person.manager.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.user.ldap_person.manager.name | The username. For example, janedoe1. | keyword |
+| ocsf.user.ldap_person.manager.org.name | The name of the organization. For example, Widget, Inc. | keyword |
+| ocsf.user.ldap_person.manager.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
+| ocsf.user.ldap_person.manager.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
+| ocsf.user.ldap_person.manager.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.user.ldap_person.manager.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
+| ocsf.user.ldap_person.manager.type_id | The account type identifier. | integer |
+| ocsf.user.ldap_person.manager.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
+| ocsf.user.ldap_person.manager.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
+| ocsf.user.ldap_person.modified_time | The timestamp when the user entry was last modified. | date |
+| ocsf.user.ldap_person.office_location | The primary office location associated with the user. This could be any string and isn't a specific address. | keyword |
+| ocsf.user.ldap_person.surname | The last or family name for the user. | keyword |
 | ocsf.user.name | The username. For example, janedoe1. | keyword |
 | ocsf.user.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.user.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
 | ocsf.user.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.user.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.user.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.user.type_id | The account type identifier. | keyword |
+| ocsf.user.type_id | The account type identifier. | integer |
 | ocsf.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.user.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.user_result.account.name | The name of the account (e.g. GCP Account Name). | keyword |

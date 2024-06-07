@@ -28,7 +28,7 @@ processors:
   - set:
       field: event.kind
       tag: set_event_kind
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','5001','5002','6001','6002','6003','6004'].contains(ctx.ocsf.class_uid)
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','3001','3002','3003','3005','3006','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','5001','5002','5003','6001','6002','6003','6004'].contains(ctx.ocsf.class_uid)
       value: event
   - set:
       field: event.kind
@@ -588,17 +588,6 @@ processors:
           tag: convert_type_id_to_string
           type: string
           ignore_missing: true
-  - script:
-      lang: painless
-      tag: script_to_map_observables_into_key_value_pair
-      description: Map observables into key value pair.
-      if: ctx.ocsf?.observables != null && ctx.ocsf.observables instanceof List
-      source: >
-         for (int i = 0; i < ctx.ocsf.observables.length; ++i) {
-           if (ctx['ocsf']['observables'][i]['value'] != null) {
-             ctx.ocsf.observables[i][ctx['ocsf']['observables'][i]['name']] = ctx['ocsf']['observables'][i]['value'];
-           }
-         }
   - convert:
       field: ocsf.severity_id
       tag: convert_severity_id_to_long
@@ -699,7 +688,7 @@ processors:
             ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_actor" }}'
-      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','5001','5002','6001','6002','6003','6004'].contains(ctx.ocsf.class_uid) && ctx.ocsf.actor != null
+      if: ctx.ocsf?.class_uid != null && ['1001','1002','1003','1004','1005','1006','1007','3001','3002','3003','3004','3005','4001','4002','4003','4004','4005','4006','4007','4008','4009','4010','4011','4012','5001','5002','5003','6001','6002','6003','6004'].contains(ctx.ocsf.class_uid) && ctx.ocsf.actor != null
       tag: pipeline_object_actor
       ignore_missing_pipeline: true
   - pipeline:
@@ -754,7 +743,7 @@ processors:
       ignore_missing_pipeline: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_object_user" }}'
-      if: ctx.ocsf?.class_uid != null && ['3001','3002','3003','3005','3006'].contains(ctx.ocsf.class_uid) && ctx.ocsf.user != null
+      if: ctx.ocsf?.class_uid != null && ['3001','3002','3003','3005','3006','5003'].contains(ctx.ocsf.class_uid) && ctx.ocsf.user != null
       tag: pipeline_object_user
       ignore_missing_pipeline: true
   - pipeline:

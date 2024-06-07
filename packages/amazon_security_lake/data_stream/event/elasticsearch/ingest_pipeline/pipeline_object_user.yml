@@ -87,6 +87,38 @@ processors:
       value: '{{{ocsf.user.uid_alt}}}'
       allow_duplicates: false
       if: ctx.ocsf?.user?.uid_alt != null
+  - foreach:
+      field: ocsf.user.ldap_person.email_addrs
+      if: ctx.ocsf?.user?.ldap_person?.email_addrs instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: user.ldap_person.email_addrs
+          tag: append_user_ldap_person_email_addrs
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ocsf.user.ldap_person.labels
+      if: ctx.ocsf?.user?.ldap_person?.labels instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: user.ldap_person.labels
+          tag: append_user_ldap_person_labels
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - convert:
+      field: ocsf.user.ldap_person.location.is_on_premises
+      tag: convert_user_ldap_person_location_is_on_premises_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ocsf.user.ldap_person.location.is_on_premises
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 on_failure:
   - append:
       field: error.message

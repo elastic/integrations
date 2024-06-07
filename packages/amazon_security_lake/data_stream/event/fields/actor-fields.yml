@@ -1,0 +1,1897 @@
+- name: ocsf
+  type: group
+  fields:
+    - name: actor
+      type: group
+      fields:
+        - name: authorizations
+          type: group
+          fields:
+            - name: decision
+              type: keyword
+              description: Authorization Result/outcome, e.g. allowed, denied.
+            - name: policy
+              type: group
+              fields:
+                - name: desc
+                  type: keyword
+                  description: The description of the policy.
+                - name: group
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                    - name: desc
+                      type: keyword
+                      description: The group description.
+                    - name: name
+                      type: keyword
+                      description: The group name.
+                    - name: privileges
+                      type: keyword
+                      description: The group privileges.
+                    - name: type
+                      type: keyword
+                      description: The type of the group or account.
+                    - name: uid
+                      type: keyword
+                      description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                - name: name
+                  type: keyword
+                  description: 'The policy name. For example: IAM Policy.'
+                - name: uid
+                  type: keyword
+                  description: A unique identifier of the policy instance.
+                - name: version
+                  type: keyword
+                  description: The policy version number.
+        - name: idp
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the identity provider.
+            - name: uid
+              type: keyword
+              description: The unique identifier of the identity provider.
+        - name: invoked_by
+          type: keyword
+          description: The name of the service that invoked the activity as described in the event.
+        - name: process
+          type: group
+          fields:
+            - name: auid
+              type: keyword
+              description: The audit user assigned at login by the audit subsystem.
+            - name: cmd_line
+              type: keyword
+              description: The full command line used to launch an application, service, process, or job.
+            - name: container
+              type: group
+              fields:
+                - name: hash
+                  type: group
+                  fields:
+                    - name: algorithm
+                      type: keyword
+                      description: The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source.
+                    - name: algorithm_id
+                      type: keyword
+                      description: The identifier of the normalized hash algorithm, which was used to create the digital fingerprint.
+                    - name: value
+                      type: keyword
+                      description: The digital fingerprint value.
+                - name: image
+                  type: group
+                  fields:
+                    - name: labels
+                      type: keyword
+                      description: The image labels.
+                    - name: name
+                      type: keyword
+                      description: The image name.
+                    - name: path
+                      type: keyword
+                      description: The full path to the image file.
+                    - name: tag
+                      type: keyword
+                      description: The tag used by the container. It can indicate version, format, OS.
+                    - name: uid
+                      type: keyword
+                      description: The unique image ID.
+                - name: name
+                  type: keyword
+                  description: The container name.
+                - name: network_driver
+                  type: keyword
+                  description: The network driver used by the container. For example, bridge, overlay, host, none, etc.
+                - name: orchestrator
+                  type: keyword
+                  description: The orchestrator managing the container, such as ECS, EKS, K8s, or OpenShift.
+                - name: pod_uuid
+                  type: keyword
+                  description: The unique identifier of the pod (or equivalent) that the container is executing on.
+                - name: runtime
+                  type: keyword
+                  description: The backend running the container, such as containerd or cri-o.
+                - name: size
+                  type: long
+                  description: The size of the container image.
+                - name: tag
+                  type: keyword
+                  description: The tag used by the container. It can indicate version, format, OS.
+                - name: uid
+                  type: keyword
+                  description: The full container unique identifier for this instantiation of the container.
+            - name: created_time
+              type: date
+              description: The time when the process was created/started.
+            - name: created_time_dt
+              type: date
+              description: The time when the process was created/started.
+            - name: egid
+              type: keyword
+              description: The effective group under which this process is running.
+            - name: euid
+              type: keyword
+              description: The effective user under which this process is running.
+            - name: file
+              type: group
+              fields:
+                - name: accessed_time
+                  type: date
+                  description: The time when the file was last accessed.
+                - name: accessed_time_dt
+                  type: date
+                  description: The time when the file was last accessed.
+                - name: accessor
+                  type: group
+                  fields:
+                    - name: account
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the account (e.g. GCP Account Name).
+                        - name: type
+                          type: keyword
+                          description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                        - name: type_id
+                          type: keyword
+                          description: The normalized account type identifier.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the account (e.g. AWS Account ID).
+                    - name: credential_uid
+                      type: keyword
+                      description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                    - name: domain
+                      type: keyword
+                      description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+                    - name: email_addr
+                      type: keyword
+                      description: The user's email address.
+                    - name: full_name
+                      type: keyword
+                      description: The full name of the person, as per the LDAP Common Name attribute (cn).
+                    - name: groups
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                        - name: desc
+                          type: keyword
+                          description: The group description.
+                        - name: name
+                          type: keyword
+                          description: The group name.
+                        - name: privileges
+                          type: keyword
+                          description: The group privileges.
+                        - name: type
+                          type: keyword
+                          description: The type of the group or account.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                    - name: name
+                      type: keyword
+                      description: The username. For example, janedoe1.
+                    - name: org
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the organization. For example, Widget, Inc.
+                        - name: ou_name
+                          type: keyword
+                          description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                        - name: ou_uid
+                          type: keyword
+                          description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+                    - name: type
+                      type: keyword
+                      description: The type of the user. For example, System, AWS IAM User, etc.
+                    - name: type_id
+                      type: keyword
+                      description: The account type identifier.
+                    - name: uid
+                      type: keyword
+                      description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+                    - name: uid_alt
+                      type: keyword
+                      description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+                - name: attributes
+                  type: long
+                  description: The Bitmask value that represents the file attributes.
+                - name: company_name
+                  type: keyword
+                  description: 'The name of the company that published the file. For example: Microsoft Corporation.'
+                - name: confidentiality
+                  type: keyword
+                  description: The file content confidentiality, normalized to the confidentiality_id value. In the case of 'Other', it is defined by the event source.
+                - name: confidentiality_id
+                  type: keyword
+                  description: The normalized identifier of the file content confidentiality indicator.
+                - name: created_time
+                  type: date
+                  description: The time when the file was created.
+                - name: created_time_dt
+                  type: date
+                  description: The time when the file was created.
+                - name: creator
+                  type: group
+                  fields:
+                    - name: account
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the account (e.g. GCP Account Name).
+                        - name: type
+                          type: keyword
+                          description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                        - name: type_id
+                          type: keyword
+                          description: The normalized account type identifier.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the account (e.g. AWS Account ID).
+                    - name: credential_uid
+                      type: keyword
+                      description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                    - name: domain
+                      type: keyword
+                      description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+                    - name: email_addr
+                      type: keyword
+                      description: The user's email address.
+                    - name: full_name
+                      type: keyword
+                      description: The full name of the person, as per the LDAP Common Name attribute (cn).
+                    - name: groups
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                        - name: desc
+                          type: keyword
+                          description: The group description.
+                        - name: name
+                          type: keyword
+                          description: The group name.
+                        - name: privileges
+                          type: keyword
+                          description: The group privileges.
+                        - name: type
+                          type: keyword
+                          description: The type of the group or account.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                    - name: name
+                      type: keyword
+                      description: The name of the city.
+                    - name: org
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the organization. For example, Widget, Inc.
+                        - name: ou_name
+                          type: keyword
+                          description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                        - name: ou_uid
+                          type: keyword
+                          description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+                    - name: type
+                      type: keyword
+                      description: The type of the user. For example, System, AWS IAM User, etc.
+                    - name: type_id
+                      type: keyword
+                      description: The account type identifier.
+                    - name: uid
+                      type: keyword
+                      description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+                    - name: uid_alt
+                      type: keyword
+                      description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+                - name: desc
+                  type: keyword
+                  description: 'The description of the file, as returned by file system. For example: the description as returned by the Unix file command or the Windows file type.'
+                - name: hashes
+                  type: group
+                  fields:
+                    - name: algorithm
+                      type: keyword
+                      description: The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source.
+                    - name: algorithm_id
+                      type: keyword
+                      description: The identifier of the normalized hash algorithm, which was used to create the digital fingerprint.
+                    - name: value
+                      type: keyword
+                      description: The digital fingerprint value.
+                - name: is_system
+                  type: boolean
+                  description: The indication of whether the object is part of the operating system.
+                - name: mime_type
+                  type: keyword
+                  description: The Multipurpose Internet Mail Extensions (MIME) type of the file, if applicable.
+                - name: modified_time
+                  type: date
+                  description: The time when the file was last modified.
+                - name: modified_time_dt
+                  type: date
+                  description: The time when the file was last modified.
+                - name: modifier
+                  type: group
+                  fields:
+                    - name: account
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the account (e.g. GCP Account Name).
+                        - name: type
+                          type: keyword
+                          description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                        - name: type_id
+                          type: keyword
+                          description: The normalized account type identifier.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the account (e.g. AWS Account ID).
+                    - name: credential_uid
+                      type: keyword
+                      description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                    - name: domain
+                      type: keyword
+                      description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+                    - name: email_addr
+                      type: keyword
+                      description: 'The image name. For example: elixir.'
+                    - name: full_name
+                      type: keyword
+                      description: The user's email address.
+                    - name: groups
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                        - name: desc
+                          type: keyword
+                          description: The group description.
+                        - name: name
+                          type: keyword
+                          description: The group name.
+                        - name: privileges
+                          type: keyword
+                          description: The group privileges.
+                        - name: type
+                          type: keyword
+                          description: The type of the group or account.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                    - name: name
+                      type: keyword
+                      description: The username. For example, janedoe1.
+                    - name: org
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the organization. For example, Widget, Inc.
+                        - name: ou_name
+                          type: keyword
+                          description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                        - name: ou_uid
+                          type: keyword
+                          description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+                    - name: type
+                      type: keyword
+                      description: The type of the user. For example, System, AWS IAM User, etc.
+                    - name: type_id
+                      type: keyword
+                      description: The account type identifier.
+                    - name: uid
+                      type: keyword
+                      description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+                    - name: uid_alt
+                      type: keyword
+                      description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+                - name: name
+                  type: keyword
+                  description: 'The name of the file. For example: svchost.exe.'
+                - name: owner
+                  type: group
+                  fields:
+                    - name: account
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the account (e.g. GCP Account Name).
+                        - name: type
+                          type: keyword
+                          description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                        - name: type_id
+                          type: keyword
+                          description: The normalized account type identifier.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the account (e.g. AWS Account ID).
+                    - name: credential_uid
+                      type: keyword
+                      description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                    - name: domain
+                      type: keyword
+                      description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+                    - name: email_addr
+                      type: keyword
+                      description: The user's email address.
+                    - name: full_name
+                      type: keyword
+                      description: The full name of the person, as per the LDAP Common Name attribute (cn).
+                    - name: groups
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                        - name: desc
+                          type: keyword
+                          description: The group description.
+                        - name: name
+                          type: keyword
+                          description: The group name.
+                        - name: privileges
+                          type: keyword
+                          description: The group privileges.
+                        - name: type
+                          type: keyword
+                          description: The type of the group or account.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                    - name: name
+                      type: keyword
+                      description: The username. For example, janedoe1.
+                    - name: org
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the organization. For example, Widget, Inc.
+                        - name: ou_name
+                          type: keyword
+                          description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                        - name: ou_uid
+                          type: keyword
+                          description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+                    - name: type
+                      type: keyword
+                      description: The event occurred on a personal device.The type of the user. For example, System, AWS IAM User, etc.
+                    - name: type_id
+                      type: keyword
+                      description: The account type identifier.
+                    - name: uid
+                      type: keyword
+                      description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+                    - name: uid_alt
+                      type: keyword
+                      description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+                - name: parent_folder
+                  type: keyword
+                  description: 'The parent folder in which the file resides. For example: c:\windows\system32.'
+                - name: path
+                  type: keyword
+                  description: 'The full path to the file. For example: c:\windows\system32\svchost.exe.'
+                - name: product
+                  type: group
+                  fields:
+                    - name: feature
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the feature.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the feature.
+                        - name: version
+                          type: keyword
+                          description: The version of the feature.
+                    - name: lang
+                      type: keyword
+                      description: 'The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French).'
+                    - name: name
+                      type: keyword
+                      description: The name of the feature.
+                    - name: path
+                      type: keyword
+                      description: The installation path of the product.
+                    - name: uid
+                      type: keyword
+                      description: The unique identifier of the feature.
+                    - name: url_string
+                      type: keyword
+                      description: The URL pointing towards the product.
+                    - name: vendor_name
+                      type: keyword
+                      description: The name of the vendor of the product.
+                    - name: version
+                      type: keyword
+                      description: 'The version of the product, as defined by the event source. For example: 2013.1.3-beta.'
+                - name: security_descriptor
+                  type: keyword
+                  description: The object security descriptor.
+                - name: signature
+                  type: group
+                  fields:
+                    - name: algorithm
+                      type: keyword
+                      description: The digital signature algorithm used to create the signature, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source.
+                    - name: algorithm_id
+                      type: keyword
+                      description: The identifier of the normalized digital signature algorithm.
+                    - name: certificate
+                      type: group
+                      fields:
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the certificate.
+                        - name: created_time
+                          type: date
+                          description: The time when the certificate was created.
+                        - name: created_time_dt
+                          type: date
+                          description: The time when the certificate was created.
+                        - name: expiration_time
+                          type: date
+                          description: The expiration time of the certificate.
+                        - name: expiration_time_dt
+                          type: date
+                          description: The expiration time of the certificate.
+                        - name: fingerprints
+                          type: group
+                          fields:
+                            - name: algorithm
+                              type: keyword
+                              description: The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source.
+                            - name: algorithm_id
+                              type: keyword
+                              description: The identifier of the normalized hash algorithm, which was used to create the digital fingerprint.
+                            - name: value
+                              type: keyword
+                              description: The digital fingerprint value.
+                        - name: issuer
+                          type: keyword
+                          description: The certificate issuer distinguished name.
+                        - name: serial_number
+                          type: keyword
+                          description: The serial number of the certificate used to create the digital signature.
+                        - name: subject
+                          type: keyword
+                          description: The certificate subject distinguished name.
+                        - name: version
+                          type: keyword
+                          description: The certificate version.
+                    - name: created_time
+                      type: date
+                      description: The time when the digital signature was created.
+                    - name: created_time_dt
+                      type: date
+                      description: The time when the digital signature was created.
+                    - name: developer_uid
+                      type: keyword
+                      description: The developer ID on the certificate that signed the file.
+                    - name: digest
+                      type: group
+                      fields:
+                        - name: algorithm
+                          type: keyword
+                          description: The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source.
+                        - name: algorithm_id
+                          type: keyword
+                          description: The identifier of the normalized hash algorithm, which was used to create the digital fingerprint.
+                        - name: value
+                          type: keyword
+                          description: The digital fingerprint value.
+                - name: size
+                  type: long
+                  description: The size of data, in bytes.
+                - name: type
+                  type: keyword
+                  description: The file type.
+                - name: type_id
+                  type: keyword
+                  description: The file type ID.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the file as defined by the storage system, such the file system file ID.
+                - name: version
+                  type: keyword
+                  description: 'The file version. For example: 8.0.7601.17514.'
+                - name: xattributes
+                  type: flattened
+                  description: An unordered collection of zero or more name/value pairs where each pair represents a file or folder extended attribute.
+            - name: group
+              type: group
+              fields:
+                - name: desc
+                  type: keyword
+                  description: The group description.
+                - name: name
+                  type: keyword
+                  description: The group name.
+                - name: privileges
+                  type: keyword
+                  description: The group privileges.
+                - name: type
+                  type: keyword
+                  description: The type of the group or account.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+            - name: integrity
+              type: keyword
+              description: The process integrity level, normalized to the caption of the direction_id value. In the case of 'Other', it is defined by the event source (Windows only).
+            - name: integrity_id
+              type: keyword
+              description: The normalized identifier of the process integrity level (Windows only).
+            - name: lineage
+              type: keyword
+              description: 'The lineage of the process, represented by a list of paths for each ancestor process. For example: [''/usr/sbin/sshd'', ''/usr/bin/bash'', ''/usr/bin/whoami''].'
+            - name: loaded_modules
+              type: keyword
+              description: The list of loaded module names.
+            - name: name
+              type: keyword
+              description: 'The friendly name of the process, for example: Notepad++.'
+            - name: namespace_pid
+              type: long
+              description: If running under a process namespace (such as in a container), the process identifier within that process namespace.
+            - name: parent_process
+              type: group
+              fields:
+                - name: auid
+                  type: keyword
+                  description: The audit user assigned at login by the audit subsystem.
+                - name: cmd_line
+                  type: keyword
+                  description: The full command line used to launch an application, service, process, or job.
+                - name: container
+                  type: group
+                  fields:
+                    - name: hash
+                      type: group
+                      fields:
+                        - name: algorithm
+                          type: keyword
+                          description: The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source.
+                        - name: algorithm_id
+                          type: keyword
+                          description: The identifier of the normalized hash algorithm, which was used to create the digital fingerprint.
+                        - name: value
+                          type: keyword
+                          description: The digital fingerprint value.
+                    - name: image
+                      type: group
+                      fields:
+                        - name: labels
+                          type: keyword
+                          description: The image labels.
+                        - name: name
+                          type: keyword
+                          description: The image name.
+                        - name: path
+                          type: keyword
+                          description: The full path to the image file.
+                        - name: tag
+                          type: keyword
+                          description: The tag used by the container. It can indicate version, format, OS.
+                        - name: uid
+                          type: keyword
+                          description: The unique image ID.
+                    - name: name
+                      type: keyword
+                      description: The container name.
+                    - name: network_driver
+                      type: keyword
+                      description: The network driver used by the container. For example, bridge, overlay, host, none, etc.
+                    - name: orchestrator
+                      type: keyword
+                      description: The orchestrator managing the container, such as ECS, EKS, K8s, or OpenShift.
+                    - name: pod_uuid
+                      type: keyword
+                      description: The unique identifier of the pod (or equivalent) that the container is executing on.
+                    - name: runtime
+                      type: keyword
+                      description: The backend running the container, such as containerd or cri-o.
+                    - name: size
+                      type: long
+                      description: The size of the container image.
+                    - name: tag
+                      type: keyword
+                      description: The tag used by the container. It can indicate version, format, OS.
+                    - name: uid
+                      type: keyword
+                      description: The full container unique identifier for this instantiation of the container.
+                - name: created_time
+                  type: date
+                  description: The time when the process was created/started.
+                - name: created_time_dt
+                  type: date
+                  description: The time when the process was created/started.
+                - name: egid
+                  type: keyword
+                  description: The effective group under which this process is running.
+                - name: euid
+                  type: keyword
+                  description: The effective user under which this process is running.
+                - name: file
+                  type: group
+                  fields:
+                    - name: accessed_time
+                      type: date
+                      description: The time when the file was last accessed.
+                    - name: accessed_time_dt
+                      type: date
+                      description: The time when the file was last accessed.
+                    - name: accessor
+                      type: group
+                      fields:
+                        - name: account
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The name of the account (e.g. GCP Account Name).
+                            - name: type
+                              type: keyword
+                              description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                            - name: type_id
+                              type: keyword
+                              description: The normalized account type identifier.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the account (e.g. AWS Account ID).
+                        - name: credential_uid
+                          type: keyword
+                          description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                        - name: domain
+                          type: keyword
+                          description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+                        - name: email_addr
+                          type: keyword
+                          description: The user's email address.
+                        - name: full_name
+                          type: keyword
+                          description: The full name of the person, as per the LDAP Common Name attribute (cn).
+                        - name: groups
+                          type: group
+                          fields:
+                            - name: domain
+                              type: keyword
+                              description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                            - name: desc
+                              type: keyword
+                              description: The group description.
+                            - name: name
+                              type: keyword
+                              description: The group name.
+                            - name: privileges
+                              type: keyword
+                              description: The group privileges.
+                            - name: type
+                              type: keyword
+                              description: The type of the group or account.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                        - name: name
+                          type: keyword
+                          description: The username. For example, janedoe1.
+                        - name: org
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The name of the organization. For example, Widget, Inc.
+                            - name: ou_name
+                              type: keyword
+                              description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                            - name: ou_uid
+                              type: keyword
+                              description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+                        - name: type
+                          type: keyword
+                          description: The type of the user. For example, System, AWS IAM User, etc.
+                        - name: type_id
+                          type: keyword
+                          description: The account type identifier.
+                        - name: uid
+                          type: keyword
+                          description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+                        - name: uid_alt
+                          type: keyword
+                          description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+                    - name: attributes
+                      type: long
+                      description: The Bitmask value that represents the file attributes.
+                    - name: company_name
+                      type: keyword
+                      description: 'The name of the company that published the file. For example: Microsoft Corporation.'
+                    - name: confidentiality
+                      type: keyword
+                      description: The file content confidentiality, normalized to the confidentiality_id value. In the case of 'Other', it is defined by the event source.
+                    - name: confidentiality_id
+                      type: keyword
+                      description: The normalized identifier of the file content confidentiality indicator.
+                    - name: created_time
+                      type: date
+                      description: The time when the file was created.
+                    - name: created_time_dt
+                      type: date
+                      description: The time when the file was created.
+                    - name: creator
+                      type: group
+                      fields:
+                        - name: account
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The name of the account (e.g. GCP Account Name).
+                            - name: type
+                              type: keyword
+                              description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                            - name: type_id
+                              type: keyword
+                              description: The normalized account type identifier.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the account (e.g. AWS Account ID).
+                        - name: credential_uid
+                          type: keyword
+                          description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                        - name: domain
+                          type: keyword
+                          description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+                        - name: email_addr
+                          type: keyword
+                          description: The user's email address.
+                        - name: full_name
+                          type: keyword
+                          description: The full name of the person, as per the LDAP Common Name attribute (cn).
+                        - name: groups
+                          type: group
+                          fields:
+                            - name: domain
+                              type: keyword
+                              description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                            - name: desc
+                              type: keyword
+                              description: The group description.
+                            - name: name
+                              type: keyword
+                              description: The group name.
+                            - name: privileges
+                              type: keyword
+                              description: The group privileges.
+                            - name: type
+                              type: keyword
+                              description: The type of the group or account.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                        - name: name
+                          type: keyword
+                          description: The name of the city.
+                        - name: org
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The name of the organization. For example, Widget, Inc.
+                            - name: ou_name
+                              type: keyword
+                              description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                            - name: ou_uid
+                              type: keyword
+                              description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+                        - name: type
+                          type: keyword
+                          description: The type of the user. For example, System, AWS IAM User, etc.
+                        - name: type_id
+                          type: keyword
+                          description: The account type identifier.
+                        - name: uid
+                          type: keyword
+                          description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+                        - name: uid_alt
+                          type: keyword
+                          description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+                    - name: desc
+                      type: keyword
+                      description: 'The description of the file, as returned by file system. For example: the description as returned by the Unix file command or the Windows file type.'
+                    - name: hashes
+                      type: group
+                      fields:
+                        - name: algorithm
+                          type: keyword
+                          description: The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source.
+                        - name: algorithm_id
+                          type: keyword
+                          description: The identifier of the normalized hash algorithm, which was used to create the digital fingerprint.
+                        - name: value
+                          type: keyword
+                          description: The digital fingerprint value.
+                    - name: is_system
+                      type: boolean
+                      description: The indication of whether the object is part of the operating system.
+                    - name: mime_type
+                      type: keyword
+                      description: The Multipurpose Internet Mail Extensions (MIME) type of the file, if applicable.
+                    - name: modified_time
+                      type: date
+                      description: The time when the file was last modified.
+                    - name: modified_time_dt
+                      type: date
+                      description: The time when the file was last modified.
+                    - name: modifier
+                      type: group
+                      fields:
+                        - name: account
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The name of the account (e.g. GCP Account Name).
+                            - name: type
+                              type: keyword
+                              description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                            - name: type_id
+                              type: keyword
+                              description: The normalized account type identifier.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the account (e.g. AWS Account ID).
+                        - name: credential_uid
+                          type: keyword
+                          description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                        - name: domain
+                          type: keyword
+                          description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+                        - name: email_addr
+                          type: keyword
+                          description: 'The image name. For example: elixir.'
+                        - name: full_name
+                          type: keyword
+                          description: The user's email address.
+                        - name: groups
+                          type: group
+                          fields:
+                            - name: domain
+                              type: keyword
+                              description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                            - name: desc
+                              type: keyword
+                              description: The group description.
+                            - name: name
+                              type: keyword
+                              description: The group name.
+                            - name: privileges
+                              type: keyword
+                              description: The group privileges.
+                            - name: type
+                              type: keyword
+                              description: The type of the group or account.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                        - name: name
+                          type: keyword
+                          description: The username. For example, janedoe1.
+                        - name: org
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The name of the organization. For example, Widget, Inc.
+                            - name: ou_name
+                              type: keyword
+                              description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                            - name: ou_uid
+                              type: keyword
+                              description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+                        - name: type
+                          type: keyword
+                          description: The type of the user. For example, System, AWS IAM User, etc.
+                        - name: type_id
+                          type: keyword
+                          description: The account type identifier.
+                        - name: uid
+                          type: keyword
+                          description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+                        - name: uid_alt
+                          type: keyword
+                          description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+                    - name: name
+                      type: keyword
+                      description: 'The name of the file. For example: svchost.exe.'
+                    - name: owner
+                      type: group
+                      fields:
+                        - name: account
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The name of the account (e.g. GCP Account Name).
+                            - name: type
+                              type: keyword
+                              description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                            - name: type_id
+                              type: keyword
+                              description: The normalized account type identifier.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the account (e.g. AWS Account ID).
+                        - name: credential_uid
+                          type: keyword
+                          description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                        - name: domain
+                          type: keyword
+                          description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+                        - name: email_addr
+                          type: keyword
+                          description: The user's email address.
+                        - name: full_name
+                          type: keyword
+                          description: The full name of the person, as per the LDAP Common Name attribute (cn).
+                        - name: groups
+                          type: group
+                          fields:
+                            - name: domain
+                              type: keyword
+                              description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                            - name: desc
+                              type: keyword
+                              description: The group description.
+                            - name: name
+                              type: keyword
+                              description: The group name.
+                            - name: privileges
+                              type: keyword
+                              description: The group privileges.
+                            - name: type
+                              type: keyword
+                              description: The type of the group or account.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                        - name: name
+                          type: keyword
+                          description: The username. For example, janedoe1.
+                        - name: org
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The name of the organization. For example, Widget, Inc.
+                            - name: ou_name
+                              type: keyword
+                              description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                            - name: ou_uid
+                              type: keyword
+                              description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+                        - name: type
+                          type: keyword
+                          description: The event occurred on a personal device.The type of the user. For example, System, AWS IAM User, etc.
+                        - name: type_id
+                          type: keyword
+                          description: The account type identifier.
+                        - name: uid
+                          type: keyword
+                          description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+                        - name: uid_alt
+                          type: keyword
+                          description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+                    - name: parent_folder
+                      type: keyword
+                      description: 'The parent folder in which the file resides. For example: c:\windows\system32.'
+                    - name: path
+                      type: keyword
+                      description: 'The full path to the file. For example: c:\windows\system32\svchost.exe.'
+                    - name: product
+                      type: group
+                      fields:
+                        - name: feature
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                              description: The name of the feature.
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the feature.
+                            - name: version
+                              type: keyword
+                              description: The version of the feature.
+                        - name: lang
+                          type: keyword
+                          description: 'The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French).'
+                        - name: name
+                          type: keyword
+                          description: The name of the feature.
+                        - name: path
+                          type: keyword
+                          description: The installation path of the product.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the feature.
+                        - name: url_string
+                          type: keyword
+                          description: The URL pointing towards the product.
+                        - name: vendor_name
+                          type: keyword
+                          description: The name of the vendor of the product.
+                        - name: version
+                          type: keyword
+                          description: 'The version of the product, as defined by the event source. For example: 2013.1.3-beta.'
+                    - name: security_descriptor
+                      type: keyword
+                      description: The object security descriptor.
+                    - name: signature
+                      type: group
+                      fields:
+                        - name: algorithm
+                          type: keyword
+                          description: The digital signature algorithm used to create the signature, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source.
+                        - name: algorithm_id
+                          type: keyword
+                          description: The identifier of the normalized digital signature algorithm.
+                        - name: certificate
+                          type: group
+                          fields:
+                            - name: uid
+                              type: keyword
+                              description: The unique identifier of the certificate.
+                            - name: created_time
+                              type: date
+                              description: The time when the certificate was created.
+                            - name: created_time_dt
+                              type: date
+                              description: The time when the certificate was created.
+                            - name: expiration_time
+                              type: date
+                              description: The expiration time of the certificate.
+                            - name: expiration_time_dt
+                              type: date
+                              description: The expiration time of the certificate.
+                            - name: fingerprints
+                              type: group
+                              fields:
+                                - name: algorithm
+                                  type: keyword
+                                  description: The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source.
+                                - name: algorithm_id
+                                  type: keyword
+                                  description: The identifier of the normalized hash algorithm, which was used to create the digital fingerprint.
+                                - name: value
+                                  type: keyword
+                                  description: The digital fingerprint value.
+                            - name: issuer
+                              type: keyword
+                              description: The certificate issuer distinguished name.
+                            - name: serial_number
+                              type: keyword
+                              description: The serial number of the certificate used to create the digital signature.
+                            - name: subject
+                              type: keyword
+                              description: The certificate subject distinguished name.
+                            - name: version
+                              type: keyword
+                              description: The certificate version.
+                        - name: created_time
+                          type: date
+                          description: The time when the digital signature was created.
+                        - name: created_time_dt
+                          type: date
+                          description: The time when the digital signature was created.
+                        - name: developer_uid
+                          type: keyword
+                          description: The developer ID on the certificate that signed the file.
+                        - name: digest
+                          type: group
+                          fields:
+                            - name: algorithm
+                              type: keyword
+                              description: The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source.
+                            - name: algorithm_id
+                              type: keyword
+                              description: The identifier of the normalized hash algorithm, which was used to create the digital fingerprint.
+                            - name: value
+                              type: keyword
+                              description: The digital fingerprint value.
+                    - name: size
+                      type: long
+                      description: The size of data, in bytes.
+                    - name: type
+                      type: keyword
+                      description: The file type.
+                    - name: type_id
+                      type: keyword
+                      description: The file type ID.
+                    - name: uid
+                      type: keyword
+                      description: The unique identifier of the file as defined by the storage system, such the file system file ID.
+                    - name: version
+                      type: keyword
+                      description: 'The file version. For example: 8.0.7601.17514.'
+                    - name: xattributes
+                      type: flattened
+                      description: An unordered collection of zero or more name/value pairs where each pair represents a file or folder extended attribute.
+                - name: group
+                  type: group
+                  fields:
+                    - name: desc
+                      type: keyword
+                      description: The group description.
+                    - name: name
+                      type: keyword
+                      description: The group name.
+                    - name: privileges
+                      type: keyword
+                      description: The group privileges.
+                    - name: type
+                      type: keyword
+                      description: The type of the group or account.
+                    - name: uid
+                      type: keyword
+                      description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                - name: integrity
+                  type: keyword
+                  description: The process integrity level, normalized to the caption of the direction_id value. In the case of 'Other', it is defined by the event source (Windows only).
+                - name: integrity_id
+                  type: keyword
+                  description: The normalized identifier of the process integrity level (Windows only).
+                - name: lineage
+                  type: keyword
+                  description: 'The lineage of the process, represented by a list of paths for each ancestor process. For example: [''/usr/sbin/sshd'', ''/usr/bin/bash'', ''/usr/bin/whoami''].'
+                - name: loaded_modules
+                  type: keyword
+                  description: The list of loaded module names.
+                - name: name
+                  type: keyword
+                  description: 'The friendly name of the process, for example: Notepad++.'
+                - name: namespace_pid
+                  type: long
+                  description: If running under a process namespace (such as in a container), the process identifier within that process namespace.
+                - name: parent_process
+                  type: flattened
+                  description: The parent process of this process object. It is recommended to only populate this field for the first process object, to prevent deep nesting.
+                - name: parent_process_keyword
+                  type: keyword
+                  ignore_above: 1024
+                - name: pid
+                  type: long
+                  description: The process identifier, as reported by the operating system. Process ID (PID) is a number used by the operating system to uniquely identify an active process.
+                - name: sandbox
+                  type: keyword
+                  description: The name of the containment jail (i.e., sandbox). For example, hardened_ps, high_security_ps, oracle_ps, netsvcs_ps, or default_ps.
+                - name: session
+                  type: group
+                  fields:
+                    - name: created_time
+                      type: date
+                      description: The time when the session was created.
+                    - name: created_time_dt
+                      type: date
+                      description: The time when the session was created.
+                    - name: credential_uid
+                      type: keyword
+                      description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                    - name: expiration_time
+                      type: date
+                      description: The session expiration time.
+                    - name: expiration_time_dt
+                      type: date
+                      description: The session expiration time.
+                    - name: is_remote
+                      type: boolean
+                      description: The indication of whether the session is remote.
+                    - name: issuer
+                      type: keyword
+                      description: The identifier of the session issuer.
+                    - name: mfa
+                      type: boolean
+                    - name: uid
+                      type: keyword
+                      description: The unique identifier of the session.
+                    - name: uuid
+                      type: keyword
+                      description: The universally unique identifier of the session.
+                - name: terminated_time
+                  type: date
+                  description: The time when the process was terminated.
+                - name: terminated_time_dt
+                  type: date
+                  description: The time when the process was terminated.
+                - name: tid
+                  type: long
+                  description: The Identifier of the thread associated with the event, as returned by the operating system.
+                - name: uid
+                  type: keyword
+                  description: A unique identifier for this process assigned by the producer (tool). Facilitates correlation of a process event with other events for that process.
+                - name: user
+                  type: group
+                  fields:
+                    - name: account
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the account (e.g. GCP Account Name).
+                        - name: type
+                          type: keyword
+                          description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                        - name: type_id
+                          type: keyword
+                          description: The normalized account type identifier.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the account (e.g. AWS Account ID).
+                    - name: credential_uid
+                      type: keyword
+                      description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                    - name: domain
+                      type: keyword
+                      description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+                    - name: email_addr
+                      type: keyword
+                      description: The user's email address.
+                    - name: full_name
+                      type: keyword
+                      description: The full name of the person, as per the LDAP Common Name attribute (cn).
+                    - name: groups
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                        - name: desc
+                          type: keyword
+                          description: The group description.
+                        - name: name
+                          type: keyword
+                          description: The group name.
+                        - name: privileges
+                          type: keyword
+                          description: The group privileges.
+                        - name: type
+                          type: keyword
+                          description: The type of the group or account.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                    - name: name
+                      type: keyword
+                      description: The username. For example, janedoe1.
+                    - name: org
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the organization. For example, Widget, Inc.
+                        - name: ou_name
+                          type: keyword
+                          description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                        - name: ou_uid
+                          type: keyword
+                          description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+                    - name: type
+                      type: keyword
+                      description: The type of the user. For example, System, AWS IAM User, etc.
+                    - name: type_id
+                      type: keyword
+                      description: The account type identifier.
+                    - name: uid
+                      type: keyword
+                      description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+                    - name: uid_alt
+                      type: keyword
+                      description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+                - name: xattributes
+                  type: flattened
+                  description: An unordered collection of zero or more name/value pairs that represent a process extended attribute.
+            - name: pid
+              type: long
+              description: The process identifier, as reported by the operating system. Process ID (PID) is a number used by the operating system to uniquely identify an active process.
+            - name: sandbox
+              type: keyword
+              description: The name of the containment jail (i.e., sandbox). For example, hardened_ps, high_security_ps, oracle_ps, netsvcs_ps, or default_ps.
+            - name: session
+              type: group
+              fields:
+                - name: created_time
+                  type: date
+                  description: The time when the session was created.
+                - name: created_time_dt
+                  type: date
+                  description: The time when the session was created.
+                - name: credential_uid
+                  type: keyword
+                  description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                - name: expiration_time
+                  type: date
+                  description: The session expiration time.
+                - name: expiration_time_dt
+                  type: date
+                  description: The session expiration time.
+                - name: is_remote
+                  type: boolean
+                  description: The indication of whether the session is remote.
+                - name: issuer
+                  type: keyword
+                  description: The identifier of the session issuer.
+                - name: mfa
+                  type: boolean
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the session.
+                - name: uuid
+                  type: keyword
+                  description: The universally unique identifier of the session.
+            - name: terminated_time
+              type: date
+              description: The time when the process was terminated.
+            - name: terminated_time_dt
+              type: date
+              description: The time when the process was terminated.
+            - name: tid
+              type: long
+              description: The Identifier of the thread associated with the event, as returned by the operating system.
+            - name: uid
+              type: keyword
+              description: A unique identifier for this process assigned by the producer (tool). Facilitates correlation of a process event with other events for that process.
+            - name: user
+              type: group
+              fields:
+                - name: account
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The name of the account (e.g. GCP Account Name).
+                    - name: type
+                      type: keyword
+                      description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                    - name: type_id
+                      type: keyword
+                      description: The normalized account type identifier.
+                    - name: uid
+                      type: keyword
+                      description: The unique identifier of the account (e.g. AWS Account ID).
+                - name: credential_uid
+                  type: keyword
+                  description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                - name: domain
+                  type: keyword
+                  description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+                - name: email_addr
+                  type: keyword
+                  description: The user's email address.
+                - name: full_name
+                  type: keyword
+                  description: The full name of the person, as per the LDAP Common Name attribute (cn).
+                - name: groups
+                  type: group
+                  fields:
+                    - name: domain
+                      type: keyword
+                      description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                    - name: desc
+                      type: keyword
+                      description: The group description.
+                    - name: name
+                      type: keyword
+                      description: The group name.
+                    - name: privileges
+                      type: keyword
+                      description: The group privileges.
+                    - name: type
+                      type: keyword
+                      description: The type of the group or account.
+                    - name: uid
+                      type: keyword
+                      description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                - name: name
+                  type: keyword
+                  description: The username. For example, janedoe1.
+                - name: org
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The name of the organization. For example, Widget, Inc.
+                    - name: ou_name
+                      type: keyword
+                      description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                    - name: ou_uid
+                      type: keyword
+                      description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                    - name: uid
+                      type: keyword
+                      description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+                - name: type
+                  type: keyword
+                  description: The type of the user. For example, System, AWS IAM User, etc.
+                - name: type_id
+                  type: keyword
+                  description: The account type identifier.
+                - name: uid
+                  type: keyword
+                  description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+                - name: uid_alt
+                  type: keyword
+                  description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+            - name: xattributes
+              type: flattened
+              description: An unordered collection of zero or more name/value pairs that represent a process extended attribute.
+        - name: session
+          type: group
+          fields:
+            - name: created_time
+              type: date
+              description: The time when the session was created.
+            - name: created_time_dt
+              type: date
+              description: The time when the session was created.
+            - name: credential_uid
+              type: keyword
+              description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+            - name: expiration_time
+              type: date
+              description: The session expiration time.
+            - name: expiration_time_dt
+              type: date
+              description: The session expiration time.
+            - name: is_remote
+              type: boolean
+              description: The indication of whether the session is remote.
+            - name: issuer
+              type: keyword
+              description: The identifier of the session issuer.
+            - name: mfa
+              type: boolean
+            - name: uid
+              type: keyword
+              description: The unique identifier of the session.
+            - name: uuid
+              type: keyword
+              description: The universally unique identifier of the session.
+            - name: count
+              type: integer
+              description: The number of identical sessions spawned from the same source IP, destination IP, application, and content/threat type seen over a period of time.
+            - name: expiration_reason
+              type: keyword
+              description: The reason which triggered the session expiration.
+            - name: is_mfa
+              type: boolean
+              description: Indicates whether Multi Factor Authentication was used during authentication.
+            - name: is_vpn
+              type: boolean
+              description: The indication of whether the session is a VPN session.
+            - name: terminal
+              type: keyword
+              description: The Pseudo Terminal associated with the session. Ex, the tty or pts value.
+            - name: uid_alt
+              type: keyword
+              description: The alternate unique identifier of the session. e.g. AWS ARN - arn:aws:sts::123344444444:assumed-role/Admin/example-session.
+        - name: user
+          type: group
+          fields:
+            - name: account
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the account (e.g. GCP Account Name).
+                - name: type
+                  type: keyword
+                  description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                - name: type_id
+                  type: keyword
+                  description: The normalized account type identifier.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the account (e.g. AWS Account ID).
+            - name: credential_uid
+              type: keyword
+              description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+            - name: domain
+              type: keyword
+              description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+            - name: email_addr
+              type: keyword
+              description: The user's email address.
+            - name: full_name
+              type: keyword
+              description: The full name of the person, as per the LDAP Common Name attribute (cn).
+            - name: groups
+              type: group
+              fields:
+                - name: domain
+                  type: keyword
+                  description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                - name: desc
+                  type: keyword
+                  description: The group description.
+                - name: name
+                  type: keyword
+                  description: The group name.
+                - name: privileges
+                  type: keyword
+                  description: The group privileges.
+                - name: type
+                  type: keyword
+                  description: The type of the group or account.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+            - name: name
+              type: keyword
+              description: The username. For example, janedoe1.
+            - name: org
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the organization. For example, Widget, Inc.
+                - name: ou_name
+                  type: keyword
+                  description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                - name: ou_uid
+                  type: keyword
+                  description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+            - name: type
+              type: keyword
+              description: The type of the user. For example, System, AWS IAM User, etc.
+            - name: type_id
+              type: keyword
+              description: The account type identifier.
+            - name: uid
+              type: keyword
+              description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+            - name: uid_alt
+              type: keyword
+              description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
+            - name: ldap_person
+              type: group
+              fields:
+                - name: cost_center
+                  type: keyword
+                  description: The cost center associated with the user.
+                - name: created_time
+                  type: date
+                  format: epoch_second
+                  description: The timestamp when the user was created.
+                - name: deleted_time
+                  type: date
+                  format: epoch_second
+                  description: The timestamp when the user was deleted.
+                - name: email_addrs
+                  type: keyword
+                  description: A list of additional email addresses for the user.
+                - name: employee_uid
+                  type: keyword
+                  description: The employee identifier assigned to the user by the organization.
+                - name: given_name
+                  type: keyword
+                  description: The given or first name of the user.
+                - name: hire_time
+                  type: date
+                  format: epoch_second
+                  description: The timestamp when the user was or will be hired by the organization.
+                - name: job_title
+                  type: keyword
+                  description: The user's job title.
+                - name: labels
+                  type: keyword
+                  description: The labels associated with the user. For example in AD this could be the userType, employeeType.
+                - name: last_login_time
+                  type: date
+                  format: epoch_second
+                  description: The last time when the user logged in.
+                - name: ldap_cn
+                  type: keyword
+                  description: The LDAP and X.500 commonName attribute, typically the full name of the person. For example, John Doe.
+                - name: ldap_dn
+                  type: keyword
+                  description: The X.500 Distinguished Name (DN) is a structured string that uniquely identifies an entry, such as a user, in an X.500 directory service For example, cn=John Doe,ou=People,dc=example,dc=com.
+                - name: leave_time
+                  type: date
+                  format: epoch_second
+                  description: The timestamp when the user left or will be leaving the organization.
+                - name: modified_time
+                  type: date
+                  format: epoch_second
+                  description: The timestamp when the user entry was last modified.
+                - name: office_location
+                  type: keyword
+                  description: The primary office location associated with the user. This could be any string and isn't a specific address.
+                - name: surname
+                  type: keyword
+                  description: The last or family name for the user.
+                - name: location
+                  type: group
+                  fields:
+                    - name: city
+                      type: keyword
+                      description: The name of the city.
+                    - name: continent
+                      type: keyword
+                      description: The name of the continent.
+                    - name: coordinates
+                      type: geo_point
+                      description: A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON.
+                    - name: country
+                      type: keyword
+                      description: The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized.
+                    - name: desc
+                      type: keyword
+                      description: The description of the geographical location.
+                    - name: is_on_premises
+                      type: boolean
+                      description: The indication of whether the location is on premises.
+                    - name: isp
+                      type: keyword
+                      description: The name of the Internet Service Provider (ISP).
+                    - name: postal_code
+                      type: keyword
+                      description: The postal code of the location.
+                    - name: provider
+                      type: keyword
+                      description: The provider of the geographical location data.
+                    - name: region
+                      type: keyword
+                      description: The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US.
+                - name: manager
+                  type: group
+                  description: Manager
+                  fields:
+                    - name: account
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the account (e.g. GCP Account Name).
+                        - name: type
+                          type: keyword
+                          description: The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source.
+                        - name: type_id
+                          type: integer
+                          description: The normalized account type identifier.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the account (e.g. AWS Account ID).
+                    - name: credential_uid
+                      type: keyword
+                      description: The unique identifier of the user's credential. For example, AWS Access Key ID.
+                    - name: domain
+                      type: keyword
+                      description: 'The domain where the user is defined. For example: the LDAP or Active Directory domain.'
+                    - name: email_addr
+                      type: keyword
+                      description: The user's email address.
+                    - name: full_name
+                      type: keyword
+                      description: The full name of the person, as per the LDAP Common Name attribute (cn).
+                    - name: groups
+                      type: group
+                      fields:
+                        - name: domain
+                          type: keyword
+                          description: The domain where the group is defined. For example, the LDAP or Active Directory domain.
+                        - name: desc
+                          type: keyword
+                          description: The group description.
+                        - name: name
+                          type: keyword
+                          description: The group name.
+                        - name: privileges
+                          type: keyword
+                          description: The group privileges.
+                        - name: type
+                          type: keyword
+                          description: The type of the group or account.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group.
+                    - name: name
+                      type: keyword
+                      description: The username. For example, janedoe1.
+                    - name: org
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the organization. For example, Widget, Inc.
+                        - name: ou_name
+                          type: keyword
+                          description: The name of the organizational unit, within an organization. For example, Finance, IT, R&D.
+                        - name: ou_uid
+                          type: keyword
+                          description: The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID.
+                        - name: uid
+                          type: keyword
+                          description: The unique identifier of the organization. For example, its Active Directory or AWS Org ID.
+                    - name: type
+                      type: keyword
+                      description: The type of the user. For example, System, AWS IAM User, etc.
+                    - name: type_id
+                      type: integer
+                      description: The account type identifier.
+                    - name: uid
+                      type: keyword
+                      description: The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN.
+                    - name: uid_alt
+                      type: keyword
+                      description: The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID.
