@@ -44,11 +44,19 @@ policy_templates:
             type: bool
             title: Configure BPF to account for VLAN tags
             description: |-
-              Packetbeat automatically generates a BPF for capturing only the traffic on ports where it expects to find known protocols.
+              Packetbeat automatically generates a BPF program for capturing only the traffic on ports where it expects to find known protocols.
               For example, if you have configured port 80 for HTTP and port 3306 for MySQL, Packetbeat generates the following BPF filter: "port 80 or port 3306".
 
               However, if the traffic contains VLAN tags, the filter that Packetbeat generates is ineffective because the offset is moved by four bytes.
               To fix this, you can enable the with_vlans option, which generates a BPF filter that looks like this: "port 80 or port 3306 or (vlan and (port 80 or port 3306))".
+            required: false
+            show_user: true
+            default: false
+          - name: ignore_outgoing
+            type: bool
+            title: Ignore network transactions initiated locally
+            description: |-
+              If the ignore_outgoing option is enabled, Packetbeat ignores all the transactions initiated from the server running Packetbeat.
             required: false
             show_user: true
             default: false
