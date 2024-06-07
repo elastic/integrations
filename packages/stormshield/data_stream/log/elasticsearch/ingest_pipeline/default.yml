@@ -101,6 +101,9 @@ processors:
       name: '{{ IngestPipeline "count" }}'
       if: ctx.stormshield?.logtype == 'count'
 
+  #########################################################
+  # Now rename things to ECS
+
   - convert:
       field: stormshield.modsrc
       target_field: source.nat.ip
@@ -123,7 +126,7 @@ processors:
       field: stormshield.modsrcport
       target_field: source.nat.port
       type: long
-      if: ctx.stormshield?.modsrcport != null && ctx.stormshield?.modsrcport != ctx.stormshield?.srcport
+      if: ctx.stormshield?.modsrcport != null && ctx.source?.nat?.ip != null
   - convert:
       field: stormshield.srcport
       target_field: source.port
@@ -198,9 +201,6 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
-
-  #########################################################
-  # Now rename things to ECS
 
   - rename:
       field: stormshield.action
