@@ -245,15 +245,11 @@ An example event for `audit` looks as following:
 | teleport.audit.desktop.allow_user_creation | AllowUserCreation indicates whether automatic local user creation is allowed for this session. | boolean |
 | teleport.audit.desktop.delay_ms | DelayMilliseconds is the delay in milliseconds from the start of the session. | unsigned_long |
 | teleport.audit.desktop.directory_id | DirectoryID is the ID of the directory being shared (unique to the Windows Desktop Session). | unsigned_long |
-| teleport.audit.desktop.directory_name | DirectoryName is the name of the directory being shared. | keyword |
 | teleport.audit.desktop.is_recorded | Recorded is true if the session was recorded, false otherwise. | boolean |
 | teleport.audit.desktop.labels | DesktopLabels are the labels on the desktop resource. | flattened |
 | teleport.audit.desktop.length | Length is the number of bytes of data received from the remote clipboard or sent from a user's workstation to Teleport. | unsigned_long |
-| teleport.audit.desktop.name | DesktopName is the name of the desktop resource. | keyword |
 | teleport.audit.desktop.offset | Offset is the offset the bytes were read from or written to. | unsigned_long |
-| teleport.audit.desktop.path | Path is the path within the shared directory where the file is located. | keyword |
 | teleport.audit.desktop.windows_desktop_service | WindowsDesktopService is the name of the service proxying the RDP session. | keyword |
-| teleport.audit.desktop.windows_domain | Domain is the Active Directory domain of the desktop being accessed. | keyword |
 | teleport.audit.desktop.windows_user | WindowsUser is the Windows username used to connect. | keyword |
 | teleport.audit.device.asset_tag | Device inventory identifier. | keyword |
 | teleport.audit.device.credential_id | Device credential identifier. | keyword |

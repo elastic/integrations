@@ -278,6 +278,22 @@ processors:
       target_field: teleport.audit.access_list.review_message
       ignore_missing: true
       if: ctx.teleport.audit.event?.action == 'access_list.review'
+  - rename:
+      field: teleport.audit.review_id
+      target_field: teleport.audit.access_list.review_id
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.review_frequency_changed
+      target_field: teleport.audit.access_list.review_frequency_changed
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.review_day_of_month_changed
+      target_field: teleport.audit.access_list.review_day_of_month_changed
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.removed_members
+      target_field: teleport.audit.access_list.removed_members
+      ignore_missing: true
   # LockMetadata contains common metadata for lock resource events.
   - rename:
       field: teleport.audit.target
@@ -347,7 +363,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.directory_name
-      target_field: teleport.audit.desktop.directory_name
+      target_field: file.directory
       ignore_missing: true
   - rename:
       field: teleport.audit.directory_id
@@ -355,7 +371,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.file_path
-      target_field: teleport.audit.desktop.path
+      target_field: file.path
       ignore_missing: true
   - rename:
       field: teleport.audit.ms
@@ -882,11 +898,11 @@ processors:
       if: ctx.teleport?.audit?.db_gcp_project_id != null
   - rename:
       field: teleport.audit.db_gcp_project_id
-      target_field: cloud.project_id
+      target_field: cloud.project.id
       ignore_missing: true
   - rename:
       field: teleport.audit.db_gcp_instance_id
-      target_field: cloud.instance_id
+      target_field: cloud.instance.id
       ignore_missing: true
   - rename:
       field: teleport.audit.db_roles
@@ -971,11 +987,11 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.windows_domain
-      target_field: teleport.audit.desktop.windows_domain
+      target_field: destination.user.domain
       ignore_missing: true
   - rename:
       field: teleport.audit.windows_user
-      target_field: teleport.audit.desktop.windows_user
+      target_field: destination.user.name
       ignore_missing: true
   - rename:
       field: teleport.audit.desktop_labels
@@ -983,7 +999,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.desktop_name
-      target_field: teleport.audit.desktop.name
+      target_field: destination.name
       ignore_missing: true
   - rename:
       field: teleport.audit.allow_user_creation
@@ -1324,7 +1340,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.instance_id
-      target_field: cloud.instance_id
+      target_field: cloud.instance.id
       ignore_missing: true
   - rename:
       field: teleport.audit.exit_code
@@ -1349,6 +1365,7 @@ processors:
       field: teleport.audit.region
       target_field: cloud.region
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: teleport.audit.stdout
       target_field: teleport.audit.database.aws.ssm_run.stdout
