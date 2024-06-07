@@ -27,167 +27,161 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-09T13:25:02.000Z",
+    "@timestamp": "2024-04-11T02:56:17.000Z",
     "agent": {
+        "ephemeral_id": "5bdc4789-78f8-49b0-807e-5a6c1e876d58",
+        "id": "5b7ea00b-603f-4de7-b7f7-240330ab7d50",
         "name": "docker-fleet-agent",
-        "id": "ce7af7c5-78b1-43dc-b793-515305b9d122",
-        "ephemeral_id": "154bf117-f912-4bf9-b76e-2ba220d1f488",
         "type": "filebeat",
-        "version": "8.13.3"
+        "version": "8.13.2"
     },
     "client": {
-        "port": 57748,
-        "bytes": 0,
-        "packets": 0,
-        "ip": "10.0.0.3"
+        "bytes": 798,
+        "ip": "10.0.0.3",
+        "nat": {
+            "ip": "10.0.128.2",
+            "port": 53184
+        },
+        "port": 47886
     },
     "data_stream": {
+        "dataset": "fortinet_fortiproxy.log",
         "namespace": "ep",
-        "type": "logs",
-        "dataset": "fortinet_fortiproxy.log"
+        "type": "logs"
     },
     "destination": {
+        "bytes": 125800732,
         "geo": {
             "continent_name": "Asia",
             "country_iso_code": "BT",
             "country_name": "Bhutan",
             "location": {
-                "lon": 90.5,
-                "lat": 27.5
+                "lat": 27.5,
+                "lon": 90.5
             }
         },
-        "port": 443,
-        "bytes": 0,
-        "ip": "67.43.156.126",
-        "packets": 0
+        "ip": "67.43.156.10",
+        "port": 443
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ce7af7c5-78b1-43dc-b793-515305b9d122",
-        "version": "8.13.3",
-        "snapshot": false
+        "id": "5b7ea00b-603f-4de7-b7f7-240330ab7d50",
+        "snapshot": false,
+        "version": "8.13.2"
     },
     "event": {
-        "duration": 0,
+        "action": "accept",
         "agent_id_status": "verified",
-        "ingested": "2024-06-07T13:55:18Z",
-        "original": "<189>date=2024-05-09 time=06:25:02 devname=\"TEST-PXY01\" devid=\"FPXTESTPXY01\" eventtime=1715261101829329792 tz=\"-0700\" logid=\"0000000013\" type=\"traffic\" subtype=\"forward\" level=\"notice\" vd=\"root\" srcip=10.0.0.3 srcport=57748 srcintf=\"port2\" srcintfrole=\"lan\" dstip=67.43.156.126 dstport=443 dstintf=\"port1\" dstintfrole=\"undefined\" srccountry=\"Reserved\" dstcountry=\"United States\" sessionid=1781818022 proto=6 action=\"deny\" policyid=2 policytype=\"policy\" poluuid=\"7f573f0c-0e07-51ef-9204-df7d834bf3cd\" policyname=\"url-filter-test\" service=\"HTTPS\" trandisp=\"noop\" url=\"https://steampowered.com/\" agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0\" duration=0 sentbyte=0 rcvdbyte=0 sentpkt=0 rcvdpkt=0 appcat=\"unscanned\" crscore=30 craction=131072 crlevel=\"high\" msg=\"Traffic denied because of explicit proxy policy\"",
-        "code": "0000000013",
-        "kind": "event",
-        "timezone": "-0700",
-        "start": "2024-05-09T13:25:01.829Z",
-        "action": "deny",
         "category": [
             "network"
         ],
-        "dataset": "fortinet_fortiproxy.log"
+        "code": "0000000010",
+        "dataset": "fortinet_fortiproxy.log",
+        "duration": 8089000000000,
+        "ingested": "2024-06-07T14:49:44Z",
+        "kind": "event",
+        "original": "<189>date=2024-04-10 time=19:56:17 devname=\"TEST-PXY01\" devid=\"FPXTESTPXY01\" eventtime=1712771778239212440 tz=\"-0700\" logid=\"0000000010\" type=\"traffic\" subtype=\"forward\" level=\"notice\" vd=\"root\" srcip=10.0.0.3 srcport=47886 srcintf=\"port2\" srcintfrole=\"lan\" dstcountry=\"United States\" srccountry=\"Reserved\" dstip=67.43.156.10 dstport=443 dstintf=\"port1\" dstintfrole=\"undefined\" sessionid=1781818019 service=\"HTTPS\" proxyapptype=\"web-proxy\" proto=6 action=\"accept\" policyid=1 policytype=\"proxy-policy\" poluuid=\"27b09930-033d-51ef-0c72-6c1221a8d893\" policyname=\"test-proxy\" trandisp=\"snat\" transip=10.0.128.2 transport=53184 clientip=10.0.0.3 duration=8089 wanin=125800732 rcvdbyte=125800732 wanout=632 lanin=798 sentbyte=798 lanout=125824455 appcat=\"unscanned\" utmaction=\"allow\"",
+        "start": "2024-04-10T17:56:18.239Z",
+        "timezone": "-0700"
     },
     "fortinet": {
         "proxy": {
+            "dstintfrole": "undefined",
+            "lanin": 798,
+            "lanout": 125824455,
+            "proxyapptype": "web-proxy",
+            "sessionid": "1781818019",
             "srcintfrole": "lan",
-            "crlevel": "high",
-            "sessionid": "1781818022",
-            "type": "traffic",
             "subtype": "forward",
-            "crscore": 30,
-            "trandisp": "noop",
+            "trandisp": "snat",
+            "type": "traffic",
+            "utmaction": "allow",
             "vd": "root",
-            "url": "https://steampowered.com/",
-            "craction": 131072,
-            "dstintfrole": "undefined"
+            "wanin": 125800732,
+            "wanout": 632
         }
     },
     "input": {
-        "type": "tcp"
+        "type": "filestream"
     },
     "log": {
-        "level": "notice",
-        "source": {
-            "address": "192.168.208.4:44660"
+        "file": {
+            "device_id": "35",
+            "inode": "80",
+            "path": "/tmp/service_logs/fortinet-fortiproxy.log"
         },
+        "level": "notice",
+        "offset": 15140,
         "syslog": {
-            "severity": {
-                "code": 5
-            },
-            "priority": 189,
             "facility": {
                 "code": 23
+            },
+            "priority": 189,
+            "severity": {
+                "code": 5
             }
         }
     },
-    "message": "Traffic denied because of explicit proxy policy",
     "network": {
-        "protocol": "https",
-        "bytes": 0,
-        "transport": "tcp",
+        "bytes": 125801530,
         "iana_number": "6",
-        "packets": 0
+        "protocol": "https",
+        "transport": "tcp"
     },
     "observer": {
+        "egress": {
+            "interface": {
+                "name": "port1"
+            }
+        },
+        "hostname": "TEST-PXY01",
         "ingress": {
             "interface": {
                 "name": "port2"
             }
         },
         "product": "FortiProxy",
-        "hostname": "TEST-PXY01",
-        "vendor": "Fortinet",
         "serial_number": "FPXTESTPXY01",
         "type": "proxy",
-        "egress": {
-            "interface": {
-                "name": "port1"
-            }
-        }
+        "vendor": "Fortinet"
     },
     "rule": {
-        "ruleset": "policy",
-        "name": "url-filter-test",
-        "id": "2",
         "category": "unscanned",
-        "uuid": "7f573f0c-0e07-51ef-9204-df7d834bf3cd"
+        "id": "1",
+        "name": "test-proxy",
+        "ruleset": "proxy-policy",
+        "uuid": "27b09930-033d-51ef-0c72-6c1221a8d893"
     },
     "server": {
+        "bytes": 125800732,
         "geo": {
             "continent_name": "Asia",
+            "country_iso_code": "BT",
             "country_name": "Bhutan",
             "location": {
-                "lon": 90.5,
-                "lat": 27.5
-            },
-            "country_iso_code": "BT"
+                "lat": 27.5,
+                "lon": 90.5
+            }
         },
-        "port": 443,
-        "bytes": 0,
-        "packets": 0,
-        "ip": "67.43.156.126"
+        "ip": "67.43.156.10",
+        "port": 443
     },
     "source": {
-        "port": 57748,
-        "bytes": 0,
+        "bytes": 798,
         "ip": "10.0.0.3",
-        "packets": 0
+        "nat": {
+            "ip": "10.0.128.2",
+            "port": 53184
+        },
+        "port": 47886
     },
     "tags": [
         "preserve_original_event",
         "fortinet-fortiproxy",
         "forwarded"
-    ],
-    "user_agent": {
-        "original": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
-        "os": {
-            "name": "Windows",
-            "version": "10",
-            "full": "Windows 10"
-        },
-        "name": "Firefox",
-        "device": {
-            "name": "Other"
-        },
-        "version": "115.0."
-    }
+    ]
 }
 ```
 
