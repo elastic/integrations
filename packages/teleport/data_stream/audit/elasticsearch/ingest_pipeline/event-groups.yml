@@ -171,9 +171,9 @@ processors:
   # KubernetesClusterMetadata contains common metadata for kubernetes-related events.
   # See teleport.audit.kubernetes group for field definitions.
   - set:
-        field: orchestrator.type
-        value: kubernetes
-        if: ctx.teleport.audit.kubernetes_cluster != null
+      field: orchestrator.type
+      value: kubernetes
+      if: ctx.teleport.audit.kubernetes_cluster != null
   - rename:
       field: teleport.audit.kubernetes_cluster
       target_field: orchestrator.cluster.name
@@ -423,7 +423,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.program
-      target_field: process.executable
+      target_field: process.name
       ignore_missing: true
   - append:
       field: event.outcome
@@ -453,7 +453,8 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.path
-      target_field: file.path
+      target_field: process.executable
+      if: ctx.event.action.startsWith('session.')
       ignore_missing: true
   - rename:
       field: teleport.audit.argv
@@ -548,6 +549,7 @@ processors:
   - rename:
       field: teleport.audit.attributes
       target_field: teleport.audit.login.identity_attributes
+      if: ctx.event.action == 'user.login'
       ignore_missing: true
   - rename:
       field: teleport.audit.mfa_device.mfa_device_name
@@ -653,6 +655,7 @@ processors:
   - rename:
       field: teleport.audit.path
       target_field: file.path
+      if: ctx.event.action == 'sftp' ||  ctx.event.action == 'scp'
       ignore_missing: true
   - rename:
       field: teleport.audit.target_path
@@ -661,6 +664,7 @@ processors:
   - rename:
       field: teleport.audit.attributes
       target_field: teleport.audit.sftp.attributes
+      if: ctx.event.action == 'sftp'
       ignore_missing: true
   - set:
       field: teleport.audit.sftp.action
@@ -853,12 +857,12 @@ processors:
   - rename:
       description: 'Fix an issue where "uri" is present in this event.'
       field: teleport.audit.uri
-      target_field: url.full
+      target_field: teleport.audit.database.uri
       ignore_missing: true
       if: ctx.event.action.startsWith('db.')
   - rename:
       field: teleport.audit.db_uri
-      target_field: url.full
+      target_field: teleport.audit.database.uri
       ignore_missing: true
   - rename:
       field: teleport.audit.db_name
@@ -1048,6 +1052,7 @@ processors:
   - rename:
       field: teleport.audit.attributes
       target_field: teleport.audit.join.attributes
+      if: ctx.event.action.endsWith('.join')
       ignore_missing: true
   - rename:
       field: teleport.audit.user_name
@@ -1160,6 +1165,7 @@ processors:
       field: teleport.audit.certificate.identity.client_ip
       target_field: client.ip
       ignore_missing: true
+      ignore_failure: true
   # AccessRequestResourceSearch is emitted when a user searches for resources as part of a search-based access request
   # See teleport.audit.access_request.resource_search group for field definitions.
   - rename:
@@ -1185,16 +1191,8 @@ processors:
   # MySQL related events
   # See teleport.audit.database.mysql group for field definitions.
   - rename:
-      field: teleport.audit.query
-      target_field: teleport.audit.database.query
-      ignore_missing: true
-  - rename:
       field: teleport.audit.statement_id
       target_field: teleport.audit.database.mysql.statement_id
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.parameters
-      target_field: teleport.audit.database.query_parameters
       ignore_missing: true
   - rename:
       field: teleport.audit.schema_name

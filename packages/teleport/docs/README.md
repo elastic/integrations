@@ -50,7 +50,7 @@ An example event for `audit` looks as following:
         "code": "T1000I",
         "dataset": "teleport.audit",
         "id": "173d6b6e-d613-44be-8ff6-f9f893791ef2",
-        "ingested": "2024-06-06T17:46:47Z",
+        "ingested": "2024-06-07T17:25:10Z",
         "kind": "event",
         "original": "{\"code\":\"T1000I\",\"event\":\"user.login\",\"method\":\"local\",\"success\":true,\"time\":\"2019-04-22T00:49:03Z\",\"uid\":\"173d6b6e-d613-44be-8ff6-f9f893791ef2\",\"user\":\"admin@example.com\"}",
         "outcome": [
@@ -66,7 +66,7 @@ An example event for `audit` looks as following:
     "log": {
         "file": {
             "device_id": "35",
-            "inode": "51",
+            "inode": "61",
             "path": "/tmp/service_logs/test-teleport-all-events.log"
         },
         "offset": 9010
@@ -235,6 +235,7 @@ An example event for `audit` looks as following:
 | teleport.audit.database.spanner.rpc.args | Args are the RPC arguments. | flattened |
 | teleport.audit.database.spanner.rpc.procedure | Procedure is the name of the remote procedure. | keyword |
 | teleport.audit.database.type | DatabaseType is the database type. | keyword |
+| teleport.audit.database.uri | DatabaseURI is the database URI to connect to. | keyword |
 | teleport.audit.database.user | DatabaseUser is the database username used to connect. | keyword |
 | teleport.audit.database.user_change.is_deleted | Delete indicates if the user was deleted entirely or merely disabled. | boolean |
 | teleport.audit.database.user_change.username | Username is the username chosen for the database user. Due to database limitations (e.g. username length, allowed charset) it may differ from Teleport username. | keyword |
