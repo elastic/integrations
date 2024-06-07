@@ -520,8 +520,8 @@ processors:
   # Events related to SFTP file transfers.
   - set:
       field: event.category
-      value: ['file']
-      if: 'ctx.event.action.startsWith("sftp.")'
+      value: ['file', 'network']
+      if: 'ctx.event.action.startsWith("sftp")'
   # Events related to SPIFFE SVID issuance.
   - set:
       field: event.category
@@ -573,15 +573,15 @@ processors:
       if: 'ctx.event.action == "user.login"'
   - set:
       field: event.type
-      value: ['creation']
+      value: ['creation', 'user']
       if: 'ctx.event.action == "user.create"'
   - set:
       field: event.type
-      value: ['deletion']
+      value: ['deletion', 'user']
       if: 'ctx.event.action == "user.delete"'
   - set:
       field: event.type
-      value: ['change']
+      value: ['change', 'user']
       if: 'ctx.event.action == "user.password_change" || ctx.event.action == "user.update"'
   - set:
       field: event.type
