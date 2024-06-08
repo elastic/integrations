@@ -1,0 +1,441 @@
+---
+description: Pipeline for processing diagnostic category logs.
+processors:
+  - grok:
+      field: watchguard_firebox.log.body
+      tag: grok_firewall_log_messages
+      if: ctx.watchguard_firebox.log.msg_id != null && ['3000-0006', '3000-0007', '3000-0027', '3000-0028', '3000-0029', '3000-002A', '3000-003A', '3000-003C', '3000-0040', '3000-0065', '3000-012D', '3000-012E'].contains(ctx.watchguard_firebox.log.msg_id)
+      patterns:
+        - '^IP address %{IP:watchguard_firebox.log.ip_address} %{GREEDYDATA}$'
+        - '^Route look up on HTTP redirect host %{IP:watchguard_firebox.log.ip_address} for policy %{QUOTEDSTRING:watchguard_firebox.log.policy_name} failed, local redirect may not work$'
+        - '^Idle timeout has occurred for blocked site %{IP:watchguard_firebox.log.ip_address}$'
+        - '^User %{DATA:watchguard_firebox.log.user_name}(?:@%{DATA:watchguard_firebox.log.user_domain})? used %{GREEDYDATA:watchguard_firebox.log.quota_info}$'
+        - '^Verify ARP entry for host at %{IP:watchguard_firebox.log.ip_address}$'
+        - '^Cannot relearn system MAC address, possible loop or MAC spoofing, ip=%{IP:watchguard_firebox.log.ip_address}, mac=%{MAC:watchguard_firebox.log.mac}, interface=%{NUMBER:watchguard_firebox.log.interface_id}$'
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      tag: grok_for_network_log_messages
+      if: ctx.watchguard_firebox.log.msg_id != null && ['0900-0001', '0900-0002', '0900-0006', '0900-0007', '1600-0005', '3100-0003', '3100-0004', '3100-000F', '3100-0030', '3100-0031', '3100-0034', '3100-0035', '3100-0036', '3100-0037', '3100-0038', '3100-003D', '3100-004F', '3100-0050', '3100-0051', '3100-0057', '3100-0058', '3100-0059', '3100-005A', '3100-005B', '3100-005C', '3100-005D', '3100-005E', '3100-0070', '3100-0075', '3113-0001', '4500-0001', '5A00-0001', '5A00-0002', '5A00-0003', '5A00-0004', '5A00-0005', '5A00-0006', '5A00-0007', '5A00-0008', '5A00-0009', '5A00-000A', '5A00-000B', '5A00-000C', '5A00-000D'].contains(ctx.watchguard_firebox.log.msg_id)
+      patterns:
+        - '^Initiating GARP for %{WORD:watchguard_firebox.log.dev_name}$'
+        - '^Adding bridge %{WORD:watchguard_firebox.log.dev_name}$'
+        - '^\[%{WORD:watchguard_firebox.log.dev_name}\] Sending interface status event, logical=%{WORD:watchguard_firebox.log.logical} link=%{WORD:watchguard_firebox.log.link} ip=%{IP:watchguard_firebox.log.ip_address} mask=%{IP:watchguard_firebox.log.mask}$'
+        - '^\[%{WORD:watchguard_firebox.log.dev_name}\] Sending interface status event for link %{WORD:watchguard_firebox.log.link}$'
+        - '^\[%{DATA:watchguard_firebox.log.dev_name} \(%{DATA:watchguard_firebox.log.interface_name}\)\] External Interface %{WORD:watchguard_firebox.log.operation} IP address$'
+        - '^\[%{DATA:watchguard_firebox.log.dev_name} \(%{DATA:watchguard_firebox.log.interface_name}\)\] Ignoring unknown address operation %{GREEDYDATA:watchguard_firebox.log.operation}$'
+        - '^%{GREEDYDATA} role %{WORD:watchguard_firebox.log.cluster_role}$'
+        - '^\[Cluster\] Traffic signal become %{WORD:watchguard_firebox.log.status}$'
+        - '^\[ECMP\] Fix up %{NUMBER:watchguard_firebox.log.num:long} multipath gateway successfully$'
+        - '^Updating %{DATA:watchguard_firebox.log.interface_name} secondary IP \(s\) setting$'
+        - '^\[Cluster\] Clean up stale IP connections with expired address %{IP:watchguard_firebox.log.ip_address} for PPPoE interface %{WORD:watchguard_firebox.log.dev_name}$'
+        - '^Capture stopped, %{GREEDYDATA:watchguard_firebox.log.reason}$'
+        - '^Response from server: %{DATA:watchguard_firebox.log.response} \(%{NUMBER:watchguard_firebox.log.return_code:long}\)$'
+        - '^Resolved domain %{DATA:watchguard_firebox.log.domain} to %{IP:watchguard_firebox.log.dns_ip_address}$'
+        - '^Connected to: %{DATA:watchguard_firebox.log.server_name} / %{IP:watchguard_firebox.log.server_ip}$'
+        - '^Connecting to: %{DATA:watchguard_firebox.log.server_name} / %{IP:watchguard_firebox.log.server_ip}$'
+        - '^Activating DynDNS on interface: %{DATA:watchguard_firebox.log.interface_name}$'
+        - '^Received reply: %{GREEDYDATA:watchguard_firebox.log.reply}$'
+        - '^Could not resolve server: %{DATA:watchguard_firebox.log.server_name}$'
+        - '^Could not connect to %{DATA:watchguard_firebox.log.server_name} / %{IP:watchguard_firebox.log.server_ip}, %{GREEDYDATA:watchguard_firebox.log.reason}$'
+        - '^Unable to connect to server: %{DATA:watchguard_firebox.log.server_name} / %{IP:watchguard_firebox.log.server_ip}$'
+        - '^No response from server %{DATA:watchguard_firebox.log.server_name} / %{IP:watchguard_firebox.log.server_ip}$'
+        - '^Invalid response from server \(%{NUMBER:watchguard_firebox.log.return_code:long}\)$'
+        - '^Next update is on %{GREEDYDATA:watchguard_firebox.log.next_update_time}$'
+        - '^Sending update request \(%{NUMBER:watchguard_firebox.log.bytes:long} bytes\): %{GREEDYDATA:watchguard_firebox.log.content}$'
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      tag: grok_management_log_messages
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-000C', '5501-000D', '5501-0010', '5501-0014', '5501-0015', '5501-0017', '5501-0017', '5501-001B', '5501-001C'].contains(ctx.watchguard_firebox.log.msg_id)
+      patterns:
+        - '^Device %{DATA:watchguard_firebox.log.restore_type} restore from %{DATA:watchguard_firebox.log.image_source} image failed %{GREEDYDATA:watchguard_firebox.log.reason}$'
+        - '^Creation of USB auto restore image failed %{GREEDYDATA:watchguard_firebox.log.reason}$'
+        - '^USB drive format operation was %{WORD:watchguard_firebox.log.result}$'
+        - '^Generate system diagnostic file to %{GREEDYDATA:watchguard_firebox.log.device} %{GREEDYDATA}$'
+        - '^Exported system diagnostic file to %{GREEDYDATA:watchguard_firebox.log.device} %{GREEDYDATA}$'
+        - '^System backup %{GREEDYDATA:watchguard_firebox.log.destination_device} failed %{GREEDYDATA:watchguard_firebox.log.reason}$'
+        - '^USB auto restore failed %{GREEDYDATA:watchguard_firebox.log.reason}$'
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      tag: grok_firecluster_log_messages
+      if: ctx.watchguard_firebox.log.msg_id != null && ['3A00-0002', '3A00-0004', '3A00-0005', '3A00-0006', '3A00-0007', '3A00-0008', '3A00-000A', '3A00-000B', '3A00-000C', '3800-0002', '3800-0003', '3800-0004', '3800-025C', '3800-0264', '3B00-0001', '3B00-0002'].contains(ctx.watchguard_firebox.log.msg_id)
+      patterns:
+        - '^Member %{DATA:watchguard_firebox.log.member_id} Virtual Router with cluster ID %{WORD:watchguard_firebox.log.cluster_id} changed state to master due to %{NUMBER:watchguard_firebox.log.notification_gap_duration:long} second notification gap from current master with IP %{IP:watchguard_firebox.log.ip_address}$'
+        - '^A DHCP server is interfering with static address assignment of cluster IP address %{IP:watchguard_firebox.log.ip_address} on eth%{NUMBER:watchguard_firebox.log.port:long}\. Disable DHCP server access to eth%{NUMBER:watchguard_firebox.log.port:long}\.$'
+        - '^Cluster member %{DATA:watchguard_firebox.log.member_id} received updated configuration; version %{NUMBER:watchguard_firebox.log.version}\.$'
+        - '^Cluster channel from member %{WORD:watchguard_firebox.log.member_id} to master is %{WORD:watchguard_firebox.log.state}$'
+        - '^Virtual Router with cluster ID %{WORD:watchguard_firebox.log.cluster_id} %{GREEDYDATA}$'
+        - '^Cluster interface %{WORD:watchguard_firebox.log.interface_name} %{GREEDYDATA}$'
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      tag: grok_for_vpn_log_messages_log_messages
+      if: ctx.watchguard_firebox.log.msg_id != null && ['0200-0001', '0200-0002', '0202-0001', '0203-0002', '0203-0003', '0203-0004', '0203-0005', '0203-0006', '0203-0007', '0203-0008', '0203-0009', '0203-000A', '0203-000B', '0203-000C', '0203-000D', '0203-000E', '0203-000F', '0203-0010', '0203-0011', '0203-0012', '0203-0013', '0203-0014', '0203-0015', '0203-0016', '0203-0017', '0203-0018', '0203-0019', '0203-0020', '0203-0021', '0203-0022', '0203-0023', '0203-0024', '0203-0025', '0203-0026', '0203-0027', '0203-0028', '0203-0029', '0203-002A', '0203-002B', '0205-0002', '0205-0003', '0205-0004', '0205-0005', '0205-0006', '0205-0007', '0205-0008', '0205-000A', '0205-000B', '0205-000C', '0205-000D', '0205-000E', '0205-000F', '0205-0010', '0205-0011', '0206-0001', '0206-0002', '0206-0003', '0206-0004', '0206-0005', '0206-0006', '0206-0007', '0208-0001', '021A-0001', '021A-0002', '021A-0003', '021A-0004', '021A-0005', '021A-0006', '021A-0007', '021A-0008', '021A-0009', '021A-000A', '021A-000B', '021A-000C', '021A-000D', '021A-000E', '021A-000F', '021A-0010', '021A-0011', '021A-0012', '021A-0013', '021A-0014', '021A-0015', '021A-0016', '021A-0017', '021A-0018', '021A-0019', '021A-001A', '021A-001B', '021A-001C', '021A-001D', '021A-001E', '021A-001F', '021A-0020', '2500-0000', '2500-0001', '5B01-0004', '5B01-0005'].contains(ctx.watchguard_firebox.log.msg_id)
+      pattern_definitions:
+        ike_phase_1_negotiation: 'IKE phase-1 negotiation from %{IP:watchguard_firebox.log.local_address}:%{NUMBER:watchguard_firebox.log.local_address_port:long} to %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}'
+        ike_phase_2_negotiation: 'IKE phase-2 negotiation from %{IP:watchguard_firebox.log.local_address}:%{NUMBER:watchguard_firebox.log.local_address_port:long} to %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}'
+        remote_gateway: "Remote gateway '%{DATA:watchguard_firebox.log.gateway_endpoint}' with IP %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}"
+        IKEv2: 'IKEv2 %{DATA:watchguard_firebox.log.exchange_type} exchange from %{IP:watchguard_firebox.log.local_address}:%{NUMBER:watchguard_firebox.log.local_address_port:long} to %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}'
+      patterns:
+        - "^Could not read %{GREEDYDATA:watchguard_firebox.log.certificate_type} certificate with \\[%{WORD:watchguard_firebox.log.certificate_id}\\] ID$"
+        - "^Virtual IP address from '%{DATA:watchguard_firebox.log.pool_name}' address pool is not available for Mobile VPN with IPSec user '%{USERNAME:watchguard_firebox.log.user_name}'$"
+        - "^%{ike_phase_1_negotiation} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}' Reason=Received '%{DATA:watchguard_firebox.log.exchange_type}' exchange type. Expecting main mode.$"
+        - "^%{ike_phase_1_negotiation} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}' Reason=Received '%{DATA:watchguard_firebox.log.exchange_type}' exchange type. Expecting aggressive mode.$"
+        - "^%{ike_phase_1_negotiation} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}' Reason=Received DH group %{NUMBER:watchguard_firebox.log.received_value:long}, expecting %{NUMBER:watchguard_firebox.log.expected_value:long}$"
+        - "^%{ike_phase_1_negotiation} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}' Reason=Received hash %{WORD:watchguard_firebox.log.received}, expecting %{WORD:watchguard_firebox.log.expected}$"
+        - "^%{ike_phase_1_negotiation} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}' Reason=Received encryption %{WORD:watchguard_firebox.log.received}, expecting %{WORD:watchguard_firebox.log.expected}$"
+        - "^%{ike_phase_1_negotiation} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}' Reason=Received authentication method %{DATA:watchguard_firebox.log.received}, expecting %{GREEDYDATA:watchguard_firebox.log.expected}$"
+        - "^%{ike_phase_1_negotiation} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}' Reason=Received AES key length %{NUMBER:watchguard_firebox.log.received_value:long}, expecting %{NUMBER:watchguard_firebox.log.expected_value:long}$"
+        - "^%{ike_phase_1_negotiation} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}' Reason=Failed to get ID information from certificate %{NUMBER:watchguard_firebox.log.certificate_id}$"
+        - "^%{ike_phase_1_negotiation} failed. Reason=Received IKE message on wrong interface '%{DATA:watchguard_firebox.log.received_interface}'\\(index:%{NUMBER:watchguard_firebox.log.received_interface_index}\\). Expecting it to be received on '%{GREEDYDATA:watchguard_firebox.log.expected_interface}'.$"
+        - "^%{ike_phase_1_negotiation} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}' Reason=Received message with wrong interface IP address %{IP:watchguard_firebox.log.received_ip}. Expecting peer to use remote gateway endpoint IP address %{IP:watchguard_firebox.log.expected_ip}.$"
+        - "^%{ike_phase_1_negotiation} failed. Gateway-Endpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}' Reason=%{GREEDYDATA:watchguard_firebox.log.reason}$"
+        - "^%{ike_phase_1_negotiation} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}' Reason=%{GREEDYDATA:watchguard_firebox.log.reason}$"
+        - '^IKE phase-1 negotiation from %{IP:watchguard_firebox.log.source_ip}:%{NUMBER:watchguard_firebox.log.source_port:long} to %{IP:watchguard_firebox.log.destination_ip}:%{NUMBER:watchguard_firebox.log.destination_port:long} failed. - %{GREEDYDATA:watchguard_firebox.log.reason}$'
+        - '^%{ike_phase_1_negotiation} failed. Reason=%{GREEDYDATA:watchguard_firebox.log.reason}$'
+        - "^IKEv2 exchange from %{IP:watchguard_firebox.log.local_address}:%{NUMBER:watchguard_firebox.log.local_address_port:long} to %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=No response for %{GREEDYDATA:watchguard_firebox.log.msg_info} message. Check the connection between the local and remote gateway endpoints.$"
+        - "^Received '%{DATA:watchguard_firebox.log.info_msg}' message from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long} for '%{DATA:watchguard_firebox.log.gateway_endpoint}' gateway endpoint. Check VPN IKE diagnostic log messages on the remote gateway endpoint for more information.$"
+        - "^%{ike_phase_2_negotiation} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}' Reason=Received protocol '%{DATA:watchguard_firebox.log.received_proto}'. Expecting '%{DATA:watchguard_firebox.log.expected_protocol}' in phase-2 proposal.$"
+        - "^%{ike_phase_2_negotiation} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}' Reason=Received AH authentication %{DATA:watchguard_firebox.log.received}, expecting %{DATA:watchguard_firebox.log.expected}$"
+        - "^%{ike_phase_2_negotiation} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}' Reason=Received ESP encryption %{WORD:watchguard_firebox.log.received}, expecting %{WORD:watchguard_firebox.log.expected}$"
+        - "^%{ike_phase_2_negotiation} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}' Reason=Received PFS DH group %{NUMBER:watchguard_firebox.log.received_value:long}, expecting %{NUMBER:watchguard_firebox.log.expected_value:long}$"
+        - "^%{ike_phase_2_negotiation} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}' Reason=Received ESP authentication %{DATA:watchguard_firebox.log.received}, expecting %{DATA:watchguard_firebox.log.expected}$"
+        - "^%{ike_phase_2_negotiation} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}' Reason=Received AES key length %{NUMBER:watchguard_firebox.log.received_value:long}, expecting %{NUMBER:watchguard_firebox.log.expected_value:long}$"
+        - "^%{ike_phase_2_negotiation} failed. Gateway='%{DATA:watchguard_firebox.log.gateway}' Reason=No matching tunnel route for peer proposed local:%{DATA:watchguard_firebox.log.tr_local} remote:%{GREEDYDATA:watchguard_firebox.log.tr_remote}$"
+        - "^%{ike_phase_2_negotiation} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}' Reason=%{GREEDYDATA:watchguard_firebox.log.reason}$"
+        - "^Rejected quick mode negotiation from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long} because '%{WORD:watchguard_firebox.log.gateway_endpoint}' is not the preferred IKE gateway endpoint.$"
+        - "^Rejected phase-2 negotiation from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long} because '%{DATA:watchguard_firebox.log.gateway_endpoint}' is not the preferred IKE gateway endpoint.$"
+        - '^%{remote_gateway} did not send DPD R_U_THERE_ACK message. %{NUMBER:watchguard_firebox.log.retry_count:long} retries left$'
+        - '^%{remote_gateway} presumed dead due to DPD failure. %{GREEDYDATA:watchguard_firebox.log.action}$'
+        - '^%{remote_gateway} did not send KEEP_ALIVE_ACK message. %{NUMBER:watchguard_firebox.log.retry_count:long} retries left.$'
+        - '^%{remote_gateway} presumed dead due to keep-alive negotiation failure. %{GREEDYDATA:watchguard_firebox.log.action}$'
+        - '^Rejected MUVPN IPSec user from %{IP:watchguard_firebox.log.peer_address} because maximum allowed user connections has been reached. Maximum:%{NUMBER:watchguard_firebox.log.max_user_connection:long}$'
+        - "^Received IKE message from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long} for unknown P1 SA. Sending delete message to remote gateway '%{DATA:watchguard_firebox.log.gateway}'.$"
+        - "^Received '%{DATA:watchguard_firebox.log.info_msg}' message from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long} for '%{DATA:watchguard_firebox.log.tunnel_name}' tunnel. Check VPN IKE diagnostic log messages on the remote gateway endpoint for more information.$"
+        - '^Dropped a simultaneous phase-2 negotiation from the peer %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}$'
+        - "^Received XAuth failed notification from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}. Group:'%{DATA:watchguard_firebox.log.gateway}'$"
+        - '^Rejected phase-1 authentication method %{WORD:watchguard_firebox.log.authentication_method} from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}, expecting client XAUTH enabled.$'
+        - '^Rejected phase-1 authentication method %{WORD:watchguard_firebox.log.authentication_method} from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}, expecting server XAUTH enabled.$'
+        - '^Rejected phase 1 authentication method %{WORD:watchguard_firebox.log.authentication_method} from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}, expecting client XAUTH enabled.$'
+        - '^Rejected phase 1 authentication method %{WORD:watchguard_firebox.log.authentication_method} from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}, expecting server XAUTH enabled.$'
+        - '^XAuth negotiation from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long} failed due to a mismatched XAuthMode.$'
+        - '^MUVPN user authentication failed due to unresponsive peer at %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}$'
+        - "^MUVPN user '%{USERNAME:watchguard_firebox.log.user_name}' is authenticated without group information.$"
+        - "^MUVPN user '%{USERNAME:watchguard_firebox.log.user_name}' is a member of '%{DATA:watchguard_firebox.log.group_name}' group.$"
+        - "^Dropped IKEv2 %{DATA:watchguard_firebox.log.exchange_type} message from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=IKE SA is in %{WORD:watchguard_firebox.log.ikev2_ikesa_state} state.$"
+        - "^Dropped IKEv2 %{DATA:watchguard_firebox.log.exchange_type} message from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}. Gateway-Endpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=Waiting for the %{WORD:watchguard_firebox.log.user_auth_protocol} user authentication result.$"
+        - '^Dropped IKEv2 %{DATA:watchguard_firebox.log.exchange_type} message from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}. Reason=IKE SA not found to handle message with message ID %{DATA:watchguard_firebox.log.received_message_id}.$'
+        - "^Dropped IKEv2 %{DATA:watchguard_firebox.log.exchange_type} message from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}. Reason='%{DATA:watchguard_firebox.log.gateway_endpoint}' gateway endpoint not found to handle message with message ID %{DATA:watchguard_firebox.log.received_message_id}.$"
+        - "^Dropped IKEv2 %{DATA:watchguard_firebox.log.exchange_type} message from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=Invalid message ID in %{WORD:watchguard_firebox.log.req_or_resp} message.$"
+        - '^Dropped IKEv2 %{DATA:watchguard_firebox.log.exchange_type} message from %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long}. Reason=%{GREEDYDATA:watchguard_firebox.log.reason}$'
+        - "^%{IKEv2} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=DH-Group %{NUMBER:watchguard_firebox.log.received_dh_group:long} in the KE payload does not match DH-Group %{NUMBER:watchguard_firebox.log.selected_dh_group:long} selected in the %{DATA:watchguard_firebox.log.msg_info} proposal.$"
+        - "^%{IKEv2} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}'. Reason=DH-Group %{NUMBER:watchguard_firebox.log.received_dh_group:long} in the KE payload does not match DH-Group %{NUMBER:watchguard_firebox.log.selected_dh_group:long} selected in the %{DATA:watchguard_firebox.log.msg_info} proposal.$"
+        - "^%{IKEv2} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=Received unacceptable traffic selector in IKE_AUTH request.$"
+        - "^%{IKEv2} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=Received authentication method %{DATA:watchguard_firebox.log.received}, expecting %{GREEDYDATA:watchguard_firebox.log.expected}.$"
+        - "^%{IKEv2} failed. (?:GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'.)? Reason=Remote gateway endpoint %{DATA:watchguard_firebox.log.authentication_method} authentication failed.$"
+        - "^%{IKEv2} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}'. Reason=Received %{DATA:watchguard_firebox.log.notify_msg} message.$"
+        - "^%{IKEv2} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=Received %{DATA:watchguard_firebox.log.notify_msg} message.$"
+        - "^%{IKEv2} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}'. Reason=Peer proposed invalid SPI in %{DATA:watchguard_firebox.log.msg_info}.$"
+        - "^%{IKEv2} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}'. Reason=Could not find child SA by received SPI %{GREEDYDATA:watchguard_firebox.log.spi} in %{GREEDYDATA:watchguard_firebox.log.msg_info}.$"
+        - "^%{IKEv2} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=Received message with wrong interface IP address %{IP:watchguard_firebox.log.received_ip}. Expecting peer to use remote gateway endpoint IP address %{IP:watchguard_firebox.log.expected_ip}.$"
+        - "^%{IKEv2} failed. Gateway-Endpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=Received message with the wrong interface IP address %{IP:watchguard_firebox.log.received_ip}. Expecting peer to use remote gateway endpoint IP address %{IP:watchguard_firebox.log.expected_ip}.$"
+        - "^%{IKEv2} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=Received message on wrong interface '%{DATA:watchguard_firebox.log.received_interface}' \\(index:%{NUMBER:watchguard_firebox.log.received_interface_index}\\). Expecting it to be received on '%{GREEDYDATA:watchguard_firebox.log.expected_interface}'.$"
+        - '^%{IKEv2} failed. Reason=%{GREEDYDATA:watchguard_firebox.log.reason}$'
+        - "^%{IKEv2} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=%{GREEDYDATA:watchguard_firebox.log.reason}$"
+        - "^IKEv2 %{DATA:watchguard_firebox.log.exchange_type} exchange from %{IP:watchguard_firebox.log.local_address}:?(%{NUMBER:watchguard_firebox.log.local_address_port:long})? to %{IP:watchguard_firebox.log.peer_address}:?(%{NUMBER:watchguard_firebox.log.peer_address_port:long})? failed. Gateway-Endpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=The Mobile VPN with IKEv2 profile is not enabled.$"
+        - '^%{DATA:watchguard_firebox.log.vpn_user_type} %{WORD:watchguard_firebox.log.user_name} logged in. Virtual IP address is %{IP:watchguard_firebox.log.virtual_ip_address}. Real IP address is %{IP:watchguard_firebox.log.real_ip_address}.$'
+        - '^%{DATA:watchguard_firebox.log.vpn_user_type} %{WORD:watchguard_firebox.log.user_name} logged off. Virtual IP address is %{IP:watchguard_firebox.log.virtual_ip_address}.$'
+        - "^%{WORD:watchguard_firebox.log.tunnel_type} phase-1 %{GREEDYDATA:watchguard_firebox.log.negotiation_mode} completed successfully as %{WORD:watchguard_firebox.log.negotiation_role} for '%{DATA:watchguard_firebox.log.gateway_endpoint}' gateway endpoint. localgw:%{IP:watchguard_firebox.log.source_ip}:%{NUMBER:watchguard_firebox.log.source_port:long} remotegw:%{IP:watchguard_firebox.log.destination_ip}:%{NUMBER:watchguard_firebox.log.destination_port:long} SA ID:%{DATA:watchguard_firebox.log.p1_sa_id}$"
+        - "^IKEv2 IKE SA established successfully as %{WORD:watchguard_firebox.log.exchange_role} for '%{DATA:watchguard_firebox.log.gateway_endpoint}' gateway endpoint. local-gw:%{IP:watchguard_firebox.log.local_address}:%{NUMBER:watchguard_firebox.log.local_address_port:long} remote-gw:%{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long} SA ID:%{DATA:watchguard_firebox.log.sa_id}.$"
+        - "^%{GREEDYDATA} user '%{DATA:watchguard_firebox.log.user_domain}\\\\%{DATA:watchguard_firebox.log.user_name}', virtual IP address '%{IP:watchguard_firebox.log.virtual_ip_address}'.$"
+        - "^IKEv2 %{DATA:watchguard_firebox.log.exchange_type} EAP exchange from %{IP:watchguard_firebox.log.local_address}:%{NUMBER:watchguard_firebox.log.local_address_port:long} to %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long} failed. Gateway-Endpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=%{GREEDYDATA:watchguard_firebox.log.reason}$"
+        - "^IKEv2 %{DATA:watchguard_firebox.log.exchange_type} exchange from %{IP:watchguard_firebox.log.local_address}:%{NUMBER:watchguard_firebox.log.local_address_port:long} to %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long} failed. GatewayEndpoint='%{DATA:watchguard_firebox.log.gateway_endpoint}'. Reason=%{GREEDYDATA:watchguard_firebox.log.msg_info}$"
+        - "^IKEv2 %{DATA:watchguard_firebox.log.exchange_type} exchange from %{IP:watchguard_firebox.log.local_address}:%{NUMBER:watchguard_firebox.log.local_address_port:long} to %{IP:watchguard_firebox.log.peer_address}:%{NUMBER:watchguard_firebox.log.peer_address_port:long} failed. Tunnel='%{DATA:watchguard_firebox.log.tunnel_name}'. Reason=%{GREEDYDATA:watchguard_firebox.log.msg_info}$"
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      ignore_failure: true
+  - set:
+      field: message
+      tag: set_message_from_log_body
+      copy_from: watchguard_firebox.log.body
+      ignore_empty_value: true
+  - set:
+      field: http.request.bytes
+      tag: set_http_request_bytes_from_log_bytes
+      copy_from: watchguard_firebox.log.bytes
+      ignore_empty_value: true
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_log_destination_port
+      copy_from: watchguard_firebox.log.destination_port
+      ignore_empty_value: true
+  - set:
+      field: observer.ingress.interface.name
+      tag: set_observer_ingress_interface_name_from_log_dev_name
+      copy_from: watchguard_firebox.log.dev_name
+      ignore_empty_value: true
+  - set:
+      field: dns.question.name
+      tag: set_dns_question_name_from_log_domain
+      copy_from: watchguard_firebox.log.domain
+      ignore_empty_value: true
+  - set:
+      field: dns.question.name
+      tag: set_dns_question_name_from_server_name
+      copy_from: watchguard_firebox.log.server_name
+      ignore_empty_value: true
+  - append:
+      field: dns.resolved_ip
+      tag: append_log_dns_ip_address_into_dns_resolved_ip
+      value: '{{{watchguard_firebox.log.dns_ip_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.dns_ip_address != null
+  - append:
+      field: dns.resolved_ip
+      tag: append_log_server_ip_into_dns_resolved_ip
+      value: '{{{watchguard_firebox.log.server_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.server_ip != null
+  - append:
+      field: related.ip
+      tag: append_log_dns_ip_address_into_related_ip
+      value: '{{{watchguard_firebox.log.dns_ip_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.dns_ip_address != null
+  - append:
+      field: related.ip
+      tag: append_log_server_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.server_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.server_ip != null
+  - set:
+      field: user.group.name
+      tag: set_user_group_name_from_log_group_name
+      copy_from: watchguard_firebox.log.group_name
+      ignore_empty_value: true
+  - set:
+      field: observer.ingress.interface.id
+      tag: set_observer_ingress_interface_id_from_log_interface_id
+      copy_from: watchguard_firebox.log.interface_id
+      ignore_empty_value: true
+  - set:
+      field: observer.ingress.interface.alias
+      tag: set_observer_ingress_interface_alias_from_log_interface_name
+      copy_from: watchguard_firebox.log.interface_name
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      tag: set_user_domain_from_log_authentication_server
+      copy_from: watchguard_firebox.log.authentication_server
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      tag: set_user_domain_from_log_user_domain
+      copy_from: watchguard_firebox.log.user_domain
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_log_local_address
+      copy_from: watchguard_firebox.log.local_address
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_log_real_ip_address
+      copy_from: watchguard_firebox.log.real_ip_address
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_log_source_ip
+      copy_from: watchguard_firebox.log.source_ip
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_log_policy_name
+      copy_from: watchguard_firebox.log.policy_name
+      ignore_empty_value: true
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_log_reason
+      copy_from: watchguard_firebox.log.reason
+      ignore_empty_value: true
+  - set:
+      field: source.port
+      tag: set_source_port_from_log_source_port
+      copy_from: watchguard_firebox.log.source_port
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_log_user_name
+      copy_from: watchguard_firebox.log.user_name
+      ignore_empty_value: true
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_log_destination_ip
+      copy_from: watchguard_firebox.log.destination_ip
+      ignore_empty_value: true
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_log_peer_address
+      copy_from: watchguard_firebox.log.peer_address
+      ignore_empty_value: true
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_log_virtual_ip_address
+      copy_from: watchguard_firebox.log.virtual_ip_address
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_log_destination_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.destination_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.destination_ip != null
+  - append:
+      field: related.ip
+      tag: append_log_peer_address_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.peer_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.peer_address != null
+  - append:
+      field: related.ip
+      tag: append_log_virtual_ip_address_into_related_ip
+      value: '{{{watchguard_firebox.log.virtual_ip_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.virtual_ip_address != null
+  - append:
+      field: related.ip
+      tag: append_log_ip_address_into_related_ip
+      value: '{{{watchguard_firebox.log.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.ip_address != null
+  - append:
+      field: related.ip
+      tag: append_log_ip_address_into_related_ip
+      value: '{{{watchguard_firebox.log.dns_ip_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.dns_ip_address != null
+  - append:
+      field: related.ip
+      tag: append_log_server_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.server_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.server_ip != null
+  - append:
+      field: related.ip
+      tag: append_log_local_address_into_related_ip
+      value: '{{{watchguard_firebox.log.local_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.local_address != null
+  - append:
+      field: related.ip
+      tag: append_log_real_ip_address_into_related_ip
+      value: '{{{watchguard_firebox.log.real_ip_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.real_ip_address != null
+  - append:
+      field: related.ip
+      tag: append_log_exepected_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.expected_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.expected_ip != null
+  - append:
+      field: related.ip
+      tag: append_log_source_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.source_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.source_ip != null
+  - append:
+      field: related.ip
+      tag: append_log_received_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.received_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.received_ip != null
+  - append:
+      field: related.hosts
+      tag: append_log_domain_into_related_hosts
+      value: '{{{watchguard_firebox.log.domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.domain != null
+  - append:
+      field: related.hosts
+      tag: append_log_user_domain_into_related_hosts
+      value: '{{{watchguard_firebox.log.user_domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.user_domain != null
+  - append:
+      field: related.hosts
+      tag: append_log_server_name_into_related_hosts
+      value: '{{{watchguard_firebox.log.server_name}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.server_name != null
+  - append:
+      field: related.user
+      tag: append_log_user_name_into_related_user
+      value: '{{{watchguard_firebox.log.user_name}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.user_name != null
+  - gsub:
+      field: watchguard_firebox.log.mac
+      tag: gsub_watchguard_firebox_log_mac
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: watchguard_firebox.log.mac
+      ignore_missing: true
+  - date:
+      field: watchguard_firebox.log.next_update_time
+      target_field: watchguard_firebox.log.next_update_time
+      tag: 'date_set_next_update_time'
+      if: ctx.watchguard_firebox?.log?.next_update_time != null && ctx.watchguard_firebox.log.next_update_time != ''
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss
+        - yyyy-MM-dd HH:mm:ss +zzzz
+        - yyyy-MM-dd HH:mm:ss
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - MMM  d HH:mm:ss.SSS
+        - MMM dd HH:mm:ss.SSS
+        - MMM d HH:mm:ss.SSS
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - watchguard_firebox.log.bytes
+        - watchguard_firebox.log.destination_ip
+        - watchguard_firebox.log.destination_port
+        - watchguard_firebox.log.dev_name
+        - watchguard_firebox.log.domain
+        - watchguard_firebox.log.group_name
+        - watchguard_firebox.log.interface_id
+        - watchguard_firebox.log.interface_name
+        - watchguard_firebox.log.ip_address
+        - watchguard_firebox.log.local_address
+        - watchguard_firebox.log.peer_address
+        - watchguard_firebox.log.policy_name
+        - watchguard_firebox.log.real_ip_address
+        - watchguard_firebox.log.reason
+        - watchguard_firebox.log.server_ip
+        - watchguard_firebox.log.server_name
+        - watchguard_firebox.log.source_ip
+        - watchguard_firebox.log.source_port
+        - watchguard_firebox.log.user_name
+        - watchguard_firebox.log.virtual_ip_address
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
