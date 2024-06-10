@@ -234,37 +234,37 @@ An example event for `awshealth` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
-| aws.awshealth.affected_entities.affected_entities.last_updated_time | The last updated time of entities. | date |
-| aws.awshealth.affected_entities.aws_account_id | The Amazon Web Services account number that contains the affected entity. | keyword |
-| aws.awshealth.affected_entities.entity_arn | The unique identifier for the affected entities. The entity ARN has the format: arn:aws:health:entity-region:aws-account:entity/entity-id. | keyword |
-| aws.awshealth.affected_entities.entity_url | The URL of the affected entity. | keyword |
-| aws.awshealth.affected_entities.entity_value | The IDs of the affected entities. | keyword |
-| aws.awshealth.affected_entities.status_code | The most recent status of affected entities. Possible values are open, closed, and upcoming. | keyword |
-| aws.awshealth.affected_entities_others | The number of affected resources related to the event whose status cannot be verified. | float |
-| aws.awshealth.affected_entities_pending | The number of affected resources that may require action. | float |
-| aws.awshealth.affected_entities_resolved | The number of affected resources that do not require any action. | float |
-| aws.awshealth.end_time | The date and time when the event ended. Some events may not have an end date. | date |
-| aws.awshealth.event_arn | The unique identifier for the event. The event ARN has the format arn:aws:health:event-region::event/SERVICE/EVENT_TYPE_CODE/EVENT_TYPE_PLUS_ID. | keyword |
-| aws.awshealth.event_description | The detailed description of the event. | text |
-| aws.awshealth.event_scope_code | This parameter specifies whether the Health event is a public Amazon Web Service event or an account-specific event. Allowed values are PUBLIC, ACCOUNT_SPECIFIC, or NONE. | keyword |
-| aws.awshealth.event_type_category | The event type category code. Possible values are issue, accountNotification, or scheduledChange. | keyword |
-| aws.awshealth.event_type_code | The unique identifier for the event type. The format is AWS_SERVICE_DESCRIPTION. | keyword |
-| aws.awshealth.last_updated_time | The most recent date and time when the event was updated. | date |
-| aws.awshealth.region | The Amazon Web Services Region name of the event. | keyword |
-| aws.awshealth.service | The Amazon Web Service affected by the event. For example, EC2 or RDS. | keyword |
-| aws.awshealth.start_time | The date and time when the event began. | date |
-| aws.awshealth.status_code | The most recent status of the event. Possible values are open, closed, and upcoming. | keyword |
-| aws.linked_account.id | ID used to identify linked account. | keyword |
-| aws.linked_account.name | Name or alias used to identify linked account. | keyword |
-| aws.tags | Tag key value pairs from aws resources. | flattened |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| aws.awshealth.affected_entities.affected_entities.last_updated_time | The last updated time of entities. | date |  |
+| aws.awshealth.affected_entities.aws_account_id | The Amazon Web Services account number that contains the affected entity. | keyword |  |
+| aws.awshealth.affected_entities.entity_arn | The unique identifier for the affected entities. The entity ARN has the format: arn:aws:health:entity-region:aws-account:entity/entity-id. | keyword |  |
+| aws.awshealth.affected_entities.entity_url | The URL of the affected entity. | keyword |  |
+| aws.awshealth.affected_entities.entity_value | The IDs of the affected entities. | keyword |  |
+| aws.awshealth.affected_entities.status_code | The most recent status of affected entities. Possible values are open, closed, and upcoming. | keyword |  |
+| aws.awshealth.affected_entities_others | The number of affected resources related to the event whose status cannot be verified. | float | gauge |
+| aws.awshealth.affected_entities_pending | The number of affected resources that may require action. | float | gauge |
+| aws.awshealth.affected_entities_resolved | The number of affected resources that do not require any action. | float | gauge |
+| aws.awshealth.end_time | The date and time when the event ended. Some events may not have an end date. | date |  |
+| aws.awshealth.event_arn | The unique identifier for the event. The event ARN has the format arn:aws:health:event-region::event/SERVICE/EVENT_TYPE_CODE/EVENT_TYPE_PLUS_ID. | keyword |  |
+| aws.awshealth.event_description | The detailed description of the event. | text |  |
+| aws.awshealth.event_scope_code | This parameter specifies whether the Health event is a public Amazon Web Service event or an account-specific event. Allowed values are PUBLIC, ACCOUNT_SPECIFIC, or NONE. | keyword |  |
+| aws.awshealth.event_type_category | The event type category code. Possible values are issue, accountNotification, or scheduledChange. | keyword |  |
+| aws.awshealth.event_type_code | The unique identifier for the event type. The format is AWS_SERVICE_DESCRIPTION. | keyword |  |
+| aws.awshealth.last_updated_time | The most recent date and time when the event was updated. | date |  |
+| aws.awshealth.region | The Amazon Web Services Region name of the event. | keyword |  |
+| aws.awshealth.service | The Amazon Web Service affected by the event. For example, EC2 or RDS. | keyword |  |
+| aws.awshealth.start_time | The date and time when the event began. | date |  |
+| aws.awshealth.status_code | The most recent status of the event. Possible values are open, closed, and upcoming. | keyword |  |
+| aws.linked_account.id | ID used to identify linked account. | keyword |  |
+| aws.linked_account.name | Name or alias used to identify linked account. | keyword |  |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
