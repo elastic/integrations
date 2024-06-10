@@ -1,0 +1,21 @@
+---
+description: Pipeline for Jamf Protect Telemetry system_performance events.
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: Collection of system system_performance data
+    - append:
+        field: event.category
+        value: host
+    - rename:
+        field: jamf_protect.telemetry.event.system_performance.metrics.tasks
+        target_field: custom.system_performance
+        ignore_missing: true
+on_failure:
+- append:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

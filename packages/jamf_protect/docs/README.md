@@ -94,10 +94,10 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-27T14:43:17.317Z",
+    "@timestamp": "2024-06-10T08:23:15.738Z",
     "agent": {
-        "ephemeral_id": "a159207a-eee9-43af-95dd-4bc3fb4163d2",
-        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
+        "ephemeral_id": "48ff65c7-7dea-49d8-b213-34b505173861",
+        "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.2"
@@ -111,7 +111,7 @@ An example event for `alerts` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
+        "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "snapshot": false,
         "version": "8.13.2"
     },
@@ -124,7 +124,7 @@ An example event for `alerts` looks as following:
         ],
         "dataset": "jamf_protect.alerts",
         "id": "6bdb0697-6d07-47bc-a37d-6c3348a5d953",
-        "ingested": "2024-05-27T14:43:27Z",
+        "ingested": "2024-06-10T08:23:25Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Application that uses custom url handler created",
@@ -437,13 +437,19 @@ An example event for `telemetry` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-27T14:44:58.617Z",
+    "@timestamp": "2024-06-10T08:25:09.290Z",
     "agent": {
-        "ephemeral_id": "9db22e40-43c9-4aff-bdee-32cd1242930e",
-        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
+        "ephemeral_id": "9f20b65f-8958-4813-bf1a-7905dfbdf8c4",
+        "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.2"
+    },
+    "custom": {
+        "code_directory_hash": "153e203e26743ff3bc3f1e91fc6c0596ad574126",
+        "es_client": false,
+        "event_allowed_by_esclient": true,
+        "platform_binary": true
     },
     "data_stream": {
         "dataset": "jamf_protect.telemetry",
@@ -458,7 +464,7 @@ An example event for `telemetry` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
+        "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "snapshot": false,
         "version": "8.13.2"
     },
@@ -471,10 +477,10 @@ An example event for `telemetry` looks as following:
         "code": "9",
         "dataset": "jamf_protect.telemetry",
         "id": "1755D61B-373E-4F35-9D27-DE8AAA395BC3",
-        "ingested": "2024-05-27T14:45:08Z",
+        "ingested": "2024-06-10T08:25:19Z",
         "kind": "event",
         "provider": "Jamf Protect",
-        "reason": "A new process has been executed.",
+        "reason": "A new process has been executed",
         "sequence": 716,
         "start": "2024-05-13T18:48:07.832Z",
         "type": [
@@ -634,6 +640,47 @@ An example event for `telemetry` looks as following:
 | custom.record_name | Name of the record | keyword |
 | custom.shell | Shell associated with the user or process | keyword |
 | custom.source_address_type | Defines the source address type | keyword |
+| custom.system_performance.bytes_received | Bytes received by the task | long |
+| custom.system_performance.bytes_received_per_s | Bytes received per second by the task | double |
+| custom.system_performance.bytes_sent | Bytes sent by the task | long |
+| custom.system_performance.bytes_sent_per_s | Bytes sent per second by the task | double |
+| custom.system_performance.cputime_ms_per_s | CPU time in milliseconds per second for the task | double |
+| custom.system_performance.cputime_ns | CPU time in nanoseconds for the task | long |
+| custom.system_performance.cputime_sample_ms_per_s | CPU sample time in milliseconds per second for the task | double |
+| custom.system_performance.cputime_userland_ratio | Userland CPU time ratio for the task | double |
+| custom.system_performance.diskio_bytesread | Bytes read by disk I/O for the task | long |
+| custom.system_performance.diskio_bytesread_per_s | Bytes read per second by disk I/O for the task | double |
+| custom.system_performance.diskio_byteswritten | Bytes written by disk I/O for the task | long |
+| custom.system_performance.diskio_byteswritten_per_s | Bytes written per second by disk I/O for the task | double |
+| custom.system_performance.energy_impact | Energy impact of the task | double |
+| custom.system_performance.energy_impact_per_s | Energy impact per second of the task | double |
+| custom.system_performance.idle_wakeups | Number of idle wakeups for the task | long |
+| custom.system_performance.interval_ns | Interval in nanoseconds | long |
+| custom.system_performance.intr_wakeups_per_s | Interrupt wakeups per second for the task | double |
+| custom.system_performance.name | Name of the task | keyword |
+| custom.system_performance.packets_received | Packets received by the task | long |
+| custom.system_performance.packets_received_per_s | Packets received per second by the task | double |
+| custom.system_performance.packets_sent | Packets sent by the task | long |
+| custom.system_performance.packets_sent_per_s | Packets sent per second by the task | double |
+| custom.system_performance.pageins | Page-ins by the task | long |
+| custom.system_performance.pageins_per_s | Page-ins per second by the task | double |
+| custom.system_performance.pid | Process ID of the task | long |
+| custom.system_performance.qos_background_ms_per_s | QoS background time in milliseconds per second for the task | double |
+| custom.system_performance.qos_background_ns | QoS background time in nanoseconds for the task | long |
+| custom.system_performance.qos_default_ms_per_s | QoS default time in milliseconds per second for the task | double |
+| custom.system_performance.qos_default_ns | QoS default time in nanoseconds for the task | long |
+| custom.system_performance.qos_disabled_ms_per_s | QoS disabled time in milliseconds per second for the task | double |
+| custom.system_performance.qos_disabled_ns | QoS disabled time in nanoseconds for the task | long |
+| custom.system_performance.qos_maintenance_ms_per_s | QoS maintenance time in milliseconds per second for the task | double |
+| custom.system_performance.qos_maintenance_ns | QoS maintenance time in nanoseconds for the task | long |
+| custom.system_performance.qos_user_initiated_ms_per_s | QoS user-initiated time in milliseconds per second for the task | double |
+| custom.system_performance.qos_user_initiated_ns | QoS user-initiated time in nanoseconds for the task | long |
+| custom.system_performance.qos_user_interactive_ms_per_s | QoS user-interactive time in milliseconds per second for the task | double |
+| custom.system_performance.qos_user_interactive_ns | QoS user-interactive time in nanoseconds for the task | long |
+| custom.system_performance.qos_utility_ms_per_s | QoS utility time in milliseconds per second for the task | double |
+| custom.system_performance.qos_utility_ns | QoS utility time in nanoseconds for the task | long |
+| custom.system_performance.started_abstime_ns | Absolute start time in nanoseconds for the task | long |
+| custom.system_performance.timer_wakeups.wakeups | Number of wakeups | long |
 | custom.to_username | Username to which an action is directed | keyword |
 | custom.tty | Software terminal device file that the process is associated with | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -820,10 +867,10 @@ An example event for `web_threat_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-27T14:48:17.391Z",
+    "@timestamp": "2024-06-10T08:28:49.848Z",
     "agent": {
-        "ephemeral_id": "b5e5f8c5-4b25-4872-92c2-7855dea53eee",
-        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
+        "ephemeral_id": "6f7eca76-dd75-4ece-b004-677b598d9341",
+        "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.2"
@@ -842,7 +889,7 @@ An example event for `web_threat_events` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
+        "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "snapshot": false,
         "version": "8.13.2"
     },
@@ -854,7 +901,7 @@ An example event for `web_threat_events` looks as following:
         ],
         "dataset": "jamf_protect.web_threat_events",
         "id": "013b15c9-8f62-4bf1-948a-d82367af2a10",
-        "ingested": "2024-05-27T14:48:27Z",
+        "ingested": "2024-06-10T08:28:59Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Sideloaded App",
@@ -1087,10 +1134,10 @@ An example event for `web_traffic_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-27T14:49:56.561Z",
+    "@timestamp": "2024-06-10T08:30:42.191Z",
     "agent": {
-        "ephemeral_id": "b9db18e8-fd3b-4ed9-8e1f-dc345cdc362c",
-        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
+        "ephemeral_id": "e4353fe6-9650-40d0-b350-7d1bb40b4818",
+        "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.2"
@@ -1116,7 +1163,7 @@ An example event for `web_traffic_events` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0433a83d-42c1-4916-b854-fe218fca0f10",
+        "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "snapshot": false,
         "version": "8.13.2"
     },
@@ -1128,7 +1175,7 @@ An example event for `web_traffic_events` looks as following:
             "network"
         ],
         "dataset": "jamf_protect.web_traffic_events",
-        "ingested": "2024-05-27T14:50:06Z",
+        "ingested": "2024-06-10T08:30:52Z",
         "kind": "event",
         "outcome": [
             "success"
