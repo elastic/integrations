@@ -516,6 +516,7 @@ An example event for `agent` looks as following:
 | sentinel_one.agent.active_directory.mail | Mail. | keyword |
 | sentinel_one.agent.active_directory.user.principal_name | User principal name. | keyword |
 | sentinel_one.agent.active_threats_count | Current number of active threats. | long |
+| sentinel_one.agent.agent.id | Related agent (if applicable). | keyword |
 | sentinel_one.agent.allow_remote_shell | Agent is capable and policy enabled for remote shell. | boolean |
 | sentinel_one.agent.apps_vulnerability_status | Apps vulnerability status. | keyword |
 | sentinel_one.agent.cloud_provider | Cloud providers for this agent. | flattened |
@@ -1550,6 +1551,7 @@ An example event for `threat` looks as following:
 | sentinel_one.threat.agent.decommissioned_at | Decommissioned at. | boolean |
 | sentinel_one.threat.agent.group.id | Group id. | keyword |
 | sentinel_one.threat.agent.group.name | Group name. | keyword |
+| sentinel_one.threat.agent.id | Related agent (if applicable). | keyword |
 | sentinel_one.threat.agent.infected | Agent infected. | boolean |
 | sentinel_one.threat.agent.is_active | Is active. | boolean |
 | sentinel_one.threat.agent.is_decommissioned | Is decommissioned. | boolean |
