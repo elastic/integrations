@@ -136,6 +136,8 @@ An example event for `audit` looks as following:
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| process.cgroup.id | CgroupID is the internal cgroupv2 ID of the event. | long |
+| process.flags | Flags are the flags passed to open. | long |
 | teleport.audit.access_list.members.joined_on | JoinedOn is the date that the member joined. | date |
 | teleport.audit.access_list.members.member_name | MemberName is the name of the member. | keyword |
 | teleport.audit.access_list.members.removed_on | RemovedOn is the date that the access list member was removed. Will only be populated for deletion. | date |
@@ -327,8 +329,6 @@ An example event for `audit` looks as following:
 | teleport.audit.okta.users.deleted | NumUsersDeleted is the number of Teleport users deleted in this synchronization pass. | integer |
 | teleport.audit.okta.users.modified | NumUserModified is the number of Teleport users modified in this synchronization pass. | integer |
 | teleport.audit.okta.users.total | NumUsersTotal is the total number of Teleport users managed by the Okta integration at the end of the synchronization pass. | integer |
-| teleport.audit.process.cgroup_id | CgroupID is the internal cgroupv2 ID of the event. | long |
-| teleport.audit.process.flags | Flags are the flags passed to open. | long |
 | teleport.audit.resource.expires | Expires is set if resource expires | date |
 | teleport.audit.resource.name | ResourceName is a resource name | keyword |
 | teleport.audit.resource.ttl | TTL is a TTL of reset password token represented as duration, e.g. '10m' | keyword |
