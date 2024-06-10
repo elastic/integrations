@@ -1,0 +1,61 @@
+---
+description: Pipeline for processing filterstat logs from Stormshield appliances.
+processors:
+  - script:
+      tag: script_split_composite_pairs
+      lang: painless
+      description: Splits composite key/value pairs into nested data.
+      params:
+        i: in_count
+        o: out_count
+      source: >-
+        Pattern compositeKeyPattern = /^(\w+)\((\w+)\/(\w+)\)$/;
+        Pattern compositeValuePattern = /^(\w+)\/(\w+)$/;
+        
+        def replacePairs = [:];
+        def move = [];
+        ctx.stormshield.forEach((k, v) -> {
+          if (k.contains('(')) {
+            replacePairs[k] = v;
+          } else if (Character.isUpperCase(k.charAt(0))) {
+            move.add(k);
+          }
+        
+          return true;
+        });
+        
+        if (!ctx.stormshield.containsKey("metadata")) {
+          ctx.stormshield.metadata = [:];
+        }
+        move.forEach(k -> {
+          ctx.stormshield.metadata[k] = ctx.stormshield[k];
+          ctx.stormshield.remove(k);
+          return true;
+        });
+        replacePairs.forEach((k, v) -> {
+          def keyMatcher = compositeKeyPattern.matcher(k);
+          if (!keyMatcher.matches()) {
+            return false;
+          }
+          def valueMatcher = compositeValuePattern.matcher(v);
+          if (!valueMatcher.matches()) {
+            return false;
+          }
+          def newSubkeys = [:];
+          def newSubkey0 = keyMatcher.group(2);
+          def newSubkey1 = keyMatcher.group(3);
+          newSubkey0 = params.containsKey(newSubkey0) ? params[newSubkey0] : newSubkey0;
+          newSubkey1 = params.containsKey(newSubkey1) ? params[newSubkey1] : newSubkey1;
+          newSubkeys[newSubkey0] = Long.parseLong(valueMatcher.group(1));
+          newSubkeys[newSubkey1] = Long.parseLong(valueMatcher.group(2));
+          ctx.stormshield.metadata[keyMatcher.group(1)] = newSubkeys;
+          ctx.stormshield.remove(k);
+        });
+
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
