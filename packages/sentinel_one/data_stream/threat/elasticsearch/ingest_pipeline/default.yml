@@ -257,8 +257,12 @@ processors:
       ignore_missing: true
   - rename:
       field: json.agentRealtimeInfo.agentId
-      target_field: host.id
+      target_field: sentinel_one.threat.agent.id
       ignore_missing: true
+  - set:
+      field: host.id
+      copy_from: sentinel_one.threat.agent.id
+      if: ctx.sentinel_one?.threat?.agent?.id != null
   - convert:
       field: json.agentRealtimeInfo.agentInfected
       target_field: sentinel_one.threat.agent.infected
