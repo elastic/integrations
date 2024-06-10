@@ -35,9 +35,25 @@ processors:
       field: teleport.audit.uid
       target_field: event.id
       ignore_missing: true
-  - rename:
+  - set:
+      field: event.outcome
+      value: ['failure']
+      if: 'ctx.teleport.audit.code.endsWith("E") || ctx.teleport.audit.code.endsWith("W")'
+  - append:
+      field: event.code
+      value:
+        - '{{{teleport.audit.event}}}'
+      if: ctx.teleport.audit.event != null
+  - append:
+      field: event.code
+      value:
+        - '{{{teleport.audit.code}}}'
+      if: ctx.teleport.audit.code != null
+  - remove:
+      field: teleport.audit.event
+      ignore_missing: true
+  - remove:
       field: teleport.audit.code
-      target_field: event.code
       ignore_missing: true
   - date:
       field: teleport.audit.time
