@@ -305,7 +305,7 @@ An example event for `audit` looks as following:
 | teleport.audit.kubernetes.pod.container_name | KubernetesContainerName is the name of the container within the pod. | flattened |
 | teleport.audit.kubernetes.pod.node_name | KubernetesNodeName is the node that runs the pod. | keyword |
 | teleport.audit.kubernetes.users | KubernetesUsers is a list of Kubernetes usernames for the user. | flattened |
-| teleport.audit.lock.target | Method is the event field indicating how the login was performed | flattened |
+| teleport.audit.lock.target | Target describes the set of interactions that the lock applies to. | flattened |
 | teleport.audit.login.applied_rules | AppliedLoginRules stores the name of each login rule that was applied during the login. | keyword |
 | teleport.audit.login.challenge_allow_reuse | ChallengeAllowReuse defines whether the MFA challenge allows reuse. | boolean |
 | teleport.audit.login.challenge_scope | ChallengeScope is the authorization scope for this MFA challenge. | keyword |
