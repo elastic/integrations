@@ -104,6 +104,16 @@ processors:
   #########################################################
   # Now rename things to ECS
 
+  - set:
+      field: observer.name
+      copy_from: stormshield.fw
+      if: ctx.stormshield?.fw != null
+
+  - set:
+      field: observer.type
+      copy_from: stormshield.id
+      if: ctx.stormshield?.id != null
+
   - convert:
       field: stormshield.modsrc
       target_field: source.nat.ip
@@ -457,6 +467,12 @@ processors:
       field: related.ip
       value: "{{{destination.nat.ip}}}"
       if: ctx.destination?.nat?.ip != null
+      allow_duplicates: false
+
+  - append:
+      field: related.user
+      value: "{{{user.name}}}"
+      if: ctx.user?.name != null
       allow_duplicates: false
 
   # ------------------------------------------------------------
