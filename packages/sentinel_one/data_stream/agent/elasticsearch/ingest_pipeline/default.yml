@@ -249,8 +249,12 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.id
-      target_field: host.id
+      target_field: sentinel_one.agent.agent.id
       ignore_missing: true
+  - set:
+      field: host.id
+      copy_from: sentinel_one.agent.agent.id
+      if: ctx.sentinel_one?.agent?.agent?.id != null
   - convert:
       field: json.infected
       target_field: sentinel_one.agent.infected
