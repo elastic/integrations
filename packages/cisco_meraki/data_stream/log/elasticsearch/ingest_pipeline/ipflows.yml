@@ -1,6 +1,11 @@
 ---
 description: Pipeline for Cisco Meraki ip_flow_start and ip_flow_end message type
 processors:
+- grok:
+    field: event.original
+    patterns:
+      - '(?:ip_flow_start|ip_flow_end) %{GREEDYDATA:message}'
+    ignore_failure: true
 - dissect:
     description: Determine if the token is src= or operation
     field: event.original

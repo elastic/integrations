@@ -1732,50 +1732,90 @@ processors:
           field: related.user
           value: '{{{_ingest._value}}}'
 
-  ## This is an best effort attempt to parse command line into arguments.
-  ## Due to the fact that there is no way to know which OS it originates from, and no specific format these are supplied in the data itself,
-  ## there is no good way to get 100% coverage, but this implementation should cover almost all common scenarios.
   - script:
-      description: Splits up the command line to populate more processor fields.
+      tag: split-command-line-device
+      description: Implements Windows-like SplitCommandLine
       lang: painless
-      tag: script_split_command_line
-      if: ctx.process?.command_line != null && ctx.process.command_line != ''
-      source: |
-        def commandLine = ctx.process.command_line;
-        commandLine = commandLine.trim();
-        if (commandLine != "") {
-          ctx.process.command_line = commandLine;
-          def args = new ArrayList();
-          for (def v : / /.split(commandLine)) {
-              if (v != "") {
-                  args.add(v);
-              }
-          }
-          if (args.length > 0) {
-              ctx.process.args = args;
-              ctx.process.args_count = args.length;
-          }
+      if: (ctx.process?.command_line != null && ctx.process.command_line != '') || (ctx.process?.parent?.command_line != null && ctx.process.parent.command_line != '')
+      source: |-
+        // appendBSBytes appends n '\\' bytes to b and returns the resulting slice.
+        def appendBSBytes(StringBuilder b, int n) {
+            for (; n > 0; n--) {
+                b.append('\\');
+            }
+            return b;
         }
-  - script:
-      description: Splits up the command line to populate more parent processor fields.
-      lang: painless
-      tag: script_split_parent_command_line
-      if: ctx.process?.parent?.command_line != null && ctx.process?.parent?.command_line != ''
-      source: |
-        def commandLine = ctx.process.parent.command_line;
-        commandLine = commandLine.trim();
-        if (commandLine != "") {
-          ctx.process.parent.command_line = commandLine;
-          def args = new ArrayList();
-          for (def v : / /.split(commandLine)) {
-              if (v != "") {
-                  args.add(v);
-              }
-          }
-          if (args.length > 0) {
-              ctx.process.parent.args = args;
-              ctx.process.parent.args_count = args.length;
-          }
+
+        // readNextArg splits command line string cmd into next
+        // argument and command line remainder.
+        def readNextArg(String cmd) {
+            def b = new StringBuilder();
+            boolean inquote;
+            int nslash;
+            for (; cmd.length() > 0; cmd = cmd.substring(1)) {
+                def c = cmd.charAt(0);
+                if (c == (char)' ' || c == (char)0x09) {
+                    if (!inquote) {
+                        return [
+                            "arg":  appendBSBytes(b, nslash).toString(),
+                            "rest": cmd.substring(1)
+                        ];
+                    }
+                } else if (c == (char)'"') {
+                    b = appendBSBytes(b, nslash/2);
+                    if (nslash%2 == 0) {
+                        // use "Prior to 2008" rule from
+                        // http://daviddeley.com/autohotkey/parameters/parameters.htm
+                        // section 5.2 to deal with double double quotes
+                        if (inquote && cmd.length() > 1 && cmd.charAt(1) == (char)'"') {
+                            b.append(c);
+                            cmd = cmd.substring(1);
+                        }
+                        inquote = !inquote;
+                    } else {
+                        b.append(c);
+                    }
+                    nslash = 0;
+                    continue;
+                } else if (c == (char)'\\') {
+                    nslash++;
+                    continue;
+                }
+                b = appendBSBytes(b, nslash);
+                nslash = 0;
+                b.append(c);
+            }
+            return [
+                "arg":  appendBSBytes(b, nslash).toString(),
+                "rest": ''
+            ];
+        }
+
+        // commandLineToArgv splits a command line into individual argument
+        // strings, following the Windows conventions documented
+        // at http://daviddeley.com/autohotkey/parameters/parameters.htm#WINARGV
+        // Original implementation found at: https://github.com/golang/go/commit/39c8d2b7faed06b0e91a1ad7906231f53aab45d1
+        def commandLineToArgv(String cmd) {
+            def args = new ArrayList();
+            while (cmd.length() > 0) {
+                if (cmd.charAt(0) == (char)' ' || cmd.charAt(0) == (char)0x09) {
+                    cmd = cmd.substring(1);
+                    continue;
+                }
+                def next = readNextArg(cmd);
+                cmd = next.rest;
+                args.add(next.arg);
+            }
+            return args;
+        }
+
+        if (ctx.process?.command_line != null && ctx.process.command_line != '') {
+          ctx.process.args = commandLineToArgv(ctx.process.command_line);
+          ctx.process.args_count = ctx.process.args.length;
+        }
+        if (ctx.process?.parent?.command_line != null && ctx.process.parent.command_line != '') {
+          ctx.process.parent.args = commandLineToArgv(ctx.process.parent.command_line);
+          ctx.process.parent.args_count = ctx.process.parent.args.length;
         }
 
   # Geo mapping

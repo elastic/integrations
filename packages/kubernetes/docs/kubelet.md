@@ -741,14 +741,14 @@ An example event for `pod` looks as following:
 | kubernetes.pod.cpu.usage.nanocores | CPU used nanocores | long | byte | gauge |
 | kubernetes.pod.cpu.usage.node.pct | CPU usage as a percentage of the total node CPU | scaled_float | percent | gauge |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
-| kubernetes.pod.memory.available.bytes | Total memory available | long | percent | gauge |
+| kubernetes.pod.memory.available.bytes | Total memory available | long |  | gauge |
 | kubernetes.pod.memory.major_page_faults | Total major page faults | long |  | counter |
 | kubernetes.pod.memory.page_faults | Total page faults | long |  | counter |
-| kubernetes.pod.memory.rss.bytes | Total resident set size memory | long | percent | gauge |
+| kubernetes.pod.memory.rss.bytes | Total resident set size memory | long |  | gauge |
 | kubernetes.pod.memory.usage.bytes | Total memory usage | long | byte | gauge |
 | kubernetes.pod.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the pod containers (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
 | kubernetes.pod.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float | percent | gauge |
-| kubernetes.pod.memory.working_set.bytes | Total working set memory | long | percent | gauge |
+| kubernetes.pod.memory.working_set.bytes | Total working set memory | long |  | gauge |
 | kubernetes.pod.memory.working_set.limit.pct | Working set memory usage as a percentage of the defined limit for the pod containers (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
 | kubernetes.pod.network.rx.bytes | Received bytes | long | byte | counter |

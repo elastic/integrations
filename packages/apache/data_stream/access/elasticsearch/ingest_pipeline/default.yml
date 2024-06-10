@@ -15,10 +15,15 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
       field: event.original
       patterns:
-      - '(%{IPORHOST:destination.domain} )?%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
+      - '(%{IPORHOST:destination.domain} )?%{IPORHOST:source.address} %{DATA:apache.access.identity} %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
         "(?:%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}|-)?"
         %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)(
         "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?( X-Forwarded-For="%{ADDRESS_LIST:apache.access.remote_addresses}")?'
@@ -95,7 +100,7 @@ processors:
   - set:
       field: event.kind
       value: event
-  - set:
+  - append:
       field: event.category
       value: web
   - set:
@@ -195,6 +200,11 @@ processors:
   - remove:
       field: event.original
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: apache.access.identity
+      if: ctx.apache?.access?.identity == "-"
       ignore_failure: true
       ignore_missing: true
 on_failure:

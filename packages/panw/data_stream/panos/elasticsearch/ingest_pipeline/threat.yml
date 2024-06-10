@@ -284,35 +284,51 @@ processors:
   # When the scheme of the URL is absent, this script parses the URL in `ctx.panw.panos.misc` into components namely 
   # `url.original`, `url.domain`, `url.port`, `url.path`, `url.query`, `url.extension`
   - script:
-      if: "ctx.url?.scheme == null && ctx.panw?.panos?.sub_type == 'url' && (ctx.panw?.panos?.misc instanceof String) && (ctx.panw.panos.misc.contains('/'))"
+      if: "ctx.url?.scheme == null && ctx.panw?.panos?.sub_type == 'url' && ctx.panw?.panos?.misc instanceof String"
       lang: painless
       source: |-
         Map url = new HashMap();
         String url_original = ctx.panw.panos.misc;
+        String domainPort = url_original;
         url.original = url_original;
-        int idxSlash = url_original.indexOf("/");
-        String domainPort = url_original.substring(0, idxSlash);
+
+        if (url_original.contains("/")) {
+            int idxSlash = url_original.indexOf("/");
+            domainPort = url_original.substring(0, idxSlash);
+            String afterDomain = url_original.substring(idxSlash);
+            int idxQuery = afterDomain.indexOf("?");
+            if (idxQuery == -1) {
+                url.path = afterDomain;
+            }
+            else {
+                url.path = afterDomain.substring(0, idxQuery);
+                url.query = afterDomain.substring(idxQuery + 1);
+            }
+            int idxExtn = url.path.indexOf(".");
+            if (idxExtn != -1) {
+                url.extension = url.path.substring(idxExtn+1);
+            }
+        }
+        else {
+            int idxQuery = url_original.indexOf("?");
+            if (idxQuery != -1) {
+                domainPort = url_original.substring(0, idxQuery);
+                url.query = url_original.substring(idxQuery + 1);
+            }
+        }
+
         if (domainPort.indexOf(":") != -1) {
             url.domain = domainPort.splitOnToken(":")[0];
-            url.port = domainPort.splitOnToken(":")[1];
+            try {
+                url.port = Long.parseLong(domainPort.splitOnToken(":")[1]);
+            } catch ( NumberFormatException e) {
+            }
         }
         else {
             url.domain = domainPort;
             ctx.destination.domain = domainPort;
         }
-        String afterDomain = url_original.substring(idxSlash);
-        int idxQuery = afterDomain.indexOf("?");
-        if (idxQuery == -1) {
-            url.path = afterDomain;
-        }
-        else {
-            url.path = afterDomain.substring(0, idxQuery);
-            url.query = afterDomain.substring(idxQuery + 1);
-        }
-        int idxExtn = url.path.indexOf(".");
-        if (idxExtn != -1) {
-            url.extension = url.path.substring(idxExtn+1);
-        }
+
         ctx.url = url;
         
   - set:

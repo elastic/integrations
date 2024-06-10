@@ -1,12 +1,12 @@
 # Azure Logs Integration
 
-The Azure Logs integration collects logs for specific Azure services like Azure Active Directory (Sign-in, Audit, Identity Protection, and Provisioning logs), Azure Spring Apps, Azure Firewall, Microsoft Graph Activity, and several others using the Activity and Platform logs.
+The Azure Logs integration collects logs for specific Azure services like Microsoft Entra ID (Sign-in, Audit, Identity Protection, and Provisioning logs), Azure Spring Apps, Azure Firewall, Microsoft Graph Activity, and several others using the Activity and Platform logs.
 
-You can then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
+You can then visualize that data in Kibana, create alerts if something goes wrong, and reference data when troubleshooting an issue.
 
-For example, if you wanted to detect possible brute force sign-in attacks, you
-could install the Azure Logs integration to send Azure sign-in logs to Elastic.
-Then, set up a new rule in the Elastic Observability Logs app to alert you when the number of failed sign-in attempts exceeds a certain threshold.
+For example, to detect possible brute force sign-in attacks, you
+can install the Azure Logs integration to send Azure sign-in logs to Elastic.
+Then, by setting up a new rule in the Elastic Observability Logs app, you can be alerted when the number of failed sign-in attempts exceeds a certain threshold.
 Or, perhaps you want to better plan your Azure capacity.
 Send Azure Activity logs to Elastic to track and visualize when your virtual machines
 fail to start due to an exceed quota limit.
@@ -16,7 +16,7 @@ fail to start due to an exceed quota limit.
 The Azure Logs integration collects logs.
 
 **Logs** help you keep a record of events that happen on your Azure account.
-Log data streams collected by the Azure Logs integration include Activity, Platform, Active Directory (Sign-in, Audit, Identity Protection, Provisioning), Microsoft Graph Activity, and Spring Apps logs.
+Log data streams collected by the Azure Logs integration include Activity, Platform, Microsoft Entra ID (Sign-in, Audit, Identity Protection, Provisioning), Microsoft Graph Activity, and Spring Apps logs.
 
 ## Requirements
 
@@ -35,15 +35,15 @@ Azure Diagnostic settings allow you to export metrics and logs from a **source**
 
 ```text
    ┌──────────────────┐      ┌──────────────┐     ┌─────────────────┐
-   │ Active Directory │      │  Diagnostic  │     │    Event Hub    │
+   │Microsoft Entra ID│      │  Diagnostic  │     │    Event Hub    │
    │    <<source>>    │─────▶│   settings   │────▶│ <<destination>> │
    └──────────────────┘      └──────────────┘     └─────────────────┘
 ```
 
 Examples of source services:
 
-* Active Directory
 * Azure Monitor
+* Microsoft Entra ID
 * Spring Apps
 
 The Diagnostic settings support several destination types. The Elastic Agent requires a Diagnostic setting configured with Event Hub as the destination.
@@ -95,7 +95,7 @@ You need to keep the storage account container as long as you need to run the in
 
 ## Setup
 
-Elastic strongly recommends installing the individual integrations ("Azure Active Directory" logs or "Azure Activity logs") instead of the collective ones ("Azure Logs"). This allows you to have a dedicated event hub for each Azure service or log group, the recommended approach for optimal performance.
+Elastic strongly recommends installing the individual integrations ("Microsoft Entra ID" logs or "Azure Activity logs") instead of the collective ones ("Azure Logs"). This allows you to have a dedicated event hub for each Azure service or log group, the recommended approach for optimal performance.
 
 Before adding the integration, you must complete the following tasks.
 
@@ -133,21 +133,21 @@ If you are familiar with Kafka, here's a conceptual mapping between the two:
 
 Elastic strongly recommends creating one event hub for each Azure service you collect data from.
 
-For example, if you plan to collect Azure Active Directory (Azure AD) logs and Activity logs, create two event hubs: one for Azure AD and one for Activity logs.
+For example, if you plan to collect Microsoft Entra ID logs and Activity logs, create two event hubs: one for Microsoft Entra ID and one for Activity logs.
 
 Here's an high-level diagram of the solution:
 
 ```text
-  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐                    
-  │    Azure AD    │   │  Diagnostic  │   │     adlogs     │                    
-  │  <<service>>   │──▶│   settings   │──▶│ <<event hub>>  │──┐                 
-  └────────────────┘   └──────────────┘   └────────────────┘  │   ┌────────────┐
-                                                              │   │  Elastic   │
-                                                              ├──▶│   Agent    │
-  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐  │   └────────────┘
-  │ Azure Monitor  │   │  Diagnostic  │   │  activitylogs  │  │                 
-  │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │──┘                 
-  └────────────────┘   └──────────────┘   └────────────────┘                                    
+  ┌───────────────┐   ┌──────────────┐   ┌───────────────┐
+  │  MS Entra ID  │   │  Diagnostic  │   │     adlogs    │
+  │  <<service>>  │──▶│   settings   │──▶│ <<event hub>> │──┐
+  └───────────────┘   └──────────────┘   └───────────────┘  │   ┌───────────┐
+                                                            │   │  Elastic  │
+                                                            ├──▶│   Agent   │
+  ┌───────────────┐   ┌──────────────┐   ┌───────────────┐  │   └───────────┘
+  │ Azure Monitor │   │  Diagnostic  │   │  activitylogs │  │
+  │  <<service>>  ├──▶│   settings   │──▶│ <<event hub>> │──┘
+  └───────────────┘   └──────────────┘   └───────────────┘
 ```
 
 Having one event hub for each Azure service is beneficial in terms of performance and easy of troubleshooting.
@@ -155,20 +155,20 @@ Having one event hub for each Azure service is beneficial in terms of performanc
 For high-volume deployments, we recommend one event hub for each data stream:
 
 ```text
-                       ┌──────────────┐   ┌─────────────────────┐                   
-                       │  Diagnostic  │   │   signin (adlogs)   │                   
-                    ┌─▶│   settings   │──▶│    <<event hub>>    │──┐                
-                    │  └──────────────┘   └─────────────────────┘  │                
-                    │                                              │                
- ┌────────────────┐ │  ┌──────────────┐   ┌─────────────────────┐  │  ┌────────────┐
- │    Azure AD    │ │  │  Diagnostic  │   │   audit (adlogs)    │  │  │  Elastic   │
- │  <<service>>   │─┼─▶│   settings   │──▶│    <<event hub>>    │──┼─▶│   Agent    │
- └────────────────┘ │  └──────────────┘   └─────────────────────┘  │  └────────────┘
-                    │                                              │                
-                    │  ┌──────────────┐   ┌─────────────────────┐  │                
-                    │  │  Diagnostic  │   │provisioning (adlogs)│  │                
-                    └─▶│   settings   │──▶│    <<event hub>>    │──┘                
-                       └──────────────┘   └─────────────────────┘                   
+                   ┌──────────────┐   ┌─────────────────────┐
+                   │  Diagnostic  │   │   signin (adlogs)   │
+                ┌─▶│   settings   │──▶│    <<event hub>>    │──┐
+                │  └──────────────┘   └─────────────────────┘  │
+                │                                              │
+┌─────────────┐ │  ┌──────────────┐   ┌─────────────────────┐  │  ┌───────────┐
+│ MS Entra ID │ │  │  Diagnostic  │   │   audit (adlogs)    │  │  │  Elastic  │
+│ <<service>> │─┼─▶│   settings   │──▶│    <<event hub>>    │──┼─▶│   Agent   │
+└─────────────┘ │  └──────────────┘   └─────────────────────┘  │  └───────────┘
+                │                                              │
+                │  ┌──────────────┐   ┌─────────────────────┐  │
+                │  │  Diagnostic  │   │provisioning (adlogs)│  │
+                └─▶│   settings   │──▶│    <<event hub>>    │──┘
+                   └──────────────┘   └─────────────────────┘
 ```
 
 #### Consumer Group
@@ -207,7 +207,7 @@ The Diagnostic settings export the logs from Azure services to a destination and
 
 To create a diagnostic settings to export logs:
 
-1. Locate the Diagnostic settings for the service (for example, Azure Active Directory).
+1. Locate the Diagnostic settings for the service (for example, Microsoft Entra ID).
 1. Select Diagnostic settings in the **Monitoring** section of the service. Note that different services may place the diagnostic settings in different positions.
 1. Select **Add diagnostic setting**.
 
@@ -222,10 +222,10 @@ Each Azure services exports a well-defined list of log categories. Check the ind
 Select the **subscription** and the **event hub namespace** you previously created. Select the event hub dedicated to this integration.
 
 ```text
-  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐      ┌────────────┐
-  │    Azure AD    │   │  Diagnostic  │   │     adlogs     │      │  Elastic   │
-  │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │─────▶│   Agent    │
-  └────────────────┘   └──────────────┘   └────────────────┘      └────────────┘
+  ┌───────────────┐   ┌──────────────┐   ┌───────────────┐      ┌───────────┐
+  │  MS Entra ID  │   │  Diagnostic  │   │     adlogs    │      │  Elastic  │
+  │  <<service>>  ├──▶│   settings   │──▶│ <<event hub>> │─────▶│   Agent   │
+  └───────────────┘   └──────────────┘   └───────────────┘      └───────────┘
 ```
 
 ### Create a Storage account container
@@ -249,15 +249,15 @@ To create the storage account:
 This is the final diagram of the a setup for collecting Activity logs from the Azure Monitor service.
 
 ```text
-  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐         ┌────────────┐
-  │Active Directory│   │  Diagnostic  │   │     adlogs     │  logs   │  Elastic   │
-  │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │────────▶│   Agent    │
-  └────────────────┘   └──────────────┘   └────────────────┘         └────────────┘
-                                                                            │      
-                       ┌──────────────┐          consumer group info        │      
-                       │  azurelogs   │          (state, position, or       │      
-                       │<<container>> │◀───────────────offset)──────────────┘      
-                       └──────────────┘                                                             
+ ┌───────────────┐   ┌──────────────┐   ┌────────────────┐         ┌───────────┐
+ │  MS Entra ID  │   │  Diagnostic  │   │     adlogs     │  logs   │  Elastic  │
+ │  <<service>>  ├──▶│   settings   │──▶│ <<event hub>>  │────────▶│   Agent   │
+ └───────────────┘   └──────────────┘   └────────────────┘         └───────────┘
+                                                                          │     
+                     ┌──────────────┐          consumer group info        │     
+                     │  azurelogs   │          (state, position, or       │     
+                     │<<container>> │◀───────────────offset)──────────────┘     
+                     └──────────────┘                                           
 ```
 
 #### How many Storage account containers?

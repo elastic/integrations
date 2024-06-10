@@ -1,6 +1,10 @@
 # Jamf Protect
 
-The Jamf Protect integration collects and parses data received from [Jamf Protect](https://learn.jamf.com/bundle/jamf-protect-documentation/page/About_Jamf_Protect.html) using a HTTP endpoint.
+The Jamf Protect integration collects and parses data received from [Jamf Protect](https://learn.jamf.com/bundle/jamf-protect-documentation/page/About_Jamf_Protect.html) using the following methods.
+
+- HTTP Endpoint mode - Jamf Protect streams logs directly to an HTTP endpoint hosted by your Elastic Agent.
+- AWS S3 polling mode - Jamf Protect forwards data to S3 and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
+- AWS S3 SQS mode - Jamf Protect writes data to S3, S3 pushes a new object notification to SQS, Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple Agents can be used in this mode.
 
 Use the Jamf Protect integration to collect logs from your machines.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
@@ -26,11 +30,11 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 To use this integration, you will also need to:
 - Enable the integration in Elastic
-- Configure Jamf Protect (macOS Security) to send logs to the Elastic Agent (Custom HTTP Endpoint Logs)
-    - Remote Alert Collection Endpoints
-    - Unified Logs Collection Endpoints
-    - Telemetry Collection Endpoints
-- Configure Jamf Protect (Jamf Security Cloud) to send logs to the Elastic Agent (Custom HTTP Endpoint Logs)
+- Configure Jamf Protect (macOS Security) to send logs to AWS S3 or the Elastic Agent (HTTP Endpoint)
+    - Alerts
+    - Unified Logs
+    - Telemetry
+- Configure Jamf Protect (Jamf Security Cloud) to send logs to AWS S3 or the Elastic Agent (HTTP Endpoint)
     - Threat Event Stream 
     - Network Traffic Stream
 
@@ -39,9 +43,9 @@ To use this integration, you will also need to:
 
 For step-by-step instructions on how to set up an new integration in Elastic, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
-When setting up the integration, you will choose to collect logs via HTTP Endpoint.
+When setting up the integration, you will choose to collect logs via either S3 or HTTP Endpoint.
 
-### Configure Jamf Protect
+### Configure Jamf Protect using HTTP Endpoint
 
 After validating settings, you can configure Jamf Protect to send events to Elastic.
 For more information on configuring Jamf Protect, see 
@@ -67,6 +71,15 @@ Then, depending on which events you want to send to Elastic, configure one or mu
 - In the Server hostname or IP field, enter the full URL with port using this format: `http[s]://{ELASTICAGENT_ADDRESS}:{AGENT_PORT}`.
 
 
+### Configure Jamf Protect using AWS S3
+
+After validating settings, you can configure Jamf Protect to send events to AWS S3.
+For more information on configuring Jamf Protect, see 
+- [Creating an Action Configuration](https://learn.jamf.com/bundle/jamf-protect-documentation/page/Creating_an_Action_Configuration.html)
+- [Enabling Data Forwarding to AWS S3](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Data_Forwarding_to_a_Third_Party_Storage_Solution.html#ariaid-title2)
+- [Configure Threat Event Stream](https://learn.jamf.com/en-US/bundle/jamf-protect-documentation/page/Configuring_the_Threat_Events_Stream_to_Send_Events_to_AWS_S3.html)
+
+
 **Copyright (c) 2024, Jamf Software, LLC.  All rights reserved.**
 
 ## Logs reference
@@ -81,137 +94,153 @@ An example event for `alerts` looks as following:
 
 ```json
 {
+    "@timestamp": "2024-05-17T00:09:29.807Z",
+    "agent": {
+        "ephemeral_id": "dd1cb398-e758-40c0-87b6-4ce4fb3611b2",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "jamf_protect.alerts",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
     "event": {
-        "action": "User Elevated Action",
+        "action": "CustomURLHandlerCreation",
+        "agent_id_status": "verified",
         "category": [
             "host",
-            "process"
+            "file"
         ],
-        "id": "7232d4a4-2289-49ba-a218-215ef3d62ec4",
+        "dataset": "jamf_protect.alerts",
+        "id": "6bdb0697-6d07-47bc-a37d-6c3348a5d953",
+        "ingested": "2024-05-17T00:09:39Z",
         "kind": "alert",
-        "module": "jamf_protect",
-        "outcome": "success",
         "provider": "Jamf Protect",
-        "reason": "Application used deprecated elevation API",
+        "reason": "Application that uses custom url handler created",
         "severity": 0,
-        "start": "2023-11-01T12:20:38.851Z",
+        "start": "2023-11-21T11:32:44.184Z",
         "type": [
-            "start"
+            "change"
         ]
+    },
+    "file": {
+        "code_signature": {
+            "status": "code object is not signed at all"
+        },
+        "gid": "0",
+        "inode": "19478271",
+        "mode": "16804",
+        "path": "/Applications/.Microsoft Teams (work or school).app.installBackup",
+        "size": 96,
+        "uid": "0"
     },
     "group": {
         "id": "0",
         "name": "wheel"
     },
     "host": {
-        "hostname": "VMAC-2C23RW4DY",
-        "id": "0000FE00-8406CE28ECFC4DAB",
+        "hostname": "LMAC-ZW0GTLVDL",
+        "id": "32EC79C5-26DC-535A-85F7-986F063297E2",
         "ip": [
-            "192.168.11.226"
+            "175.16.199.1"
         ],
         "os": {
             "family": "macos",
-            "full": "Version 14.0 (Build 23A344)"
+            "full": "Version 14.2 (Build 23C5030f)"
         }
     },
-    "message": "{\"caid\":\"9344154b2323cbfdca098e408354212d4331ac3e9e538497aba0f766723661f7\",\"certid\":\"312301bd32f3fc8f82c7d6e57814764ae751f171f37496407d8998a32892bcea\",\"input\":{\"host\":{\"os\":\"Version 14.0 (Build 23A344)\",\"ips\":[\"192.168.11.226\"],\"serial\":\"Z2C23RW4DY\",\"hostname\":\"VMAC-2C23RW4DY\",\"protectVersion\":\"5.1.0.4\",\"provisioningUDID\":\"0000FE00-8406CE28ECFC4DAB\"},\"match\":{\"tags\":[\"MITREattack\",\"DefenseEvasion\",\"T1548.004\",\"AbuseElevationControlMechanism\",\"PrivilegeEscalation\"],\"uuid\":\"7232d4a4-2289-49ba-a218-215ef3d62ec4\",\"event\":{\"pid\":3136,\"type\":1,\"uuid\":\"e19385fc-6077-4d00-ad56-b89eec15e730\",\"subType\":7,\"timestamp\":1698841238.851668},\"facts\":[{\"name\":\"User Elevated Action\",\"tags\":[\"DefenseEvasion\",\"T1548.004\",\"PrivilegeEscalation\",\"MITREattack\",\"AbuseElevationControlMechanism\"],\"uuid\":\"db094865-99c2-416c-9f06-e7740d9e8a20\",\"human\":\"Application used deprecated elevation API\",\"actions\":[{\"name\":\"Report\"}],\"context\":[],\"version\":1,\"severity\":0}],\"custom\":false,\"actions\":[{\"name\":\"Report\"}],\"context\":[],\"severity\":0},\"related\":{\"files\":[],\"users\":[{\"uid\":0,\"name\":\"root\",\"uuid\":\"Z2C23RW4DY0\"},{\"uid\":501,\"name\":\"local-admin\",\"uuid\":\"Z2C23RW4DY1f5\"}],\"groups\":[{\"gid\":0,\"name\":\"wheel\",\"uuid\":\"Z2C23RW4DY0\"},{\"gid\":20,\"name\":\"staff\",\"uuid\":\"Z2C23RW4DY14\"}],\"binaries\":[{\"gid\":0,\"uid\":0,\"fsid\":16777230,\"mode\":35273,\"path\":\"/usr/libexec/security_authtrampoline\",\"size\":134768,\"inode\":1152921500312504800,\"xattrs\":[],\"changed\":1694870910,\"created\":1694870910,\"sha1hex\":\"82e899cb1c8a42b74653b05ca526d5feae92b9f6\",\"accessed\":1694870910,\"modified\":1694870910,\"sha256hex\":\"7528368ce03bd25fb22520923f366e364ea40ae90b22dac79fba90f2152c3d32\",\"isDownload\":false,\"objectType\":\"GPSystemObject\",\"isAppBundle\":false,\"isDirectory\":false,\"signingInfo\":{\"appid\":\"com.apple.security_authtrampoline\",\"cdhash\":\"rbIoddPMz9MoMMZl1ATihY8wlMk=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"isScreenShot\":false},{\"gid\":0,\"uid\":0,\"fsid\":16777230,\"mode\":33261,\"path\":\"/Library/Application Support/JAMF/Remote Assist/jamfRemoteAssistLauncher\",\"size\":6929392,\"inode\":4631313,\"xattrs\":[],\"changed\":1698101729,\"created\":1697718684,\"sha1hex\":\"4f16310b5f518c8b0bd29afdfb8e2ca7a5a0b0b3\",\"accessed\":1698818094,\"modified\":1697718684,\"sha256hex\":\"b6e3e8d03cb0b11bf0e30649fcb3755e58babd00f942e07f85b656980fe4d9ff\",\"isDownload\":false,\"objectType\":\"GPSystemObject\",\"isAppBundle\":false,\"isDirectory\":false,\"signingInfo\":{\"appid\":\"com.jamf.remoteassist.launcher\",\"cdhash\":\"OkjDuX0cFaDreH32s6FfHKg1FqE=\",\"status\":0,\"teamid\":\"483DWKW443\",\"signerType\":2,\"authorities\":[\"Developer ID Application: JAMF Software (483DWKW443)\",\"Developer ID Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"isScreenShot\":false},{\"gid\":0,\"uid\":0,\"fsid\":16777230,\"mode\":35145,\"path\":\"/usr/bin/sudo\",\"size\":1446192,\"inode\":1152921500312502700,\"xattrs\":[],\"changed\":1694870910,\"created\":1694870910,\"sha1hex\":\"8e860430a91946640dcc5161c726a39dc8576cc3\",\"accessed\":1694870910,\"modified\":1694870910,\"sha256hex\":\"38e7f57d53e3c8847ea3361085e13d87849b31f588bfe9e9e1c02abfac542aef\",\"isDownload\":false,\"objectType\":\"GPSystemObject\",\"isAppBundle\":false,\"isDirectory\":false,\"signingInfo\":{\"appid\":\"com.apple.sudo\",\"cdhash\":\"LZl8hBA1BePrgPrqw+Ap/HR6YUg=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"isScreenShot\":false},{\"gid\":0,\"uid\":0,\"fsid\":16777230,\"mode\":33133,\"path\":\"/bin/bash\",\"size\":1310224,\"inode\":1152921500312501200,\"xattrs\":[],\"changed\":1694870910,\"created\":1694870910,\"sha1hex\":\"db9d08f69e6bff5c31ff7d7a0da06a0a8311c393\",\"accessed\":1694870910,\"modified\":1694870910,\"sha256hex\":\"4c70b5307a375045d205dbff19dc96fdaa25a77061446259204657c97726c70a\",\"isDownload\":false,\"objectType\":\"GPSystemObject\",\"isAppBundle\":false,\"isDirectory\":false,\"signingInfo\":{\"appid\":\"com.apple.bash\",\"cdhash\":\"w8D5iqHkJJxjGQGuFQLtfzG2Wes=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"isScreenShot\":false},{\"gid\":0,\"uid\":0,\"fsid\":16777230,\"mode\":33261,\"path\":\"/bin/zsh\",\"size\":1377584,\"inode\":1152921500312501200,\"xattrs\":[],\"changed\":1694870910,\"created\":1694870910,\"sha1hex\":\"959ade1e4967a51eb8757d723d5040090fdfcb5c\",\"accessed\":1694870910,\"modified\":1694870910,\"sha256hex\":\"ccb1ba009baa2353c3806fe4f56349497b542104b5104e7a82b8f8ce2304ec03\",\"isDownload\":false,\"objectType\":\"GPSystemObject\",\"isAppBundle\":false,\"isDirectory\":false,\"signingInfo\":{\"appid\":\"com.apple.zsh\",\"cdhash\":\"f8w59TUpUrUhesGyuRBvXldP3Q0=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"isScreenShot\":false},{\"gid\":0,\"uid\":0,\"fsid\":16777230,\"mode\":35181,\"path\":\"/usr/bin/login\",\"size\":172032,\"inode\":1152921500312502100,\"xattrs\":[],\"changed\":1694870910,\"created\":1694870910,\"sha1hex\":\"875c999ee4df1a16d7654636714f852f55d1cc57\",\"accessed\":1694870910,\"modified\":1694870910,\"sha256hex\":\"4fa5b402145c8228454641e232d3d4b4152df143bf3ffda98d75c200e661baf4\",\"isDownload\":false,\"objectType\":\"GPSystemObject\",\"isAppBundle\":false,\"isDirectory\":false,\"signingInfo\":{\"appid\":\"com.apple.login\",\"cdhash\":\"MnR8eKbXO4v5eUokTXLWEDUfCVY=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[\"com.apple.private.endpoint-security.submit.login\",\"com.apple.private.security.clear-library-validation\"],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"isScreenShot\":false},{\"gid\":0,\"uid\":0,\"fsid\":16777230,\"mode\":33261,\"path\":\"/System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal\",\"size\":2222656,\"inode\":1152921500311913100,\"xattrs\":[],\"changed\":1694870910,\"created\":1694870910,\"sha1hex\":\"14c2df1ea5a91fed7527fcfdff74268e19524eb3\",\"accessed\":1694870910,\"modified\":1694870910,\"sha256hex\":\"17a6a338efd6052c871a6da90b81c483a3edea43c056326587735b89feaf189c\",\"isDownload\":false,\"objectType\":\"GPSystemObject\",\"isAppBundle\":false,\"isDirectory\":false,\"signingInfo\":{\"appid\":\"com.apple.Terminal\",\"cdhash\":\"wW5ML2vzWxs1MRJgpzVfrYJJ/GU=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"isScreenShot\":false}],\"processes\":[{\"gid\":0,\"pid\":3136,\"tty\":\"/dev/ttys016\",\"uid\":0,\"args\":[\"/usr/libexec/security_authtrampoline\",\"/Library/Application Support/JAMF/Remote Assist/Wipe\",\"auth 16\"],\"name\":\"security_authtrampoline\",\"path\":\"/usr/libexec/security_authtrampoline\",\"pgid\":3096,\"ppid\":3099,\"rgid\":0,\"ruid\":0,\"uuid\":\"c821d617-2ce5-4475-aae6-c428a1ad9e8c\",\"flags\":[],\"processType\":\"GPSystemObject\",\"signingInfo\":{\"appid\":\"com.apple.security_authtrampoline\",\"cdhash\":\"rbIoddPMz9MoMMZl1ATihY8wlMk=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"inheritedFlags\":[],\"responsiblePID\":765,\"startTimestamp\":1698841238,\"originalParentPID\":3099,\"processIdentifier\":6750},{\"gid\":0,\"pid\":3099,\"tty\":\"/dev/ttys016\",\"uid\":0,\"args\":[\"/Library/Application Support/JAMF/Remote Assist/jamfRemoteAssistLauncher\",\"/operation=connector.uninstall\"],\"name\":\"jamfRemoteAssistLauncher\",\"path\":\"/Library/Application Support/JAMF/Remote Assist/jamfRemoteAssistLauncher\",\"pgid\":3096,\"ppid\":3098,\"rgid\":0,\"ruid\":0,\"uuid\":\"a382cfda-8964-4388-8c19-49d4eaef2ae7\",\"flags\":[],\"processType\":\"GPSystemObject\",\"signingInfo\":{\"appid\":\"com.jamf.remoteassist.launcher\",\"cdhash\":\"OkjDuX0cFaDreH32s6FfHKg1FqE=\",\"status\":0,\"teamid\":\"483DWKW443\",\"signerType\":2,\"authorities\":[\"Developer ID Application: JAMF Software (483DWKW443)\",\"Developer ID Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"inheritedFlags\":[],\"responsiblePID\":765,\"startTimestamp\":1698841236,\"originalParentPID\":3098,\"processIdentifier\":6654},{\"gid\":20,\"pid\":3098,\"tty\":\"/dev/ttys016\",\"uid\":0,\"args\":[\"sudo\",\"/Library/Application Support/JAMF/Remote Assist/jamfRemoteAssistLauncher\",\"/operation=connector.uninstall\"],\"name\":\"sudo\",\"path\":\"/usr/bin/sudo\",\"pgid\":3096,\"ppid\":3096,\"rgid\":20,\"ruid\":501,\"uuid\":\"31060be9-a210-4e18-bec5-2b0b6c482563\",\"flags\":[],\"processType\":\"GPSystemObject\",\"signingInfo\":{\"appid\":\"com.apple.sudo\",\"cdhash\":\"LZl8hBA1BePrgPrqw+Ap/HR6YUg=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"inheritedFlags\":[],\"responsiblePID\":765,\"startTimestamp\":1698841234,\"originalParentPID\":3096,\"processIdentifier\":6652},{\"gid\":20,\"pid\":3096,\"tty\":\"/dev/ttys016\",\"uid\":501,\"args\":[\"/bin/sh\",\"/Library/Application Support/JAMF/Remote Assist/Uninstall\"],\"name\":\"bash\",\"path\":\"/bin/bash\",\"pgid\":3096,\"ppid\":3063,\"rgid\":20,\"ruid\":501,\"uuid\":\"6600050c-406a-4cd6-8c31-1eefe04fea65\",\"flags\":[],\"processType\":\"GPSystemObject\",\"signingInfo\":{\"appid\":\"com.apple.bash\",\"cdhash\":\"w8D5iqHkJJxjGQGuFQLtfzG2Wes=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"inheritedFlags\":[],\"responsiblePID\":765,\"startTimestamp\":1698841233,\"originalParentPID\":3063,\"processIdentifier\":6650},{\"gid\":20,\"pid\":3063,\"uid\":501,\"args\":[\"-zsh\"],\"name\":\"zsh\",\"path\":\"/bin/zsh\",\"pgid\":3063,\"ppid\":3062,\"rgid\":20,\"ruid\":501,\"uuid\":\"f596588c-0db5-4fdb-bd64-95584398c596\",\"flags\":[],\"processType\":\"GPSystemObject\",\"signingInfo\":{\"appid\":\"com.apple.zsh\",\"cdhash\":\"f8w59TUpUrUhesGyuRBvXldP3Q0=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"inheritedFlags\":[],\"responsiblePID\":765,\"startTimestamp\":1698841233,\"originalParentPID\":3062,\"processIdentifier\":6608},{\"gid\":20,\"pid\":3062,\"uid\":0,\"args\":[\"login\",\"-pf\",\"local-admin\"],\"name\":\"login\",\"path\":\"/usr/bin/login\",\"pgid\":3062,\"ppid\":765,\"rgid\":20,\"ruid\":501,\"uuid\":\"bfd4dcd0-5054-4cab-9b8f-1e650d977771\",\"flags\":[],\"processType\":\"GPSystemObject\",\"signingInfo\":{\"appid\":\"com.apple.login\",\"cdhash\":\"MnR8eKbXO4v5eUokTXLWEDUfCVY=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[\"com.apple.private.endpoint-security.submit.login\",\"com.apple.private.security.clear-library-validation\"],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"inheritedFlags\":[],\"responsiblePID\":765,\"startTimestamp\":1698841233,\"originalParentPID\":765,\"processIdentifier\":6606},{\"gid\":20,\"pid\":765,\"uid\":501,\"args\":[\"/System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal\"],\"name\":\"Terminal\",\"path\":\"/System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal\",\"pgid\":765,\"ppid\":1,\"rgid\":20,\"ruid\":501,\"uuid\":\"7fb1cc18-b1a9-467a-880a-3a6e86960880\",\"flags\":[],\"appPath\":\"/System/Applications/Utilities/Terminal.app\",\"processType\":\"GPSystemObject\",\"signingInfo\":{\"appid\":\"com.apple.Terminal\",\"cdhash\":\"wW5ML2vzWxs1MRJgpzVfrYJJ/GU=\",\"status\":0,\"teamid\":\"\",\"signerType\":0,\"authorities\":[\"Software Signing\",\"Apple Code Signing Certification Authority\",\"Apple Root CA\"],\"entitlements\":[],\"statusMessage\":\"No error.\",\"informationStage\":\"extended\"},\"inheritedFlags\":[],\"responsiblePID\":765,\"startTimestamp\":1698840671,\"originalParentPID\":1,\"processIdentifier\":1812}]},\"eventType\":\"GPProcessEvent\"}}",
+    "input": {
+        "type": "http_endpoint"
+    },
     "observer": {
         "product": "Jamf Protect",
         "vendor": "Jamf"
     },
     "process": {
         "args": [
-            "/usr/libexec/security_authtrampoline",
-            "/Library/Application Support/JAMF/Remote Assist/Wipe",
-            "auth 16"
+            "/Library/PrivilegedHelperTools/com.microsoft.autoupdate.helper",
+            "XPC_SERVICE_NAME=com.microsoft.autoupdate.helper",
+            "PATH=/usr/bin:/bin:/usr/sbin:/sbin",
+            "XPC_FLAGS=1",
+            "pfz=0x7ffffff12000",
+            "stack_guard=0x94bec1a9eb9800ea",
+            "malloc_entropy=0x7777a3bc060946c0,0x6f95455435250cbc",
+            "ptr_munge=0x749c1515ccadfca",
+            "main_stack=0x7ff7bf6da000,0x800000,0x7ff7bb6da000,0x4000000",
+            "executable_file=0x1a01000009,0x12f5060",
+            "dyld_file=0x1a01000009,0xfffffff000982f7",
+            "executable_cdhash=262df85f4455ca182cb45671afb26c9ad9dff13b",
+            "executable_boothash=1fc9ca7065a4d7a9c299cc51414c052e5d7025d7",
+            "th_port=0x103"
         ],
         "code_signature": {
-            "signing_id": "com.apple.security_authtrampoline",
+            "signing_id": "com.microsoft.autoupdate.helper",
             "status": "No error.",
-            "team_id": ""
+            "team_id": "UBF8T346G9"
         },
-        "entity_id": "c821d617-2ce5-4475-aae6-c428a1ad9e8c",
-        "executable": "/usr/libexec/security_authtrampoline",
+        "entity_id": "b8cd6fa5-e8c3-4f05-88a0-68469d04806c",
+        "executable": "/Library/PrivilegedHelperTools/com.microsoft.autoupdate.helper",
         "group_leader": {
-            "executable": "/System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal",
-            "name": "Terminal",
-            "pid": 765,
+            "executable": "/Library/PrivilegedHelperTools/com.microsoft.autoupdate.helper",
+            "name": "com.microsoft.autoupdate.helper",
+            "pid": 15910,
             "real_group": {
-                "id": "20"
+                "id": "0"
             },
             "real_user": {
-                "id": "501"
+                "id": "0"
             },
-            "start": "2023-11-01T12:11:11Z",
+            "start": "2023-11-21T11:32:44Z",
             "user": {
-                "id": "501"
+                "id": "0"
             }
         },
         "hash": {
-            "sha1": "82e899cb1c8a42b74653b05ca526d5feae92b9f6",
-            "sha256": "7528368ce03bd25fb22520923f366e364ea40ae90b22dac79fba90f2152c3d32"
+            "sha1": "5ddcd49004e66cead79ca82991f1b4d4a8ba52d9",
+            "sha256": "8fd91d9d1ca53ef93921c8072e12ec082c9eba62bf93f0f900e71b6aa4fa0ed8"
         },
-        "name": "security_authtrampoline",
+        "name": "com.microsoft.autoupdate.helper",
         "parent": {
-            "code_signature": {
-                "signing_id": "com.jamf.remoteassist.launcher",
-                "status": "No error.",
-                "team_id": "483DWKW443"
-            },
-            "executable": "/Library/Application Support/JAMF/Remote Assist/jamfRemoteAssistLauncher",
-            "name": "jamfRemoteAssistLauncher",
-            "pid": 3099,
-            "real_group": {
-                "id": "0"
-            },
-            "real_user": {
-                "id": "0"
-            },
-            "start": "2023-11-01T12:20:36Z",
-            "user": {
-                "id": "0"
-            }
+            "pid": 15910
         },
-        "pid": 3136,
+        "pid": 15910,
         "real_group": {
             "id": "0"
         },
         "real_user": {
             "id": "0"
         },
-        "start": "2023-11-01T12:20:38Z",
-        "tty": "/dev/ttys016",
+        "start": "2023-11-21T11:32:44Z",
         "user": {
             "id": "0"
         }
     },
     "related": {
         "hash": [
-            "82e899cb1c8a42b74653b05ca526d5feae92b9f6",
-            "7528368ce03bd25fb22520923f366e364ea40ae90b22dac79fba90f2152c3d32"
+            "5ddcd49004e66cead79ca82991f1b4d4a8ba52d9",
+            "8fd91d9d1ca53ef93921c8072e12ec082c9eba62bf93f0f900e71b6aa4fa0ed8"
+        ],
+        "ip": [
+            "175.16.199.1"
         ],
         "user": [
-            "root",
-            "local-admin",
-            ""
+            "root"
         ]
     },
     "tags": [
-        "DefenseEvasion",
-        "T1548.004",
-        "PrivilegeEscalation",
-        "MITREattack",
-        "AbuseElevationControlMechanism"
-    ],
-    "threat": {
-        "framework": "MITRE ATT\u0026CK",
-        "software": {
-            "platforms": "macOS"
-        }
-    }
+        "Visibility"
+    ]
 }
 ```
 
@@ -220,7 +249,20 @@ An example event for `alerts` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container ID. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.image.tag | Container image tags. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -275,9 +317,28 @@ An example event for `alerts` looks as following:
 | file.uid | The user ID (UID) or security identifier (SID) of the file owner. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
 | jamf_protect.alerts.timestamp_nanoseconds | The timestamp in Epoch nanoseconds. | date |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
+| log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
@@ -328,7 +389,6 @@ An example event for `alerts` looks as following:
 | process.real_group.id | Unique identifier for the group on the system/platform. | keyword |
 | process.real_user.id | Unique identifier of the user. | keyword |
 | process.start | The time the process started. | date |
-| process.tty | Information about the controlling TTY device. If set, the process belongs to an interactive session. | object |
 | process.user.id | Unique identifier of the user. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
@@ -378,18 +438,38 @@ An example event for `telemetry` looks as following:
 ```json
 {
     "@timestamp": "2024-02-06T16:01:34.442Z",
+    "agent": {
+        "ephemeral_id": "a0a97e34-86ea-435f-8629-308f4c17a3b1",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "jamf_protect.telemetry",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
+        "snapshot": false,
+        "version": "8.13.0"
     },
     "error": {
         "code": "0"
     },
     "event": {
         "action": "aue_posix_spawn",
+        "agent_id_status": "verified",
         "category": [
             "authentication"
         ],
         "code": "43190",
+        "dataset": "jamf_protect.telemetry",
+        "ingested": "2024-05-17T00:10:39Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -404,6 +484,72 @@ An example event for `telemetry` looks as following:
         ],
         "os": {
             "version": "Version 14.2.1 (Build 23C71)"
+        }
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "jamf_protect": {
+        "telemetry": {
+            "arguments": {
+                "child": {
+                    "pid": 70851
+                }
+            },
+            "dataset": "audit",
+            "exec_args": {
+                "args_compiled": "/usr/bin/profiles,status,-type,enrollment"
+            },
+            "exec_chain_parent": {
+                "uuid": "87F2E500-EDF1-4F12-A489-C5E05B0F523E"
+            },
+            "exec_env": {
+                "env": {
+                    "compiled": "PWD=/,PATH=/usr/bin:/bin:/usr/sbin:/sbin"
+                }
+            },
+            "header": {
+                "event_modifier": "0",
+                "version": "11"
+            },
+            "host_info": {
+                "host": {
+                    "uuid": "AE2FA359-6AB0-5F54-9E4A-39EDCF015C91"
+                }
+            },
+            "identity": {
+                "cd_hash": "a2c787fe5e26ead7c68909e45a75edced4147c68",
+                "signer": {
+                    "id_truncated": "false",
+                    "type": "0"
+                }
+            },
+            "path": [
+                "/usr/bin/profiles",
+                "/usr/bin/profiles"
+            ],
+            "return": {
+                "description": "success"
+            },
+            "subject": {
+                "effective": {
+                    "group": {
+                        "id": "0",
+                        "name": "wheel"
+                    }
+                },
+                "process": {
+                    "name": "/Library/Application Support/Microsoft/EdgeUpdater/118.0.2088.86/EdgeUpdater.app/Contents/MacOS/EdgeUpdater",
+                    "pid": 70848
+                },
+                "session": {
+                    "id": "100016"
+                },
+                "terminal_id": {
+                    "port": 0,
+                    "type": "4"
+                }
+            }
         }
     },
     "process": {
@@ -447,6 +593,10 @@ An example event for `telemetry` looks as following:
             "root"
         ]
     },
+    "tags": [
+        "forwarded",
+        "jamf_protect-telemetry"
+    ],
     "user": {
         "id": "0",
         "name": [
@@ -773,6 +923,19 @@ An example event for `web_threat_events` looks as following:
 
 ```json
 {
+    "@timestamp": "2024-05-17T00:11:29.057Z",
+    "agent": {
+        "ephemeral_id": "0eddc4c4-e383-459e-925e-3ba00e7abfbf",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "jamf_protect.web_threat_events",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "destination": {
         "address": "ip",
         "domain": "host",
@@ -781,14 +944,21 @@ An example event for `web_threat_events` looks as following:
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
     "event": {
         "action": "Detected",
+        "agent_id_status": "verified",
         "category": [
             "host"
         ],
+        "dataset": "jamf_protect.web_threat_events",
         "id": "013b15c9-8f62-4bf1-948a-d82367af2a10",
+        "ingested": "2024-05-17T00:11:39Z",
         "kind": "alert",
-        "module": "jamf_protect",
         "provider": "Jamf Protect",
         "reason": "Sideloaded App",
         "severity": 6,
@@ -812,8 +982,9 @@ An example event for `web_threat_events` looks as following:
             "full": "IOS 11.2.5"
         }
     },
-    "jamf_protect": {},
-    "message": "{\"event\":{\"metadata\":{\"schemaVersion\":\"1.0\",\"vendor\":\"Jamf\",\"product\":\"Threat Events Stream\"},\"timestamp\":\"2020-01-30T17:47:41.767Z\",\"alertId\":\"013b15c9-8f62-4bf1-948a-d82367af2a10\",\"account\":{\"customerId\":\"fb4567b6-4ee2-3c4c-abb9-4c78ec463b25\",\"parentId\":\"7c302632-7ac4-4234-8ada-11d76feb3730\",\"name\":\"Customer\"},\"device\":{\"deviceId\":\"09f81436-de17-441e-a631-0461252c629b\",\"os\":\"IOS 11.2.5\",\"deviceName\":\"Apple iPhone 11 (11.2.5)\",\"userDeviceName\":\"Apple iPhone 11\",\"externalId\":\"5087dc0e-876c-4b0e-95ea-5b543476e0c4\"},\"eventType\":{\"id\":213,\"description\":\"Sideloaded App\",\"name\":\"SIDE_LOADED_APP_IN_INVENTORY\"},\"app\":{\"id\":\"com.apple.iBooks\",\"name\":\"Books\",\"version\":\"1.1\",\"sha1\":\"16336078972773bc6c8cef69d722c8c093ba727ddc5bb31eb2\",\"sha256\":\"16336078978a306dc23b67dae9df18bc2a0205e3ff0cbf97c46e76fd670f93fd142d7042\"},\"destination\":{\"name\":\"host\",\"ip\":\"ip\",\"port\":80},\"source\":{\"ip\":\"1.2.3.4\",\"port\":3025},\"location\":\"gb\",\"accessPoint\":\"AccessPoint\",\"accessPointBssid\":\"c6:9f:db:b1:73:5a\",\"severity\":6,\"user\":{\"email\":\"user@mail.com\",\"name\":\"John Doe\"},\"eventUrl\":\"https://radar.wandera.com/security/events/detail/013b15c9-8f62-4bf1-948a-d82367af2a10.SIDE_LOADED_APP_IN_INVENTORY?createdUtcMs=1580406461767\",\"action\":\"Detected\"}}",
+    "input": {
+        "type": "http_endpoint"
+    },
     "observer": {
         "product": "Jamf Protect",
         "vendor": "Jamf"
@@ -828,6 +999,10 @@ An example event for `web_threat_events` looks as following:
     "source": {
         "port": 3025
     },
+    "tags": [
+        "forwarded",
+        "jamf_protect-web-threat-events"
+    ],
     "user": {
         "email": "user@mail.com",
         "name": "John Doe"
@@ -840,7 +1015,20 @@ An example event for `web_threat_events` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container ID. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
 | container.image.tag | Container image tags. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -895,9 +1083,28 @@ An example event for `web_threat_events` looks as following:
 | file.uid | The user ID (UID) or security identifier (SID) of the file owner. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.geo.country_iso_code | Country ISO code. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
+| log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
@@ -928,7 +1135,10 @@ An example event for `web_threat_events` looks as following:
 | process.real_group.id | Unique identifier for the group on the system/platform. | keyword |
 | process.real_user.id | Unique identifier of the user. | keyword |
 | process.start | The time the process started. | date |
-| process.tty | Information about the controlling TTY device. If set, the process belongs to an interactive session. | object |
+| process.tty.char_device.major | The major number identifies the driver associated with the device. The character device's major and minor numbers can be algorithmically combined to produce the more familiar terminal identifiers such as "ttyS0" and "pts/0". For more details, please refer to the Linux kernel documentation. | long |
+| process.tty.char_device.minor | The minor number is used only by the driver specified by the major number; other parts of the kernel don’t use it, and merely pass it along to the driver. It is common for a driver to control several devices; the minor number provides a way for the driver to differentiate among them. | long |
+| process.tty.columns | The number of character columns per line. e.g terminal width Terminal sizes can change, so this value reflects the maximum value for a given IO event. i.e. where event.action = 'text_output' | long |
+| process.tty.rows | The number of character rows in the terminal. e.g terminal height Terminal sizes can change, so this value reflects the maximum value for a given IO event. i.e. where event.action = 'text_output' | long |
 | process.user.id | Unique identifier of the user. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
@@ -979,6 +1189,19 @@ An example event for `web_traffic_events` looks as following:
 
 ```json
 {
+    "@timestamp": "2024-05-17T00:12:27.062Z",
+    "agent": {
+        "ephemeral_id": "ffca4568-15a9-4780-bc89-e026120c233e",
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "jamf_protect.web_traffic_events",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "dns": {
         "answers": {
             "ttl": 101,
@@ -994,14 +1217,21 @@ An example event for `web_traffic_events` looks as following:
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
     "event": {
         "action": "DNS Lookup",
+        "agent_id_status": "verified",
         "category": [
             "host",
             "network"
         ],
+        "dataset": "jamf_protect.web_traffic_events",
+        "ingested": "2024-05-17T00:12:37Z",
         "kind": "event",
-        "module": "jamf_protect",
         "outcome": [
             "success"
         ],
@@ -1020,10 +1250,9 @@ An example event for `web_traffic_events` looks as following:
             ]
         }
     },
-    "interface": {
-        "name": "WIFI"
+    "input": {
+        "type": "http_endpoint"
     },
-    "jamf_protect": {},
     "observer": {
         "product": "Jamf Protect",
         "vendor": "Jamf"
@@ -1034,8 +1263,12 @@ An example event for `web_traffic_events` looks as following:
     "rule": {
         "name": "DNS Lookup"
     },
+    "tags": [
+        "forwarded",
+        "jamf_protect-web-traffic-events"
+    ],
     "user": {
-        "email": "user@acme.com",
+        "email": "hjilling@icloud.com",
         "name": "07a5a2ae-16de-4767-831e-0ea8b7c3abe4"
     }
 }
@@ -1046,6 +1279,19 @@ An example event for `web_traffic_events` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container ID. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -1105,10 +1351,28 @@ An example event for `web_traffic_events` looks as following:
 | file.uid | The user ID (UID) or security identifier (SID) of the file owner. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.geo.country_iso_code | Country ISO code. | keyword |
-| interface.name | Interface name as reported by the system. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
+| log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |

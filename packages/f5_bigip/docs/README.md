@@ -18,7 +18,7 @@ For example, users can use the data from this integration to analyze the traffic
 The F5 BIG-IP integration collects one type of data stream: log.
 
 **Log** help users to keep a record of events happening on the network using telemetry streaming.
-The log data stream collected by the F5 BIG-IP integration includes events that are related to network traffic. See more details in the [Logs](https://clouddocs.f5.com/products/extensions/f5-telemetry-streaming/latest/output-example.html#ltm-request-log).
+The log data stream collected by the F5 BIG-IP integration includes events that are related to network traffic. See more details in the [logs examples documentation](https://clouddocs.f5.com/products/extensions/f5-telemetry-streaming/latest/output-example.html). F5 BIG-IP streams a variety of log types, categorized by the `telemetryEventCategory` field.
 
 This integration targets the five types of events as mentioned below:
 
