@@ -22,7 +22,7 @@ The `log` dataset collects and parses logs from Kafka servers.
 
 In order to collect metrics, you need to provide all the Kafka Broker hosts.
 
-More details at <https://github.com/elastic/beats/issues/34053>.
+More details [here](https://github.com/elastic/beats/issues/34053).
 
 ### broker
 
