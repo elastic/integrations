@@ -1,0 +1,179 @@
+---
+description: Pipeline for processing Qualys User Activity Log data.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - fail:
+      if: ctx.error != null
+      tag: fail_on_cel_error
+      message: CEL program returned an error. Skipping ingest pipeline execution.
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      if: ctx.event?.original != null
+      field: message
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: qualys_vmdr.user_activity
+  - script:
+      lang: painless
+      description: Replace spaces and dashes in field names under qualys_vmdr.user_activity.
+      tag: painless_purge_spaces_and_dashes
+      if: ctx.qualys_vmdr?.user_activity instanceof Map
+      source: |
+        String underscore(String s) {
+          return /[ -]/.matcher(s).replaceAll('_');
+        }
+        
+        def out = [:];
+        for (def item : ctx.qualys_vmdr.user_activity.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.qualys_vmdr.user_activity = out;
+  - fingerprint:
+      fields:
+        - event.original
+      target_field: _id
+  - date:
+      field: qualys_vmdr.user_activity.Date
+      formats:
+        - ISO8601
+  - set:
+      field: event.action
+      copy_from: qualys_vmdr.user_activity.Action
+      ignore_empty_value: true
+  - set:
+      field: event.provider
+      copy_from: qualys_vmdr.user_activity.Module
+      ignore_empty_value: true
+  - set:
+      field: message
+      copy_from: qualys_vmdr.user_activity.Details
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: qualys_vmdr.user_activity.User_Name
+      ignore_empty_value: true
+  - append:
+      if: ctx.user?.name != null
+      field: related.user
+      value: '{{{user.name}}}'
+  - append:
+      field: user.roles
+      value: '{{{qualys_vmdr.user_activity.User_Role}}}'
+  - convert:
+      field: qualys_vmdr.user_activity.User_IP
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+  - append:
+      if: ctx.source?.ip != null
+      field: related.ip
+      value: '{{{source.ip}}}'
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - remove:
+      field:
+        - qualys_vmdr.user_activity.Date
+        - qualys_vmdr.user_activity.Action
+        - qualys_vmdr.user_activity.Module
+        - qualys_vmdr.user_activity.Details
+        - qualys_vmdr.user_activity.User_Name
+        - qualys_vmdr.user_activity.User_Role
+        - qualys_vmdr.user_activity.User_IP
+      tag: remove_preserve_duplicate_custom_fields
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_missing: true
+  - remove:
+      if: ctx?.qualys_vmdr?.user_activity instanceof Map && ctx.qualys_vmdr.user_activity.isEmpty()
+      field: qualys_vmdr.user_activity
+  - remove:
+      if: ctx?.qualys_vmdr instanceof Map && ctx.qualys_vmdr.isEmpty()
+      field: qualys_vmdr
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      description: Remove metadata unrelated to the user activity log.
+      field:
+        - cloud
+        - host
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      if: ctx.event?.action == "login"
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+  - append:
+      if: ctx.event?.action == "login"
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - append:
+      if: ctx.event?.action == "request"
+      field: event.category
+      value: api
+      allow_duplicates: false
+  - append:
+      if: ctx.event?.action == "request"
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - append:
+      if: >
+        ctx.event?.action == 'add'
+        || ctx.event?.action == 'create'
+        || ctx.event?.action == 'set'
+      field: event.category
+      value: configuration
+      allow_duplicates: false
+  - append:
+      if: >
+        ctx.event?.action == 'add'
+        || ctx.event?.action == 'set'
+      field: event.type
+      value: change
+      allow_duplicates: false
+  - append:
+      if: ctx.event?.action == 'create'
+      field: event.type
+      value: creation
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error

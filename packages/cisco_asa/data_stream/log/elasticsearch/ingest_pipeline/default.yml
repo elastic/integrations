@@ -237,6 +237,12 @@ processors:
       - "Deny %{NOTSPACE:network.direction} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{POSINT:source.port} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{POSINT:destination.port}(%{GREEDYDATA})?"
       - "Deny %{NOTSPACE:network.direction} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}(/%{POSINT:source.port})? (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}(/%{POSINT:destination.port})?(%{GREEDYDATA})?"
   - dissect:
+      if: "ctx._temp_.cisco.message_id == '106012'"
+      tag: parse_106012
+      field: "message"
+      description: "106012"
+      pattern: 'Deny IP from %{source.address} to %{destination.address}, %{event.reason}'
+  - dissect:
       if: "ctx._temp_.cisco.message_id == '106013'"
       tag: parse_106013
       field: "message"
@@ -384,6 +390,18 @@ processors:
         USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
         IPORNONE: (%{IP:source.address}|None)
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113008'"
+      tag: parse_113008
+      field: message
+      description: "113008"
+      pattern: 'AAA transaction status ACCEPT: user = %{source.user.name}'
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113009'"
+      tag: parse_113009
+      field: message
+      description: "113008"
+      pattern: 'AAA retrieved default group policy %{_temp_.cisco.group_policy} for user %{source.user.name}'
   - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
       tag: parse_113012
@@ -437,6 +455,12 @@ processors:
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '302010'"
+      tag: parse_302010
+      field: "message"
+      description: "302010"
+      pattern: '%{_temp_.cisco.connections_in_use} in use, %{_temp_.cisco.connections_most_used} most used'
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id)'
       tag: parse_302013-302015
@@ -594,6 +618,12 @@ processors:
       field: "message"
       description: "313009"
       pattern: "Denied invalid %{network.transport} code %{_temp_.cisco.icmp_code}, for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '315011'"
+      tag: parse_315011
+      field: "message"
+      description: "315011"
+      pattern: 'SSH session from %{source.ip} on interface %{_temp_.cisco.source_interface} for user %{source.user.name} disconnected by SSH server, reason: %{event.reason}'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '322001'"
       tag: parse_322001
@@ -851,7 +881,7 @@ processors:
       field: "message"
       description: "710005"
       pattern: "%{network.transport} request discarded from %{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
-  - grok: 
+  - grok:
       if: "ctx._temp_.cisco.message_id == '713049'"
       tag: parse_713049
       field: "message"
@@ -865,56 +895,113 @@ processors:
       field: "message"
       description: "716002"
       patterns:
-        - "Group <%{DATA:_temp_.cisco.webvpn.group_name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}> WebVPN session terminated: %{GREEDYDATA:event.reason}."
-        - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} WebVPN session terminated: %{GREEDYDATA:event.reason}."
+        - 'Group <%{DATA:_temp_.cisco.webvpn.group_name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}> WebVPN session terminated: %{GREEDYDATA:event.reason}.'
+        - 'Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} WebVPN session terminated: %{GREEDYDATA:event.reason}.'
   - grok:
-      if: "ctx._temp_.cisco.message_id == '722011'"
-      tag: parse_722011
+      if: "ctx._temp_.cisco.message_id == '716003'"
+      tag: parse_716003
       field: "message"
-      description: "722011"
+      description: "716003"
       patterns:
-        - 'Group <%{DATA:source.user.group.name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}> SVC Message: %{GREEDYDATA:event.reason}\.'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} SVC Message: %{GREEDYDATA:event.reason}\.'
+        - '^Group <%{NOTBRACKET:_temp_.cisco.webvpn.group_name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}> WebVPN access GRANTED: "?%{DATA:url.original}"?$'
+        - '^Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address} WebVPN access GRANTED: "?%{DATA:url.original}"?$'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
   - grok:
-      if: '["722022", "722023"].contains(ctx._temp_.cisco.message_id)'
-      tag: parse_722022-722023
+      if: "ctx._temp_.cisco.message_id == '716058'"
+      tag: parse_716058
       field: "message"
-      description: "722022, 722023"
+      description: "716058"
       patterns:
-        - 'Group <%{DATA:source.user.group.name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}> %{GREEDYDATA:event.reason}'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} %{GREEDYDATA:event.reason}'
+        - '^Group <%{NOTBRACKET:_temp_.cisco.webvpn.group_name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}>'
+        - '^Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address}'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
   - grok:
+      if: "ctx._temp_.cisco.message_id == '716059'"
+      tag: parse_716059
+      field: "message"
+      description: "716059"
+      patterns:
+        - '^Group <%{NOTBRACKET:_temp_.cisco.webvpn.group_name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:destination.address}> AnyConnect session resumed. Connection from %{NOTSPACE:source.address}\.$'
+        - '^Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:destination.address} AnyConnect session resumed. Connection from %{NOTSPACE:source.address}\.$'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '721016'"
+      tag: parse_721016
+      field: message
+      description: "721016"
+      pattern: '(%{_temp_.cisco.device_type}) WebVPN session for client user %{source.user.name}, IP %{destination.ip} has been created.'
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '721018'"
+      tag: parse_721018
+      field: message
+      description: "721018"
+      pattern: '(%{_temp_.cisco.device_type}) WebVPN session for client user %{source.user.name}, IP %{destination.ip} has been deleted.'
+  - grok:
+      if: "['722011', '722022', '722023', '722028', '722032', '722033', '722034', '722037', '722051'].contains(ctx._temp_.cisco.message_id)"
+      tag: parse_svc_message
+      field: "message"
+      description: "svc_message"
+      patterns:
+        - '^Group <%{NOTBRACKET:source.user.group.name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}> %{GREEDYDATA:event.reason}$'
+        - '^Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address} %{GREEDYDATA:event.reason}$'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
+  - dissect:
       if: "ctx._temp_.cisco.message_id == '722033'"
       tag: parse_722033
-      field: "message"
+      field: "event.reason"
       description: "722033"
-      patterns:
-        - 'Group <%{DATA:source.user.group.name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}> First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
-  - grok:
+      pattern: 'First %{network.transport} SVC connection established for SVC session.'
+  - dissect:
       if: "ctx._temp_.cisco.message_id == '722034'"
       tag: parse_722034
-      field: "message"
+      field: "event.reason"
       description: "722034"
-      patterns:
-        - 'Group <%{DATA:source.user.group.name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}> New %{NOTSPACE:network.transport} SVC connection, no existing connection\.'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} New %{NOTSPACE:network.transport} SVC connection, no existing connection\.'
-  - grok:
-      if: "ctx._temp_.cisco.message_id == '722037'"
-      tag: parse_722037
-      field: "message"
-      description: "722037"
-      patterns:
-        - 'Group <%{DATA:source.user.group.name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}> SVC closing connection: %{GREEDYDATA:event.reason}\.'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} SVC closing connection: %{GREEDYDATA:event.reason}\.'
-  - grok:
+      pattern: 'New %{network.transport} SVC connection, no existing connection.'
+  - dissect:
       if: "ctx._temp_.cisco.message_id == '722051'"
       tag: parse_722051
-      field: "message"
+      field: "event.reason"
       description: "722051"
+      pattern: 'IPv4 Address <%{_temp_.cisco.assigned_ip}> %{}'
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '722055'"
+      tag: parse_722055
+      field: "message"
+      description: "722055"
       patterns:
-        - "Group <%{DATA:source.user.group.name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}> IPv4 Address <%{IP:_temp_.cisco.assigned_ip}> %{GREEDYDATA}"
-        - "Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} IPv4 Address %{IP:_temp_.cisco.assigned_ip} %{GREEDYDATA}"
+        - '^Group <%{NOTBRACKET:source.user.group.name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}> Client Type: %{GREEDYDATA:user_agent}$'
+        - '^Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address} Client Type: %{GREEDYDATA:user_agent}$'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '725001'"
+      tag: parse_725001
+      patterns:
+        - '^Starting SSL handshake with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.ip}/%{NOTSPACE:source.port} to %{NOTSPACE:destination.ip}/%{NOTSPACE:destination.port} for %{NOTSPACE:_temp_.cisco.tls_version} session.$'
+        - '^Starting SSL handshake with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.ip}/%{NOTSPACE:source.port} for %{NOTSPACE:_temp_.cisco.tls_version} session.$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '725002'"
+      tag: parse_725002
+      patterns:
+        - '^Device completed SSL handshake with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.ip}/%{NOTSPACE:source.port} to %{NOTSPACE:destination.ip}/%{NOTSPACE:destination.port} for %{NOTSPACE:_temp_.cisco.tls_version} session.$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '725007'"
+      tag: parse_725007
+      patterns:
+        - '^SSL session with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.ip}/%{NOTSPACE:source.port} to %{NOTSPACE:destination.ip}/%{NOTSPACE:destination.port} terminated.$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '725016'"
+      tag: parse_725016
+      patterns:
+        - '^Device selects trust-point %{DATA:_temp_.cisco.trustpoint} for %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.ip}/%{NOTSPACE:source.port} to %{NOTSPACE:destination.ip}/%{NOTSPACE:destination.port}$'
   - grok:
       if: "ctx._temp_.cisco.message_id == '733100'"
       tag: parse_733100
@@ -928,6 +1015,41 @@ processors:
       field: "message"
       description: "734001"
       pattern: "DAP: User %{user.email}, Addr %{source.address}, Connection %{_temp_.cisco.connection_type}: The following DAP records were selected for this connection: %{_temp_.cisco.dap_records->}"
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '737003'"
+      tag: parse_737003
+      patterns:
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, DHCP configured, no viable servers found for tunnel-group %{NOTSPACE:_temp_.cisco.tunnel_group}$'
+        - '^IPAA: DHCP configured, no viable servers found for tunnel-group %{NOTSPACE:_temp_.cisco.tunnel_group}$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '737006'"
+      tag: parse_737006
+      patterns:
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, Local pool request succeeded for tunnel-group %{NOTSPACE:_temp_.cisco.tunnel_group}$'
+        - '^IPAA: Local pool request succeeded for tunnel-group %{NOTSPACE:_temp_.cisco.tunnel_group}$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '737016'"
+      tag: parse_737016
+      patterns:
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, Freeing local pool %{NOTSPACE:_temp_.cisco.pool_name} address %{NOTSPACE:_temp_.cisco.pool_address}$'
+        - '^IPAA: Freeing local pool %{NOTSPACE:_temp_.cisco.pool_name} address %{NOTSPACE:_temp_.cisco.pool_address}$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '737026'"
+      tag: parse_737026
+      patterns:
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, Client assigned %{NOTSPACE:_temp_.cisco.pool_address} from local pool %{NOTSPACE:_temp_.cisco.pool_name}$'
+        - '^IPAA: Client assigned %{NOTSPACE:_temp_.cisco.pool_address} from local pool %{NOTSPACE:_temp_.cisco.pool_name}$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '737034'"
+      tag: parse_737034
+      patterns:
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, %{GREEDYDATA:event.reason}$'
+        - '^IPAA: %{GREEDYDATA:event.reason}$'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '805001'"
       tag: parse_805001
@@ -1864,7 +1986,17 @@ processors:
       tag: "convert_sip_to_uri_port"
       type: integer
       ignore_missing: true
-      
+  - convert:
+      field: _temp_.cisco.connections_in_use
+      tag: "convert_connections_in_use"
+      type: long
+      ignore_missing: true
+  - convert:
+      field: _temp_.cisco.connections_most_used
+      tag: "convert_connections_most_used"
+      type: long
+      ignore_missing: true
+
   #
   # Assign ECS .ip fields from .address is a valid IP address is found,
   # otherwise set .domain field.
@@ -2084,6 +2216,21 @@ processors:
       allow_duplicates: false
       if: ctx?._temp_?.url_domain != null
 
+  - grok:
+      field: _temp_.cisco.tls_version
+      if: "ctx._temp_?.cisco?.tls_version != null"
+      tag: parse_tls_version
+      patterns:
+        - "%{PROTO:tls.version_protocol}v%{NUMBER:tls.version}"
+      pattern_definitions:
+        PROTO: "[A-Z]+"
+  - lowercase:
+      field: tls.version_protocol
+      ignore_missing: true
+  - remove:
+      field: _temp_.cisco.tls_version
+      ignore_missing: true
+
   #
   # Populate ECS event.code
   #
@@ -2181,6 +2328,10 @@ processors:
           type: [ connection, denied ]
           outcome: success
           action: firewall-rule
+        "106012":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
         "106013":
           type: [ connection, denied ]
           outcome: success
@@ -2253,6 +2404,16 @@ processors:
           type: [ denied, info ]
           outcome: failure
           action: logon-failed
+        "113008":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+          action: logged-in
+        "113009":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+          action: logged-in
         "113012":
           category: [ authentication, network ]
           type: [ allowed, info ]
@@ -2428,6 +2589,9 @@ processors:
           type: [ connection, denied ]
           outcome: success
           action: firewall-rule
+        "315011":
+          type: [ connection, end ]
+          action: ssh-session-ended
         "322001":
           type: [ connection, denied ]
           outcome: success
@@ -2590,11 +2754,31 @@ processors:
           type: [ connection, end ]
           outcome: success
           action: client-vpn-disconnected
+        "716003":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
         "716039":
           category: [ authentication, network ]
           type: [ denied, info ]
           action: logon-failed
           outcome: failure
+        "716058":
+          type: [ connection, end ]
+          outcome: success
+          action: client-vpn-disconnected
+        "716059":
+          type: [ connection, start ]
+          outcome: success
+          action: client-vpn-resumed
+        "721016":
+          type: [ connection, start ]
+          outcome: success
+          action: client-vpn-connected
+        "721018":
+          type: [ connection, end ]
+          outcome: success
+          action: client-vpn-disconnected
         "722011":
           type: [ info ]
         "722022":
@@ -2602,6 +2786,12 @@ processors:
           outcome: success
         "722023":
           type: [ connection, end ]
+          outcome: success
+        "722028":
+          type: [ connection, end ]
+          outcome: success
+        "722032":
+          type: [ connection, start ]
           outcome: success
         "722033":
           type: [ connection, start ]
@@ -2614,6 +2804,20 @@ processors:
           type: [ connection, info ]
           outcome: success
           action: address-assigned
+        "722055":
+          type: [ connection, info ]
+        "725001":
+          type: [ connection, start ]
+          outcome: success
+        "725002":
+          type: [ connection, info ]
+          outcome: success
+        "725007":
+          type: [ connection, end ]
+          outcome: success
+        "725016":
+          type: [ connection, info ]
+          outcome: success
         "733100":
           type: [ info ]
         "734001":
@@ -2621,6 +2825,21 @@ processors:
           type: [ allowed, info ]
           outcome: success
           action: logged-in
+        "737003":
+          type: [ connection, info ]
+          outcome: failure
+        "737006":
+          type: [ connection, info ]
+          outcome: success
+        "737016":
+          type: [ connection, info ]
+          outcome: success
+        "737026":
+          type: [ connection, info ]
+          outcome: success
+        "737034":
+          type: [ connection, info ]
+          outcome: failure
         "750002":
           type: [ connection, start ]
           outcome: success

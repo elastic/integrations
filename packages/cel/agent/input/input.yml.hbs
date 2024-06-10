@@ -28,12 +28,28 @@ auth.basic.user: {{username}}
 auth.basic.password: {{password}}
 {{/if}}
 
+{{#unless username}}
+{{#unless password}}
+{{#if digest_username}}
+auth.digest.user: {{digest_username}}
+{{/if}}
+{{#if digest_password}}
+auth.digest.password: {{digest_password}}
+{{#if digest_no_reuse}}
+auth.digest.no_reuse: true
+{{/if}}
+{{/if}}
+{{/unless}}
+{{/unless}}
+
 {{#if pipeline}}
 pipeline: {{pipeline}}
 {{/if}}
 
 {{#unless username}}
 {{#unless password}}
+{{#unless digest_username}}
+{{#unless digest_password}}
 {{#if oauth_id}}
 auth.oauth2.client.id: {{oauth_id}}
 {{/if}}
@@ -86,6 +102,8 @@ auth.oauth2.okta.jwk_pem: {{oauth_okta_jwk_pem}}
 auth.oauth2.endpoint_params: 
   {{oauth_endpoint_params}}
 {{/if}}
+{{/unless}}
+{{/unless}}
 {{/unless}}
 {{/unless}}
 
