@@ -876,12 +876,36 @@ processors:
   - rename:
       description: 'Fix an issue where "uri" is present in this event.'
       field: teleport.audit.uri
-      target_field: teleport.audit.database.uri
+      target_field: teleport.audit.db_uri
       ignore_missing: true
       if: ctx.event.action.startsWith('db.')
   - rename:
       field: teleport.audit.db_uri
       target_field: teleport.audit.database.uri
+      ignore_missing: true
+  - grok:
+      field: teleport.audit.database.uri
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - '^(%{IPORHOST:url.domain})(:%{POSINT:url.port:long})?$'
+      if:  ctx.teleport.audit.database?.uri != null && ctx.url == null
+  - rename:
+      field: teleport.audit.database.uri
+      target_field: url.original
+      ignore_missing: true
+      if: ctx.teleport?.audit?.database?.uri != null && ctx.url != null
+  - uri_parts:
+      field: teleport.audit.database.uri
+      target_field: url
+      ignore_missing: true
+      ignore_failure: true
+      keep_original: true
+      remove_if_successful: true
+      if: ctx.url == null
+  - remove:
+      tag: database_uri_remove_on_failure
+      field: teleport.audit.database.uri
       ignore_missing: true
   - rename:
       field: teleport.audit.db_name

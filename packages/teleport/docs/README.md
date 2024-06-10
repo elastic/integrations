@@ -260,7 +260,6 @@ An example event for `audit` looks as following:
 | teleport.audit.database.spanner.rpc.args | Args are the RPC arguments. | flattened |
 | teleport.audit.database.spanner.rpc.procedure | Procedure is the name of the remote procedure. | keyword |
 | teleport.audit.database.type | DatabaseType is the database type. | keyword |
-| teleport.audit.database.uri | DatabaseURI is the database URI to connect to. | keyword |
 | teleport.audit.database.user | DatabaseUser is the database username used to connect. | keyword |
 | teleport.audit.database.user_change.is_deleted | Delete indicates if the user was deleted entirely or merely disabled. | boolean |
 | teleport.audit.database.user_change.username | Username is the username chosen for the database user. Due to database limitations (e.g. username length, allowed charset) it may differ from Teleport username. | keyword |
