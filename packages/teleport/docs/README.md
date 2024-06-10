@@ -126,6 +126,7 @@ An example event for `audit` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| http.request.headers | Headers are the HTTP request headers. | flattened |
 | input.type | Type of Filebeat input. | keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
@@ -289,7 +290,6 @@ An example event for `audit` looks as following:
 | teleport.audit.file_transfer_request.id | RequestID is the ID for the FileTransferRequest | keyword |
 | teleport.audit.file_transfer_request.is_download | Download is true if the requested file transfer is a download, false if an upload | boolean |
 | teleport.audit.file_transfer_request.requester | Requester is the Teleport user who requested the file transfer | keyword |
-| teleport.audit.http.request.headers | Headers are the HTTP request headers. | flattened |
 | teleport.audit.join.attributes | Attributes is a map of attributes received from the join method provider. | flattened |
 | teleport.audit.join.bot_name | BotName is the name of the bot which has joined. | keyword |
 | teleport.audit.join.method | Method is the event field indicating what join method was used. | keyword |
