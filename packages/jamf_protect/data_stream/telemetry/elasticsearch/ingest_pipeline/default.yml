@@ -92,8 +92,8 @@ processors:
     - script:
         lang: painless
         source: >
-            if (ctx.jamf_protect?.telemetry?.action?.result?.auth != null) {
-            def authType = ctx.jamf_protect.telemetry.action.result.auth;
+            if (ctx.jamf_protect?.telemetry?.action?.result?.result?.auth != null) {
+            def authType = ctx.jamf_protect.telemetry.action.result.result.auth;
             def authTypeMap = [
                 0: true,
                 1: false
@@ -250,12 +250,6 @@ processors:
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_su" }}'
         if: ctx.event.action == "su"
-    - pipeline:
-        name: '{{ IngestPipeline "pipeline_event_authorization_petition" }}'
-        if: ctx.event.action == "authorization_petition"
-    - pipeline:
-        name: '{{ IngestPipeline "pipeline_event_authorization_judgement" }}'
-        if: ctx.event.action == "authorization_judgement"
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_authentication" }}'
         if: ctx.event.action == "authentication"

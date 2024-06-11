@@ -94,9 +94,9 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-11T11:42:38.260Z",
+    "@timestamp": "2024-06-11T16:04:10.825Z",
     "agent": {
-        "ephemeral_id": "c9461ce5-96ac-4e44-98fd-82e52fb45197",
+        "ephemeral_id": "4b4850ad-50da-448f-9a48-25d078137ce4",
         "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -124,7 +124,7 @@ An example event for `alerts` looks as following:
         ],
         "dataset": "jamf_protect.alerts",
         "id": "6bdb0697-6d07-47bc-a37d-6c3348a5d953",
-        "ingested": "2024-06-11T11:42:48Z",
+        "ingested": "2024-06-11T16:04:20Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Application that uses custom url handler created",
@@ -437,9 +437,9 @@ An example event for `telemetry` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-11T11:44:38.068Z",
+    "@timestamp": "2024-06-11T16:06:10.217Z",
     "agent": {
-        "ephemeral_id": "ed15fcff-4d89-47ac-a9ce-60452bcda01f",
+        "ephemeral_id": "e71e7bf3-25f5-48dc-bd96-c71e60e81e05",
         "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -477,7 +477,7 @@ An example event for `telemetry` looks as following:
         "code": "9",
         "dataset": "jamf_protect.telemetry",
         "id": "1755D61B-373E-4F35-9D27-DE8AAA395BC3",
-        "ingested": "2024-06-11T11:44:48Z",
+        "ingested": "2024-06-11T16:06:20Z",
         "kind": "event",
         "provider": "Jamf Protect",
         "reason": "A new process has been executed",
@@ -868,9 +868,9 @@ An example event for `web_threat_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-11T11:48:33.678Z",
+    "@timestamp": "2024-06-11T16:09:59.956Z",
     "agent": {
-        "ephemeral_id": "3d5794d6-3881-42c6-af32-315197254445",
+        "ephemeral_id": "4f30b878-003d-41fd-bf72-eb32d144978a",
         "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -902,7 +902,7 @@ An example event for `web_threat_events` looks as following:
         ],
         "dataset": "jamf_protect.web_threat_events",
         "id": "013b15c9-8f62-4bf1-948a-d82367af2a10",
-        "ingested": "2024-06-11T11:48:43Z",
+        "ingested": "2024-06-11T16:10:09Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Sideloaded App",
@@ -1135,9 +1135,9 @@ An example event for `web_traffic_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-11T11:50:30.125Z",
+    "@timestamp": "2024-06-11T16:11:56.550Z",
     "agent": {
-        "ephemeral_id": "cd754841-fee6-4d73-aa84-da8fb9d76151",
+        "ephemeral_id": "75fb9993-5e02-437d-b5f8-dafea969bcb6",
         "id": "8e815812-b6dc-4364-9622-da2462209a37",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -1176,7 +1176,7 @@ An example event for `web_traffic_events` looks as following:
             "network"
         ],
         "dataset": "jamf_protect.web_traffic_events",
-        "ingested": "2024-06-11T11:50:40Z",
+        "ingested": "2024-06-11T16:12:06Z",
         "kind": "event",
         "outcome": [
             "success"
