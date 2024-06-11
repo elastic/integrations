@@ -249,11 +249,11 @@ An example event for `audit` looks as following:
 | teleport.audit.database.user_change.is_deleted | Delete indicates if the user was deleted entirely or merely disabled. | boolean |
 | teleport.audit.database.user_change.username | Username is the username chosen for the database user. Due to database limitations (e.g. username length, allowed charset) it may differ from Teleport username. | keyword |
 | teleport.audit.desktop.allow_user_creation | AllowUserCreation indicates whether automatic local user creation is allowed for this session. | boolean |
+| teleport.audit.desktop.clipboard_length | Length is the number of bytes of data received from the remote clipboard or sent from a user's workstation to Teleport. | unsigned_long |
 | teleport.audit.desktop.delay_ms | DelayMilliseconds is the delay in milliseconds from the start of the session. | unsigned_long |
 | teleport.audit.desktop.directory_id | DirectoryID is the ID of the directory being shared (unique to the Windows Desktop Session). | unsigned_long |
 | teleport.audit.desktop.is_recorded | Recorded is true if the session was recorded, false otherwise. | boolean |
 | teleport.audit.desktop.labels | DesktopLabels are the labels on the desktop resource. | flattened |
-| teleport.audit.desktop.length | Length is the number of bytes of data received from the remote clipboard or sent from a user's workstation to Teleport. | unsigned_long |
 | teleport.audit.desktop.name | DesktopName is the name of the desktop resource. | keyword |
 | teleport.audit.desktop.offset | Offset is the offset the bytes were read from or written to. | unsigned_long |
 | teleport.audit.desktop.windows_desktop_service | WindowsDesktopService is the name of the service proxying the RDP session. | keyword |
