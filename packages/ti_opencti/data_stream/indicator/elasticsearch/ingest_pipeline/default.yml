@@ -148,11 +148,31 @@ processors:
   - script:
       description: Reformat indicator type
       lang: painless
+      params:
+        cryptocurrency-wallet: user-account
+        domain-name: domain-name
+        email-addr: email-addr
+        email-message: artifact
+        hostname: domain-name # There is no good match for this: this or 'url'?
+        ipv4-addr: ipv4-addr
+        ipv6-addr: ipv6-addr
+        mutex: mutex
+        phone-number: user-account # There is no good match for this.
+        process: process
+        stixfile: file
+        url: url
+        user-agent: artifact # There is no good match for this.
+        windows-registry-key: windows-registry-key
+        unknown: null
       source: |
         String type = ctx.threat.indicator.type;
         type = type.toLowerCase();
-        type = type.replace('stixfile', 'file');
-        ctx.threat.indicator.type = type;
+        type = params[type];
+        if (type != null) {
+          ctx.threat.indicator.type = type;
+        } else {
+          ctx.threat.indicator.remove('type');
+        }
   - rename:
       field: createdBy.name
       target_field: threat.indicator.provider
