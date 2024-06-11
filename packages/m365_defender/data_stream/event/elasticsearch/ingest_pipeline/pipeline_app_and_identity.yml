@@ -391,6 +391,23 @@ processors:
       tag: set_host_ip
       ignore_empty_value: true
   - set:
+      field: host.os.type
+      value: windows
+      if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('windows')
+  - set:
+      field: host.os.type
+      value: linux
+      if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('linux')
+  - set:
+      field: host.os.type
+      value: macos
+      if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('macos')
+  # For IdentityQueryEvents, OS type is derived from AdditionalFields.SourceComputerOperatingSystemType
+  - set:
+      field: host.os.type
+      copy_from: m365_defender.event.additional_fields.SourceComputerOperatingSystemType
+      if: ctx.m365_defender?.event?.additional_fields?.SourceComputerOperatingSystemType != null
+  - set:
       field: host.os.name
       copy_from: m365_defender.event.os.platform
       tag: set_host_os_name
