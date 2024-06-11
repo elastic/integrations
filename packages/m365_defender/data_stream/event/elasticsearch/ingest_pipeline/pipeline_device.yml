@@ -1928,11 +1928,11 @@ processors:
       copy_from: m365_defender.event.device.id
       tag: set_host_id
       ignore_empty_value: true
-  - set:
+  - append:
       field: host.ip
-      copy_from: m365_defender.event.public_ip.value
-      tag: set_host_ip
-      ignore_empty_value: true
+      value: '{{{m365_defender.event.public_ip.value}}}'
+      tag: append_host_ip
+      if: ctx.m365_defender?.event?.public_ip?.value != null && ctx.m365_defender.event.public_ip.value != ''
   - set:
       field: host.architecture
       copy_from: m365_defender.event.os.architecture
@@ -1981,10 +1981,21 @@ processors:
       tag: uppercase_m365_defender_event_mac_address
       ignore_missing: true
   - set:
-      field: host.mac
+      field: _tmp.mac
       copy_from: m365_defender.event.mac_address
       tag: set_host_mac
       ignore_empty_value: true
+  - gsub:
+      field: _tmp.mac
+      pattern: '(..)(?!$)'
+      replacement: '$1-'
+      tag: gsub_host_mac
+      ignore_missing: true
+  - append:
+      field: host.mac
+      value: '{{{_tmp.mac}}}'
+      if: ctx._tmp?.mac != null
+      allow_duplicates: false
 
   # Registry Mapping
   - set:
@@ -2529,11 +2540,16 @@ processors:
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
-  - append:
-      field: related.ip
-      value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
-      allow_duplicates: false
+  - foreach:
+      field: host.ip
+      if: ctx.host?.ip instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          tag: append_host_ip_to_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: related.ip
       value: '{{{m365_defender.event.ipv4_dhcp}}}'
@@ -2675,6 +2691,10 @@ processors:
         - m365_defender.event.dns.rcode_name
         - m365_defender.event.dns.answers
         - m365_defender.event.dns.header_flags
+      ignore_missing: true
+  - remove:
+      field:
+        - _tmp
       ignore_missing: true
 on_failure:
   - append:
