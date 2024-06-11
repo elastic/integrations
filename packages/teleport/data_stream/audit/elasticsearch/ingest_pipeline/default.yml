@@ -23,38 +23,6 @@ processors:
       target_field: teleport.audit
   # Metadata is a common event metadata.
   # All of these fields are mapped to ECS fields.
-  - rename:
-      field: teleport.audit.ei
-      target_field: event.sequence
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.event
-      target_field: event.action
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.uid
-      target_field: event.id
-      ignore_missing: true
-  - set:
-      field: event.outcome
-      value: ['failure']
-      if: 'ctx.teleport.audit.code.endsWith("E") || ctx.teleport.audit.code.endsWith("W")'
-  - append:
-      field: event.code
-      value:
-        - '{{{teleport.audit.event}}}'
-      if: ctx.teleport.audit.event != null
-  - append:
-      field: event.code
-      value:
-        - '{{{teleport.audit.code}}}'
-      if: ctx.teleport.audit.code != null
-  - remove:
-      field: teleport.audit.event
-      ignore_missing: true
-  - remove:
-      field: teleport.audit.code
-      ignore_missing: true
   - date:
       field: teleport.audit.time
       target_field: '@timestamp'
@@ -63,6 +31,26 @@ processors:
       if: ctx.teleport?.audit?.time != null
   - remove:
       field: teleport.audit.time
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.event
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.code
+      target_field: event.code
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.uid
+      target_field: event.id
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: ['failure']
+      if: 'ctx.event.code.endsWith("E") || ctx.event.code.endsWith("W")'
+  - rename:
+      field: teleport.audit.ei
+      target_field: event.sequence
       ignore_missing: true
   - rename:
       field: teleport.audit.cluster_name
@@ -132,19 +120,6 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "event-enrich" }}'
       ignore_failure: true
-  # Rename the action field.
-  - append:
-      field: event.code
-      value:
-        - '{{{event.action}}}'
-      if: ctx.event?.action != null
-  - remove:
-      field: event.action
-      ignore_missing: true
-  - rename:
-      field: teleport.audit.sftp.action
-      target_field: event.action
-      ignore_missing: true
   # Final steps.
   - remove:
       field: event.original

@@ -335,6 +335,7 @@ An example event for `audit` looks as following:
 | teleport.audit.saml_idp_service_provider.attribute_mapping | AttributeMapping is a map of attribute name and value which will be asserted in SAML response. | flattened |
 | teleport.audit.saml_idp_service_provider.entity_id | ServiceProviderEntityID is the entity ID of the service provider. | keyword |
 | teleport.audit.saml_idp_service_provider.shortcut | ServiceProviderShortcut is the shortcut name of a service provider. | keyword |
+| teleport.audit.scp.action | Action is upload or download | keyword |
 | teleport.audit.sec_report.name | Name is the name of the Access Monitoring Report. | keyword |
 | teleport.audit.sec_report.total_data_scanned_in_bytes | TotalDataScannedInBytes is the amount of data scanned by the query. | long |
 | teleport.audit.sec_report.total_execution_time_in_millis | TotalExecutionTimeInMillis is the total execution time of the query. | long |
@@ -350,6 +351,7 @@ An example event for `audit` looks as following:
 | teleport.audit.session.private_key_policy | PrivateKeyPolicy is the private key policy of the private key used to start this session. | keyword |
 | teleport.audit.session.session_recording | SessionRecording is the type of session recording. | keyword |
 | teleport.audit.session.terminal_size | TerminalSize is expressed as 'W:H' | keyword |
+| teleport.audit.sftp.action | Action is what kind of file operation | keyword |
 | teleport.audit.sftp.attributes | Attributes is file metadata that the user requested to be changed | object |
 | teleport.audit.sftp.target_path | TargetPath is the new path in file renames, or the path of the symlink when creating symlinks. | keyword |
 | teleport.audit.svid.dns_sans | DNSSANs is the list of DNS SANs in the issued SVID. | keyword |

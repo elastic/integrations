@@ -665,6 +665,20 @@ processors:
       field: teleport.audit.exitError
       target_field: process.io.text
       ignore_missing: true
+
+  # SCP is emitted when data transfer has occurred between server and client
+  # See teleport.audit.scp group for field definitions.
+  - rename:
+      field: teleport.audit.path
+      target_field: file.path
+      if: ctx.event.action == 'scp'
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.action
+      target_field: teleport.audit.scp.action
+      if: ctx.event.action == 'scp'
+      ignore_missing: true
+
   # SFTP file operations metadata
   # See teleport.audit.sftp group for field definitions.
   - rename:
@@ -674,7 +688,7 @@ processors:
   - rename:
       field: teleport.audit.path
       target_field: file.path
-      if: ctx.event.action == 'sftp' ||  ctx.event.action == 'scp'
+      if: ctx.event.action == 'sftp'
       ignore_missing: true
   - rename:
       field: teleport.audit.target_path
@@ -688,95 +702,96 @@ processors:
   - set:
       field: teleport.audit.sftp.action
       value: ['INVALID']
-      if: 'ctx.teleport?.audit?.action == 0'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 0'
   - set:
       field: teleport.audit.sftp.action
       value: ['OPEN']
-      if: 'ctx.teleport?.audit?.action == 1'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 1'
   - set:
       field: teleport.audit.sftp.action
       value: ['CLOSE']
-      if: 'ctx.teleport?.audit?.action == 2'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 2'
   - set:
       field: teleport.audit.sftp.action
       value: ['READ']
-      if: 'ctx.teleport?.audit?.action == 3'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 3'
   - set:
       field: teleport.audit.sftp.action
       value: ['WRITE']
-      if: 'ctx.teleport?.audit?.action == 4'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 4'
   - set:
       field: teleport.audit.sftp.action
       value: ['LSTAT']
-      if: 'ctx.teleport?.audit?.action == 5'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 5'
   - set:
       field: teleport.audit.sftp.action
       value: ['FSTAT']
-      if: 'ctx.teleport?.audit?.action == 6'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 6'
   - set:
       field: teleport.audit.sftp.action
       value: ['SETSTAT']
-      if: 'ctx.teleport?.audit?.action == 7'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 7'
   - set:
       field: teleport.audit.sftp.action
       value: ['FSETSTAT']
-      if: 'ctx.teleport?.audit?.action == 8'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 8'
   - set:
       field: teleport.audit.sftp.action
       value: ['OPENDIR']
-      if: 'ctx.teleport?.audit?.action == 9'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 9'
   - set:
       field: teleport.audit.sftp.action
       value: ['READDIR']
-      if: 'ctx.teleport?.audit?.action == 10'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 10'
   - set:
       field: teleport.audit.sftp.action
       value: ['REMOVE']
-      if: 'ctx.teleport?.audit?.action == 11'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 11'
   - set:
       field: teleport.audit.sftp.action
       value: ['MKDIR']
-      if: 'ctx.teleport?.audit?.action == 12'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 12'
   - set:
       field: teleport.audit.sftp.action
       value: ['RMDIR']
-      if: 'ctx.teleport?.audit?.action == 13'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 13'
   - set:
       field: teleport.audit.sftp.action
       value: ['REALPATH']
-      if: 'ctx.teleport?.audit?.action == 14'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 14'
   - set:
       field: teleport.audit.sftp.action
       value: ['STAT']
-      if: 'ctx.teleport?.audit?.action == 15'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 15'
   - set:
       field: teleport.audit.sftp.action
       value: ['RENAME']
-      if: 'ctx.teleport?.audit?.action == 16'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 16'
   - set:
       field: teleport.audit.sftp.action
       value: ['READLINK']
-      if: 'ctx.teleport?.audit?.action == 17'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 17'
   - set:
       field: teleport.audit.sftp.action
       value: ['SYMLINK']
-      if: 'ctx.teleport?.audit?.action == 18'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 18'
   - set:
       field: teleport.audit.sftp.action
       value: ['LINK']
-      if: 'ctx.teleport?.audit?.action == 19'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.action == 19'
   - remove:
       field: teleport.audit.action
-      if: 'ctx.teleport?.audit?.sftp?.action != null'
+      if: 'ctx.event.action == "sftp" && ctx.event.action == "sftp" && ctx.teleport?.audit?.sftp?.action != null'
   - convert:
       field: teleport.audit.action
       type: string
       ignore_missing: true
+      if: 'ctx.event.action == "sftp"'
   - rename:
       field: teleport.audit.action
       target_field: teleport.audit.sftp.action
       ignore_missing: true
-      if: 'ctx.teleport?.audit?.sftp?.action == null'
+      if: 'ctx.event.action == "sftp" && ctx.teleport?.audit?.sftp?.action == null'
   # ClientDisconnect is emitted when client is disconnected
   # by the server due to inactivity or any other reason
   - rename:
