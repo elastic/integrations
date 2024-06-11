@@ -374,7 +374,7 @@ An example event for `apex` looks as following:
 | salesforce.apex.fetch_ms | How long it took (in milliseconds) to retrieve the query results from the external system. Available in API version 42.0 and later. | float | ms | gauge |
 | salesforce.apex.fields_count | The number of fields or columns, where applicable. | long |  |  |
 | salesforce.apex.filter | Field expressions to filter which rows to return. Corresponds to WHERE in SOQL queries. | keyword |  |  |
-| salesforce.apex.is_long_running_request | Indicates whether the request is counted against your org's concurrent long-running Apex request limit (true) or not (false). | keyword |  |  |
+| salesforce.apex.is_long_running_request | Indicates whether the request is counted against your org's concurrent long-running Apex request limit. | boolean |  |  |
 | salesforce.apex.limit | Maximum number of rows to return for a query. Corresponds to LIMIT in SOQL queries. | long |  |  |
 | salesforce.apex.limit_usage_pct | The percentage of Apex SOAP calls that were made against the organization's limit. | float | percent | gauge |
 | salesforce.apex.login_key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |  |  |

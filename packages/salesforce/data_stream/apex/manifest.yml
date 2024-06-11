@@ -1,12 +1,12 @@
 type: logs
-title: Salesforce apex logs
+title: Salesforce Apex logs
 streams:
   - input: salesforce
     vars:
       - name: api_version
         type: text
         title: API Version
-        description: API Version of Salesforce.
+        description: API Version of Salesforce. Default is 56.0.
         multi: false
         required: true
         show_user: false
@@ -14,7 +14,7 @@ streams:
       - name: period
         type: text
         title: Period
-        description: Period of fetching logs, i.e. 1s/1m/1h.
+        description: Period of fetching logs, i.e. 1s/1m/1h/1d. Default is 1h.
         multi: false
         required: true
         show_user: true
@@ -22,7 +22,7 @@ streams:
       - name: initial_interval
         type: text
         title: Initial Interval
-        description: Initial Interval to fetch historical data form, i.e. 1s/1m/1h.
+        description: Initial interval to fetch historical data from, i.e. 1s/1m/1h/1d. Default is 30d.
         multi: false
         required: false
         show_user: true
@@ -30,7 +30,7 @@ streams:
       - name: log_file_interval
         type: text
         title: EventLogFile Interval
-        description: EventLogFile Interval for Event Log, i.e. Hourly/Daily.
+        description: EventLogFile Interval for Event Log, i.e. Hourly/Daily. Default is Hourly.
         multi: false
         required: false
         show_user: true
@@ -45,19 +45,19 @@ streams:
           - salesforce-apex
           - forwarded
       - name: preserve_original_event
-        required: true
-        show_user: true
+        type: bool
         title: Preserve original event
         description: Preserves a raw copy of the original event, added to the field `event.original`.
-        type: bool
         multi: false
+        required: true
+        show_user: true
         default: false
       - name: processors
         type: yaml
         title: Processors
         multi: false
         required: false
-        show_user: false
+        show_user: true
         description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
     template_path: salesforce.yml.hbs
     title: Salesforce Apex logs

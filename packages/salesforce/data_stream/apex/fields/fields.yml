@@ -65,12 +65,15 @@
           description: How long it took (in milliseconds) to retrieve the query results from the external system. Available in API version 42.0 and later.
           unit: ms
           metric_type: gauge
+        - name: fields_count
+          type: long
+          description: The number of fields or columns, where applicable.
         - name: filter
           type: keyword
           description: Field expressions to filter which rows to return. Corresponds to WHERE in SOQL queries.
         - name: is_long_running_request
-          type: keyword
-          description: Indicates whether the request is counted against your org's concurrent long-running Apex request limit (true) or not (false).
+          type: boolean
+          description: Indicates whether the request is counted against your org's concurrent long-running Apex request limit.
         - name: limit
           type: long
           description: Maximum number of rows to return for a query. Corresponds to LIMIT in SOQL queries.
@@ -91,12 +94,6 @@
         - name: method_name
           type: keyword
           description: The name of the calling Apex method.
-        - name: fields_count
-          type: long
-          description: The number of fields or columns, where applicable.
-        - name: soql_queries_count
-          type: long
-          description: The number of SOQL queries that were executed during the event.
         - name: offset
           type: long
           description: Number of rows to skip when paging through a result set. Corresponds to OFFSET in SOQL queries.
@@ -118,15 +115,15 @@
         - name: request_status
           type: keyword
           description: The status of the request for a page view or user interface action.
-        - name: rows_total
-          type: long
-          description: Total number of records in the result set. The value is always -1 if the custom adapter's DataSource.Provider class doesn't declare the QUERY_TOTAL_SIZE capability.
         - name: rows_fetched
           type: long
           description: Number of rows fetched by the callout. Available in API version 42.0 and later.
         - name: rows_processed
           type: long
           description: The number of rows that were processed in the request.
+        - name: rows_total
+          type: long
+          description: Total number of records in the result set. The value is always -1 if the custom adapter's DataSource.Provider class doesn't declare the QUERY_TOTAL_SIZE capability.
         - name: run_time
           type: float
           description: The amount of time that the request took in milliseconds.
@@ -135,6 +132,9 @@
         - name: select
           type: keyword
           description: Comma-separated list of fields being queried. Corresponds to SELECT in SOQL queries.
+        - name: soql_queries_count
+          type: long
+          description: The number of SOQL queries that were executed during the event.
         - name: subqueries
           type: keyword
           description: Reserved for future use.
