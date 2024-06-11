@@ -231,7 +231,7 @@ processors:
       field: teleport.audit.session_id
       target_field: teleport.audit.session.id
       ignore_missing: true
-      if: ctx.event.action.startsWith('saml.')
+      if: ctx.event.code.startsWith('saml.')
   # Okta related events metadata.
   # See teleport.audit.okta group for field definitions.
   - rename:
@@ -304,7 +304,7 @@ processors:
       tag: lock_target_field
       target_field: teleport.audit.lock.target
       ignore_missing: true
-      if: "ctx.event.action.startsWith('lock.')"
+      if: "ctx.event.code.startsWith('lock.')"
   # Session related events metadata.
   # See teleport.audit.session group for field definitions.
   - rename:
@@ -454,7 +454,7 @@ processors:
   - rename:
       field: teleport.audit.path
       target_field: process.executable
-      if: ctx.event.action.startsWith('session.')
+      if: ctx.event.code.startsWith('session.')
       ignore_missing: true
   - rename:
       field: teleport.audit.argv
@@ -563,12 +563,12 @@ processors:
   - rename:
       field: teleport.audit.method
       target_field: teleport.audit.login.method
-      if: ctx.event.action == 'user.login'
+      if: ctx.event.code == 'user.login'
       ignore_missing: true
   - rename:
       field: teleport.audit.attributes
       target_field: teleport.audit.login.identity_attributes
-      if: ctx.event.action == 'user.login'
+      if: ctx.event.code == 'user.login'
       ignore_missing: true
   - rename:
       field: teleport.audit.mfa_device.mfa_device_name
@@ -674,7 +674,7 @@ processors:
   - rename:
       field: teleport.audit.path
       target_field: file.path
-      if: ctx.event.action == 'sftp' ||  ctx.event.action == 'scp'
+      if: ctx.event.code == 'sftp' ||  ctx.event.code == 'scp'
       ignore_missing: true
   - rename:
       field: teleport.audit.target_path
@@ -683,86 +683,86 @@ processors:
   - rename:
       field: teleport.audit.attributes
       target_field: teleport.audit.sftp.attributes
-      if: ctx.event.action == 'sftp'
+      if: ctx.event.code == 'sftp'
       ignore_missing: true
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['INVALID']
       if: 'ctx.teleport?.audit?.action == 0'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['OPEN']
       if: 'ctx.teleport?.audit?.action == 1'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['CLOSE']
       if: 'ctx.teleport?.audit?.action == 2'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['READ']
       if: 'ctx.teleport?.audit?.action == 3'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['WRITE']
       if: 'ctx.teleport?.audit?.action == 4'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['LSTAT']
       if: 'ctx.teleport?.audit?.action == 5'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['FSTAT']
       if: 'ctx.teleport?.audit?.action == 6'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['SETSTAT']
       if: 'ctx.teleport?.audit?.action == 7'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['FSETSTAT']
       if: 'ctx.teleport?.audit?.action == 8'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['OPENDIR']
       if: 'ctx.teleport?.audit?.action == 9'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['READDIR']
       if: 'ctx.teleport?.audit?.action == 10'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['REMOVE']
       if: 'ctx.teleport?.audit?.action == 11'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['MKDIR']
       if: 'ctx.teleport?.audit?.action == 12'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['RMDIR']
       if: 'ctx.teleport?.audit?.action == 13'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['REALPATH']
       if: 'ctx.teleport?.audit?.action == 14'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['STAT']
       if: 'ctx.teleport?.audit?.action == 15'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['RENAME']
       if: 'ctx.teleport?.audit?.action == 16'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['READLINK']
       if: 'ctx.teleport?.audit?.action == 17'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['SYMLINK']
       if: 'ctx.teleport?.audit?.action == 18'
   - set:
-      field: teleport.audit.sftp.action
+      field: event.action
       value: ['LINK']
       if: 'ctx.teleport?.audit?.action == 19'
   - remove:
@@ -774,9 +774,9 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.action
-      target_field: teleport.audit.sftp.action
+      target_field: event.action
       ignore_missing: true
-      if: 'ctx.teleport?.audit?.sftp?.action == null'
+      if: 'ctx.event.action == null'
   # ClientDisconnect is emitted when client is disconnected
   # by the server due to inactivity or any other reason
   - rename:
@@ -878,7 +878,7 @@ processors:
       field: teleport.audit.uri
       target_field: teleport.audit.db_uri
       ignore_missing: true
-      if: ctx.event.action.startsWith('db.')
+      if: ctx.event.code.startsWith('db.')
   - rename:
       field: teleport.audit.db_uri
       target_field: teleport.audit.database.uri
@@ -1087,7 +1087,7 @@ processors:
       field: teleport.audit.method
       target_field: teleport.audit.join.method
       ignore_missing: true
-      if: 'ctx.event.action?.endsWith(".join")'
+      if: 'ctx.event.code?.endsWith(".join")'
   - rename:
       field: teleport.audit.token_name
       target_field: teleport.audit.join.token_name
@@ -1095,7 +1095,7 @@ processors:
   - rename:
       field: teleport.audit.attributes
       target_field: teleport.audit.join.attributes
-      if: ctx.event.action.endsWith('.join')
+      if: ctx.event.code.endsWith('.join')
       ignore_missing: true
   - rename:
       field: teleport.audit.user_name
@@ -1279,80 +1279,80 @@ processors:
   - set:
       field: teleport.audit.database.elasticsearch.category
       value: 'GENERAL'
-      if: 'ctx.teleport?.audit?.category == 0 && ctx.event.action.contains(".session.elasticsearch")'
+      if: 'ctx.teleport?.audit?.category == 0 && ctx.event.code.contains(".session.elasticsearch")'
   - set:
       field: teleport.audit.database.elasticsearch.category
       value: 'SECURITY'
-      if: 'ctx.teleport?.audit?.category == 1 && ctx.event.action.contains(".session.elasticsearch")'
+      if: 'ctx.teleport?.audit?.category == 1 && ctx.event.code.contains(".session.elasticsearch")'
   - set:
       field: teleport.audit.database.elasticsearch.category
       value: 'SEARCH'
-      if: 'ctx.teleport?.audit?.category == 2 && ctx.event.action.contains(".session.elasticsearch")'
+      if: 'ctx.teleport?.audit?.category == 2 && ctx.event.code.contains(".session.elasticsearch")'
   - set:
       field: teleport.audit.database.elasticsearch.category
       value: 'SQL'
-      if: 'ctx.teleport?.audit?.category == 3 && ctx.event.action.contains(".session.elasticsearch")'
+      if: 'ctx.teleport?.audit?.category == 3 && ctx.event.code.contains(".session.elasticsearch")'
   - remove:
       field: teleport.audit.category
       ignore_missing: true
-      if: 'ctx.teleport?.audit?.database?.elasticsearch?.category != null && ctx.event.action.contains(".session.elasticsearch")'
+      if: 'ctx.teleport?.audit?.database?.elasticsearch?.category != null && ctx.event.code.contains(".session.elasticsearch")'
   - convert:
       field: teleport.audit.category
       type: string
       ignore_missing: true
-      if: 'ctx.event.action.contains(".session.elasticsearch")'
+      if: 'ctx.event.code.contains(".session.elasticsearch")'
   - rename:
       field: teleport.audit.category
       target_field: teleport.audit.database.elasticsearch.category
-      if: 'ctx.event.action.contains(".session.elasticsearch")'
+      if: 'ctx.event.code.contains(".session.elasticsearch")'
       ignore_missing: true
   - rename:
       field: teleport.audit.target
       target_field: teleport.audit.database.elasticsearch.target
       ignore_missing: true
-      if: 'ctx.event.action.contains(".session.elasticsearch")'
+      if: 'ctx.event.code.contains(".session.elasticsearch")'
   # OpenSearch related events
   - set:
       field: teleport.audit.database.opensearch.category
       value: 'GENERAL'
-      if: 'ctx.teleport?.audit?.category == 0 && ctx.event.action.contains(".session.opensearch")'
+      if: 'ctx.teleport?.audit?.category == 0 && ctx.event.code.contains(".session.opensearch")'
   - set:
       field: teleport.audit.database.opensearch.category
       value: 'SECURITY'
-      if: 'ctx.teleport?.audit?.category == 1 && ctx.event.action.contains(".session.opensearch")'
+      if: 'ctx.teleport?.audit?.category == 1 && ctx.event.code.contains(".session.opensearch")'
   - set:
       field: teleport.audit.database.opensearch.category
       value: 'SEARCH'
-      if: 'ctx.teleport?.audit?.category == 2 && ctx.event.action.contains(".session.opensearch")'
+      if: 'ctx.teleport?.audit?.category == 2 && ctx.event.code.contains(".session.opensearch")'
   - set:
       field: teleport.audit.database.opensearch.category
       value: 'SQL'
-      if: 'ctx.teleport?.audit?.category == 3 && ctx.event.action.contains(".session.opensearch")'
+      if: 'ctx.teleport?.audit?.category == 3 && ctx.event.code.contains(".session.opensearch")'
   - remove:
       field: teleport.audit.category
       ignore_missing: true
-      if: 'ctx.teleport?.audit?.database?.opensearch?.category != null && ctx.event.action.contains(".session.opensearch")'
+      if: 'ctx.teleport?.audit?.database?.opensearch?.category != null && ctx.event.code.contains(".session.opensearch")'
   - convert:
       field: teleport.audit.category
       type: string
       ignore_missing: true
-      if: 'ctx.event.action.contains(".session.opensearch")'
+      if: 'ctx.event.code.contains(".session.opensearch")'
   - rename:
       field: teleport.audit.category
       target_field: teleport.audit.database.opensearch.category
-      if: 'ctx.event.action.contains(".session.opensearch")'
+      if: 'ctx.event.code.contains(".session.opensearch")'
       ignore_missing: true
   - rename:
       field: teleport.audit.target
       target_field: teleport.audit.database.opensearch.target
       ignore_missing: true
-      if: 'ctx.event.action.contains(".session.opensearch")'
+      if: 'ctx.event.code.contains(".session.opensearch")'
   # DynamoDB related events
   - rename:
       field: teleport.audit.target
       target_field: teleport.audit.database.dynamodb.target
       ignore_missing: true
-      if: 'ctx.event.action.contains(".session.dynamodb.")'
+      if: 'ctx.event.code.contains(".session.dynamodb.")'
   # UpgradeWindowStartMetadata contains common upgrade window information.
   # See upgradewindow.yml for field definitions.
   - rename:
@@ -1444,59 +1444,59 @@ processors:
       field: teleport.audit.name
       target_field: teleport.audit.audit_query.name
       ignore_missing: true
-      if: ctx.event.action == 'secreports.audit.query.run'
+      if: ctx.event.code == 'secreports.audit.query.run'
   - rename:
       field: teleport.audit.query
       target_field: teleport.audit.audit_query.query
       ignore_missing: true
-      if: ctx.event.action == 'secreports.audit.query.run'
+      if: ctx.event.code == 'secreports.audit.query.run'
   - rename:
       field: teleport.audit.days
       target_field: teleport.audit.audit_query.days
       ignore_missing: true
-      if: ctx.event.action == 'secreports.audit.query.run'
+      if: ctx.event.code == 'secreports.audit.query.run'
   - rename:
       field: teleport.audit.total_execution_time_in_millis
       target_field: teleport.audit.audit_query.total_execution_time_in_millis
       ignore_missing: true
-      if: ctx.event.action == 'secreports.audit.query.run'
+      if: ctx.event.code == 'secreports.audit.query.run'
   - rename:
       field: teleport.audit.data_scanned_in_bytes
       target_field: teleport.audit.audit_query.data_scanned_in_bytes
       ignore_missing: true
-      if: ctx.event.action == 'secreports.audit.query.run'
+      if: ctx.event.code == 'secreports.audit.query.run'
   # SecurityReportRun is emitted when a user runs an audit query.
   - rename:
       field: teleport.audit.name
       target_field: teleport.audit.sec_report.name
       ignore_missing: true
-      if: ctx.event.action == 'secreports.report.run'
+      if: ctx.event.code == 'secreports.report.run'
   - rename:
       field: teleport.audit.version
       target_field: teleport.audit.sec_report.version
       ignore_missing: true
-      if: ctx.event.action == 'secreports.report.run'
+      if: ctx.event.code == 'secreports.report.run'
   - rename:
       field: teleport.audit.total_execution_time_in_millis
       target_field: teleport.audit.sec_report.total_execution_time_in_millis
       ignore_missing: true
-      if: ctx.event.action == 'secreports.report.run'
+      if: ctx.event.code == 'secreports.report.run'
   - rename:
       field: teleport.audit.total_data_scanned_in_bytes
       target_field: teleport.audit.sec_report.total_data_scanned_in_bytes
       ignore_missing: true
-      if: ctx.event.action == 'secreports.report.run'
+      if: ctx.event.code == 'secreports.report.run'
   - rename:
       field: teleport.audit.data_scanned_in_bytes
       target_field: teleport.audit.sec_report.total_data_scanned_in_bytes
       ignore_missing: true
       ignore_failure: true
-      if: ctx.event.action == 'secreports.report.run'
+      if: ctx.event.code == 'secreports.report.run'
   - rename:
       field: teleport.audit.sec_report.audit_queries
       target_field: teleport.audit.audit_query
       ignore_missing: true
-      if: ctx.event.action == 'secreports.report.run'
+      if: ctx.event.code == 'secreports.report.run'
   # External Audit Storage configuration details.
   - rename:
       field: teleport.audit.integration_name
