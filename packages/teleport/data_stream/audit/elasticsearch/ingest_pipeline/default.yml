@@ -29,7 +29,7 @@ processors:
       ignore_missing: true
   - rename:
       field: teleport.audit.event
-      target_field: event.code
+      target_field: event.action
       ignore_missing: true
   - rename:
       field: teleport.audit.uid
@@ -39,6 +39,22 @@ processors:
       field: event.outcome
       value: ['failure']
       if: 'ctx.teleport.audit.code.endsWith("E") || ctx.teleport.audit.code.endsWith("W")'
+  - append:
+      field: event.code
+      value:
+        - '{{{teleport.audit.event}}}'
+      if: ctx.teleport.audit.event != null
+  - append:
+      field: event.code
+      value:
+        - '{{{teleport.audit.code}}}'
+      if: ctx.teleport.audit.code != null
+  - remove:
+      field: teleport.audit.event
+      ignore_missing: true
+  - remove:
+      field: teleport.audit.code
+      ignore_missing: true
   - date:
       field: teleport.audit.time
       target_field: '@timestamp'
@@ -116,14 +132,18 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "event-enrich" }}'
       ignore_failure: true
-  # Move the second, alphanumeric, code to event.code.
+  # Rename the action field.
   - append:
       field: event.code
       value:
-        - '{{{teleport.audit.code}}}'
-      if: ctx.teleport.audit.code != null
+        - '{{{event.action}}}'
+      if: ctx.event?.action != null
   - remove:
-      field: teleport.audit.code
+      field: event.action
+      ignore_missing: true
+  - rename:
+      field: teleport.audit.sftp.action
+      target_field: event.action
       ignore_missing: true
   # Final steps.
   - remove:
