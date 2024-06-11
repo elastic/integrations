@@ -51,7 +51,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.REQUEST_STATUS
-      target_field: salesforce.login.request_status
+      target_field: salesforce.login.request.status
       ignore_missing: true
       ignore_failure: true
   - script:
@@ -66,14 +66,14 @@ processors:
           R: Redirect
           "N": Not Found
       source: >
-        ctx.salesforce.login.request_status =
-        params.request_status_map.getOrDefault(ctx.salesforce?.login?.request_status,
-        ctx.salesforce.login.request_status);
+        ctx.salesforce.login.request.status =
+        params.request_status_map.getOrDefault(ctx.salesforce?.login?.request.status,
+        ctx.salesforce.login.request.status);
       on_failure:
         - append:
             field: error.message
             value: >-
-              Failed to set salesforce.login.request_status:
+              Failed to set salesforce.login.request.status:
               {{{_ingest.on_failure_message}}}
   - rename:
       field: json.API_VERSION
@@ -97,7 +97,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.REQUEST_ID
-      target_field: salesforce.login.request_id
+      target_field: salesforce.login.request.id
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -120,7 +120,7 @@ processors:
   - convert:
       field: json.DB_TOTAL_TIME
       type: long
-      target_field: salesforce.login.db_time_total
+      target_field: salesforce.login.db_total_time
       ignore_missing: true
       ignore_failure: true
   - script:
@@ -130,22 +130,22 @@ processors:
       lang: painless
       source: |
         if (ctx.salesforce?.login?.db_time?.total != null) {
-            ctx.salesforce.login.db_time_total = ctx.salesforce.login.db_time_total / 1000000;
+            ctx.salesforce.login.db_total_time = ctx.salesforce.login.db_total_time / 1000000;
         }
       on_failure:
         - append:
             field: error.message
             value: >-
-              Failed to set salesforce.login.db_time_total:
+              Failed to set salesforce.login.db_total_time:
               {{{_ingest.on_failure_message}}}
   - rename:
       field: json.CLIENT_IP
-      target_field: salesforce.login.client_ip
+      target_field: salesforce.login.client.ip
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.URI_ID_DERIVED
-      target_field: salesforce.login.uri_derived_id
+      target_field: salesforce.login.uri.id
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -198,10 +198,10 @@ processors:
       target_field: source.geo
       ignore_missing: true
       ignore_failure: true
-  - rename:
+  - user_agent:
       field: json.BROWSER_TYPE
-      target_field: user_agent.name
       ignore_missing: true
+      properties: [NAME, OS, DEVICE]
       ignore_failure: true
   - rename:
       field: json.CIPHER_SUITE
