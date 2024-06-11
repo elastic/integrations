@@ -562,7 +562,7 @@ An example event for `login` looks as following:
 | input.type | Input type. | keyword |  |  |
 | related.ip | All of the IPs seen on your event. | ip |  |  |
 | salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |  |  |
-| salesforce.login.additional_info | Additional information that's captured from the HTTP headers during a login request. | text |  |  |
+| salesforce.login.additional_info | Additional information that's captured from the HTTP headers during a login request. | match_only_text |  |  |
 | salesforce.login.api.type | The type of Salesforce API request. | keyword |  |  |
 | salesforce.login.api.version | The version of the Salesforce API used for the login request. | keyword |  |  |
 | salesforce.login.application | The application used to access the Salesforce organization. | keyword |  |  |
