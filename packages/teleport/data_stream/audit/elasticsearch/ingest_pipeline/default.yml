@@ -52,10 +52,6 @@ processors:
       field: teleport.audit.ei
       target_field: event.sequence
       ignore_missing: true
-  - rename:
-      field: teleport.audit.cluster_name
-      target_field: orchestrator.cluster.name
-      ignore_missing: true
   # Add the event categorization.
   - pipeline:
       name: '{{ IngestPipeline "event-categories" }}'
@@ -80,8 +76,16 @@ processors:
       target_field: url.query
       ignore_missing: true
   - rename:
+      field: teleport.audit.cluster_name
+      target_field: orchestrator.cluster.name
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: teleport.audit.cluster_name
+      ignore_missing: true
+  - rename:
       field: teleport.audit.name
-      target_field: teleport.audit.resource.name
+      target_field: orchestrator.resource.name
       ignore_missing: true
   - script:
       description: Convert the body if it's base64-encoded.
