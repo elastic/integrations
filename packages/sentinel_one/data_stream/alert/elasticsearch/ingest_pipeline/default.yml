@@ -202,7 +202,6 @@ processors:
       ignore_missing: true
   - convert:
       field: json.alertInfo.srcMachineIp
-      target_field: host.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -213,9 +212,15 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      field: host.ip
+      value: '{{{json.alertInfo.srcMachineIp}}}'
+      if: ctx.json?.alertInfo?.srcMachineIp != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
       field: related.ip
-      value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
+      value: '{{{json.alertInfo.srcMachineIp}}}'
+      if: ctx.json?.alertInfo?.srcMachineIp != null
       allow_duplicates: false
       ignore_failure: true
   - rename:

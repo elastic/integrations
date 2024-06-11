@@ -385,11 +385,11 @@ processors:
       field: host.name
       tag: lowercase_host_name
       if: ctx.host?.name != null
-  - set:
+  - append:
       field: host.ip
-      copy_from: m365_defender.event.ip_address
-      tag: set_host_ip
-      ignore_empty_value: true
+      value: '{{{m365_defender.event.ip_address}}}'
+      tag: append_host_ip
+      if: ctx.m365_defender?.event?.ip_address != null && ctx.m365_defender.event.ip_address != ''
   - set:
       field: host.os.type
       value: windows
@@ -537,12 +537,16 @@ processors:
       tag: append_related_hosts
       if: ctx.host?.name != null
       allow_duplicates: false
-  - append:
-      field: related.ip
-      value: '{{{host.ip}}}'
-      tag: append_related_ip
-      if: ctx.host?.ip != null
-      allow_duplicates: false
+  - foreach:
+      field: host.ip
+      if: ctx.host?.ip instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          tag: append_host_ip_to_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: related.hosts
       value: '{{{user.domain}}}'
