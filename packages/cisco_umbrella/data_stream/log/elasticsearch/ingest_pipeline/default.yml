@@ -492,10 +492,11 @@ processors:
       field: event.action
       value: "dlp-{{cisco.umbrella.action}}"
       if: ctx.cisco?.umbrella?.action != null && ctx.log?.file?.path != null && ctx.log.file.path.contains('dlplogs')
-  - set:
+  - append:
       field: event.category
-      value: [network]
+      value: network
       if: "ctx.log?.file?.path != null && !ctx.log.file.path.contains('auditlogs')"
+      allow_duplicates: false
   - append:
       field: event.type
       value: allowed
@@ -508,10 +509,11 @@ processors:
       field: event.type
       value: connection
       if: "ctx.log?.file?.path != null && !ctx.log.file.path.contains('auditlogs')"
-  - set:
+  - append:
       field: event.category
-      value: [configuration]
+      value: configuration
       if: "ctx.log?.file?.path != null && ctx.log.file.path.contains('auditlogs')"
+      allow_duplicates: false
   - append:
       field: event.category
       value: file
