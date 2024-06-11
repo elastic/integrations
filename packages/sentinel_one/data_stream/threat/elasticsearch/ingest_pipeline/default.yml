@@ -168,7 +168,6 @@ processors:
       ignore_missing: true
   - convert:
       field: json.agentDetectionInfo.externalIp
-      target_field: host.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -179,18 +178,24 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - geoip:
-      field: host.ip
+      field: json.agentDetectionInfo.externalIp
       target_field: host.geo
       ignore_missing: true
-      if: ctx.host?.ip != null && ctx.host.ip != ''
+      if: ctx.json?.agentDetectionInfo?.externalIp != null
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      field: host.ip
+      value: '{{{json.agentDetectionInfo.externalIp}}}'
+      if: ctx.json?.agentDetectionInfo?.externalIp != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
       field: related.ip
-      value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
+      value: '{{{json.agentDetectionInfo.externalIp}}}'
+      if: ctx.json?.agentDetectionInfo?.externalIp != null
       allow_duplicates: false
       ignore_failure: true
   - rename:

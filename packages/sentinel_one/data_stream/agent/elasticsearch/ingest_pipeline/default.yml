@@ -187,7 +187,6 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.externalIp
-      target_field: host.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -198,9 +197,15 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      field: host.ip
+      value: '{{{json.externalIp}}}'
+      if: ctx.json?.externalIp != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
       field: related.ip
-      value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
+      value: '{{{json.externalIp}}}'
+      if: ctx.json?.externalIp != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
