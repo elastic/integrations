@@ -2,7 +2,8 @@ format_version: 3.0.2
 name: salesforce
 title: Salesforce
 version: "0.14.2"
-description: Collect logs from Salesforce with Elastic Agent.
+description: |
+  Collect logs from Salesforce instances using the Elastic Agent. This integration allows you to monitor and analyze various Salesforce logs, including Login, Logout, Setup Audit Trail, and Apex logs.
 type: integration
 categories:
   - observability
@@ -44,42 +45,42 @@ vars:
   - name: jwt_enabled
     type: bool
     title: Enable JWT Authentication
-    description: Enable JWT Authentication (if disabled User-Password flow will be used).
+    description: Enable JWT-based authentication for secure communication with Salesforce APIs. If disabled, the package will use the username-password authentication flow.
     required: true
     show_user: true
     default: true
   - name: client_key_path
     type: text
     title: JWT Authentication Client Key Path
-    description: Path to the JWT Authentication Client key.
+    description: Path to the private key file used for JWT authentication. The key file should be in PEM format.
     required: false
     show_user: true
     default: client-key.pem
   - name: jwt_url
     type: text
     title: JWT Authentication Audience URL
-    description: Audience URL for JWT Authentication, (i.e. https://login.salesforce.com).
+    description: The audience URL for JWT authentication, typically set to https://login.salesforce.com.
     required: false
     show_user: true
     default: https://login.salesforce.com
   - name: username
     type: text
     title: Username
-    description: JWT Authentication or OAuth 2.0 Email Id used while registering salesforce, (i.e. my.email@here.com).
+    description: The email address or username associated with your Salesforce account, used for OAuth 2.0 authentication.
     required: true
     show_user: true
     default: username
   - name: client_id
     type: text
     title: Client ID
-    description: JWT Authentication or OAuth 2.0 client ID.
+    description: The client ID obtained from your Salesforce connected app, used for OAuth 2.0 authentication.
     required: true
     show_user: true
     default: client_id
   - name: client_secret
     type: password
     title: Client Secret
-    description: OAuth 2.0 client secret.
+    description: The client secret obtained from your Salesforce connected app, used for OAuth 2.0 authentication.
     required: false
     secret: true
     show_user: true
@@ -88,7 +89,7 @@ vars:
     type: password
     title: Password
     secret: true
-    description: The password used as part of the authentication flow.
+    description: The password associated with your Salesforce account, used for username-password authentication.
     required: false
     show_user: true
     default: password
@@ -96,14 +97,14 @@ vars:
     type: text
     title: Token URL
     secret: false
-    description: The OAuth 2.0 token URL for Salesforce.
+    description: The OAuth 2.0 token endpoint URL for Salesforce, typically set to https://login.salesforce.com/services/oauth2/token.
     required: true
     show_user: false
     default: https://login.salesforce.com
 policy_templates:
   - name: salesforce
     title: Salesforce logs
-    description: Collect logs from Salesforce instances.
+    description: Collect logs from Salesforce instances using the Elastic Agent. This policy template configures the necessary inputs and settings to ingest Salesforce Login, Logout, Setup Audit Trail, and Apex logs into Elastic.
     inputs:
       - type: salesforce
         title: Collect Salesforce logs using REST API
