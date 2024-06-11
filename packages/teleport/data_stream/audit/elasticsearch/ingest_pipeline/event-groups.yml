@@ -833,7 +833,7 @@ processors:
   # See teleport.audit.app group for field definitions.
   - rename:
       field: teleport.audit.app_uri
-      target_field: url.full
+      target_field: teleport.audit.app.uri
       ignore_missing: true
   - rename:
       field: teleport.audit.app_public_addr
@@ -1210,9 +1210,17 @@ processors:
       target_field: teleport.audit.device.web_session_id
       ignore_missing: true
   # SessionUpload is a session upload
+  - uri_parts:
+      field: teleport.audit.url
+      target_field: url
+      ignore_missing: true
+      ignore_failure: true
+      keep_original: true
+      remove_if_successful: true
+      if: ctx.url == null
   - rename:
       field: teleport.audit.url
-      target_field: url.full
+      target_field: url.original
       ignore_missing: true
   # Identity is the identity associated with the certificate, as interpreted by Teleport.
   # See teleport.audit.certificate group for field definitions.

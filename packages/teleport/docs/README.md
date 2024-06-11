@@ -159,6 +159,7 @@ An example event for `audit` looks as following:
 | teleport.audit.app.name | AppName is the configured application name. | keyword |
 | teleport.audit.app.public_address | AppPublicAddr is the configured application public address. | keyword |
 | teleport.audit.app.session.chunk_id | SessionChunkID is the ID of the session that was created for this 5 minute application log chunk. | keyword |
+| teleport.audit.app.uri | AppURI is the application endpoint. | keyword |
 | teleport.audit.audit_query.data_scanned_in_bytes | DataScannedInBytes is the amount of data scanned by the query. | long |
 | teleport.audit.audit_query.days | Days is the number of days time range for the query. | integer |
 | teleport.audit.audit_query.name | Name is the name of the query. | keyword |
