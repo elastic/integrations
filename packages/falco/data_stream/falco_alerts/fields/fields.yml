@@ -41,7 +41,7 @@
           type: keyword
         - name: rdrw
           type: keyword
-        - name: propogation
+        - name: propagation
           type: keyword
     - name: output
       type: text
@@ -308,21 +308,15 @@
         - name: container.name
           type: keyword
           description: The container name
-        - name: container.image.full_id
-          type: keyword
-          description: Full container image ID, enriched as part of the container engine enrichment.
-        - name: container.image.id
-          type: keyword
-          description: Container image ID.
-        - name: container.image.repository
-          type: keyword
-          description: The container image repository.
         - name: container.healthcheck
           type: text
           description: The container's health check. Will be N/A if no health check configured.
         - name: container.liveness_probe
           type: text
           description: The container's liveness probe. Will be N/A if no liveness probe configured.
+        - name: container.mounts
+          type: text
+          description: The raw text value for container mounts information
         - name: container.readiness_probe
           type: text
           description: The container's readiness probe. Will be N/A if no readiness probe configured.
@@ -470,6 +464,9 @@
         - name: proc.cmdnargs
           type: integer
           description: Preserved Falco field
+        - name: proc.args
+          type: text
+          description: Preserved Falco field
         - name: proc.env
           type: text
           description: Preserved Falco field
@@ -548,14 +545,24 @@
         - name: container.image
           type: text
           description: Preserved Falco field
+          fields:
+            - name: digest
+              type: text
+              description: Preserved Falco field
+            - name: full_id
+              type: keyword
+              description: Full container image ID, enriched as part of the container engine enrichment.
+            - name: id
+              type: keyword
+              description: Container image ID.
+            - name: repository
+              type: keyword
+              description: The container image repository.
         - name: container.type
           type: text
           description: Preserved Falco field
         - name: container.privileged
           type: boolean
-          description: Preserved Falco field
-        - name: container.image.digest
-          type: text
           description: Preserved Falco field
         - name: container.ip
           type: text
@@ -579,16 +586,16 @@
           type: ip
           description: Preserved Falco field
         - name: fd.cport
-          type: text
+          type: long
           description: Preserved Falco field
         - name: fd.sport
-          type: text
+          type: long
           description: Preserved Falco field
         - name: fd.lport
-          type: text
+          type: long
           description: Preserved Falco field
         - name: fd.rport
-          type: text
+          type: long
           description: Preserved Falco field
         - name: fd.cip.name
           type: text

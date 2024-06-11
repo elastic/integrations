@@ -192,13 +192,24 @@ processors:
     field: event.sequence
     copy_from: Falco.output_fields.evt.num
     ignore_empty_value: true
-
-# TODO this should probably check several potential fields conditionally to provide fallback if one is not available
-- set:
-    field: '@timestamp'
-    copy_from: Falco.output_fields.evt.time.iso8601
-    ignore_empty_value: true
-
+- script:
+    lang: painless
+    tag: 'Script for generating @timestamp'
+    source: |
+        if (ctx.Falco?.output_fields?.evt?.time != null) {
+            def timeField = ctx.Falco.output_fields.evt.time;
+            if (timeField instanceof Map) {
+                if (timeField.iso8601 != null) {
+                    ctx['@timestamp'] = timeField.iso8601;
+                } else if (timeField.rawtime != null) {
+                    ctx['@timestamp'] = timeField.rawtime;
+                } else {
+                    ctx['@timestamp'] = timeField;
+                }
+            } else {
+                ctx['@timestamp'] = timeField;
+            }
+        }
 - set:
     field: event.start
     copy_from: Falco.output_fields.evt.time.iso8601
@@ -243,12 +254,21 @@ processors:
     field: process.parent.name
     copy_from: Falco.output_fields.proc.pname
     ignore_empty_value: true
-
-# TODO need sample data and test for this - our array formatting may not be correct
-- set:
-    field: process.args
-    value: ['{{Falco.output_fields.proc.exepath}}{{Falco.output_fields.proc.args}}']
-
+- script:
+    lang: painless
+    tag: 'Script for generating process.args'
+    source: |
+        if (ctx.Falco.output_fields?.proc?.exepath != null && ctx.Falco.output_fields?.proc?.args != null) {
+            def path = ctx.Falco.output_fields.proc.exepath;
+            def args = ctx.Falco.output_fields.proc.args;
+            def argItems = args.splitOnToken(' ');
+            def finalList = [];
+            finalList.add(path);
+            for (int i = 0; i < argItems.length; i++) {
+                finalList.add(argItems[i]);
+            }
+            ctx['process']['args'] = finalList;
+        }
 - set:
     field: process.command_line
     copy_from: Falco.output_fields.proc.cmdline
@@ -257,8 +277,6 @@ processors:
     field: process.parent.command_line
     copy_from: Falco.output_fields.proc.pcmdline
     ignore_empty_value: true
-
-# TODO need test case for these
 - set:
     field: process.args_count
     copy_from: Falco.output_fields.proc.cmdnargs
@@ -298,15 +316,11 @@ processors:
     ignore_empty_value: true
 - set:
     field: process.session_leader.executable
-    copy_from: Falco.output_fields.proc.sid.exepath
+    copy_from: Falco.output_fields.proc.sid.exepath # this is a problem
     ignore_empty_value: true
 - set:
     field: process.group_leader.vpid
-    copy_from: Falco.output_fields.proc.vpgid
-    ignore_empty_value: true
-- set:
-    field: process.group_leader.name
-    copy_from: Falco.output_fields.proc.vpgid.name
+    copy_from: Falco.output_fields.proc.vpgid # these are problems as well
     ignore_empty_value: true
 - set:
     field: process.group_leader.name
@@ -316,10 +330,11 @@ processors:
     field: process.group_leader.executable
     copy_from: Falco.output_fields.proc.vpgid.exepath
     ignore_empty_value: true
-- set:
-    field: process.uptime
-    copy_from: Falco.output_fields.proc.duration
-    ignore_empty_value: true
+- convert:
+    field: Falco.output_fields.proc.duration
+    target_field: process.uptime
+    type: long
+    ignore_missing: true
 - set:
     field: process.parent.uptime
     copy_from: Falco.output_fields.proc.ppid.duration
@@ -363,8 +378,6 @@ processors:
     field: process.user.name
     copy_from: Falco.output_fields.user.name
     ignore_empty_value: true
-
-# TODO need test case for these
 - set:
     field: process.group.id
     copy_from: Falco.output_fields.group.gid
@@ -373,8 +386,6 @@ processors:
     field: process.group.name
     copy_from: Falco.output_fields.group.name
     ignore_empty_value: true
-
-
 - set:
     field: container.id
     copy_from: Falco.output_fields.container.id
@@ -383,9 +394,7 @@ processors:
     field: container.name
     copy_from: Falco.output_fields.container.name
     ignore_empty_value: true
-
-# TODO need test case for these
-- set:
+- set: # still need to figure out this one and container.image.digest
     field: container.image.name
     copy_from: Falco.output_fields.container.image
     ignore_empty_value: true
@@ -498,8 +507,6 @@ processors:
     field: file.inode
     copy_from: Falco.output_fields.fd.ino
     ignore_empty_value: true
-
-# TODO need test case for these
 - set:
     field: orchestrator.namespace
     copy_from: Falco.output_fields.k8s.ns.name
@@ -530,25 +537,23 @@ processors:
     field: orchestrator.type
     value: 'kubernetes'
     if: ctx.containsKey('Falco.output_fields.k8s.pod.name')
-
-# TODO need test data
 - script:
     lang: painless
     tag: 'container.mounts'
     source: |
-        if (ctx['Falco.output_fields.container'] != null && ctx['Falco.output_fields.container.mounts'] != null) {
-            def mountsString = ctx['Falco.output_fields.container.mounts'];
-            def mountItems = mountsString.split(' ');            
+        if (ctx.Falco.output_fields?.container?.mounts != null) {
+            def mountsString = ctx.Falco.output_fields.container.mounts;
+            def mountItems = mountsString.splitOnToken(' ');            
             def mountsList = [];
             for (int i = 0; i < mountItems.length; i++) {
                 def mountItem = mountItems[i];
-                def parts = mountItem.split(':');
+                def parts = mountItem.splitOnToken(':');
                 def mountRecord = [:];
-                mountRecord.source = parts && parts.length > 0 ? parts[0] : null;
-                mountRecord.dest = parts && parts.length > 1 ? parts[1] : null;
-                mountRecord.mode = parts && parts.length > 2 ? parts[2] : null;
-                mountRecord.rdrw = parts && parts.length > 3 ? parts[3] : null;
-                mountRecord.propagation = parts && parts.length > 4 ? parts[4] : null;
+                mountRecord.source = parts.length > 0 ? parts[0] : null;
+                mountRecord.dest = parts.length > 1 ? parts[1] : null;
+                mountRecord.mode = parts.length > 2 ? parts[2] : null;
+                mountRecord.rdrw = parts.length > 3 ? parts[3] : null;
+                mountRecord.propagation = parts.length > 4 ? parts[4] : null;
                 mountsList.add(mountRecord);
             }
             ctx['Falco.container.mounts'] = mountsList;
