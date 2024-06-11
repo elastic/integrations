@@ -65,11 +65,6 @@ processors:
         target_field: event.sequence
         ignore_missing: true
         if: ctx.jamf_protect?.telemetry?.glob_seq_num != null
-    # - rename:
-    #     field: jamf_protect.telemetry.event_type
-    #     target_field: event.code
-    #     ignore_missing: true
-    #     if: ctx.jamf_protect?.telemetry?.event_type != null
     - convert:
         field: jamf_protect.telemetry.event_type
         target_field: event.code
@@ -107,32 +102,6 @@ processors:
             ctx.custom = ctx.custom != null ? ctx.custom : new HashMap();
             ctx.custom.event_allowed_by_esclient = authTypeBoolean;
             }
-    # - script:
-    #     description: Checks if for given event type the petitioner or instigator exists.
-    #     lang: painless
-    #     source: >
-    #       boolean instigator_exists = false;
-    #       boolean petitioner_exists = false;
-    #       if (ctx.containsKey('jamf_protect') &&
-    #           ctx.jamf_protect.containsKey('telemetry') &&
-    #           ctx.jamf_protect.telemetry.containsKey('event')) {
-            
-    #         def eventObject = ctx.jamf_protect.telemetry.event;
-            
-    #         for (def key : eventObject.keySet()) {
-    #           if (eventObject[key].containsKey('instigator')) {
-    #             instigator_exists = true;
-    #             break;
-    #           }
-    #           if (eventObject[key].containsKey('petitioner')) {
-    #             petitioner_exists = true;
-    #             break;
-    #           }
-    #         }
-    #       }
-    #       ctx.jamf_protect.telemetry.instigator_exists = instigator_exists;
-    #       ctx.jamf_protect.telemetry.petitioner_exists = petitioner_exists;
-    #     ignore_failure: true
 
 #######################
 ## ECS Host Mapping ##
@@ -199,26 +168,6 @@ processors:
                 field: related.ip
                 value: '{{{_ingest._value}}}'
                 allow_duplicates: false
-    # - append:
-    #     field: related.hash
-    #     value: "{{ file.hash.sha1 }}"
-    #     if: ctx.file?.hash?.sha1 != null
-    #     allow_duplicates: false
-    # - append:
-    #     field: related.hash
-    #     value: "{{ file.hash.sha256 }}"
-    #     if: ctx.file?.hash?.sha256 != null
-    #     allow_duplicates: false
-    # - append:
-    #     field: related.hash
-    #     value: "{{ process.hash.sha1 }}"
-    #     if: ctx.process?.hash?.sha1 != null
-    #     allow_duplicates: false
-    # - append:
-    #     field: related.hash
-    #     value: "{{ process.hash.sha256 }}"
-    #     if: ctx.process?.hash?.sha256 != null
-    #     allow_duplicates: false
 
 #######################
 ## ECS Pipelines ##
@@ -226,204 +175,30 @@ processors:
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_exec" }}'
         if: ctx.event.action == "exec"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_open" }}'
-    #     if: ctx.event.action == "open"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_fork" }}'
-    #     if: ctx.event.action == "fork"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_close" }}'
-    #     if: ctx.event.action == "close"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_create" }}'
-    #     if: ctx.event.action == "create"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_exchangedata" }}'
-    #     if: ctx.event.action == "exchangedata"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_exit" }}'
-    #     if: ctx.event.action == "exit"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_get_task" }}'
-    #     if: ctx.event.action == "get_task"
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_kextload" }}'
         if: ctx.event.action == "kextload"
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_kextunload" }}'
         if: ctx.event.action == "kextunload"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_link" }}'
-    #     if: ctx.event.action == "link"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_mmap" }}'
-    #     if: ctx.event.action == "mmap"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_mprotect" }}'
-    #     if: ctx.event.action == "mprotect"
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_mount" }}'
         if: ctx.event.action == "mount"
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_unmount" }}'
         if: ctx.event.action == "unmount"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_iokit_open" }}'
-    #     if: ctx.event.action == "iokit_open"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_rename" }}'
-    #     if: ctx.event.action == "rename"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_setattrlist" }}'
-    #     if: ctx.event.action == "setattrlist"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_setextattr" }}'
-    #     if: ctx.event.action == "setextattr"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_setflags" }}'
-    #     if: ctx.event.action == "setflags"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_setmode" }}'
-    #     if: ctx.event.action == "setmode"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_setowner" }}'
-    #     if: ctx.event.action == "setowner"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_signal" }}'
-    #     if: ctx.event.action == "signal"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_unlink" }}'
-    #     if: ctx.event.action == "unlink"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_write" }}'
-    #     if: ctx.event.action == "write"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_file_provider_materialize" }}'
-    #     if: ctx.event.action == "file_provider_materialize"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_file_provider_update" }}'
-    #     if: ctx.event.action == "file_provider_update"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_readlink" }}'
-    #     if: ctx.event.action == "readlink"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_truncate" }}'
-    #     if: ctx.event.action == "truncate"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_lookup" }}'
-    #     if: ctx.event.action == "lookup"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_chdir" }}'
-    #     if: ctx.event.action == "chdir"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_getattrlist" }}'
-    #     if: ctx.event.action == "getattrlist"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_stat" }}'
-    #     if: ctx.event.action == "stat"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_access" }}'
-    #     if: ctx.event.action == "access"
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_chroot" }}'
         if: ctx.event.action == "chroot"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_utimes" }}'
-    #     if: ctx.event.action == "utimes"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_clone" }}'
-    #     if: ctx.event.action == "clone"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_fcntl" }}'
-    #     if: ctx.event.action == "fcntl"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_getextattr" }}'
-    #     if: ctx.event.action == "getextattr"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_listextattr" }}'
-    #     if: ctx.event.action == "listextattr"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_readdir" }}'
-    #     if: ctx.event.action == "readdir"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_deleteextattr" }}'
-    #     if: ctx.event.action == "deleteextattr"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_fsgetpath" }}'
-    #     if: ctx.event.action == "fsgetpath"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_dup" }}'
-    #     if: ctx.event.action == "dup"
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_settime" }}'
         if: ctx.event.action == "settime"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_uipc_bind" }}'
-    #     if: ctx.event.action == "uipc_bind"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_uipc_connect" }}'
-    #     if: ctx.event.action == "uipc_connect"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_setacl" }}'
-    #     if: ctx.event.action == "setacl"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_pty_grant" }}'
-    #     if: ctx.event.action == "pty_grant"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_pty_close" }}'
-    #     if: ctx.event.action == "pty_close"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_proc_check" }}'
-    #     if: ctx.event.action == "proc_check"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_searchfs" }}'
-    #     if: ctx.event.action == "searchfs"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_proc_suspend_resume" }}'
-    #     if: ctx.event.action == "proc_suspend_resume"
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_cs_invalidated" }}'
         if: ctx.event.action == "cs_invalidated"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_get_task_name" }}'
-    #     if: ctx.event.action == "get_task_name"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_trace" }}'
-    #     if: ctx.event.action == "trace"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_remote_thread_create" }}'
-    #     if: ctx.event.action == "remote_thread_create"
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_remount" }}'
         if: ctx.event.action == "remount"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_get_task_read" }}'
-    #     if: ctx.event.action == "get_task_read"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_get_task_inspect" }}'
-    #     if: ctx.event.action == "get_task_inspect"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_setuid" }}'
-    #     if: ctx.event.action == "setuid"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_setgid" }}'
-    #     if: ctx.event.action == "setgid"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_seteuid" }}'
-    #     if: ctx.event.action == "seteuid"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_setegid" }}'
-    #     if: ctx.event.action == "setegid"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_setreuid" }}'
-    #     if: ctx.event.action == "setreuid"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_setregid" }}'
-    #     if: ctx.event.action == "setregid"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_copyfile" }}'
-    #     if: ctx.event.action == "copyfile"
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_xp_malware_detected" }}'
         if: ctx.event.action == "xp_malware_detected"
@@ -526,9 +301,12 @@ processors:
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_od_delete_group" }}'
         if: ctx.event.action == "od_delete_group"
-    # - pipeline:
-    #     name: '{{ IngestPipeline "pipeline_event_xpc_connect" }}'
-    #     if: ctx.event.action == "xpc_connect"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_log_collection" }}'
+        if: ctx.event.action == "log_collection"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_file_collection" }}'
+        if: ctx.event.action == "file_collection"
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_system_performance" }}'
         if: ctx.event.action == "system_performance"
@@ -539,11 +317,6 @@ processors:
         field: event.original
         if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
         ignore_failure: true
-    # - grok:
-    #     field: process.executable
-    #     patterns: 
-    #       - '%{GREEDYDATA}(?:exec|child|instigator)\".*?executable\"\\:\\{\"path\"\\:\"%{DATA:process.executable}\"'
-
 
 #############
 ## Cleanup ##

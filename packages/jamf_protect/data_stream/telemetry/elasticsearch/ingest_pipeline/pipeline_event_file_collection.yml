@@ -1,0 +1,20 @@
+---
+description: Pipeline for Jamf Protect Telemetry crash and diagnostic events.
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A crash or diagnostic file is detected being created
+    - rename:
+        field: jamf_protect.telemetry.event.file_collection.file.path
+        target_field: log.file.path
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.file_collection.contents
+        target_field: custom.log_entries
+        type: string
+        ignore_missing: true
+        ignore_failure: true
