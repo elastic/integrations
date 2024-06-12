@@ -19,17 +19,17 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2024-03-14T18:59:23.000Z",
     "agent": {
-        "ephemeral_id": "e35b09c8-23c2-496b-adf0-0328de4ea63d",
-        "id": "2c5ad0eb-f525-4944-8ec2-2cb048f1147d",
+        "ephemeral_id": "4b522414-3f7d-4cec-a7f7-7df2a87de0c9",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-cisco-umbrella-bucket-33606",
-                "name": "elastic-package-cisco-umbrella-bucket-33606"
+                "arn": "arn:aws:s3:::elastic-package-cisco-umbrella-bucket-37380",
+                "name": "elastic-package-cisco-umbrella-bucket-37380"
             },
             "object": {
                 "key": "auditlogs.log"
@@ -55,24 +55,26 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "cisco_umbrella.log",
-        "namespace": "ep",
+        "namespace": "27145",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2c5ad0eb-f525-4944-8ec2-2cb048f1147d",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "update",
         "agent_id_status": "verified",
-        "category": "configuration",
+        "category": [
+            "configuration"
+        ],
         "dataset": "cisco_umbrella.log",
         "id": "1757843536",
-        "ingested": "2024-04-12T02:04:00Z",
+        "ingested": "2024-06-12T03:03:50Z",
         "kind": "event",
         "original": "\"1757843536\",\"2024-03-14 18:59:23\",\"admin@company.com\",\"Administrator\",\"logexportconfigurations\",\"update\",\"81.2.69.144\",\"\",\"includeAuditLog: 1\n\"",
         "type": [
@@ -84,7 +86,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-cisco-umbrella-bucket-33606.s3.us-east-1.amazonaws.com/auditlogs.log"
+            "path": "https://elastic-package-cisco-umbrella-bucket-37380.s3.us-east-1.amazonaws.com/auditlogs.log"
         },
         "offset": 529
     },
