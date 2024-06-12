@@ -232,11 +232,11 @@ An example event for `apex` looks as following:
 {
     "@timestamp": "2022-11-22T04:46:15.591Z",
     "agent": {
-        "ephemeral_id": "c50ecba0-45f3-4a29-bd66-d5bd6317345e",
-        "id": "6e72b9f7-fadd-4789-a6ea-e17925d36c7e",
+        "ephemeral_id": "49e35ef9-7e8a-4fe2-975b-8a97f8934654",
+        "id": "7f00c966-0ded-43ce-aeb9-d7e9799a10a0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "salesforce.apex",
@@ -244,12 +244,12 @@ An example event for `apex` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6e72b9f7-fadd-4789-a6ea-e17925d36c7e",
-        "snapshot": false,
-        "version": "8.4.1"
+        "id": "7f00c966-0ded-43ce-aeb9-d7e9799a10a0",
+        "snapshot": true,
+        "version": "8.14.0"
     },
     "event": {
         "action": "apex-callout",
@@ -257,14 +257,13 @@ An example event for `apex` looks as following:
         "category": [
             "network"
         ],
-        "created": "2023-01-04T05:20:36.070Z",
         "dataset": "salesforce.apex",
         "duration": 1293,
-        "ingested": "2023-01-04T05:20:38Z",
+        "ingested": "2024-06-03T10:55:39Z",
         "kind": "event",
-        "module": "salesforce",
         "original": "{\"CLIENT_IP\":\"81.2.69.142\",\"CPU_TIME\":\"10\",\"EVENT_TYPE\":\"ApexCallout\",\"LOGIN_KEY\":\"Obv9123BzbaxqCo1\",\"METHOD\":\"GET\",\"ORGANIZATION_ID\":\"00D5j000000001V\",\"REQUEST_ID\":\"4exLFFQZ1234xFl1cJNwOV\",\"REQUEST_SIZE\":\"10\",\"RESPONSE_SIZE\":\"256\",\"RUN_TIME\":\"1305\",\"SESSION_KEY\":\"WvtsJ1235oW24EbH\",\"SUCCESS\":\"1\",\"TIME\":\"1293\",\"TIMESTAMP\":\"20221122044615.591\",\"TIMESTAMP_DERIVED\":\"2022-11-22T04:46:15.591Z\",\"TYPE\":\"OData\",\"URI\":\"CALLOUT-LOG\",\"URI_ID_DERIVED\":\"0055j000000utlPAQZB\",\"URL\":\"https://temp.sh/odata/Accounts\",\"USER_ID\":\"0055j0000000001\",\"USER_ID_DERIVED\":\"0055j012345utlPAAQ\"}",
         "outcome": "success",
+        "provider": "EventLogFile",
         "type": [
             "connection"
         ],
@@ -280,7 +279,7 @@ An example event for `apex` looks as following:
         }
     },
     "input": {
-        "type": "httpjson"
+        "type": "salesforce"
     },
     "related": {
         "ip": [
@@ -289,7 +288,6 @@ An example event for `apex` looks as following:
     },
     "salesforce": {
         "apex": {
-            "access_mode": "REST",
             "cpu_time": 10,
             "event_type": "ApexCallout",
             "login_key": "Obv9123BzbaxqCo1",
@@ -301,7 +299,7 @@ An example event for `apex` looks as following:
             "uri_derived_id": "0055j000000utlPAQZB",
             "user_id_derived": "0055j012345utlPAAQ"
         },
-        "instance_url": "http://elastic-package-service_salesforce_1:8010"
+        "instance_url": "http://elastic-package-service-salesforce-1:8010"
     },
     "source": {
         "geo": {
@@ -430,24 +428,24 @@ An example event for `login` looks as following:
 {
     "@timestamp": "2022-11-22T04:46:15.591Z",
     "agent": {
-        "ephemeral_id": "d3dbbcc8-b6d9-4663-aa98-297eafdb9870",
-        "id": "aac3e549-38a7-4347-8467-9dff612f8103",
+        "ephemeral_id": "71948e74-53b5-4693-bf75-17c49852d8b2",
+        "id": "cceb5ad8-9b2e-4fc9-b32b-47f0f861c4b8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.5.0"
+        "version": "8.14.0"
     },
     "data_stream": {
-        "dataset": "salesforce.login_rest",
+        "dataset": "salesforce.login",
         "namespace": "ep",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "aac3e549-38a7-4347-8467-9dff612f8103",
-        "snapshot": false,
-        "version": "8.5.0"
+        "id": "cceb5ad8-9b2e-4fc9-b32b-47f0f861c4b8",
+        "snapshot": true,
+        "version": "8.14.0"
     },
     "event": {
         "action": "login-attempt",
@@ -455,20 +453,20 @@ An example event for `login` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2023-04-18T13:50:26.274Z",
-        "dataset": "salesforce.login_rest",
-        "ingested": "2023-04-18T13:50:27Z",
+        "dataset": "salesforce.login",
+        "ingested": "2024-06-05T06:07:01Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"9998.0\",\"AUTHENTICATION_METHOD_REFERENCE\":\"\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36\",\"CIPHER_SUITE\":\"ECDHE-RSA-AES256-GCM-SHA384\",\"CLIENT_IP\":\"81.2.69.142\",\"CPU_TIME\":\"30\",\"DB_TOTAL_TIME\":\"52435102\",\"EVENT_TYPE\":\"Login\",\"LOGIN_KEY\":\"QfNecrLXSII6fsBq\",\"LOGIN_STATUS\":\"LOGIN_NO_ERROR\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"4ehU_U-nbQyAPFl1cJILm-\",\"REQUEST_STATUS\":\"Success\",\"RUN_TIME\":\"83\",\"SESSION_KEY\":\"\",\"SOURCE_IP\":\"81.2.69.142\",\"TIMESTAMP\":\"20221122044615.591\",\"TIMESTAMP_DERIVED\":\"2022-11-22T04:46:15.591Z\",\"TLS_PROTOCOL\":\"TLSv1.2\",\"URI\":\"/index.jsp\",\"URI_ID_DERIVED\":\"s4heK3WbH-lcJIL3-n\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_NAME\":\"user@elastic.co\",\"USER_TYPE\":\"Standard\"}",
         "outcome": "success",
+        "provider": "EventLogFile",
         "type": [
             "info"
         ],
         "url": "/index.jsp"
     },
     "input": {
-        "type": "httpjson"
+        "type": "salesforce"
     },
     "related": {
         "ip": [
@@ -476,19 +474,15 @@ An example event for `login` looks as following:
         ]
     },
     "salesforce": {
-        "instance_url": "http://elastic-package-service_salesforce_1:8010",
+        "instance_url": "http://elastic-package-service-salesforce-1:8010",
         "login": {
-            "access_mode": "REST",
             "api": {
                 "type": "Feed",
                 "version": "9998.0"
             },
             "client_ip": "81.2.69.142",
             "cpu_time": 30,
-            "db_time": {
-                "total": 52.435104
-            },
-            "document_id": "K7i/LrB3UIX55uwooXhvn+bfgs8=",
+            "db_time_total": 52435102,
             "event_type": "Login",
             "key": "QfNecrLXSII6fsBq",
             "organization_id": "00D5j000000VI3n",
@@ -627,24 +621,24 @@ An example event for `logout` looks as following:
 {
     "@timestamp": "2022-11-22T07:37:25.779Z",
     "agent": {
-        "ephemeral_id": "49171880-184e-4712-bef1-97619368d729",
-        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
+        "ephemeral_id": "841861b6-b3b7-4afd-b512-d346368f0844",
+        "id": "cceb5ad8-9b2e-4fc9-b32b-47f0f861c4b8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.14.0"
     },
     "data_stream": {
-        "dataset": "salesforce.logout_rest",
+        "dataset": "salesforce.logout",
         "namespace": "ep",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e8ad8355-f296-4e32-9096-2df7c9cc7e97",
-        "snapshot": false,
-        "version": "8.4.1"
+        "id": "cceb5ad8-9b2e-4fc9-b32b-47f0f861c4b8",
+        "snapshot": true,
+        "version": "8.14.0"
     },
     "event": {
         "action": "logout",
@@ -653,18 +647,18 @@ An example event for `logout` looks as following:
             "authentication"
         ],
         "code": "4exLFFQZ1234xFl1cJNwOV",
-        "created": "2022-12-15T10:29:49.953Z",
-        "dataset": "salesforce.logout_rest",
-        "ingested": "2022-12-15T10:29:53Z",
+        "dataset": "salesforce.logout",
+        "ingested": "2024-06-05T10:28:20Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"54.0\",\"APP_TYPE\":\"1000\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36\",\"CLIENT_IP\":\"81.2.69.142\",\"CLIENT_VERSION\":\"9998\",\"EVENT_TYPE\":\"Logout\",\"LOGIN_KEY\":\"Obv9123BzbaxqCo1\",\"ORGANIZATION_ID\":\"00D5j001234VI3n\",\"PLATFORM_TYPE\":\"1015\",\"REQUEST_ID\":\"4exLFFQZ1234xFl1cJNwOV\",\"RESOLUTION_TYPE\":\"9999\",\"SESSION_KEY\":\"WvtsJ1235oW24EbH\",\"SESSION_LEVEL\":\"1\",\"SESSION_TYPE\":\"O\",\"TIMESTAMP\":\"20221122073725.779\",\"TIMESTAMP_DERIVED\":\"2022-11-22T07:37:25.779Z\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_INITIATED_LOGOUT\":\"0\",\"USER_TYPE\":\"S\"}",
+        "provider": "EventLogFile",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "salesforce"
     },
     "related": {
         "ip": [
@@ -672,9 +666,8 @@ An example event for `logout` looks as following:
         ]
     },
     "salesforce": {
-        "instance_url": "http://elastic-package-service_salesforce_1:8010",
+        "instance_url": "http://elastic-package-service-salesforce-1:8010",
         "logout": {
-            "access_mode": "REST",
             "api": {
                 "type": "Feed",
                 "version": "54.0"
@@ -690,6 +683,11 @@ An example event for `logout` looks as following:
             "session": {
                 "level": "Standard Session",
                 "type": "Oauth2"
+            },
+            "user": {
+                "roles": [
+                    "Standard"
+                ]
             },
             "user_id": "0055j000000utlP",
             "user_initiated_logout": "0"
@@ -716,10 +714,7 @@ An example event for `logout` looks as following:
         "forwarded"
     ],
     "user": {
-        "id": "0055j000000utlPAAQ",
-        "roles": [
-            "Standard"
-        ]
+        "id": "0055j000000utlPAAQ"
     }
 }
 ```
@@ -792,11 +787,11 @@ An example event for `setupaudittrail` looks as following:
 {
     "@timestamp": "2022-08-16T09:26:38.000Z",
     "agent": {
-        "ephemeral_id": "cf463665-f17d-4155-8434-4f93e0fabd18",
-        "id": "511d10d2-be41-45d0-9712-40b7ce035864",
+        "ephemeral_id": "f2dcca1e-b687-4a55-8e01-384c3e2fadf0",
+        "id": "7f00c966-0ded-43ce-aeb9-d7e9799a10a0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.1"
+        "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "salesforce.setupaudittrail",
@@ -804,12 +799,12 @@ An example event for `setupaudittrail` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "511d10d2-be41-45d0-9712-40b7ce035864",
-        "snapshot": false,
-        "version": "8.4.1"
+        "id": "7f00c966-0ded-43ce-aeb9-d7e9799a10a0",
+        "snapshot": true,
+        "version": "8.14.0"
     },
     "event": {
         "action": "insertConnectedApplication",
@@ -817,27 +812,25 @@ An example event for `setupaudittrail` looks as following:
         "created": "2022-08-16T09:26:38.000Z",
         "dataset": "salesforce.setupaudittrail",
         "id": "0Ym5j000019nwonCAA",
-        "ingested": "2023-01-04T15:34:45Z",
+        "ingested": "2024-06-04T05:27:34Z",
         "kind": "event",
         "module": "salesforce",
-        "original": "{\"Action\":\"insertConnectedApplication\",\"CreatedByContext\":\"Einstein\",\"CreatedById\":\"0055j000000utlPAAQ\",\"CreatedByIssuer\":null,\"CreatedDate\":\"2022-08-16T09:26:38.000+0000\",\"DelegateUser\":\"user1\",\"Display\":\"For user user@elastic.co, the User Verified Email status changed to verified\",\"Id\":\"0Ym5j000019nwonCAA\",\"Section\":\"Connected Apps\",\"attributes\":{\"type\":\"SetupAuditTrail\",\"url\":\"/services/data/v54.0/sobjects/SetupAuditTrail/0Ym5j000019nwonCAA\"}}",
+        "original": "{\"Action\":\"insertConnectedApplication\",\"CreatedByContext\":\"Einstein\",\"CreatedById\":\"0055j000000utlPAAQ\",\"CreatedDate\":\"2022-08-16T09:26:38.000+0000\",\"DelegateUser\":\"user1\",\"Display\":\"For user user@elastic.co, the User Verified Email status changed to verified\",\"Id\":\"0Ym5j000019nwonCAA\",\"Section\":\"Connected Apps\"}",
+        "provider": "Object",
         "type": [
             "admin"
-        ],
-        "url": "/services/data/v54.0/sobjects/SetupAuditTrail/0Ym5j000019nwonCAA"
+        ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "salesforce"
     },
     "salesforce": {
-        "instance_url": "http://elastic-package-service_salesforce_1:8010",
+        "instance_url": "http://elastic-package-service-salesforce-1:8010",
         "setup_audit_trail": {
-            "access_mode": "REST",
             "created_by_context": "Einstein",
             "created_by_id": "0055j000000utlPAAQ",
             "delegate_user": "user1",
             "display": "For user user@elastic.co, the User Verified Email status changed to verified",
-            "event_type": "SetupAuditTrail",
             "section": "Connected Apps"
         }
     },
