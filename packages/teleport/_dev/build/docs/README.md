@@ -20,7 +20,7 @@ to configure Teleport so that it sends audit logs to the Elasticsearch instance.
 
 The data stream `audit` provides events from Teleport audit logs.
 
-Event fields are mapped into the Elastic Common Schema or into custom fields, which are grouped 
+Event fields are mapped into the Elastic Common Schema, its extensions, or into custom fields. The latter are grouped 
 into logical categories, such as `teleport.audit.session.*`.
 
 {{ event "audit" }}
