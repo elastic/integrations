@@ -2342,15 +2342,15 @@ processors:
       target_field: file.hash
       if: ctx.event?.action != null && (ctx.event.action.contains("File") || ctx.event.action.contains("Directory") || ctx.event.action.contains("Executable")) && ctx._temp?.hashes != null && ctx._temp?.hashes.size() > 0
   ## Device Fields.
-  - rename:
-      field: crowdstrike.SensorId
-      target_field: device.id
-      ignore_missing: true
+  - set:
+      field: device.id
+      copy_from: crowdstrike.SensorId
+      ignore_empty_value: true
       tag: rename_event_sensorid
-  - rename:
-      field: crowdstrike.DeviceId
-      target_field: device.id
-      ignore_missing: true
+  - set:
+      field: device.id
+      copy_from: crowdstrike.DeviceId
+      ignore_empty_value: true
       tag: rename_event_deviceid
       if: ctx.device?.id == null
 
