@@ -13,8 +13,8 @@ on your own hardware.
 
 ## Setup
 
-To set up this integration, you need to configure Teleport to send audit logs
-to the Elasticsearch instance. Check out [Teleport's Event Handler plugin guide](https://goteleport.com/docs/management/export-audit-events/).
+Check out [Teleport's Event Handler plugin guide](https://goteleport.com/docs/management/export-audit-events/)
+to configure Teleport so that it sends audit logs to the Elasticsearch instance.
 
 ## Data streams
 
