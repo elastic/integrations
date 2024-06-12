@@ -28,18 +28,17 @@ processors:
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
-  - drop: 
+  - drop:
       if: "ctx.event.original.startsWith('#')"
       description: "Drop if logline contains header(s), which startswith `#`"
   - grok:
       field: event.original
       patterns:
-        - '%{TIMESTAMP:_tmp.time}\s%{EDGE_LOCATION:aws.cloudfront.edge_location}\s%{INT:http.response.bytes:long}\s%{IP:source.address}\s%{WORD:http.request.method}\s%{HOSTNAME:aws.cloudfront.domain}\s%{UNIXPATH:url.path}\s%{INT:http.response.status_code:long}\s(-|%{DATA:http.request.referrer})\s%{DATA:_tmp.user_agent}\s(-|%{DATA:url.query})\s(-|%{DATA:aws.cloudfront.cookies})\s%{WORD:aws.cloudfront.edge_result_type}\s%{DATA:http.request.id}\s%{HOSTNAME:destination.address}\s%{WORD:network.protocol}\s%{INT:http.request.bytes:long}\s%{NUMBER:_tmp.duration:float}\s(-|%{FORWARDED_IPS:_tmp.forwarded_ip})\s(-|%{TLS:tls.version_protocol}v%{NUMBER:tls.version})\s(-|%{DATA:tls.cipher})\s%{WORD:aws.cloudfront.edge_response_result_type}\s%{DATA:_tmp.protocol}\s(-|%{WORD:aws.cloudfront.fle_status})\s(-|%{DATA:aws.cloudfront.fle_encrypted_fields})\s(-|%{POSINT:source.port:long})\s(-|%{NUMBER:aws.cloudfront.time_to_first_byte:float})\s(-|%{WORD:aws.cloudfront.edge_detailed_result_type})\s%{DATA:aws.cloudfront.content_type}\s(-|%{INT:http.response.body.bytes:long})\s(-|%{DATA:aws.cloudfront.range_start})\s(-|%{DATA:aws.cloudfront.range_end})'
+        - '%{TIMESTAMP:_tmp.time}\s%{EDGE_LOCATION:aws.cloudfront.edge_location}\s%{INT:http.response.bytes:long}\s%{IP:source.address}\s%{WORD:http.request.method}\s%{HOSTNAME:aws.cloudfront.domain}\s%{NOTSPACE:url.path}\s%{INT:http.response.status_code:long}\s(-|%{DATA:http.request.referrer})\s%{DATA:_tmp.user_agent}\s(-|%{DATA:url.query})\s(-|%{DATA:aws.cloudfront.cookies})\s%{WORD:aws.cloudfront.edge_result_type}\s%{DATA:http.request.id}\s%{NOTSPACE:destination.address}\s%{WORD:network.protocol}\s%{INT:http.request.bytes:long}\s%{NUMBER:event.duration:float}\s(-|%{DATA:_tmp.forwarded_ip_raw})\s(-|%{TLS:tls.version_protocol}v%{NUMBER:tls.version})\s(-|%{DATA:tls.cipher})\s%{WORD:aws.cloudfront.edge_response_result_type}\s%{DATA:_tmp.protocol}\s(-|%{WORD:aws.cloudfront.fle_status})\s(-|%{DATA:aws.cloudfront.fle_encrypted_fields})\s(-|%{POSINT:source.port:long})\s(-|%{NUMBER:aws.cloudfront.time_to_first_byte:float})\s(-|%{WORD:aws.cloudfront.edge_detailed_result_type})\s%{DATA:aws.cloudfront.content_type}\s(-|%{INT:http.response.body.bytes:long})\s(-|%{DATA:aws.cloudfront.range_start})\s(-|%{DATA:aws.cloudfront.range_end})'
       pattern_definitions:
         TIMESTAMP: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}%{SPACE}%{HOUR}:%{MINUTE}:%{SECOND}'
         TLS: '(TLS|SSL)'
         EDGE_LOCATION: '[A-Z]{3}\d+(-[A-Z]+\d+)?'
-        FORWARDED_IPS: '(%{IP}?(,(\s*)%{IP})*)+'
   - gsub:
       field: _tmp.time
       pattern: \t
@@ -57,7 +56,7 @@ processors:
   - user_agent:
       field: _tmp.user_agent
       target_field: user_agent
-      ignore_missing: 
+      ignore_missing: true
   - dissect:
       field: _tmp.protocol
       pattern: "%{}/%{http.version}"
@@ -90,6 +89,10 @@ processors:
       field: _tmp.url_full
       target_field: url
       keep_original: false
+  - remove:
+      description: Remove domain if null to avoid problems. This usually happens on parsing odd domain names.
+      field: url.domain
+      if: 'ctx?.url?.domain == null'
   - rename:
       field: _tmp.url_full
       target_field: url.full
@@ -134,20 +137,43 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+  - gsub:
+      description: Remove cloudfront \x20 whitspace substitution
+      field: _tmp.forwarded_ip_raw
+      pattern: "\\\\x20"
+      replacement: ""
+      ignore_missing: true
   - split:
-      field: _tmp.forwarded_ip
-      target_field: related.ip
+      field: _tmp.forwarded_ip_raw
       separator: ','
       ignore_missing: true
+  - trim:
+      description: Trim field values in case the original comma separated values contained whitespaces.
+      field: _tmp.forwarded_ip_raw
+      ignore_missing: true
+  - convert:
+      description: Creates a target field containing valid ip's if ALL values are valid ip's. I.e. some valid ip's may be skipped. Not ideal but the best feasible action we can take.
+      field: _tmp.forwarded_ip_raw
+      target_field: _tmp.forwarded_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            description: Add convert failure to error message and continue.
+            field: error.message
+            value: '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: related.ip
+      copy_from: _tmp.forwarded_ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       value: "{{source.ip}}"
       if: ctx.source?.ip != null
-  - split:
-      field: _tmp.forwarded_ip
-      target_field: network.forwarded_ip
-      separator: ','
-      ignore_missing: true
+  - set:
+      field: network.forwarded_ip
+      copy_from: _tmp.forwarded_ip
+      ignore_empty_value: true
   - append:
       field: related.hosts
       value: "{{destination.domain}}"
@@ -176,7 +202,7 @@ processors:
       if: ctx.http?.response?.status_code == 000
   - script:
       lang: painless
-      if: ctx.event?.duration != null
+      if: ctx?.event?.duration != null
       params:
         S_TO_NS: 1000000000
       source: >-
@@ -193,6 +219,9 @@ processors:
       ignore_failure: true
       ignore_missing: true
 on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
   - set:
       field: 'error.message'
       value: '{{ _ingest.on_failure_message }}'
