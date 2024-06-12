@@ -33,33 +33,33 @@ An example event for `activity` looks as following:
 {
     "@timestamp": "2022-04-05T16:01:56.995Z",
     "agent": {
-        "ephemeral_id": "d7cb61c6-f67e-41a2-ad96-fbcb9390b1ba",
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "ephemeral_id": "630c4de2-59ec-4613-ab7d-261434a79313",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "sentinel_one.activity",
-        "namespace": "ep",
+        "namespace": "83396",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
-        "created": "2023-10-19T11:39:59.555Z",
+        "created": "2024-06-12T03:21:55.005Z",
         "dataset": "sentinel_one.activity",
-        "ingested": "2023-10-19T11:40:00Z",
+        "ingested": "2024-06-12T03:22:05Z",
         "kind": "event",
         "original": "{\"accountId\":\"1234567890123456789\",\"accountName\":\"Default\",\"activityType\":1234,\"agentId\":null,\"agentUpdatedVersion\":null,\"comments\":null,\"createdAt\":\"2022-04-05T16:01:56.995120Z\",\"data\":{\"accountId\":1234567890123456800,\"accountName\":\"Default\",\"fullScopeDetails\":\"Account Default\",\"fullScopeDetailsPath\":\"test/path\",\"groupName\":null,\"scopeLevel\":\"Account\",\"scopeName\":\"Default\",\"siteName\":null,\"username\":\"test user\"},\"description\":null,\"groupId\":null,\"groupName\":null,\"hash\":null,\"id\":\"1234567890123456789\",\"osFamily\":null,\"primaryDescription\":\"created Default account.\",\"secondaryDescription\":null,\"siteId\":null,\"siteName\":null,\"threatId\":null,\"updatedAt\":\"2022-04-05T16:01:56.992136Z\",\"userId\":\"1234567890123456789\"}",
         "type": [
@@ -112,7 +112,6 @@ An example event for `activity` looks as following:
         "id": "1234567890123456789"
     }
 }
-
 ```
 
 **Exported fields**
@@ -252,33 +251,33 @@ An example event for `agent` looks as following:
 {
     "@timestamp": "2022-04-07T08:31:47.481Z",
     "agent": {
-        "ephemeral_id": "b79cbfcd-f5db-4c13-949e-773ecdb03861",
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "ephemeral_id": "bc127c14-939d-445f-ba71-65c2a9cd997e",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "sentinel_one.agent",
-        "namespace": "ep",
+        "namespace": "27680",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "host"
         ],
-        "created": "2023-10-19T11:40:47.027Z",
+        "created": "2024-06-12T03:22:47.058Z",
         "dataset": "sentinel_one.agent",
-        "ingested": "2023-10-19T11:40:50Z",
+        "ingested": "2024-06-12T03:22:59Z",
         "kind": "event",
         "original": "{\"accountId\":\"12345123451234512345\",\"accountName\":\"Account Name\",\"activeDirectory\":{\"computerDistinguishedName\":null,\"computerMemberOf\":[],\"lastUserDistinguishedName\":null,\"lastUserMemberOf\":[]},\"activeThreats\":7,\"agentVersion\":\"12.x.x.x\",\"allowRemoteShell\":true,\"appsVulnerabilityStatus\":\"not_applicable\",\"cloudProviders\":{},\"computerName\":\"user-test\",\"consoleMigrationStatus\":\"N/A\",\"coreCount\":2,\"cpuCount\":2,\"cpuId\":\"CPU Name\",\"createdAt\":\"2022-03-18T09:12:00.519500Z\",\"detectionState\":null,\"domain\":\"WORKGROUP\",\"encryptedApplications\":false,\"externalId\":\"\",\"externalIp\":\"81.2.69.143\",\"firewallEnabled\":true,\"firstFullModeTime\":null,\"groupId\":\"1234567890123456789\",\"groupIp\":\"81.2.69.144\",\"groupName\":\"Default Group\",\"id\":\"13491234512345\",\"inRemoteShellSession\":false,\"infected\":true,\"installerType\":\".msi\",\"isActive\":true,\"isDecommissioned\":false,\"isPendingUninstall\":false,\"isUninstalled\":false,\"isUpToDate\":true,\"lastActiveDate\":\"2022-03-17T09:51:28.506000Z\",\"lastIpToMgmt\":\"81.2.69.145\",\"lastLoggedInUserName\":\"\",\"licenseKey\":\"\",\"locationEnabled\":true,\"locationType\":\"not_applicable\",\"locations\":null,\"machineType\":\"server\",\"missingPermissions\":[\"user-action-needed-bluetooth-per\",\"user_action_needed_fda\"],\"mitigationMode\":\"detect\",\"mitigationModeSuspicious\":\"detect\",\"modelName\":\"Compute Engine\",\"networkInterfaces\":[{\"gatewayIp\":\"81.2.69.145\",\"gatewayMacAddress\":\"00-00-5E-00-53-00\",\"id\":\"1234567890123456789\",\"inet\":[\"81.2.69.144\"],\"inet6\":[\"2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6\"],\"name\":\"Ethernet\",\"physical\":\"00-00-5E-00-53-00\"}],\"networkQuarantineEnabled\":false,\"networkStatus\":\"connected\",\"operationalState\":\"na\",\"operationalStateExpiration\":null,\"osArch\":\"64 bit\",\"osName\":\"Linux Server\",\"osRevision\":\"1234\",\"osStartTime\":\"2022-04-06T08:27:14Z\",\"osType\":\"linux\",\"osUsername\":null,\"rangerStatus\":\"Enabled\",\"rangerVersion\":\"21.x.x.x\",\"registeredAt\":\"2022-04-06T08:26:45.515278Z\",\"remoteProfilingState\":\"disabled\",\"remoteProfilingStateExpiration\":null,\"scanAbortedAt\":null,\"scanFinishedAt\":\"2022-04-06T09:18:21.090855Z\",\"scanStartedAt\":\"2022-04-06T08:26:52.838047Z\",\"scanStatus\":\"finished\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\",\"storageName\":null,\"storageType\":null,\"tags\":{\"sentinelone\":[{\"assignedAt\":\"2018-02-27T04:49:26.257525Z\",\"assignedBy\":\"test-user\",\"assignedById\":\"123456789012345678\",\"id\":\"123456789012345678\",\"key\":\"key123\",\"value\":\"value123\"}]},\"threatRebootRequired\":false,\"totalMemory\":1234,\"updatedAt\":\"2022-04-07T08:31:47.481227Z\",\"userActionsNeeded\":[\"reboot_needed\"],\"uuid\":\"XXX35XXX8Xfb4aX0X1X8X12X343X8X30\"}",
         "type": [
@@ -304,7 +303,9 @@ An example event for `agent` looks as following:
             "region_name": "England"
         },
         "id": "13491234512345",
-        "ip": "81.2.69.143",
+        "ip": [
+            "81.2.69.143"
+        ],
         "mac": [
             "00-00-5E-00-53-00"
         ],
@@ -340,6 +341,9 @@ An example event for `agent` looks as following:
                 "name": "Account Name"
             },
             "active_threats_count": 7,
+            "agent": {
+                "id": "13491234512345"
+            },
             "allow_remote_shell": true,
             "apps_vulnerability_status": "not_applicable",
             "console_migration_status": "N/A",
@@ -442,7 +446,6 @@ An example event for `agent` looks as following:
         "sentinel_one-agent"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -605,11 +608,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2018-02-27T04:49:26.257Z",
     "agent": {
-        "ephemeral_id": "c0eb8175-0afb-4233-970c-cf3233254110",
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "ephemeral_id": "5076489f-5b52-4bc8-a887-13206a7b5ebd",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "container": {
         "id": "string",
@@ -620,7 +623,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "sentinel_one.alert",
-        "namespace": "ep",
+        "namespace": "68976",
         "type": "logs"
     },
     "destination": {
@@ -642,19 +645,19 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "malware"
         ],
-        "created": "2023-10-19T11:41:38.188Z",
+        "created": "2024-06-12T03:23:40.343Z",
         "dataset": "sentinel_one.alert",
         "id": "123456789123456789",
-        "ingested": "2023-10-19T11:41:42Z",
+        "ingested": "2024-06-12T03:23:52Z",
         "kind": "event",
         "original": "{\"agentDetectionInfo\":{\"machineType\":\"string\",\"name\":\"string\",\"osFamily\":\"string\",\"osName\":\"string\",\"osRevision\":\"string\",\"siteId\":\"123456789123456789\",\"uuid\":\"string\",\"version\":\"3.x.x.x\"},\"alertInfo\":{\"alertId\":\"123456789123456789\",\"analystVerdict\":\"string\",\"createdAt\":\"2018-02-27T04:49:26.257525Z\",\"dnsRequest\":\"string\",\"dnsResponse\":\"string\",\"dstIp\":\"81.2.69.144\",\"dstPort\":\"1234\",\"dvEventId\":\"string\",\"eventType\":\"info\",\"hitType\":\"Events\",\"incidentStatus\":\"string\",\"indicatorCategory\":\"string\",\"indicatorDescription\":\"string\",\"indicatorName\":\"string\",\"loginAccountDomain\":\"string\",\"loginAccountSid\":\"string\",\"loginIsAdministratorEquivalent\":\"string\",\"loginIsSuccessful\":\"string\",\"loginType\":\"string\",\"loginsUserName\":\"string\",\"modulePath\":\"string\",\"moduleSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"netEventDirection\":\"string\",\"registryKeyPath\":\"string\",\"registryOldValue\":\"string\",\"registryOldValueType\":\"string\",\"registryPath\":\"string\",\"registryValue\":\"string\",\"reportedAt\":\"2018-02-27T04:49:26.257525Z\",\"source\":\"string\",\"srcIp\":\"81.2.69.142\",\"srcMachineIp\":\"81.2.69.142\",\"srcPort\":\"1234\",\"tiIndicatorComparisonMethod\":\"string\",\"tiIndicatorSource\":\"string\",\"tiIndicatorType\":\"string\",\"tiIndicatorValue\":\"string\",\"updatedAt\":\"2018-02-27T04:49:26.257525Z\"},\"containerInfo\":{\"id\":\"string\",\"image\":\"string\",\"labels\":\"string\",\"name\":\"string\"},\"kubernetesInfo\":{\"cluster\":\"string\",\"controllerKind\":\"string\",\"controllerLabels\":\"string\",\"controllerName\":\"string\",\"namespace\":\"string\",\"namespaceLabels\":\"string\",\"node\":\"string\",\"pod\":\"string\",\"podLabels\":\"string\"},\"ruleInfo\":{\"description\":\"string\",\"id\":\"string\",\"name\":\"string\",\"scopeLevel\":\"string\",\"severity\":\"Low\",\"treatAsThreat\":\"UNDEFINED\"},\"sourceParentProcessInfo\":{\"commandline\":\"string\",\"fileHashMd5\":\"5d41402abc4b2a76b9719d911017c592\",\"fileHashSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"fileHashSha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\",\"filePath\":\"string\",\"fileSignerIdentity\":\"string\",\"integrityLevel\":\"unknown\",\"name\":\"string\",\"pid\":\"12345\",\"pidStarttime\":\"2018-02-27T04:49:26.257525Z\",\"storyline\":\"string\",\"subsystem\":\"unknown\",\"uniqueId\":\"string\",\"user\":\"string\"},\"sourceProcessInfo\":{\"commandline\":\"string\",\"fileHashMd5\":\"5d41402abc4b2a76b9719d911017c592\",\"fileHashSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"fileHashSha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\",\"filePath\":\"string\",\"fileSignerIdentity\":\"string\",\"integrityLevel\":\"unknown\",\"name\":\"string\",\"pid\":\"12345\",\"pidStarttime\":\"2018-02-27T04:49:26.257525Z\",\"storyline\":\"string\",\"subsystem\":\"unknown\",\"uniqueId\":\"string\",\"user\":\"string\"},\"targetProcessInfo\":{\"tgtFileCreatedAt\":\"2018-02-27T04:49:26.257525Z\",\"tgtFileHashSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"tgtFileHashSha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\",\"tgtFileId\":\"string\",\"tgtFileIsSigned\":\"string\",\"tgtFileModifiedAt\":\"2018-02-27T04:49:26.257525Z\",\"tgtFileOldPath\":\"string\",\"tgtFilePath\":\"string\",\"tgtProcCmdLine\":\"string\",\"tgtProcImagePath\":\"string\",\"tgtProcIntegrityLevel\":\"unknown\",\"tgtProcName\":\"string\",\"tgtProcPid\":\"12345\",\"tgtProcSignedStatus\":\"string\",\"tgtProcStorylineId\":\"string\",\"tgtProcUid\":\"string\",\"tgtProcessStartTime\":\"2018-02-27T04:49:26.257525Z\"}}",
         "type": [
@@ -666,7 +669,9 @@ An example event for `alert` looks as following:
         "mtime": "2018-02-27T04:49:26.257Z"
     },
     "host": {
-        "ip": "81.2.69.142",
+        "ip": [
+            "81.2.69.142"
+        ],
         "name": "string",
         "os": {
             "family": "string",
@@ -874,7 +879,6 @@ An example event for `alert` looks as following:
         "name": "string"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1055,33 +1059,33 @@ An example event for `group` looks as following:
 {
     "@timestamp": "2022-04-05T16:01:57.564Z",
     "agent": {
-        "ephemeral_id": "83bb6b62-84e1-449b-a652-b206238f20f8",
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "ephemeral_id": "99777f03-5c73-4831-b833-2489562ef8fb",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "sentinel_one.group",
-        "namespace": "ep",
+        "namespace": "81222",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2023-10-19T11:42:26.967Z",
+        "created": "2024-06-12T03:24:33.387Z",
         "dataset": "sentinel_one.group",
-        "ingested": "2023-10-19T11:42:30Z",
+        "ingested": "2024-06-12T03:24:45Z",
         "kind": "event",
         "original": "{\"createdAt\":\"2022-04-05T16:01:56.928383Z\",\"creator\":\"Test User\",\"creatorId\":\"1234567890123456789\",\"filterId\":null,\"filterName\":null,\"id\":\"1234567890123456789\",\"inherits\":true,\"isDefault\":true,\"name\":\"Default Group\",\"rank\":null,\"registrationToken\":\"eyxxxxxxxxxxxxxxxxxxxxkixZxx1xxxxx8xxx2xODA0ZxxxxTIwNjhxxxxxxxxxxxxxxiMWYxx1Ixxnxxxx0=\",\"siteId\":\"1234567890123456789\",\"totalAgents\":1,\"type\":\"static\",\"updatedAt\":\"2022-04-05T16:01:57.564266Z\"}",
         "type": [
@@ -1127,7 +1131,6 @@ An example event for `group` looks as following:
         "full_name": "Test User"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1209,24 +1212,24 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2022-04-06T08:54:17.194Z",
     "agent": {
-        "ephemeral_id": "8e74b49b-8a2e-4955-9a51-41e94056e2fa",
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "ephemeral_id": "3ea8603b-159f-441f-ae62-7fce6805bf8c",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "sentinel_one.threat",
-        "namespace": "ep",
+        "namespace": "37791",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "action": "SentinelOne Cloud",
@@ -1234,10 +1237,10 @@ An example event for `threat` looks as following:
         "category": [
             "malware"
         ],
-        "created": "2023-10-19T11:43:14.860Z",
+        "created": "2024-06-12T03:25:25.764Z",
         "dataset": "sentinel_one.threat",
         "id": "1234567890123456789",
-        "ingested": "2023-10-19T11:43:18Z",
+        "ingested": "2024-06-12T03:25:37Z",
         "kind": "alert",
         "original": "{\"agentDetectionInfo\":{\"accountId\":\"1234567890123456789\",\"accountName\":\"Default\",\"agentDetectionState\":null,\"agentDomain\":\"WORKGROUP\",\"agentIpV4\":\"10.0.0.1\",\"agentIpV6\":\"2a02:cf40::\",\"agentLastLoggedInUpn\":null,\"agentLastLoggedInUserMail\":null,\"agentLastLoggedInUserName\":\"\",\"agentMitigationMode\":\"protect\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentRegisteredAt\":\"2022-04-06T08:26:45.515278Z\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x\",\"cloudProviders\":{},\"externalIp\":\"81.2.69.143\",\"groupId\":\"1234567890123456789\",\"groupName\":\"Default Group\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\"},\"agentRealtimeInfo\":{\"accountId\":\"1234567890123456789\",\"accountName\":\"Default\",\"activeThreats\":7,\"agentComputerName\":\"test-LINUX\",\"agentDecommissionedAt\":null,\"agentDomain\":\"WORKGROUP\",\"agentId\":\"1234567890123456789\",\"agentInfected\":true,\"agentIsActive\":true,\"agentIsDecommissioned\":false,\"agentMachineType\":\"server\",\"agentMitigationMode\":\"detect\",\"agentNetworkStatus\":\"connected\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentOsType\":\"linux\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x.1234\",\"groupId\":\"1234567890123456789\",\"groupName\":\"Default Group\",\"networkInterfaces\":[{\"id\":\"1234567890123456789\",\"inet\":[\"10.0.0.1\"],\"inet6\":[\"2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6\"],\"name\":\"Ethernet\",\"physical\":\"X2:0X:0X:X6:00:XX\"}],\"operationalState\":\"na\",\"rebootRequired\":false,\"scanAbortedAt\":null,\"scanFinishedAt\":\"2022-04-06T09:18:21.090855Z\",\"scanStartedAt\":\"2022-04-06T08:26:52.838047Z\",\"scanStatus\":\"finished\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\",\"storageName\":null,\"storageType\":null,\"userActionsNeeded\":[]},\"containerInfo\":{\"id\":null,\"image\":null,\"labels\":null,\"name\":null},\"id\":\"1234567890123456789\",\"indicators\":[],\"kubernetesInfo\":{\"cluster\":null,\"controllerKind\":null,\"controllerLabels\":null,\"controllerName\":null,\"namespace\":null,\"namespaceLabels\":null,\"node\":null,\"pod\":null,\"podLabels\":null},\"mitigationStatus\":[{\"action\":\"unquarantine\",\"actionsCounters\":{\"failed\":0,\"notFound\":0,\"pendingReboot\":0,\"success\":1,\"total\":1},\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:54:17.198002Z\",\"latestReport\":\"/threats/mitigation-report\",\"mitigationEndedAt\":\"2022-04-06T08:54:17.101000Z\",\"mitigationStartedAt\":\"2022-04-06T08:54:17.101000Z\",\"status\":\"success\"},{\"action\":\"kill\",\"actionsCounters\":null,\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:45:55.303355Z\",\"latestReport\":null,\"mitigationEndedAt\":\"2022-04-06T08:45:55.297364Z\",\"mitigationStartedAt\":\"2022-04-06T08:45:55.297363Z\",\"status\":\"success\"}],\"threatInfo\":{\"analystVerdict\":\"undefined\",\"analystVerdictDescription\":\"Undefined\",\"automaticallyResolved\":false,\"browserType\":null,\"certificateId\":\"\",\"classification\":\"Trojan\",\"classificationSource\":\"Cloud\",\"cloudFilesHashVerdict\":\"black\",\"collectionId\":\"1234567890123456789\",\"confidenceLevel\":\"malicious\",\"createdAt\":\"2022-04-06T08:45:54.519988Z\",\"detectionEngines\":[{\"key\":\"sentinelone_cloud\",\"title\":\"SentinelOne Cloud\"}],\"detectionType\":\"static\",\"engines\":[\"SentinelOne Cloud\"],\"externalTicketExists\":false,\"externalTicketId\":null,\"failedActions\":false,\"fileExtension\":\"EXE\",\"fileExtensionType\":\"Executable\",\"filePath\":\"default.exe\",\"fileSize\":1234,\"fileVerificationType\":\"NotSigned\",\"identifiedAt\":\"2022-04-06T08:45:53.968000Z\",\"incidentStatus\":\"unresolved\",\"incidentStatusDescription\":\"Unresolved\",\"initiatedBy\":\"agent_policy\",\"initiatedByDescription\":\"Agent Policy\",\"initiatingUserId\":null,\"initiatingUsername\":null,\"isFileless\":false,\"isValidCertificate\":false,\"maliciousProcessArguments\":null,\"md5\":null,\"mitigatedPreemptively\":false,\"mitigationStatus\":\"not_mitigated\",\"mitigationStatusDescription\":\"Not mitigated\",\"originatorProcess\":\"default.exe\",\"pendingActions\":false,\"processUser\":\"test user\",\"publisherName\":\"\",\"reachedEventsLimit\":false,\"rebootRequired\":false,\"sha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"sha256\":null,\"storyline\":\"D0XXXXXXXXXXAF4D\",\"threatId\":\"1234567890123456789\",\"threatName\":\"default.exe\",\"updatedAt\":\"2022-04-06T08:54:17.194122Z\"},\"whiteningOptions\":[\"hash\"]}",
         "type": [
@@ -1259,7 +1262,9 @@ An example event for `threat` looks as following:
             "region_name": "England"
         },
         "id": "1234567890123456789",
-        "ip": "81.2.69.143",
+        "ip": [
+            "81.2.69.143"
+        ],
         "mac": [
             "X2-0X-0X-X6-00-XX"
         ],
@@ -1307,6 +1312,7 @@ An example event for `threat` looks as following:
                     "id": "1234567890123456789",
                     "name": "Default Group"
                 },
+                "id": "1234567890123456789",
                 "infected": true,
                 "is_active": true,
                 "is_decommissioned": false,
@@ -1477,7 +1483,6 @@ An example event for `threat` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
