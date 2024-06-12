@@ -198,18 +198,45 @@ processors:
     source: |
         if (ctx.Falco?.output_fields?.evt?.time != null) {
             def timeField = ctx.Falco.output_fields.evt.time;
+            def inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
             if (timeField instanceof Map) {
                 if (timeField.iso8601 != null) {
-                    ctx['@timestamp'] = timeField.iso8601;
+                    if (timeField.iso8601 instanceof String) {
+                        def formatted = inputFormat.parse(timeField.iso8601);
+                        ctx['@timestamp'] = formatted;
+                    } else if (timeField.iso8601 instanceof Long) {
+                        long milliseconds = timeField.iso8601 / 1000000;
+                        ctx['@timestamp'] = new Date(milliseconds);
+                    }
                 } else if (timeField.rawtime != null) {
-                    ctx['@timestamp'] = timeField.rawtime;
+                    if (timeField.rawtime instanceof String) {
+                        def formatted = inputFormat.parse(timeField.rawtime);
+                        ctx['@timestamp'] = formatted;
+                    } else if (timeField.rawtime instanceof Long) {
+                        long milliseconds = timeField.rawtime / 1000000;
+                        ctx['@timestamp'] = new Date(milliseconds);
+                    }
                 } else {
-                    ctx['@timestamp'] = timeField;
+                    if (timeField instanceof String) {
+                        def formatted = inputFormat.parse(timeField);
+                        ctx['@timestamp'] = formatted;
+                    } else if (timeField instanceof Long) {
+                        long milliseconds = timeField / 1000000;
+                        ctx['@timestamp'] = new Date(milliseconds);
+                    }
                 }
             } else {
-                ctx['@timestamp'] = timeField;
+                if (timeField instanceof String) {
+                    def formatted = inputFormat.parse(timeField);
+                    ctx['@timestamp'] = formatted;
+                } else if (timeField instanceof Long) {
+                    long milliseconds = timeField / 1000000;
+                    ctx['@timestamp'] = new Date(milliseconds);
+                }
             }
         }
+
 - set:
     field: event.start
     copy_from: Falco.output_fields.evt.time.iso8601
@@ -296,7 +323,7 @@ processors:
     ignore_empty_value: true
 - set:
     field: process.parent.pid
-    copy_from: Falco.output_fields.proc.ppid
+    copy_from: Falco.output_fields.proc.ppid # problem field
     ignore_empty_value: true
 - set:
     field: process.vpid
@@ -308,7 +335,7 @@ processors:
     ignore_empty_value: true
 - set:
     field: process.session_leader.pid
-    copy_from: Falco.output_fields.proc.sid
+    copy_from: Falco.output_fields.proc.sid # problem field
     ignore_empty_value: true
 - set:
     field: process.session_leader.name
@@ -316,15 +343,15 @@ processors:
     ignore_empty_value: true
 - set:
     field: process.session_leader.executable
-    copy_from: Falco.output_fields.proc.sid.exepath # this is a problem
+    copy_from: Falco.output_fields.proc.sid.exepath # problem field
     ignore_empty_value: true
 - set:
     field: process.group_leader.vpid
-    copy_from: Falco.output_fields.proc.vpgid # these are problems as well
+    copy_from: Falco.output_fields.proc.vpgid # problem field
     ignore_empty_value: true
 - set:
     field: process.group_leader.name
-    copy_from: Falco.output_fields.proc.vpgid.name
+    copy_from: Falco.output_fields.proc.vpgid.name # problem field
     ignore_empty_value: true
 - set:
     field: process.group_leader.executable
@@ -341,11 +368,11 @@ processors:
     ignore_empty_value: true
 - set:
     field: process.start
-    copy_from: Falco.output_fields.proc.pid.ts
+    copy_from: Falco.output_fields.proc.pid.ts # problem field
     ignore_empty_value: true
 - set:
     field: process.parent.start
-    copy_from: Falco.output_fields.proc.ppid.ts
+    copy_from: Falco.output_fields.proc.ppid.ts # problem field
     ignore_empty_value: true
 - set:
     field: process.session_leader.same_as_process
@@ -394,9 +421,9 @@ processors:
     field: container.name
     copy_from: Falco.output_fields.container.name
     ignore_empty_value: true
-- set: # still need to figure out this one and container.image.digest
+- set:
     field: container.image.name
-    copy_from: Falco.output_fields.container.image
+    copy_from: Falco.output_fields.container.image # problem field
     ignore_empty_value: true
 - set:
     field: container.runtime
@@ -424,49 +451,49 @@ processors:
     copy_from: Falco.output_fields.fd.filename
     ignore_empty_value: true
 - convert:
-    field: Falco.output_fields.fd.cip
+    field: Falco.output_fields.fd.cip # problem field
     target_field: client.ip
     type: ip
     ignore_missing: true
     ignore_failure: true
 - convert:
-    field: Falco.output_fields.fd.cip
+    field: Falco.output_fields.fd.cip # problem field
     target_field: client.address
     type: ip
     ignore_missing: true
     ignore_failure: true
 - convert:
-    field: Falco.output_fields.fd.sip
+    field: Falco.output_fields.fd.sip # problem field
     target_field: server.ip
     type: ip
     ignore_missing: true
     ignore_failure: true
 - convert:
-    field: Falco.output_fields.fd.sip
+    field: Falco.output_fields.fd.sip # problem field
     target_field: server.address
     type: ip
     ignore_missing: true
     ignore_failure: true
 - convert:
-    field: Falco.output_fields.fd.lip
+    field: Falco.output_fields.fd.lip # problem field
     target_field: source.ip
     type: ip
     ignore_missing: true
     ignore_failure: true
 - convert:
-    field: Falco.output_fields.fd.lip
+    field: Falco.output_fields.fd.lip # problem field
     target_field: source.address
     type: ip
     ignore_missing: true
     ignore_failure: true
 - convert:
-    field: Falco.output_fields.fd.rip
+    field: Falco.output_fields.fd.rip # problem field
     target_field: destination.ip
     type: ip
     ignore_missing: true
     ignore_failure: true
 - convert:
-    field: Falco.output_fields.fd.rip
+    field: Falco.output_fields.fd.rip # problem field
     target_field: destination.address
     type: ip
     ignore_missing: true
@@ -489,19 +516,19 @@ processors:
     ignore_empty_value: true
 - set:
     field: client.domain
-    copy_from: Falco.output_fields.fd.cip.name
+    copy_from: Falco.output_fields.fd.cip.name # problem field
     ignore_empty_value: true
 - set:
     field: server.domain
-    copy_from: Falco.output_fields.fd.sip.name
+    copy_from: Falco.output_fields.fd.sip.name # problem field
     ignore_empty_value: true
 - set:
     field: source.domain
-    copy_from: Falco.output_fields.fd.lip.name
+    copy_from: Falco.output_fields.fd.lip.name # problem field
     ignore_empty_value: true
 - set:
     field: destination.domain
-    copy_from: Falco.output_fields.fd.rip.name
+    copy_from: Falco.output_fields.fd.rip.name # problem field
     ignore_empty_value: true
 - set:
     field: file.inode
