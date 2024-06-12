@@ -1,0 +1,78 @@
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+resource.tracer.maxsize: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  user: {{escape_string username}}
+  password: {{escape_string password}}
+  initial_interval: {{escape_string initial_interval}}
+{{#if batch_size}}
+  batch_size: {{batch_size}}
+{{/if}}
+redact:
+  fields:
+    - password
+program: |
+  request(
+    "GET",
+    state.url.trim_right("/") + "/api/2.0/fo/activity_log/?" + {
+      "action": ["list"],
+      "since_datetime": [string(state.?cursor.latest_ts.orValue(now - duration(state.initial_interval)))],
+      ?"truncation_limit": has(state.batch_size) ? optional.of([string(state.batch_size)]) : optional.none(),
+    }.format_query()
+  ).with({
+    "Header":{
+      "Authorization": ["Basic " + (state.user + ":" + state.password).base64()],
+      "X-Requested-With": ["Elastic-Agent"],
+    }
+  }).do_request().as(resp, (
+    resp.StatusCode == 200
+    ?
+      bytes(resp.Body).mime("text/csv; header=present").as(events, state.with({
+          "events": events.map(e, {"message": e.encode_json()}),
+          "want_more": has(state.batch_size) && size(events) >= state.batch_size,
+          "cursor": {
+              ?"latest_ts": size(events) > 0 ?
+                optional.of(events.map(e, e.Date.parse_time(time_layout.RFC3339)).max())
+              :
+                state.?cursor.latest_ts,
+          },
+      }))
+    :
+      state.with({
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": string(resp.Body),
+          },
+        },
+        "want_more": false,
+      })
+  ))
+tags:
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

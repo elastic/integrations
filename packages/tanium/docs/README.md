@@ -985,7 +985,7 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.event.name | Event name of the threat response. | keyword |
 | tanium.threat_response.id | Threat response id. | keyword |
 | tanium.threat_response.other_parameters.log_details.name | Name of threat. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload | Decoded payload data. | keyword |
+| tanium.threat_response.other_parameters.log_details.payload | Decoded payload data. | match_only_text |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.config_id | Config id. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.config_rev_id | Config rev.iD. | keyword |
 | tanium.threat_response.other_parameters.log_details.payload_decoded.finding.domain | Finding domain. | keyword |
@@ -1099,7 +1099,7 @@ An example event for `threat_response` looks as following:
 | tanium.threat_response.other_parameters.log_details.payload_decoded.match.version | Finding version. | version |
 | tanium.threat_response.other_parameters.log_details.source | Source of threat. | keyword |
 | tanium.threat_response.other_parameters.log_details.type | Type of threat. | keyword |
-| tanium.threat_response.other_parameters.original |  | keyword |
+| tanium.threat_response.other_parameters.original |  | match_only_text |
 | tanium.threat_response.priority | Priority of the threat response. | keyword |
 | tanium.threat_response.revision | Revision of the threat response. | keyword |
 | tanium.threat_response.row_id | Row id for the threat response. | keyword |

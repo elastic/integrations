@@ -162,9 +162,14 @@ with_docker() {
     fi
     echo "deb [arch=${architecture} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${ubuntu_codename} stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt-get update
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce=${debian_version}"
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce-cli=${debian_version}"
-    sudo systemctl start docker
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce=${debian_version}"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce-cli=${debian_version}"
+    retry 3 sudo systemctl restart docker
+
+    echo "- Installed docker client version:"
+    docker version -f json  | jq -r '.Client.Version'
+    echo "- Installed docker server version:"
+    docker version -f json  | jq -r '.Server.Version'
 }
 
 with_docker_compose_plugin() {
@@ -394,7 +399,11 @@ packages_excluded() {
     echo "${excluded_packages}"
 }
 
-is_package_excluded() {
+package_name_manifest() {
+    cat manifest.yml | yq -r '.name'
+}
+
+is_package_excluded_in_config() {
     local package=$1
     local config_file_path=$2
     local excluded_packages=""
@@ -403,7 +412,10 @@ is_package_excluded() {
     if [[ "${excluded_packages}" == "null" ]]; then
         return 1
     fi
-    if echo "${excluded_packages}" | grep -q -E "\"${package}\""; then
+    local package_name=""
+    package_name=$(package_name_manifest)
+
+    if echo "${excluded_packages}" | grep -q -E "\"${package_name}\""; then
         return 0
     fi
     return 1
@@ -417,7 +429,7 @@ is_supported_capability() {
     local capabilities=""
     capabilities=$(capabilities_manifest)
 
-    # if no capabilities defined, it is available iavailable all projects
+    # if no capabilities defined, it is available in all projects
     if [[  "${capabilities}" == "null" ]]; then
         return 0
     fi
@@ -586,7 +598,7 @@ get_commit_from_build() {
 get_previous_commit() {
     local pipeline="$1"
     local branch="$2"
-    # Not using state=finished because it implies also skip and cancelled builds https://buildkite.com/docs/pipelines/notifications#build-states
+    # Not using state=finished because it implies also skip and canceled builds https://buildkite.com/docs/pipelines/notifications#build-states
     local status="state[]=failed&state[]=passed"
     local previous_commit
     previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
@@ -654,7 +666,7 @@ is_pr_affected() {
     fi
 
     if is_serverless; then
-        if is_package_excluded "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
+        if is_package_excluded_in_config "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
             echo "[${package}] PR is not affected: package ${package} excluded in Kibana config for ${SERVERLESS_PROJECT}"
             return 1
         fi
@@ -680,7 +692,7 @@ is_pr_affected() {
 
     echo "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi

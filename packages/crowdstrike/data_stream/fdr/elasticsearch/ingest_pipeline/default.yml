@@ -1829,6 +1829,12 @@ processors:
       field: crowdstrike.info.user.UserName
       target_field: user.name
       ignore_missing: true
+      if: ctx.crowdstrike?.info?.user?.UserName != null && ctx.user?.name == null
+  - rename:
+      field: crowdstrike.info.user.User
+      target_field: user.name
+      ignore_missing: true
+      if: ctx.crowdstrike?.info?.user?.User != null && ctx.user?.name == null
   - rename:
       field: crowdstrike.GID
       target_field: user.group.id
@@ -1846,6 +1852,7 @@ processors:
       field: crowdstrike.UserName
       target_field: user.name
       ignore_missing: true
+      if: ctx.crowdstrike?.UserName != null && ctx.user?.name == null
   - split:
       field: crowdstrike.UserPrincipal
       target_field: "_temp.user_parts"
@@ -2334,6 +2341,18 @@ processors:
       field: _temp.hashes
       target_field: file.hash
       if: ctx.event?.action != null && (ctx.event.action.contains("File") || ctx.event.action.contains("Directory") || ctx.event.action.contains("Executable")) && ctx._temp?.hashes != null && ctx._temp?.hashes.size() > 0
+  ## Device Fields.
+  - set:
+      field: device.id
+      copy_from: crowdstrike.SensorId
+      ignore_empty_value: true
+      tag: rename_event_sensorid
+  - set:
+      field: device.id
+      copy_from: crowdstrike.DeviceId
+      ignore_empty_value: true
+      tag: rename_event_deviceid
+      if: ctx.device?.id == null
 
   ## Crowdstrike fields.
   - split:
