@@ -23,7 +23,7 @@ event_monitoring_method:
     interval: {{elf_period}}
     query:
       default: SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if initial_interval}}LogDate > [[ (formatTime (now.Add (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.000Z0700") ]] AND {{/if}}{{#if log_file_interval}}Interval = '{{log_file_interval}}' AND {{/if}}EventType = 'Logout' ORDER BY LogDate ASC NULLS FIRST
-      value: SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if log_file_interval}}Interval = '{{log_file_interval}}' AND {{/if}}AND EventType = 'Logout' AND CreatedDate > [[ .cursor.event_log_file.last_event_time ]] ORDER BY LogDate ASC NULLS FIRST
+      value: SELECT CreatedDate,LogDate,LogFile FROM EventLogFile WHERE {{#if log_file_interval}}Interval = '{{log_file_interval}}' AND {{/if}}EventType = 'Logout' AND CreatedDate > [[ .cursor.event_log_file.last_event_time ]] ORDER BY LogDate ASC NULLS FIRST
     cursor:
       field: "CreatedDate"
   object:
