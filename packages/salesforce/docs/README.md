@@ -2,41 +2,51 @@
 
 ## Overview
 
-The Salesforce integration allows users to monitor a [Salesforce](https://www.salesforce.com/) instance. Salesforce is a customer relationship management (CRM) platform. It provides an ecosystem for businesses to manage marketing, sales, commerce, service, and IT teams from anywhere with one integrated CRM platform.
+The Salesforce integration enables users to monitor their [Salesforce](https://www.salesforce.com/) instance effectively. Salesforce is a comprehensive customer relationship management (CRM) platform that supports businesses in managing marketing, sales, commerce, service, and IT teams from a unified platform accessible from anywhere.
 
-Use the Salesforce integration to:
-- Gain insights into login and other operational activities by the users of the organization.
-- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+### Key Benefits of Salesforce Integration:
 
-As an example, users can use the data from this integration to understand the activity patterns of users based on region or the distribution of users by license type. 
+- **Operational Insights**: Gain valuable insights into login and logout activities and other operational events within your organization.
+- **Data Visualization**: Create detailed visualizations to monitor, measure, and analyze usage trends and key data, helping you derive actionable business insights.
+- **Proactive Alerts**: Set up alerts to minimize Mean Time to Detection (MTTD) and Mean Time to Resolution (MTTR) by referencing relevant logs during troubleshooting.
+
+### Use cases:
+
+For example, with this integration, users can analyze data to understand user activity patterns based on geographic regions or examine the distribution of users by license type. This helps in making informed decisions and optimizing resource allocation.
 
 ## Data streams
 
-The Salesforce integration collects log events using the REST API of Salesforce.
+The Salesforce integration collects log events using the Salesforce REST API.
 
-**Logs** help users to keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm), [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm), [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm), [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm), and [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
+Logs help users maintain a record of events occurring in Salesforce. The log data streams collected by the Salesforce integration include:
+
+- [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm)
+- [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm)
+- [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm)
+- [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm)
+- [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm)
+- [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
 
 Data streams:
-- `login` : Tracks login activity of users who log in to Salesforce.
-- `logout`: Tracks logout activity of users who logout from Salesforce.
-- `apex`: Represents information about various Apex events like Callout, Execution, REST API, SOAP API, Trigger, etc.
-- `setupaudittrail`: Represents changes users made in the user's organization's Setup area for at least the last 180 days.
+- `login`: Tracks login activity of users who log in to Salesforce.
+- `logout`: Tracks logout activity of users who log out from Salesforce.
+- `apex`: Represents information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, etc.
+- `setupaudittrail`: Represents changes users made in the organization's Setup area for at least the last 180 days.
 
 ## Compatibility
 
-This integration has been tested against Salesforce `Spring '22 (v54.0) release`.
+This integration has been tested against Salesforce Spring '22 (v54.0) release.
 
-In order to find out the Salesforce version of the user's instance, see below:
+In order to find out the version of your Salesforce instance using one of the following methods:
 
-1. On the Home tab in Salesforce Classic, in the top right corner of the screen is a link to releases like `Summer '22`. This indicates the release version of the salesforce instance.
+1. Salesforce Classic: On the Home tab in Salesforce Classic, in the top right corner of the screen is a link to releases like `Summer '22`. This indicates the release version of the salesforce instance.
 
-2. An alternative way to find out the version of Salesforce is by hitting the following URL:
+2. Using the Salesforce Instance URL: To find out the version of Salesforce is by using the instance URL:
     - Format: (Salesforce Instance URL)/services/data
     - Example: `https://na9.salesforce.com/services/data`
 
 Example response:
+
 ```xml
 <Versions>
     <Version>
@@ -56,89 +66,96 @@ Example response:
     </Version>
 </Versions>
 ```
+
 The last one on the list is the release of the user's salesforce instance. In the example above, the version is `Summer '22` i.e. `v55.0`.
+
+The last entry in the list indicates the current release version of your Salesforce instance. In the example above, the version is `Summer '22 (v55.0)`.
 
 ## Prerequisites
 
-Users need Elasticsearch for storing and searching their data and Kibana for visualizing and managing it.
-Users can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on their own hardware.
+To use this integration, you need Elasticsearch for storing and searching your data, and Kibana for visualizing and managing it. We recommend using our hosted Elasticsearch Service on Elastic Cloud, but you can also self-manage the Elastic Stack on your own hardware.
 
-In the user's Salesforce instance, ensure that `API Enabled permission` is selected for the user profile. Follow the below steps to enable the same:
+### Enabling API Access in Salesforce
 
-1. Go to `Setup` > `Quick Find` > `Users`, and Click on `Users`.
+Ensure that the `API Enabled` permission is selected for the user profile in your Salesforce instance. Follow these steps to enable it:
+
+1. Navigate to `Setup` > `Quick Find` > `Users`, and click on `Users`.
 2. Click on the profile link associated with the `User Account` used for data collection.
-3. Search for `API Enabled` permission on the same page. In case it’s not present, search it under `System Permissions` and check if `API Enabled` privilege is selected. If not, enable it for data collection.
+3. Search for the `API Enabled` permission on the profile page. If it’s not present, search under `System Permissions` and check if the `API Enabled` privilege is selected. If not, enable it for data collection.
 
-For collecting data using `Streaming API`:
+### Collecting Data Using Streaming API
 
-In the user's Salesforce instance, ensure that `View Real-Time Event Monitoring Data` is selected for the user profile. Follow the below steps to enable the same:
+Ensure that the `View Real-Time Event Monitoring Data` permission is selected for the user profile in your Salesforce instance. Follow these steps to enable it:
 
-1. Go to `Setup` > `Quick Find` > `Users`, and Click on `Users`.
+1. Navigate to `Setup` > `Quick Find` > `Users`, and click on `Users`.
 2. Click on the profile link associated with the `User Account` used for data collection.
-3. Search for `View Real-Time Event Monitoring Data` permission on the same page. In case it’s not present, search it under `System Permissions` and check if `View Real-Time Event Monitoring Data` privilege is selected. If not, enable it for data collection.
+3. Search for the `View Real-Time Event Monitoring Data` permission on the profile page. If it’s not present, search under `System Permissions` and check if the `View Real-Time Event Monitoring Data` privilege is selected. If not, enable it for data collection.
 
-Also, ensure that `Event Streaming` is enabled for `Login Event` and `Logout Event`. Follow the below steps to enable the same: 
+### Enabling Event Streaming
 
-1. Go to `Setup` > `Quick Find` > `Event Manager`, and Click on `Event Manager`.
-2. For `Login Event` and `Logout Event` click on the down arrow button on the left corner and select `Enable Streaming`.
+Ensure that `Event Streaming` is enabled for both `Login Event` and `Logout Event`. Follow these steps to enable it:
+
+1. Navigate to `Setup` > `Quick Find` > `Event Manager`, and click on `Event Manager`.
+2. For both `Login Event` and `Logout Event`, click on the down arrow button on the left corner and select `Enable Streaming`.
 
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-Note: Please enable either `login` data stream and either `logout` data stream to avoid data duplication.
+> **Note:** Please enable either the `login` data stream or the `logout` data stream to avoid data duplication.
 
 ## Configuration
 
-Users need the following information from the user's Salesforce instance to configure this integration in Elastic:
+To configure the Salesforce integration in Elastic, you will need the following information from your Salesforce instance:
 
 ### Salesforce Instance URL
 
-The instance the user's Salesforce Organization uses is indicated in the URL of the address bar in Salesforce Classic. The value before 'salesforce.com' is the user's Salesforce Instance.
+The Salesforce Instance URL is the URL of your Salesforce Organization. It can be found in the address bar in Salesforce Classic or Salesforce Lightning.
 
-Example URL: `https://na9.salesforce.com/home/home.jsp`
+- **Salesforce Classic**: The value before 'salesforce.com' in the URL is your Salesforce Instance.
 
-In the above example, the value before 'salesforce.com' is the user's Salesforce Instance. In this example, the Salesforce Organization is located on NA9. 
+  Example URL: `https://na9.salesforce.com/home/home.jsp`
 
-The Salesforce Instance URL is: `https://na9.salesforce.com`
+  In this example, the Salesforce Instance URL is: `https://na9.salesforce.com`
 
-In Salesforce Lightning, it is available under the user name in the “View Profile” tab.
+- **Salesforce Lightning**: The instance URL is available under your user name in the “View Profile” tab.
 
 ### Client Key and Client Secret for Authentication
 
-In order to use this integration, users need to create a new Salesforce Application using OAuth. Follow the steps below to create a connected application in Salesforce:
+To use this integration, you need to create a new Salesforce Application using OAuth. Follow these steps to create a connected application in Salesforce:
 
-1. Login to [Salesforce](https://login.salesforce.com/) with the same user credentials that the user wants to collect data with.
-2. Click on Setup on the top right menu bar. On the Setup page search `App Manager` in the `Search Setup` search box at the top of the page, then select `App Manager`.
-3. Click *New Connected App*.
-4. Provide a name for the connected application. This will be displayed in the App Manager and on its App Launcher tile. 
-5. Enter the API name. The default is a version of the name without spaces. Only letters, numbers, and underscores are allowed. If the original app name contains any other characters, edit the default name.
-6. Enter the contact email for Salesforce.
-7. Under the API (Enable OAuth Settings) section of the page, select *Enable OAuth Settings*.
-8. In the Callback URL enter the Instance URL (Please refer to `Salesforce Instance URL`)
-9. Select the following OAuth scopes to apply to the connected app:
-    - Manage user data via APIs (api). 
-    - Perform requests at any time (refresh_token, offline_access).
-    - (Optional) In case of data collection, if any permission issues arise, add the Full access (full) scope.
-10. Select *Require Secret for the Web Server Flow* to require the app's client secret in exchange for an access token.
-11. Select *Require Secret for Refresh Token Flow* to require the app's client secret in the authorization request of a refresh token and hybrid refresh token flow.
-12. Click Save. It may take approximately 10 minutes for the changes to take effect.
-13. Click Continue and then under API details click Manage Consumer Details, Verify the user account using Verification Code.
-14. Copy `Consumer Key` and `Consumer Secret` from the Consumer Details section, which should be populated as value to Client ID and Client Secret respectively in the configuration.
+1. Log in to [Salesforce](https://login.salesforce.com/) with the user credentials you want to collect data with.
+2. Click on **Setup** in the top right menu bar.
+3. In the Setup page, search for `App Manager` in the `Search Setup` box at the top of the page, then select **App Manager**.
+4. Click **New Connected App**.
+5. Provide a name for the connected application. This name will be displayed in the App Manager and on its App Launcher tile.
+6. Enter the API name. The default is a version of the name without spaces. Only letters, numbers, and underscores are allowed. If the original app name contains any other characters, edit the default name.
+7. Enter the contact email for Salesforce.
+8. Under the **API (Enable OAuth Settings)** section, select **Enable OAuth Settings**.
+9. In the **Callback URL**, enter the Instance URL (refer to `Salesforce Instance URL` above).
+10. Select the following OAuth scopes to apply to the connected app:
+    - **Manage user data via APIs (api)**
+    - **Perform requests at any time (refresh_token, offline_access)**
+    - (Optional) If you encounter any permission issues during data collection, add the **Full access (full)** scope.
+11. Select **Require Secret for the Web Server Flow** to require the app's client secret in exchange for an access token.
+12. Select **Require Secret for Refresh Token Flow** to require the app's client secret in the authorization request of a refresh token and hybrid refresh token flow.
+13. Click **Save**. It may take approximately 10 minutes for the changes to take effect.
+14. Click **Continue**, then under **API details**, click **Manage Consumer Details**. Verify the user account using the Verification Code.
+15. Copy the `Consumer Key` and `Consumer Secret` from the Consumer Details section. These should be populated as the values for Client ID and Client Secret, respectively, in the configuration.
 
-For more details on how to Create a Connected App refer to the salesforce documentation [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
+For more details on how to create a connected app, refer to the Salesforce documentation [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
 
 ### Username
 
-User Id of the registered user in Salesforce.
+The User ID of the registered user in Salesforce.
 
 ### Password
 
-Password used for authenticating the above user.
+The password used for authenticating the above user.
 
 ## Additional Information
 
-Follow the steps below, in case the user needs to find the API version:
+Follow the steps below if you need to find the API version:
 
 1. Go to `Setup` > `Quick Find` > `Apex Classes`.
 2. Click the `New` button.
@@ -147,22 +164,35 @@ Follow the steps below, in case the user needs to find the API version:
 
 ## Validation
 
-After the integration is successfully configured, clicking on the Assets tab of the Salesforce Integration should display a list of available dashboards. Click on the dashboard available for the user's configured datastream. It should be populated with the required data.
+Once the Salesforce integration is successfully configured, you can validate the setup by following these steps:
+
+1. Navigate to the **Assets** tab within the Salesforce Integration.
+2. You should see a list of available dashboards corresponding to your configured data streams.
+3. Select the dashboard relevant to your data stream (e.g., login, logout, apex, setupaudittrail).
+4. Verify that the dashboard is populated with the expected data.
+
+If the dashboard displays the data correctly, your integration is successfully validated.
+
 
 ## Troubleshooting
 
+This section provides solutions to common issues you might encounter while using the Salesforce integration.
+
 ### Request timeout
 
-In `Apex`, `Login Rest`, `Logout Rest`, or `SetupAuditTrail` datastreams, if the response is getting delayed from the Salesforce server side due to any reason then the following error might occur:
+If you experience delays in the response from the Salesforce server in the `Apex`, `Login Rest`, `Logout Rest`, or `SetupAuditTrail` data streams, you might encounter the following error:
+
 ```
 Error while processing http request: failed to execute rf.collectResponse: failed to execute http client.Do: failed to execute http client.Do: failed to read http.response.body
 ```
-In this case, consider increasing `Request timeout` configuration from `Advanced options` section of that data stream.
+
+**Solution:** Consider increasing the `Request timeout` configuration from the `Advanced options` section of the affected data stream.
 
 ### Data ingestion error
 
-In case of data ingestion if the user finds the following type of error logs:
-```
+If you encounter data ingestion errors, you might see logs similar to the following:
+
+```json
 {
     "log.level": "error",
     "@timestamp": "2022-11-24T12:59:36.835+0530",
@@ -177,24 +207,24 @@ In case of data ingestion if the user finds the following type of error logs:
     "ecs.version": "1.6.0"
 }
 ```
-Please check if the `API Enabled permission` is provided to the `profile` associated with the `username` used as part of the integration.
-Please refer to the Prerequisites section above for more information.
 
-If the error continues follow these steps:
+**Solution:** Ensure that the `API Enabled` permission is provided to the `profile` associated with the `username` used for the integration. Refer to the **Prerequisites** section above for more information.
+
+If the error persists, follow these steps:
 
 1. Go to `Setup` > `Quick Find` > `Manage Connected Apps`.
-2. Click on the Connected App name created by the user to generate the client id and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
-3. Click on Edit Policies, and select `Relax IP restrictions` from the dropdown for IP Relaxation.
+2. Click on the Connected App name created to generate the client ID and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
+3. Click on `Edit Policies` and select `Relax IP restrictions` from the dropdown for IP Relaxation.
 
-### Missing old events in **Login events table** panel
+### Missing old events in "Login events table" panel
 
-If **Login events table** does not display older documents after upgrading to ``0.8.0`` or later versions, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``login_rest`` data stream.
+If **Login events table** does not display older documents after upgrading to version `0.8.0` or later, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the `login_rest` data stream.
 
 ## Logs reference
 
 ### Apex
 
-This is the `apex` data stream. Apex enables developers to access the Salesforce platform back-end database and client-server interfaces to create third-party SaaS applications.
+The `apex` data stream captures events related to Apex operations, enabling developers to access the Salesforce platform back-end database and client-server interfaces to create third-party SaaS applications.
 
 An example event for `apex` looks as following:
 
@@ -311,12 +341,12 @@ An example event for `apex` looks as following:
 | error.message | Error message. | match_only_text |  |  |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |  |  |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |  |  |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
 | event.duration | Duration of the event in milliseconds. If event.start and event.end are known this value should be the difference between the end and start time | long | ms |  |
 | event.id | Unique ID to describe the event. | keyword |  |  |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |  |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
@@ -344,7 +374,7 @@ An example event for `apex` looks as following:
 | salesforce.apex.fetch_ms | How long it took (in milliseconds) to retrieve the query results from the external system. Available in API version 42.0 and later. | float | ms | gauge |
 | salesforce.apex.fields_count | The number of fields or columns, where applicable. | long |  |  |
 | salesforce.apex.filter | Field expressions to filter which rows to return. Corresponds to WHERE in SOQL queries. | keyword |  |  |
-| salesforce.apex.is_long_running_request | Indicates whether the request is counted against your org's concurrent long-running Apex request limit (true) or not (false). | keyword |  |  |
+| salesforce.apex.is_long_running_request | Indicates whether the request is counted against your org's concurrent long-running Apex request limit. | boolean |  |  |
 | salesforce.apex.limit | Maximum number of rows to return for a query. Corresponds to LIMIT in SOQL queries. | long |  |  |
 | salesforce.apex.limit_usage_pct | The percentage of Apex SOAP calls that were made against the organization's limit. | float | percent | gauge |
 | salesforce.apex.login_key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |  |  |
@@ -392,7 +422,7 @@ An example event for `apex` looks as following:
 
 ### Login
 
-This is the `login` data stream. It represents events containing details about the user's organization's login history.
+The `login` data stream captures events that detail the login history of users within your Salesforce organization. This data stream provides insights into user authentication activities, helping you monitor and analyze login patterns, detect anomalies, and ensure security compliance.
 
 An example event for `login` looks as following:
 
@@ -519,10 +549,10 @@ An example event for `login` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |  |  |
 | event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |  |  |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |  |  |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |  |  |
@@ -532,35 +562,36 @@ An example event for `login` looks as following:
 | input.type | Input type. | keyword |  |  |
 | related.ip | All of the IPs seen on your event. | ip |  |  |
 | salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |  |  |
-| salesforce.login.additional_info | JSON serialization of additional information that's captured from the HTTP headers during a login request. | text |  |  |
+| salesforce.login.additional_info | Additional information that's captured from the HTTP headers during a login request. | match_only_text |  |  |
 | salesforce.login.api.type | The type of Salesforce API request. | keyword |  |  |
-| salesforce.login.api.version | The version of the Salesforce API that's being used. | keyword |  |  |
-| salesforce.login.application | The application used to access the organization. | keyword |  |  |
-| salesforce.login.auth.method_reference | The authentication method used by a third-party identification provider for an OpenID Connect single sign-on protocol. This field is available in API version 51.0 and later. | keyword |  |  |
-| salesforce.login.auth.service_id | The authentication method used by a third-party identification provider for an OpenID Connect single sign-on protocol. | keyword |  |  |
-| salesforce.login.client_ip | The IP address of the client that's using Salesforce services. A Salesforce internal IP (such as a login from Salesforce Workbench or AppExchange) is shown as “Salesforce.com IP”. | keyword |  |  |
-| salesforce.login.client_version | The version number of the login client. If no version number is available, “Unknown” is returned. | keyword |  |  |
-| salesforce.login.cpu_time | The CPU time in milliseconds used to complete the request. This field indicates the amount of activity taking place in the app server layer. | long | ms | gauge |
-| salesforce.login.db_time_total | The time in nanoseconds for a database round trip. Includes time spent in the JDBC driver, network to the database, and DB's CPU time. Compare this field to cpu_time to determine whether performance issues are occurring in the database layer or in your own code. | double | ms | gauge |
-| salesforce.login.document_id | Unique Id. | keyword |  |  |
-| salesforce.login.evaluation_time | The amount of time it took to evaluate the transaction security policy, in milliseconds. | float | ms | gauge |
-| salesforce.login.event_type | The type of event. The value is always Login. | keyword |  |  |
-| salesforce.login.geo_id | The Salesforce ID of the LoginGeo object associated with the login user's IP address. | keyword |  |  |
-| salesforce.login.history_id | Tracks a user session so you can correlate user activity with a particular login instance. This field is also available on the LoginHistory, AuthSession, and other objects, making it easier to trace events back to a user's original authentication. | keyword |  |  |
-| salesforce.login.key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |  |  |
-| salesforce.login.login_type | The type of login used to access the session. | keyword |  |  |
-| salesforce.login.organization_id | The 15-character ID of the organization. | keyword |  |  |
-| salesforce.login.policy_id | The ID of the policy used to evaluate the transaction. | keyword |  |  |
-| salesforce.login.policy_outcome | The outcome of the policy evaluation. | keyword |  |  |
-| salesforce.login.related_event_identifier | The ID of the related event. | keyword |  |  |
-| salesforce.login.request_id | The unique ID of a single transaction. A transaction can contain one or more events. Each event in a given transaction has the same REQUEST_ID. | keyword |  |  |
-| salesforce.login.request_status | The status of the request for a page view or user interface action. | keyword |  |  |
-| salesforce.login.run_time | The amount of time that the request took in milliseconds. | long | ms | gauge |
-| salesforce.login.session.key | The user's unique session ID. Use this value to identify all user events within a session. When a user logs out and logs in again, a new session is started. For LoginEvent, this field is often null because the event is captured before a session is created. For example, vMASKIU6AxEr+Op5. This field is available in API version 46.0 and later. | keyword |  |  |
-| salesforce.login.session.level | Session-level security controls user access to features that support it, such as connected apps and reporting. This field is available in API version 42.0 and later. | text |  |  |
+| salesforce.login.api.version | The version of the Salesforce API used for the login request. | keyword |  |  |
+| salesforce.login.application | The application used to access the Salesforce organization. | keyword |  |  |
+| salesforce.login.auth.method_reference | The authentication method reference used by a third-party identity provider for SSO using the OpenID Connect protocol. This field is available in API version 51.0 and later. | keyword |  |  |
+| salesforce.login.auth.service_id | The authentication service ID used by a third-party identity provider for single sign-on (SSO) using the OpenID Connect protocol. | keyword |  |  |
+| salesforce.login.client.ip | The IP address of the client using Salesforce services. Internal Salesforce IP addresses are shown as "Salesforce.com IP". | ip |  |  |
+| salesforce.login.client.version | The version number of the login client. If no version number is available, "Unknown" is returned. | keyword |  |  |
+| salesforce.login.client_version | The version of the client used for the login request. | keyword |  |  |
+| salesforce.login.cpu_time | The CPU time in milliseconds used to complete the login request, indicating the amount of activity in the application server layer. | long | ms | gauge |
+| salesforce.login.db_total_time | The total time in milliseconds for the database round trip during login, including time spent in the JDBC driver, network, and database CPU time. | double | ms | gauge |
+| salesforce.login.document_id | Unique identifier for the login event. | keyword |  |  |
+| salesforce.login.evaluation_time | The amount of time it took to evaluate the transaction security policy, in milliseconds. This field is available in API version 46.0 and later. | double | ms | gauge |
+| salesforce.login.event_type | The type of event. For login events, the value is always "Login". | keyword |  |  |
+| salesforce.login.geo_id | The Salesforce ID of the LoginGeo object associated with the user's IP address during login. | keyword |  |  |
+| salesforce.login.history_id | The identifier that tracks a user session, allowing correlation of user activity with a specific login instance. | keyword |  |  |
+| salesforce.login.key | The string that ties together all events in a given user's login session, starting with the login event and ending with either a logout event or the user session expiring. | keyword |  |  |
+| salesforce.login.organization_id | The 15-character ID of the Salesforce organization. | keyword |  |  |
+| salesforce.login.related_event_identifier | The identifier of a related event associated with the login event. | keyword |  |  |
+| salesforce.login.request.id | The unique identifier for the login request transaction. | keyword |  |  |
+| salesforce.login.request.status | The status of the login request (e.g., Success, Failed). | keyword |  |  |
+| salesforce.login.run_time | The total time in milliseconds taken by the login request. | long | ms | gauge |
+| salesforce.login.session.key | The unique session ID for the user. Use this value to identify all user events within a session. This field is available in API version 46.0 and later. | keyword |  |  |
+| salesforce.login.session.level | The session-level security controls that determine user access to features supporting session-level security. This field is available in API version 42.0 and later. | keyword |  |  |
+| salesforce.login.transaction_security.evaluation_time | The time in milliseconds taken to evaluate the transaction security policy for the login event. | double | ms | gauge |
+| salesforce.login.transaction_security.policy.id | The ID of the transaction security policy used to evaluate the login event. | keyword |  |  |
+| salesforce.login.transaction_security.policy.outcome | The outcome of the transaction security policy evaluation (e.g., Block, Notified, NoAction). | keyword |  |  |
 | salesforce.login.type | The type of login used to access the session. | keyword |  |  |
-| salesforce.login.uri_derived_id | The 18-character case insensitive ID of the URI of the page that's receiving the request. | keyword |  |  |
-| salesforce.login.user_id | The 15-character ID of the user who's using Salesforce services through the UI or the API. | keyword |  |  |
+| salesforce.login.uri.id | The 18-character case-insensitive ID of the URI of the page receiving the login request. | keyword |  |  |
+| salesforce.login.user_id | The 15-character ID of the user logging in to Salesforce. | keyword |  |  |
 | source.geo.city_name | City name. | keyword |  |  |
 | source.geo.continent_name | Name of the continent. | keyword |  |  |
 | source.geo.country_iso_code | Country ISO code. | keyword |  |  |
@@ -577,13 +608,18 @@ An example event for `login` looks as following:
 | user.email | User email address. | keyword |  |  |
 | user.id | Unique identifier of the user. | keyword |  |  |
 | user.roles | Array of user roles at the time of the event. | keyword |  |  |
+| user_agent.device.name | Name of the device. | keyword |  |  |
 | user_agent.name | Name of the user agent. | keyword |  |  |
-| user_agent.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| user_agent.os.full | Operating system name, including the version or code name. | keyword |  |  |
+| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |  |  |
+| user_agent.os.name | Operating system name, without the version. | keyword |  |  |
+| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |  |  |
+| user_agent.os.version | Operating system version as a raw string. | keyword |  |  |
 
 
 ### Logout
 
-This is the `logout` data stream. It represents events containing details about the user's organization's logout history.
+The `logout` data stream captures events that detail the logout history of users within your Salesforce organization. This data stream provides insights into user authentication activities, helping you monitor and analyze logout patterns, detect anomalies, and ensure security compliance.
 
 An example event for `logout` looks as following:
 
@@ -701,10 +737,10 @@ An example event for `logout` looks as following:
 | event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
@@ -748,7 +784,7 @@ An example event for `logout` looks as following:
 
 ### SetupAuditTrail
 
-This is the `setupaudittrail` data stream. It represents changes users made in the user's organization's Setup area for at least the last 180 days.
+The `setupaudittrail` data stream captures and records changes made by users in the organization's Setup area over the past 180 days.
 
 An example event for `setupaudittrail` looks as following:
 
@@ -828,11 +864,11 @@ An example event for `setupaudittrail` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |

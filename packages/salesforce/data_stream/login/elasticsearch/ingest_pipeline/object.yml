@@ -53,7 +53,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.PolicyOutcome
-      target_field: salesforce.login.policy_outcome
+      target_field: salesforce.login.transaction_security.policy.outcome
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -83,7 +83,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.PolicyId
-      target_field: salesforce.login.policy_id
+      target_field: salesforce.login.transaction_security.policy.id
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -166,7 +166,7 @@ processors:
       target_field: source.geo
       ignore_missing: true
       ignore_failure: true
-      if: '!ctx.source?.geo?.location?.containsKey("lat") && !ctx.source?.geo?.location?.containsKey("lon")'
+      if: 'ctx?.source?.ip != null && !ctx.source?.geo?.location?.containsKey("lat") && !ctx.source?.geo?.location?.containsKey("lon")'
   - rename:
       field: json.CountryIso
       target_field: source.geo.country_iso_code
@@ -199,7 +199,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.Platform
-      target_field: user_agent.os.platform
+      target_field: user_agent.os.name
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -225,6 +225,9 @@ processors:
         - append:
             field: error.message
             value: "Failed to dissect TlsProtocol: {{{_ingest.on_failure_message}}}"
+  - remove:
+      field: json
+      ignore_missing: true
 
 on_failure:
   - set:
