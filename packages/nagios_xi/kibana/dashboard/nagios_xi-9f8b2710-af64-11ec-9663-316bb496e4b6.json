@@ -1,10 +1,31 @@
 {
     "attributes": {
         "description": "Host dashboard for Nagios XI Metrics",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "nagios_xi.host"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "nagios_xi.host"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -14,168 +35,916 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**[Overview](#/dashboard/nagios_xi-3a61d470-a0fe-11ec-8479-e1ade3344260)** | **[Host](#/dashboard/nagios_xi-9f8b2710-af64-11ec-9663-316bb496e4b6)** | **[Service](#/dashboard/nagios_xi-d56317e0-af6d-11ec-9663-316bb496e4b6)** | **[Events](#/dashboard/nagios_xi-9c265030-af6f-11ec-9663-316bb496e4b6)**",
+                            "openLinksInNewTab": false
+                        },
+                        "type": "markdown",
+                        "uiState": {}
+                    }
                 },
                 "gridData": {
                     "h": 2,
-                    "i": "4d3fe5a0-c88a-4a97-913e-9fa4cf48b883",
+                    "i": "0bb61516-f280-459c-a055-33c4c166a097",
                     "w": 48,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "4d3fe5a0-c88a-4a97-913e-9fa4cf48b883",
-                "panelRefName": "panel_4d3fe5a0-c88a-4a97-913e-9fa4cf48b883",
-                "type": "visualization",
-                "version": "8.0.0"
+                "panelIndex": "0bb61516-f280-459c-a055-33c4c166a097",
+                "title": "",
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 16,
-                    "i": "ecf70ee4-c29b-44d5-8369-ba6abd494017",
-                    "w": 48,
-                    "x": 0,
-                    "y": 16
-                },
-                "panelIndex": "ecf70ee4-c29b-44d5-8369-ba6abd494017",
-                "panelRefName": "panel_ecf70ee4-c29b-44d5-8369-ba6abd494017",
-                "type": "lens",
-                "version": "8.0.0"
-            },
-            {
-                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-94b7c1b6-234b-4c69-99a2-f82a4d4b03fc",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "94b7c1b6-234b-4c69-99a2-f82a4d4b03fc": {
+                                            "columnOrder": [
+                                                "11863052-289f-4bf8-852e-542f06171c0b",
+                                                "dcfe47d4-eb20-4981-ad0f-6e53d60b036b"
+                                            ],
+                                            "columns": {
+                                                "11863052-289f-4bf8-852e-542f06171c0b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Hosts",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": false,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 1000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "nagios_xi.host.display_name"
+                                                },
+                                                "dcfe47d4-eb20-4981-ad0f-6e53d60b036b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": false,
+                                                    "label": "State",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "nagios_xi.host.current_state"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "11863052-289f-4bf8-852e-542f06171c0b",
+                                        "hidden": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "dcfe47d4-eb20-4981-ad0f-6e53d60b036b"
+                                    }
+                                ],
+                                "layerId": "94b7c1b6-234b-4c69-99a2-f82a4d4b03fc",
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
+                            }
+                        },
+                        "visualizationType": "lnsDatatable"
+                    },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 14,
-                    "i": "b5e09616-5fb5-4d24-8847-f8f47a2bb2dc",
-                    "w": 24,
-                    "x": 0,
-                    "y": 32
-                },
-                "panelIndex": "b5e09616-5fb5-4d24-8847-f8f47a2bb2dc",
-                "panelRefName": "panel_b5e09616-5fb5-4d24-8847-f8f47a2bb2dc",
-                "type": "lens",
-                "version": "8.0.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "e91a28e8-836a-4dff-8a9a-3788a30e1945",
-                    "w": 24,
-                    "x": 24,
-                    "y": 32
-                },
-                "panelIndex": "e91a28e8-836a-4dff-8a9a-3788a30e1945",
-                "panelRefName": "panel_e91a28e8-836a-4dff-8a9a-3788a30e1945",
-                "type": "lens",
-                "version": "8.0.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "34a6c2b3-1876-42cb-9b18-835550fb2bec",
-                    "w": 24,
-                    "x": 0,
-                    "y": 46
-                },
-                "panelIndex": "34a6c2b3-1876-42cb-9b18-835550fb2bec",
-                "panelRefName": "panel_34a6c2b3-1876-42cb-9b18-835550fb2bec",
-                "type": "lens",
-                "version": "8.0.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "d11c8f47-00a1-456d-8100-5276057ae797",
-                    "w": 24,
-                    "x": 24,
-                    "y": 46
-                },
-                "panelIndex": "d11c8f47-00a1-456d-8100-5276057ae797",
-                "panelRefName": "panel_d11c8f47-00a1-456d-8100-5276057ae797",
-                "type": "lens",
-                "version": "8.0.0"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "2fbfe14e-e1f4-4a9f-9a1c-4f4adabc7afb",
+                    "i": "7316c514-cc4a-4a6e-a5f2-4bab81bed7ea",
                     "w": 48,
                     "x": 0,
                     "y": 2
                 },
-                "panelIndex": "2fbfe14e-e1f4-4a9f-9a1c-4f4adabc7afb",
-                "panelRefName": "panel_2fbfe14e-e1f4-4a9f-9a1c-4f4adabc7afb",
-                "type": "lens",
-                "version": "8.0.0"
+                "panelIndex": "7316c514-cc4a-4a6e-a5f2-4bab81bed7ea",
+                "title": "Hosts [Metrics Nagios XI]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a95fc1ab-8f65-4448-a99c-c6e66f8e810c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "a95fc1ab-8f65-4448-a99c-c6e66f8e810c": {
+                                            "columnOrder": [
+                                                "d4e776a5-1770-48da-8062-5a55fe9154aa",
+                                                "4634cf29-563b-4702-b1f1-8c5886cb5933",
+                                                "4634cf29-563b-4702-b1f1-8c5886cb5933X0",
+                                                "449c8142-0bb6-40a8-bf39-b3805af1f1f1",
+                                                "449c8142-0bb6-40a8-bf39-b3805af1f1f1X0",
+                                                "118bfd06-0a4b-4dce-9a08-3087c767f368",
+                                                "dcc60cf3-dc96-4320-8b70-8815b7f88493"
+                                            ],
+                                            "columns": {
+                                                "118bfd06-0a4b-4dce-9a08-3087c767f368": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Size",
+                                                    "operationType": "median",
+                                                    "scale": "ratio",
+                                                    "sourceField": "nagios_xi.host.performance_data.size"
+                                                },
+                                                "449c8142-0bb6-40a8-bf39-b3805af1f1f1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "PL",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "average(nagios_xi.host.performance_data.pl)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "449c8142-0bb6-40a8-bf39-b3805af1f1f1X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "449c8142-0bb6-40a8-bf39-b3805af1f1f1X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of PL",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "nagios_xi.host.performance_data.pl"
+                                                },
+                                                "4634cf29-563b-4702-b1f1-8c5886cb5933": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "RTA",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "average(nagios_xi.host.performance_data.rta)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "4634cf29-563b-4702-b1f1-8c5886cb5933X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "4634cf29-563b-4702-b1f1-8c5886cb5933X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of RTA",
+                                                    "operationType": "average",
+                                                    "scale": "ratio",
+                                                    "sourceField": "nagios_xi.host.performance_data.rta"
+                                                },
+                                                "d4e776a5-1770-48da-8062-5a55fe9154aa": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Host Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "118bfd06-0a4b-4dce-9a08-3087c767f368",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 998
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "nagios_xi.host.display_name"
+                                                },
+                                                "dcc60cf3-dc96-4320-8b70-8815b7f88493": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Time",
+                                                    "operationType": "median",
+                                                    "scale": "ratio",
+                                                    "sourceField": "nagios_xi.host.performance_data.time"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "d4e776a5-1770-48da-8062-5a55fe9154aa",
+                                        "isTransposed": false,
+                                        "width": 224.33333333333331
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "4634cf29-563b-4702-b1f1-8c5886cb5933",
+                                        "isTransposed": false,
+                                        "width": 176.33333333333337
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "449c8142-0bb6-40a8-bf39-b3805af1f1f1",
+                                        "isTransposed": false,
+                                        "width": 187.77777777777777
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "118bfd06-0a4b-4dce-9a08-3087c767f368",
+                                        "isTransposed": false,
+                                        "width": 173.77777777777777
+                                    },
+                                    {
+                                        "columnId": "dcc60cf3-dc96-4320-8b70-8815b7f88493",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "a95fc1ab-8f65-4448-a99c-c6e66f8e810c",
+                                "layerType": "data",
+                                "rowHeight": "single",
+                                "rowHeightLines": 1
+                            }
+                        },
+                        "title": "Average Round Trip Travel Time and Packet Loss by Host Address [Metrics Nagios XI]",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "7a443718-bfb5-4656-831b-b8b083b38488",
+                    "w": 48,
+                    "x": 0,
+                    "y": 16
+                },
+                "panelIndex": "7a443718-bfb5-4656-831b-b8b083b38488",
+                "title": "Average Round Trip Travel Time and Packet Loss by Host Address [Metrics Nagios XI]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-61f04377-fecc-4d15-9f37-498e493497af",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "61f04377-fecc-4d15-9f37-498e493497af": {
+                                            "columnOrder": [
+                                                "90d3f4b5-dc7c-4bc5-a0e9-7ec9a754cf16",
+                                                "87ba10c0-bc6a-4d5c-b7bf-2f9992eed156",
+                                                "87ba10c0-bc6a-4d5c-b7bf-2f9992eed156X0"
+                                            ],
+                                            "columns": {
+                                                "87ba10c0-bc6a-4d5c-b7bf-2f9992eed156": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Host RTA (ms)",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "median(nagios_xi.host.performance_data.rta)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "87ba10c0-bc6a-4d5c-b7bf-2f9992eed156X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "87ba10c0-bc6a-4d5c-b7bf-2f9992eed156X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Host RTA (ms)",
+                                                    "operationType": "median",
+                                                    "scale": "ratio",
+                                                    "sourceField": "nagios_xi.host.performance_data.rta"
+                                                },
+                                                "90d3f4b5-dc7c-4bc5-a0e9-7ec9a754cf16": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "87ba10c0-bc6a-4d5c-b7bf-2f9992eed156"
+                                        ],
+                                        "layerId": "61f04377-fecc-4d15-9f37-498e493497af",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "90d3f4b5-dc7c-4bc5-a0e9-7ec9a754cf16"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "63320d90-5259-46ad-aa8a-14178574e260",
+                    "w": 24,
+                    "x": 0,
+                    "y": 32
+                },
+                "panelIndex": "63320d90-5259-46ad-aa8a-14178574e260",
+                "title": "Host RTA [Metrics Nagios XI]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-11ed735d-3cc9-4aae-9585-3c80a0a83b28",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "11ed735d-3cc9-4aae-9585-3c80a0a83b28": {
+                                            "columnOrder": [
+                                                "09bf925f-0c7c-4132-84a5-bb11e77a5014",
+                                                "462c049d-58cb-473c-8756-aecd0a3a7143",
+                                                "462c049d-58cb-473c-8756-aecd0a3a7143X0"
+                                            ],
+                                            "columns": {
+                                                "09bf925f-0c7c-4132-84a5-bb11e77a5014": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "462c049d-58cb-473c-8756-aecd0a3a7143": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "PL",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "max(nagios_xi.host.performance_data.pl)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "462c049d-58cb-473c-8756-aecd0a3a7143X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "462c049d-58cb-473c-8756-aecd0a3a7143X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of PL",
+                                                    "operationType": "max",
+                                                    "scale": "ratio",
+                                                    "sourceField": "nagios_xi.host.performance_data.pl"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "462c049d-58cb-473c-8756-aecd0a3a7143"
+                                        ],
+                                        "layerId": "11ed735d-3cc9-4aae-9585-3c80a0a83b28",
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "09bf925f-0c7c-4132-84a5-bb11e77a5014"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "7ba5b322-503f-4b34-b8e0-5e4cedbefc97",
+                    "w": 24,
+                    "x": 24,
+                    "y": 32
+                },
+                "panelIndex": "7ba5b322-503f-4b34-b8e0-5e4cedbefc97",
+                "title": "Host PL [Metrics Nagios XI]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-db5a1508-0c9c-47c7-9bb5-f3574f7cdb10",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "db5a1508-0c9c-47c7-9bb5-f3574f7cdb10": {
+                                            "columnOrder": [
+                                                "2deac151-243a-4ecf-8a21-cd703f2f1803",
+                                                "d1df6846-1a75-4814-b695-f6236e433693"
+                                            ],
+                                            "columns": {
+                                                "2deac151-243a-4ecf-8a21-cd703f2f1803": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d1df6846-1a75-4814-b695-f6236e433693": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Host Request Time",
+                                                    "operationType": "median",
+                                                    "scale": "ratio",
+                                                    "sourceField": "nagios_xi.host.performance_data.time"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d1df6846-1a75-4814-b695-f6236e433693"
+                                        ],
+                                        "layerId": "db5a1508-0c9c-47c7-9bb5-f3574f7cdb10",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "xAccessor": "2deac151-243a-4ecf-8a21-cd703f2f1803"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "6a5a71ac-1dce-4800-ab41-4c7b8fe363aa",
+                    "w": 24,
+                    "x": 24,
+                    "y": 46
+                },
+                "panelIndex": "6a5a71ac-1dce-4800-ab41-4c7b8fe363aa",
+                "title": "Host Request TIme [Metrics Nagios Xi]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-6b3952fa-d33c-4bfb-ba80-7d5b5b5ae321",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "6b3952fa-d33c-4bfb-ba80-7d5b5b5ae321": {
+                                            "columnOrder": [
+                                                "a2bfc732-6218-43f6-baed-55dd4149e20e",
+                                                "5199bf85-c56c-4892-bc2f-925b7227f7f1"
+                                            ],
+                                            "columns": {
+                                                "5199bf85-c56c-4892-bc2f-925b7227f7f1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Host Request Size",
+                                                    "operationType": "median",
+                                                    "scale": "ratio",
+                                                    "sourceField": "nagios_xi.host.performance_data.size"
+                                                },
+                                                "a2bfc732-6218-43f6-baed-55dd4149e20e": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "5199bf85-c56c-4892-bc2f-925b7227f7f1"
+                                        ],
+                                        "layerId": "6b3952fa-d33c-4bfb-ba80-7d5b5b5ae321",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "xAccessor": "a2bfc732-6218-43f6-baed-55dd4149e20e"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "auto",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "0f7bd03b-dea9-4017-9f95-a80e19470ab9",
+                    "w": 24,
+                    "x": 0,
+                    "y": 46
+                },
+                "panelIndex": "0f7bd03b-dea9-4017-9f95-a80e19470ab9",
+                "title": "Host Request Size [Metrics Nagios Xi]",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Nagios XI] Hosts Dashboard",
         "version": 1
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-05-14T05:21:44.818Z",
     "id": "nagios_xi-9f8b2710-af64-11ec-9663-316bb496e4b6",
-    "migrationVersion": {
-        "dashboard": "8.3.0"
-    },
+    "managed": false,
     "references": [
         {
-            "id": "nagios_xi-8232e9a0-b036-11ec-9663-316bb496e4b6",
-            "name": "4d3fe5a0-c88a-4a97-913e-9fa4cf48b883:panel_4d3fe5a0-c88a-4a97-913e-9fa4cf48b883",
-            "type": "visualization"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "nagios_xi-9e3ac090-a132-11ec-9990-f1d1ce00d46d",
-            "name": "ecf70ee4-c29b-44d5-8369-ba6abd494017:panel_ecf70ee4-c29b-44d5-8369-ba6abd494017",
-            "type": "lens"
+            "id": "logs-*",
+            "name": "7316c514-cc4a-4a6e-a5f2-4bab81bed7ea:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
         },
         {
-            "id": "nagios_xi-6cfcf2f0-af6f-11ec-9663-316bb496e4b6",
-            "name": "b5e09616-5fb5-4d24-8847-f8f47a2bb2dc:panel_b5e09616-5fb5-4d24-8847-f8f47a2bb2dc",
-            "type": "lens"
+            "id": "logs-*",
+            "name": "7316c514-cc4a-4a6e-a5f2-4bab81bed7ea:indexpattern-datasource-layer-94b7c1b6-234b-4c69-99a2-f82a4d4b03fc",
+            "type": "index-pattern"
         },
         {
-            "id": "nagios_xi-5993dab0-af71-11ec-9663-316bb496e4b6",
-            "name": "e91a28e8-836a-4dff-8a9a-3788a30e1945:panel_e91a28e8-836a-4dff-8a9a-3788a30e1945",
-            "type": "lens"
+            "id": "logs-*",
+            "name": "7a443718-bfb5-4656-831b-b8b083b38488:indexpattern-datasource-layer-a95fc1ab-8f65-4448-a99c-c6e66f8e810c",
+            "type": "index-pattern"
         },
         {
-            "id": "nagios_xi-8f926310-b03a-11ec-9663-316bb496e4b6",
-            "name": "34a6c2b3-1876-42cb-9b18-835550fb2bec:panel_34a6c2b3-1876-42cb-9b18-835550fb2bec",
-            "type": "lens"
+            "id": "logs-*",
+            "name": "63320d90-5259-46ad-aa8a-14178574e260:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
         },
         {
-            "id": "nagios_xi-94eaa480-b03a-11ec-9663-316bb496e4b6",
-            "name": "d11c8f47-00a1-456d-8100-5276057ae797:panel_d11c8f47-00a1-456d-8100-5276057ae797",
-            "type": "lens"
+            "id": "logs-*",
+            "name": "63320d90-5259-46ad-aa8a-14178574e260:indexpattern-datasource-layer-61f04377-fecc-4d15-9f37-498e493497af",
+            "type": "index-pattern"
         },
         {
-            "id": "nagios_xi-b84bbc20-b0d0-11ec-9d30-4dcd61bf6ba0",
-            "name": "2fbfe14e-e1f4-4a9f-9a1c-4f4adabc7afb:panel_2fbfe14e-e1f4-4a9f-9a1c-4f4adabc7afb",
-            "type": "lens"
+            "id": "logs-*",
+            "name": "7ba5b322-503f-4b34-b8e0-5e4cedbefc97:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7ba5b322-503f-4b34-b8e0-5e4cedbefc97:indexpattern-datasource-layer-11ed735d-3cc9-4aae-9585-3c80a0a83b28",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6a5a71ac-1dce-4800-ab41-4c7b8fe363aa:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6a5a71ac-1dce-4800-ab41-4c7b8fe363aa:indexpattern-datasource-layer-db5a1508-0c9c-47c7-9bb5-f3574f7cdb10",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0f7bd03b-dea9-4017-9f95-a80e19470ab9:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0f7bd03b-dea9-4017-9f95-a80e19470ab9:indexpattern-datasource-layer-6b3952fa-d33c-4bfb-ba80-7d5b5b5ae321",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

@@ -3,10 +3,10 @@ name: http_endpoint
 title: Custom HTTP Endpoint Logs
 description: Collect JSON data from listening HTTP port with Elastic Agent.
 type: input
-version: "2.0.0"
+version: "2.1.0"
 conditions:
   kibana:
-    version: "^8.12.0"
+    version: "^8.14.0"
 categories:
   - custom
   - observability
@@ -118,7 +118,7 @@ policy_templates:
       - name: hmac_header
         type: text
         title: HMAC Header
-        description: The name of the header that contains the HMAC signature, for example X-Dropbox-Signature, X-Hub-Signature-256, etc.
+        description: The name of the header that contains the HMAC signature, for example X-Dropbox-Signature, X-Hub-Signature-256, etc. HMAC signatures may be encoded as hex.
         required: false
         show_user: false
       - name: hmac_key
@@ -193,6 +193,14 @@ policy_templates:
           - forwarded
         multi: true
         show_user: true
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
 icons:
   - src: "/img/icon.svg"
     type: "image/svg+xml"
