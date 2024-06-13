@@ -1,6 +1,6 @@
 config_version: "2"
 interval: {{period}}
-resource.url: "{{url}}/_node/stats?graph=true&vertices=true"
+resource.url: "{{url}}/_node"
 {{#if resource_ssl}}
 resource.ssl:
   {{resource_ssl}}
@@ -21,9 +21,17 @@ redact:
 
 
 program: |
-  get(state.url).as(resp, bytes(resp.Body).decode_json().as(body,
+  get(state.url + "/stats?graph=true&vertices=true").as(resp, bytes(resp.Body).decode_json().as(body,
     body.pipelines.map(pipeline_name, pipeline_name != ".monitoring-logstash", {
       "name": pipeline_name,
+      "info": get(state.url + "/pipelines/" + pipeline_name).as(resp,
+        bytes(resp.Body).decode_json().as(pipes,
+          has(pipes.pipeline) && has (pipes.pipelines) ?
+            pipes.pipelines[pipeline_name]
+          :
+            []
+        )
+      ),
       "elasticsearch.cluster.id": has(body.pipelines[pipeline_name].vertices) ?
         body.pipelines[pipeline_name].vertices.map(vertex, has(vertex.cluster_uuid), vertex.cluster_uuid)
       :
