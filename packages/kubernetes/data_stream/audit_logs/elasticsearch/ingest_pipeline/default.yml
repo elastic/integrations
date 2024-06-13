@@ -16,7 +16,14 @@ processors:
         Map annotations = ctx['kubernetes']['audit']['annotations'];
         Map updatedAnnotation = new HashMap();
         for (String key: annotations.keySet()) {
-            updatedAnnotation[key.replace('.', '_')] = annotations[key]
+            updatedAnnotation[key.replace('.', '_')] = annotations[key];
+            if (key == 'authorization.k8s.io/decision') {
+                if (annotations['authorization.k8s.io/decision'] == 'allow') {
+                    ctx.event.outcome = 'success';
+                } else if (annotations['authorization.k8s.io/decision'] == 'forbid') {
+                    ctx.event.outcome = 'failure';
+                }
+            }
         }
         ctx['kubernetes']['audit']['annotations'] = updatedAnnotation
   - set:
@@ -43,12 +50,14 @@ processors:
       field: user_agent.original
       copy_from: kubernetes.audit.userAgent
       ignore_empty_value: true
-  - convert:
-      field: kubernetes.audit.sourceIPs
-      target_field: source.ip
-      type: ip
-      ignore_failure: true
-      ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: kubernetes.audit.sourceIPs
+      ignore_empty_value: true
+  - set:
+      field: client.ip
+      copy_from: source.ip
+      ignore_empty_value: true
   - set:
       field: event.action
       copy_from: kubernetes.audit.verb
