@@ -96,12 +96,12 @@
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.s3_daily_storage
-      if: ctx['aws.s3.metrics.BucketSizeBytes'] != null || ctx['aws.s3.metrics.NumberOfObjects'] != null
+      if: ctx['aws.cloudwatch.namespace'] != null &&  ctx['aws.cloudwatch.namespace'] == "AWS/S3" && (ctx['aws.s3.metrics.BucketSizeBytes'] != null || ctx['aws.s3.metrics.NumberOfObjects'] != null)
       namespace:
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.s3_request
-      if: ctx['aws.s3.metrics.BucketSizeBytes'] == null && ctx['aws.s3.metrics.NumberOfObjects'] == null
+      if: ctx['aws.cloudwatch.namespace'] != null &&  ctx['aws.cloudwatch.namespace'] == "AWS/S3" && ctx['aws.s3.metrics.BucketSizeBytes'] == null && ctx['aws.s3.metrics.NumberOfObjects'] == null
       namespace:
         - "{{data_stream.namespace}}"
         - default
