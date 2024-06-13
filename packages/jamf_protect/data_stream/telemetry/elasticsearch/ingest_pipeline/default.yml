@@ -91,16 +91,16 @@ processors:
         ignore_failure: true
     - script:
         lang: painless
-        source: >
+        source: |
             if (ctx.jamf_protect?.telemetry?.action?.result?.result?.auth != null) {
-            def authType = ctx.jamf_protect.telemetry.action.result.result.auth;
-            def authTypeMap = [
+              def authType = ctx.jamf_protect.telemetry.action.result.result.auth;
+              def authTypeMap = [
                 0: true,
                 1: false
-            ];
-            def authTypeBoolean = authTypeMap.containsKey(authType) ? authTypeMap[authType] : null;
-            ctx.custom = ctx.custom != null ? ctx.custom : new HashMap();
-            ctx.custom.event_allowed_by_esclient = authTypeBoolean;
+              ];
+              def authTypeBoolean = authTypeMap.containsKey(authType) ? authTypeMap[authType] : null;
+              ctx.custom = ctx.custom != null ? ctx.custom : new HashMap();
+              ctx.custom.event_allowed_by_esclient = authTypeBoolean;
             }
 
 #######################
