@@ -223,16 +223,13 @@ An example event for `metrics` looks as following:
 | azure.namespace | The namespace selected | keyword |  |  |
 | azure.open_ai.active_tokens.total | Total tokens minus cached tokens over a period of time. | long |  | gauge |
 | azure.open_ai.context_tokens_cache_match_rate.avg | Percentage of the prompt tokens hit the cache (Avaiable for PTU-managed). | float |  | gauge |
-| azure.open_ai.fine_tuned_training_hours.total | Number of Training Hours Processed on an OpenAI FineTuned Model. | float |  | counter |
-| azure.open_ai.generated_tokens.total | Number of tokens generated (output) from an OpenAI model. | long |  | counter |
-| azure.open_ai.processed_prompt_tokens.total | Number of prompt tokens processed (input) on an OpenAI model. | long |  | counter |
+| azure.open_ai.fine_tuned_training_hours.total | Number of Training Hours Processed on an OpenAI FineTuned Model. | float |  | gauge |
+| azure.open_ai.generated_tokens.total | Number of tokens generated (output) from an OpenAI model. | long |  | gauge |
+| azure.open_ai.processed_prompt_tokens.total | Number of prompt tokens processed (input) on an OpenAI model. | long |  | gauge |
 | azure.open_ai.provisioned_managed_utilization_v2.avg | Utilization % for a provisoned-managed deployment, calculated as (PTUs consumed / PTUs deployed) x 100. When utilization is greater than or equal to 100%, calls are throttled and error code 429 returned. | float | percent | gauge |
-| azure.open_ai.raiharmful_requests.total | ContentSafety - Risks&Safety. Number of calls made to Azure OpenAI API and detected as harmful(both block model and annotate mode) by content filter applied over a period of time. | long |  | counter |
-| azure.open_ai.rairejected_requests.total | ContentSafety - Risks&Safety. Number of calls made to Azure OpenAI API and rejected by content filter applied over a period of time. | long |  | counter |
-| azure.open_ai.raitotal_requests.total | ContentSafety - Risks&Safety. Number of calls made to Azure OpenAI API and detected by content filter applied over a period of time. | long |  | counter |
-| azure.open_ai.requests.total | Number of calls made to the Azure OpenAI API over a period of time. | long |  | counter |
+| azure.open_ai.requests.total | Number of calls made to the Azure OpenAI API over a period of time. | long |  | gauge |
 | azure.open_ai.time_to_response.avg | Recommended latency (responsiveness) measure for streaming requests. Applies to PTU and PTU-managed deployments. Calculated as time taken for the first response to appear after a user sends a prompt, as measured by the API gateway. This number increases as the prompt size increases and/or cache hit size reduces. | float |  | gauge |
-| azure.open_ai.token_transaction.total | Number of inference tokens processed on an OpenAI model. | long |  | counter |
+| azure.open_ai.token_transaction.total | Number of inference tokens processed on an OpenAI model. | long |  | gauge |
 | azure.resource.group | The resource group | keyword |  |  |
 | azure.resource.id | The id of the resource | keyword |  |  |
 | azure.resource.name | The name of the resource | keyword |  |  |
