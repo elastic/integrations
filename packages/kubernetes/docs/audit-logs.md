@@ -219,7 +219,7 @@ An example event for `audit` looks as following:
 | kubernetes.audit.responseStatus.message | A human-readable description of the status of this operation | text |
 | kubernetes.audit.responseStatus.reason | A machine-readable description of why this operation is in the "Failure" status. If this value is empty there is no information available. A Reason clarifies an HTTP status code but does not override it | keyword |
 | kubernetes.audit.responseStatus.status | Status of the operation | keyword |
-| kubernetes.audit.sourceIPs | Source IPs, from where the request originated and intermediate proxies | ip |
+| kubernetes.audit.sourceIPs | Source IPs, from where the request originated and intermediate proxies | text |
 | kubernetes.audit.stage | Stage of the request handling when this event instance was generated | keyword |
 | kubernetes.audit.stageTimestamp | Time the request reached current audit stage | date |
 | kubernetes.audit.user.extra.\* | Any additional information provided by the authenticator | object |
