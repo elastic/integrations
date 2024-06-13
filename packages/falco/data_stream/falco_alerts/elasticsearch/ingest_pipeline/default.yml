@@ -10,7 +10,7 @@ processors:
 - dot_expander:
     field: '*'
     path: Falco.output_fields
-
+# Overarching event fields
 - script:
     lang: painless
     tag: 'painless_map_event_category'
@@ -123,7 +123,6 @@ processors:
         } else {
             ctx['event.type'] = ['info'];
         }
-
 - set:
     field: event.outcome
     value: success
@@ -134,7 +133,6 @@ processors:
     value: failure
     if: ctx?.Falco?.output_fields?.evt?.res != null && ctx?.Falco?.output_fields?.evt?.res != 'SUCCESS' && ctx?.Falco?.output_fields?.evt?.failed != null && ctx?.Falco?.output_fields?.evt?.failed == true
     tag: set_event_outcome_failure
-
 - set:
     field: event.ingested
     value: '{{_ingest.timestamp}}'
@@ -154,13 +152,11 @@ processors:
                 break;
             }
         }
-
 - set:
     field: event.original
     copy_from: message
     ignore_empty_value: true
     if: ctx['tags'] != null && ctx['tags'].contains('preserve_original_event')
-
 - script:
     lang: painless
     tag: 'painless_set_event_severity'
@@ -245,14 +241,16 @@ processors:
     field: event.provider
     copy_from: Falco.source
     ignore_empty_value: true
+# Process and observer fields
 - set:
     field: observer.hostname
     copy_from: Falco.hostname
     ignore_empty_value: true
-- set:
-    field: related.hosts
-    value: ['{{Falco.hostname}}']
-    ignore_empty_value: true
+- append:
+      field: related.hosts
+      value: '{{Falco.hostname}}'
+      if: ctx.Falco?.hostname != null
+      allow_duplicates: false
 - set:
     field: process.executable
     copy_from: Falco.output_fields.proc.exepath
@@ -413,6 +411,7 @@ processors:
     field: process.group.name
     copy_from: Falco.output_fields.group.name
     ignore_empty_value: true
+# Container fields
 - set:
     field: container.id
     copy_from: Falco.output_fields.container.id
@@ -442,6 +441,7 @@ processors:
     value: ['{{Falco.output_fields.container.ip}}']
     if: ctx?.Falco?.output_fields?.container?.ip != null
     ignore_empty_value: true
+# File-spcecifc fields
 - set:
     field: file.directory
     copy_from: Falco.output_fields.fd.directory

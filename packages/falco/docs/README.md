@@ -14,54 +14,171 @@ The logfile input operates in a similar manner to the syslog input, but pulls Fa
 Falco events can contain a multitude of various fields pertaining to the type of activity on the host machine. An example of one such type of event is the following:
 ```json
 {
-	"container": {
-		"id": "abcdef123456",
-		"name": "nginx-container",
-		"image": {
-		"name": "nginx",
-		"digest": "sha256:abcdef123456"
-		},
-		"type": "docker",
-		"privileged": false,
-		"ip": "192.168.1.10",
-		"runtime": "docker",
-		"mounts": "/var/log/nginx:/var/log/nginx:rw /etc/nginx:/etc/nginx:ro"
-	},
-	"proc": {
-		"thread": {
-		"cap_inheritable": "test string"
-		},
-		"env": "development",
-		"name": "test process",
-		"exepath": "/usr/sbin/nginx",
-		"cmdnargs": 7456
-	},
-	"file": {
-		"directory": "/var/log/nginx",
-		"name": "access.log",
-		"inode": "123456"
-	},
-	"client": {
-		"ip": "192.168.1.20",
-		"port": 54321,
-		"domain": "client.example.com"
-	},
-	"server": {
-		"ip": "192.168.1.10",
-		"port": 80,
-		"domain": "example.com"
-	},
-	"evt": {
-		"category": "system",
-		"type": "send",
-		"pluginname": "nginx",
-		"plugininfo": "Nginx access log",
-		"latency": 0.123,
-		"dir": "outbound",
-		"args": "/index.html",
-		"info": "GET request",
-		"res": "SUCCESS"
-	}
+    "@timestamp": "2024-06-13T20:16:19.872Z",
+    "Falco": {
+        "hostname": "0f41ba71cafb",
+        "output": "2024-06-13T20:16:19.872061345+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator3030933150/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=<NA> aname[7]=<NA> evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls > /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=7a9ce89e6fb2 container_name=elastic-package-service-falco-event-generator-1)",
+        "output_fields": {
+            "container": {
+                "id": "7a9ce89e6fb2",
+                "name": "elastic-package-service-falco-event-generator-1"
+            },
+            "evt": {
+                "arg": {},
+                "time": {
+                    "iso8601": 1718309779872061400
+                },
+                "type": "execve"
+            },
+            "proc": {
+                "cmdline": "bash -c ls > /dev/null",
+                "exepath": "/bin/bash",
+                "name": "bash",
+                "pcmdline": "httpd --loglevel info run ^helper.RunShell$",
+                "pexe": "/tmp/falco-event-generator3030933150/httpd",
+                "pexepath": "/bin/event-generator",
+                "pname": "httpd",
+                "tty": 0
+            },
+            "user": {
+                "loginuid": -1,
+                "name": "root",
+                "uid": "0"
+            }
+        },
+        "priority": "Notice",
+        "rule": "Run shell untrusted",
+        "source": "syscall",
+        "tags": [
+            "T1059.004",
+            "container",
+            "host",
+            "maturity_stable",
+            "mitre_execution",
+            "process",
+            "shell"
+        ],
+        "time": "2024-06-13T20:16:19.872061345Z",
+        "uuid": "cc3bf710-4a8c-4cd9-82bb-58a35cb45916"
+    },
+    "Falco.container.mounts": null,
+    "agent": {
+        "ephemeral_id": "eed7110f-a8f3-483f-98b4-4c91c2b770c5",
+        "id": "14415011-4e78-4ac4-85cb-824629c9c6cd",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.12.2"
+    },
+    "container": {
+        "id": "7a9ce89e6fb2",
+        "name": "elastic-package-service-falco-event-generator-1"
+    },
+    "data_stream": {
+        "dataset": "falco.falco_alerts",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "14415011-4e78-4ac4-85cb-824629c9c6cd",
+        "snapshot": false,
+        "version": "8.12.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "falco.falco_alerts",
+        "ingested": "2024-06-13T20:16:30Z",
+        "kind": "alert",
+        "original": "{\"uuid\":\"cc3bf710-4a8c-4cd9-82bb-58a35cb45916\",\"output\":\"2024-06-13T20:16:19.872061345+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator3030933150/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=\\u003cNA\\u003e aname[7]=\\u003cNA\\u003e evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls \\u003e /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=7a9ce89e6fb2 container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Notice\",\"rule\":\"Run shell untrusted\",\"time\":\"2024-06-13T20:16:19.872061345Z\",\"output_fields\":{\"container.id\":\"7a9ce89e6fb2\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.arg.flags\":\"EXE_WRITABLE\",\"evt.time.iso8601\":1718309779872061345,\"evt.type\":\"execve\",\"proc.aname[2]\":\"event-generator\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"containerd-shim\",\"proc.aname[5]\":\"init\",\"proc.aname[6]\":null,\"proc.aname[7]\":null,\"proc.cmdline\":\"bash -c ls \\u003e /dev/null\",\"proc.exepath\":\"/bin/bash\",\"proc.name\":\"bash\",\"proc.pcmdline\":\"httpd --loglevel info run ^helper.RunShell$\",\"proc.pexe\":\"/tmp/falco-event-generator3030933150/httpd\",\"proc.pexepath\":\"/bin/event-generator\",\"proc.pname\":\"httpd\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1059.004\",\"container\",\"host\",\"maturity_stable\",\"mitre_execution\",\"process\",\"shell\"],\"hostname\":\"0f41ba71cafb\"}",
+        "provider": "syscall",
+        "start": 1718309779872061400,
+        "timezone": "+00:00"
+    },
+    "event.category": [
+        "process"
+    ],
+    "event.severity": 2,
+    "event.type": [
+        "start"
+    ],
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "29b44b57f32c4ff282841a8a4406ef95",
+        "ip": [
+            "192.168.224.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-E0-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "6.6.12-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.224.4:34904"
+        },
+        "syslog": {
+            "appname": "Falco",
+            "facility": {
+                "code": 0,
+                "name": "kernel"
+            },
+            "hostname": "8bb04d848cd0",
+            "priority": 5,
+            "procid": "{\"uuid\":\"cc3bf710-4a8c-4cd9-82bb-58a35cb45916\",\"output\":\"2024-06-13T20:16:19.872061345+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator3030933150/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=\\u003cNA\\u003e aname[7]=\\u003cNA\\u003e evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls \\u003e /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=7a9ce89e6fb2 container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Notice\",\"rule\":\"Run shell untrusted\",\"time\":\"2024-06-13T20:16:19.872061345Z\",\"output_fields\":{\"container.id\":\"7a9ce89e6fb2\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.arg.flags\":\"EXE_WRITABLE\",\"evt.time.iso8601\":1718309779872061345,\"evt.type\":\"execve\",\"proc.aname[2]\":\"event-generator\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"containerd-shim\",\"proc.aname[5]\":\"init\",\"proc.aname[6]\":null,\"proc.aname[7]\":null,\"proc.cmdline\":\"bash -c ls \\u003e /dev/null\",\"proc.exepath\":\"/bin/bash\",\"proc.name\":\"bash\",\"proc.pcmdline\":\"httpd --loglevel info run ^helper.RunShell$\",\"proc.pexe\":\"/tmp/falco-event-generator3030933150/httpd\",\"proc.pexepath\":\"/bin/event-generator\",\"proc.pname\":\"httpd\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1059.004\",\"container\",\"host\",\"maturity_stable\",\"mitre_execution\",\"process\",\"shell\"",
+            "severity": {
+                "code": 5,
+                "name": "Notice"
+            }
+        }
+    },
+    "observer": {
+        "hostname": "0f41ba71cafb"
+    },
+    "process": {
+        "command_line": "bash -c ls > /dev/null",
+        "executable": "/bin/bash",
+        "name": "bash",
+        "parent": {
+            "command_line": "httpd --loglevel info run ^helper.RunShell$",
+            "executable": "/bin/event-generator",
+            "name": "httpd"
+        },
+        "user": {
+            "id": "0",
+            "name": "root"
+        }
+    },
+    "related": {
+        "hosts": [
+            "0f41ba71cafb"
+        ]
+    },
+    "rule": {
+        "name": "Run shell untrusted"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_falco_fields"
+    ],
+    "threat.technique.id": [
+        "T1059"
+    ]
 }
 ```
 
@@ -380,10 +497,10 @@ Falco events can contain a multitude of various fields pertaining to the type of
 
 ## Requirements
 
-This integration is compatible with falco version 0.37 and above, and should not be expected to perform successfully in lower versions. The system will only receive fields output by falco’s rules. If a rule does not include a desired field the rule must be edited in falco to add the field.
+This integration is compatible with Falco version 0.37 and above, and should not be expected to perform successfully in lower versions. The system will only receive fields output by Falco's rules. If a rule does not include a desired field the rule must be edited in falco to add the field.
 
 ## Setup
-Use the falco integration to connect to your falco account and collect data from multiple machines / hosts. When you configure the integration, you can collect data from as many hosts or machines as you need.
+Use the falco integration to connect to your Falco account and collect data from multiple machines / hosts. When you configure the integration, you can collect data from as many hosts or machines as you need.
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
