@@ -144,37 +144,21 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-05T18:10:13.490Z",
+    "@timestamp": "2022-10-21T17:25:36.969Z",
     "agent": {
-        "ephemeral_id": "f42c0a8e-b2c0-4772-ab85-278acafa95f5",
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "ephemeral_id": "7db2c43f-4281-444d-b5b8-242a7ddf8ba2",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "namespace": "ep",
+        "namespace": "63147",
         "type": "logs"
     },
     "destination": {
-        "as": {
-            "number": 209
-        },
         "domain": "contoso.com",
-        "geo": {
-            "city_name": "Milton",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 47.2513,
-                "lon": -122.3149
-            },
-            "region_iso_code": "US-WA",
-            "region_name": "Washington"
-        },
-        "ip": "216.160.83.56",
         "registered_domain": "contoso.com",
         "top_level_domain": "com",
         "user": {
@@ -188,25 +172,25 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.13.0"
     },
     "email": {
         "attachments": {
             "file": {
-                "size": 87891
+                "size": 22761
             }
         },
-        "delivery_timestamp": "2022-09-05T18:10:13.4907658",
+        "delivery_timestamp": "2022-10-21T17:25:36.969376Z",
         "from": {
             "address": [
-                "azure-noreply@microsoft.com"
+                "noreply@azure.microsoft.com"
             ]
         },
-        "local_id": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
-        "message_id": "<a210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com>",
-        "subject": "PIM: A privileged directory role was assigned outside of PIM",
+        "local_id": "a5e6dc0f-23df-4b20-d240-08dab38944a1",
+        "message_id": "<GVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
+        "subject": "testmail 2",
         "to": {
             "address": [
                 "linus@contoso.com"
@@ -215,73 +199,66 @@ An example event for `log` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-07-24T14:46:09.199Z",
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "end": "2022-09-06T09:01:46.036Z",
-        "ingested": "2023-07-24T14:46:12Z",
-        "original": "{\"EndDate\":\"2022-09-06T09:01:46.0369423Z\",\"FromIP\":\"81.2.69.144\",\"Index\":0,\"MessageId\":\"\\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\\u003e\",\"MessageTraceId\":\"cf7a249a-5edd-4350-130a-08da8f69e0f6\",\"Organization\":\"contoso.com\",\"Received\":\"2022-09-05T18:10:13.4907658\",\"RecipientAddress\":\"linus@contoso.com\",\"SenderAddress\":\"azure-noreply@microsoft.com\",\"Size\":87891,\"StartDate\":\"2022-09-04T09:01:46.0369423Z\",\"Status\":\"Delivered\",\"Subject\":\"PIM: A privileged directory role was assigned outside of PIM\",\"ToIP\":\"216.160.83.56\"}",
-        "outcome": "Delivered",
-        "start": "2022-09-04T09:01:46.036Z"
+        "end": "2022-10-22T09:40:10.000Z",
+        "ingested": "2024-06-12T03:18:25Z",
+        "original": "{\"Organization\":\"contoso.com\",\"MessageId\":\"\\u003cGVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\\u003e\",\"Received\":\"2022-10-21T17:25:36.969376Z\",\"SenderAddress\":\"noreply@azure.microsoft.com\",\"RecipientAddress\":\"linus@contoso.com\",\"Subject\":\"testmail 2\",\"Status\":\"Delivered\",\"ToIP\":null,\"FromIP\":\"40.107.23.54\",\"Size\":22761,\"MessageTraceId\":\"a5e6dc0f-23df-4b20-d240-08dab38944a1\",\"StartDate\":\"2022-10-21T09:40:10Z\",\"EndDate\":\"2022-10-22T09:40:10Z\",\"Index\":0}",
+        "outcome": "success",
+        "start": "2022-10-21T09:40:10.000Z"
     },
     "input": {
-        "type": "httpjson"
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/microsoft_exchange_online_message_trace_test.ndjson.log"
+        },
+        "offset": 0
     },
     "microsoft": {
         "online_message_trace": {
-            "EndDate": "2022-09-06T09:01:46.0369423Z",
-            "FromIP": "81.2.69.144",
+            "EndDate": "2022-10-22T09:40:10Z",
+            "FromIP": "40.107.23.54",
             "Index": 0,
-            "MessageId": "<a210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com>",
-            "MessageTraceId": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
+            "MessageId": "<GVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM>",
+            "MessageTraceId": "a5e6dc0f-23df-4b20-d240-08dab38944a1",
             "Organization": "contoso.com",
-            "Received": "2022-09-05T18:10:13.4907658",
+            "Received": "2022-10-21T17:25:36.969376Z",
             "RecipientAddress": "linus@contoso.com",
-            "SenderAddress": "azure-noreply@microsoft.com",
-            "Size": 87891,
-            "StartDate": "2022-09-04T09:01:46.0369423Z",
+            "SenderAddress": "noreply@azure.microsoft.com",
+            "Size": 22761,
+            "StartDate": "2022-10-21T09:40:10Z",
             "Status": "Delivered",
-            "Subject": "PIM: A privileged directory role was assigned outside of PIM",
-            "ToIP": "216.160.83.56"
+            "Subject": "testmail 2"
         }
     },
     "related": {
         "user": [
             "linus@contoso.com",
-            "azure-noreply@microsoft.com",
+            "noreply@azure.microsoft.com",
             "linus",
-            "azure-noreply"
+            "noreply"
         ]
     },
     "source": {
-        "domain": "microsoft.com",
-        "geo": {
-            "city_name": "London",
-            "continent_name": "Europe",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
-            "location": {
-                "lat": 51.5142,
-                "lon": -0.0931
-            },
-            "region_iso_code": "GB-ENG",
-            "region_name": "England"
-        },
-        "ip": "81.2.69.144",
+        "domain": "azure.microsoft.com",
+        "ip": "40.107.23.54",
         "registered_domain": "microsoft.com",
+        "subdomain": "azure",
         "top_level_domain": "com",
         "user": {
-            "domain": "microsoft.com",
-            "email": "azure-noreply@microsoft.com",
-            "id": "azure-noreply@microsoft.com",
-            "name": "azure-noreply"
+            "domain": "azure.microsoft.com",
+            "email": "noreply@azure.microsoft.com",
+            "id": "noreply@azure.microsoft.com",
+            "name": "noreply"
         }
     },
     "tags": [
         "preserve_original_event",
+        "microsoft-defender-endpoint",
         "forwarded"
     ]
 }
-
 ```
 
 **Exported fields**
