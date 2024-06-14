@@ -8,16 +8,22 @@ processors:
     - set:
         field: event.reason
         value: A user attempts to start a new shell using a substitute user identity
+    - append:
+        field: event.type
+        value: start
+    - append:
+        field: event.category
+        value: authentication
     - script:
         lang: painless
         source: >
             if (ctx.jamf_protect?.telemetry?.event?.su?.success != null) {
                 if (ctx.jamf_protect.telemetry.event.su.success == true) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                ctx.event.outcome = 'success';
+                    ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                    ctx.event.outcome = 'success';
                 } else if (ctx.jamf_protect.telemetry.event.su.success == false) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                ctx.event.outcome = 'failure';
+                    ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                    ctx.event.outcome = 'failure';
                 }
             } else {
                 ctx.event = ctx.event != null ? ctx.event : new HashMap();
@@ -32,22 +38,20 @@ processors:
         target_field: user.id
         type: string
         ignore_missing: true
-        ignore_failure: true
     - rename:
-            field: jamf_protect.telemetry.event.su.argv
-            target_field: process.args
-            ignore_missing: true
-            if: ctx.jamf_protect?.telemetry?.event?.su?.argv != null
+        field: jamf_protect.telemetry.event.su.argv
+        target_field: process.args
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.su?.argv != null
     - script:
         description: Counts the indexes of the arguments
         lang: painless
         source: >
-            if (ctx.process.args instanceof List) {
-            
-            ctx.process.args_count = ((List)ctx.process.args).size();
+            if (ctx.process.args instanceof List) {            
+                ctx.process.args_count = ((List)ctx.process.args).size();
             } else {
-            ctx.process = ctx.process != null ? ctx.process : new HashMap();
-            ctx.process.args_count = 0;
+                ctx.process = ctx.process != null ? ctx.process : new HashMap();
+                ctx.process.args_count = 0;
             }
         ignore_failure: true
     - rename:
@@ -57,37 +61,41 @@ processors:
         if: ctx.jamf_protect?.telemetry?.event?.su?.env != null
     - convert:
         field: jamf_protect.telemetry.event.su.env_count
-        target_field: custom.env_count
+        target_field: jamf_protect.env_count
         type: string
         ignore_missing: true
-        ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.su.shell
-        target_field: custom.shell
+        target_field: jamf_protect.shell
         type: string
         ignore_missing: true
-        ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.su.from_username
-        target_field: custom.from_username
+        target_field: jamf_protect.from_username
         type: string
         ignore_missing: true
-        ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.su.to_username
-        target_field: custom.to_username
+        target_field: jamf_protect.to_username
         type: string
         ignore_missing: true
-        ignore_failure: true
+    - convert:
+        field: jamf_protect.telemetry.event.su.failure_message
+        target_field: jamf_protect.failure_reason
+        type: string
+        ignore_missing: true
+    - append:
+        field: related.user
+        value: '{{{jamf_protect.to_username}}}'
+        if: ctx.jamf_protect?.to_username != null
+        allow_duplicates: false
+    - append:
+        field: related.user
+        value: '{{{jamf_protect.from_username}}}'
+        if: ctx.jamf_protect?.from_username != null
+        allow_duplicates: false
 ##########################
 ## ECS Process ##
 ##########################
-    - append:
-        field: event.type
-        value: start
-
-    - append:
-        field: event.category
-        value: authentication
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'

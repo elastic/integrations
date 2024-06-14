@@ -8,28 +8,25 @@ processors:
     - set:
         field: event.reason
         value: A sudo attempt occurred
+    - append:
+        field: event.type
+        value: start
     - rename:
         field: jamf_protect.telemetry.event.sudo.command
         target_field: process.command_line
         ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.sudo.attribute_name
-        target_field: custom.attribute_name
+        target_field: jamf_protect.attribute_name
         type: string
         ignore_missing: true
-        ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.sudo.attribute_value
-        target_field: custom.attribute_value
+        target_field: jamf_protect.attribute_value
         type: string
         ignore_missing: true
-        ignore_failure: true
 ##########################
 ## ECS Process ##
 ##########################
-    - append:
-        field: event.type
-        value: start
-
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'

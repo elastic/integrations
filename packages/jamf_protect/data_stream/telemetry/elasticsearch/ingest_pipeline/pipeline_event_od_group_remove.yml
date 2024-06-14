@@ -8,6 +8,12 @@ processors:
     - set:
         field: event.reason
         value: A member has been removed from a group using Open Directory
+    - append:
+        field: event.type
+        value: change
+    - append:
+        field: event.category
+        value: configuration  
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.group_name
         target_field: group.name
@@ -21,19 +27,9 @@ processors:
         target_field: file.path
         ignore_missing: true
 
-
 ##########################
 ## ECS Process ##
 ##########################
-    - append:
-        field: event.type
-        value: change
-    # - append:
-    #     field: event.type
-    #     value: group
-    - append:
-        field: event.category
-        value: configuration  
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.start_time
         target_field: process.start
@@ -43,13 +39,11 @@ processors:
         target_field: jamf_protect.telemetry.event.od_group_remove.instigator.audit_token.egid
         type: string
         ignore_missing: true
-        ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.audit_token.euid
         target_field: jamf_protect.telemetry.event.od_group_remove.instigator.audit_token.euid
         type: string
         ignore_missing: true
-        ignore_failure: true
     - append:
         field: user.effective.id
         value: '{{{jamf_protect.telemetry.event.od_group_remove.instigator.audit_token.euid}}}'
@@ -58,15 +52,15 @@ processors:
         ignore_failure: true
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.is_platform_binary
-        target_field: custom.platform_binary
+        target_field: jamf_protect.platform_binary
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.is_es_client
-        target_field: custom.es_client
+        target_field: jamf_protect.es_client
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.cdhash
-        target_field: custom.code_directory_hash
+        target_field: jamf_protect.code_directory_hash
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.executable.sha1
@@ -77,20 +71,23 @@ processors:
         target_field: process.hash.sha256
         ignore_missing: true
     - append:
-        field: process.hash.sha1
-        value: '{{{jamf_protect.telemetry.event.od_group_remove.instigator.executable.sha1}}}'
-        if: ctx.jamf_protect.telemetry?.event?.od_group_remove?.instigator?.executable?.sha1 != null
+        field: related.hash
+        value: '{{{process.hash.sha1}}}'
+        if: ctx.process?.hash?.sha1 != null
         allow_duplicates: false
-        ignore_failure: true
     - append:
         field: related.hash
-        value: '{{{jamf_protect.telemetry.event.od_group_remove.instigator.executable.sha1}}}'
-        if: ctx.jamf_protect.telemetry?.event?.od_group_remove?.instigator?.executable?.sha1 != null
+        value: '{{{process.hash.sha256}}}'
+        if: ctx.process?.hash?.sha256 != null
         allow_duplicates: false
-        ignore_failure: true
+    - append:
+        field: related.hash
+        value: '{{{jamf_protect.code_directory_hash}}}'
+        if: ctx.jamf_protect?.code_directory_hash != null
+        allow_duplicates: false
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.tty.path
-        target_field: custom.tty
+        target_field: jamf_protect.tty
         ignore_missing: true
     - set:
         field: process.interactive
@@ -185,10 +182,8 @@ processors:
         target_field: process.group_leader.real_user.id
         type: string
         ignore_missing: true
-        ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.responsible_audit_token.rgid
         target_field: process.group_leader.real_group.id
         type: string
         ignore_missing: true
-        ignore_failure: true

@@ -5,19 +5,19 @@ processors:
 ##########################
 ## ECS Event Specific ##
 ##########################
+    - append:
+        field: event.category
+        value: authentication  
     - script:
         description: Populates the authentication method that is used. 
         lang: painless
-        source: >
+        source: |
           if (ctx.jamf_protect.telemetry.event.authentication.containsKey('data')) {
             
             def eventObject = ctx.jamf_protect.telemetry.event.authentication.data;
             for (def key : eventObject.keySet()) {
               if (eventObject[key] != null) {
-                if (!ctx.containsKey('data')) {
-                  ctx.custom = new HashMap();
-                }
-                ctx.custom.authentication_method = key;
+                ctx.jamf_protect.authentication_method = key;
                 break;
               }
             }
@@ -26,32 +26,27 @@ processors:
     - script:
         lang: painless
         source: >
-            ctx.event.reason = 'A user authentication happened using ' + ctx.custom.authentication_method;
+            ctx.event.reason = 'A user authentication happened using ' + ctx.jamf_protect.authentication_method;
     - script:
         lang: painless
-        source: >
+        source: |
             if (ctx.jamf_protect?.telemetry?.event?.authentication?.success != null) {
                 if (ctx.jamf_protect.telemetry.event.authentication.success == true) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                ctx.event.outcome = 'success';
+                    ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                    ctx.event.outcome = 'success';
                 } else if (ctx.jamf_protect.telemetry.event.authentication.success == false) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                ctx.event.outcome = 'failure';
+                    ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                    ctx.event.outcome = 'failure';
                 }
             } else {
                 ctx.event = ctx.event != null ? ctx.event : new HashMap();
                 ctx.event.outcome = 'unknown';
             }
+        ignore_failure: true
 
 ##########################
 ## ECS Process ##
 ##########################
-    - append:
-        field: event.type
-        value: info
-    - append:
-        field: event.category
-        value: authentication  
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.od.instigator.start_time
         target_field: process.start
@@ -63,102 +58,102 @@ processors:
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.start_time
         target_field: process.start
-        ignore_missing: true
+        ignore_missing: false
 
     - convert:
         field: jamf_protect.telemetry.event.authentication.data.od.instigator.audit_token.egid
         target_field: jamf_protect.telemetry.event.authentication.instigator.audit_token.egid
         type: string
         ignore_missing: true
-        ignore_failure: true
+        ignore_failure: false
     - convert:
         field: jamf_protect.telemetry.event.authentication.data.token.instigator.audit_token.egid
         target_field: jamf_protect.telemetry.event.authentication.instigator.audit_token.egid
         type: string
         ignore_missing: true
-        ignore_failure: true
+        ignore_failure: false
     - convert:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.audit_token.egid
         target_field: jamf_protect.telemetry.event.authentication.instigator.audit_token.egid
         type: string
         ignore_missing: true
-        ignore_failure: true
+        ignore_failure: false
 
     - convert:
         field: jamf_protect.telemetry.event.authentication.data.od.instigator.audit_token.euid
         target_field: jamf_protect.telemetry.event.authentication.instigator.audit_token.euid
         type: string
         ignore_missing: true
-        ignore_failure: true
+        ignore_failure: false
     - convert:
         field: jamf_protect.telemetry.event.authentication.data.token.instigator.audit_token.euid
         target_field: jamf_protect.telemetry.event.authentication.instigator.audit_token.euid
         type: string
         ignore_missing: true
-        ignore_failure: true
+        ignore_failure: false
     - convert:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.audit_token.euid
         target_field: jamf_protect.telemetry.event.authentication.instigator.audit_token.euid
         type: string
         ignore_missing: true
-        ignore_failure: true
+        ignore_failure: false
 
     - append:
         field: user.effective.id
         value: '{{{jamf_protect.telemetry.event.authentication.data.od.instigator.audit_token.euid}}}'
-        if: ctx.jamf_protect.telemetry?.event?.authentication?.instigator?.audit_token?.euid != null
+        if: ctx.jamf_protect.telemetry?.event?.authentication?.data?.od?.instigator?.audit_token?.euid != null
         allow_duplicates: false
         ignore_failure: true
     - append:
         field: user.effective.id
         value: '{{{jamf_protect.telemetry.event.authentication.data.token.instigator.audit_token.euid}}}'
-        if: ctx.jamf_protect.telemetry?.event?.authentication?.instigator?.audit_token?.euid != null
+        if: ctx.jamf_protect.telemetry?.event?.authentication?.data?.token?.instigator?.audit_token?.euid != null
         allow_duplicates: false
         ignore_failure: true
     - append:
         field: user.effective.id
         value: '{{{jamf_protect.telemetry.event.authentication.data.touchid.instigator.audit_token.euid}}}'
-        if: ctx.jamf_protect.telemetry?.event?.authentication?.instigator?.audit_token?.euid != null
+        if: ctx.jamf_protect.telemetry?.event?.authentication?.data?.touchid?.instigator?.audit_token?.euid != null
         allow_duplicates: false
         ignore_failure: true
 
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.od.instigator.is_platform_binary
-        target_field: custom.platform_binary
+        target_field: jamf_protect.platform_binary
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.token.instigator.is_platform_binary
-        target_field: custom.platform_binary
+        target_field: jamf_protect.platform_binary
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.is_platform_binary
-        target_field: custom.platform_binary
+        target_field: jamf_protect.platform_binary
         ignore_missing: true
 
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.od.instigator.is_es_client
-        target_field: custom.es_client
+        target_field: jamf_protect.es_client
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.token.instigator.is_es_client
-        target_field: custom.es_client
+        target_field: jamf_protect.es_client
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.is_es_client
-        target_field: custom.es_client
+        target_field: jamf_protect.es_client
         ignore_missing: true
 
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.od.instigator.cdhash
-        target_field: custom.code_directory_hash
+        target_field: jamf_protect.code_directory_hash
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.token.instigator.cdhash
-        target_field: custom.code_directory_hash
+        target_field: jamf_protect.code_directory_hash
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.cdhash
-        target_field: custom.code_directory_hash
+        target_field: jamf_protect.code_directory_hash
         ignore_missing: true
 
     - rename:
@@ -188,29 +183,32 @@ processors:
         ignore_missing: true
 
     - append:
-        field: process.hash.sha1
-        value: '{{{jamf_protect.telemetry.event.authentication.instigator.executable.sha1}}}'
-        if: ctx.jamf_protect.telemetry?.event?.authentication?.instigator?.executable?.sha1 != null
+        field: related.hash
+        value: '{{{process.hash.sha1}}}'
+        if: ctx.process?.hash?.sha1 != null
         allow_duplicates: false
-        ignore_failure: true
     - append:
         field: related.hash
-        value: '{{{jamf_protect.telemetry.event.authentication.instigator.executable.sha1}}}'
-        if: ctx.jamf_protect.telemetry?.event?.authentication?.instigator?.executable?.sha1 != null
+        value: '{{{process.hash.sha256}}}'
+        if: ctx.process?.hash?.sha256 != null
         allow_duplicates: false
-        ignore_failure: true
+    - append:
+        field: related.hash
+        value: '{{{jamf_protect.code_directory_hash}}}'
+        if: ctx.jamf_protect?.code_directory_hash != null
+        allow_duplicates: false
 
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.od.instigator.tty.path
-        target_field: custom.tty
+        target_field: jamf_protect.tty
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.token.instigator.tty.path
-        target_field: custom.tty
+        target_field: jamf_protect.tty
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.tty.path
-        target_field: custom.tty
+        target_field: jamf_protect.tty
         ignore_missing: true
 
     - set:
@@ -450,39 +448,34 @@ processors:
         target_field: process.group_leader.real_user.id
         type: string
         ignore_missing: true
-        ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.authentication.data.token.instigator.responsible_audit_token.ruid
         target_field: process.group_leader.real_user.id
         type: string
         ignore_missing: true
-        ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.responsible_audit_token.ruid
         target_field: process.group_leader.real_user.id
         type: string
         ignore_missing: true
-        ignore_failure: true
 
     - convert:
         field: jamf_protect.telemetry.event.authentication.data.od.instigator.responsible_audit_token.rgid
         target_field: process.group_leader.real_group.id
         type: string
         ignore_missing: true
-        ignore_failure: true
     - convert:
-        field: jamf_protect.telemetry.event.authentication.data.tokeninstigator.responsible_audit_token.rgid
+        field: jamf_protect.telemetry.event.authentication.data.token.instigator.responsible_audit_token.rgid
         target_field: process.group_leader.real_group.id
         type: string
         ignore_missing: true
-        ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.responsible_audit_token.rgid
         target_field: process.group_leader.real_group.id
         type: string
         ignore_missing: true
-        ignore_failure: true
 
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'
         if: ctx.jamf_protect?.telemetry?.event?.authentication?.data?.od == null && ctx.jamf_protect?.telemetry?.event?.authentication?.data?.token == null && ctx.jamf_protect?.telemetry?.event?.authentication?.data?.touchid == null
+        

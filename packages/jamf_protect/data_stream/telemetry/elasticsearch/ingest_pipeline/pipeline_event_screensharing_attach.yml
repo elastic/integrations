@@ -8,76 +8,81 @@ processors:
     - set:
         field: event.reason
         value: A screen sharing session has attached to a graphical session
-    - script:
-        lang: painless
-        source: >
-            if (ctx.jamf_protect?.telemetry?.event?.screensharing_attach?.success != null) {
-                if (ctx.jamf_protect.telemetry.event.screensharing_attach.success == true) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                ctx.event.outcome = 'success';
-                } else if (ctx.jamf_protect.telemetry.event.screensharing_attach.success == false) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                ctx.event.outcome = 'failure';
-                }
-            } else {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                ctx.event.outcome = 'unknown';
-            }
-    - convert:
-        field: jamf_protect.telemetry.event.screensharing_attacht.existing_session
-        target_field: custom.existing_session
-        type: boolean
-        ignore_missing: true
-        ignore_failure: true
-    - convert:
-        field: jamf_protect.telemetry.event.screensharing_attacht.graphical_session_id
-        target_field: custom.graphical_session_id
-        type: string
-        ignore_missing: true
-        ignore_failure: true
-    - convert:
-        field: jamf_protect.telemetry.event.screensharing_attacht.authentication_username
-        target_field: custom.graphical_authentication_username
-        type: string
-        ignore_missing: true
-        ignore_failure: true
-    - convert:
-        field: jamf_protect.telemetry.event.screensharing_attacht.session_username
-        target_field: custom.session_username
-        type: string
-        ignore_missing: true
-        ignore_failure: true
-    - convert:
-        field: jamf_protect.telemetry.event.screensharing_attacht.viewer_appleid
-        target_field: custom.viewer_appleid
-        type: string
-        if: ctx.jamf_protect.telemetry?.event?.screensharing_attach?.viewer_appleid != null
-        ignore_missing: true
-        ignore_failure: true
-    - convert:
-        field: jamf_protect.telemetry.event.screensharing_attacht.authentication_type
-        target_field: custom.authentication_type
-        type: string
-        ignore_missing: true
-        ignore_failure: true
-    - convert:
-        field: jamf_protect.telemetry.event.screensharing_attacht.authentication_type
-        target_field: custom.authentication_type
-        type: string
-        ignore_missing: true
-        ignore_failure: true
-    - rename:
-        field: jamf_protect.telemetry.event.screensharing_attacht.source_address
-        target_field: source.ip
-        ignore_missing: true
-##########################
-## ECS Process ##
-##########################
     - append:
         field: event.type
         value: start
     - append:
         field: event.category
         value: session  
+    - script:
+        lang: painless
+        source: |
+            if (ctx.jamf_protect?.telemetry?.event?.screensharing_attach?.success != null) {
+              if (ctx.jamf_protect.telemetry.event.screensharing_attach.success == true) {
+                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                ctx.event.outcome = 'success';
+              } else if (ctx.jamf_protect.telemetry.event.screensharing_attach.success == false) {
+                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+                ctx.event.outcome = 'failure';
+              }
+            } else {
+              ctx.event = ctx.event != null ? ctx.event : new HashMap();
+              ctx.event.outcome = 'unknown';
+            }
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.existing_session
+        target_field: jamf_protect.existing_session
+        type: boolean
+        ignore_missing: true
+        ignore_failure: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.graphical_session_id
+        target_field: jamf_protect.graphical_session_id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.authentication_username
+        target_field: jamf_protect.graphical_authentication_username
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.session_username
+        target_field: jamf_protect.session_username
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.viewer_appleid
+        target_field: jamf_protect.viewer_appleid
+        type: string
+        if: ctx.jamf_protect.telemetry?.event?.screensharing_attach?.viewer_appleid != null
+        ignore_missing: true
+        ignore_failure: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.authentication_type
+        target_field: jamf_protect.authentication_type
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.screensharing_attach.authentication_type
+        target_field: jamf_protect.authentication_type
+        type: string
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.screensharing_attach.source_address
+        target_field: source.ip
+        ignore_missing: true
+    - append:
+        field: related.user
+        value: '{{{jamf_protect.session_username}}}'
+        if: ctx.jamf_protect?.session_username != null
+        allow_duplicates: false
+    - append:
+        field: related.user
+        value: '{{{jamf_protect.graphical_authentication_username}}}'
+        if: ctx.jamf_protect?.graphical_authentication_username != null
+        allow_duplicates: false
+##########################
+## ECS Process ##
+##########################
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'

@@ -43,9 +43,6 @@ processors:
     - append:
         field: event.category
         value: process
-    # - append:
-    #     field: event.category
-    #     value: host
     - set:
         field: event.provider
         value: Jamf Protect
@@ -59,7 +56,6 @@ processors:
         field: jamf_protect.telemetry.uuid
         target_field: event.id
         ignore_missing: true
-        if: ctx.jamf_protect?.telemetry?.uuid != null
     - rename:
         field: jamf_protect.telemetry.glob_seq_num
         target_field: event.sequence
@@ -70,7 +66,6 @@ processors:
         target_field: event.code
         type: string
         ignore_missing: true
-        ignore_failure: true
     - script:
         description: Populates event.action with the name of the event
         lang: painless
@@ -99,8 +94,8 @@ processors:
                 1: false
               ];
               def authTypeBoolean = authTypeMap.containsKey(authType) ? authTypeMap[authType] : null;
-              ctx.custom = ctx.custom != null ? ctx.custom : new HashMap();
-              ctx.custom.event_allowed_by_esclient = authTypeBoolean;
+              ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+              ctx.jamf_protect.event_allowed_by_esclient = authTypeBoolean;
             }
 
 #######################
@@ -126,6 +121,17 @@ processors:
         target_field: host.os.full
         if: ctx.jamf_protect?.telemetry?.host?.os != null
         ignore_missing: true
+    - gsub:
+        field: host.os.full
+        pattern: "^Version\\s*"
+        replacement: ""
+        if: ctx.host?.os?.full != null
+    - gsub:
+        field: host.os.full
+        pattern: "^([^\\s]+).*"
+        replacement: "$1"
+        target_field: host.os.version
+        if: ctx.host?.os?.full != null
     - set:
         field: host.os.family
         value: macos
@@ -168,7 +174,6 @@ processors:
                 field: related.ip
                 value: '{{{_ingest._value}}}'
                 allow_duplicates: false
-
 #######################
 ## ECS Pipelines ##
 #######################
@@ -309,7 +314,7 @@ processors:
         if: ctx.event.action == "bios_uefi"
     - remove:
         field: event.original
-        if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+        if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
         ignore_failure: true
 
 #############
@@ -318,7 +323,6 @@ processors:
     - remove:
         field:
         - jamf_protect.telemetry
-        - jamf_protect
         - message
         ignore_missing: true
     - script:
@@ -342,6 +346,6 @@ on_failure:
     - set:
         field: event.kind
         value: pipeline_error
-    - set:
+    - append:
         field: error.message
         value: '{{ _ingest.on_failure_message }}'

@@ -8,27 +8,35 @@ processors:
     - set:
         field: event.reason
         value: A user has logged into the system via OpenSSH
+    - append:
+        field: event.type
+        value: start
+    - append:
+        field: event.category
+        value: authentication  
+    - append:
+        field: event.category
+        value: session 
     - script:
         lang: painless
-        source: >
+        source: |
             if (ctx.jamf_protect?.telemetry?.event?.openssh_login?.success != null) {
-                if (ctx.jamf_protect.telemetry.event.openssh_login.success == true) {
+              if (ctx.jamf_protect.telemetry.event.openssh_login.success == true) {
                 ctx.event = ctx.event != null ? ctx.event : new HashMap();
                 ctx.event.outcome = 'success';
-                } else if (ctx.jamf_protect.telemetry.event.openssh_login.success == false) {
+              } else if (ctx.jamf_protect.telemetry.event.openssh_login.success == false) {
                 ctx.event = ctx.event != null ? ctx.event : new HashMap();
                 ctx.event.outcome = 'failure';
-                }
+              }
             } else {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                ctx.event.outcome = 'unknown';
+              ctx.event = ctx.event != null ? ctx.event : new HashMap();
+              ctx.event.outcome = 'unknown';
             }
     - convert:
         field: jamf_protect.telemetry.event.openssh_login.graphical_session_id
-        target_field: custom.graphical_session_id
+        target_field: jamf_protect.graphical_session_id
         type: string
         ignore_missing: true
-        ignore_failure: true
     - rename:
         field: jamf_protect.telemetry.event.openssh_login.username
         target_field: user.name
@@ -39,14 +47,14 @@ processors:
             if (ctx.jamf_protect?.telemetry?.event?.openssh_login?.source_address_type != null) {
                 def itemType = ctx.jamf_protect.telemetry.event.openssh_login.source_address_type;
                 def itemTypeMap = [
-                0: 'Unknown',
-                1: 'IPv4',
-                2: 'IPv6',
-                3: 'UNIX Socket'
+                    0: 'Unknown',
+                    1: 'IPv4',
+                    2: 'IPv6',
+                    3: 'UNIX Socket'
                 ];
                 def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
-                ctx.custom = ctx.custom != null ? ctx.custom : new HashMap();
-                ctx.custom.source_address_type = itemTypeString;
+                ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+                ctx.jamf_protect.source_address_type = itemTypeString;
             }
     - script:
         lang: painless
@@ -66,21 +74,11 @@ processors:
                 9: 'invalid user'
             ];
             def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
-            ctx.custom = ctx.custom != null ? ctx.custom : new HashMap();
-            ctx.custom.authentication_result_type = itemTypeString;
+            ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+            ctx.jamf_protect.authentication_result_type = itemTypeString;
             }
 ##########################
 ## ECS Process ##
 ##########################
-    - append:
-        field: event.type
-        value: start
-
-    - append:
-        field: event.category
-        value: authentication  
-    - append:
-        field: event.category
-        value: session 
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'

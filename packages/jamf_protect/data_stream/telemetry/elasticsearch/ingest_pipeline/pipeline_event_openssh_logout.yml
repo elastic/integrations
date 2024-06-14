@@ -8,12 +8,20 @@ processors:
     - set:
         field: event.reason
         value: A user has logged out of an OpenSSH session
+    - append:
+        field: event.type
+        value: start
+    - append:
+        field: event.category
+        value: authentication
+    - append:
+        field: event.category
+        value: session  
     - convert:
         field: jamf_protect.telemetry.event.openssh_logout.graphical_session_id
-        target_field: custom.graphical_session_id
+        target_field: jamf_protect.graphical_session_id
         type: string
         ignore_missing: true
-        ignore_failure: true
     - rename:
         field: jamf_protect.telemetry.event.openssh_logout.username
         target_field: user.name
@@ -23,7 +31,6 @@ processors:
         target_field: user.id
         type: string
         ignore_missing: true
-        ignore_failure: true
         
     - rename:
         field: jamf_protect.telemetry.event.openssh_logout.source_address
@@ -35,27 +42,17 @@ processors:
             if (ctx.jamf_protect?.telemetry?.event?.openssh_logout?.source_address_type != null) {
                 def itemType = ctx.jamf_protect.telemetry.event.openssh_logout.source_address_type;
                 def itemTypeMap = [
-                0: 'Unknown',
-                1: 'IPv4',
-                2: 'IPv6',
-                3: 'UNIX Socket'
+                    0: 'Unknown',
+                    1: 'IPv4',
+                    2: 'IPv6',
+                    3: 'UNIX Socket'
                 ];
                 def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
-                ctx.custom = ctx.custom != null ? ctx.custom : new HashMap();
-                ctx.custom.source_address_type = itemTypeString;
+                ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+                ctx.jamf_protect.source_address_type = itemTypeString;
             }
 ##########################
 ## ECS Process ##
-##########################
-    - append:
-        field: event.type
-        value: start
-
-    - append:
-        field: event.category
-        value: authentication
-    - append:
-        field: event.category
-        value: session    
+##########################  
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'

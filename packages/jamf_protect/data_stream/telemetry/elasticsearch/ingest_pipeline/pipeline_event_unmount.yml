@@ -8,6 +8,9 @@ processors:
     - set:
         field: event.reason
         value: A file system has been unmounted
+    - append:
+        field: event.type
+        value: end
     - rename:
         field: jamf_protect.telemetry.event.unmount.statfs.f_mntfromname
         target_field: volume.device_name
@@ -27,8 +30,5 @@ processors:
 ##########################
 ## ECS Process ##
 ##########################
-    - append:
-        field: event.type
-        value: end
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'

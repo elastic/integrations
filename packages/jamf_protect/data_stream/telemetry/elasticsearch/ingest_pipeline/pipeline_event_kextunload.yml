@@ -10,18 +10,17 @@ processors:
         value: A kernel extension (kext) was unloaded
     - convert:
         field: jamf_protect.telemetry.event.kextunload.identifier
-        target_field: custom.identifier
+        target_field: jamf_protect.identifier
         type: string
         ignore_missing: true
-        ignore_failure: true
-##########################
-## ECS Process ##
-##########################
     - append:
         field: event.type
         value: change
     - append:
         field: event.category
         value: configuration  
+##########################
+## ECS Process ##
+##########################
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'

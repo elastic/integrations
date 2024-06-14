@@ -8,12 +8,17 @@ processors:
     - set:
         field: event.reason
         value: A user has logged out of an active graphical session
+    - append:
+        field: event.type
+        value: end
+    - append:
+        field: event.category
+        value: authentication  
     - convert:
         field: jamf_protect.telemetry.event.lw_session_logout.graphical_session_id
-        target_field: custom.graphical_session_id
+        target_field: jamf_protect.graphical_session_id
         type: string
         ignore_missing: true
-        ignore_failure: true
     - rename:
         field: jamf_protect.telemetry.event.lw_session_logout.username
         target_field: user.name
@@ -21,11 +26,5 @@ processors:
 ##########################
 ## ECS Process ##
 ##########################
-    - append:
-        field: event.type
-        value: end
-    - append:
-        field: event.category
-        value: authentication  
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'
