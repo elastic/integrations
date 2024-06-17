@@ -26,47 +26,16 @@ It will only support RabbitMQ default i.e RFC 3339 timestamp format.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | rabbitmq.log.pid | The Erlang process id | keyword |
-| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
@@ -78,8 +47,19 @@ An example event for `connection` looks as following:
 ```json
 {
     "@timestamp": "2020-06-25T10:16:10.138Z",
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "dataset": "rabbitmq.connection",
+        "duration": 374411,
+        "module": "rabbitmq"
+    },
+    "metricset": {
+        "name": "connection",
+        "period": 10000
+    },
     "rabbitmq": {
-        "vhost": "/",
         "connection": {
             "channel_max": 65535,
             "channels": 2,
@@ -88,7 +68,7 @@ An example event for `connection` looks as following:
             },
             "frame_max": 131072,
             "host": "::1",
-            "name": "[::1]:31153 -\u003e [::1]:5672",
+            "name": "[::1]:31153 -> [::1]:5672",
             "octet_count": {
                 "received": 5834,
                 "sent": 5834
@@ -105,25 +85,15 @@ An example event for `connection` looks as following:
             "port": 5672,
             "state": "running",
             "type": "network"
-        }
-    },
-    "event": {
-        "duration": 374411,
-        "dataset": "rabbitmq.connection",
-        "module": "rabbitmq"
-    },
-    "metricset": {
-        "name": "connection",
-        "period": 10000
+        },
+        "vhost": "/"
     },
     "service": {
         "address": "localhost:15672",
         "type": "rabbitmq"
-    },
-    "ecs": {
-        "version": "8.5.1"
     }
 }
+
 ```
 
 **Exported fields**
@@ -132,42 +102,22 @@ An example event for `connection` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | rabbitmq.connection.channel_max | The maximum number of channels allowed on the connection. | long | counter |
 | rabbitmq.connection.channels | The number of channels on the connection. | long | gauge |
 | rabbitmq.connection.client_provided.name | User specified connection name. | keyword |  |
@@ -186,10 +136,7 @@ An example event for `connection` looks as following:
 | rabbitmq.connection.type | Type of the connection. | keyword |  |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 | user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |  |
-| user.name | Short name or login of the user. | keyword |  |
-| user.name.text | Multi-field of `user.name`. | match_only_text |  |
 
 
 ### Exchange Metrics
@@ -199,36 +146,37 @@ An example event for `exchange` looks as following:
 ```json
 {
     "@timestamp": "2020-06-25T10:04:20.944Z",
-    "rabbitmq": {
-        "vhost": "/",
-        "exchange": {
-            "arguments": {},
-            "durable": true,
-            "auto_delete": false,
-            "name": "",
-            "internal": false
-        }
+    "ecs": {
+        "version": "8.11.0"
     },
     "event": {
-        "duration": 4078507,
         "dataset": "rabbitmq.exchange",
+        "duration": 4078507,
         "module": "rabbitmq"
     },
     "metricset": {
         "name": "exchange",
         "period": 10000
     },
-    "user": {
-        "name": "rmq-internal"
+    "rabbitmq": {
+        "exchange": {
+            "arguments": {},
+            "auto_delete": false,
+            "durable": true,
+            "internal": false,
+            "name": ""
+        },
+        "vhost": "/"
     },
     "service": {
         "address": "localhost:15672",
         "type": "rabbitmq"
     },
-    "ecs": {
-        "version": "8.5.1"
+    "user": {
+        "name": "rmq-internal"
     }
 }
+
 ```
 
 **Exported fields**
@@ -237,42 +185,22 @@ An example event for `exchange` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | rabbitmq.exchange.auto_delete | Whether the queue will be deleted automatically when no longer used. | boolean |  |
 | rabbitmq.exchange.durable | Whether or not the queue survives server restarts. | boolean |  |
 | rabbitmq.exchange.internal | Whether the exchange is internal, i.e. cannot be directly published to by a client. | boolean |  |
@@ -283,10 +211,7 @@ An example event for `exchange` looks as following:
 | rabbitmq.exchange.name | The name of the queue with non-ASCII characters escaped as in C. | keyword |  |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 | user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |  |
-| user.name | Short name or login of the user. | keyword |  |
-| user.name.text | Multi-field of `user.name`. | match_only_text |  |
 
 
 ### Node Metrics
@@ -440,42 +365,22 @@ An example event for `node` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | rabbitmq.node.disk.free.bytes | Disk free space in bytes. | long | gauge |
 | rabbitmq.node.disk.free.limit.bytes | Point at which the disk alarm will go off. | long | gauge |
 | rabbitmq.node.fd.total | File descriptors available. | long | gauge |
@@ -515,7 +420,6 @@ An example event for `node` looks as following:
 | rabbitmq.node.uptime | Node uptime. | long | gauge |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### Queue Metrics
@@ -525,14 +429,32 @@ An example event for `queue` looks as following:
 ```json
 {
     "@timestamp": "2020-06-25T10:15:10.955Z",
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "dataset": "rabbitmq.queue",
+        "duration": 5860529,
+        "module": "rabbitmq"
+    },
+    "metricset": {
+        "name": "queue",
+        "period": 10000
+    },
     "rabbitmq": {
         "queue": {
+            "arguments": {},
             "auto_delete": false,
-            "state": "running",
+            "consumers": {
+                "count": 0,
+                "utilisation": {}
+            },
             "disk": {
                 "reads": {},
                 "writes": {}
             },
+            "durable": true,
+            "exclusive": false,
             "memory": {
                 "bytes": 14000
             },
@@ -540,17 +462,17 @@ An example event for `queue` looks as following:
                 "persistent": {
                     "count": 0
                 },
-                "total": {
-                    "details": {
-                        "rate": 0
-                    },
-                    "count": 0
-                },
                 "ready": {
+                    "count": 0,
                     "details": {
                         "rate": 0
-                    },
-                    "count": 0
+                    }
+                },
+                "total": {
+                    "count": 0,
+                    "details": {
+                        "rate": 0
+                    }
                 },
                 "unacknowledged": {
                     "count": 0,
@@ -559,34 +481,17 @@ An example event for `queue` looks as following:
                     }
                 }
             },
-            "durable": true,
-            "arguments": {},
-            "consumers": {
-                "utilisation": {},
-                "count": 0
-            },
             "name": "NameofQueue1",
-            "exclusive": false
+            "state": "running"
         },
         "vhost": "/"
     },
-    "event": {
-        "dataset": "rabbitmq.queue",
-        "module": "rabbitmq",
-        "duration": 5860529
-    },
-    "metricset": {
-        "name": "queue",
-        "period": 10000
-    },
     "service": {
-        "type": "rabbitmq",
-        "address": "localhost:15672"
-    },
-    "ecs": {
-        "version": "8.5.1"
+        "address": "localhost:15672",
+        "type": "rabbitmq"
     }
 }
+
 ```
 
 **Exported fields**
@@ -595,42 +500,22 @@ An example event for `queue` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | rabbitmq.queue.arguments.max_priority | Maximum number of priority levels for the queue to support. | long | gauge |
 | rabbitmq.queue.auto_delete | Whether the queue will be deleted automatically when no longer used. | boolean |  |
 | rabbitmq.queue.consumers.count | Number of consumers. | long | gauge |
@@ -651,4 +536,3 @@ An example event for `queue` looks as following:
 | rabbitmq.queue.state | The state of the queue. Normally 'running', but may be `"\{syncing, MsgCount\}"` if the queue is synchronising. Queues which are located on cluster nodes that are currently down will be shown with a status of 'down'. | keyword |  |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
