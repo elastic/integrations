@@ -98,6 +98,25 @@ processors:
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
+      if: ctx.message.contains('REFUSED')
+      patterns:
+        - "^%{REVERSE_UPDATE:event.action} for %{IP:client.ip} abandoned because of non-retryable failure: %{DATA:event.outcome}$"
+        - "^Unable to %{ADD_FORWARD:event.action} from %{DATA:infoblox_nios.log.dhcp.forward_name} to %{IP:infoblox_nios.log.dhcp.ip} by server %{IP:server.ip}#%{NUMBER:server.port:long}: %{DATA:event.outcome}$"
+        - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
+      pattern_definitions:
+        ADD_FORWARD: (?i:add forward map)
+        REVERSE_UPDATE: (?i:reverse map update)
+  - gsub:
+      field: event.action
+      pattern: ' '
+      replacement: '_'
+      if: ctx.event?.outcome?.equalsIgnoreCase('refused') == true
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.event?.outcome?.equalsIgnoreCase('refused') == true
+  - grok:
+      field: message
       if: ctx.message.contains('Encapsulated Solicit')
       patterns:
         - "^%{DATA:event.action} message from %{IP:client.ip} port %{NUMBER:client.port:long} from client DUID %{GREEDYDATA:infoblox_nios.log.dhcp.duid}, transaction ID %{GREEDYDATA:infoblox_nios.log.dhcp.trans_id}$"

@@ -10,11 +10,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-10-19T09:10:35.000+02:00",
     "agent": {
-        "ephemeral_id": "f5012eed-664a-4430-85b2-b8c48267837e",
-        "id": "1b313b92-040f-43af-8905-5b86b2755044",
+        "ephemeral_id": "59d9a27c-2780-41a3-b336-00bff722f3ec",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.4"
+        "version": "8.13.0"
     },
     "client": {
         "address": "89.160.20.156",
@@ -40,23 +40,25 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "pulse_connect_secure.log",
-        "namespace": "ep",
+        "namespace": "47711",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1b313b92-040f-43af-8905-5b86b2755044",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.11.4"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "network",
+        "category": [
+            "network"
+        ],
         "created": "2021-10-19T09:10:35.000+02:00",
         "dataset": "pulse_connect_secure.log",
-        "ingested": "2024-02-09T13:09:18Z",
+        "ingested": "2024-06-12T03:21:05Z",
         "kind": "event",
         "original": "Oct 19 09:10:35 pcs-node1 1 2021-10-19T09:10:35+02:00 10.5.2.3 PulseSecure: - - - 2021-10-19 09:10:35 - pcs-node1 - [89.160.20.156] user.name(REALM)[REALM_ROLES] - Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 89.160.20.156 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",
         "outcome": "success",
@@ -66,11 +68,11 @@ An example event for `log` looks as following:
         "hostname": "pcs-node1"
     },
     "input": {
-        "type": "tcp"
+        "type": "udp"
     },
     "log": {
         "source": {
-            "address": "192.168.176.4:39024"
+            "address": "172.19.0.5:42415"
         }
     },
     "message": "Agent login succeeded for user.name/REALM (session:sid74fa8e00ca601280318287f67dfaee7cc6da40db0be6ac75) from 89.160.20.156 with Pulse-Secure/9.1.13.11723 (Windows 10) Pulse/9.1.13.11723.",

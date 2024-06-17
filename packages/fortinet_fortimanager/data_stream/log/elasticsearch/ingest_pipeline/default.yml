@@ -17,25 +17,67 @@ processors:
       if: ctx.event?.original == null
   - grok:
       field: event.original
-      tag: 'grok_split_priority_number'
-      if: ctx.event?.original != null && ctx.event.original != ''
+      ecs_compatibility: v1
       patterns:
-        - '^<%{NUMBER:fortimanager.log.priority_number:long}>%{GREEDYDATA:temp}$'
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - kv:
-      field: temp
-      tag: 'kv_temp'
-      target_field: _temp
-      field_split: ( (?=(?:[^'"]|'[^']*'|"[^"]*")*$))
-      value_split: (?<!\\)=
-      trim_value: "\""
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - "^(?:<%{NUMBER:fortimanager.log.priority_number:long}>)?%{GREEDYDATA:syslog5424_sd}$"
+  - gsub:
+      field: syslog5424_sd
+      pattern: "[\u0000-\u001F\u007F]"
+      replacement: ""
+  - script:
+      lang: painless
+      if: ctx.syslog5424_sd != null
+      description: |
+        Splits syslog5424_sd KV list by space and then each by "=" taking into account quoted values.
+      source: |
+        def splitUnquoted(String input, String sep) {
+          def tokens = [];
+          def startPosition = 0;
+          def isInQuotes = false;
+          char quote = (char)"\"";
+          for (def currentPosition = 0; currentPosition < input.length(); currentPosition++) {
+              if (input.charAt(currentPosition) == quote) {
+                  isInQuotes = !isInQuotes;
+              }
+              else if (input.charAt(currentPosition) == (char)sep && !isInQuotes) {
+                  def token = input.substring(startPosition, currentPosition).trim();
+                  if (!token.equals("")) {
+                    tokens.add(token);
+                  }
+                  startPosition = currentPosition + 1;
+              }
+          }
+        
+          def lastToken = input.substring(startPosition);
+          if (!lastToken.equals(sep) && !lastToken.equals("")) {
+              tokens.add(lastToken.trim());
+          }
+          return tokens;
+        }
+        
+        def arr = splitUnquoted(ctx.syslog5424_sd, " ");
+        
+        Map map = new HashMap();
+        Pattern pattern = /^\"|\"$/;
+        for (def i = 0; i < arr?.length; i++) {
+          def kv = splitUnquoted(arr[i], "=");
+          if (kv.length == 2) {
+            map[kv[0]] = pattern.matcher(kv[1]).replaceAll("");
+          }
+        }
+        if (ctx.fortinet == null) {
+          ctx.fortinet = new HashMap();
+        }
+        ctx._temp = map;
+  - script:
+      lang: painless
+      source: |
+        def fw = ctx._temp;
+        if (fw != null) {
+            // We will remove any keys that are non-words to avoid polluting documents
+            def pat = /\W+/; 
+            fw.entrySet().removeIf(entry -> entry.getValue() == "N/A" || pat.matcher(entry.getKey()).find());
+        }
   - rename:
       field: _temp.changes
       target_field: fortimanager.log.changes
@@ -1202,6 +1244,7 @@ processors:
       field:
         - temp
         - _temp
+        - syslog5424_sd
       ignore_missing: true
   - remove:
       field: event.original
