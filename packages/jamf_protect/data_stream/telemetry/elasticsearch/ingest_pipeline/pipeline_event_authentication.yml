@@ -1,5 +1,5 @@
 ---
-description: Pipeline for Jamf Protect Telemetry events.
+description: Pipeline for parsing specific fields related to authentication events in Jamf Protect
 processors:
 
 ##########################
@@ -13,7 +13,6 @@ processors:
         lang: painless
         source: |
           if (ctx.jamf_protect.telemetry.event.authentication.containsKey('data')) {
-            
             def eventObject = ctx.jamf_protect.telemetry.event.authentication.data;
             for (def key : eventObject.keySet()) {
               if (eventObject[key] != null) {
@@ -30,17 +29,16 @@ processors:
     - script:
         lang: painless
         source: |
-            if (ctx.jamf_protect?.telemetry?.event?.authentication?.success != null) {
-                if (ctx.jamf_protect.telemetry.event.authentication.success == true) {
-                    ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                    ctx.event.outcome = 'success';
-                } else if (ctx.jamf_protect.telemetry.event.authentication.success == false) {
-                    ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                    ctx.event.outcome = 'failure';
-                }
-            } else {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                ctx.event.outcome = 'unknown';
+            ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            if (ctx.jamf_protect?.telemetry?.event?.authentication?.success instanceof boolean) {
+              if (ctx.jamf_protect.telemetry.event.authentication.success) {
+                ctx.event.outcome = 'success';
+              } else {
+                ctx.event.outcome = 'failure';
+              }
+            }
+            if (ctx.event.outcome == null) {
+              ctx.event.outcome = 'unknown';
             }
         ignore_failure: true
 
@@ -478,4 +476,3 @@ processors:
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'
         if: ctx.jamf_protect?.telemetry?.event?.authentication?.data?.od == null && ctx.jamf_protect?.telemetry?.event?.authentication?.data?.token == null && ctx.jamf_protect?.telemetry?.event?.authentication?.data?.touchid == null
-        

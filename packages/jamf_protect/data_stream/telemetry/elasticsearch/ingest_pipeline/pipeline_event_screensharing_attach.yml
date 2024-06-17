@@ -1,5 +1,5 @@
 ---
-description: Pipeline for Jamf Protect Telemetry events.
+description: Pipeline for parsing specific fields related to screenscharing attached events in Jamf Protect
 processors:
 
 ##########################
@@ -17,16 +17,15 @@ processors:
     - script:
         lang: painless
         source: |
-            if (ctx.jamf_protect?.telemetry?.event?.screensharing_attach?.success != null) {
-              if (ctx.jamf_protect.telemetry.event.screensharing_attach.success == true) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            if (ctx.jamf_protect?.telemetry?.event?.screensharing_attach?.success instanceof boolean) {
+              if (ctx.jamf_protect.telemetry.event.screensharing_attach.success) {
                 ctx.event.outcome = 'success';
-              } else if (ctx.jamf_protect.telemetry.event.screensharing_attach.success == false) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+              } else {
                 ctx.event.outcome = 'failure';
               }
-            } else {
-              ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            }
+            if (ctx.event.outcome == null) {
               ctx.event.outcome = 'unknown';
             }
     - convert:
@@ -86,3 +85,4 @@ processors:
 ##########################
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'
+        

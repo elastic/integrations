@@ -29,7 +29,6 @@ processors:
         field: jamf_protect.telemetry.host.protectVersion
         target_field: observer.version
         ignore_missing: true
-        if: ctx.jamf_protect?.telemetry?.host?.protectVersion != null
 
 #######################
 ## ECS Event Mapping ##
@@ -60,7 +59,6 @@ processors:
         field: jamf_protect.telemetry.glob_seq_num
         target_field: event.sequence
         ignore_missing: true
-        if: ctx.jamf_protect?.telemetry?.glob_seq_num != null
     - convert:
         field: jamf_protect.telemetry.event_type
         target_field: event.code
@@ -71,7 +69,6 @@ processors:
         lang: painless
         source: >
           if (ctx.jamf_protect.telemetry.containsKey('event')) {
-            
             def eventObject = ctx.jamf_protect.telemetry.event;
             for (def key : eventObject.keySet()) {
               if (eventObject[key] != null) {
@@ -105,30 +102,26 @@ processors:
         field: jamf_protect.telemetry.host.hostname
         target_field: host.hostname
         ignore_missing: true
-        if: ctx.jamf_protect?.telemetry?.host?.hostname != null
     - rename:
         field: jamf_protect.telemetry.host.provisioningUDID
         target_field: host.id
         ignore_missing: true
-        if: ctx.jamf_protect?.telemetry?.host?.provisioningUDID != null
     - rename:
         field: jamf_protect.telemetry.host.ips
         target_field: host.ip
-        ignore_missing: true
         if: ctx.jamf_protect?.telemetry?.host?.ips != null && ctx.jamf_protect?.telemetry?.host?.ips != ""
     - rename:
         field: jamf_protect.telemetry.host.os
         target_field: host.os.full
-        if: ctx.jamf_protect?.telemetry?.host?.os != null
         ignore_missing: true
     - gsub:
         field: host.os.full
-        pattern: "^Version\\s*"
+        pattern: '^Version\s*'
         replacement: ""
         if: ctx.host?.os?.full != null
     - gsub:
         field: host.os.full
-        pattern: "^([^\\s]+).*"
+        pattern: ^([^\s]+).*
         replacement: "$1"
         target_field: host.os.version
         if: ctx.host?.os?.full != null
@@ -148,7 +141,6 @@ processors:
         field: jamf_protect.telemetry.host.serial
         target_field: device.id
         ignore_missing: true
-        if: ctx.jamf_protect?.telemetry?.host?.serial != null
     - set:
         field: device.manufacturer
         value: Apple
@@ -157,13 +149,13 @@ processors:
 ########################
     - append:
         field: related.hosts
-        value: '{{{host.hostname}}}'
+        value: '{{{ host.hostname }}}'
         if: ctx.host?.hostname != null
         allow_duplicates: false
         ignore_failure: true
     - append:
         field: related.user
-        value: "{{ user.name }}"
+        value: "{{{ user.name }}}"
         if: ctx.user?.name != null
         allow_duplicates: false
     - foreach:
@@ -343,9 +335,13 @@ processors:
           }
           dropEmptyFields(ctx);
 on_failure:
-    - set:
-        field: event.kind
-        value: pipeline_error
-    - append:
-        field: error.message
-        value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+

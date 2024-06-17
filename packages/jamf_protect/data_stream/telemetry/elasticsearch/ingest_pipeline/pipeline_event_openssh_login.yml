@@ -1,5 +1,5 @@
 ---
-description: Pipeline for Jamf Protect Telemetry events.
+description: Pipeline for parsing specific fields related to openssh login events in Jamf Protect
 processors:
 
 ##########################
@@ -20,16 +20,15 @@ processors:
     - script:
         lang: painless
         source: |
-            if (ctx.jamf_protect?.telemetry?.event?.openssh_login?.success != null) {
-              if (ctx.jamf_protect.telemetry.event.openssh_login.success == true) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            if (ctx.jamf_protect?.telemetry?.event?.openssh_login?.success instanceof boolean) {
+              if (ctx.jamf_protect.telemetry.event.openssh_login.success) {
                 ctx.event.outcome = 'success';
-              } else if (ctx.jamf_protect.telemetry.event.openssh_login.success == false) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+              } else {
                 ctx.event.outcome = 'failure';
               }
-            } else {
-              ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            }
+            if (ctx.event.outcome == null) {
               ctx.event.outcome = 'unknown';
             }
     - convert:
@@ -60,8 +59,8 @@ processors:
         lang: painless
         source: >
             if (ctx.jamf_protect?.telemetry?.event?.openssh_login?.result_type != null) {
-            def itemType = ctx.jamf_protect.telemetry.event.openssh_login.result_type;
-            def itemTypeMap = [
+              def itemType = ctx.jamf_protect.telemetry.event.openssh_login.result_type;
+              def itemTypeMap = [
                 0: 'Exceeded maximum attempts',
                 1: 'Denied by root',
                 2: 'Success',
@@ -72,13 +71,14 @@ processors:
                 7: 'Host based',
                 8: 'gss api',
                 9: 'invalid user'
-            ];
-            def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
-            ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
-            ctx.jamf_protect.authentication_result_type = itemTypeString;
+              ];
+              def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
+              ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+              ctx.jamf_protect.authentication_result_type = itemTypeString;
             }
 ##########################
 ## ECS Process ##
 ##########################
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'
+

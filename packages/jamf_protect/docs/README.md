@@ -1366,3 +1366,4 @@ An example event for `web_traffic_events` looks as following:
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
+

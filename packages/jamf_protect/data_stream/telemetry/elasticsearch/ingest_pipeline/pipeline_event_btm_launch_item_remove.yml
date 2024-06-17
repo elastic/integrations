@@ -1,5 +1,5 @@
 ---
-description: Pipeline for Jamf Protect Telemetry events.
+description: Pipeline for parsing specific fields related to btm remove events in Jamf Protect
 processors:
 
 ##########################
@@ -45,17 +45,17 @@ processors:
         lang: painless
         source: >
             if (ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.item?.item_type != null) {
-                def itemType = ctx.jamf_protect.telemetry.event.btm_launch_item_remove.item.item_type;
-                def itemTypeMap = [
+              def itemType = ctx.jamf_protect.telemetry.event.btm_launch_item_remove.item.item_type;
+              def itemTypeMap = [
                 0: 'User Item',
                 1: 'App',
                 2: 'Login Item',
                 3: 'LaunchAgent',
                 4: 'LaunchDaemon'
-                ];
-                def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
-                ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
-                ctx.jamf_protect.btm_item_type = itemTypeString;
+              ];
+              def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
+              ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+              ctx.jamf_protect.btm_item_type = itemTypeString;
             }
             
 ##########################

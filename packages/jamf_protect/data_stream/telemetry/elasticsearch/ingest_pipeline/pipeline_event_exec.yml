@@ -1,5 +1,5 @@
 ---
-description: Pipeline for Jamf Protect Telemetry event exec.
+description: Pipeline for parsing specific fields related to exec events in Jamf Protect
 processors:
 
 ##########################
@@ -114,11 +114,10 @@ processors:
         lang: painless
         source: >
             if (ctx.process.args instanceof List) {
-            
-            ctx.process.args_count = ((List)ctx.process.args).size();
+              ctx.process.args_count = ctx.process.args.size();
             } else {
-            ctx.process = ctx.process != null ? ctx.process : new HashMap();
-            ctx.process.args_count = 0;
+              ctx.process = ctx.process != null ? ctx.process : new HashMap();
+              ctx.process.args_count = 0;
             }
         ignore_failure: true
     - rename:

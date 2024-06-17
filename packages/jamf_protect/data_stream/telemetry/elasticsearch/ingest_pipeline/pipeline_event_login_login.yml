@@ -1,5 +1,5 @@
 ---
-description: Pipeline for Jamf Protect Telemetry events.
+description: Pipeline for parsing specific fields related to login using /usr/bin/login events in Jamf Protect
 processors:
 
 ##########################
@@ -17,17 +17,16 @@ processors:
     - script:
         lang: painless
         source: >
-            if (ctx.jamf_protect?.telemetry?.event?.login_login?.success != null) {
-                if (ctx.jamf_protect.telemetry.event.login_login.success == true) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            if (ctx.jamf_protect?.telemetry?.event?.login_login?.success instanceof boolean) {
+              if (ctx.jamf_protect.telemetry.event.login_login.success) {
                 ctx.event.outcome = 'success';
-                } else if (ctx.jamf_protect.telemetry.event.login_login.success == false) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+              } else {
                 ctx.event.outcome = 'failure';
-                }
-            } else {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
-                ctx.event.outcome = 'unknown';
+              }
+            }
+            if (ctx.event.outcome == null) {
+              ctx.event.outcome = 'unknown';
             }
     - rename:
         field: jamf_protect.telemetry.event.login_login.username
@@ -43,3 +42,4 @@ processors:
 ########################## 
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'
+
