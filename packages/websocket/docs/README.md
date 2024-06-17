@@ -1,4 +1,4 @@
-# WebSocket Input Integration
+# Custom WebSocket Input
 
 The WebSocket input integration enables ingestion of real-time data from WebSocket servers. WebSockets provide a full-duplex communication channel over a single, long-lived connection, which makes it suitable for scenarios where low latency data transmission is required.
 
@@ -14,14 +14,9 @@ To configure the WebSocket input, specify the connection URL and other optional 
 
 Here is a basic example of how to configure the WebSocket input:
 
-```yaml
-- type: websocket
-  url: "ws://websocket-server.example.com/stream"
-  headers:
-    Cookie: "session_id=abcdef1234567890"
-```
+![Configuration Page](../img/websocket_configuration.png)
 
-This configuration creates a WebSocket connection to ws://websocket-server.example.com/stream, using a session cookie for authentication.
+This configuration establishes a WebSocket connection to ws://localhost:443/v1/stream and uses basic authentication.
 
 ## Data Processing
 

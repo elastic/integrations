@@ -1,0 +1,11 @@
+input: websocket
+service: websocket-mock-service
+vars:
+  url: ws://{{Hostname}}:{{Port}}/test
+  program: |
+    bytes(state.response).decode_json().as(body,{
+      "events": body.map(e, {
+        "message": e.encode_json(),
+      }),
+      "cursor": body.map(e, e.ts).max()
+    })
