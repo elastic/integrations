@@ -52,13 +52,13 @@ An example event for `detailed_shared_folder` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-07-24T13:38:49.667Z",
+    "@timestamp": "2024-05-24T11:28:38.242Z",
     "agent": {
-        "ephemeral_id": "0c9df2f5-7a57-46b5-af86-d72509a29876",
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "ephemeral_id": "4a4388c0-12ab-4c2c-910c-c912f6bd4730",
+        "id": "b0183e4b-ecd8-4ee9-8e73-bb43ce3ddcf2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.8.2"
+        "version": "8.12.2"
     },
     "data_stream": {
         "dataset": "lastpass.detailed_shared_folder",
@@ -69,15 +69,15 @@ An example event for `detailed_shared_folder` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e4c29d91-bbb7-42b8-80fd-85ddb56d2300",
+        "id": "b0183e4b-ecd8-4ee9-8e73-bb43ce3ddcf2",
         "snapshot": false,
-        "version": "8.8.2"
+        "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-07-24T13:38:49.667Z",
+        "created": "2024-05-24T11:28:38.242Z",
         "dataset": "lastpass.detailed_shared_folder",
-        "ingested": "2023-07-24T13:38:52Z",
+        "ingested": "2024-05-24T11:28:50Z",
         "kind": "state",
         "original": "{\"id\":\"101\",\"score\":99,\"sharedfoldername\":\"ThisSFName\",\"users\":{\"can_administer\":true,\"give\":false,\"readonly\":true,\"sites\":[\"aaa.com\",\"bbb.com\"],\"username\":\"joe.user@lastpass.com\"}}",
         "type": [
@@ -121,7 +121,6 @@ An example event for `detailed_shared_folder` looks as following:
         "email": "joe.user@lastpass.com"
     }
 }
-
 ```
 
 **Exported fields**

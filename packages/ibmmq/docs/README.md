@@ -1,20 +1,63 @@
 # IBM MQ integration
 
-The IBM MQ Integration is used to fetch observability data from [IBM MQ web endpoints](https://www.ibm.com/docs/en/ibm-mq) and ingest it into Elasticsearch.
+## Overview
+
+[IBM MQ](https://www.ibm.com/docs/en/ibm-mq) is a message-oriented middleware for secure and reliable communication between distributed systems. It supports messaging patterns like queuing, publish/subscribe, and assures message delivery without a direct connection between sender and receiver.
+
+Use the IBM MQ integration to:
+
+- Collect Queue Manager performance metrics and error logs, providing insights into messages, topics, subscriptions, and operational events.
+- Streamline observability by ingesting IBM MQ metrics and logs into Elasticsearch, enabling centralized monitoring and analysis of IBM MQ environments.
+- Enhance system reliability through real-time analysis and proactive alerting based on collected metrics and logs.
+
+## Data streams
+
+The IBM MQ integration collects logs and metrics data.
+
+Logs provide insights into operations and events within the IBM MQ environment. The errorlog data stream collected by the IBM MQ integration enables users to track errors and warnings, understand their causes, and address issues related to message handling and processing.
+
+Metrics provide statistics on the performance and health of IBM MQ. The qmgr data stream collected by the IBM MQ integration covers Queue Manager performance metrics, including message throughput, topics, subscriptions, and other operational statistics. This allows users to monitor and optimize the performance and reliability of their IBM MQ instances.
+
+Data streams:
+
+- `errorlog`: Collects error and warning messages from the IBM MQ Queue Manager, providing details like error descriptions, actions, explanations, and error codes.
+- `qmgr`: Collects performance metrics from the Queue Manager, including message throughput, topics, subscriptions, and other vital operational statistics.
+
+Note:
+- Users can monitor and view logs within the ingested documents for IBM MQ using the logs-* index pattern in Discover. For metrics, the corresponding index pattern is metrics-*.
 
 ## Compatibility
 
 This integration has been tested against `IBM MQ v9.1` and `IBM MQ v9.2`. The ibmmq `qmgr` data stream is compatible with a containerized distribution of IBM MQ (since version 9.1.0).
-The Docker image starts the `runmqserver` process, which spawns the HTTP server exposing metrics in Prometheus format.
 
-## Requirements
+## Prerequisites
+
+Users require Elasticsearch for storing and searching their data, and Kibana for visualizing and managing it. They can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on their own hardware.
 
 In order to ingest data from IBM MQ:
 
 - User should specify Hostname and Port (example: localhost:9157) of Prometheus endpoint (/metrics).
 - User should specify the path of IBM MQ Queue Manager Error logs. (default paths: `/var/mqm/errors/*.LOG` and `/var/mqm/qmgrs/*/errors/*.LOG`)
 
-## Metrics
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Steps to setup Prometheus
+
+Enable Metrics in IBM MQ: Ensure that the `MQ_ENABLE_METRICS` environment variable is set to true for user's IBM MQ service to expose the metrics endpoint.
+
+The Docker image starts the runmqserver process, which spawns the HTTP server exposing metrics in Prometheus format on port `9157`.
+
+## Validation
+
+After the integration is successfully configured, clicking on the Assets tab of the IBM MQ Integration should display a list of available dashboards. Click on the dashboard available for user's configured data stream. It should be populated with the required data.
+
+## Troubleshooting
+
+- In version 1.3.0 of this integration, the field type of `ibmmq.errorlog.error.description` has been changed from `text` to `keyword `. It is therefore recommended to update the `ibmmq.errorlog.error.description` field to use the `keyword` type wherever it is being used. This can be achieved by using the [Update By Query API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html#docs-update-by-query-api-ingest-pipeline), allowing for a seamless transition of the field type from  `text` to `keyword` facross all relevant documents.
+
+## Metrics reference
 
 ### Queue Manager performance metrics
 
@@ -24,13 +67,13 @@ An example event for `qmgr` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-04T07:29:32.808Z",
+    "@timestamp": "2024-05-28T10:25:41.537Z",
     "agent": {
-        "ephemeral_id": "b74cf2bf-29aa-46f0-8eec-ed48244675f2",
-        "id": "0402a600-6a5e-443e-a57e-10f6f91ff35e",
+        "ephemeral_id": "2a2b7004-c50a-4ee2-9bc6-78d99713b117",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.12.0"
     },
     "data_stream": {
         "dataset": "ibmmq.qmgr",
@@ -41,39 +84,40 @@ An example event for `qmgr` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "0402a600-6a5e-443e-a57e-10f6f91ff35e",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.12.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "web",
+        "category": [
+            "web"
+        ],
         "dataset": "ibmmq.qmgr",
-        "duration": 4639837,
-        "ingested": "2022-07-04T07:29:36Z",
+        "duration": 15347292,
+        "ingested": "2024-05-28T10:25:53Z",
         "kind": "metric",
         "module": "ibmmq",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02:42:ac:12:00:07"
-        ],
+        "id": "829324aac17946dcace17006fa82a2d2",
+        "ip": "192.168.243.9",
+        "mac": "02-42-C0-A8-F3-09",
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "ibmmq": {
@@ -305,7 +349,7 @@ An example event for `qmgr` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service_ibmmq_1:9157/metrics",
+        "address": "http://elastic-package-service-ibmmq-1:9157/metrics",
         "type": "ibmmq"
     },
     "tags": [
@@ -406,7 +450,7 @@ An example event for `qmgr` looks as following:
 | tags | List of keywords used to tag each event. | keyword |  |
 
 
-## Logs
+## Logs reference
 
 ### Queue Manager Error logs
 
@@ -416,13 +460,13 @@ An example event for `errorlog` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-29T08:23:34.385Z",
+    "@timestamp": "2024-05-28T10:29:59.860Z",
     "agent": {
-        "ephemeral_id": "12f21cf2-6df4-459c-8ce2-413e761943ae",
-        "id": "1a4dbf12-3b5c-45ea-9256-3c1754b52588",
+        "ephemeral_id": "cbbb6e1e-c10f-4635-bb3e-b42063268637",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.12.0"
     },
     "data_stream": {
         "dataset": "ibmmq.errorlog",
@@ -433,34 +477,36 @@ An example event for `errorlog` looks as following:
         "version": "8.5.1"
     },
     "elastic_agent": {
-        "id": "1a4dbf12-3b5c-45ea-9256-3c1754b52588",
+        "id": "476beedd-c7de-4696-a85b-d20aa455d46a",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.12.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-06-29T08:23:59.009Z",
+        "created": "2024-05-28T10:30:26.219Z",
         "dataset": "ibmmq.errorlog",
-        "ingested": "2022-06-29T08:24:02Z",
+        "ingested": "2024-05-28T10:30:38Z",
         "kind": "event",
         "module": "ibmmq",
-        "type": "error"
+        "type": [
+            "error"
+        ]
     },
     "host": {
-        "hostname": "20c2d61f227a",
+        "hostname": "99726abecb7d",
         "name": "docker-fleet-agent"
     },
     "ibmmq": {
         "errorlog": {
             "error": {
-                "action": "Host Info :- Linux 3.10.0-1160.59.1.el7.x86_64 (MQ Linux (x86-64 platform) 64-bit) Installation :- /opt/mqm (Installation1) Version :- 9.2.4.0 (p924-L211105.DE) ACTION: None.",
+                "action": "Host Info :- Linux 3.10.0-1160.102.1.el7.x86_64 (MQ Linux (x86-64 platform) 64-bit) Installation :- /opt/mqm (Installation1) Version :- 9.2.4.0 (p924-L211105.DE) ACTION: None.",
                 "code": "AMQ6287I",
                 "description": "IBM MQ V9.2.4.0 (p924-L211105.DE).",
                 "explanation": "IBM MQ system"
             },
             "insert": {
                 "comment": [
-                    "Linux 3.10.0-1160.59.1.el7.x86_64 (MQ Linux (x86-64 platform) 64-bit)",
+                    "Linux 3.10.0-1160.102.1.el7.x86_64 (MQ Linux (x86-64 platform) 64-bit)",
                     "/opt/mqm (Installation1)",
                     "9.2.4.0 (p924-L211105.DE)"
                 ]
@@ -481,7 +527,7 @@ An example event for `errorlog` looks as following:
         "offset": 0
     },
     "process": {
-        "pid": 61.1,
+        "pid": 58.1,
         "title": "crtmqm"
     },
     "service": {
@@ -514,7 +560,7 @@ An example event for `errorlog` looks as following:
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | ibmmq.errorlog.error.action | Defines what to do when the error occurs. | keyword |
 | ibmmq.errorlog.error.code | Error code. | keyword |
-| ibmmq.errorlog.error.description | Error description. | text |
+| ibmmq.errorlog.error.description | Error description. | keyword |
 | ibmmq.errorlog.error.explanation | Explains the error in more detail. | keyword |
 | ibmmq.errorlog.insert.arith | Changing content based on error.id. | keyword |
 | ibmmq.errorlog.insert.comment | Changing content based on error.id. | keyword |
