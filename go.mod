@@ -192,11 +192,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.15.2 // indirect
 	howett.net/plist v1.0.0 // indirect
-	k8s.io/api v0.30.1 // indirect
+	k8s.io/api v0.30.2 // indirect
 	k8s.io/apiextensions-apiserver v0.30.0 // indirect
-	k8s.io/apimachinery v0.30.1 // indirect
-	k8s.io/cli-runtime v0.30.1 // indirect
-	k8s.io/client-go v0.30.1 // indirect
+	k8s.io/apimachinery v0.30.2 // indirect
+	k8s.io/cli-runtime v0.30.2 // indirect
+	k8s.io/client-go v0.30.2 // indirect
 	k8s.io/component-base v0.30.0 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
@@ -209,6 +209,6 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20240617120252-2cdeacf4883c
+replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20240617155231-9758666f38ec
 
 replace github.com/elastic/package-spec/v3 => github.com/elastic/package-spec/v3 v3.1.6-0.20240617154842-572e54732385
