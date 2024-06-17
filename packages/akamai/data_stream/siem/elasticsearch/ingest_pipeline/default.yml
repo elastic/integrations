@@ -76,6 +76,12 @@ processors:
       field: json.httpMessage.query
       target_field: url.query
       ignore_missing: true
+      on_failure:
+        # Assume a failure is due to the query already being decoded.
+        - rename:
+            field: json.httpMessage.query
+            target_field: url.query
+            ignore_failure: true
   - rename:
       field: json.httpMessage.port
       target_field: url.port
@@ -279,20 +285,25 @@ processors:
         ArrayList rule_actions = new ArrayList();
         ArrayList rule_tags = new ArrayList();
         for (def i = 0; i < ctx.json.attackData.rules.length; i++) {
-            HashMap map = new HashMap();
-            for (def j = 0; j < items.length; j++) {
-                String key = items[j];
-                if (i < ctx.json.attackData[key].length ) {
-                    String value = ctx.json.attackData[key][i].replace(" ", "").decodeBase64();
-                    map.put(key, value);
-                    if (key == "ruleTags") {
-                        rule_tags.add(value.toLowerCase());
-                    } else if (key == "ruleActions") {
-                        rule_actions.add(value.toLowerCase());
-                    }
+          HashMap map = new HashMap();
+          for (def j = 0; j < items.length; j++) {
+            String key = items[j];
+            if (i < ctx.json.attackData[key].length ) {
+              try {
+                String value = ctx.json.attackData[key][i].replace(" ", "").decodeBase64();
+                map.put(key, value);
+                if (key == "ruleTags") {
+                  rule_tags.add(value.toLowerCase());
+                } else if (key == "ruleActions") {
+                  rule_actions.add(value.toLowerCase());
                 }
+              }
+              catch (Exception e) {
+                // Do nothing.
+              }
             }
-            rules_array.add(map);
+          }
+          rules_array.add(map);
         }
         ctx.akamai.siem.rules = rules_array;
         ctx._rule_actions = rule_actions;
@@ -393,6 +404,7 @@ processors:
       field: json.userRiskData.score
       target_field: akamai.siem.user_risk.score
       type: long
+      if: ctx.json.userRiskData.score != ""
       ignore_missing: true
   - convert:
       field: json.userRiskData.allow
@@ -423,6 +435,7 @@ processors:
       field_split: '\|'
       value_split: ':'
       ignore_missing: true
+      ignore_failure: true
   ##
   - append:
       field: related.ip
