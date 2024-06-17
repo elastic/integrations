@@ -126,24 +126,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-12-04T23:19:32.051Z",
     "agent": {
-        "ephemeral_id": "9f5e87b3-da6a-4888-96ba-c905ba197b12",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "3a1ecfb2-18a4-46c9-9996-65f6853ed739",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "mattermost.audit",
-        "namespace": "ep",
+        "namespace": "26102",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "action": "updateConfig",
@@ -152,7 +152,7 @@ An example event for `audit` looks as following:
             "configuration"
         ],
         "dataset": "mattermost.audit",
-        "ingested": "2022-01-02T00:19:22Z",
+        "ingested": "2024-06-12T03:15:44Z",
         "kind": "event",
         "original": "{\"timestamp\":\"2021-12-04 23:19:32.051 Z\",\"event\":\"updateConfig\",\"status\":\"success\",\"user_id\":\"ag99yu4i1if63jrui63tsmq57y\",\"session_id\":\"pjh4n69j3p883k7hhzippskcba\",\"ip_address\":\"172.19.0.1\",\"api_path\":\"/api/v4/config\",\"cluster_id\":\"jq3utry71f8a7q9qgebmjccf4r\",\"client\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36\"}",
         "outcome": "success",
@@ -162,24 +162,24 @@ An example event for `audit` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.18.0.5"
+            "172.19.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02-42-AC-13-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-43-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "6.5.11-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -239,5 +239,4 @@ An example event for `audit` looks as following:
         "version": "96.0.4664.45"
     }
 }
-
 ```

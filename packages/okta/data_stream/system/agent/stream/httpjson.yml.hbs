@@ -1,21 +1,46 @@
 config_version: "2"
 interval: {{interval}}
+
 {{#if enable_request_tracer}}
 request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
 request.tracer.maxbackups: 5
 {{/if}}
+
 request.method: "GET"
 request.keep_alive.disable: {{disable_keep_alive}}
 request.url: {{url}}
+request.rate_limit:
+  limit: '[[.last_response.header.Get "X-Rate-Limit-Limit"]]'
+  remaining: '[[.last_response.header.Get "X-Rate-Limit-Remaining"]]'
+  reset: '[[.last_response.header.Get "X-Rate-Limit-Reset"]]'
+
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
+
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
+
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
 {{/if}}
+
+{{! oin flow auth.oauth2 section}}
+{{#if oin_app}}
+{{#if api_key}}
+{{#if okta_domain_url}}
+{{#if client_id}}
+auth.oauth2.token_url: {{okta_domain_url}}/oauth2/v1/token
+auth.oauth2.client.id: {{client_id}}
+auth.oauth2.client.secret: {{api_key}}
+auth.oauth2.scopes:
+  - okta.logs.read
+{{/if}}
+{{/if}}
+{{/if}}
+{{/if}}
+
 {{! conditional auth.oauth2 section}}
 {{#unless api_key}}
 {{#if okta_domain_url}}
@@ -40,11 +65,8 @@ auth.oauth2.okta.jwk_pem: {{escape_string key_pem}}
 {{/if}}
 {{/unless}}
 
-request.rate_limit:
-  limit: '[[.last_response.header.Get "X-Rate-Limit-Limit"]]'
-  remaining: '[[.last_response.header.Get "X-Rate-Limit-Remaining"]]'
-  reset: '[[.last_response.header.Get "X-Rate-Limit-Reset"]]'
 request.transforms:
+{{#unless oin_app}}
 {{#unless client_id}}
 {{#unless okta_domain_url}}
 {{#if api_key }}
@@ -54,6 +76,7 @@ request.transforms:
 {{/if}}
 {{/unless}}
 {{/unless}}
+{{/unless}}
   - set:
       target: url.params.limit
       value: '1000'
@@ -61,6 +84,7 @@ request.transforms:
       target: url.params.since
       value: "[[.cursor.published]]"
       default: '[[formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339"]]'
+
 response.pagination:
   - set:
       target: url.value

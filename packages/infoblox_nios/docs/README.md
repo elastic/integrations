@@ -318,9 +318,11 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dhcp.decline.message |  | keyword |
 | infoblox_nios.log.dhcp.discover.message |  | keyword |
 | infoblox_nios.log.dhcp.duid |  | keyword |
+| infoblox_nios.log.dhcp.forward_name |  | keyword |
 | infoblox_nios.log.dhcp.iaid |  | keyword |
 | infoblox_nios.log.dhcp.inform.message |  | keyword |
 | infoblox_nios.log.dhcp.interface.ip |  | ip |
+| infoblox_nios.log.dhcp.ip |  | ip |
 | infoblox_nios.log.dhcp.lease.duration |  | long |
 | infoblox_nios.log.dhcp.lease.message |  | keyword |
 | infoblox_nios.log.dhcp.lease_query.message |  | keyword |
@@ -369,6 +371,7 @@ An example event for `log` looks as following:
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| server.port | Port of the server. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
