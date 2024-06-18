@@ -49,13 +49,13 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-26T18:10:04.000Z",
+    "@timestamp": "2024-06-18T06:57:37.000Z",
     "agent": {
-        "ephemeral_id": "803b783e-44fb-41f8-ba17-08c31c34aae8",
-        "id": "d17bdd23-2a9d-4013-abe7-0652f306d69d",
+        "ephemeral_id": "98e5ffe5-df03-43bc-bb8e-bfb3de694ee6",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "oracle_weblogic.access",
@@ -66,9 +66,9 @@ An example event for `access` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d17bdd23-2a9d-4013-abe7-0652f306d69d",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -76,10 +76,9 @@ An example event for `access` looks as following:
             "network"
         ],
         "dataset": "oracle_weblogic.access",
-        "ingested": "2022-04-25T06:53:32Z",
+        "ingested": "2024-06-18T06:58:44Z",
         "kind": "event",
         "module": "oracle_weblogic",
-        "original": "172.17.32.1 - - [26/Mar/2022:23:40:04 +0530] \"GET /medrec/start.xhtml HTTP/1.1\" 200 8876 ",
         "type": [
             "access"
         ]
@@ -88,30 +87,31 @@ An example event for `access` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.17.32.1"
+            "127.0.0.1"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-C0-A8-F5-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-107-generic",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "http": {
         "request": {
             "method": "GET",
-            "referrer": "/medrec/start.xhtml"
+            "referrer": "/sample/index.jsp"
         },
         "response": {
-            "bytes": 8876,
+            "bytes": 750,
             "status_code": 200
         },
         "version": "1.1"
@@ -121,21 +121,20 @@ An example event for `access` looks as following:
     },
     "log": {
         "file": {
-            "path": "/tmp/service_logs/oracle-weblogic-access.log"
+            "path": "/tmp/service_logs/adminserver/logs/access.log"
         },
         "offset": 0
     },
     "oracle_weblogic": {
         "access": {
             "authuser": "-",
-            "host_address": "172.17.32.1"
+            "host_address": "127.0.0.1"
         }
     },
     "tags": [
         "oracle_weblogic-access"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -161,13 +160,13 @@ An example event for `admin_server` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-24T10:29:51.865Z",
+    "@timestamp": "2024-06-18T06:59:47.388Z",
     "agent": {
-        "ephemeral_id": "1e785926-cb16-442e-9599-91e10ef5228d",
-        "id": "2c65d5b2-0806-4fb1-96c2-b9852c73afd0",
+        "ephemeral_id": "eb27a024-3ff2-4d79-a4c1-86ffd80db450",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "oracle_weblogic.admin_server",
@@ -178,9 +177,9 @@ An example event for `admin_server` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2c65d5b2-0806-4fb1-96c2-b9852c73afd0",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -188,10 +187,9 @@ An example event for `admin_server` looks as following:
             "iam"
         ],
         "dataset": "oracle_weblogic.admin_server",
-        "ingested": "2022-05-09T11:20:10Z",
+        "ingested": "2024-06-18T07:01:48Z",
         "kind": "event",
         "module": "oracle_weblogic",
-        "original": "####<Mar 24, 2022 10:29:51,865 AM GMT> <Info> <Server> <wlsadmin> <> <Thread-11> <> <> <> <1648117791865> <[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] > <BEA-002622> <The protocol \"admin\" is now configured.> ",
         "type": [
             "admin"
         ]
@@ -200,21 +198,22 @@ An example event for `admin_server` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.19.0.6"
+            "192.168.245.7"
         ],
         "mac": [
-            "02:42:ac:13:00:06"
+            "02-42-C0-A8-F5-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -222,27 +221,26 @@ An example event for `admin_server` looks as following:
     },
     "log": {
         "file": {
-            "path": "/tmp/service_logs/oracle-weblogic-adminserver.log"
+            "path": "/tmp/service_logs/adminserver/logs/admin-server.log"
         },
         "level": "Info",
         "offset": 0
     },
-    "message": "The protocol \"admin\" is now configured.",
+    "message": "Disabling the CryptoJ JCE Provider self-integrity check for better startup performance. To enable this check, specify -Dweblogic.security.allowCryptoJDefaultJCEVerification=true.",
     "oracle_weblogic": {
         "admin_server": {
-            "diagnostic_context_id": "1648117791865",
+            "diagnostic_context_id": "1718693987388",
             "machine_name": "wlsadmin",
-            "message_id": "BEA-002622",
+            "message_id": "BEA-090905",
             "meta": "[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] ",
-            "subsystem": "Server",
-            "thread_id": "Thread-11"
+            "subsystem": "Security",
+            "thread_id": "main"
         }
     },
     "tags": [
         "oracle_weblogic-admin_server"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -273,13 +271,13 @@ An example event for `domain` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-24T10:30:27.263Z",
+    "@timestamp": "2024-06-18T07:04:50.877Z",
     "agent": {
-        "ephemeral_id": "98841608-fe35-4844-b829-880c24a1cef7",
-        "id": "2f35c5e6-c16d-4b67-a955-b81668aca1aa",
+        "ephemeral_id": "8593b7b5-07f0-4ec3-bdc4-06ff40098f2e",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "oracle_weblogic.domain",
@@ -290,9 +288,9 @@ An example event for `domain` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2f35c5e6-c16d-4b67-a955-b81668aca1aa",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -300,10 +298,9 @@ An example event for `domain` looks as following:
             "network"
         ],
         "dataset": "oracle_weblogic.domain",
-        "ingested": "2022-05-09T12:29:51Z",
+        "ingested": "2024-06-18T07:07:06Z",
         "kind": "event",
         "module": "oracle_weblogic",
-        "original": "####<Mar 24, 2022 10:30:27,263 AM GMT> <Warning> <Socket> <wlsadmin> <AdminServer> <[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)'> <<WLS Kernel>> <> <38f025ff-7924-471b-bac8-a419692aabf9-00000018> <1648117827263> <[severity-value: 16] [rid: 0] [partition-id: 0] [partition-name: DOMAIN] > <BEA-000449> <Closing the socket, as no data read from it on 172.18.0.1:41,972 during the configured idle timeout of 5 seconds.> ",
         "type": [
             "info"
         ]
@@ -312,21 +309,22 @@ An example event for `domain` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.25.0.7"
+            "192.168.245.7"
         ],
         "mac": [
-            "02:42:ac:19:00:07"
+            "02-42-C0-A8-F5-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -334,31 +332,27 @@ An example event for `domain` looks as following:
     },
     "log": {
         "file": {
-            "path": "/tmp/service_logs/oracle-weblogic-domain.log"
+            "path": "/tmp/service_logs/adminserver/domain1.log"
         },
-        "level": "Warning",
-        "offset": 2823
+        "level": "Notice",
+        "offset": 0
     },
-    "message": "Closing the socket, as no data read from it on 172.18.0.1:41,972 during the configured idle timeout of 5 seconds.",
+    "message": "Security pre-initializing using security realm: myrealm",
     "oracle_weblogic": {
         "domain": {
-            "diagnostic_context_id": "1648117827263",
+            "diagnostic_context_id": "1718694290877",
             "machine_name": "wlsadmin",
-            "message_id": "BEA-000449",
-            "meta": "[severity-value: 16] [rid: 0] [partition-id: 0] [partition-name: DOMAIN] ",
-            "server_name": "AdminServer",
-            "subsystem": "Socket",
-            "thread_id": "[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)'"
+            "message_id": "BEA-090946",
+            "meta": "[severity-value: 32] [partition-id: 0] [partition-name: DOMAIN] ",
+            "server_name": "admin-server",
+            "subsystem": "Security",
+            "thread_id": "[STANDBY] ExecuteThread: '1' for queue: 'weblogic.kernel.Default (self-tuning)'"
         }
     },
     "tags": [
         "oracle_weblogic-domain"
-    ],
-    "transaction": {
-        "id": "38f025ff-7924-471b-bac8-a419692aabf9-00000018"
-    }
+    ]
 }
-
 ```
 
 **Exported fields**
@@ -389,13 +383,13 @@ An example event for `managed_server` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-24T10:29:56.637Z",
+    "@timestamp": "2024-06-18T07:08:39.933Z",
     "agent": {
-        "ephemeral_id": "fc2f1df6-97a1-42bf-9f6b-904a765041e3",
-        "id": "e27eb192-b14d-4af1-8861-fd7cbadb3643",
+        "ephemeral_id": "8852cf23-5f53-4fcc-aed6-75d584b4e479",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "oracle_weblogic.managed_server",
@@ -406,9 +400,9 @@ An example event for `managed_server` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e27eb192-b14d-4af1-8861-fd7cbadb3643",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -416,10 +410,9 @@ An example event for `managed_server` looks as following:
             "iam"
         ],
         "dataset": "oracle_weblogic.managed_server",
-        "ingested": "2022-05-09T11:59:45Z",
+        "ingested": "2024-06-18T07:09:56Z",
         "kind": "event",
         "module": "oracle_weblogic",
-        "original": "####<Mar 24, 2022 10:29:56,637 AM GMT> <Info> <Management> <5565e043d1b0> <> <Thread-12> <> <> <> <1648117796637> <[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] > <BEA-141307> <Unable to connect to the Administration Server. Waiting 5 second(s) to retry (attempt number 2 of 3).> ",
         "type": [
             "info"
         ]
@@ -428,21 +421,22 @@ An example event for `managed_server` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.21.0.7"
+            "192.168.245.7"
         ],
         "mac": [
-            "02:42:ac:15:00:07"
+            "02-42-C0-A8-F5-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -450,27 +444,26 @@ An example event for `managed_server` looks as following:
     },
     "log": {
         "file": {
-            "path": "/tmp/service_logs/oracle-weblogic-managedserver.log"
+            "path": "/tmp/service_logs/managedserver/managed-server1.log"
         },
         "level": "Info",
         "offset": 0
     },
-    "message": "Unable to connect to the Administration Server. Waiting 5 second(s) to retry (attempt number 2 of 3).",
+    "message": "Disabling the CryptoJ JCE Provider self-integrity check for better startup performance. To enable this check, specify -Dweblogic.security.allowCryptoJDefaultJCEVerification=true.",
     "oracle_weblogic": {
         "managed_server": {
-            "diagnostic_context_id": "1648117796637",
-            "machine_name": "5565e043d1b0",
-            "message_id": "BEA-141307",
+            "diagnostic_context_id": "1718694519933",
+            "machine_name": "a22d5129529e",
+            "message_id": "BEA-090905",
             "meta": "[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] ",
-            "subsystem": "Management",
-            "thread_id": "Thread-12"
+            "subsystem": "Security",
+            "thread_id": "main"
         }
     },
     "tags": [
         "oracle_weblogic-managed_server"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -503,13 +496,13 @@ An example event for `deployed_application` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-01T06:06:16.679Z",
+    "@timestamp": "2024-06-18T07:03:43.008Z",
     "agent": {
-        "ephemeral_id": "9b5302d4-4654-485a-8708-b8c971d7ebd6",
-        "id": "f5ae4eeb-820b-4f24-a94a-df327091d185",
+        "ephemeral_id": "dc9d4e03-d8bf-428d-b21a-630a38824bcc",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "oracle_weblogic.deployed_application",
@@ -520,9 +513,9 @@ An example event for `deployed_application` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f5ae4eeb-820b-4f24-a94a-df327091d185",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -530,8 +523,8 @@ An example event for `deployed_application` looks as following:
             "web"
         ],
         "dataset": "oracle_weblogic.deployed_application",
-        "duration": 27026922,
-        "ingested": "2022-06-01T06:06:20Z",
+        "duration": 1954627464,
+        "ingested": "2024-06-18T07:03:54Z",
         "kind": "metric",
         "module": "oracle_weblogic",
         "type": [
@@ -542,21 +535,22 @@ An example event for `deployed_application` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.31.0.7"
+            "192.168.245.7"
         ],
         "mac": [
-            "02:42:ac:1f:00:07"
+            "02-42-C0-A8-F5-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -580,19 +574,18 @@ An example event for `deployed_application` looks as following:
                 }
             },
             "single_threaded_servlet_pool_size": 5,
-            "source_info": "weblogic.war",
+            "source_info": "bea_wls_deployment_internal.war",
             "status": "DEPLOYED"
         }
     },
     "service": {
-        "address": "http://elastic-package-service_wlsadmin_1:8005/jolokia",
+        "address": "http://elastic-package-service-wlsadmin-1:8005/jolokia",
         "type": "jolokia"
     },
     "tags": [
         "oracle_weblogic-deployed_application"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -631,13 +624,13 @@ An example event for `threadpool` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-08-23T11:54:38.053Z",
+    "@timestamp": "2024-06-18T07:12:00.351Z",
     "agent": {
-        "ephemeral_id": "4a2754ea-5dba-4b59-8d77-c0f70bfccae3",
-        "id": "89fbf5a1-dedd-4f8f-a1ee-97a7e3ec1ed2",
+        "ephemeral_id": "837f7bab-f401-4069-a15b-31ad7f230beb",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.4.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "oracle_weblogic.threadpool",
@@ -648,9 +641,9 @@ An example event for `threadpool` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "89fbf5a1-dedd-4f8f-a1ee-97a7e3ec1ed2",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -658,8 +651,8 @@ An example event for `threadpool` looks as following:
             "web"
         ],
         "dataset": "oracle_weblogic.threadpool",
-        "duration": 55017871,
-        "ingested": "2023-08-23T11:54:39Z",
+        "duration": 448877395,
+        "ingested": "2024-06-18T07:12:12Z",
         "kind": "metric",
         "module": "oracle_weblogic",
         "type": [
@@ -670,18 +663,18 @@ An example event for `threadpool` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "e8978f2086c14e13b7a0af9ed0011d19",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.29.0.9"
+            "192.168.245.7"
         ],
         "mac": [
-            "02-42-AC-1D-00-09"
+            "02-42-C0-A8-F5-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.90.1.el7.x86_64",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -694,43 +687,21 @@ An example event for `threadpool` looks as following:
     },
     "oracle_weblogic": {
         "threadpool": {
-            "mbean": "com.bea:ServerRuntime=admin-server,Name=ThreadPoolRuntime,Type=ThreadPoolRuntime",
-            "queue": {
-                "length": 0
-            },
-            "requests": {
-                "completed": 1466,
-                "overload": {
-                    "rejected": 0
-                },
-                "pending": 0
-            },
+            "mbean": "java.lang:type=Threading",
             "threads": {
-                "execute": {
-                    "idle": 1,
-                    "total": 15
-                },
-                "hogging": 0,
-                "standby": 14,
-                "stuck": 0
-            },
-            "throughput": 91.5,
-            "work_manager": {
-                "capacity": {
-                    "shared": 65536
-                }
+                "daemon": 39,
+                "total": 42
             }
         }
     },
     "service": {
-        "address": "http://elastic-package-service_wlsadmin_1:8005/jolokia",
+        "address": "http://elastic-package-service-wlsadmin-1:8005/jolokia",
         "type": "jolokia"
     },
     "tags": [
         "oracle_weblogic-threadpool"
     ]
 }
-
 ```
 
 **Exported fields**
