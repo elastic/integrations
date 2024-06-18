@@ -55,82 +55,82 @@ An example event for `app_insights` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-08-23T14:37:42.268Z",
     "agent": {
-        "hostname": "docker-fleet-agent",
-        "name": "docker-fleet-agent",
-        "id": "d979a8cf-ddeb-458f-9019-389414e0ab47",
         "ephemeral_id": "4162d5df-ab00-4c1b-b4f3-7db2e3b599d4",
+        "hostname": "docker-fleet-agent",
+        "id": "d979a8cf-ddeb-458f-9019-389414e0ab47",
+        "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "7.15.0"
-    },
-    "elastic_agent": {
-        "id": "d979a8cf-ddeb-458f-9019-389414e0ab47",
-        "version": "7.15.0",
-        "snapshot": true
-    },
-    "cloud": {
-        "provider": "azure"
-    },
-    "@timestamp": "2021-08-23T14:37:42.268Z",
-    "ecs": {
-        "version": "1.12.0"
-    },
-    "service": {
-        "type": "azure"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "azure.app_insights"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "4.19.128-microsoft-standard",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "family": "redhat",
-            "type": "linux",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "192.168.96.7"
-        ],
-        "name": "docker-fleet-agent",
-        "id": "1642d255f9a32fc6926cddf21bb0d5d3",
-        "mac": [
-            "02:42:c0:a8:60:07"
-        ],
-        "architecture": "x86_64"
-    },
-    "metricset": {
-        "period": 300000,
-        "name": "app_insights"
-    },
-    "event": {
-        "duration": 503187300,
-        "agent_id_status": "verified",
-        "ingested": "2021-08-23T14:37:41Z",
-        "module": "azure",
-        "dataset": "azure.app_insights"
     },
     "azure": {
         "app_insights": {
             "end_date": "2021-08-23T14:37:42.268Z",
             "start_date": "2021-08-23T14:32:42.268Z"
         },
-        "metrics": {
-            "requests_count": {
-                "sum": 4
-            }
-        },
         "application_id": "42cb59a9-d5be-400b-a5c4-69b0a0026ac6",
         "dimensions": {
             "request_name": "GET Home/Index",
             "request_url_host": "demoappobs.azurewebsites.net"
+        },
+        "metrics": {
+            "requests_count": {
+                "sum": 4
+            }
         }
+    },
+    "cloud": {
+        "provider": "azure"
+    },
+    "data_stream": {
+        "dataset": "azure.app_insights",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "d979a8cf-ddeb-458f-9019-389414e0ab47",
+        "snapshot": true,
+        "version": "7.15.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "azure.app_insights",
+        "duration": 503187300,
+        "ingested": "2021-08-23T14:37:41Z",
+        "module": "azure"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "1642d255f9a32fc6926cddf21bb0d5d3",
+        "ip": [
+            "192.168.96.7"
+        ],
+        "mac": [
+            "02:42:c0:a8:60:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "4.19.128-microsoft-standard",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
+    "metricset": {
+        "name": "app_insights",
+        "period": 300000
+    },
+    "service": {
+        "type": "azure"
     }
 }
 ```
