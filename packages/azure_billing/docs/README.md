@@ -282,7 +282,7 @@ An example event for `billing` looks as following:
             "192.168.16.7"
         ],
         "mac": [
-            "02:42:c0:a8:10:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
