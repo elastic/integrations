@@ -62,7 +62,7 @@ An example event for `access` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "event": {
         "category": [
@@ -165,7 +165,6 @@ An example event for `access` looks as following:
         "name": "-"
     }
 }
-
 ```
 
 **Exported fields**
