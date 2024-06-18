@@ -112,7 +112,7 @@ An example event for `app_insights` looks as following:
             "192.168.96.7"
         ],
         "mac": [
-            "02:42:c0:a8:60:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
