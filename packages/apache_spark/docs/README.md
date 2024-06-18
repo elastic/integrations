@@ -157,7 +157,9 @@ An example event for `application` looks as following:
         "ip": [
             "172.20.0.7"
         ],
-        "mac": "02-42-AC-14-00-07",
+        "mac": [
+            "02-42-C0-A8-F5-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -263,7 +265,9 @@ An example event for `driver` looks as following:
         "ip": [
             "172.26.0.7"
         ],
-        "mac": "02-42-AC-1A-00-07",
+        "mac": [
+            "02-42-AC-1A-00-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -435,7 +439,9 @@ An example event for `executor` looks as following:
         "ip": [
             "172.20.0.7"
         ],
-        "mac": "02-42-AC-14-00-07",
+        "mac": [
+            "02-42-AC-14-00-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -609,7 +615,7 @@ An example event for `node` looks as following:
             "192.168.32.5"
         ],
         "mac": [
-            "02:42:c0:a8:20:05"
+            "02-42-AC-14-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
