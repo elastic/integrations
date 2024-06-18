@@ -881,7 +881,9 @@ An example event for `memory` looks as following:
         "address": "http://elastic-package-service-apache_tomcat-1:9090/metrics",
         "type": "prometheus"
     },
-    "tags": "apache_tomcat-memory"
+    "tags": [
+        "apache_tomcat-memory"
+    ]
 }
 ```
 
@@ -1150,7 +1152,9 @@ An example event for `session` looks as following:
         "address": "http://elastic-package-service-apache_tomcat-1:9090/metrics",
         "type": "prometheus"
     },
-    "tags": "apache_tomcat-session"
+    "tags": [
+        "apache_tomcat-session"
+    ]
 }
 ```
 
@@ -1312,7 +1316,9 @@ An example event for `thread_pool` looks as following:
         "address": "http://elastic-package-service-apache_tomcat-1:9090/metrics",
         "type": "prometheus"
     },
-    "tags": "apache_tomcat-thread_pool"
+    "tags": [
+        "apache_tomcat-thread_pool"
+    ]
 }
 ```
 
