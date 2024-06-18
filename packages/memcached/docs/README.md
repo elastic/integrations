@@ -86,7 +86,7 @@ An example event for `stats` looks as following:
             "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
