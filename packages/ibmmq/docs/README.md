@@ -107,8 +107,12 @@ An example event for `qmgr` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "829324aac17946dcace17006fa82a2d2",
-        "ip": "192.168.243.9",
-        "mac": "02-42-C0-A8-F3-09",
+        "ip": [
+            "192.168.243.9"
+        ],
+        "mac": [
+            "02-42-AC-1F-00-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
