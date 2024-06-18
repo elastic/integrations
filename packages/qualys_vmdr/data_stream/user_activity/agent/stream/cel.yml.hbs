@@ -29,13 +29,13 @@ program: |
     "GET",
     state.url.trim_right("/") + "/api/2.0/fo/activity_log/?" + {
       "action": ["list"],
-      "since_datetime": [string(state.?cursor.latest_ts.orValue(now - duration(state.initial_interval)))],
+      "since_datetime": [string(state.?cursor.latest_ts.orValue(now - duration(state.initial_interval)).format("2006-01-02 15:04:05"))],
       ?"truncation_limit": has(state.batch_size) ? optional.of([string(state.batch_size)]) : optional.none(),
     }.format_query()
   ).with({
     "Header":{
       "Authorization": ["Basic " + (state.user + ":" + state.password).base64()],
-      "X-Requested-With": ["Elastic-Agent"],
+      "X-Requested-With": ["curl"],
     }
   }).do_request().as(resp, (
     resp.StatusCode == 200
@@ -65,6 +65,9 @@ program: |
 tags:
 {{#if preserve_duplicate_custom_fields}}
   - preserve_duplicate_custom_fields
+{{/if}}
+{{#if preserve_original_event}}
+  - preserve_original_event
 {{/if}}
 {{#each tags as |tag|}}
   - {{tag}}
