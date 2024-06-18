@@ -136,7 +136,7 @@ An example event for `bucket` looks as following:
             "192.168.128.7"
         ],
         "mac": [
-            "02:42:c0:a8:80:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -268,7 +268,7 @@ An example event for `cache` looks as following:
             "192.168.128.7"
         ],
         "mac": [
-            "02:42:c0:a8:80:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -449,7 +449,7 @@ An example event for `cluster` looks as following:
             "192.168.128.7"
         ],
         "mac": [
-            "02:42:c0:a8:80:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -631,7 +631,7 @@ An example event for `cbl_replication` looks as following:
             "192.168.128.7"
         ],
         "mac": [
-            "02:42:c0:a8:80:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -775,7 +775,7 @@ An example event for `database_stats` looks as following:
             "192.168.128.7"
         ],
         "mac": [
-            "02:42:c0:a8:80:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -953,7 +953,7 @@ An example event for `miscellaneous` looks as following:
             "192.168.128.7"
         ],
         "mac": [
-            "02:42:c0:a8:80:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1106,7 +1106,7 @@ An example event for `resource` looks as following:
             "192.168.128.7"
         ],
         "mac": [
-            "02:42:c0:a8:80:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1404,7 +1404,7 @@ An example event for `query_index` looks as following:
             "192.168.128.7"
         ],
         "mac": [
-            "02:42:c0:a8:80:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1529,7 +1529,7 @@ An example event for `xdcr` looks as following:
             "192.168.128.7"
         ],
         "mac": [
-            "02:42:c0:a8:80:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
