@@ -103,7 +103,7 @@ An example event for `log` looks as following:
             "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
