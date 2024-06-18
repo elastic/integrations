@@ -2296,7 +2296,7 @@ processors:
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == null
 
   # Event Outcome/Actions mapping
-  # Special handling when event.category is 'file' or 'registry' or 'driver' for better compatibility and detection rules.
+  # Special handling when event.category is 'file' or 'registry' or 'driver' or 'process' for better compatibility and detection rules.
   - set:
       field: event.action
       value: deletion
@@ -2332,6 +2332,11 @@ processors:
       value: load
       tag: set_event_action_load
       if: ctx.event?.category != null && ctx.event.category.contains('driver')
+  - set:
+      field: event.action
+      value: start
+      tag: set_event_action_start
+      if: ctx.event?.category != null && ctx.event.category.contains('process') && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase() == 'processcreated'
   # For all other categories, copy the value from m365_defender.event.action.type
   - set:
       field: event.action
