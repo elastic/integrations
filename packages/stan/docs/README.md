@@ -18,13 +18,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T04:11:35.529Z",
+    "@timestamp": "2024-06-18T10:41:22.515Z",
     "agent": {
-        "ephemeral_id": "8d87b679-d308-4954-a88f-fdac22706bb7",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "e925a178-f704-43e6-899e-b69b164425d8",
+        "id": "21652d23-59b4-4d65-a341-ede15f919642",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "stan.log",
@@ -35,15 +35,15 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "21652d23-59b4-4d65-a341-ede15f919642",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-01-12T04:11:50.063Z",
+        "created": "2024-06-18T10:41:36.382Z",
         "dataset": "stan.log",
-        "ingested": "2022-01-12T04:11:50Z",
+        "ingested": "2024-06-18T10:41:38Z",
         "kind": "event",
         "type": [
             "info"
@@ -111,13 +111,13 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T04:12:59.760Z",
+    "@timestamp": "2024-06-18T10:42:35.470Z",
     "agent": {
-        "ephemeral_id": "6e4beb8a-ccda-438d-b3f4-e89b98e870d8",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "b30d1b07-36f0-4e5f-9f80-56b6015fb855",
+        "id": "21652d23-59b4-4d65-a341-ede15f919642",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "stan.stats",
@@ -125,40 +125,36 @@ An example event for `stats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "21652d23-59b4-4d65-a341-ede15f919642",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "stan.stats",
-        "duration": 15794254,
-        "ingested": "2022-01-12T04:13:00Z",
+        "duration": 1823495,
+        "ingested": "2024-06-18T10:42:47Z",
         "module": "stan"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.252.5",
+        "mac": "02-42-C0-A8-FC-05",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -174,7 +170,7 @@ An example event for `stats` looks as following:
             "id": "test-cluster"
         },
         "server": {
-            "id": "JQCbrpPJGBxuQGsQ9Yx4Xs"
+            "id": "I9vNI3muOuNoem5vuoyo5z"
         },
         "stats": {
             "bytes": 0,
@@ -227,13 +223,13 @@ An example event for `channels` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T04:11:05.571Z",
+    "@timestamp": "2024-06-18T10:40:33.161Z",
     "agent": {
-        "ephemeral_id": "02c989d8-8cf2-4e65-bf07-a8e93785fdaa",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "2f2befc0-8f03-49d7-b5bf-8131709857b6",
+        "id": "21652d23-59b4-4d65-a341-ede15f919642",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "stan.channels",
@@ -241,40 +237,36 @@ An example event for `channels` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "21652d23-59b4-4d65-a341-ede15f919642",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "stan.channels",
-        "duration": 22264899,
-        "ingested": "2022-01-12T04:11:06Z",
+        "duration": 3556501,
+        "ingested": "2024-06-18T10:40:45Z",
         "module": "stan"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.252.5",
+        "mac": "02-42-C0-A8-FC-05",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -298,7 +290,7 @@ An example event for `channels` looks as following:
             "id": "test-cluster"
         },
         "server": {
-            "id": "dEvzTKomxEioLU6oP1VuXM"
+            "id": "KJXiShxwxsi2oNAUH1Rlzn"
         }
     }
 }
@@ -342,13 +334,13 @@ An example event for `subscriptions` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T04:13:52.133Z",
+    "@timestamp": "2024-06-18T10:43:38.692Z",
     "agent": {
-        "ephemeral_id": "edb669a5-3b36-43d7-8190-d485d6517f69",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "871b52f0-2644-4638-811c-1b0befe0ee13",
+        "id": "21652d23-59b4-4d65-a341-ede15f919642",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "stan.subscriptions",
@@ -356,40 +348,36 @@ An example event for `subscriptions` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "21652d23-59b4-4d65-a341-ede15f919642",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "stan.subscriptions",
-        "duration": 6243276,
-        "ingested": "2022-01-12T04:13:53Z",
+        "duration": 1947519984,
+        "ingested": "2024-06-18T10:43:50Z",
         "module": "stan"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.252.5",
+        "mac": "02-42-C0-A8-FC-05",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -405,11 +393,11 @@ An example event for `subscriptions` looks as following:
             "id": "test-cluster"
         },
         "server": {
-            "id": "NevWjtY7nB1yzea8TtJaGb"
+            "id": "SwiO2nzNV8CW27j45QPnFz"
         },
         "subscriptions": {
             "channel": "foo",
-            "id": "benchmark-sub-25",
+            "id": "benchmark-sub-23",
             "last_sent": 0,
             "offline": false,
             "pending": 0,
