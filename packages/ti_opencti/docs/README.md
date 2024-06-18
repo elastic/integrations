@@ -53,26 +53,26 @@ An example event for `indicator` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-11-09T01:59:11.241Z",
+    "@timestamp": "2024-06-12T06:54:25.854Z",
     "agent": {
-        "ephemeral_id": "f115b31f-9c4f-4f14-a73b-3a54e25f204e",
-        "id": "00b6764d-580c-4a5e-bd48-b4e128e0d894",
+        "ephemeral_id": "de8fc32a-4eaf-4e32-97ae-bcdb93b8d8ee",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_opencti.indicator",
-        "namespace": "ep",
+        "namespace": "66338",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "00b6764d-580c-4a5e-bd48-b4e128e0d894",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -82,9 +82,9 @@ An example event for `indicator` looks as following:
         "created": "2018-02-05T08:04:53.000Z",
         "dataset": "ti_opencti.indicator",
         "id": "d019b01c-b637-4eb2-af53-6d527be3193d",
-        "ingested": "2023-11-09T01:59:14Z",
+        "ingested": "2024-06-12T06:54:37Z",
         "kind": "enrichment",
-        "original": "{\"confidence\":15,\"created\":\"2018-02-05T08:04:53.000Z\",\"createdBy\":{\"identity_class\":\"organization\",\"name\":\"CthulhuSPRL.be\"},\"description\":\"\",\"externalReferences\":{\"edges\":[]},\"id\":\"d019b01c-b637-4eb2-af53-6d527be3193d\",\"is_inferred\":false,\"killChainPhases\":{\"edges\":[]},\"lang\":\"en\",\"modified\":\"2023-01-17T05:53:42.851Z\",\"name\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"objectLabel\":{\"edges\":[{\"node\":{\"value\":\"information-credibility-6\"}},{\"node\":{\"value\":\"osint\"}}]},\"objectMarking\":{\"edges\":[{\"node\":{\"definition\":\"TLP:GREEN\",\"definition_type\":\"TLP\"}}]},\"observables\":{\"edges\":[{\"node\":{\"entity_type\":\"Hostname\",\"id\":\"b0a91059-5637-4050-8dce-a976a607f75c\",\"observable_value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"standard_id\":\"hostname--2047cd44-ffae-5b34-b912-5856add59b59\",\"value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\"}}],\"pageInfo\":{\"globalCount\":1}},\"pattern\":\"[hostname:value = 'ec2-23-21-172-164.compute-1.amazonaws.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":true,\"standard_id\":\"indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b\",\"valid_from\":\"2018-02-05T08:04:53.000Z\",\"valid_until\":\"2019-02-05T08:04:53.000Z\",\"x_opencti_detection\":false,\"x_opencti_main_observable_type\":\"Hostname\",\"x_opencti_score\":40}",
+        "original": "{\"confidence\":15,\"created\":\"2018-02-05T08:04:53.000Z\",\"createdBy\":{\"identity_class\":\"organization\",\"name\":\"CthulhuSPRL.be\"},\"description\":\"\",\"externalReferences\":{\"edges\":[]},\"id\":\"d019b01c-b637-4eb2-af53-6d527be3193d\",\"is_inferred\":false,\"killChainPhases\":[],\"lang\":\"en\",\"modified\":\"2023-01-17T05:53:42.851Z\",\"name\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"objectLabel\":[{\"value\":\"information-credibility-6\"},{\"value\":\"osint\"}],\"objectMarking\":[{\"definition\":\"TLP:GREEN\",\"definition_type\":\"TLP\"}],\"observables\":{\"edges\":[{\"node\":{\"entity_type\":\"Hostname\",\"id\":\"b0a91059-5637-4050-8dce-a976a607f75c\",\"observable_value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"standard_id\":\"hostname--2047cd44-ffae-5b34-b912-5856add59b59\",\"value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\"}}],\"pageInfo\":{\"globalCount\":1}},\"pattern\":\"[hostname:value = 'ec2-23-21-172-164.compute-1.amazonaws.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":true,\"standard_id\":\"indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b\",\"valid_from\":\"2018-02-05T08:04:53.000Z\",\"valid_until\":\"2019-02-05T08:04:53.000Z\",\"x_opencti_detection\":false,\"x_opencti_main_observable_type\":\"Hostname\",\"x_opencti_score\":40}",
         "type": [
             "indicator"
         ]
@@ -96,6 +96,7 @@ An example event for `indicator` looks as following:
         "indicator": {
             "creator_identity_class": "organization",
             "detection": false,
+            "invalid_or_revoked_from": "2019-02-05T08:04:53.000Z",
             "is_inferred": false,
             "lang": "en",
             "observables_count": 1,
@@ -145,8 +146,8 @@ An example event for `indicator` looks as following:
             "modified_at": "2023-01-17T05:53:42.851Z",
             "name": "ec2-23-21-172-164.compute-1.amazonaws.com",
             "provider": "CthulhuSPRL.be",
-            "reference": "http://elastic-package-service-opencti_stub-1:8080/dashboard/observations/indicators/d019b01c-b637-4eb2-af53-6d527be3193d",
-            "type": "hostname",
+            "reference": "http://svc-opencti_stub:8080/dashboard/observations/indicators/d019b01c-b637-4eb2-af53-6d527be3193d",
+            "type": "domain-name",
             "url": {
                 "domain": "ec2-23-21-172-164.compute-1.amazonaws.com",
                 "registered_domain": "ec2-23-21-172-164.compute-1.amazonaws.com",
@@ -155,7 +156,6 @@ An example event for `indicator` looks as following:
         }
     }
 }
-
 ```
 
 #### Exported fields
