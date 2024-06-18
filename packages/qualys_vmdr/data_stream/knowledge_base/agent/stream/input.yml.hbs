@@ -37,38 +37,51 @@ program: |
           "X-Requested-With": ["curl"],
           "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
       }
-  }).do_request().as(resp, resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_2_0').as(body, {
-      "events": (has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST) ?
-          body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, {
-            ?"xml":    state.keep_xml ? optional.of(string(xml)) : optional.none(),
-            "message": e.with({
-              "CVE_LIST": has(e.CVE_LIST) && has(e.CVE_LIST.CVE) ? e.CVE_LIST.CVE.map(c, c.ID) : [],
-            }).encode_json()
-          })
-        :
-          has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET) ?
-          body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET : {"error":"response IDs values are missing"}
-      ),
-      "cursor": {
-        "last_modified": (
-          has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST) && has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN) && body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.size() > 0
+  }).do_request().as(resp,
+    resp.StatusCode == 200
+    ?
+      resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_2_0').as(body, state.with({
+        "events": (
+          has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
           ?
-            body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.LAST_SERVICE_MODIFICATION_DATETIME).max()
+            body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, {
+              ?"xml":    state.keep_xml ? optional.of(string(xml)) : optional.none(),
+              "message": e.with({
+                "CVE_LIST": has(e.CVE_LIST) && has(e.CVE_LIST.CVE) ? e.CVE_LIST.CVE.map(c, c.ID) : [],
+              }).encode_json()
+            })
           :
-            (
-              has(state.cursor) && has(state.cursor.last_modified)
-              ?
-                state.cursor.last_modified
-              :
-                null
-            )
-        )
-      },
-      "user": state.user,
-      "password": state.password,
-      "params": has(state.params) ? state.params : "",
-      "initial_interval": state.initial_interval
-  })))
+            has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET) ?
+            body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET : {"error":"response IDs values are missing"}
+        ),
+        "cursor": {
+          "last_modified": (
+            has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST) && has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN) && body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.size() > 0
+            ?
+              body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.LAST_SERVICE_MODIFICATION_DATETIME).max()
+            :
+              (
+                has(state.cursor) && has(state.cursor.last_modified)
+                ?
+                  state.cursor.last_modified
+                :
+                  null
+              )
+          )
+        },
+      })))
+    :
+      state.with({
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": string(resp.Body),
+          },
+        },
+        "want_more": false,
+      })
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
