@@ -52,8 +52,12 @@ An example event for `virtualmachine` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
-        "ip": "172.23.0.7",
-        "mac": "02-42-AC-17-00-07",
+        "ip": [
+            "172.23.0.7"
+        ],
+        "mac": [
+            "02-42-AC-17-00-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -189,8 +193,12 @@ An example event for `host` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
-        "ip": "172.23.0.7",
-        "mac": "02-42-AC-17-00-07",
+        "ip": [
+            "172.23.0.7"
+        ],
+        "mac": [
+            "02-42-AC-17-00-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -316,8 +324,12 @@ An example event for `datastore` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
-        "ip": "172.23.0.7",
-        "mac": "02-42-AC-17-00-07",
+        "ip": [
+            "172.23.0.7"
+        ],
+        "mac": [
+            "02-42-AC-17-00-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
