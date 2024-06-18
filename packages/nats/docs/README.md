@@ -62,7 +62,7 @@ An example event for `log` looks as following:
             "192.168.192.8"
         ],
         "mac": [
-            "02:42:c0:a8:c0:08"
+            "02-42-C0-A8-F5-07"
         ],
         "name": "5706c620a165",
         "os": {
@@ -146,13 +146,13 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:55:11.384Z",
+    "@timestamp": "2024-06-18T06:49:17.492Z",
     "agent": {
-        "ephemeral_id": "259312b7-26e3-4a70-8c3a-720386a6a71e",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "4b9c9086-97a0-4aec-9cc4-b227f25eaf7b",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.stats",
@@ -160,40 +160,36 @@ An example event for `stats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.stats",
-        "duration": 49665904,
-        "ingested": "2022-01-12T02:55:14Z",
+        "duration": 1739425,
+        "ingested": "2024-06-18T06:49:29Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -202,12 +198,12 @@ An example event for `stats` looks as following:
     },
     "nats": {
         "server": {
-            "id": "NCXFULRLCZMWAWXMVPHIAESOUAOURC2INJOQFODIMJ2IHZ3QE7BH7X74",
-            "time": "2022-01-12T02:55:11.384194105Z"
+            "id": "NDCZVPEIJLTFLUSYR6Y4OSKTDJ5QD4LTTBSOKJ6HPX3K3QZPF6CI6VMI",
+            "time": "2024-06-18T06:49:17.492Z"
         },
         "stats": {
-            "cores": 1,
-            "cpu": 0.28,
+            "cores": 12,
+            "cpu": 1.03,
             "http": {
                 "req_stats": {
                     "uri": {
@@ -215,16 +211,16 @@ An example event for `stats` looks as following:
                         "root": 0,
                         "routez": 0,
                         "subsz": 0,
-                        "varz": 2
+                        "varz": 1
                     }
                 }
             },
             "in": {
-                "bytes": 13072240,
-                "messages": 817015
+                "bytes": 29849184,
+                "messages": 1865574
             },
             "mem": {
-                "bytes": 12103680
+                "bytes": 8806400
             },
             "out": {
                 "bytes": 0,
@@ -233,7 +229,7 @@ An example event for `stats` looks as following:
             "remotes": 1,
             "slow_consumers": 0,
             "total_connections": 1,
-            "uptime": 23
+            "uptime": 13
         }
     },
     "service": {
@@ -291,13 +287,13 @@ An example event for `connections` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:46:48.367Z",
+    "@timestamp": "2024-06-18T06:42:06.763Z",
     "agent": {
-        "ephemeral_id": "3886806d-b880-4842-a4be-79391a8fc2e4",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "dd10a7db-f158-4b9b-aaf2-af4cdc3d6b06",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.connections",
@@ -305,40 +301,36 @@ An example event for `connections` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.connections",
-        "duration": 125128016,
-        "ingested": "2022-01-12T02:46:50Z",
+        "duration": 1514602,
+        "ingested": "2024-06-18T06:42:18Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -350,8 +342,8 @@ An example event for `connections` looks as following:
             "total": 1
         },
         "server": {
-            "id": "NBBIEC4H2KI3XR4SUAATGL5INXZZS72ZUYMVJBCLKVDDEWCJCFZOXH7W",
-            "time": "2022-01-12T02:46:48.367495135Z"
+            "id": "NCNKDXBFQLH5L4U6H3BPZX2CYTOLLFFFKKMAPUCSKE2QYMMS2S7HGYMN",
+            "time": "2024-06-18T06:42:06.763Z"
         }
     },
     "service": {
@@ -394,13 +386,13 @@ An example event for `routes` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:52:26.015Z",
+    "@timestamp": "2024-06-18T06:46:57.937Z",
     "agent": {
-        "ephemeral_id": "5ca072d2-2eac-4cad-9a39-bdfec64f2640",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "109393c6-0e20-4b2a-b653-3fa5e35b5f7c",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.routes",
@@ -408,40 +400,36 @@ An example event for `routes` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.routes",
-        "duration": 29566227,
-        "ingested": "2022-01-12T02:52:29Z",
+        "duration": 1390061,
+        "ingested": "2024-06-18T06:47:09Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -453,8 +441,8 @@ An example event for `routes` looks as following:
             "total": 1
         },
         "server": {
-            "id": "NAGYMNF4IADKFHPNJEJMQUWPYUVOWX3KC3V2UINL5QJYDVGIAZB7N3L6",
-            "time": "2022-01-12T02:52:26.015311657Z"
+            "id": "NCTCCFMHSIRDQEDRY54BNE6H5D2S476BITJEDHPZMOMCKZOITM6WWA6V",
+            "time": "2024-06-18T06:46:57.937Z"
         }
     },
     "service": {
@@ -497,13 +485,13 @@ An example event for `subscriptions` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:57:55.837Z",
+    "@timestamp": "2024-06-18T06:51:43.719Z",
     "agent": {
-        "ephemeral_id": "29d75d7c-e650-4bf4-ba7a-f769e4edd5da",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "20d397d4-1143-4670-8a66-d8b8bceb57ac",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.subscriptions",
@@ -511,40 +499,36 @@ An example event for `subscriptions` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.subscriptions",
-        "duration": 11100010,
-        "ingested": "2022-01-12T02:57:59Z",
+        "duration": 1163583,
+        "ingested": "2024-06-18T06:51:55Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -614,13 +598,13 @@ An example event for `connection` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:43:51.172Z",
+    "@timestamp": "2024-06-18T06:39:34.665Z",
     "agent": {
-        "ephemeral_id": "3cf8068e-3998-4da7-b2f1-de14207c5d44",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "3565b6dd-89b9-4d31-bc0e-52bd652289ee",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.connection",
@@ -628,40 +612,36 @@ An example event for `connection` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.connection",
-        "duration": 276175024,
-        "ingested": "2022-01-12T02:43:52Z",
+        "duration": 1778759,
+        "ingested": "2024-06-18T06:39:46Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -672,8 +652,8 @@ An example event for `connection` looks as following:
         "connection": {
             "idle_time": 0,
             "in": {
-                "bytes": 10310992,
-                "messages": 644437
+                "bytes": 31946336,
+                "messages": 1996646
             },
             "name": "NATS Benchmark",
             "out": {
@@ -682,10 +662,10 @@ An example event for `connection` looks as following:
             },
             "pending_bytes": 0,
             "subscriptions": 0,
-            "uptime": 24
+            "uptime": 14
         },
         "server": {
-            "id": "NAMJNT4IYFE3N7FCYJWAKX3OKMQVIUSL7CN4EPBUXJNKSCTYCRHSVNTB"
+            "id": "NCKVGU7EX4KDOQDL6CQIEYBWSAVCA37KXRD5UOGRNGIFXOMDAV3VYKFJ"
         }
     },
     "service": {
@@ -736,13 +716,13 @@ An example event for `route` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:49:43.071Z",
+    "@timestamp": "2024-06-18T06:44:35.066Z",
     "agent": {
-        "ephemeral_id": "7603b971-4c23-4474-94d7-736540cccfbc",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "6003d8f1-6313-4eb7-8d62-101876d13951",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.route",
@@ -750,40 +730,36 @@ An example event for `route` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.route",
-        "duration": 37120483,
-        "ingested": "2022-01-12T02:49:47Z",
+        "duration": 1372502,
+        "ingested": "2024-06-18T06:44:47Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -796,18 +772,18 @@ An example event for `route` looks as following:
                 "bytes": 0,
                 "messages": 0
             },
-            "ip": "172.23.0.2",
+            "ip": "192.168.254.2",
             "out": {
                 "bytes": 0,
                 "messages": 0
             },
             "pending_size": 0,
-            "port": 43132,
-            "remote_id": "ND6TIOITFXLQL7IOQ6YF4YA76FO5DZKZ7RADTQFJH5Y22554RBAN23HE",
+            "port": 43212,
+            "remote_id": "NDLBUBM32KU4PB6T3NDNQOFUCNPVHPGEVLS5K2CYY2RHGOV6M3UBBXCF",
             "subscriptions": 0
         },
         "server": {
-            "id": "NDLSAJ5QGWF5IZJSOSOC7P22NTXGFIQMULUEZR2VC4HT4STJU6L36AIB"
+            "id": "NADJLTRJXDJIDP4EJTJ2ZLIYQENQKIRX23VYDPNGHPAWEAHLESEEENNM"
         }
     },
     "service": {
