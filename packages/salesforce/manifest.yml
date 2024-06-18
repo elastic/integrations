@@ -11,24 +11,7 @@ conditions:
   elastic:
     subscription: basic
   kibana:
-    version: ^8.12.0
-screenshots:
-  - src: /img/salesforce-login.png
-    title: Salesforce Login Dashboard
-    size: 1366x1912
-    type: image/png
-  - src: /img/salesforce-logout.png
-    title: Salesforce Logout Dashboard
-    size: 1366x1912
-    type: image/png
-  - src: /img/salesforce-setupaudittrail.png
-    title: Salesforce SetupAuditTrail Dashboard
-    size: 1366x1912
-    type: image/png
-  - src: /img/salesforce-apex.png
-    title: Salesforce Apex Dashboard
-    size: 1366x1912
-    type: image/png
+    version: ^8.14.0
 icons:
   - src: /img/salesforce.svg
     title: Salesforce
@@ -45,24 +28,10 @@ vars:
   - name: jwt_enabled
     type: bool
     title: Enable JWT Authentication
-    description: Enable JWT-based authentication for secure communication with Salesforce APIs. If disabled, the package will use the username-password authentication flow.
+    description: "Enable JWT-based authentication for secure communication with Salesforce APIs. If disabled, the package will use the username-password authentication flow.\n`Required fields for JWT Authentication`: JWT Authentication Audience URL, JWT Authentication Client Key Path, Username, Client ID \n `Required fields for User-Password Authentication`: Username, Password, Client ID, Client Secret, Token URL"
     required: true
     show_user: true
-    default: true
-  - name: client_key_path
-    type: text
-    title: JWT Authentication Client Key Path
-    description: Path to the private key file used for JWT authentication. The key file should be in PEM format.
-    required: false
-    show_user: true
-    default: client-key.pem
-  - name: jwt_url
-    type: text
-    title: JWT Authentication Audience URL
-    description: The audience URL for JWT authentication, typically set to https://login.salesforce.com.
-    required: false
-    show_user: true
-    default: https://login.salesforce.com
+    default: false
   - name: username
     type: text
     title: Username
@@ -70,6 +39,14 @@ vars:
     required: true
     show_user: true
     default: username
+  - name: password
+    type: password
+    title: Password
+    secret: true
+    description: The password associated with your Salesforce account, used for username-password authentication.
+    required: false
+    show_user: true
+    default: password
   - name: client_id
     type: text
     title: Client ID
@@ -85,21 +62,27 @@ vars:
     secret: true
     show_user: true
     default: client_secret
-  - name: password
-    type: password
-    title: Password
-    secret: true
-    description: The password associated with your Salesforce account, used for username-password authentication.
-    required: false
-    show_user: true
-    default: password
   - name: token_url
     type: text
     title: Token URL
     secret: false
     description: The OAuth 2.0 token endpoint URL for Salesforce, typically set to https://login.salesforce.com/services/oauth2/token.
     required: true
-    show_user: false
+    show_user: true
+    default: https://login.salesforce.com
+  - name: client_key_path
+    type: text
+    title: JWT Authentication Client Key Path
+    description: Path to the private key file used for JWT authentication.
+    required: false
+    show_user: true
+    default: client-key.pem
+  - name: jwt_url
+    type: text
+    title: JWT Authentication Audience URL
+    description: The audience URL for JWT authentication, typically set to https://login.salesforce.com.
+    required: false
+    show_user: true
     default: https://login.salesforce.com
 policy_templates:
   - name: salesforce
