@@ -178,7 +178,7 @@ An example event for `cluster` looks as following:
             "172.27.0.7"
         ],
         "mac": [
-            "02:42:ac:1b:00:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -477,7 +477,7 @@ An example event for `namenode` looks as following:
             "192.168.160.7"
         ],
         "mac": [
-            "02:42:c0:a8:a0:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -610,7 +610,7 @@ An example event for `node_manager` looks as following:
             "192.168.160.7"
         ],
         "mac": [
-            "02:42:c0:a8:a0:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
