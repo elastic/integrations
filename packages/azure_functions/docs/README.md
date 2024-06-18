@@ -81,13 +81,13 @@ An example event for `functionapplogs` looks as following:
             "app_name": "test-function",
             "category": "Function.hello",
             "event_name": "FunctionStarted",
-            "invocation_id": "d878e365-b3d6-4796-9292-7500acd0c677",
-            "name": "Functions.hello",
             "host_instance_id": "bb84c437-4c26-4d0b-a06d-7fc2f16976e3",
             "host_version": "4.19.2.2",
+            "invocation_id": "d878e365-b3d6-4796-9292-7500acd0c677",
             "level": "Information",
             "level_id": 2,
             "message": "Executing Functions.hello (Reason=This function was programmatically called via the host APIs., Id=d878e365-b3d6-4796-9292-7500acd0c677)",
+            "name": "Functions.hello",
             "process_id": 67,
             "role_instance": "54108609-638204200593759681"
         },
@@ -107,7 +107,7 @@ An example event for `functionapplogs` looks as following:
         "provider": "azure"
     },
     "ecs": {
-        "version": "8.7.0"
+        "version": "8.11.0"
     },
     "event": {
         "original": "{\"time\":\"2023-05-23T20:11:59Z\",\"resourceId\":\"/SUBSCRIPTIONS/12CABCB4-86E8-404F-A3D2-1DC9982F45CA/RESOURCEGROUPS/TEST-RG/PROVIDERS/MICROSOFT.WEB/SITES/TEST-FUNCTION\",\"category\":\"FunctionAppLogs\",\"operationName\":\"Microsoft.Web/sites/functions/log\",\"level\":\"Informational\",\"location\":\"East US\",\"properties\":{\"appName\":\"test-function\",\"roleInstance\":\"54108609-638204200593759681\",\"message\":\"Executing Functions.hello (Reason=This function was programmatically called via the host APIs., Id=d878e365-b3d6-4796-9292-7500acd0c677)\",\"category\":\"Function.hello\",\"hostVersion\":\"4.19.2.2\",\"functionInvocationId\":\"d878e365-b3d6-4796-9292-7500acd0c677\",\"functionName\":\"Functions.hello\",\"hostInstanceId\":\"bb84c437-4c26-4d0b-a06d-7fc2f16976e3\",\"level\":\"Information\",\"levelId\":2,\"processId\":67,\"eventId\":1,\"eventName\":\"FunctionStarted\"}}"
@@ -152,33 +152,12 @@ An example event for `functionapplogs` looks as following:
 | azure.resource.provider | Resource type/namespace | keyword |
 | azure.subscription_id | Azure subscription ID | keyword |
 | azure.tenant_id | tenant ID | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| error.stack_trace | The stack trace of this error in plain text. | wildcard |
-| error.stack_trace.text | Multi-field of `error.stack_trace`. | match_only_text |
-| error.type | The type of the error, for example the class name of the exception. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.product | The product name of the observer. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
 
 
 ### Metrics
@@ -310,117 +289,36 @@ An example event for `metrics` looks as following:
 
 ```json
 {
+    "@timestamp": "2023-08-23T12:20:00.000Z",
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "ae16c4cf-2550-452a-860d-cef5e5182e94",
-        "type": "metricbeat",
         "ephemeral_id": "7511408f-f109-4e34-a405-98ad479fc097",
+        "id": "ae16c4cf-2550-452a-860d-cef5e5182e94",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
         "version": "8.7.1"
     },
-    "@timestamp": "2023-08-23T12:20:00.000Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "azure.function"
-    },
-    "service": {
-        "type": "azure"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.15.49-linuxkit",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "family": "debian",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "containerized": false,
-        "ip": [
-            "172.19.0.9"
-        ],
-        "name": "docker-fleet-agent",
-        "id": "fd2c4b0943e444508c12855a04d117c7",
-        "mac": [
-            "02-42-AC-13-00-09"
-        ],
-        "architecture": "x86_64"
-    },
-    "elastic_agent": {
-        "id": "ae16c4cf-2550-452a-860d-cef5e5182e94",
-        "version": "8.7.1",
-        "snapshot": false
-    },
-    "metricset": {
-        "period": 300000,
-        "name": "monitor"
-    },
-    "event": {
-        "duration": 42827917228,
-        "agent_id_status": "verified",
-        "ingested": "2023-08-23T12:25:34Z",
-        "module": "azure",
-        "dataset": "azure.function"
-    },
     "azure": {
-        "subscription_id": "12hjkls-78tyu-404f-a3d2-1dc9982f45ds",
-        "timegrain": "PT5M",
         "functions": {
-            "handles": {
-                "avg": 0
-            },
             "app_connections": {
                 "avg": 0
-            },
-            "total_app_domains": {
-                "avg": 0
-            },
-            "http_response_time": {
-                "avg": 0.02796875
-            },
-            "bytes_received": {
-                "total": 28804
             },
             "average_memory_working_set": {
                 "avg": 328533059.5
             },
-            "requests": {
-                "total": 32
+            "bytes_received": {
+                "total": 28804
             },
             "bytes_sent": {
                 "total": 8192
             },
-            "requests_inapplication_queue": {
-                "avg": 0
-            },
-            "memory_working_set": {
-                "avg": 328533059.5
-            },
-            "io_write_bytes_per_second": {
+            "function_execution_count": {
                 "total": 0
-            },
-            "io_other_bytes_per_second": {
-                "total": 0
-            },
-            "total_app_domains_unloaded": {
-                "avg": 0
-            },
-            "io_other_operations_per_second": {
-                "total": 0
-            },
-            "io_read_bytes_per_second": {
-                "total": 31879
             },
             "function_execution_units": {
                 "total": 0
             },
-            "io_read_operations_per_second": {
-                "total": 0
+            "handles": {
+                "avg": 0
             },
             "http2xx": {
                 "total": 16
@@ -431,26 +329,107 @@ An example event for `metrics` looks as following:
             "http4xx": {
                 "total": 0
             },
+            "http5xx": {
+                "total": 16
+            },
+            "http_response_time": {
+                "avg": 0.02796875
+            },
+            "io_other_bytes_per_second": {
+                "total": 0
+            },
+            "io_other_operations_per_second": {
+                "total": 0
+            },
+            "io_read_bytes_per_second": {
+                "total": 31879
+            },
+            "io_read_operations_per_second": {
+                "total": 0
+            },
+            "io_write_bytes_per_second": {
+                "total": 0
+            },
             "io_write_operations_per_second": {
                 "total": 0
             },
-            "function_execution_count": {
-                "total": 0
+            "memory_working_set": {
+                "avg": 328533059.5
             },
-            "http5xx": {
-                "total": 16
+            "requests": {
+                "total": 32
+            },
+            "requests_inapplication_queue": {
+                "avg": 0
+            },
+            "total_app_domains": {
+                "avg": 0
+            },
+            "total_app_domains_unloaded": {
+                "avg": 0
             }
         },
+        "namespace": "Microsoft.Web/sites",
         "resource": {
-            "name": "return-of-the-jedi",
-            "id": "/subscriptions/12hjkls-78tyu-404f-a3d2-1dc9982f45ds/resourceGroups/test-rg/providers/Microsoft.Web/sites/return-of-the-jedi",
-            "type": "Microsoft.Web/sites",
             "group": "test-rg",
+            "id": "/subscriptions/12hjkls-78tyu-404f-a3d2-1dc9982f45ds/resourceGroups/test-rg/providers/Microsoft.Web/sites/return-of-the-jedi",
+            "name": "return-of-the-jedi",
             "tags": {
                 "hidden-link: /app-insights-resource-id": "/subscriptions/12hjkls-78tyu-404f-a3d2-1dc9982f45ds/resourceGroups/test-rg/providers/Microsoft.Insights/components/return-of-the-jedi"
-            }
+            },
+            "type": "Microsoft.Web/sites"
         },
-        "namespace": "Microsoft.Web/sites"
+        "subscription_id": "12hjkls-78tyu-404f-a3d2-1dc9982f45ds",
+        "timegrain": "PT5M"
+    },
+    "data_stream": {
+        "dataset": "azure.function",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "ae16c4cf-2550-452a-860d-cef5e5182e94",
+        "snapshot": false,
+        "version": "8.7.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "azure.function",
+        "duration": 42827917228,
+        "ingested": "2023-08-23T12:25:34Z",
+        "module": "azure"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "fd2c4b0943e444508c12855a04d117c7",
+        "ip": [
+            "172.19.0.9"
+        ],
+        "mac": [
+            "02-42-AC-13-00-09"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "monitor",
+        "period": 300000
+    },
+    "service": {
+        "type": "azure"
     }
 }
 ```
@@ -501,45 +480,15 @@ An example event for `metrics` looks as following:
 | azure.resource.type | The type of the resource | keyword |  |  |
 | azure.subscription_id | The subscription ID | keyword |  |  |
 | azure.timegrain | The Azure metric timegrain | keyword |  |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
-| cloud.region | Region in which this host is running. | keyword |  |  |
-| container.id | Unique container id. | keyword |  |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |  |
-| container.labels | Image labels. | object |  |  |
-| container.name | Container name. | keyword |  |  |
-| container.runtime | Runtime managing this container. | keyword |  |  |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | dataset.name | Dataset name. | constant_keyword |  |  |
 | dataset.namespace | Dataset namespace. | constant_keyword |  |  |
 | dataset.type | Dataset type. | constant_keyword |  |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
-| host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host mac addresses. | keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
-| host.os.name | Operating system name, without the version. | keyword |  |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
