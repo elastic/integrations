@@ -52,15 +52,15 @@ processors:
         ignore_failure: true
     - rename:
         field: jamf_protect.telemetry.event.od_delete_group.instigator.is_platform_binary
-        target_field: jamf_protect.platform_binary
+        target_field: jamf_protect.telemetry.platform_binary
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.od_delete_group.instigator.is_es_client
-        target_field: jamf_protect.es_client
+        target_field: jamf_protect.telemetry.es_client
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.od_delete_group.instigator.cdhash
-        target_field: jamf_protect.code_directory_hash
+        target_field: jamf_protect.telemetry.code_directory_hash
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.od_delete_group.instigator.executable.sha1
@@ -82,12 +82,12 @@ processors:
         allow_duplicates: false
     - append:
         field: related.hash
-        value: '{{{jamf_protect.code_directory_hash}}}'
+        value: '{{{jamf_protect.telemetry.code_directory_hash}}}'
         if: ctx.jamf_protect?.code_directory_hash != null
         allow_duplicates: false
     - rename:
         field: jamf_protect.telemetry.event.od_delete_group.instigator.tty.path
-        target_field: jamf_protect.tty
+        target_field: jamf_protect.telemetry.tty
         ignore_missing: true
     - set:
         field: process.interactive
@@ -187,4 +187,3 @@ processors:
         target_field: process.group_leader.real_group.id
         type: string
         ignore_missing: true
-        

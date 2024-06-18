@@ -30,23 +30,23 @@ processors:
             }
     - convert:
         field: jamf_protect.telemetry.event.screensharing_attach.existing_session
-        target_field: jamf_protect.existing_session
+        target_field: jamf_protect.telemetry.existing_session
         type: boolean
         ignore_missing: true
         ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.screensharing_attach.graphical_session_id
-        target_field: jamf_protect.graphical_session_id
+        target_field: jamf_protect.telemetry.graphical_authentication_username
         type: string
         ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.screensharing_attach.authentication_username
-        target_field: jamf_protect.graphical_authentication_username
+        target_field: jamf_protect.telemetry.graphical_authentication_username
         type: string
         ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.screensharing_attach.session_username
-        target_field: jamf_protect.session_username
+        target_field: jamf_protect.telemetry.session_username
         type: string
         ignore_missing: true
     - convert:
@@ -58,12 +58,12 @@ processors:
         ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.screensharing_attach.authentication_type
-        target_field: jamf_protect.authentication_type
+        target_field: jamf_protect.telemetry.authentication_type
         type: string
         ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.screensharing_attach.authentication_type
-        target_field: jamf_protect.authentication_type
+        target_field: jamf_protect.telemetry.authentication_type
         type: string
         ignore_missing: true
     - rename:
@@ -72,12 +72,12 @@ processors:
         ignore_missing: true
     - append:
         field: related.user
-        value: '{{{jamf_protect.session_username}}}'
+        value: '{{{jamf_protect.telemetry.session_username}}}'
         if: ctx.jamf_protect?.session_username != null
         allow_duplicates: false
     - append:
         field: related.user
-        value: '{{{jamf_protect.graphical_authentication_username}}}'
+        value: '{{{jamf_protect.telemetry.graphical_authentication_username}}}'
         if: ctx.jamf_protect?.graphical_authentication_username != null
         allow_duplicates: false
 ##########################

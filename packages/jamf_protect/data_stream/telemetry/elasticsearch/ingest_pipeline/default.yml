@@ -83,18 +83,17 @@ processors:
         ignore_failure: true
     - script:
         lang: painless
+        params:
+            authTypeMap:
+                '0': true
+                '1': false
         source: |
             if (ctx.jamf_protect?.telemetry?.action?.result?.result?.auth != null) {
-              def authType = ctx.jamf_protect.telemetry.action.result.result.auth;
-              def authTypeMap = [
-                0: true,
-                1: false
-              ];
-              def authTypeBoolean = authTypeMap.containsKey(authType) ? authTypeMap[authType] : null;
-              ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
-              ctx.jamf_protect.event_allowed_by_esclient = authTypeBoolean;
+                def authValue = ctx.jamf_protect.telemetry.action.result.result.auth.toString();
+                def authTypeBoolean = params.authTypeMap.containsKey(authValue) ? params.authTypeMap[authValue] : 'Unknown';
+                ctx.jamf_protect.telemetry = ctx.jamf_protect.telemetry != null ? ctx.jamf_protect.telemetry : new HashMap();
+                ctx.jamf_protect.telemetry.event_allowed_by_esclient = authTypeBoolean;
             }
-
 #######################
 ## ECS Host Mapping ##
 #######################
@@ -314,7 +313,23 @@ processors:
 #############
     - remove:
         field:
-        - jamf_protect.telemetry
+        # - jamf_protect.telemetry
+        - jamf_protect.telemetry.event
+        - jamf_protect.telemetry.process
+        - jamf_protect.telemetry.action.result.result.auth
+        - jamf_protect.telemetry.action.result.result_type
+        - jamf_protect.telemetry.action_type
+        - jamf_protect.telemetry.deadline
+        - jamf_protect.telemetry.event_type
+        - jamf_protect.telemetry.is_telemetry
+        - jamf_protect.telemetry.mach_time
+        - jamf_protect.telemetry.metadata.product
+        - jamf_protect.telemetry.metadata.schemaVersion
+        - jamf_protect.telemetry.metadata.vendor
+        - jamf_protect.telemetry.seq_num
+        - jamf_protect.telemetry.thread.uuid
+        - jamf_protect.telemetry.time
+        - jamf_protect.telemetry.version
         - message
         ignore_missing: true
     - script:

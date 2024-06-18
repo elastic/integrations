@@ -16,46 +16,46 @@ processors:
         value: configuration 
     - convert:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.item.app_url
-        target_field: jamf_protect.btm_item_app_url
+        target_field: jamf_protect.telemetry.btm_item_app_url
         type: string
         ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.item.item_url
-        target_field: jamf_protect.btm_item_url
+        target_field: jamf_protect.telemetry.btm_item_url
         type: string
         ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.item.uid
-        target_field: jamf_protect.btm_item_user_uid
+        target_field: jamf_protect.telemetry.btm_item_user_uid
         type: string
         ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.item.legacy
-        target_field: jamf_protect.btm_item_is_legacy
+        target_field: jamf_protect.telemetry.btm_item_is_legacy
         type: boolean
         ignore_missing: true
         ignore_failure: true
     - convert:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.item.managed
-        target_field: jamf_protect.btm_item_is_managed
+        target_field: jamf_protect.telemetry.btm_item_is_managed
         type: boolean
         ignore_missing: true
         ignore_failure: true
     - script:
         lang: painless
+        params:
+            itemTypeMap:
+                '0': User_Item
+                '1': App
+                '2': LoginItem
+                '3': LaunchAgent
+                '4': LaunchDaemon
         source: >
             if (ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.item?.item_type != null) {
-              def itemType = ctx.jamf_protect.telemetry.event.btm_launch_item_remove.item.item_type;
-              def itemTypeMap = [
-                0: 'User Item',
-                1: 'App',
-                2: 'Login Item',
-                3: 'LaunchAgent',
-                4: 'LaunchDaemon'
-              ];
-              def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
-              ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
-              ctx.jamf_protect.btm_item_type = itemTypeString;
+                String itemType = ctx.jamf_protect.telemetry.event.btm_launch_item_remove.item.item_type.toString();
+                def itemTypeString = params.itemTypeMap.containsKey(itemType) ? params.itemTypeMap[itemType] : 'Unknown';
+                ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+                ctx.jamf_protect.telemetry.btm_item_type = itemTypeString;
             }
             
 ##########################
@@ -115,29 +115,29 @@ processors:
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_add.app.is_platform_binary
-        target_field: jamf_protect.platform_binary
+        target_field: jamf_protect.telemetry.platform_binary
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.is_platform_binary
-        target_field: jamf_protect.platform_binary
+        target_field: jamf_protect.telemetry.platform_binary
         if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_add.app.is_es_client
-        target_field: jamf_protect.es_client
+        target_field: jamf_protect.telemetry.es_client
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.is_es_client
-        target_field: jamf_protect.es_client
+        target_field: jamf_protect.telemetry.es_client
         if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.app.cdhash
-        target_field: jamf_protect.code_directory_hash
+        target_field: jamf_protect.telemetry.code_directory_hash
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.cdhash
-        target_field: jamf_protect.code_directory_hash
+        target_field: jamf_protect.telemetry.code_directory_hash
         if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
         ignore_missing: true
     - rename:
@@ -170,17 +170,17 @@ processors:
         allow_duplicates: false
     - append:
         field: related.hash
-        value: '{{{jamf_protect.code_directory_hash}}}'
+        value: '{{{jamf_protect.telemetry.code_directory_hash}}}'
         if: ctx.jamf_protect?.code_directory_hash != null
         allow_duplicates: false
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.app.tty.path
-        target_field: jamf_protect.tty
+        target_field: jamf_protect.telemetry.tty
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.tty.path
         if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
-        target_field: jamf_protect.tty
+        target_field: jamf_protect.telemetry.tty
         ignore_missing: true
     - set:
         field: process.interactive

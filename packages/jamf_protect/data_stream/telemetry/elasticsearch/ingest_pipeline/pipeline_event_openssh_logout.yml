@@ -19,7 +19,7 @@ processors:
         value: session  
     - convert:
         field: jamf_protect.telemetry.event.openssh_logout.graphical_session_id
-        target_field: jamf_protect.graphical_session_id
+        target_field: jamf_protect.telemetry.graphical_authentication_username
         type: string
         ignore_missing: true
     - rename:
@@ -38,22 +38,23 @@ processors:
         ignore_missing: true
     - script:
         lang: painless
+        params:
+            itemTypeMap:
+                '0': Unknown
+                '1': IPv4
+                '2': IPv6
+                '3': UNIX Socket
         source: >
             if (ctx.jamf_protect?.telemetry?.event?.openssh_logout?.source_address_type != null) {
-                def itemType = ctx.jamf_protect.telemetry.event.openssh_logout.source_address_type;
-                def itemTypeMap = [
-                    0: 'Unknown',
-                    1: 'IPv4',
-                    2: 'IPv6',
-                    3: 'UNIX Socket'
-                ];
-                def itemTypeString = itemTypeMap.containsKey(itemType) ? itemTypeMap[itemType] : 'Unknown';
+                String itemType = ctx.jamf_protect.telemetry.event.openssh_logout.source_address_type.toString();
+                def itemTypeString = params.itemTypeMap.containsKey(itemType) ? params.itemTypeMap[itemType] : 'Unknown';
                 ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
-                ctx.jamf_protect.source_address_type = itemTypeString;
+                ctx.jamf_protect.telemetry.source_address_type = itemTypeString;
             }
+            
 ##########################
 ## ECS Process ##
 ##########################  
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'
-        
+

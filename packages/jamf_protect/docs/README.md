@@ -683,92 +683,92 @@ An example event for `telemetry` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
-| jamf_protect.account_type | Defines if it's a user or group | keyword |
-| jamf_protect.attribute_name | The name of the attribute that got set | keyword |
-| jamf_protect.attribute_value | The value of the attribute that got set | keyword |
-| jamf_protect.authentication_method | Method used to authenticate | keyword |
-| jamf_protect.authentication_result_type | Defines the source address type | keyword |
-| jamf_protect.authentication_type | Type of authentication used to authenticate the user | keyword |
-| jamf_protect.authorization_judgement_results | Results of the authorization judgement | object |
-| jamf_protect.authorization_petition_flags | Flags associated with the authorization petition | integer |
-| jamf_protect.authorization_petition_right_count | The count of rights in the authorization petition | integer |
-| jamf_protect.authorization_petition_rights | Rights associated with the authorization petition | keyword |
-| jamf_protect.bios_firmware_version | Version of the BIOS firmware | keyword |
-| jamf_protect.bios_system_firmware_version | Version of the system firmware in BIOS | keyword |
-| jamf_protect.btm_executable_path | Path to the executable in BTM | keyword |
-| jamf_protect.btm_item_app_url | URL of the app in BTM item | keyword |
-| jamf_protect.btm_item_is_legacy | Indicates if the BTM item is legacy | boolean |
-| jamf_protect.btm_item_is_managed | Indicates if the BTM item is managed | boolean |
-| jamf_protect.btm_item_type | Type of the BTM item | keyword |
-| jamf_protect.btm_item_url | URL of the BTM item | keyword |
-| jamf_protect.btm_item_user_uid | UID of the user associated with the BTM item | keyword |
-| jamf_protect.code_directory_hash | Code directory hash of a application bundle | keyword |
-| jamf_protect.env_count | Count of environment variables | integer |
-| jamf_protect.error_message | Contains the event specific error message | keyword |
-| jamf_protect.es_client | Set to true if the process is an Endpoint Security client | boolean |
-| jamf_protect.event_allowed_by_esclient | Value to indicate if the event was allowed or denied | boolean |
-| jamf_protect.existing_session | If an existing user session was attached to, this is true | boolean |
-| jamf_protect.failure_reason | The reason that contains why the outcome of the event failed | keyword |
-| jamf_protect.from_username | Username from which an action originated | keyword |
-| jamf_protect.graphical_authentication_username | The username used for authentication | keyword |
-| jamf_protect.graphical_session_id | ID of the graphical session | keyword |
-| jamf_protect.identifier | Identifier for an entity or action | keyword |
-| jamf_protect.log_entries | Log entries being collected in an event | object |
-| jamf_protect.platform_binary | This is set to true for all binaries that are shipped with macOS | boolean |
-| jamf_protect.profile_display_name | Display name of the profile | keyword |
-| jamf_protect.profile_identifier | Identifier of the profile | keyword |
-| jamf_protect.profile_install_source | Source from which the profile was installed | keyword |
-| jamf_protect.profile_is_updated | Indicates if the profile is updated | boolean |
-| jamf_protect.profile_organization | Organization associated with the profile | keyword |
-| jamf_protect.profile_scope | Scope of the profile | keyword |
-| jamf_protect.profile_uuid | UUID of the profile | keyword |
-| jamf_protect.record_name | Name of the record | keyword |
-| jamf_protect.session_username | Username of the loginwindow session | keyword |
-| jamf_protect.shell | Shell associated with the user or process | keyword |
-| jamf_protect.source_address_type | Defines the source address type | keyword |
-| jamf_protect.system_performance.bytes_received | Bytes received by the task | long |
-| jamf_protect.system_performance.bytes_received_per_s | Bytes received per second by the task | double |
-| jamf_protect.system_performance.bytes_sent | Bytes sent by the task | long |
-| jamf_protect.system_performance.bytes_sent_per_s | Bytes sent per second by the task | double |
-| jamf_protect.system_performance.cputime_ms_per_s | CPU time in milliseconds per second for the task | double |
-| jamf_protect.system_performance.cputime_ns | CPU time in nanoseconds for the task | long |
-| jamf_protect.system_performance.cputime_sample_ms_per_s | CPU sample time in milliseconds per second for the task | double |
-| jamf_protect.system_performance.cputime_userland_ratio | Userland CPU time ratio for the task | double |
-| jamf_protect.system_performance.diskio_bytesread | Bytes read by disk I/O for the task | long |
-| jamf_protect.system_performance.diskio_bytesread_per_s | Bytes read per second by disk I/O for the task | double |
-| jamf_protect.system_performance.diskio_byteswritten | Bytes written by disk I/O for the task | long |
-| jamf_protect.system_performance.diskio_byteswritten_per_s | Bytes written per second by disk I/O for the task | double |
-| jamf_protect.system_performance.energy_impact | Energy impact of the task | double |
-| jamf_protect.system_performance.energy_impact_per_s | Energy impact per second of the task | double |
-| jamf_protect.system_performance.idle_wakeups | Number of idle wakeups for the task | long |
-| jamf_protect.system_performance.interval_ns | Interval in nanoseconds | long |
-| jamf_protect.system_performance.intr_wakeups_per_s | Interrupt wakeups per second for the task | double |
-| jamf_protect.system_performance.name | Name of the task | keyword |
-| jamf_protect.system_performance.packets_received | Packets received by the task | long |
-| jamf_protect.system_performance.packets_received_per_s | Packets received per second by the task | double |
-| jamf_protect.system_performance.packets_sent | Packets sent by the task | long |
-| jamf_protect.system_performance.packets_sent_per_s | Packets sent per second by the task | double |
-| jamf_protect.system_performance.pageins | Page-ins by the task | long |
-| jamf_protect.system_performance.pageins_per_s | Page-ins per second by the task | double |
-| jamf_protect.system_performance.pid | Process ID of the task | long |
-| jamf_protect.system_performance.qos_background_ms_per_s | QoS background time in milliseconds per second for the task | double |
-| jamf_protect.system_performance.qos_background_ns | QoS background time in nanoseconds for the task | long |
-| jamf_protect.system_performance.qos_default_ms_per_s | QoS default time in milliseconds per second for the task | double |
-| jamf_protect.system_performance.qos_default_ns | QoS default time in nanoseconds for the task | long |
-| jamf_protect.system_performance.qos_disabled_ms_per_s | QoS disabled time in milliseconds per second for the task | double |
-| jamf_protect.system_performance.qos_disabled_ns | QoS disabled time in nanoseconds for the task | long |
-| jamf_protect.system_performance.qos_maintenance_ms_per_s | QoS maintenance time in milliseconds per second for the task | double |
-| jamf_protect.system_performance.qos_maintenance_ns | QoS maintenance time in nanoseconds for the task | long |
-| jamf_protect.system_performance.qos_user_initiated_ms_per_s | QoS user-initiated time in milliseconds per second for the task | double |
-| jamf_protect.system_performance.qos_user_initiated_ns | QoS user-initiated time in nanoseconds for the task | long |
-| jamf_protect.system_performance.qos_user_interactive_ms_per_s | QoS user-interactive time in milliseconds per second for the task | double |
-| jamf_protect.system_performance.qos_user_interactive_ns | QoS user-interactive time in nanoseconds for the task | long |
-| jamf_protect.system_performance.qos_utility_ms_per_s | QoS utility time in milliseconds per second for the task | double |
-| jamf_protect.system_performance.qos_utility_ns | QoS utility time in nanoseconds for the task | long |
-| jamf_protect.system_performance.started_abstime_ns | Absolute start time in nanoseconds for the task | long |
-| jamf_protect.system_performance.timer_wakeups.wakeups | Number of wakeups | long |
-| jamf_protect.to_username | Username to which an action is directed | keyword |
-| jamf_protect.tty | Software terminal device file that the process is associated with | keyword |
+| jamf_protect.telemetry.account_type | Defines if it's a user or group | keyword |
+| jamf_protect.telemetry.attribute_name | The name of the attribute that got set | keyword |
+| jamf_protect.telemetry.attribute_value | The value of the attribute that got set | keyword |
+| jamf_protect.telemetry.authentication_method | Method used to authenticate | keyword |
+| jamf_protect.telemetry.authentication_result_type | Defines the source address type | keyword |
+| jamf_protect.telemetry.authentication_type | Type of authentication used to authenticate the user | keyword |
+| jamf_protect.telemetry.authorization_judgement_results | Results of the authorization judgement | object |
+| jamf_protect.telemetry.authorization_petition_flags | Flags associated with the authorization petition | integer |
+| jamf_protect.telemetry.authorization_petition_right_count | The count of rights in the authorization petition | integer |
+| jamf_protect.telemetry.authorization_petition_rights | Rights associated with the authorization petition | keyword |
+| jamf_protect.telemetry.bios_firmware_version | Version of the BIOS firmware | keyword |
+| jamf_protect.telemetry.bios_system_firmware_version | Version of the system firmware in BIOS | keyword |
+| jamf_protect.telemetry.btm_executable_path | Path to the executable in BTM | keyword |
+| jamf_protect.telemetry.btm_item_app_url | URL of the app in BTM item | keyword |
+| jamf_protect.telemetry.btm_item_is_legacy | Indicates if the BTM item is legacy | boolean |
+| jamf_protect.telemetry.btm_item_is_managed | Indicates if the BTM item is managed | boolean |
+| jamf_protect.telemetry.btm_item_type | Type of the BTM item | keyword |
+| jamf_protect.telemetry.btm_item_url | URL of the BTM item | keyword |
+| jamf_protect.telemetry.btm_item_user_uid | UID of the user associated with the BTM item | keyword |
+| jamf_protect.telemetry.code_directory_hash | Code directory hash of a application bundle | keyword |
+| jamf_protect.telemetry.env_count | Count of environment variables | integer |
+| jamf_protect.telemetry.error_message | Contains the event specific error message | keyword |
+| jamf_protect.telemetry.es_client | Set to true if the process is an Endpoint Security client | boolean |
+| jamf_protect.telemetry.event_allowed_by_esclient | Value to indicate if the event was allowed or denied | boolean |
+| jamf_protect.telemetry.existing_session | If an existing user session was attached to, this is true | boolean |
+| jamf_protect.telemetry.failure_reason | The reason that contains why the outcome of the event failed | keyword |
+| jamf_protect.telemetry.from_username | Username from which an action originated | keyword |
+| jamf_protect.telemetry.graphical_authentication_username | The username used for authentication | keyword |
+| jamf_protect.telemetry.graphical_session_id | ID of the graphical session | keyword |
+| jamf_protect.telemetry.identifier | Identifier for an entity or action | keyword |
+| jamf_protect.telemetry.log_entries | Log entries being collected in an event | object |
+| jamf_protect.telemetry.platform_binary | This is set to true for all binaries that are shipped with macOS | boolean |
+| jamf_protect.telemetry.profile_display_name | Display name of the profile | keyword |
+| jamf_protect.telemetry.profile_identifier | Identifier of the profile | keyword |
+| jamf_protect.telemetry.profile_install_source | Source from which the profile was installed | keyword |
+| jamf_protect.telemetry.profile_is_updated | Indicates if the profile is updated | boolean |
+| jamf_protect.telemetry.profile_organization | Organization associated with the profile | keyword |
+| jamf_protect.telemetry.profile_scope | Scope of the profile | keyword |
+| jamf_protect.telemetry.profile_uuid | UUID of the profile | keyword |
+| jamf_protect.telemetry.record_name | Name of the record | keyword |
+| jamf_protect.telemetry.session_username | Username of the loginwindow session | keyword |
+| jamf_protect.telemetry.shell | Shell associated with the user or process | keyword |
+| jamf_protect.telemetry.source_address_type | Defines the source address type | keyword |
+| jamf_protect.telemetry.system_performance.bytes_received | Bytes received by the task | long |
+| jamf_protect.telemetry.system_performance.bytes_received_per_s | Bytes received per second by the task | double |
+| jamf_protect.telemetry.system_performance.bytes_sent | Bytes sent by the task | long |
+| jamf_protect.telemetry.system_performance.bytes_sent_per_s | Bytes sent per second by the task | double |
+| jamf_protect.telemetry.system_performance.cputime_ms_per_s | CPU time in milliseconds per second for the task | double |
+| jamf_protect.telemetry.system_performance.cputime_ns | CPU time in nanoseconds for the task | long |
+| jamf_protect.telemetry.system_performance.cputime_sample_ms_per_s | CPU sample time in milliseconds per second for the task | double |
+| jamf_protect.telemetry.system_performance.cputime_userland_ratio | Userland CPU time ratio for the task | double |
+| jamf_protect.telemetry.system_performance.diskio_bytesread | Bytes read by disk I/O for the task | long |
+| jamf_protect.telemetry.system_performance.diskio_bytesread_per_s | Bytes read per second by disk I/O for the task | double |
+| jamf_protect.telemetry.system_performance.diskio_byteswritten | Bytes written by disk I/O for the task | long |
+| jamf_protect.telemetry.system_performance.diskio_byteswritten_per_s | Bytes written per second by disk I/O for the task | double |
+| jamf_protect.telemetry.system_performance.energy_impact | Energy impact of the task | double |
+| jamf_protect.telemetry.system_performance.energy_impact_per_s | Energy impact per second of the task | double |
+| jamf_protect.telemetry.system_performance.idle_wakeups | Number of idle wakeups for the task | long |
+| jamf_protect.telemetry.system_performance.interval_ns | Interval in nanoseconds | long |
+| jamf_protect.telemetry.system_performance.intr_wakeups_per_s | Interrupt wakeups per second for the task | double |
+| jamf_protect.telemetry.system_performance.name | Name of the task | keyword |
+| jamf_protect.telemetry.system_performance.packets_received | Packets received by the task | long |
+| jamf_protect.telemetry.system_performance.packets_received_per_s | Packets received per second by the task | double |
+| jamf_protect.telemetry.system_performance.packets_sent | Packets sent by the task | long |
+| jamf_protect.telemetry.system_performance.packets_sent_per_s | Packets sent per second by the task | double |
+| jamf_protect.telemetry.system_performance.pageins | Page-ins by the task | long |
+| jamf_protect.telemetry.system_performance.pageins_per_s | Page-ins per second by the task | double |
+| jamf_protect.telemetry.system_performance.pid | Process ID of the task | long |
+| jamf_protect.telemetry.system_performance.qos_background_ms_per_s | QoS background time in milliseconds per second for the task | double |
+| jamf_protect.telemetry.system_performance.qos_background_ns | QoS background time in nanoseconds for the task | long |
+| jamf_protect.telemetry.system_performance.qos_default_ms_per_s | QoS default time in milliseconds per second for the task | double |
+| jamf_protect.telemetry.system_performance.qos_default_ns | QoS default time in nanoseconds for the task | long |
+| jamf_protect.telemetry.system_performance.qos_disabled_ms_per_s | QoS disabled time in milliseconds per second for the task | double |
+| jamf_protect.telemetry.system_performance.qos_disabled_ns | QoS disabled time in nanoseconds for the task | long |
+| jamf_protect.telemetry.system_performance.qos_maintenance_ms_per_s | QoS maintenance time in milliseconds per second for the task | double |
+| jamf_protect.telemetry.system_performance.qos_maintenance_ns | QoS maintenance time in nanoseconds for the task | long |
+| jamf_protect.telemetry.system_performance.qos_user_initiated_ms_per_s | QoS user-initiated time in milliseconds per second for the task | double |
+| jamf_protect.telemetry.system_performance.qos_user_initiated_ns | QoS user-initiated time in nanoseconds for the task | long |
+| jamf_protect.telemetry.system_performance.qos_user_interactive_ms_per_s | QoS user-interactive time in milliseconds per second for the task | double |
+| jamf_protect.telemetry.system_performance.qos_user_interactive_ns | QoS user-interactive time in nanoseconds for the task | long |
+| jamf_protect.telemetry.system_performance.qos_utility_ms_per_s | QoS utility time in milliseconds per second for the task | double |
+| jamf_protect.telemetry.system_performance.qos_utility_ns | QoS utility time in nanoseconds for the task | long |
+| jamf_protect.telemetry.system_performance.started_abstime_ns | Absolute start time in nanoseconds for the task | long |
+| jamf_protect.telemetry.system_performance.timer_wakeups.wakeups | Number of wakeups | long |
+| jamf_protect.telemetry.to_username | Username to which an action is directed | keyword |
+| jamf_protect.telemetry.tty | Software terminal device file that the process is associated with | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |

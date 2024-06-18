@@ -17,21 +17,20 @@ processors:
     - script:
         lang: painless
         source: |
-            if (ctx.jamf_protect?.telemetry?.event?.screensharing_detach?.success != null) {
-              if (ctx.jamf_protect.telemetry.event.screensharing_detach.success == true) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            if (ctx.jamf_protect?.telemetry?.event?.screensharing_detach?.success instanceof boolean) {
+              if (ctx.jamf_protect.telemetry.event.screensharing_detach.success) {
                 ctx.event.outcome = 'success';
-              } else if (ctx.jamf_protect.telemetry.event.screensharing_detach.success == false) {
-                ctx.event = ctx.event != null ? ctx.event : new HashMap();
+              } else {
                 ctx.event.outcome = 'failure';
               }
-            } else {
-              ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            }
+            if (ctx.event.outcome == null) {
               ctx.event.outcome = 'unknown';
             }
     - convert:
         field: jamf_protect.telemetry.event.screensharing_detach.graphical_session_id
-        target_field: jamf_protect.graphical_session_id
+        target_field: jamf_protect.telemetry.graphical_authentication_username
         type: string
         ignore_missing: true
     - convert:
@@ -50,4 +49,3 @@ processors:
 ##########################
     - pipeline:
         name: '{{ IngestPipeline "pipeline_object_process" }}'
-        
