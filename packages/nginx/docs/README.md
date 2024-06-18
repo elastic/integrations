@@ -371,7 +371,9 @@ An example event for `stubstatus` looks as following:
         "ip": [
             "172.24.0.7"
         ],
-        "mac": "02-42-AC-18-00-07",
+        "mac": [
+            "02-42-AC-18-00-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
