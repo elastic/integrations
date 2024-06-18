@@ -66,7 +66,7 @@ An example event for `jdbc` looks as following:
             "172.31.0.5"
         ],
         "mac": [
-            "02:42:ac:1f:00:05"
+            "02-42-C0-A8-FB-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -202,7 +202,7 @@ An example event for `servlet` looks as following:
             "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:07"
+            "02-42-C0-A8-FB-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -318,7 +318,7 @@ An example event for `session_manager` looks as following:
             "192.168.240.6"
         ],
         "mac": [
-            "02:42:c0:a8:f0:06"
+            "02-42-C0-A8-FB-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -463,7 +463,7 @@ An example event for `threadpool` looks as following:
             "192.168.144.7"
         ],
         "mac": [
-            "02:42:c0:a8:90:07"
+            "02-42-C0-A8-FB-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
