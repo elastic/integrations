@@ -142,8 +142,12 @@ An example event for `activity` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": "192.168.251.4",
-        "mac": "02-42-C0-A8-FB-04",
+        "ip": [
+            "192.168.251.4"
+        ],
+        "mac": [
+            "02-42-C0-A8-FB-04"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -284,7 +288,7 @@ An example event for `bgwriter` looks as following:
             "172.18.0.4"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02-42-C0-A8-FB-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -413,8 +417,12 @@ An example event for `database` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": "192.168.241.7",
-        "mac": "02-42-C0-A8-F1-07",
+        "ip": [
+            "192.168.241.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-F1-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -563,8 +571,12 @@ An example event for `statement` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": "192.168.251.4",
-        "mac": "02-42-C0-A8-FB-04",
+        "ip": [
+            "192.168.251.4"
+        ],
+        "mac": [
+            "02-42-C0-A8-FB-04"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
