@@ -1,0 +1,54 @@
+---
+description: Pipeline for processing monitor logs from Stormshield appliances.
+processors:
+  - script:
+      tag: script_process_devices
+      lang: painless
+      description: Process device stat fields.
+      params:
+        devices:
+          - Rule
+        stats:
+          - Implicit Filter Rule
+          - Global Filter Rule
+          - Local Filter Rule
+          - Implicit NAT Rule
+          - Global NAT Rule
+          - Local NAT Rule
+      source: >-
+        def ruleStats = [:];
+        def str = "Rule";
+        ctx.stormshield.forEach((k, v) -> {
+          if (k.startsWith(str)) {
+            def joined = k.substring(str.length());
+            def parts = joined.splitByToken(":", 2);
+            ruleStats["original"] = k;
+            ruleStats["byte_count"] = v;
+            ruleStats["category"] = params.stats[Long.parseLong(parts[0])];
+            ruleStats["rule_number"] = Long.parseLong(parts[1]);
+          }
+      
+          return true;
+        });
+
+        if (ruleStats.isEmpty()) {
+          return;
+        }
+
+        for (entry in ruleStats.entrySet()) {
+          ruleStats[entry.getKey()].sort((a, b) -> a["original"].compareTo(b["original"]));
+        }
+        if (!ctx.stormshield.containsKey("metadata")) {
+          ctx.stormshield.metadata = [:];
+        }
+        ctx.stormshield.metadata.rule_stats = ruleStats;
+        for (entry in ruleStats.entrySet()) {
+          ctx.stormshield.remove(entry.getValue()["original"]);
+        }
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

@@ -38,6 +38,7 @@ processors:
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} %{IP} %{CISCO_HOSTNAME:log.syslog.hostname}: (?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{NUMBER:cisco.ios.sequence}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{CISCO_HOSTNAME:log.syslog.hostname}|%{IP})[:]? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{GREEDYDATA:_temp_.message}$'
       pattern_definitions:
         CISCO_PRIORITY_MSGCOUNT: '<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT:cisco.ios.message_count})?(?:: )?'
         CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
@@ -147,7 +148,7 @@ processors:
       patterns:
         - '%%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}:\s+(\w+\d+(/\d+)?\:\s+)?([a-zA-Z0-9_]+\:\s+)?%{GREEDYDATA:message}'
       ignore_missing: true
-      if: ctx.cisco?.ios?.facility == 'IOSXE' && ctx.event?.code == 'PLATFORM'
+      if: "ctx.cisco?.ios?.facility == 'IOSXE' && ctx.event?.code == 'PLATFORM' && ctx.message.indexOf('%') != -1"
   - grok:
       field: message
       tag: grok_audit_details
