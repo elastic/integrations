@@ -70,17 +70,23 @@ An example event for `statsd` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-11-28T06:26:54.238Z",
+    "@timestamp": "2024-06-18T07:24:40.220Z",
     "agent": {
-        "ephemeral_id": "283d2103-181e-4e55-990c-d463765d591a",
-        "id": "208488b1-ba3d-4035-b968-4202e1fadc05",
+        "ephemeral_id": "82e52250-5f2d-4fad-9f19-b88a209229db",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.11.0"
+        "version": "8.13.0"
     },
     "airflow": {
-        "task_executable": {
-            "value": 0
+        "scheduler_critical_section_duration": {
+            "count": 1,
+            "max": 7,
+            "mean": 7,
+            "mean_rate": 0.25568506211340597,
+            "median": 7,
+            "min": 7,
+            "stddev": 0
         }
     },
     "data_stream": {
@@ -92,28 +98,32 @@ An example event for `statsd` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "208488b1-ba3d-4035-b968-4202e1fadc05",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "airflow.statsd",
-        "ingested": "2023-11-28T06:26:55Z",
+        "ingested": "2024-06-18T07:24:50Z",
         "module": "statsd"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "d7fd92f5e61644938d48518adcee73ad",
-        "ip": "172.20.0.7",
-        "mac": "02-42-AC-14-00-07",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": [
+            "192.168.245.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-F5-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.90.1.el7.x86_64",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
