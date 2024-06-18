@@ -158,7 +158,7 @@ An example event for `status` looks as following:
             "192.168.80.7"
         ],
         "mac": [
-            "02:42:c0:a8:50:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -307,7 +307,7 @@ An example event for `advstatus` looks as following:
             "192.168.80.7"
         ],
         "mac": [
-            "02:42:c0:a8:50:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
