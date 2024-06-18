@@ -22,8 +22,6 @@ This configuration establishes a WebSocket connection to ws://localhost:443/v1/s
 
 The WebSocket input will consume messages from the server as they are transmitted. These messages are expected to be in a format that Filebeat can process, such as JSON. If the message format is different, you may need to define a processor to parse and structure the data before it is sent to Elasticsearch.
 
-**NOTE**: The websocket input as of now does not support XML messages.
-
 ## Connection Management
 
 The WebSocket input manages the connection to the WebSocket server, including automatically reconnecting if the connection is lost. The input does not maintain any state between restarts, so if the server sends historical data, it will be re-ingested upon reconnection.

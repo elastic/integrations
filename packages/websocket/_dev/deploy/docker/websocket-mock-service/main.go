@@ -1,3 +1,7 @@
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License;
+// you may not use this file except in compliance with the Elastic License.
+
 package main
 
 import (
@@ -7,14 +11,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
+func main() {
+	http.HandleFunc("/", handleWebSocket)
+	log.Fatal(http.ListenAndServe(":3000", nil))
 }
 
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
-
 	if r.URL.Path == "/testbasicauth" {
 		// Check if the 'Authorization' header is set for basic authentication
 		authHeader := r.Header.Get("Authorization")
@@ -26,6 +28,9 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool { return true },
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -68,9 +73,4 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 		log.Println("write:", err)
 		return
 	}
-}
-
-func main() {
-	http.HandleFunc("/", handleWebSocket)
-	log.Fatal(http.ListenAndServe(":3000", nil))
 }
