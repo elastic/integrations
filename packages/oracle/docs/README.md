@@ -365,8 +365,7 @@ An example event for `tablespace` looks as following:
             "192.168.240.4"
         ],
         "mac": [
-            "02:42:ac:1d:00:03",
-            "02:42:c0:a8:f0:04"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-custom-agent",
         "os": {
@@ -673,8 +672,7 @@ An example event for `sysmetric` looks as following:
             "192.168.240.4"
         ],
         "mac": [
-            "02:42:ac:1b:00:03",
-            "02:42:c0:a8:f0:04"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-custom-agent",
         "os": {
@@ -966,8 +964,7 @@ An example event for `memory` looks as following:
             "192.168.240.4"
         ],
         "mac": [
-            "02:42:ac:19:00:03",
-            "02:42:c0:a8:f0:04"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-custom-agent",
         "os": {
@@ -1180,8 +1177,7 @@ An example event for `system_statistics` looks as following:
             "192.168.240.4"
         ],
         "mac": [
-            "02:42:ac:1c:00:03",
-            "02:42:c0:a8:f0:04"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-custom-agent",
         "os": {
@@ -1414,8 +1410,7 @@ An example event for `performance` looks as following:
             "192.168.240.4"
         ],
         "mac": [
-            "02:42:ac:1a:00:03",
-            "02:42:c0:a8:f0:04"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-custom-agent",
         "os": {
