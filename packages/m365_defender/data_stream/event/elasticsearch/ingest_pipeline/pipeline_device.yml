@@ -1994,7 +1994,7 @@ processors:
       description: Remove HKEY_CURRENT_USER\ and HKEY_LOCAL_MACHINE\ from registry.key
       lang: painless
       tag: set_registry_key
-      if: ctx.m365_defender?.event?.registry?.key != null
+      if: ctx.m365_defender?.event?.registry?.key != null && ctx.m365_defender.event.registry.key != ''
       source: |
         String key = ctx.m365_defender.event.registry.key;
         def regex = /HKEY_CURRENT_USER\\|HKEY_LOCAL_MACHINE\\/;
@@ -2013,7 +2013,7 @@ processors:
       value: >-
         {{{m365_defender.event.registry.key}}}\{{{registry.value}}}
       tag: set_registry_path
-      if: ctx.m365_defender?.event?.registry?.key != null && ctx.registry.value != null
+      if: ctx.m365_defender?.event?.registry?.key != null && ctx.m365_defender.event.registry.key != '' && ctx.registry.value != null
       ignore_empty_value: true
   - append:
       field: registry.data.strings
@@ -2032,7 +2032,7 @@ processors:
       description: Remove HKEY_CURRENT_USER\ and HKEY_LOCAL_MACHINE\ from registry.key
       tag: set_registry_key_prev
       lang: painless
-      if: ctx.registry?.key == null && ctx.m365_defender?.event?.previous?.registry_key != null
+      if: ctx.registry?.key == null && ctx.m365_defender?.event?.previous?.registry_key != null && ctx.m365_defender.event.previous.registry_key != ''
       source: |
         String key = ctx.m365_defender.event.previous.registry_key;
         def regex = /HKEY_CURRENT_USER\\|HKEY_LOCAL_MACHINE\\/;
@@ -2051,7 +2051,7 @@ processors:
       value: >-
         {{{m365_defender.event.previous.registry_key}}}\{{{registry.value}}}
       tag: set_registry_path_prev
-      if: ctx.registry?.path == null && ctx.m365_defender?.event?.previous?.registry_key != null && ctx.registry.value != null
+      if: ctx.registry?.path == null && ctx.m365_defender?.event?.previous?.registry_key != null && ctx.m365_defender.event.previous.registry_key != '' && ctx.registry.value != null
       ignore_empty_value: true
   - append:
       field: registry.data.strings
@@ -2059,6 +2059,27 @@ processors:
       tag: append_registry_data_strings_prev
       allow_duplicates: false
       if: ctx.m365_defender?.event?.previous?.registry_value_data != null
+  # registry hive 
+  - script:
+      description: Abbreviated registry.hive derived from https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users
+      tag: set_registry_hive
+      lang: painless
+      if: (ctx.m365_defender?.event?.registry?.key != null && ctx.m365_defender.event.registry.key != '') || (ctx.m365_defender?.event?.previous?.registry_key != null && ctx.m365_defender.event.previous.registry_key != '')
+      params:
+        HKEY_CURRENT_USER: HKCU
+        HKEY_LOCAL_MACHINE: HKLM
+        HKEY_USERS: HKU
+        HKEY_CLASSES_ROOT: HKCR
+        HKEY_CURRENT_CONFIG: HKCC
+      source: |
+        String key = ctx.m365_defender?.event?.registry?.key;
+        if (key == null || key == '') {
+          key = ctx.m365_defender.event.previous.registry_key;
+        }
+        String hive_full = key.splitOnToken('\\')[0];
+        if (params.get(hive_full) != null) {
+          ctx.registry.hive = params.get(hive_full);
+        }
 
   # Source Mapping (DeviceLoginEvent has different mappings than the rest. DeviceNetworkEvent might include a direction, which controls which field goes to source/destination)
   - set:
