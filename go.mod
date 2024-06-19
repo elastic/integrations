@@ -210,5 +210,3 @@ require (
 )
 
 replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20240619153519-f9ffd443b8cb
-
-replace github.com/elastic/package-spec/v3 => github.com/elastic/package-spec/v3 v3.1.6-0.20240617154842-572e54732385
