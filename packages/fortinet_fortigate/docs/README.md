@@ -325,6 +325,7 @@ An example event for `log` looks as following:
 | fortinet.firewall.client_addr | Wifi client address | keyword |
 | fortinet.firewall.cloudaction | Cloud Action | keyword |
 | fortinet.firewall.clouduser | Cloud User | keyword |
+| fortinet.firewall.clustername | Cluster Name | keyword |
 | fortinet.firewall.column | VOIP Column | integer |
 | fortinet.firewall.command | CLI Command | keyword |
 | fortinet.firewall.community | SNMP Community | keyword |
@@ -815,7 +816,10 @@ An example event for `log` looks as following:
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.roles | Array of user roles at the time of the event. | keyword |
