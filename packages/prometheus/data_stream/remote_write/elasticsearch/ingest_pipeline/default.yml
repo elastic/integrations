@@ -22,6 +22,10 @@ processors:
           field: "prometheus.labels.metrics_names"
           value: ["{{_ingest._key}}"]
           description: Add all keys of the 'prometheus' object to the earlier created field, it includes all metric names and key "labels"
+  - fingerprint:
+      fields: ["prometheus.labels.metrics_names"]
+      target_field: "prometheus.labels_fingerprint"
+      ignore_missing: true
   - remove:
       field: "prometheus.labels.metrics_names"
       description: Remove field as it contains a redundant information and can impact the documents size
