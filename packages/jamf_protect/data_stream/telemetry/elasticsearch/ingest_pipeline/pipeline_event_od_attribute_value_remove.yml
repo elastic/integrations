@@ -1,0 +1,198 @@
+---
+description: Pipeline for parsing specific fields related to attribute value remove events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: Attribute removed from a user or group using Open Directory
+    - append:
+        field: event.type
+        value: deletion
+    - append:
+        field: event.category
+        value: configuration  
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.group_name
+        target_field: group.name
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.record_name
+        target_field: user.name
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.db_path
+        target_field: file.path
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.attribute_name
+        target_field: jamf_protect.telemetry.attribute_name
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.attribute_value
+        target_field: jamf_protect.telemetry.attribute_value
+        type: string
+        ignore_missing: true
+##########################
+## ECS Process ##
+##########################
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.start_time
+        target_field: process.start
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.audit_token.egid
+        target_field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.audit_token.egid
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.audit_token.euid
+        target_field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.audit_token.euid
+        type: string
+        ignore_missing: true
+    - append:
+        field: user.effective.id
+        value: '{{{jamf_protect.telemetry.event.od_attribute_value_remove.instigator.audit_token.euid}}}'
+        if: ctx.jamf_protect.telemetry?.event?.od_attribute_value_remove?.instigator?.audit_token?.euid != null
+        allow_duplicates: false
+        ignore_failure: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.is_platform_binary
+        target_field: jamf_protect.telemetry.platform_binary
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.is_es_client
+        target_field: jamf_protect.telemetry.es_client
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.cdhash
+        target_field: jamf_protect.telemetry.code_directory_hash
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.executable.sha1
+        target_field: process.hash.sha1
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.executable.sha256
+        target_field: process.hash.sha256
+        ignore_missing: true
+    - append:
+        field: related.hash
+        value: '{{{process.hash.sha1}}}'
+        if: ctx.process?.hash?.sha1 != null
+        allow_duplicates: false
+    - append:
+        field: related.hash
+        value: '{{{process.hash.sha256}}}'
+        if: ctx.process?.hash?.sha256 != null
+        allow_duplicates: false
+    - append:
+        field: related.hash
+        value: '{{{jamf_protect.telemetry.code_directory_hash}}}'
+        if: ctx.jamf_protect?.code_directory_hash != null
+        allow_duplicates: false
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.tty.path
+        target_field: jamf_protect.telemetry.tty
+        ignore_missing: true
+    - set:
+        field: process.interactive
+        value: true
+        if: ctx.jamf_protect.telemetry?.event?.od_attribute_value_remove?.instigator?.tty != null
+    - set:
+        field: process.interactive
+        value: false
+        if: ctx.jamf_protect.telemetry?.event?.od_attribute_value_remove?.instigator?.tty == null
+    - convert:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.audit_token.pid
+        target_field: process.pid
+        type: long
+        ignore_missing: true
+        on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.audit_token.uuid
+        target_field: process.entity_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.executable.path
+        target_field: process.executable
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.thread.thread_id
+        target_field: process.thread.id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.db_path
+        target_field: process.working_directory
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.od_attribute_value_remove?.db_path != null
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.signing_id
+        target_field: process.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.team_id
+        target_field: process.code_signature.team_id
+        ignore_missing: true
+
+##########################
+## ECS Parent Process ##
+##########################
+
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.parent_audit_token.uuid
+        target_field: process.parent.entity_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.parent_audit_token.pid
+        target_field: process.parent.pid
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.parent_audit_token.euid
+        target_field: process.parent.user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.parent_audit_token.ruid
+        target_field: process.parent.real_user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.parent_audit_token.rgid
+        target_field: process.parent.real_group.id
+        type: string
+        ignore_missing: true
+
+##########################
+## ECS Responsible Process ##
+##########################
+
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.responsible_audit_token.uuid
+        target_field: process.group_leader.entity_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.responsible_audit_token.pid
+        target_field: process.group_leader.pid
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.responsible_audit_token.euid
+        target_field: process.group_leader.user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.responsible_audit_token.ruid
+        target_field: process.group_leader.real_user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.od_attribute_value_remove.instigator.responsible_audit_token.rgid
+        target_field: process.group_leader.real_group.id
+        type: string
+        ignore_missing: true

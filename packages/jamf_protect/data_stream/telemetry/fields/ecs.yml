@@ -1,177 +1,282 @@
-- description: |-
-    ECS version this event conforms to. `ecs.version` is a required field and must exist in all events.
-    When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events.
-  name: ecs.version
-  type: keyword
-- description: Error code describing the error.
-  name: error.code
-  type: keyword
-- description: |-
-    The action captured by the event.
-    This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer.
+- external: ecs
+  name: observer.version
+- external: ecs
+  name: device.id
+- external: ecs
+  name: device.manufacturer
+- external: ecs
+  name: process.env_vars
+- external: ecs
+  name: process.interactive
+- external: ecs
+  name: process.thread.id
+- external: ecs
   name: event.action
-  type: keyword
-- description: |-
-    This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy.
-    `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory.
-    This field is an array. This will allow proper categorization of some events that fall in multiple categories.
-  name: event.category
-  type: keyword
-- description: |-
-    Identification code for this event, if one exists.
-    Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID.
-  name: event.code
-  type: keyword
-- description: |-
-    `event.created` contains the date/time when the event was first read by an agent, or by your pipeline.
-    This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event.
-    In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source.
-    In case the two timestamps are identical, `@timestamp` should be used.
+- external: ecs
   name: event.created
-  type: date
-- description: |-
-    This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy.
-    `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events.
-    The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not.
+- external: ecs
+  name: event.code
+- external: ecs
+  name: event.ingested
+- external: ecs
   name: event.kind
-  type: keyword
-- description: |-
-    Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex.
-    This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`.
-  doc_values: false
-  index: false
+- external: ecs
   name: event.original
-  type: keyword
-- description: |-
-    This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy.
-    `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event.
-    Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective.
-    Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer.
-    Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense.
+- external: ecs
   name: event.outcome
-  type: keyword
-- description: |-
-    This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy.
-    `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization.
-    This field is an array. This will allow proper categorization of some events that fall in multiple event types.
-  name: event.type
-  type: keyword
-- description: SHA1 hash.
-  name: file.hash.sha1
-  type: keyword
-- description: Full path to the file, including the file name. It should include the drive letter, when appropriate.
-  multi_fields:
-    - name: text
-      type: match_only_text
-  name: file.path
-  type: keyword
-- description: |-
-    Use the `os.type` field to categorize the operating system into one of the broad commercial families.
-    If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition.
-  name: host.os.type
-  type: keyword
-- description: |-
-    Array of process arguments, starting with the absolute path to the executable.
-    May be filtered to protect sensitive information.
-  name: process.args
-  type: keyword
-- description: |-
-    The exit code of the process, if this is a termination event.
-    The field should be absent if there is no exit code for the event (e.g. process start).
-  name: process.exit_code
-  type: long
-- description: SHA1 hash.
-  name: process.hash.sha1
-  type: keyword
-- description: |-
-    Process name.
-    Sometimes called program name or similar.
-  multi_fields:
-    - name: text
-      type: match_only_text
-  name: process.name
-  type: keyword
-- description: Process id.
-  name: process.pid
-  type: long
-- description: Process id.
-  name: process.parent.pid
-  type: long
-- description: Unique identifier for the group on the system/platform.
-  name: process.real_group.id
-  type: keyword
-- description: Name of the group.
-  name: process.real_group.name
-  type: keyword
-- description: Unique identifier of the user.
-  name: process.real_user.id
-  type: keyword
-- description: Short name or login of the user.
-  multi_fields:
-    - name: text
-      type: match_only_text
-  name: process.real_user.name
-  type: keyword
-- description: Unique identifier of the user.
-  name: process.user.id
-  type: keyword
-- description: Short name or login of the user.
-  multi_fields:
-    - name: text
-      type: match_only_text
-  name: process.user.name
-  type: keyword
-- description: All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search).
-  name: related.hash
-  type: keyword
-- description: All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases.
-  name: related.hosts
-  type: keyword
-- description: All of the IPs seen on your event.
+- external: ecs
+  name: event.severity
+- external: ecs
+  name: event.start
+- external: ecs
+  name: event.category
+- external: ecs
+  name: event.id
+- external: ecs
+  name: event.timezone
+- external: ecs
   name: related.ip
-  type: ip
-- description: IP address of the server (IPv4 or IPv6).
-  name: server.ip
-  type: ip
-- description: Port of the server.
-  name: server.port
-  type: long
-- description: All the user names or other user identifiers seen on the event.
+- external: ecs
   name: related.user
-  type: keyword
-- description: List of keywords used to tag each event.
-  name: tags
-  type: keyword
-- description: Unique identifier of the user.
-  name: user.effective.id
-  type: keyword
-- description: Short name or login of the user.
-  multi_fields:
-    - name: text
-      type: match_only_text
-  name: user.effective.name
-  type: keyword
-- description: User email address.
-  name: user.email
-  type: keyword
-- description: Unique identifier for the group on the system/platform.
-  name: user.group.id
-  type: keyword
-- description: Name of the group.
-  name: user.group.name
-  type: keyword
-- description: Unique identifier of the user.
-  name: user.id
-  type: keyword
-- description: Short name or login of the user.
-  multi_fields:
-    - name: text
-      type: match_only_text
+- external: ecs
   name: user.name
-  type: keyword
+- external: ecs
+  name: user.id
+- external: ecs
+  name: user.effective.id
+- external: ecs
+  name: user.domain
+- external: ecs
+  name: user.email
+- external: ecs
+  name: related.hosts
+- external: ecs
+  name: related.hash
+- external: ecs
+  name: process.args
+- external: ecs
+  name: process.working_directory
+- external: ecs
+  name: process.args_count
+- external: ecs
+  name: process.executable
+- external: ecs
+  name: process.parent.pid
+- external: ecs
+  name: process.group_leader.group.id
+- external: ecs
+  name: process.real_group.id
+- external: ecs
+  name: process.parent.real_group.id
+- external: ecs
+  name: process.group_leader.real_group.id
+- external: ecs
+  name: process.entity_id
+- external: ecs
+  name: process.real_user.id
+- external: ecs
+  name: process.parent.real_user.id
+- external: ecs
+  name: process.group_leader.real_user.id
+- external: ecs
+  name: process.user.id
+- external: ecs
+  name: process.parent.user.id
+- external: ecs
+  name: process.group_leader.user.id
+- external: ecs
+  name: process.group_leader.pid
+- external: ecs
+  name: process.exit_code
+- external: ecs
+  name: process.name
+- external: ecs
+  name: process.pid
+- external: ecs
+  name: process.hash.md5
+- external: ecs
+  name: process.hash.sha1
+- external: ecs
+  name: process.hash.sha256
 - external: ecs
   name: process.code_signature.signing_id
 - external: ecs
   name: process.code_signature.status
 - external: ecs
   name: process.code_signature.team_id
+- external: ecs
+  name: file.hash.md5
+- external: ecs
+  name: file.hash.sha1
+- external: ecs
+  name: file.hash.sha256
+- external: ecs
+  name: file.name
+- external: ecs
+  name: file.path
+- external: ecs
+  name: file.gid
+- external: ecs
+  name: file.inode
+- external: ecs
+  name: file.mode
+- external: ecs
+  name: file.size
+- external: ecs
+  name: file.uid
+- external: ecs
+  name: file.code_signature.signing_id
+- external: ecs
+  name: file.code_signature.status
+- external: ecs
+  name: file.code_signature.team_id
+- external: ecs
+  name: destination.address
+- external: ecs
+  name: destination.as.number
+- external: ecs
+  name: destination.as.organization.name
+- external: ecs
+  name: destination.domain
+- external: ecs
+  name: destination.geo.continent_name
+- external: ecs
+  name: destination.geo.country_iso_code
+- external: ecs
+  name: destination.geo.city_name
+- external: ecs
+  name: destination.geo.country_name
+- external: ecs
+  name: destination.geo.location
+- external: ecs
+  name: destination.ip
+- external: ecs
+  name: destination.port
+- external: ecs
+  name: network.direction
+- external: ecs
+  name: network.transport
+- external: ecs
+  name: source.ip
+- external: ecs
+  name: source.port
+- external: ecs
+  name: tags
+- external: ecs
+  name: threat.tactic.id
+- external: ecs
+  name: threat.tactic.reference
+- external: ecs
+  name: threat.tactic.name
+- external: ecs
+  name: threat.technique.id
+- external: ecs
+  name: threat.technique.name
+- external: ecs
+  name: threat.technique.reference
+- external: ecs
+  name: threat.enrichments
+- external: ecs
+  name: threat.software.platforms
+- external: ecs
+  name: threat.indicator.file.path
+- external: ecs
+  name: threat.indicator.type
+- external: ecs
+  name: rule.version
+- external: ecs
+  name: container.image.tag
+- external: ecs
+  name: container.runtime
+- external: ecs
+  name: ecs.version
+- external: ecs
+  name: error.message
+- external: ecs
+  name: event.duration
+- external: ecs
+  name: event.end
+- external: ecs
+  name: event.provider
+- external: ecs
+  name: event.type
+- external: ecs
+  name: file.extension
+- external: ecs
+  name: file.hash.sha512
+- external: ecs
+  name: log.file.path
+- external: ecs
+  name: log.logger
+- external: ecs
+  name: message
+- external: ecs
+  name: observer.name
+- external: ecs
+  name: observer.product
+- external: ecs
+  name: observer.type
+- external: ecs
+  name: observer.vendor
+- external: ecs
+  name: process.command_line
+- external: ecs
+  name: process.parent.name
+- external: ecs
+  name: process.parent.executable
+- external: ecs
+  name: process.parent.entity_id
+- external: ecs
+  name: process.parent.start
+- external: ecs
+  name: process.parent.code_signature.signing_id
+- external: ecs
+  name: process.parent.code_signature.status
+- external: ecs
+  name: process.parent.code_signature.team_id
+- external: ecs
+  name: process.group_leader.name
+- external: ecs
+  name: process.group_leader.executable
+- external: ecs
+  name: process.group_leader.start
+- external: ecs
+  name: process.group_leader.entity_id
+- external: ecs
+  name: process.start
+- external: ecs
+  name: rule.description
+- external: ecs
+  name: rule.name
+- external: ecs
+  name: threat.framework
+- external: ecs
+  name: group.id
+- external: ecs
+  name: group.name
+- name: volume.device_name
+  type: keyword
+- name: volume.mount_name
+  type: keyword
+- name: volume.file_system_type
+  type: keyword
+- name: volume.bus_type
+  type: keyword
+- name: volume.nt_name
+  type: keyword
+- name: volume.product_id
+  type: keyword
+- name: volume.product_name
+  type: keyword
+- name: volume.removable
+  type: boolean
+- name: volume.serial_number
+  type: keyword
+- name: volume.size
+  type: long
+- name: volume.vendor_id
+  type: keyword
+- name: volume.vendor_name
+  type: keyword
+- name: volume.writable
+  type: boolean
