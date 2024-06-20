@@ -2,9 +2,6 @@ condition: ${host.platform} == 'windows'
 data_stream:
   dataset: {{data_stream.dataset}}
 name: {{channel}}
-{{#if preserve_original_event}}
-include_xml: true
-{{/if}}
 {{#if providers}}
 provider:
 {{#each providers as |p|}}
@@ -22,9 +19,20 @@ language: {{language}}
 {{/if}}
 {{#if tags.length}}
 tags:
-{{#each tags as |tag i|}}
+{{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+  - preserve_original_event
+{{/if}}
+{{/if}}
+{{#if preserve_original_event}}
+include_xml: true
 {{/if}}
 {{#if pipeline}}
 pipeline: {{pipeline}}
