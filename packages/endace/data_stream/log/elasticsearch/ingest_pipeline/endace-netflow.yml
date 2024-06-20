@@ -7,8 +7,7 @@ processors:
       value: "ip_conv={{ source.ip }}%26{{ destination.ip }}"
       if: ctx.destination?.ip != null && ctx.destination?.ip != '' && ctx.source?.ip != null && ctx.source?.ip != ''
       tag: endace conversation set
-  
-  
+
   - set: 
       description: "Set IP Conversation if either destination.ip and source.ip are present"
       field: _conf.ipconv
@@ -19,30 +18,48 @@ processors:
 
   - date:
       description: "Convert Start time to Epoch"
-      field: event.start
+      field: netflow.flow_start_milliseconds
       formats: ["ISO8601"]
       target_field: _conf.event.start
       output_format: epoch_millis
-      if: ctx.event?.start != null && ctx.event?.start != ''
+      if: ctx.netflow?.flow_start_milliseconds != null && ctx.netflow?.flow_start_milliseconds != ''
+
+
+  - convert:
+        field: _conf.event.start
+        type: long
+        description: "Convert Start time to Long"
+        if: ctx._conf?.event?.start != null && ctx._conf?.event?.start != ''
 
 
   - date:
       description: "Convert End time to Epoch"
-      field: event.end
+      field: netflow.flow_end_milliseconds
       formats: ["ISO8601"]
       target_field: _conf.event.end
       output_format: epoch_millis
-      if: ctx.event?.end != null && ctx.event?.end != ''
+      if: ctx.netflow?.flow_end_milliseconds != null && ctx.netflow?.flow_end_milliseconds != ''
 
-  - set: 
-      description: "Calculate timedelta"
-      field: _conf.timedelta
-      value: _conf.endace_lookback * 60 * 1000
 
-  - set: 
-      description: "Calculate Endtime + additional lookback"
-      field: _conf.event.end
-      value: _conf.event.end - _conf.timedelta
+  - convert:
+        field: _conf.event.end
+        type: long
+        description: "Convert End time to Long"
+        if: ctx._conf?.event?.end != null && ctx._conf?.event?.end != ''
+
+  - script:
+        source: "ctx._conf.timedelta = ctx._conf.endace_lookback * 60 * 1000"
+        tag: "Calculate Timedelta"
+        description: "Calculate Timedelta"
+        if: ctx._conf?.endace_lookback != null && ctx._conf?.endace_lookback != ''
+
+
+  - script:
+        source: "ctx._conf.event.end = ctx._conf.event.end - ctx._conf.timedelta"
+        tag: "Calculate Endtime + additional lookback"
+        description: "Calculate Endtime + additional lookback"
+        if: ctx._conf?.event?.end != null && ctx._conf?.event?.end != '' && ctx._conf?.timedelta != null && ctx._conf?.timedelta != ''
+
 
   - set:
       field: event.reference

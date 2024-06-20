@@ -106,6 +106,12 @@ processors:
       field: 
         - _tmp_
       ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "endace-netflow" }}'
+      tag: pipeline_processor
+      if: ctx.source?.ip != null && ctx.destination?.ip != null && ctx.source?.ip != '0.0.0.0' && ctx.destination?.ip != '0.0.0.0'
+  - remove:
+      field: "_conf"
 on_failure:
   - set:
       field: event.kind
