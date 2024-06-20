@@ -54,7 +54,7 @@ Set up a new app registration in Azure.
 To create the app registration:
 
 1. Sign in to the [Azure Portal](https://portal.azure.com/).
-2. Search for and select **Azure Active Directory**.
+2. Search for and select **Microsoft Entra ID**.
 3. Under **Manage**, select **App registrations** > **New registration**.
 4. Enter a display _Name_ for your application (for example, "elastic-agent").
 5. Specify who can use the application.
