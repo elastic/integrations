@@ -7,15 +7,22 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 
 	"github.com/elastic/integrations/dev/codeowners"
+	"github.com/elastic/integrations/dev/issuesreporter"
+)
+
+const (
+	defaultResultsPath = "build/test-results/"
 )
 
 var (
@@ -32,6 +39,11 @@ func Check() error {
 	mg.Deps(ModTidy)
 	mg.Deps(goTest)
 	mg.Deps(codeowners.Check)
+	return nil
+}
+
+func Test() error {
+	mg.Deps(goTest)
 	return nil
 }
 
@@ -127,4 +139,24 @@ func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 
 func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
+}
+
+func ReportIssues() error {
+	stackVersion := os.Getenv("STACK_VERSION")
+	serverlessEnv := os.Getenv("SERVERLESS")
+	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
+
+	serverless := false
+	if serverlessEnv != "" {
+		var err error
+		serverless, err = strconv.ParseBool(serverlessEnv)
+		if err != err {
+			return fmt.Errorf("failed to parse SERVERLESS value: %w", err)
+		}
+	}
+
+	path := defaultResultsPath
+	path = "dev/issuesreporter/testdata/"
+	mg.Deps(mg.F(issuesreporter.Check, path, buildURL, stackVersion, serverless))
+	return nil
 }
