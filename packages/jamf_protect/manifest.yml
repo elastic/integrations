@@ -1,14 +1,14 @@
-format_version: 1.0.0
+format_version: 3.0.3
 name: jamf_protect
 title: Jamf Protect
-version: "0.5.0"
+version: "2.0.0"
 description: Receives events from Jamf Protect with Elastic Agent.
 type: integration
 categories:
   - security
-release: beta
 conditions:
-  kibana.version: ^8.12.0
+  kibana:
+    version: ^8.12.0
 screenshots:
   - src: /img/jamfprotect_kibana.png
     title: Jamf Protect Kibana
@@ -38,12 +38,14 @@ policy_templates:
             default: 0.0.0.0
           - name: secret_header
             type: text
+            secret: false
             title: Secret Header
             description: The header to check for a specific value specified by `secret.value`.
             required: false
             show_user: false
           - name: secret_value
             type: password
+            secret: true
             title: Secret Value
             description: The secret stored in the header name specified by `secret.header`.
             required: false
@@ -96,6 +98,7 @@ policy_templates:
             description: "URL of the AWS SQS queue that messages will be received from. \nThis is only required if you want to collect logs via AWS SQS.\nThis is a global queue URL, i.e this can be overriden by specific local queue URLs for each data stream if required."
           - name: access_key_id
             type: password
+            secret: true
             title: Access Key ID
             multi: false
             required: false
@@ -103,6 +106,7 @@ policy_templates:
             description: First part of access key.
           - name: secret_access_key
             type: password
+            secret: true
             title: Secret Access Key
             multi: false
             required: false
@@ -110,6 +114,7 @@ policy_templates:
             description: Second part of access key.
           - name: session_token
             type: password
+            secret: true
             title: Session Token
             multi: false
             required: false

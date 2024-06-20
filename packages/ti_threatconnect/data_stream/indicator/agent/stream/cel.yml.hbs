@@ -1,25 +1,40 @@
 config_version: 2
+# Set interval in between polling.
 interval: {{interval}}
+
+# Set the filename and max backups if need be.
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 request.tracer.maxbackups: 5
 {{/if}}
+
+# Set proxy url.
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
+
+# Set expiration duration.
 {{#if ioc_expiration_duration}}
 fields_under_root: true
 fields:
   _conf:
     ioc_expiration_duration: "{{ioc_expiration_duration}}"
 {{/if}}
+
+# This specifies SSL/TLS configuration. If the ssl section is missing, the host’s CAs are used for HTTPS connections.
+# If set to a boolean, this controls if SSL verification is enabled or not.
 {{#if ssl}}
 resource.ssl: {{ssl}}
 {{/if}}
+
+# Timeout for contacting TC.
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
+
+# Set the base url.
 resource.url: {{url}}
+
 state:
   access_id: {{escape_string access_id}}
   secret_key: {{escape_string secret_key}}
@@ -28,19 +43,27 @@ state:
   batch: {{batch_size}}
   initial_interval: {{initial_interval}}
   event_list:
+{{#if include_group_assoc}}
     - associatedGroups
+{{/if}}
+{{#if include_indicator_assoc}}
     - associatedIndicators
+{{/if}}
+{{#if include_attributes}}
     - attributes
+{{/if}}
     - securityLabels
     - sightings
     - tags
     - threatAssess
-{{#if tql}}
   tql_filter: {{tql}}
-{{/if}}
+
+# Hide the secret_key.
 redact:
   fields:
     - secret_key
+
+# The program section is where the logic of the stream processor is defined.
 program: |
   ['lastModified GEQ "'+(
       !state.want_more ?

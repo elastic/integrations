@@ -1,0 +1,217 @@
+---
+description: Pipeline to process gitlab api logs
+processors:
+- set:
+    field: ecs.version
+    tag: set_ecs_version
+    value: 8.11.0
+- rename:
+    field: message
+    target_field: event.original
+    tag: rename_message
+    ignore_missing: true
+    if: ctx.event?.original == null
+- remove:
+    field: message
+    ignore_missing: true
+    tag: remove_message
+    if: ctx.event?.original != null
+- drop: 
+    if: ctx.event.original.startsWith('#')
+    description: Drop if logline contains header(s), which startswith `#`.
+- json:
+    field: event.original
+    tag: json_original
+    target_field: gitlab.api
+- date:
+    field: gitlab.api.time
+    target_field: '@timestamp'
+    formats:
+    - ISO8601
+    ignore_failure: true
+- rename:
+    field: gitlab.api.severity
+    target_field: log.level
+    ignore_missing: true
+- script:
+    lang: painless
+    source: |-
+      if (ctx.gitlab?.api?.duration_s != null) {
+        ctx.event.duration = ctx.gitlab.api.duration_s * 1000000;
+      }
+    ignore_failure: true
+- rename:
+    field: gitlab.api.status
+    target_field: http.response.status_code
+    ignore_missing: true
+- rename:
+    field: gitlab.api.method
+    target_field: http.request.method
+    ignore_missing: true
+- rename:
+    field: gitlab.api.path
+    target_field: url.path
+    ignore_missing: true
+- rename:
+    field: gitlab.api.host
+    target_field: url.domain
+    ignore_missing: true
+- dot_expander:
+    path: gitlab.api
+    field: meta.caller_id
+- dot_expander:
+    path: gitlab.api
+    field: meta.client_id
+- dot_expander:
+    path: gitlab.api
+    field: meta.feature_category
+- dot_expander:
+    path: gitlab.api
+    field: meta.remote_ip
+- convert:
+    field: gitlab.api.meta.remote_ip
+    type: ip
+    ignore_missing: true
+    on_failure:
+        - remove:
+            field: gitlab.api.meta.remote_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+- dot_expander:
+    path: gitlab.api
+    field: meta.user
+- dot_expander:
+    path: gitlab.api
+    field: meta.user_id
+- rename:
+    field: gitlab.api.meta.caller_id
+    target_field: event.provider
+    ignore_missing: true
+- split:
+    field: gitlab.api.remote_ip
+    if: ctx.gitlab?.api?.remote_ip != null && ctx.gitlab?.api?.remote_ip != ''
+    tag: split_ips
+    target_field: source.ip
+    separator: ', ?'
+- foreach:
+    field: source.ip
+    if: ctx.source?.ip instanceof List
+    ignore_failure: true
+    processor:
+      convert:
+        field: _ingest._value.name
+        type: ip
+        target_field: _ingest._value.name_ips
+        ignore_missing: true
+        on_failure:
+          - remove:
+              field: _ingest._value.ip
+              ignore_missing: true
+- remove:
+    field: gitlab.api.remote_ip
+    ignore_missing: true
+- rename:
+    field: gitlab.api.ua
+    target_field: user_agent.original
+    ignore_missing: true
+- rename:
+    field: gitlab.api.pid
+    target_field: process.pid
+    ignore_missing: true
+- rename:
+    field: gitlab.api.user_id
+    target_field: user.id
+    ignore_missing: true
+- convert:
+    field: user.id
+    type: string
+    ignore_missing: true
+- rename:
+    field: gitlab.api.username
+    target_field: user.name
+    ignore_missing: true
+- geoip:
+    field: client.address
+    tag: geoip_client_address
+    target_field: client.geo
+    ignore_missing: true
+- geoip:
+    ignore_missing: true
+    database_file: GeoLite2-ASN.mmdb
+    field: client.address
+    tag: geoip_client_asn
+    target_field: client.as
+    properties:
+    - asn
+    - organization_name
+- rename:
+    field: client.as.asn
+    tag: rename_client_as_asn
+    target_field: client.as.number
+    ignore_missing: true
+- rename:
+    field: client.as.organization_name
+    tag: rename_client_as_organization_name
+    target_field: client.as.organization.name
+    ignore_missing: true
+- append:
+    field: event.category
+    value:
+    - api
+    allow_duplicates: false
+- append:
+    field: event.type
+    value:
+    - info
+    allow_duplicates: false
+- append:
+    field: event.category
+    value:
+    - database
+    allow_duplicates: false
+    if: ctx.gitlab?.api?.db_count != null && ctx.gitlab?.api?.db_count > 0
+- append:
+    field: event.type
+    value:
+    - error
+    allow_duplicates: false
+    if: ctx.http?.response?.status_code != null && (ctx.http.response.status_code < 200 || ctx.http.response.status_code >= 400)
+- append:
+    field: event.kind
+    value:
+    - pipeline_error
+    allow_duplicates: false
+    if: ctx.error?.message != null
+- remove:
+    field: event.original
+    tag: remove_original_event
+    if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    description: Drops null/empty values recursively.
+    lang: painless
+    source: |
+      boolean dropEmptyFields(Object object) {
+        if (object == null || object == "") {
+          return true;
+        } else if (object instanceof Map) {
+          ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+          return (((Map) object).size() == 0);
+        } else if (object instanceof List) {
+          ((List) object).removeIf(value -> dropEmptyFields(value));
+          return (((List) object).length == 0);
+        }
+        return false;
+      }
+      dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+      in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- set:
+    field: event.kind
+    value: pipeline_error

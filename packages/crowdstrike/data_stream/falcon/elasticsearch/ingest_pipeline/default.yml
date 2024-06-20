@@ -336,6 +336,13 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+# If `device.id`` is not already mapped inside respective pipelines using SensorId, use `event.DeviceId` to map it.
+  - set:
+      field: device.id
+      copy_from: crowdstrike.event.DeviceId
+      ignore_empty_value: true
+      tag: rename_event_deviceid
+      if: ctx.device?.id == null
   - remove:
       field: event.original
       tag: remove_event_original

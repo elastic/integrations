@@ -1,0 +1,316 @@
+metricsets: ["monitor"]
+period: {{period}}
+{{#if client_id}}
+client_id: {{client_id}}
+{{/if}}
+{{#if client_secret}}
+client_secret: {{client_secret}}
+{{/if}}
+{{#if tenant_id}}
+tenant_id: {{tenant_id}}
+{{/if}}
+{{#if subscription_id}}
+subscription_id: {{subscription_id}}
+{{/if}}
+{{#if refresh_list_interval}}
+refresh_list_interval: {{refresh_list_interval}}
+{{/if}}
+{{#if resource_manager_endpoint}}
+resource_manager_endpoint: {{resource_manager_endpoint}}
+{{/if}}
+resources:
+{{#if resource_groups}}
+    {{#each resource_groups}}
+        - resource_group: "{{this}}"
+          resource_type: "Microsoft.CognitiveServices/accounts"
+          metrics:
+          - name:
+              - AzureOpenAIRequests
+              - AzureOpenAITimeToResponse
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ApiName
+              value: '*'
+            - name: OperationName
+              value: '*'
+            - name: Region
+              value: '*'
+            - name: StreamType
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ModelVersion
+              value: '*'
+            - name: StatusCode
+              value: '*'
+          - name:
+              - ProcessedPromptTokens
+              - GeneratedTokens
+              - TokenTransaction
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ApiName
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: FeatureName
+              value: '*'
+            - name: UsageChannel
+              value: '*'
+            - name: Region
+              value: '*'
+            - name: ModelVersion
+              value: '*'
+          - name:
+              - FineTunedTrainingHours
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ApiName
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: FeatureName
+              value: '*'
+            - name: UsageChannel
+              value: '*'
+            - name: Region
+              value: '*'
+          - name:
+              - ActiveTokens
+              - AzureOpenAIContextTokensCacheMatchRate
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: Region
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ModelVersion
+              value: '*'
+          - name:
+              - AzureOpenAIProvisionedManagedUtilizationV2
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: Region
+              value: '*'
+            - name: StreamType
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ModelVersion
+              value: '*'
+    {{/each}}
+{{/if}}
+{{#if resource_ids}}
+    {{#each resource_ids}}
+        - resource_id: "{{this}}"
+          metrics:
+          - name:
+              - AzureOpenAIRequests
+              - AzureOpenAITimeToResponse
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ApiName
+              value: '*'
+            - name: OperationName
+              value: '*'
+            - name: Region
+              value: '*'
+            - name: StreamType
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ModelVersion
+              value: '*'
+            - name: StatusCode
+              value: '*'
+          - name:
+              - ProcessedPromptTokens
+              - GeneratedTokens
+              - TokenTransaction
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ApiName
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: FeatureName
+              value: '*'
+            - name: UsageChannel
+              value: '*'
+            - name: Region
+              value: '*'
+            - name: ModelVersion
+              value: '*'
+          - name:
+              - FineTunedTrainingHours
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ApiName
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: FeatureName
+              value: '*'
+            - name: UsageChannel
+              value: '*'
+            - name: Region
+              value: '*'
+          - name:
+              - ActiveTokens
+              - AzureOpenAIContextTokensCacheMatchRate
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: Region
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ModelVersion
+              value: '*'
+            - name:
+                - AzureOpenAIProvisionedManagedUtilizationV2
+              namespace: "Microsoft.CognitiveServices/accounts"
+              timegrain: "PT1M"
+              ignore_unsupported: true
+              dimensions:
+              - name: Region
+                value: '*'
+              - name: StreamType
+                value: '*'
+              - name: ModelDeploymentName
+                value: '*'
+              - name: ModelName
+                value: '*'
+              - name: ModelVersion
+                value: '*'
+    {{/each}}
+{{/if}}
+
+{{!
+    When no resource group and resource ID are specified by the user, we want to
+    collect metrics for all the resource groups in the subscription.
+}}
+
+{{#unless resource_ids }}
+    {{#unless resource_groups }}
+        - resource_query: "resourceType eq 'Microsoft.CognitiveServices/accounts'"
+          metrics:
+          - name:
+              - AzureOpenAIRequests
+              - AzureOpenAITimeToResponse
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ApiName
+              value: '*'
+            - name: OperationName
+              value: '*'
+            - name: Region
+              value: '*'
+            - name: StreamType
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ModelVersion
+              value: '*'
+            - name: StatusCode
+              value: '*'
+          - name:
+              - ProcessedPromptTokens
+              - GeneratedTokens
+              - TokenTransaction
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ApiName
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: FeatureName
+              value: '*'
+            - name: UsageChannel
+              value: '*'
+            - name: Region
+              value: '*'
+            - name: ModelVersion
+              value: '*'
+          - name:
+              - FineTunedTrainingHours
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: ApiName
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: FeatureName
+              value: '*'
+            - name: UsageChannel
+              value: '*'
+            - name: Region
+              value: '*'
+          - name:
+              - ActiveTokens
+              - AzureOpenAIContextTokensCacheMatchRate
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: Region
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ModelVersion
+              value: '*'
+          - name:
+              - AzureOpenAIProvisionedManagedUtilizationV2
+            namespace: "Microsoft.CognitiveServices/accounts"
+            timegrain: "PT1M"
+            ignore_unsupported: true
+            dimensions:
+            - name: Region
+              value: '*'
+            - name: StreamType
+              value: '*'
+            - name: ModelDeploymentName
+              value: '*'
+            - name: ModelName
+              value: '*'
+            - name: ModelVersion
+              value: '*'
+    {{/unless}}
+{{/unless}}
