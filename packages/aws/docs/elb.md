@@ -458,6 +458,7 @@ An example event for `elb` looks as following:
 | aws.applicationelb.metrics.RejectedConnectionCount.sum | The number of connections that were rejected because the load balancer had reached its maximum number of connections. | long | gauge |
 | aws.applicationelb.metrics.RequestCount.sum | The number of requests processed over IPv4 and IPv6. | long | gauge |
 | aws.applicationelb.metrics.RuleEvaluations.sum | The number of rules processed by the load balancer given a request rate averaged over an hour. | long | gauge |
+| aws.applicationelb.metrics.TargetResponseTime.avg | The time elapsed after the request leaves the load balancer until the target starts to send the response headers. | double | s | gauge |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.AvailabilityZone | Filters the metric data by the specified Availability Zone. | keyword |  |
 | aws.dimensions.LoadBalancer | Filters the metric data by load balancer. | keyword |  |
