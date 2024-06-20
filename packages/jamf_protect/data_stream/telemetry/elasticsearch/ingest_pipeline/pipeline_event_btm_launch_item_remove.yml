@@ -1,0 +1,384 @@
+---
+description: Pipeline for parsing specific fields related to btm remove events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: Apple’s Background Task Manager notified that an existing item has been removed
+    - append:
+        field: event.type
+        value: change
+    - append:
+        field: event.category
+        value: configuration 
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.item.app_url
+        target_field: jamf_protect.telemetry.btm_item_app_url
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.item.item_url
+        target_field: jamf_protect.telemetry.btm_item_url
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.item.uid
+        target_field: jamf_protect.telemetry.btm_item_user_uid
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.item.legacy
+        target_field: jamf_protect.telemetry.btm_item_is_legacy
+        type: boolean
+        ignore_missing: true
+        ignore_failure: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.item.managed
+        target_field: jamf_protect.telemetry.btm_item_is_managed
+        type: boolean
+        ignore_missing: true
+        ignore_failure: true
+    - script:
+        lang: painless
+        params:
+            itemTypeMap:
+                '0': User_Item
+                '1': App
+                '2': LoginItem
+                '3': LaunchAgent
+                '4': LaunchDaemon
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.item?.item_type != null) {
+                String itemType = ctx.jamf_protect.telemetry.event.btm_launch_item_remove.item.item_type.toString();
+                def itemTypeString = params.itemTypeMap.containsKey(itemType) ? params.itemTypeMap[itemType] : 'Unknown';
+                ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+                ctx.jamf_protect.telemetry.btm_item_type = itemTypeString;
+            }
+            
+##########################
+## ECS Process ##
+##########################
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.start_time
+        target_field: process.start
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.start_time
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        target_field: process.start
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.audit_token.egid
+        target_field: jamf_protect.telemetry.event.btm_launch_item_remove.app.audit_token.egid
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.audit_token.egid
+        target_field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.audit_token.egid
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null        
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.audit_token.euid
+        target_field: jamf_protect.telemetry.event.btm_launch_item_remove.app.audit_token.euid
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.audit_token.euid
+        target_field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.audit_token.euid
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        type: string
+        ignore_missing: true
+    - append:
+        field: user.effective.id
+        value: '{{{jamf_protect.telemetry.event.btm_launch_item_remove.app.audit_token.euid}}}'
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app?.audit_token?.euid != null
+        allow_duplicates: false
+        ignore_failure: true
+    - append:
+        field: user.effective.id
+        value: '{{{jamf_protect.telemetry.event.btm_launch_item_remove.instigator.audit_token.euid}}}'
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.instigator?.audit_token?.euid != null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        allow_duplicates: false
+        ignore_failure: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.executable.sha1
+        target_field: process.hash.sha1
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.executable.sha1
+        target_field: process.hash.sha1
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_add.app.is_platform_binary
+        target_field: jamf_protect.telemetry.platform_binary
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.is_platform_binary
+        target_field: jamf_protect.telemetry.platform_binary
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_add.app.is_es_client
+        target_field: jamf_protect.telemetry.es_client
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.is_es_client
+        target_field: jamf_protect.telemetry.es_client
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.cdhash
+        target_field: jamf_protect.telemetry.code_directory_hash
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.cdhash
+        target_field: jamf_protect.telemetry.code_directory_hash
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.executable.sha1
+        target_field: process.hash.sha1
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.executable.sha1
+        target_field: process.hash.sha1
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.executable.sha256
+        target_field: process.hash.sha256
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.executable.sha256
+        target_field: process.hash.sha256
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+    - append:
+        field: related.hash
+        value: '{{{process.hash.sha1}}}'
+        if: ctx.process?.hash?.sha1 != null
+        allow_duplicates: false
+    - append:
+        field: related.hash
+        value: '{{{process.hash.sha256}}}'
+        if: ctx.process?.hash?.sha256 != null
+        allow_duplicates: false
+    - append:
+        field: related.hash
+        value: '{{{jamf_protect.telemetry.code_directory_hash}}}'
+        if: ctx.jamf_protect?.code_directory_hash != null
+        allow_duplicates: false
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.tty.path
+        target_field: jamf_protect.telemetry.tty
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.tty.path
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        target_field: jamf_protect.telemetry.tty
+        ignore_missing: true
+    - set:
+        field: process.interactive
+        value: true
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app?.tty != null
+    - set:
+        field: process.interactive
+        value: true
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.instigator?.tty != null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+    - set:
+        field: process.interactive
+        value: false
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app?.tty == null
+    - set:
+        field: process.interactive
+        value: false
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.instigator?.tty == null && ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.audit_token.pid
+        target_field: process.pid
+        type: long
+        ignore_missing: true
+        on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.audit_token.pid
+        target_field: process.pid
+        type: long
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+        on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.audit_token.uuid
+        target_field: process.entity_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.audit_token.uuid
+        target_field: process.entity_id
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.executable.path
+        target_field: process.executable
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.executable.path
+        target_field: process.executable
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+
+    - rename:
+        field: jamf_protect.telemetry.thread.thread_id
+        target_field: process.thread.id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.signing_id
+        target_field: process.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.signing_id
+        target_field: process.code_signature.signing_id
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.team_id
+        target_field: process.code_signature.team_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.team_id
+        target_field: process.code_signature.team_id
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+
+##########################
+## ECS Parent Process ##
+##########################
+
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.parent_audit_token.uuid
+        target_field: process.parent.entity_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.parent_audit_token.uuid
+        target_field: process.parent.entity_id
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.parent_audit_token.pid
+        target_field: process.parent.pid
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.parent_audit_token.pid
+        target_field: process.parent.pid
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.parent_audit_token.euid
+        target_field: process.parent.user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.parent_audit_token.euid
+        target_field: process.parent.user.id
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        type: string
+        ignore_missing: true
+
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.parent_audit_token.ruid
+        target_field: process.parent.real_user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.parent_audit_token.ruid
+        target_field: process.parent.real_user.id
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        type: string
+        ignore_missing: true
+
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.parent_audit_token.rgid
+        target_field: process.parent.real_group.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.parent_audit_token.rgid
+        target_field: process.parent.real_group.id
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        type: string
+        ignore_missing: true
+
+##########################
+## ECS Responsible Process ##
+##########################
+
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.responsible_audit_token.uuid
+        target_field: process.group_leader.entity_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.responsible_audit_token.uuid
+        target_field: process.group_leader.entity_id
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.responsible_audit_token.pid
+        target_field: process.group_leader.pid
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.responsible_audit_token.pid
+        target_field: process.group_leader.pid
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        ignore_missing: true
+
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.responsible_audit_token.euid
+        target_field: process.group_leader.user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.responsible_audit_token.euid
+        target_field: process.group_leader.user.id
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        type: string
+        ignore_missing: true
+
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.responsible_audit_token.ruid
+        target_field: process.group_leader.real_user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.responsible_audit_token.ruid
+        target_field: process.group_leader.real_user.id
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        type: string
+        ignore_missing: true
+
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.responsible_audit_token.rgid
+        target_field: process.group_leader.real_group.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.responsible_audit_token.rgid
+        target_field: process.group_leader.real_group.id
+        if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
+        type: string
+        ignore_missing: true
+
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'
+        if: ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.instigator == null && ctx.jamf_protect?.telemetry?.event?.btm_launch_item_remove?.app == null
