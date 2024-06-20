@@ -28,7 +28,7 @@ func (r ResultsFormatter) Description() string {
 		sb.WriteString("- Serverless run\n")
 	}
 	sb.WriteString("- Package: `")
-	sb.WriteString(r.result.Package)
+	sb.WriteString(r.result.Package())
 	sb.WriteString("`\n")
 	sb.WriteString("- Failing test: `")
 	sb.WriteString(r.result.Name)

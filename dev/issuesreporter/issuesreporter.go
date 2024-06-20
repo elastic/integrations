@@ -10,7 +10,6 @@ import (
 
 type PackageError struct {
 	testCase
-	Package      string
 	Serverless   bool
 	StackVersion string
 	BuildURL     string
@@ -28,7 +27,7 @@ func (p PackageError) String() string {
 		sb.WriteString("] ")
 	}
 	sb.WriteString("[")
-	sb.WriteString(p.Package)
+	sb.WriteString(p.Package())
 	sb.WriteString("] ")
 	sb.WriteString("Failing test daily: ")
 	sb.WriteString(p.testCase.String())
@@ -42,6 +41,11 @@ func (p PackageError) DataStream() string {
 		return ""
 	}
 	return values[1]
+}
+
+func (p PackageError) Package() string {
+	values := strings.Split(p.testCase.ClassName, ".")
+	return values[0]
 }
 
 type checkOptions struct {
@@ -63,7 +67,7 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool) error {
 		return err
 	}
 	for _, e := range packageErrors {
-		fmt.Printf("Failures found for %s\n", e.Package)
+		fmt.Printf("Failures found for %s\n", e.Package())
 		if e.Failure != "" {
 			fmt.Printf("- (failure) %s (%s): %s\n", e.Name, e.ClassName, e.Failure)
 		}
@@ -92,10 +96,6 @@ func errorsFromTests(options checkOptions) ([]PackageError, error) {
 			return nil
 		}
 		fmt.Println("File to get read: ", path)
-		packageName, err := getPackageFromPath(filepath.Base(path))
-		if err != nil {
-			return err
-		}
 		cases, err := testFailures(path)
 		if err != nil {
 			return err
@@ -103,7 +103,6 @@ func errorsFromTests(options checkOptions) ([]PackageError, error) {
 
 		for _, c := range cases {
 			packageErrors = append(packageErrors, PackageError{
-				Package:      packageName,
 				Serverless:   options.Serverless,
 				StackVersion: options.StackVersion,
 				BuildURL:     options.BuildURL,

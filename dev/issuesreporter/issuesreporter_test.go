@@ -24,7 +24,6 @@ func TestErrorsFromTest(t *testing.T) {
 						TimeInSeconds: 1368.349501429,
 						Failure:       "could not find hits in logs-cisco_umbrella.log-ep data stream",
 					},
-					Package:    "cisco_umbrella",
 					Serverless: false,
 				},
 				{
@@ -44,7 +43,6 @@ func TestErrorsFromTest(t *testing.T) {
              }
 `,
 					},
-					Package:    "fortinet_fortigate",
 					Serverless: false,
 				},
 				{
@@ -54,7 +52,6 @@ func TestErrorsFromTest(t *testing.T) {
 						TimeInSeconds: 34.296986222,
 						Failure:       "one or more errors found in documents stored in metrics-sql.sql-12466 data stream: [0] found error.message in event: cannot open connection: testing connection: mssql: login error: Login failed for user 'SA'.",
 					},
-					Package:    "sql_input",
 					Serverless: false,
 				},
 				{
@@ -62,9 +59,8 @@ func TestErrorsFromTest(t *testing.T) {
 						Name:          "system test: mysql",
 						ClassName:     "sql_input.",
 						TimeInSeconds: 34.25843055,
-						Error:         "one or more errors found in documents stored in metrics-sql.sql-98584 data stream: [0] found error.message in event: cannot open connection: testing connection: dial tcp 172.21.0.6:3306: connect: connection refused",
+						Failure:       "one or more errors found in documents stored in metrics-sql.sql-98584 data stream: [0] found error.message in event: cannot open connection: testing connection: dial tcp 172.21.0.6:3306: connect: connection refused",
 					},
-					Package:    "sql_input",
 					Serverless: false,
 				},
 				{
@@ -74,7 +70,6 @@ func TestErrorsFromTest(t *testing.T) {
 						TimeInSeconds: 1368.349501429,
 						Error:         "could not find hits in logs-test.metrics-ep data stream",
 					},
-					Package:    "test",
 					Serverless: false,
 				},
 			},
@@ -93,7 +88,7 @@ func TestErrorsFromTest(t *testing.T) {
 
 			assert.Len(t, errors, len(c.expected))
 
-			assert.Equal(t, errors, c.expected)
+			assert.Equal(t, c.expected, errors)
 		})
 	}
 }
@@ -133,7 +128,47 @@ func TestErrorDataStream(t *testing.T) {
 			for _, e := range errors {
 				dataStreams = append(dataStreams, e.DataStream())
 			}
-			assert.Equal(t, dataStreams, c.expected)
+			assert.Equal(t, c.expected, dataStreams)
+		})
+	}
+}
+
+func TestErrorPackageName(t *testing.T) {
+	cases := []struct {
+		title     string
+		xmlFolder string
+		expected  []string
+	}{
+		{
+			title:     "read XML files",
+			xmlFolder: "testdata",
+			expected: []string{
+				"cisco_umbrella",
+				"fortinet_fortigate",
+				"sql_input", // input package
+				"sql_input", // input package
+				"test",
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			errors, err := errorsFromTests(checkOptions{
+				ResultsPath:  c.xmlFolder,
+				Serverless:   false,
+				StackVersion: "",
+				BuildURL:     "",
+			})
+			require.NoError(t, err)
+
+			assert.Len(t, errors, len(c.expected))
+
+			packages := []string{}
+			for _, e := range errors {
+				packages = append(packages, e.Package())
+			}
+			assert.Equal(t, c.expected, packages, c.expected)
 		})
 	}
 }
