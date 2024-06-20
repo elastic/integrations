@@ -2,9 +2,26 @@
 description: Build ECS fields from an OpenCTI windows registry key observable
 processors:
 
-  - dissect:
+  - grok:
       field: _ingest._value.attribute_key
-      pattern: "%{_tmp_registry.hive}\\%{_tmp_registry.key}"
+      patterns:
+        - "^(%{HIVE_NAMES:_tmp_registry.hive}\\\\)?%{GREEDYDATA:_tmp_registry.key}$"
+      pattern_definitions:
+        HIVE_NAMES: "(?i:HKEY_CLASSES_ROOT|HKCR|HKEY_CURRENT_USER|HKCU|HKEY_LOCAL_MACHINE|HKLM|HKEY_USERS|HKU|HKEY_CURRENT_CONFIG|HKCC)"
+
+  - script:
+      description: Normalize hive names (ECS uses abbreviated names)
+      lang: painless
+      params:
+        HKEY_CLASSES_ROOT: HKCR
+        HKEY_CURRENT_USER: HKCU
+        HKEY_LOCAL_MACHINE: HKLM
+        HKEY_USERS: HKU
+        HKEY_CURRENT_CONFIG: HKCC
+      source: |
+        def name = ctx._tmp_registry.hive.toUpperCase();
+        ctx._tmp_registry.hive = params.getOrDefault(name, name);
+      if: ctx._tmp_registry?.hive != null
 
   # append object
   - append:
