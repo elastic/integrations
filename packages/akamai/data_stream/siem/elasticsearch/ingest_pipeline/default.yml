@@ -26,9 +26,12 @@ processors:
         - UNIX
       timezone: UTC
       target_field: "@timestamp"
+      # 500s do not include a timestamp.
+      if: ctx.json?.httpMessage?.start != null
   - set:
       field: "event.start"
       copy_from: "@timestamp"
+      ignore_empty_value: true
   - rename:
       field: json.httpMessage.status
       target_field: http.response.status_code
@@ -71,6 +74,11 @@ processors:
       field: json.httpMessage.path
       target_field: url.path
       ignore_missing: true
+      on_failure:
+        # We see some illegal character, if we can't decode, at least give the data that exists.
+        - set:
+            field: url.path
+            copy_from: json.httpMessage.path
   - urldecode:
       tag: urldecode_httpMessage_query
       field: json.httpMessage.query
@@ -118,21 +126,24 @@ processors:
       lang: painless
       description: This script builds the `url.full` field out of the available `url.*` parts.
       source: |
-        def full = "";
-        if(ctx.url.scheme != null && ctx.url.scheme != "") {
-            full += ctx.url.scheme+"://";
+        String full = '';
+        if (ctx.url?.scheme != null && ctx.url.scheme != "") {
+          full += ctx.url.scheme+"://";
         }
-        if(ctx.url.domain != null && ctx.url.domain != "") {
-            full += ctx.url.domain;
+        if (ctx.url?.domain != null && ctx.url.domain != "") {
+          full += ctx.url.domain;
         }
-        if(ctx.json.httpMessage.path != null && ctx.json.httpMessage.path != "") {
-            full += ctx.json.httpMessage.path;
+        if (ctx.json?.httpMessage?.path != null && ctx.json.httpMessage.path != "") {
+          full += ctx.json.httpMessage.path;
         }
-        if(ctx.json.httpMessage.query != null && ctx.json.httpMessage.query != "") {
-            full += "?"+ctx.json.httpMessage.query;
+        if (ctx.json?.httpMessage?.query != null && ctx.json.httpMessage.query != "") {
+          full += "?"+ctx.json.httpMessage.query;
         }
-        if(full != "") {
-            ctx.url.full = full
+        if (full != "") {
+          if (ctx.url == null) {
+            ctx.url = [:];
+          }
+          ctx.url.full = full
         }
   - dissect:
       field: json.httpMessage.protocol
@@ -215,6 +226,7 @@ processors:
       target_field: json.attackData.ruleActions
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_ruleData
       field: json.attackData.ruleData
@@ -225,6 +237,7 @@ processors:
       target_field: json.attackData.ruleData
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_ruleMessages
       field: json.attackData.ruleMessages
@@ -235,6 +248,7 @@ processors:
       target_field: json.attackData.ruleMessages
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_ruleSelectors
       field: json.attackData.ruleSelectors
@@ -245,6 +259,7 @@ processors:
       target_field: json.attackData.ruleSelectors
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_ruleTags
       field: json.attackData.ruleTags
@@ -255,6 +270,7 @@ processors:
       target_field: json.attackData.ruleTags
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_ruleVersions
       field: json.attackData.ruleVersions
@@ -265,6 +281,7 @@ processors:
       target_field: json.attackData.ruleVersions
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - urldecode:
       tag: urldecode_attackData_rules
       field: json.attackData.rules
@@ -275,20 +292,30 @@ processors:
       target_field: json.attackData.rules
       separator: ';'
       preserve_trailing: true
+      ignore_missing: true
   - script:
       lang: painless
       description: Base64 Decode the json.attackData.rule* fields
       tag: script_base64_decode_attackData_rule
+      params:
+        items:
+          - rules
+          - ruleActions
+          - ruleData
+          - ruleMessages
+          - ruleTags
+          - ruleSelectors
+          - ruleVersions
+      if: ctx.json?.attackData?.rules instanceof List
       source: |
-        ArrayList items = new ArrayList(["rules", "ruleActions", "ruleData", "ruleMessages", "ruleTags", "ruleSelectors", "ruleVersions"]);
         ArrayList rules_array = new ArrayList();
         ArrayList rule_actions = new ArrayList();
         ArrayList rule_tags = new ArrayList();
         for (def i = 0; i < ctx.json.attackData.rules.length; i++) {
           HashMap map = new HashMap();
-          for (def j = 0; j < items.length; j++) {
-            String key = items[j];
-            if (i < ctx.json.attackData[key].length ) {
+          for (def j = 0; j < params.items.length; j++) {
+            String key = params.items[j];
+            if (i < ctx.json.attackData[key].length) {
               try {
                 String value = ctx.json.attackData[key][i].replace(" ", "").decodeBase64();
                 map.put(key, value);
@@ -404,7 +431,7 @@ processors:
       field: json.userRiskData.score
       target_field: akamai.siem.user_risk.score
       type: long
-      if: ctx.json.userRiskData.score != ""
+      if: ctx.json?.userRiskData?.score != null && ctx.json.userRiskData.score != ''
       ignore_missing: true
   - convert:
       field: json.userRiskData.allow
@@ -427,15 +454,40 @@ processors:
       field_split: '\|'
       value_split: ':'
       ignore_missing: true
-  - kv:
-      if: ctx.json?.userRiskData?.general != ""
-      tag: kv_userRiskData_general
-      field: json.userRiskData.general
-      target_field: akamai.siem.user_risk.general
-      field_split: '\|'
-      value_split: ':'
-      ignore_missing: true
-      ignore_failure: true
+  - script:
+      lang: painless
+      tag: script_userRiskData_general
+      if: ctx.json?.userRiskData?.general instanceof String && ctx.json.userRiskData.general != ""
+      source: |
+        String text = ctx.json.userRiskData.general.trim();
+        if (text != "") {
+          def m = new HashMap();
+          for (String f: /\|/.split(text)) {
+            if (f == "") {
+              continue;
+            }
+            int idx = f.indexOf(':');
+            if (idx == -1) {
+              m.put(f, "-"); // Include a non-empty string to prevent the field being removed.
+              continue;
+            }
+            String k = f.substring(0, idx);
+            String v = f.substring(idx+1);
+            m.put(k, v);
+          }
+          if (m.size() > 0) {
+            if (ctx.akamai == null) {
+              ctx.akamai = new HashMap();
+            }
+            if (ctx.akamai.siem == null) {
+              ctx.akamai.siem = new HashMap();
+            }
+            if (ctx.akamai.siem.user_risk == null) {
+              ctx.akamai.siem.user_risk = new HashMap();
+            }
+            ctx.akamai.siem.user_risk.general = m;
+          }
+        }
   ##
   - append:
       field: related.ip
