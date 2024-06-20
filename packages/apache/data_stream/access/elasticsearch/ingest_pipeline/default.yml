@@ -25,11 +25,7 @@ processors:
       patterns:
       - '(%{IPORHOST:destination.domain} )?%{IPORHOST:source.address} %{DATA:apache.access.identity} %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
         "(?:%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}|-)?"
-        %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-) %{NUMBER:apache.access.response_time}(
-        "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?( X-Forwarded-For="%{ADDRESS_LIST:apache.access.remote_addresses}")?'
-      - '(%{IPORHOST:destination.domain} )?%{IPORHOST:source.address} %{DATA:apache.access.identity} %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
-        "(?:%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}|-)?"
-        %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)(
+        %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)( %{NUMBER:apache.access.response_time})?(
         "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?( X-Forwarded-For="%{ADDRESS_LIST:apache.access.remote_addresses}")?'
       - '%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
         "-" %{NUMBER:http.response.status_code:long} -'
