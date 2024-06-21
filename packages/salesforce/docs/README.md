@@ -85,20 +85,16 @@ Ensure that the `API Enabled` permission is selected for the user profile in you
 2. Click on the profile link associated with the `User Account` used for data collection.
 3. Search for the `API Enabled` permission on the profile page. If it’s not present, search under `System Permissions` and check if the `API Enabled` privilege is selected. If not, enable it for data collection.
 
-### Collecting Data Using Streaming API
+### Collecting Data Using Real-Time Event Monitoring API
 
-Ensure that the `View Real-Time Event Monitoring Data` permission is selected for the user profile in your Salesforce instance. Follow these steps to enable it:
+To enable data collection using the [Real-Time Event Monitoring API](https://help.salesforce.com/s/articleView?id=sf.real_time_event_monitoring_enable.htm&type=5):
 
-1. Navigate to `Setup` > `Quick Find` > `Users`, and click on `Users`.
-2. Click on the profile link associated with the `User Account` used for data collection.
-3. Search for the `View Real-Time Event Monitoring Data` permission on the profile page. If it’s not present, search under `System Permissions` and check if the `View Real-Time Event Monitoring Data` privilege is selected. If not, enable it for data collection.
+1. Navigate to `Setup` > `Quick Find` > `Event Manager`.
+2. Click on "Event Manager".
+3. For each event type you want to monitor (e.g., Login Event, Logout Event), click the dropdown arrow and select "Enable Storage".
+4. Ensure you have the necessary permissions: "View Real-Time Event Monitoring Data" and "Use Real-Time Event Monitoring APIs".
 
-### Enabling Event Streaming
-
-Ensure that `Event Streaming` is enabled for both `Login Event` and `Logout Event`. Follow these steps to enable it:
-
-1. Navigate to `Setup` > `Quick Find` > `Event Manager`, and click on `Event Manager`.
-2. For both `Login Event` and `Logout Event`, click on the down arrow button on the left corner and select `Enable Streaming`.
+> Note: Real-Time Event Monitoring may require additional licensing. Check with your Salesforce account representative if you're unsure about your subscription level.
 
 ## Setup
 
