@@ -86,7 +86,6 @@ processors:
       target_field: salesforce.login.transaction_security.policy.id
       ignore_missing: true
       ignore_failure: true
-  
   - set:
       field: event.outcome
       value: success
@@ -208,14 +207,22 @@ processors:
       target_field: tls.cipher
       ignore_missing: true
       ignore_failure: true
-  - dissect:
+    # As per https://developer.salesforce.com/docs/atlas.en-us.250.0.platform_events.meta/platform_events/sforce_api_objects_loginevent.htm
+    # TlsProtocol has only 5 values: TLS 1.0, TLS 1.1, TLS 1.2, TLS 1.3, Unknown
+  - grok:
       field: json.TlsProtocol
-      pattern: "%{tls.version_protocol} %{tls.version}"
+      patterns:
+        - '^TLS %{NUMBER:tls.version}$'
+        - '^%{WORD:tls.version}$'
+      ignore_failure: true
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Failed to dissect TlsProtocol: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: tls.version_protocol
+      ## As per https://www.elastic.co/guide/en/ecs/current/ecs-tls.html#field-tls-version-protocol
+      ## the value should be in lowercase.
+      value: "tls"
+      if: "ctx.tls?.version != null && ctx.tls.version != 'Unknown'"
+      ignore_empty_value: true
   - remove:
       field: json
       ignore_missing: true
