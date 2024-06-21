@@ -333,7 +333,6 @@ An example event for `apex` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| event.duration | Duration of the event in milliseconds. If event.start and event.end are known this value should be the difference between the end and start time | long | ms |  |
 | input.type | Input type. | keyword |  |  |
 | salesforce.apex.action | Action performed by the callout. | keyword |  |  |
 | salesforce.apex.callout_time | Time spent waiting on web service callouts, in milliseconds. | float | ms | gauge |
