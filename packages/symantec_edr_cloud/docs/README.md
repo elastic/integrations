@@ -225,5 +225,4 @@ An example event for `incident` looks as following:
 | symantec_edr_cloud.incident.type | Event type. | keyword |
 | symantec_edr_cloud.incident.type_id |  | keyword |
 | symantec_edr_cloud.incident.version | API version in the form major.minor. | keyword |
-| tags | User defined tags. | keyword |
 
