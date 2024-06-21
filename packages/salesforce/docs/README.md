@@ -33,15 +33,23 @@ Data streams:
 
 This integration has been tested against Salesforce Spring '22 (v54.0) release.
 
-You can find the Salesforce instance version by using the following methods:
+### Finding Your Salesforce Instance Version
 
-1. Salesforce Classic: On the Home tab in Salesforce Classic, in the top right corner of the screen is a link to releases like `Summer '22`. This indicates the release version of the salesforce instance.
+You can determine your Salesforce instance version using one of the following methods:
 
-2. Using the Salesforce Instance URL: To find out the version of Salesforce is by using the instance URL:
-    - Format: (Salesforce Instance URL)/services/data
-    - Example: `https://na9.salesforce.com/services/data`
+#### Method 1: Salesforce Classic
 
-Example response:
+1. Navigate to the Home tab in Salesforce Classic.
+2. Look for a link in the top right corner of the screen, such as `Summer '22`.
+3. This link indicates the current release version of your Salesforce instance.
+
+#### Method 2: Using the Salesforce Instance URL
+
+1. Use your Salesforce Instance URL with the following format:
+   `(Salesforce Instance URL)/services/data`
+2. Example: `https://na9.salesforce.com/services/data`
+
+This will return an XML response listing available API versions. For example:
 
 ```xml
 <Versions>
@@ -62,8 +70,6 @@ Example response:
     </Version>
 </Versions>
 ```
-
-The last one on the list is the release of the user's salesforce instance. In the example above, the version is `Summer '22` i.e. `v55.0`.
 
 The last entry in the list indicates the current release version of your Salesforce instance. In the example above, the version is `Summer '22 (v55.0)`.
 
