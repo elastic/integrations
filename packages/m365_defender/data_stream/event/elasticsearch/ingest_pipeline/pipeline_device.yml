@@ -1990,76 +1990,7 @@ processors:
       allow_duplicates: false
 
   # Registry Mapping
-  - script:
-      description: Remove HKEY_CURRENT_USER\ and HKEY_LOCAL_MACHINE\ from registry.key
-      lang: painless
-      tag: set_registry_key
-      if: ctx.m365_defender?.event?.registry?.key != null && ctx.m365_defender.event.registry.key != ''
-      source: |
-        String key = ctx.m365_defender.event.registry.key;
-        def regex = /HKEY_CURRENT_USER\\|HKEY_LOCAL_MACHINE\\/;
-        if (ctx.registry == null) {
-          ctx.registry = new HashMap();
-        }
-        ctx.registry.key = regex.matcher(key).replaceAll('');
-  - set:
-      field: registry.value
-      copy_from: m365_defender.event.registry.value_name
-      tag: set_registry_value
-      ignore_empty_value: true
-  # For registry.path, m365_defender.event.registry.key is used to preserve HKEY_CURRENT_USER and HKEY_LOCAL_MACHINE.
-  - set:
-      field: registry.path
-      value: >-
-        {{{m365_defender.event.registry.key}}}\{{{registry.value}}}
-      tag: set_registry_path
-      if: ctx.m365_defender?.event?.registry?.key != null && ctx.m365_defender.event.registry.key != '' && ctx.registry.value != null
-      ignore_empty_value: true
-  - append:
-      field: registry.data.strings
-      value: '{{{m365_defender.event.registry.value_data}}}'
-      tag: append_registry_data_strings
-      allow_duplicates: false
-      if: ctx.m365_defender?.event?.registry?.value_data != null
-  - set:
-      field: registry.data.type
-      copy_from: m365_defender.event.registry.value_type
-      tag: set_registry_type
-      ignore_empty_value: true
-      if: ctx.m365_defender?.event?.registry?.value_type != null
-  # During registry changes
-  - script:
-      description: Remove HKEY_CURRENT_USER\ and HKEY_LOCAL_MACHINE\ from registry.key
-      tag: set_registry_key_prev
-      lang: painless
-      if: ctx.registry?.key == null && ctx.m365_defender?.event?.previous?.registry_key != null && ctx.m365_defender.event.previous.registry_key != ''
-      source: |
-        String key = ctx.m365_defender.event.previous.registry_key;
-        def regex = /HKEY_CURRENT_USER\\|HKEY_LOCAL_MACHINE\\/;
-        if (ctx.registry == null) {
-          ctx.registry = new HashMap();
-        }
-        ctx.registry.key = regex.matcher(key).replaceAll('');
-  - set:
-      field: registry.value
-      copy_from: m365_defender.event.previous.registry_value_name
-      if: ctx.registry?.value == null
-      tag: set_registry_value_prev
-      ignore_empty_value: true
-  - set:
-      field: registry.path
-      value: >-
-        {{{m365_defender.event.previous.registry_key}}}\{{{registry.value}}}
-      tag: set_registry_path_prev
-      if: ctx.registry?.path == null && ctx.m365_defender?.event?.previous?.registry_key != null && ctx.m365_defender.event.previous.registry_key != '' && ctx.registry.value != null
-      ignore_empty_value: true
-  - append:
-      field: registry.data.strings
-      value: '{{{m365_defender.event.previous.registry_value_data}}}'
-      tag: append_registry_data_strings_prev
-      allow_duplicates: false
-      if: ctx.m365_defender?.event?.previous?.registry_value_data != null
-  # registry hive 
+  # registry hive abbreviation taken from current or previous registry key
   - script:
       description: Abbreviated registry.hive derived from https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users
       tag: set_registry_hive
@@ -2078,8 +2009,81 @@ processors:
         }
         String hive_full = key.splitOnToken('\\')[0];
         if (params.get(hive_full) != null) {
+          if (ctx.registry == null) {
+            ctx.registry = new HashMap();
+          }
           ctx.registry.hive = params.get(hive_full);
         }
+  - script:
+      description: Remove HKEY_CURRENT_USER\ and HKEY_LOCAL_MACHINE\ before populating registry.key
+      lang: painless
+      tag: set_registry_key
+      if: ctx.m365_defender?.event?.registry?.key != null && ctx.m365_defender.event.registry.key != ''
+      source: |
+        String key = ctx.m365_defender.event.registry.key;
+        def regex = /HKEY_CURRENT_USER\\|HKEY_LOCAL_MACHINE\\/;
+        if (ctx.registry == null) {
+          ctx.registry = new HashMap();
+        }
+        ctx.registry.key = regex.matcher(key).replaceAll('');
+  - script:
+      description: During registry changes. Remove HKEY_CURRENT_USER\ and HKEY_LOCAL_MACHINE\ before populating registry.key
+      tag: set_registry_key_prev
+      lang: painless
+      if: ctx.registry?.key == null && ctx.m365_defender?.event?.previous?.registry_key != null && ctx.m365_defender.event.previous.registry_key != ''
+      source: |
+        String key = ctx.m365_defender.event.previous.registry_key;
+        def regex = /HKEY_CURRENT_USER\\|HKEY_LOCAL_MACHINE\\/;
+        if (ctx.registry == null) {
+          ctx.registry = new HashMap();
+        }
+        ctx.registry.key = regex.matcher(key).replaceAll('');
+  - set:
+      field: registry.value
+      copy_from: m365_defender.event.registry.value_name
+      tag: set_registry_value
+      ignore_empty_value: true
+  - set:
+      field: registry.value
+      description: Derived from previous value during registry changes.
+      copy_from: m365_defender.event.previous.registry_value_name
+      if: ctx.registry?.value == null
+      tag: set_registry_value_prev
+      ignore_empty_value: true
+  - set:
+      field: registry.path
+      description: registry.hive + registry.key + registry.value
+      value: >-
+        {{{#registry.hive}}}{{{registry.hive}}}{{{/registry.hive}}}\{{{registry.key}}}\{{{registry.value}}}
+      tag: set_registry_path
+      if: ctx.registry?.key != null && ctx.registry.key != '' && ctx.registry.value != null
+      ignore_empty_value: true
+#   - set:
+#       field: registry.path
+#       value: >-
+#         {{{m365_defender.event.previous.registry_key}}}\{{{registry.value}}}
+#       tag: set_registry_path_prev
+#       if: ctx.registry?.path == null && ctx.m365_defender?.event?.previous?.registry_key != null && ctx.m365_defender.event.previous.registry_key != '' && ctx.registry.value != null
+#       ignore_empty_value: true
+  - append:
+      field: registry.data.strings
+      value: '{{{m365_defender.event.registry.value_data}}}'
+      tag: append_registry_data_strings
+      allow_duplicates: false
+      if: ctx.m365_defender?.event?.registry?.value_data != null
+  - append:
+      field: registry.data.strings
+      description: Derived from previous value during registry changes.
+      value: '{{{m365_defender.event.previous.registry_value_data}}}'
+      tag: append_registry_data_strings_prev
+      allow_duplicates: false
+      if: ctx.m365_defender?.event?.previous?.registry_value_data != null
+  - set:
+      field: registry.data.type
+      copy_from: m365_defender.event.registry.value_type
+      tag: set_registry_type
+      ignore_empty_value: true
+      if: ctx.m365_defender?.event?.registry?.value_type != null
 
   # Source Mapping (DeviceLoginEvent has different mappings than the rest. DeviceNetworkEvent might include a direction, which controls which field goes to source/destination)
   - set:
