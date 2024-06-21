@@ -1942,6 +1942,48 @@ processors:
       field: host.os.type
       value: macos
       if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('macos')
+  # host.os.type can also be derived for Windows based on event.category
+  - set:
+      field: host.os.type
+      value: windows
+      if: >- 
+        ctx.event?.category != null && (
+            ctx.event.category.contains('api') || 
+            ctx.event.category.contains('registry') || 
+            ctx.event.category.contains('library') || 
+            ctx.event.category.contains('driver')
+        )
+  - set:
+      field: host.os.type
+      value: windows
+      if: >- 
+        ctx.event?.category != null && ctx.event.category.contains('file') && (
+            ctx.m365_defender?.event?.initiating_process?.account_sid != null || 
+            ctx.m365_defender?.event?.request?.account_sid != null
+        )
+  - set:
+      field: host.os.type
+      value: windows
+      if: >- 
+        ctx.event?.category != null && ctx.event.category.contains('process') && (
+            ctx.m365_defender?.event?.initiating_process?.account_sid != null
+        )
+  - set:
+      field: host.os.type
+      value: windows
+      if: >- 
+        ctx.event?.category != null && ctx.event.category.contains('authentication') && (
+            ctx.m365_defender?.event?.initiating_process?.account_sid != null ||
+            ctx.m365_defender?.event?.account?.sid != null
+        )
+  - set:
+      field: host.os.type
+      value: windows
+      if: >- 
+        ctx.event?.category != null && ctx.event.category.contains('network') && (
+            ctx.m365_defender?.event?.initiating_process?.account_sid != null
+        )
+
   - set:
       field: host.os.full
       copy_from: m365_defender.event.os.platform
