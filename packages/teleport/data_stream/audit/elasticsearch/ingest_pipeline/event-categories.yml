@@ -1,9 +1,21 @@
 ---
-description: Pipeline for setting the categorization fields
+description: |
+  Sets the four categorization fields for Teleport audit events: kind, category, type, and outcome.
+
+  For each known event action (the original `event` field) there should be exactly one `set:` processor 
+  with `field: event.category` and one with `field: event.type` and they should only be present in this 
+  pipeline. This way you don't need to worry that some other processor will change these fields.
+  
+  The `event.outcome` field is set here only for events that have failed based on the Teleport event code. 
+  Individual event type processing can later override this value based on other fields if needed.
 processors:
   - set:
       field: event.kind
       value: event
+  - set:
+      field: event.outcome
+      value: ['failure']
+      if: 'ctx.event.code.endsWith("E") || ctx.event.code.endsWith("W")'
   # Events related to access list activity.
   - set:
       field: event.category
