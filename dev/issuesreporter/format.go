@@ -25,7 +25,7 @@ func (r ResultsFormatter) Description() string {
 		sb.WriteString("- Serverless run\n")
 	}
 	sb.WriteString("- Package: `")
-	sb.WriteString(r.result.Package())
+	sb.WriteString(r.result.PackageName)
 	sb.WriteString("`\n")
 	sb.WriteString("- Failing test: `")
 	sb.WriteString(r.result.Name)
@@ -33,7 +33,7 @@ func (r ResultsFormatter) Description() string {
 
 	if r.result.testCase.ClassName != "" {
 		sb.WriteString("- DataStream: `")
-		sb.WriteString(r.result.DataStream())
+		sb.WriteString(r.result.DataStream)
 		sb.WriteString("`\n")
 	}
 	sb.WriteString("\n")

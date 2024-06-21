@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/elastic/integrations/dev/codeowners"
 )
 
 type PackageError struct {
@@ -14,6 +16,46 @@ type PackageError struct {
 	Serverless   bool
 	StackVersion string
 	BuildURL     string
+	Teams        []string
+	PackageName  string
+	DataStream   string
+}
+
+type PackageErrorOptions struct {
+	Serverless     bool
+	StackVersion   string
+	BuildURL       string
+	TestCase       testCase
+	CodeownersPath string
+}
+
+func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
+	p := PackageError{
+		Serverless:   options.Serverless,
+		StackVersion: options.StackVersion,
+		BuildURL:     options.BuildURL,
+		testCase:     options.TestCase,
+	}
+
+	values := strings.Split(p.testCase.ClassName, ".")
+	p.PackageName = values[0]
+	if len(values) == 2 {
+		p.DataStream = values[1]
+	}
+
+	var owners []string
+	var err error
+	if options.CodeownersPath != "" {
+		owners, err = codeowners.PackageOwnersCustomCodeowners(p.PackageName, p.DataStream, options.CodeownersPath)
+	} else {
+		owners, err = codeowners.PackageOwners(p.PackageName, p.DataStream)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to find owners for package %s: %w", p.PackageName, err)
+	}
+	p.Teams = owners
+
+	return &p, nil
 }
 
 func (p PackageError) String() string {
@@ -28,7 +70,7 @@ func (p PackageError) String() string {
 		sb.WriteString("] ")
 	}
 	sb.WriteString("[")
-	sb.WriteString(p.Package())
+	sb.WriteString(p.PackageName)
 	sb.WriteString("] ")
 	sb.WriteString("Failing test daily: ")
 	sb.WriteString(p.testCase.String())
@@ -36,24 +78,12 @@ func (p PackageError) String() string {
 	return sb.String()
 }
 
-func (p PackageError) DataStream() string {
-	values := strings.Split(p.testCase.ClassName, ".")
-	if len(values) < 2 {
-		return ""
-	}
-	return values[1]
-}
-
-func (p PackageError) Package() string {
-	values := strings.Split(p.testCase.ClassName, ".")
-	return values[0]
-}
-
 type checkOptions struct {
-	ResultsPath  string
-	Serverless   bool
-	StackVersion string
-	BuildURL     string
+	ResultsPath    string
+	Serverless     bool
+	StackVersion   string
+	BuildURL       string
+	CodeownersPath string
 }
 
 func Check(resultsPath, buildURL, stackVersion string, serverless bool) error {
@@ -71,6 +101,7 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool) error {
 	for _, e := range packageErrors {
 		r := ResultsFormatter{e}
 		fmt.Printf("Title: %q\n", r.Title())
+		fmt.Printf("Teams: %q\n", strings.Join(r.result.Teams, ", "))
 		fmt.Printf("Description:\n%s\n", r.Description())
 
 		ghIssue := NewGithubIssue(GithubIssueOptions{
@@ -120,12 +151,18 @@ func errorsFromTests(options checkOptions) ([]PackageError, error) {
 		}
 
 		for _, c := range cases {
-			packageErrors = append(packageErrors, PackageError{
-				Serverless:   options.Serverless,
-				StackVersion: options.StackVersion,
-				BuildURL:     options.BuildURL,
-				testCase:     c,
+			packageError, err := NewPackageError(PackageErrorOptions{
+				Serverless:     options.Serverless,
+				StackVersion:   options.StackVersion,
+				BuildURL:       options.BuildURL,
+				TestCase:       c,
+				CodeownersPath: options.CodeownersPath,
 			})
+			if err != nil {
+				return fmt.Errorf("failed to create package error: %w", err)
+
+			}
+			packageErrors = append(packageErrors, *packageError)
 		}
 
 		return nil

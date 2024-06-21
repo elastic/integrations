@@ -24,7 +24,22 @@ func TestErrorsFromTest(t *testing.T) {
 						TimeInSeconds: 1368.349501429,
 						Failure:       "could not find hits in logs-cisco_umbrella.log-ep data stream",
 					},
-					Serverless: false,
+					Teams:       []string{"@elastic/security-service-integrations"},
+					DataStream:  "log",
+					PackageName: "cisco_umbrella",
+					Serverless:  false,
+				},
+				{
+					testCase: testCase{
+						Name:          "system test: default",
+						ClassName:     "elastic_package_registry.metrics",
+						TimeInSeconds: 1368.349501429,
+						Error:         "could not find hits in logs-elastic_package_registry.metrics-ep data stream",
+					},
+					Teams:       []string{"@elastic/ecosystem"},
+					DataStream:  "metrics",
+					PackageName: "elastic_package_registry",
+					Serverless:  false,
 				},
 				{
 					testCase: testCase{
@@ -43,7 +58,10 @@ func TestErrorsFromTest(t *testing.T) {
              }
 `,
 					},
-					Serverless: false,
+					PackageName: "fortinet_fortigate",
+					DataStream:  "log",
+					Teams:       []string{"@elastic/sec-deployment-and-devices"},
+					Serverless:  false,
 				},
 				{
 					testCase: testCase{
@@ -52,7 +70,10 @@ func TestErrorsFromTest(t *testing.T) {
 						TimeInSeconds: 34.296986222,
 						Failure:       "one or more errors found in documents stored in metrics-sql.sql-12466 data stream: [0] found error.message in event: cannot open connection: testing connection: mssql: login error: Login failed for user 'SA'.",
 					},
-					Serverless: false,
+					PackageName: "sql_input",
+					DataStream:  "",
+					Teams:       []string{"@elastic/obs-infraobs-integrations"},
+					Serverless:  false,
 				},
 				{
 					testCase: testCase{
@@ -61,16 +82,10 @@ func TestErrorsFromTest(t *testing.T) {
 						TimeInSeconds: 34.25843055,
 						Failure:       "one or more errors found in documents stored in metrics-sql.sql-98584 data stream: [0] found error.message in event: cannot open connection: testing connection: dial tcp 172.21.0.6:3306: connect: connection refused",
 					},
-					Serverless: false,
-				},
-				{
-					testCase: testCase{
-						Name:          "system test: default",
-						ClassName:     "test.metrics",
-						TimeInSeconds: 1368.349501429,
-						Error:         "could not find hits in logs-test.metrics-ep data stream",
-					},
-					Serverless: false,
+					PackageName: "sql_input",
+					DataStream:  "",
+					Teams:       []string{"@elastic/obs-infraobs-integrations"},
+					Serverless:  false,
 				},
 			},
 		},
@@ -79,10 +94,11 @@ func TestErrorsFromTest(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			errors, err := errorsFromTests(checkOptions{
-				ResultsPath:  c.xmlFolder,
-				Serverless:   false,
-				StackVersion: "",
-				BuildURL:     "",
+				ResultsPath:    c.xmlFolder,
+				Serverless:     false,
+				StackVersion:   "",
+				BuildURL:       "",
+				CodeownersPath: "testdata/CODEOWNERS-default-tests",
 			})
 			require.NoError(t, err)
 
@@ -104,10 +120,10 @@ func TestErrorDataStream(t *testing.T) {
 			xmlFolder: "testdata",
 			expected: []string{
 				"log",
+				"metrics",
 				"log",
 				"", // input package
 				"", // input package
-				"metrics",
 			},
 		},
 	}
@@ -115,10 +131,11 @@ func TestErrorDataStream(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			errors, err := errorsFromTests(checkOptions{
-				ResultsPath:  c.xmlFolder,
-				Serverless:   false,
-				StackVersion: "",
-				BuildURL:     "",
+				ResultsPath:    c.xmlFolder,
+				Serverless:     false,
+				StackVersion:   "",
+				BuildURL:       "",
+				CodeownersPath: "testdata/CODEOWNERS-default-tests",
 			})
 			require.NoError(t, err)
 
@@ -126,7 +143,7 @@ func TestErrorDataStream(t *testing.T) {
 
 			dataStreams := []string{}
 			for _, e := range errors {
-				dataStreams = append(dataStreams, e.DataStream())
+				dataStreams = append(dataStreams, e.DataStream)
 			}
 			assert.Equal(t, c.expected, dataStreams)
 		})
@@ -144,10 +161,10 @@ func TestErrorPackageName(t *testing.T) {
 			xmlFolder: "testdata",
 			expected: []string{
 				"cisco_umbrella",
+				"elastic_package_registry",
 				"fortinet_fortigate",
 				"sql_input", // input package
 				"sql_input", // input package
-				"test",
 			},
 		},
 	}
@@ -155,10 +172,11 @@ func TestErrorPackageName(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
 			errors, err := errorsFromTests(checkOptions{
-				ResultsPath:  c.xmlFolder,
-				Serverless:   false,
-				StackVersion: "",
-				BuildURL:     "",
+				ResultsPath:    c.xmlFolder,
+				Serverless:     false,
+				StackVersion:   "",
+				BuildURL:       "",
+				CodeownersPath: "testdata/CODEOWNERS-default-tests",
 			})
 			require.NoError(t, err)
 
@@ -166,7 +184,7 @@ func TestErrorPackageName(t *testing.T) {
 
 			packages := []string{}
 			for _, e := range errors {
-				packages = append(packages, e.Package())
+				packages = append(packages, e.PackageName)
 			}
 			assert.Equal(t, c.expected, packages, c.expected)
 		})
