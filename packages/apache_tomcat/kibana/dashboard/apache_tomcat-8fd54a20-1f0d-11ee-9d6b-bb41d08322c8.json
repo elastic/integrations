@@ -17,18 +17,37 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "event.module",
+                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.module",
+                            "key": "data_stream.dataset",
                             "negate": false,
-                            "params": {
-                                "query": "apache_tomcat"
-                            },
-                            "type": "phrase"
+                            "params": [
+                                "apache_tomcat.access",
+                                "apache_tomcat.catalina",
+                                "apache_tomcat.localhost"
+                            ],
+                            "type": "phrases"
                         },
                         "query": {
-                            "match_phrase": {
-                                "event.module": "apache_tomcat"
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_tomcat.access"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_tomcat.catalina"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_tomcat.localhost"
+                                        }
+                                    }
+                                ]
                             }
                         }
                     }
@@ -54,11 +73,6 @@
                             {
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-55ba9c87-2de6-468b-ae00-ab24cdb6c2d7",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "b6532743-79d3-4ab0-bdfa-fff8aa69c7a9",
                                 "type": "index-pattern"
                             }
                         ],
@@ -125,29 +139,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "b6532743-79d3-4ab0-bdfa-fff8aa69c7a9",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_tomcat.access"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_tomcat.access"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -190,8 +182,7 @@
                 },
                 "panelIndex": "b089289a-38be-4f6f-8519-ef9b20a77409",
                 "title": "Distribution by HTTP status code [Logs Apache Tomcat]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -205,12 +196,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "25ce66fb-534d-42a3-9baf-e3c7768ee2d6",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "adb3c9a7-d289-4c05-9c2b-0791a5c482ff",
+                                "name": "27726488-c222-4017-9646-dc2a3a3438e8",
                                 "type": "index-pattern"
                             }
                         ],
@@ -285,29 +271,8 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "25ce66fb-534d-42a3-9baf-e3c7768ee2d6",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_tomcat.access"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_tomcat.access"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
                                         "field": "http.response.status_code",
-                                        "index": "adb3c9a7-d289-4c05-9c2b-0791a5c482ff",
+                                        "index": "27726488-c222-4017-9646-dc2a3a3438e8",
                                         "key": "http.response.status_code",
                                         "negate": false,
                                         "params": {
@@ -372,8 +337,7 @@
                 },
                 "panelIndex": "2f7de9ea-b38c-4a20-9f50-2c50f76f450d",
                 "title": "Distribution by HTTP Client(4xx) and Server(5xx) error status code [Logs Apache Tomcat]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -386,12 +350,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "44d71f68-2675-4ed4-adb5-9f2bdce23a3a",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "cfb45038-17c1-40f9-b31e-916d1eefc5c6",
+                                "name": "9ac46d7b-7d38-4e7c-b723-2ace8d3a1c52",
                                 "type": "index-pattern"
                             }
                         ],
@@ -489,30 +448,8 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "44d71f68-2675-4ed4-adb5-9f2bdce23a3a",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_tomcat.access"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_tomcat.access"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
                                         "field": "http.response.status_code",
-                                        "index": "cfb45038-17c1-40f9-b31e-916d1eefc5c6",
+                                        "index": "9ac46d7b-7d38-4e7c-b723-2ace8d3a1c52",
                                         "key": "http.response.status_code",
                                         "negate": false,
                                         "params": {
@@ -586,56 +523,141 @@
                 },
                 "panelIndex": "e87fc489-df1a-4f67-9d91-7b3383fcb8c7",
                 "title": "Top error causing URLs with hosts [Logs Apache Tomcat]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "attributes": {
+                        "columns": [
+                            "apache_tomcat.catalina.subsystem",
+                            "log.level",
+                            "message"
+                        ],
+                        "grid": {
+                            "columns": {
+                                "apache_tomcat.catalina.subsystem": {
+                                    "width": 240
+                                },
+                                "log.level": {
+                                    "width": 78
+                                }
+                            }
+                        },
+                        "hideChart": false,
+                        "isTextBasedQuery": false,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[{\"meta\":{\"alias\":null,\"disabled\":false,\"field\":\"data_stream.dataset\",\"key\":\"data_stream.dataset\",\"negate\":false,\"params\":{\"query\":\"apache_tomcat.catalina\"},\"type\":\"phrase\",\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\"},\"query\":{\"match_phrase\":{\"data_stream.dataset\":\"apache_tomcat.catalina\"}},\"$state\":{\"store\":\"appState\"}},{\"meta\":{\"alias\":null,\"disabled\":false,\"field\":\"log.level\",\"key\":\"log.level\",\"negate\":true,\"params\":{\"query\":\"info\"},\"type\":\"phrase\",\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index\"},\"query\":{\"match_phrase\":{\"log.level\":\"info\"}},\"$state\":{\"store\":\"appState\"}}],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ],
+                        "timeRestore": false,
+                        "usesAdHocDataView": false
+                    },
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "f02e494c-1b62-407e-a402-7799e9fab580",
+                    "i": "74487d6a-9478-485f-b6da-91f9f5b974d0",
                     "w": 48,
                     "x": 0,
                     "y": 30
                 },
-                "panelIndex": "f02e494c-1b62-407e-a402-7799e9fab580",
-                "panelRefName": "panel_f02e494c-1b62-407e-a402-7799e9fab580",
-                "title": "Catalina Logs overview [Logs Apache Tomcat]",
-                "type": "search",
-                "version": "8.7.0"
+                "panelIndex": "74487d6a-9478-485f-b6da-91f9f5b974d0",
+                "title": "Catalina logs overview [Logs Apache Tomcat]",
+                "type": "search"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false
+                    "attributes": {
+                        "columns": [
+                            "apache_tomcat.localhost.subsystem",
+                            "log.level",
+                            "message"
+                        ],
+                        "grid": {
+                            "columns": {
+                                "apache_tomcat.localhost.subsystem": {
+                                    "width": 248
+                                },
+                                "log.level": {
+                                    "width": 75
+                                }
+                            }
+                        },
+                        "hideChart": false,
+                        "isTextBasedQuery": false,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[{\"meta\":{\"alias\":null,\"disabled\":false,\"field\":\"data_stream.dataset\",\"key\":\"data_stream.dataset\",\"negate\":false,\"params\":{\"query\":\"apache_tomcat.localhost\"},\"type\":\"phrase\",\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\"},\"query\":{\"match_phrase\":{\"data_stream.dataset\":\"apache_tomcat.localhost\"}},\"$state\":{\"store\":\"appState\"}},{\"meta\":{\"alias\":null,\"disabled\":false,\"field\":\"log.level\",\"key\":\"log.level\",\"negate\":true,\"params\":{\"query\":\"info\"},\"type\":\"phrase\",\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index\"},\"query\":{\"match_phrase\":{\"log.level\":\"info\"}},\"$state\":{\"store\":\"appState\"}}],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ],
+                        "timeRestore": false,
+                        "usesAdHocDataView": false
+                    },
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "9940557b-4932-4f76-8aec-029ddac34539",
+                    "i": "1cb8c14e-fcc5-428d-8d3c-95fcd031e0b8",
                     "w": 48,
                     "x": 0,
                     "y": 45
                 },
-                "panelIndex": "9940557b-4932-4f76-8aec-029ddac34539",
-                "panelRefName": "panel_9940557b-4932-4f76-8aec-029ddac34539",
-                "title": "Localhost Logs overview [Logs Apache Tomcat]",
-                "type": "search",
-                "version": "8.7.0"
+                "panelIndex": "1cb8c14e-fcc5-428d-8d3c-95fcd031e0b8",
+                "title": "Localhost logs overview [Logs Apache Tomcat]",
+                "type": "search"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Apache Tomcat] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.0",
-    "created_at": "2023-07-24T12:48:07.116Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-13T09:02:01.512Z",
     "id": "apache_tomcat-8fd54a20-1f0d-11ee-9d6b-bb41d08322c8",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -649,22 +671,12 @@
         },
         {
             "id": "logs-*",
-            "name": "b089289a-38be-4f6f-8519-ef9b20a77409:b6532743-79d3-4ab0-bdfa-fff8aa69c7a9",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "2f7de9ea-b38c-4a20-9f50-2c50f76f450d:indexpattern-datasource-layer-55ba9c87-2de6-468b-ae00-ab24cdb6c2d7",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "2f7de9ea-b38c-4a20-9f50-2c50f76f450d:25ce66fb-534d-42a3-9baf-e3c7768ee2d6",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "2f7de9ea-b38c-4a20-9f50-2c50f76f450d:adb3c9a7-d289-4c05-9c2b-0791a5c482ff",
+            "name": "2f7de9ea-b38c-4a20-9f50-2c50f76f450d:27726488-c222-4017-9646-dc2a3a3438e8",
             "type": "index-pattern"
         },
         {
@@ -674,23 +686,38 @@
         },
         {
             "id": "logs-*",
-            "name": "e87fc489-df1a-4f67-9d91-7b3383fcb8c7:44d71f68-2675-4ed4-adb5-9f2bdce23a3a",
+            "name": "e87fc489-df1a-4f67-9d91-7b3383fcb8c7:9ac46d7b-7d38-4e7c-b723-2ace8d3a1c52",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "e87fc489-df1a-4f67-9d91-7b3383fcb8c7:cfb45038-17c1-40f9-b31e-916d1eefc5c6",
+            "name": "74487d6a-9478-485f-b6da-91f9f5b974d0:kibanaSavedObjectMeta.searchSourceJSON.index",
             "type": "index-pattern"
         },
         {
-            "id": "apache_tomcat-1f3c6e30-dd11-11ed-9f4f-d97c9f37d195",
-            "name": "f02e494c-1b62-407e-a402-7799e9fab580:panel_f02e494c-1b62-407e-a402-7799e9fab580",
-            "type": "search"
+            "id": "logs-*",
+            "name": "74487d6a-9478-485f-b6da-91f9f5b974d0:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "apache_tomcat-4d39c820-ddcd-11ed-8080-ddad81fe2c3c",
-            "name": "9940557b-4932-4f76-8aec-029ddac34539:panel_9940557b-4932-4f76-8aec-029ddac34539",
-            "type": "search"
+            "id": "logs-*",
+            "name": "74487d6a-9478-485f-b6da-91f9f5b974d0:kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1cb8c14e-fcc5-428d-8d3c-95fcd031e0b8:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1cb8c14e-fcc5-428d-8d3c-95fcd031e0b8:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1cb8c14e-fcc5-428d-8d3c-95fcd031e0b8:kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
         },
         {
             "id": "logs-*",
@@ -698,5 +725,6 @@
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }
