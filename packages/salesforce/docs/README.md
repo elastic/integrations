@@ -230,8 +230,8 @@ An example event for `apex` looks as following:
 {
     "@timestamp": "2022-11-22T04:46:15.591Z",
     "agent": {
-        "ephemeral_id": "9b25bc52-de36-439b-97fd-dadc891f76e1",
-        "id": "e3d84a2d-e217-495a-b962-bfa413101be6",
+        "ephemeral_id": "bcd82746-7d4f-4c15-8288-e159f8223e86",
+        "id": "ea40bcb3-cd35-4db9-b0d3-81d94e75b64d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.14.0"
@@ -245,7 +245,7 @@ An example event for `apex` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e3d84a2d-e217-495a-b962-bfa413101be6",
+        "id": "ea40bcb3-cd35-4db9-b0d3-81d94e75b64d",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -257,7 +257,7 @@ An example event for `apex` looks as following:
         ],
         "dataset": "salesforce.apex",
         "duration": 1293,
-        "ingested": "2024-06-12T06:20:15Z",
+        "ingested": "2024-06-21T16:36:07Z",
         "kind": "event",
         "original": "{\"CLIENT_IP\":\"81.2.69.142\",\"CPU_TIME\":\"10\",\"EVENT_TYPE\":\"ApexCallout\",\"LOGIN_KEY\":\"Obv9123BzbaxqCo1\",\"METHOD\":\"GET\",\"ORGANIZATION_ID\":\"00D5j000000001V\",\"REQUEST_ID\":\"4exLFFQZ1234xFl1cJNwOV\",\"REQUEST_SIZE\":\"10\",\"RESPONSE_SIZE\":\"256\",\"RUN_TIME\":\"1305\",\"SESSION_KEY\":\"WvtsJ1235oW24EbH\",\"SUCCESS\":\"1\",\"TIME\":\"1293\",\"TIMESTAMP\":\"20221122044615.591\",\"TIMESTAMP_DERIVED\":\"2022-11-22T04:46:15.591Z\",\"TYPE\":\"OData\",\"URI\":\"CALLOUT-LOG\",\"URI_ID_DERIVED\":\"0055j000000utlPAQZB\",\"URL\":\"https://temp.sh/odata/Accounts\",\"USER_ID\":\"0055j0000000001\",\"USER_ID_DERIVED\":\"0055j012345utlPAAQ\"}",
         "outcome": "success",
@@ -266,6 +266,28 @@ An example event for `apex` looks as following:
             "connection"
         ],
         "url": "https://temp.sh/odata/Accounts"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "345c85cf1fe945e2b19719b370c09a48",
+        "ip": [
+            "192.168.251.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-FB-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.114.2.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
     },
     "http": {
         "request": {
@@ -316,8 +338,7 @@ An example event for `apex` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "salesforce-apex",
-        "forwarded"
+        "salesforce-apex"
     ],
     "user": {
         "id": "0055j0000000001"
@@ -699,8 +720,8 @@ An example event for `setupaudittrail` looks as following:
 {
     "@timestamp": "2022-08-16T09:26:38.000Z",
     "agent": {
-        "ephemeral_id": "8e7df188-18ba-486a-94c9-528d5bf12c61",
-        "id": "e3d84a2d-e217-495a-b962-bfa413101be6",
+        "ephemeral_id": "8a1bedda-17d6-4895-b914-851f067b9106",
+        "id": "ea40bcb3-cd35-4db9-b0d3-81d94e75b64d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.14.0"
@@ -714,7 +735,7 @@ An example event for `setupaudittrail` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e3d84a2d-e217-495a-b962-bfa413101be6",
+        "id": "ea40bcb3-cd35-4db9-b0d3-81d94e75b64d",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -724,7 +745,7 @@ An example event for `setupaudittrail` looks as following:
         "created": "2022-08-16T09:26:38.000Z",
         "dataset": "salesforce.setupaudittrail",
         "id": "0Ym5j000019nwonCAA",
-        "ingested": "2024-06-12T06:24:50Z",
+        "ingested": "2024-06-21T16:40:13Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"Action\":\"insertConnectedApplication\",\"CreatedByContext\":\"Einstein\",\"CreatedById\":\"0055j000000utlPAAQ\",\"CreatedDate\":\"2022-08-16T09:26:38.000+0000\",\"DelegateUser\":\"user1\",\"Display\":\"For user user@elastic.co, the User Verified Email status changed to verified\",\"Id\":\"0Ym5j000019nwonCAA\",\"Section\":\"Connected Apps\"}",
@@ -732,6 +753,28 @@ An example event for `setupaudittrail` looks as following:
         "type": [
             "admin"
         ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "345c85cf1fe945e2b19719b370c09a48",
+        "ip": [
+            "192.168.251.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-FB-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.114.2.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
     },
     "input": {
         "type": "salesforce"
@@ -748,8 +791,7 @@ An example event for `setupaudittrail` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "salesforce-setupaudittrail",
-        "forwarded"
+        "salesforce-setupaudittrail"
     ],
     "user": {
         "id": "0055j000000utlPAAQ",
