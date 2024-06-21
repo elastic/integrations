@@ -191,23 +191,23 @@ processors:
 
         if (apex.event_type == "ApexCallout" && json.TIME != null) {
           event.duration = Float.parseFloat(json.TIME);
-        } else if ((apex.event_type == "ApexTrigger" || apex.event_type == "ApexExecution") && json.EXEC_TIME != null) {
+        } else if (json.EXEC_TIME != null && (apex.event_type == "ApexTrigger" || apex.event_type == "ApexExecution")) {
           event.duration = Float.parseFloat(json.EXEC_TIME);
-        } else if ((apex.event_type == "ApexRestApi" || apex.event_type == "ApexSoap") && apex.run_time != null) {
+        } else if (apex.run_time != null && (apex.event_type == "ApexRestApi" || apex.event_type == "ApexSoap")) {
           event.duration = apex.run_time;
-        } else if (apex.event_type == "ExternalCustomApexCallout" && json.TOTAL_MS != null) {
+        } else if (json.TOTAL_MS != null && apex.event_type == "ExternalCustomApexCallout") {
           event.duration = Float.parseFloat(json.TOTAL_MS);
         }
 
-        if ((json.SUCCESS == "1" && json.SUCCESS != null) || (json.STATUS == "1" && json.STATUS != null)) {
+        if ((json.SUCCESS != null && json.SUCCESS == "1") || (json.STATUS != null && json.STATUS == "1")) {
           event.outcome = "success";
-        } else if ((json.SUCCESS != "1" && json.SUCCESS != null) || (json.STATUS != "1" && json.STATUS != null)) {
+        } else if ((json.SUCCESS != null && json.SUCCESS != "1") || (json.STATUS != null && json.STATUS != "1")) {
           event.outcome = "failure";
         }
 
-        if (apex.event_type == "ApexCallout" && json.URL != null) {
+        if (json.URL != null && apex.event_type == "ApexCallout") {
           event.url = json.URL;
-        } else if (apex.event_type != "ApexCallout" && apex.event_type != "ExternalCustomApexCallout" && apex.uri != null) {
+        } else if (apex.uri != null && apex.event_type != "ApexCallout" && apex.event_type != "ExternalCustomApexCallout") {
           event.url = apex.uri;
         }
   - rename:
@@ -228,7 +228,7 @@ processors:
   - rename:
       field: json.CLIENT_IP
       target_field: source.ip
-      if: ctx.json?.CLIENT_IP != "Salesforce.com IP" && ctx.json?.CLIENT_IP != null
+      if: ctx.json?.CLIENT_IP != null && ctx.json?.CLIENT_IP != "Salesforce.com IP"
       ignore_missing: true
       ignore_failure: true
   - geoip:
