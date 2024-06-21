@@ -1,0 +1,40 @@
+name: Microsoft-Windows-Windows Defender/Operational
+condition: ${host.platform} == 'windows'
+{{#if event_id}}
+event_id: {{event_id}}
+{{/if}}
+{{#if ignore_older}}
+ignore_older: {{ignore_older}}
+{{/if}}
+{{#if language}}
+language: {{language}}
+{{/if}}
+{{#if tags.length}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+  - preserve_original_event
+{{/if}}
+{{/if}}
+{{#if preserve_original_event}}
+include_xml: true
+{{/if}}
+processors:
+- translate_sid:
+    field: winlog.event_data.MemberSid
+    account_name_target: winlog.event_data._MemberUserName
+    domain_target: winlog.event_data._MemberDomain
+    account_type_target: winlog.event_data._MemberAccountType
+    ignore_missing: true
+    ignore_failure: true
+{{#if processors.length}}
+{{processors}}
+{{/if}}
+{{custom}}
