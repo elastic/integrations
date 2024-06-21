@@ -4,6 +4,7 @@ go 1.22.0
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
+	github.com/cli/go-gh/v2 v2.9.0
 	github.com/elastic/elastic-package v0.100.0
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/package-registry v1.24.0
@@ -42,6 +43,7 @@ require (
 	github.com/cbroglie/mustache v1.4.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
+	github.com/cli/safeexec v1.0.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/creack/pty v1.1.21 // indirect
 	github.com/creasty/defaults v1.7.0 // indirect

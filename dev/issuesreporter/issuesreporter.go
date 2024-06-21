@@ -1,10 +1,11 @@
 package issuesreporter
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -66,19 +67,36 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool) error {
 	if err != nil {
 		return err
 	}
-	for _, e := range packageErrors {
-		fmt.Printf("Failures found for %s\n", e.Package())
-		if e.Failure != "" {
-			fmt.Printf("- (failure) %s (%s): %s\n", e.Name, e.ClassName, e.Failure)
-		}
-		if e.Error != "" {
-			fmt.Printf("- (error) %s (%s): %s\n", e.Name, e.ClassName, e.Error)
-		}
-	}
+	ghRunner := NewGithubRunner(GhRunnerOptions{DryRun: true})
 	for _, e := range packageErrors {
 		r := ResultsFormatter{e}
 		fmt.Printf("Title: %q\n", r.Title())
 		fmt.Printf("Description:\n%s\n", r.Description())
+
+		ghIssue := NewGithubIssue(GithubIssueOptions{
+			Title:       r.Title(),
+			Description: r.Description(),
+			Labels:      []string{"failed-test", "automation"},
+			Repository:  "elastic/integrations",
+		})
+
+		ctx := context.TODO()
+		found, issue, err := ghRunner.Exists(ctx, *ghIssue)
+		if err != nil {
+			return fmt.Errorf("failed to check if issue exists: %w", err)
+		}
+		fmt.Printf("Issue found: %t (%d)\n", found, issue.Number())
+		if !found {
+			// create issue
+			err := ghRunner.Create(ctx, *ghIssue)
+			if err != nil {
+				log.Printf("Failed to create issue: %s", err)
+			}
+			continue
+		}
+		// update issue
+
+		return nil
 	}
 	return nil
 }
@@ -95,7 +113,7 @@ func errorsFromTests(options checkOptions) ([]PackageError, error) {
 		if info.IsDir() {
 			return nil
 		}
-		fmt.Println("File to get read: ", path)
+		fmt.Println("Reading file:", path)
 		cases, err := testFailures(path)
 		if err != nil {
 			return err
@@ -117,13 +135,4 @@ func errorsFromTests(options checkOptions) ([]PackageError, error) {
 	}
 
 	return packageErrors, nil
-}
-
-func getPackageFromPath(path string) (string, error) {
-	pattern := "^(?P<Package>.*)_\\d+.xml"
-	regex := regexp.MustCompile(pattern)
-	if matches := regex.FindStringSubmatch(path); len(matches) > 1 {
-		return matches[1], nil
-	}
-	return "", fmt.Errorf("failed to find package name from file %s", path)
 }

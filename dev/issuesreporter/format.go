@@ -16,9 +16,6 @@ func (r ResultsFormatter) Title() string {
 
 func (r ResultsFormatter) Description() string {
 	var sb strings.Builder
-	sb.WriteString("- CI Build: ")
-	sb.WriteString(r.result.BuildURL)
-	sb.WriteString("\n")
 	if r.result.StackVersion != "" {
 		sb.WriteString("- Stack version: `")
 		sb.WriteString(r.result.StackVersion)
@@ -56,6 +53,11 @@ func (r ResultsFormatter) Description() string {
 		sb.WriteString("```\n")
 		sb.WriteString("\n")
 	}
+	sb.WriteString("\n")
+	sb.WriteString("CI Builds: \n")
+	sb.WriteString("- ")
+	sb.WriteString(r.result.BuildURL)
+	sb.WriteString("\n")
 
 	return sb.String()
 }
