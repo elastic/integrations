@@ -294,5 +294,4 @@ This is the `Event` dataset.
 | microsoft_defender_cloud.event.workspace.id |  | keyword |
 | microsoft_defender_cloud.event.workspace.resource_group |  | keyword |
 | microsoft_defender_cloud.event.workspace.subscription_id |  | keyword |
-| tags | User defined tags. | keyword |
 
