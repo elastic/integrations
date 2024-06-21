@@ -38,10 +38,9 @@ processors:
   - script:
       lang: painless
       source: |
-        def apex = ctx.salesforce.apex;
-        def json = ctx.json;
+        def apex = ctx.salesforce?.apex ?: [:];
+        def json = ctx.json ?: [:];
 
-        // Combine multiple conversions with specific renames
         def fieldsToConvert = [
           'CALLOUT_TIME': 'callout_time',
           'CPU_TIME': 'cpu_time',
@@ -55,11 +54,13 @@ processors:
         ];
         for (def entry : fieldsToConvert.entrySet()) {
           if (json[entry.getKey()] != null) {
-            apex[entry.getValue()] = Float.parseFloat(json[entry.getKey()]);
+            def value = json[entry.getKey()];
+            if (value instanceof String && value.length() > 0) {
+              apex[entry.getValue()] = Float.parseFloat(value);
+            }
           }
         }
 
-        // Combine multiple long conversions with specific renames
         def longFields = [
           'DB_BLOCKS': 'db_blocks',
           'LIMIT': 'limit',
@@ -72,11 +73,13 @@ processors:
         ];
         for (def entry : longFields.entrySet()) {
           if (json[entry.getKey()] != null) {
-            apex[entry.getValue()] = Long.parseLong(json[entry.getKey()]);
+            def value = json[entry.getKey()];
+            if (value instanceof String && value.length() > 0) {
+              apex[entry.getValue()] = Long.parseLong(value);
+            }
           }
         }
 
-        // Combine multiple renames
         def fieldsToRename = [
           'ACTION': 'action',
           'CLASS_NAME': 'class_name',
@@ -113,6 +116,14 @@ processors:
             apex[entry.getValue()] = json[entry.getKey()];
           }
         }
+
+        ctx.salesforce = ctx.salesforce ?: [:];
+        ctx.salesforce.apex = apex;
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to process Apex fields: {{{_ingest.on_failure_message}}}"
+
   - script:
       description: Set request user agent value from user agent numeric code.
       lang: painless
@@ -132,8 +143,12 @@ processors:
           "999": "Unknown"
       if: "ctx.salesforce?.apex?.user_agent != null"
       source: |
-        if (params.user_agent_map.containsKey(ctx.salesforce.apex.user_agent.toString().substring(0,3))) {
-          ctx.salesforce.apex.user_agent = params.user_agent_map[ctx.salesforce.apex.user_agent.toString().substring(0,3)];
+        def userAgent = ctx.salesforce.apex.user_agent.toString();
+        if (userAgent.length() >= 3) {
+          def code = userAgent.substring(0, 3);
+          if (params.user_agent_map.containsKey(code)) {
+            ctx.salesforce.apex.user_agent = params.user_agent_map[code];
+          }
         }
       on_failure:
         - append:
@@ -173,8 +188,9 @@ processors:
           apexsoap: apex-soap
           externalcustomapexcallout: apex-external-custom-callout
       source: |
-        def eventType = ctx?.salesforce?.apex?.event_type?.toLowerCase();
-        if (params.event_action_map.containsKey(eventType)) {
+        def eventType = ctx.salesforce.apex.event_type?.toLowerCase();
+        if (eventType != null && params.event_action_map.containsKey(eventType)) {
+          ctx.event = ctx.event ?: [:];
           ctx.event.action = params.event_action_map[eventType];
         }
       on_failure:
@@ -185,9 +201,9 @@ processors:
   - script:
       lang: painless
       source: |
-        def apex = ctx.salesforce.apex;
-        def json = ctx.json;
-        def event = ctx.event;
+        def apex = ctx.salesforce?.apex ?: [:];
+        def json = ctx.json ?: [:];
+        def event = ctx.event ?: [:];
 
         if (apex.event_type == "ApexCallout" && json.TIME != null) {
           event.duration = Float.parseFloat(json.TIME);
@@ -210,6 +226,13 @@ processors:
         } else if (apex.uri != null && apex.event_type != "ApexCallout" && apex.event_type != "ExternalCustomApexCallout") {
           event.url = apex.uri;
         }
+
+        ctx.event = event;
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to process event fields: {{{_ingest.on_failure_message}}}"
+
   - rename:
       field: json.USER_ID
       target_field: user.id
@@ -280,6 +303,11 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to drop empty fields: {{{_ingest.on_failure_message}}}"
+
   - remove:
       field:
         - json
