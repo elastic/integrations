@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/elastic/integrations/dev/codeowners"
@@ -13,12 +14,13 @@ import (
 
 type PackageError struct {
 	testCase
-	Serverless   bool
-	StackVersion string
-	BuildURL     string
-	Teams        []string
-	PackageName  string
-	DataStream   string
+	Serverless     bool
+	StackVersion   string
+	BuildURL       string
+	Teams          []string
+	PackageName    string
+	DataStream     string
+	PreviousBuilds []string
 }
 
 type PackageErrorOptions struct {
@@ -132,6 +134,18 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool) error {
 	return nil
 }
 
+func buildLinksFromDescription(issue GithubIssue) ([]string, error) {
+	description := issue.description
+	re := regexp.MustCompile(`(https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
+
+	links := []string{}
+	for i, match := range re.FindAllString(description, -1) {
+		fmt.Println(match, "found at index", i)
+		links = append(links, match)
+	}
+	return links, nil
+}
+
 func errorsFromTests(options checkOptions) ([]PackageError, error) {
 	var packageErrors []PackageError
 	err := filepath.Walk(options.ResultsPath, func(path string, info os.FileInfo, err error) error {
@@ -160,7 +174,6 @@ func errorsFromTests(options checkOptions) ([]PackageError, error) {
 			})
 			if err != nil {
 				return fmt.Errorf("failed to create package error: %w", err)
-
 			}
 			packageErrors = append(packageErrors, *packageError)
 		}

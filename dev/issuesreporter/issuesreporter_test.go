@@ -186,7 +186,49 @@ func TestErrorPackageName(t *testing.T) {
 			for _, e := range errors {
 				packages = append(packages, e.PackageName)
 			}
-			assert.Equal(t, c.expected, packages, c.expected)
+			assert.Equal(t, c.expected, packages)
+		})
+	}
+}
+
+func TestBuildLinksFromDescription(t *testing.T) {
+	cases := []struct {
+		title       string
+		description string
+		expected    []string
+	}{
+		{
+			title: "happy case",
+			description: `
+Test description
+- https://buildkite.com/elastic/integrations/builds/1
+- https://buildkite.com/elastic/integrations/builds/2
+   - https://buildkite.com/elastic/integrations/builds/2
+- https://buildkite.com/elastic/integrations-serverless/builds/5
+`,
+			expected: []string{
+				"https://buildkite.com/elastic/integrations/builds/1",
+				"https://buildkite.com/elastic/integrations/builds/2",
+				"https://buildkite.com/elastic/integrations/builds/2",
+				"https://buildkite.com/elastic/integrations-serverless/builds/5",
+			},
+		},
+		{
+			title: "no links",
+			description: `
+Test description
+`,
+			expected: []string{},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			links, err := buildLinksFromDescription(GithubIssue{description: c.description})
+			require.NoError(t, err)
+
+			assert.Len(t, links, len(c.expected))
+			assert.Equal(t, c.expected, links)
 		})
 	}
 }

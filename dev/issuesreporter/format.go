@@ -58,10 +58,19 @@ func (r ResultsFormatter) Description() string {
 		sb.WriteString("\n")
 	}
 	sb.WriteString("\n")
-	sb.WriteString("CI Builds: \n")
+	sb.WriteString("CI Builds:\n")
 	sb.WriteString("- ")
 	sb.WriteString(r.result.BuildURL)
 	sb.WriteString("\n")
+
+	if len(r.result.PreviousBuilds) > 0 {
+		sb.WriteString("Previous failed builds:\n")
+		for _, link := range r.result.PreviousBuilds {
+			sb.WriteString("- ")
+			sb.WriteString(link)
+			sb.WriteString("\n")
+		}
+	}
 
 	return sb.String()
 }
