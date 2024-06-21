@@ -2751,7 +2751,7 @@ An example event for `windows_defender` looks as following:
 {
     "@timestamp": "2024-06-21T07:56:39.313Z",
     "agent": {
-        "ephemeral_id": "e877b3e9-be35-477d-9ffc-0988cbb9a935",
+        "ephemeral_id": "1ed752d9-9abf-4ea9-99ab-730f39607f77",
         "id": "2a74efbb-9c7f-4476-b542-19107cfeb0b3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -2775,9 +2775,9 @@ An example event for `windows_defender` looks as following:
         "agent_id_status": "verified",
         "category": "process",
         "code": "1151",
-        "created": "2024-06-21T08:42:06.340Z",
+        "created": "2024-06-21T13:15:44.330Z",
         "dataset": "windows.windows_defender",
-        "ingested": "2024-06-21T08:42:18Z",
+        "ingested": "2024-06-21T13:15:56Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Windows Defender' Guid='{11cd958a-c507-4ef3-b3f2-5fd9dfbd2c78}'/\u003e\u003cEventID\u003e1151\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e0\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2024-06-21T07:56:39.3136791Z'/\u003e\u003cEventRecordID\u003e5655\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='7676' ThreadID='15392'/\u003e\u003cChannel\u003eMicrosoft-Windows-Windows Defender/Operational\u003c/Channel\u003e\u003cComputer\u003eel33t-b00k-1\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-18'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='Product Name'\u003eMicrosoft Defender Antivirus\u003c/Data\u003e\u003cData Name='Platform version'\u003e4.18.24050.7\u003c/Data\u003e\u003cData Name='Unused'\u003e\u003c/Data\u003e\u003cData Name='Engine version'\u003e1.1.24050.5\u003c/Data\u003e\u003cData Name='NRI engine version'\u003e1.1.24050.5\u003c/Data\u003e\u003cData Name='AV security intelligence version'\u003e1.413.419.0\u003c/Data\u003e\u003cData Name='AS security intelligence version'\u003e1.413.419.0\u003c/Data\u003e\u003cData Name='NRI security intelligence version'\u003e1.413.419.0\u003c/Data\u003e\u003cData Name='RTP state'\u003eEnabled\u003c/Data\u003e\u003cData Name='OA state'\u003eEnabled\u003c/Data\u003e\u003cData Name='IOAV state'\u003eEnabled\u003c/Data\u003e\u003cData Name='BM state'\u003eEnabled\u003c/Data\u003e\u003cData Name='Last AV security intelligence age'\u003e0\u003c/Data\u003e\u003cData Name='Last AS security intelligence age'\u003e0\u003c/Data\u003e\u003cData Name='Last quick scan age'\u003e1\u003c/Data\u003e\u003cData Name='Last full scan age'\u003e4294967295\u003c/Data\u003e\u003cData Name='AV security intelligence creation time'\u003e2024-06-20T17:59:45Z\u003c/Data\u003e\u003cData Name='AS security intelligence creation time'\u003e2024-06-20T17:59:47Z\u003c/Data\u003e\u003cData Name='Last quick scan start time'\u003e2024-06-19T15:49:55Z\u003c/Data\u003e\u003cData Name='Last quick scan end time'\u003e2024-06-19T15:51:57Z\u003c/Data\u003e\u003cData Name='Last quick scan source'\u003e2\u003c/Data\u003e\u003cData Name='Last full scan start time'\u003e1601-01-01T00:00:00Z\u003c/Data\u003e\u003cData Name='Last full scan end time'\u003e1601-01-01T00:00:00Z\u003c/Data\u003e\u003cData Name='Last full scan source'\u003e0\u003c/Data\u003e\u003cData Name='Product status'\u003e0x00080000\u003c/Data\u003e\u003cData Name='Latest engine version'\u003e1.1.24050.5\u003c/Data\u003e\u003cData Name='Engine up-to-date'\u003e0\u003c/Data\u003e\u003cData Name='Latest platform version'\u003e4.18.24050.7\u003c/Data\u003e\u003cData Name='Platform up-to-date'\u003e1\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-Windows Defender",
@@ -2803,34 +2803,34 @@ An example event for `windows_defender` looks as following:
         "channel": "Microsoft-Windows-Windows Defender/Operational",
         "computer_name": "el33t-b00k-1",
         "event_data": {
-            "AS security intelligence creation time": "2024-06-20T17:59:47Z",
-            "AS security intelligence version": "1.413.419.0",
-            "AV security intelligence creation time": "2024-06-20T17:59:45Z",
-            "AV security intelligence version": "1.413.419.0",
-            "BM state": "Enabled",
-            "Engine up-to-date": "0",
-            "Engine version": "1.1.24050.5",
-            "IOAV state": "Enabled",
-            "Last AS security intelligence age": "0",
-            "Last AV security intelligence age": "0",
-            "Last full scan age": "4294967295",
-            "Last full scan end time": "1601-01-01T00:00:00Z",
-            "Last full scan source": "0",
-            "Last full scan start time": "1601-01-01T00:00:00Z",
-            "Last quick scan age": "1",
-            "Last quick scan end time": "2024-06-19T15:51:57Z",
-            "Last quick scan source": "2",
-            "Last quick scan start time": "2024-06-19T15:49:55Z",
-            "Latest engine version": "1.1.24050.5",
-            "Latest platform version": "4.18.24050.7",
-            "NRI engine version": "1.1.24050.5",
-            "NRI security intelligence version": "1.413.419.0",
-            "OA state": "Enabled",
-            "Platform up-to-date": "1",
-            "Platform version": "4.18.24050.7",
-            "Product Name": "Microsoft Defender Antivirus",
-            "Product status": "0x00080000",
-            "RTP state": "Enabled"
+            "AS_security_intelligence_creation_time": "2024-06-20T17:59:47Z",
+            "AS_security_intelligence_version": "1.413.419.0",
+            "AV_security_intelligence_creation_time": "2024-06-20T17:59:45Z",
+            "AV_security_intelligence_version": "1.413.419.0",
+            "BM_state": "Enabled",
+            "Engine_up-to-date": "0",
+            "Engine_version": "1.1.24050.5",
+            "IOAV_state": "Enabled",
+            "Last_AS_security_intelligence_age": "0",
+            "Last_AV_security_intelligence_age": "0",
+            "Last_full_scan_age": "4294967295",
+            "Last_full_scan_end_time": "1601-01-01T00:00:00Z",
+            "Last_full_scan_source": "0",
+            "Last_full_scan_start_time": "1601-01-01T00:00:00Z",
+            "Last_quick_scan_age": "1",
+            "Last_quick_scan_end_time": "2024-06-19T15:51:57Z",
+            "Last_quick_scan_source": "2",
+            "Last_quick_scan_start_time": "2024-06-19T15:49:55Z",
+            "Latest_engine_version": "1.1.24050.5",
+            "Latest_platform_version": "4.18.24050.7",
+            "NRI_engine_version": "1.1.24050.5",
+            "NRI_security_intelligence_version": "1.413.419.0",
+            "OA_state": "Enabled",
+            "Platform_up-to-date": "1",
+            "Platform_version": "4.18.24050.7",
+            "Product_Name": "Microsoft Defender Antivirus",
+            "Product_status": "0x00080000",
+            "RTP_state": "Enabled"
         },
         "event_id": "1151",
         "level": "information",
@@ -2959,12 +2959,12 @@ An example event for `windows_defender` looks as following:
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
 | winlog.computer_name | The name of the computer that generated the record. When using Windows event forwarding, this name can differ from `agent.hostname`. | keyword |
 | winlog.event_data | The event-specific data. This field is mutually exclusive with `user_data`. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows. | object |
-| winlog.event_data.AS security intelligence creation time |  | date |
-| winlog.event_data.AS security intelligence version |  | keyword |
-| winlog.event_data.AV security intelligence creation time |  | date |
-| winlog.event_data.AV security intelligence version |  | keyword |
+| winlog.event_data.AS_security_intelligence_creation_time |  | date |
+| winlog.event_data.AS_security_intelligence_version |  | keyword |
+| winlog.event_data.AV_security_intelligence_creation_time |  | date |
+| winlog.event_data.AV_security_intelligence_version |  | keyword |
 | winlog.event_data.AuthenticationPackageName |  | keyword |
-| winlog.event_data.BM state |  | keyword |
+| winlog.event_data.BM_state |  | keyword |
 | winlog.event_data.Binary |  | keyword |
 | winlog.event_data.BitlockerUserInputTime |  | keyword |
 | winlog.event_data.BootMode |  | keyword |
@@ -2984,8 +2984,8 @@ An example event for `windows_defender` looks as following:
 | winlog.event_data.DriverName |  | keyword |
 | winlog.event_data.DriverNameLength |  | keyword |
 | winlog.event_data.DwordVal |  | keyword |
-| winlog.event_data.Engine up-to-date |  | keyword |
-| winlog.event_data.Engine version |  | keyword |
+| winlog.event_data.Engine_up-to-date |  | keyword |
+| winlog.event_data.Engine_version |  | keyword |
 | winlog.event_data.EntryCount |  | keyword |
 | winlog.event_data.ExtraInfo |  | keyword |
 | winlog.event_data.FailureName |  | keyword |
@@ -2993,7 +2993,7 @@ An example event for `windows_defender` looks as following:
 | winlog.event_data.FileVersion |  | keyword |
 | winlog.event_data.FinalStatus |  | keyword |
 | winlog.event_data.Group |  | keyword |
-| winlog.event_data.IOAV state |  | keyword |
+| winlog.event_data.IOAV_state |  | keyword |
 | winlog.event_data.IdleImplementation |  | keyword |
 | winlog.event_data.IdleStateCount |  | keyword |
 | winlog.event_data.ImpersonationLevel |  | keyword |
@@ -3001,20 +3001,20 @@ An example event for `windows_defender` looks as following:
 | winlog.event_data.IpAddress |  | keyword |
 | winlog.event_data.IpPort |  | keyword |
 | winlog.event_data.KeyLength |  | keyword |
-| winlog.event_data.Last AS security intelligence age |  | keyword |
-| winlog.event_data.Last AV security intelligence age |  | keyword |
-| winlog.event_data.Last full scan age |  | keyword |
-| winlog.event_data.Last full scan end time |  | date |
-| winlog.event_data.Last full scan source |  | keyword |
-| winlog.event_data.Last full scan start time |  | date |
-| winlog.event_data.Last quick scan age |  | keyword |
-| winlog.event_data.Last quick scan end time |  | date |
-| winlog.event_data.Last quick scan source |  | keyword |
-| winlog.event_data.Last quick scan start time |  | date |
 | winlog.event_data.LastBootGood |  | keyword |
 | winlog.event_data.LastShutdownGood |  | keyword |
-| winlog.event_data.Latest engine version |  | keyword |
-| winlog.event_data.Latest platform version |  | keyword |
+| winlog.event_data.Last_AS_security_intelligence_age |  | keyword |
+| winlog.event_data.Last_AV_security_intelligence_age |  | keyword |
+| winlog.event_data.Last_full_scan_age |  | keyword |
+| winlog.event_data.Last_full_scan_end_time |  | date |
+| winlog.event_data.Last_full_scan_source |  | keyword |
+| winlog.event_data.Last_full_scan_start_time |  | date |
+| winlog.event_data.Last_quick_scan_age |  | keyword |
+| winlog.event_data.Last_quick_scan_end_time |  | date |
+| winlog.event_data.Last_quick_scan_source |  | keyword |
+| winlog.event_data.Last_quick_scan_start_time |  | date |
+| winlog.event_data.Latest_engine_version |  | keyword |
+| winlog.event_data.Latest_platform_version |  | keyword |
 | winlog.event_data.LmPackageName |  | keyword |
 | winlog.event_data.LogonGuid |  | keyword |
 | winlog.event_data.LogonId |  | keyword |
@@ -3027,22 +3027,22 @@ An example event for `windows_defender` looks as following:
 | winlog.event_data.MinimumPerformancePercent |  | keyword |
 | winlog.event_data.MinimumThrottlePercent |  | keyword |
 | winlog.event_data.MinorVersion |  | keyword |
-| winlog.event_data.NRI engine version |  | keyword |
-| winlog.event_data.NRI security intelligence version |  | keyword |
+| winlog.event_data.NRI_engine_version |  | keyword |
+| winlog.event_data.NRI_security_intelligence_version |  | keyword |
 | winlog.event_data.NewProcessId |  | keyword |
 | winlog.event_data.NewProcessName |  | keyword |
 | winlog.event_data.NewSchemeGuid |  | keyword |
 | winlog.event_data.NewTime |  | keyword |
 | winlog.event_data.NominalFrequency |  | keyword |
 | winlog.event_data.Number |  | keyword |
-| winlog.event_data.OA state |  | keyword |
+| winlog.event_data.OA_state |  | keyword |
 | winlog.event_data.OldSchemeGuid |  | keyword |
 | winlog.event_data.OldTime |  | keyword |
 | winlog.event_data.OriginalFileName |  | keyword |
 | winlog.event_data.Path |  | keyword |
 | winlog.event_data.PerformanceImplementation |  | keyword |
-| winlog.event_data.Platform up-to-date |  | keyword |
-| winlog.event_data.Platform version |  | keyword |
+| winlog.event_data.Platform_up-to-date |  | keyword |
+| winlog.event_data.Platform_version |  | keyword |
 | winlog.event_data.PreviousCreationUtcTime |  | keyword |
 | winlog.event_data.PreviousTime |  | keyword |
 | winlog.event_data.PrivilegeList |  | keyword |
@@ -3051,12 +3051,12 @@ An example event for `windows_defender` looks as following:
 | winlog.event_data.ProcessPath |  | keyword |
 | winlog.event_data.ProcessPid |  | keyword |
 | winlog.event_data.Product |  | keyword |
-| winlog.event_data.Product Name |  | keyword |
-| winlog.event_data.Product status |  | keyword |
+| winlog.event_data.Product_Name |  | keyword |
+| winlog.event_data.Product_status |  | keyword |
 | winlog.event_data.PuaCount |  | keyword |
 | winlog.event_data.PuaPolicyId |  | keyword |
 | winlog.event_data.QfeVersion |  | keyword |
-| winlog.event_data.RTP state |  | keyword |
+| winlog.event_data.RTP_state |  | keyword |
 | winlog.event_data.Reason |  | keyword |
 | winlog.event_data.SchemaVersion |  | keyword |
 | winlog.event_data.ScriptBlockText |  | keyword |
