@@ -278,12 +278,16 @@ processors:
       field: threat.indicator.name
       copy_from: threat.indicator.ip
       ignore_empty_value: true
-      if: ctx.threat?.indicator?.ip != null && ['ipv4-addr', 'ipv6-addr'].contains(ctx.threat.indicator.type)
+      if: >-
+        ctx.threat?.indicator?.ip != null && (
+          ctx.threat.indicator.type == 'ipv4-addr' ||
+          ctx.threat.indicator.type == 'ipv6-addr'
+        )
   - set:
       field: threat.indicator.name
       copy_from: threat.indicator.email.address
       ignore_empty_value: true
-      if: ctx.threat?.indicator?.email?.address != null && ctx.threat.indicator.type == 'email-addr'
+      if: ctx.threat?.indicator?.email?.address == 'email-addr'
   - set:
       field: threat.indicator.name
       copy_from: threat.indicator.file.hash.md5
@@ -351,11 +355,11 @@ processors:
       source: >
         ZonedDateTime _tmp_deleted_at;
         ZonedDateTime _tmp_last_seen;
-        if (ctx.rapid7?.tc?.ioc?.status != null && ctx.rapid7.tc.ioc.status.toLowerCase().contains('retire')) {
+        if (ctx.rapid7.tc.ioc.status instanceof String && ctx.rapid7.tc.ioc.status.toLowerCase().contains('retire')) {
           _tmp_deleted_at = ZonedDateTime.parse(ctx['@timestamp']);
         }
         else {
-            def dur = ctx._conf?.ioc_expiration_duration;
+            def dur = ctx._conf.ioc_expiration_duration;
             if (ctx.threat?.indicator?.modified_at != null) {
                 _tmp_last_seen = ZonedDateTime.parse(ctx.threat.indicator.modified_at);
             }
@@ -366,7 +370,7 @@ processors:
                 _tmp_last_seen = ZonedDateTime.parse(ctx.threat.indicator.first_seen);
             }
             if (dur instanceof String){
-                String time_unit = dur.substring(dur.length() -  1, dur.length());
+                String time_unit = dur.substring(dur.length() -  1);
                 String time_value = dur.substring(0, dur.length() - 1);
                 if (time_unit == 'd') {
                     _tmp_deleted_at = _tmp_last_seen.plusDays(Long.parseLong(time_value));
