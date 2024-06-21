@@ -37,7 +37,7 @@ Data streams:
 
 This integration has been tested against Salesforce Spring '22 (v54.0) release.
 
-In order to find out the version of your Salesforce instance using one of the following methods:
+You can find the Salesforce instance version by using the following methods:
 
 1. Salesforce Classic: On the Home tab in Salesforce Classic, in the top right corner of the screen is a link to releases like `Summer '22`. This indicates the release version of the salesforce instance.
 
