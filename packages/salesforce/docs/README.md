@@ -415,8 +415,8 @@ An example event for `login` looks as following:
 {
     "@timestamp": "2022-11-22T04:46:15.591Z",
     "agent": {
-        "ephemeral_id": "42b2912a-cfc8-443d-add9-997945242313",
-        "id": "e3d84a2d-e217-495a-b962-bfa413101be6",
+        "ephemeral_id": "b02f2751-9a38-4438-8b75-937262b340bc",
+        "id": "ea40bcb3-cd35-4db9-b0d3-81d94e75b64d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.14.0"
@@ -430,7 +430,7 @@ An example event for `login` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e3d84a2d-e217-495a-b962-bfa413101be6",
+        "id": "ea40bcb3-cd35-4db9-b0d3-81d94e75b64d",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -441,7 +441,7 @@ An example event for `login` looks as following:
             "authentication"
         ],
         "dataset": "salesforce.login",
-        "ingested": "2024-06-12T06:22:07Z",
+        "ingested": "2024-06-21T16:46:09Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"9998.0\",\"AUTHENTICATION_METHOD_REFERENCE\":\"\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36\",\"CIPHER_SUITE\":\"ECDHE-RSA-AES256-GCM-SHA384\",\"CLIENT_IP\":\"81.2.69.142\",\"CPU_TIME\":\"30\",\"DB_TOTAL_TIME\":\"52435102\",\"EVENT_TYPE\":\"Login\",\"LOGIN_KEY\":\"QfNecrLXSII6fsBq\",\"LOGIN_STATUS\":\"LOGIN_NO_ERROR\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"4ehU_U-nbQyAPFl1cJILm-\",\"REQUEST_STATUS\":\"Success\",\"RUN_TIME\":\"83\",\"SESSION_KEY\":\"\",\"SOURCE_IP\":\"81.2.69.142\",\"TIMESTAMP\":\"20221122044615.591\",\"TIMESTAMP_DERIVED\":\"2022-11-22T04:46:15.591Z\",\"TLS_PROTOCOL\":\"TLSv1.2\",\"URI\":\"/index.jsp\",\"URI_ID_DERIVED\":\"s4heK3WbH-lcJIL3-n\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_NAME\":\"user@elastic.co\",\"USER_TYPE\":\"Standard\"}",
@@ -451,6 +451,28 @@ An example event for `login` looks as following:
             "info"
         ],
         "url": "/index.jsp"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "345c85cf1fe945e2b19719b370c09a48",
+        "ip": [
+            "192.168.251.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-FB-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.114.2.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
     },
     "input": {
         "type": "salesforce"
@@ -503,8 +525,7 @@ An example event for `login` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "salesforce-login_rest",
-        "forwarded"
+        "salesforce-login"
     ],
     "tls": {
         "cipher": "ECDHE-RSA-AES256-GCM-SHA384",
@@ -581,8 +602,8 @@ An example event for `logout` looks as following:
 {
     "@timestamp": "2022-11-22T07:37:25.779Z",
     "agent": {
-        "ephemeral_id": "c9bf3390-3256-43ca-b431-6ccb84d36ae2",
-        "id": "e3d84a2d-e217-495a-b962-bfa413101be6",
+        "ephemeral_id": "222f4fde-1141-42af-adaf-4b86e6aa9c18",
+        "id": "ea40bcb3-cd35-4db9-b0d3-81d94e75b64d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.14.0"
@@ -596,7 +617,7 @@ An example event for `logout` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e3d84a2d-e217-495a-b962-bfa413101be6",
+        "id": "ea40bcb3-cd35-4db9-b0d3-81d94e75b64d",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -608,7 +629,7 @@ An example event for `logout` looks as following:
         ],
         "code": "4exLFFQZ1234xFl1cJNwOV",
         "dataset": "salesforce.logout",
-        "ingested": "2024-06-12T06:23:55Z",
+        "ingested": "2024-06-21T16:47:21Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"54.0\",\"APP_TYPE\":\"1000\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36\",\"CLIENT_IP\":\"81.2.69.142\",\"CLIENT_VERSION\":\"9998\",\"EVENT_TYPE\":\"Logout\",\"LOGIN_KEY\":\"Obv9123BzbaxqCo1\",\"ORGANIZATION_ID\":\"00D5j001234VI3n\",\"PLATFORM_TYPE\":\"1015\",\"REQUEST_ID\":\"4exLFFQZ1234xFl1cJNwOV\",\"RESOLUTION_TYPE\":\"9999\",\"SESSION_KEY\":\"WvtsJ1235oW24EbH\",\"SESSION_LEVEL\":\"1\",\"SESSION_TYPE\":\"O\",\"TIMESTAMP\":\"20221122073725.779\",\"TIMESTAMP_DERIVED\":\"2022-11-22T07:37:25.779Z\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_INITIATED_LOGOUT\":\"0\",\"USER_TYPE\":\"S\"}",
@@ -616,6 +637,28 @@ An example event for `logout` looks as following:
         "type": [
             "info"
         ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "345c85cf1fe945e2b19719b370c09a48",
+        "ip": [
+            "192.168.251.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-FB-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.114.2.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
     },
     "input": {
         "type": "salesforce"
@@ -670,8 +713,7 @@ An example event for `logout` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "salesforce-logout_rest",
-        "forwarded"
+        "salesforce-logout"
     ],
     "user": {
         "id": "0055j000000utlPAAQ"
