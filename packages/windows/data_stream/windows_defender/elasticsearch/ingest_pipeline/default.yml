@@ -45,11 +45,6 @@ processors:
       type: string
       ignore_failure: true
       ignore_missing: true
-  - script:
-      description: Remove all spaces in field names from winlog.event_data.* fields
-      lang: painless
-      source: if (ctx.winlog?.event_data != null) {Map eventData = ctx.winlog.event_data; Map newEventData = new HashMap(); for (entry in eventData.entrySet()) {String newKey = entry.getKey().replace(" ", "_"); newEventData.put(newKey, entry.getValue());} ctx.winlog.event_data = newEventData;}
-      if: ctx.winlog?.event_data != null
 
   ## User fields.
 
