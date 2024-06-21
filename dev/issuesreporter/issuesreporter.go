@@ -101,7 +101,7 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool) error {
 	for _, e := range packageErrors {
 		r := ResultsFormatter{e}
 		fmt.Printf("Title: %q\n", r.Title())
-		fmt.Printf("Teams: %q\n", strings.Join(r.result.Teams, ", "))
+		fmt.Printf("Teams: %q\n", strings.Join(r.Owners(), ", "))
 		fmt.Printf("Description:\n%s\n", r.Description())
 
 		ghIssue := NewGithubIssue(GithubIssueOptions{
