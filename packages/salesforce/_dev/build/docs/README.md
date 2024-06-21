@@ -31,7 +31,7 @@ Data streams:
 - `login`: Tracks login activity of users who log in to Salesforce.
 - `logout`: Tracks logout activity of users who log out from Salesforce.
 - `apex`: Represents information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, etc.
-- `setupaudittrail`: Represents changes users made in the organization's Setup area for at least the last 180 days.
+- `setupaudittrail`: Represents changes users made in the organization's setup area for at least the last 180 days.
 
 ## Compatibility
 
