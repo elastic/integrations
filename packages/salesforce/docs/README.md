@@ -363,7 +363,6 @@ An example event for `apex` looks as following:
 | salesforce.apex.db_blocks | Indicates how much activity is occurring in the database. A high value for this field suggests that adding indexes or filters on your queries would benefit performance. | long |  | gauge |
 | salesforce.apex.db_cpu_time | The CPU time in milliseconds to complete the request. Indicates the amount of activity taking place in the database layer during the request. | float | ms | gauge |
 | salesforce.apex.db_total_time | Time (in milliseconds) spent waiting for database processing in aggregate for all operations in the request. Compare this field to cpu_time to determine whether performance issues are occurring in the database layer or in your own code. | float | ms | gauge |
-| salesforce.apex.document_id | Unique ID of the Apex document. | keyword |  |  |
 | salesforce.apex.entity | Name of the external object being accessed. | keyword |  |  |
 | salesforce.apex.entity_name | The name of the object affected by the trigger. | keyword |  |  |
 | salesforce.apex.entry_point | The entry point for this Apex execution. | keyword |  |  |
@@ -573,7 +572,6 @@ An example event for `login` looks as following:
 | salesforce.login.client_version | The version of the client used for the login request. | keyword |  |  |
 | salesforce.login.cpu_time | The CPU time in milliseconds used to complete the login request, indicating the amount of activity in the application server layer. | long | ms | gauge |
 | salesforce.login.db_total_time | The total time in milliseconds for the database round trip during login, including time spent in the JDBC driver, network, and database CPU time. | double | ms | gauge |
-| salesforce.login.document_id | Unique identifier for the login event. | keyword |  |  |
 | salesforce.login.evaluation_time | The amount of time it took to evaluate the transaction security policy, in milliseconds. This field is available in API version 46.0 and later. | double | ms | gauge |
 | salesforce.login.event_type | The type of event. For login events, the value is always "Login". | keyword |  |  |
 | salesforce.login.geo_id | The Salesforce ID of the LoginGeo object associated with the user's IP address during login. | keyword |  |  |
@@ -736,7 +734,6 @@ An example event for `logout` looks as following:
 | salesforce.logout.app_type | The application type that was in use upon logging out. | keyword |
 | salesforce.logout.browser_type | The identifier string returned by the browser used at login. | keyword |
 | salesforce.logout.client_version | The version of the client that was in use upon logging out. | keyword |
-| salesforce.logout.document_id | Unique Id. | keyword |
 | salesforce.logout.event_identifier | This field is populated only when the activity that this event monitors requires extra authentication, such as multi-factor authentication. In this case, Salesforce generates more events and sets the RelatedEventIdentifier field of the new events to the value of the EventIdentifier field of the original event. Use this field with the EventIdentifier field to correlate all the related events. If no extra authentication is required, this field is blank. | keyword |
 | salesforce.logout.event_type | The type of event. The value is always Logout. | keyword |
 | salesforce.logout.login_key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |
@@ -857,7 +854,6 @@ An example event for `setupaudittrail` looks as following:
 | salesforce.setup_audit_trail.created_by_issuer | Reserved for future use. | keyword |
 | salesforce.setup_audit_trail.delegate_user | The Login-As user who executed the action in Setup. If a Login-As user didn't perform the action, this field is blank. This field is available in API version 35.0 and later. | keyword |
 | salesforce.setup_audit_trail.display | The full description of changes made in Setup. For example, if the Action field has a value of PermSetCreate, the Display field has a value like “Created permission set MAD: with user license Salesforce." | keyword |
-| salesforce.setup_audit_trail.document_id | Unique Id. | keyword |
 | salesforce.setup_audit_trail.responsible_namespace_prefix | Unknown | keyword |
 | salesforce.setup_audit_trail.section | The section in the Setup menu where the action occurred. For example, Manage Users or Company Profile. | keyword |
 
