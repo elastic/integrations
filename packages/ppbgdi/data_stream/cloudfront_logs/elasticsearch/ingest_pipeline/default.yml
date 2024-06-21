@@ -1,0 +1,51 @@
+---
+description: Pipeline for processing ppbgdi specific fields of cloudfront logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - pipeline:
+      description: Pipeline used to create fields for elastic-package tests
+      if: ctx?.tags != null && ctx?.tags.contains('elastic-package-test')
+      name: '{{ IngestPipeline "elastic-package-test" }}'
+  - script:
+      source: |
+        String environment = "";
+        String s3_object_key = ctx?.aws?.s3?.object?.key;
+        if ( s3_object_key != null ) {
+          String domain = s3_object_key.splitOnToken("/")[0];
+          if      ( domain.contains('geo.admin.ch') ) { environment = 'prod'; }
+          else if ( domain.contains('prod.bgdi.ch') ) { environment = 'prod'; }
+          else if ( domain.contains('int.bgdi.ch')  ) { environment = 'int';  }
+          else if ( domain.contains('dev.bgdi.ch')  ) { environment = 'dev';  }
+        }
+
+        if (environment != "") {
+          if (!ctx.containsKey('service')) {
+            ctx['service'] = new HashMap();
+          }
+          ctx.service.environment = environment;
+        }
+  - fail:
+      description: Fail if service.environment not available.
+      if: 'ctx?.service?.environment == null'
+      message: Missing 'service.environment'. Check domain parser config for missing domain.
+  - grok:
+      description: Parse the system from the beginning of the domain (until first .)
+      field: aws.s3.object.key
+      patterns:
+        - "^(sys-)?(?<ppbgdi.app.system>[A-Za-z0-9-]+)\\."
+      ecs_compatibility: v1
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
