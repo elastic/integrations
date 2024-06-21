@@ -14,6 +14,10 @@ func (r ResultsFormatter) Title() string {
 	return r.result.String()
 }
 
+func (r ResultsFormatter) Owners() []string {
+	return r.result.Teams
+}
+
 func (r ResultsFormatter) Description() string {
 	var sb strings.Builder
 	if r.result.StackVersion != "" {
@@ -31,7 +35,7 @@ func (r ResultsFormatter) Description() string {
 	sb.WriteString(r.result.Name)
 	sb.WriteString("`\n")
 
-	if r.result.testCase.ClassName != "" {
+	if r.result.DataStream != "" {
 		sb.WriteString("- DataStream: `")
 		sb.WriteString(r.result.DataStream)
 		sb.WriteString("`\n")
