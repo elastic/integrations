@@ -10,10 +10,6 @@ The Salesforce integration enables users to monitor their [Salesforce](https://w
 - **Data Visualization**: Create detailed visualizations to monitor, measure, and analyze usage trends and key data, helping you derive actionable business insights.
 - **Proactive Alerts**: Set up alerts to minimize Mean Time to Detection (MTTD) and Mean Time to Resolution (MTTR) by referencing relevant logs during troubleshooting.
 
-### Use cases:
-
-For example, with this integration, users can analyze data to understand user activity patterns based on geographic regions or examine the distribution of users by license type. This helps in making informed decisions and optimizing resource allocation.
-
 ## Data streams
 
 The Salesforce integration collects log events using the Salesforce REST API.
@@ -31,13 +27,13 @@ Data streams:
 - `login`: Tracks login activity of users who log in to Salesforce.
 - `logout`: Tracks logout activity of users who log out from Salesforce.
 - `apex`: Represents information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, etc.
-- `setupaudittrail`: Represents changes users made in the organization's Setup area for at least the last 180 days.
+- `setupaudittrail`: Represents changes users made in the organization's setup area for at least the last 180 days.
 
 ## Compatibility
 
 This integration has been tested against Salesforce Spring '22 (v54.0) release.
 
-In order to find out the version of your Salesforce instance using one of the following methods:
+You can find the Salesforce instance version by using the following methods:
 
 1. Salesforce Classic: On the Home tab in Salesforce Classic, in the top right corner of the screen is a link to releases like `Summer '22`. This indicates the release version of the salesforce instance.
 
@@ -395,14 +391,14 @@ An example event for `apex` looks as following:
 | salesforce.apex.subqueries | Reserved for future use. | keyword |  |  |
 | salesforce.apex.throughput | Number of records retrieved in one second. | float |  | gauge |
 | salesforce.apex.trigger_id | The 15-character ID of the trigger that was fired. | keyword |  |  |
-| salesforce.apex.trigger_name | For triggers coming from managed packages, trigger_name includes a namespace prefix separated with a . character. If no namespace prefix is present, the trigger is from an unmanaged trigger. | keyword |  |  |
+| salesforce.apex.trigger_name | For triggers coming from managed packages, trigger_name includes a namespace prefix separated with a dot (.) character. If no namespace prefix is present, the trigger is from an unmanaged trigger. | keyword |  |  |
 | salesforce.apex.trigger_type | The type of this trigger. | keyword |  |  |
 | salesforce.apex.type | The type of Apex callout. | keyword |  |  |
 | salesforce.apex.uri | The URI of the page that's receiving the request. | keyword |  |  |
 | salesforce.apex.uri_derived_id | The 18-character case-safe ID of the URI of the page that's receiving the request. | keyword |  |  |
 | salesforce.apex.user_agent | The numeric code for the type of client used to make the request (for example, the browser, application, or API). | keyword |  |  |
 | salesforce.apex.user_id_derived | The 18-character case-safe ID of the user who's using Salesforce services through the UI or the API. | keyword |  |  |
-| salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |  |  |
+| salesforce.instance_url | The Salesforce instance URL. | keyword |  |  |
 | source.geo.city_name | City name. | keyword |  |  |
 | source.geo.continent_name | Name of the continent. | keyword |  |  |
 | source.geo.country_iso_code | Country ISO code. | keyword |  |  |

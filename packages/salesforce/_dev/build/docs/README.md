@@ -10,10 +10,6 @@ The Salesforce integration enables users to monitor their [Salesforce](https://w
 - **Data Visualization**: Create detailed visualizations to monitor, measure, and analyze usage trends and key data, helping you derive actionable business insights.
 - **Proactive Alerts**: Set up alerts to minimize Mean Time to Detection (MTTD) and Mean Time to Resolution (MTTR) by referencing relevant logs during troubleshooting.
 
-### Use cases:
-
-For example, with this integration, users can analyze data to understand user activity patterns based on geographic regions or examine the distribution of users by license type. This helps in making informed decisions and optimizing resource allocation.
-
 ## Data streams
 
 The Salesforce integration collects log events using the Salesforce REST API.
