@@ -103,7 +103,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.auid | The audit user assigned at login by the audit subsystem. | keyword |
 | ocsf.actor.process.cmd_line | The full command line used to launch an application, service, process, or job. | keyword |
 | ocsf.actor.process.container.hash.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.container.hash.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
+| ocsf.actor.process.container.hash.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
 | ocsf.actor.process.container.hash.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.container.image.labels | The image labels. | keyword |
 | ocsf.actor.process.container.image.name | The image name. | keyword |
@@ -126,7 +126,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.accessed_time_dt | The time when the file was last accessed. | date |
 | ocsf.actor.process.file.accessor.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.process.file.accessor.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.accessor.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.actor.process.file.accessor.account.type_id | The normalized account type identifier. | integer |
 | ocsf.actor.process.file.accessor.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.actor.process.file.accessor.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.actor.process.file.accessor.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -144,18 +144,18 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.accessor.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.actor.process.file.accessor.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.actor.process.file.accessor.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.actor.process.file.accessor.type_id | The account type identifier. | keyword |
+| ocsf.actor.process.file.accessor.type_id | The account type identifier. | integer |
 | ocsf.actor.process.file.accessor.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.file.accessor.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.file.attributes | The Bitmask value that represents the file attributes. | long |
 | ocsf.actor.process.file.company_name | The name of the company that published the file. For example: Microsoft Corporation. | keyword |
 | ocsf.actor.process.file.confidentiality | The file content confidentiality, normalized to the confidentiality_id value. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.confidentiality_id | The normalized identifier of the file content confidentiality indicator. | keyword |
+| ocsf.actor.process.file.confidentiality_id | The normalized identifier of the file content confidentiality indicator. | integer |
 | ocsf.actor.process.file.created_time | The time when the file was created. | date |
 | ocsf.actor.process.file.created_time_dt | The time when the file was created. | date |
 | ocsf.actor.process.file.creator.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.process.file.creator.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.creator.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.actor.process.file.creator.account.type_id | The normalized account type identifier. | integer |
 | ocsf.actor.process.file.creator.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.actor.process.file.creator.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.actor.process.file.creator.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -173,12 +173,12 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.creator.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.actor.process.file.creator.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.actor.process.file.creator.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.actor.process.file.creator.type_id | The account type identifier. | keyword |
+| ocsf.actor.process.file.creator.type_id | The account type identifier. | integer |
 | ocsf.actor.process.file.creator.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.file.creator.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.file.desc | The description of the file, as returned by file system. For example: the description as returned by the Unix file command or the Windows file type. | keyword |
 | ocsf.actor.process.file.hashes.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.hashes.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
+| ocsf.actor.process.file.hashes.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
 | ocsf.actor.process.file.hashes.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.file.is_system | The indication of whether the object is part of the operating system. | boolean |
 | ocsf.actor.process.file.mime_type | The Multipurpose Internet Mail Extensions (MIME) type of the file, if applicable. | keyword |
@@ -186,7 +186,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.modified_time_dt | The time when the file was last modified. | date |
 | ocsf.actor.process.file.modifier.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.process.file.modifier.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.modifier.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.actor.process.file.modifier.account.type_id | The normalized account type identifier. | integer |
 | ocsf.actor.process.file.modifier.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.actor.process.file.modifier.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.actor.process.file.modifier.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -204,13 +204,13 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.modifier.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.actor.process.file.modifier.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.actor.process.file.modifier.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.actor.process.file.modifier.type_id | The account type identifier. | keyword |
+| ocsf.actor.process.file.modifier.type_id | The account type identifier. | integer |
 | ocsf.actor.process.file.modifier.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.file.modifier.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.file.name | The name of the file. For example: svchost.exe. | keyword |
 | ocsf.actor.process.file.owner.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.process.file.owner.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.owner.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.actor.process.file.owner.account.type_id | The normalized account type identifier. | integer |
 | ocsf.actor.process.file.owner.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.actor.process.file.owner.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.actor.process.file.owner.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -228,7 +228,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.owner.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.actor.process.file.owner.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.actor.process.file.owner.type | The event occurred on a personal device.The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.actor.process.file.owner.type_id | The account type identifier. | keyword |
+| ocsf.actor.process.file.owner.type_id | The account type identifier. | integer |
 | ocsf.actor.process.file.owner.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
@@ -245,13 +245,13 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.product.version | The version of the product, as defined by the event source. For example: 2013.1.3-beta. | keyword |
 | ocsf.actor.process.file.security_descriptor | The object security descriptor. | keyword |
 | ocsf.actor.process.file.signature.algorithm | The digital signature algorithm used to create the signature, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.signature.algorithm_id | The identifier of the normalized digital signature algorithm. | keyword |
+| ocsf.actor.process.file.signature.algorithm_id | The identifier of the normalized digital signature algorithm. | integer |
 | ocsf.actor.process.file.signature.certificate.created_time | The time when the certificate was created. | date |
 | ocsf.actor.process.file.signature.certificate.created_time_dt | The time when the certificate was created. | date |
 | ocsf.actor.process.file.signature.certificate.expiration_time | The expiration time of the certificate. | date |
 | ocsf.actor.process.file.signature.certificate.expiration_time_dt | The expiration time of the certificate. | date |
 | ocsf.actor.process.file.signature.certificate.fingerprints.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.signature.certificate.fingerprints.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
+| ocsf.actor.process.file.signature.certificate.fingerprints.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
 | ocsf.actor.process.file.signature.certificate.fingerprints.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.file.signature.certificate.issuer | The certificate issuer distinguished name. | keyword |
 | ocsf.actor.process.file.signature.certificate.serial_number | The serial number of the certificate used to create the digital signature. | keyword |
@@ -262,11 +262,11 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.signature.created_time_dt | The time when the digital signature was created. | date |
 | ocsf.actor.process.file.signature.developer_uid | The developer ID on the certificate that signed the file. | keyword |
 | ocsf.actor.process.file.signature.digest.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.signature.digest.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
+| ocsf.actor.process.file.signature.digest.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
 | ocsf.actor.process.file.signature.digest.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.file.size | The size of data, in bytes. | long |
 | ocsf.actor.process.file.type | The file type. | keyword |
-| ocsf.actor.process.file.type_id | The file type ID. | keyword |
+| ocsf.actor.process.file.type_id | The file type ID. | integer |
 | ocsf.actor.process.file.uid | The unique identifier of the file as defined by the storage system, such the file system file ID. | keyword |
 | ocsf.actor.process.file.version | The file version. For example: 8.0.7601.17514. | keyword |
 | ocsf.actor.process.file.xattributes | An unordered collection of zero or more name/value pairs where each pair represents a file or folder extended attribute. | flattened |
@@ -276,7 +276,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.group.type | The type of the group or account. | keyword |
 | ocsf.actor.process.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.actor.process.integrity | The process integrity level, normalized to the caption of the direction_id value. In the case of 'Other', it is defined by the event source (Windows only). | keyword |
-| ocsf.actor.process.integrity_id | The normalized identifier of the process integrity level (Windows only). | keyword |
+| ocsf.actor.process.integrity_id | The normalized identifier of the process integrity level (Windows only). | integer |
 | ocsf.actor.process.lineage | The lineage of the process, represented by a list of paths for each ancestor process. For example: ['/usr/sbin/sshd', '/usr/bin/bash', '/usr/bin/whoami']. | keyword |
 | ocsf.actor.process.loaded_modules | The list of loaded module names. | keyword |
 | ocsf.actor.process.name | The friendly name of the process, for example: Notepad++. | keyword |
@@ -284,7 +284,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.auid | The audit user assigned at login by the audit subsystem. | keyword |
 | ocsf.actor.process.parent_process.cmd_line | The full command line used to launch an application, service, process, or job. | keyword |
 | ocsf.actor.process.parent_process.container.hash.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.container.hash.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
+| ocsf.actor.process.parent_process.container.hash.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
 | ocsf.actor.process.parent_process.container.hash.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.parent_process.container.image.labels | The image labels. | keyword |
 | ocsf.actor.process.parent_process.container.image.name | The image name. | keyword |
@@ -307,7 +307,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.accessed_time_dt | The time when the file was last accessed. | date |
 | ocsf.actor.process.parent_process.file.accessor.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.process.parent_process.file.accessor.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.accessor.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.actor.process.parent_process.file.accessor.account.type_id | The normalized account type identifier. | integer |
 | ocsf.actor.process.parent_process.file.accessor.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.actor.process.parent_process.file.accessor.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -325,18 +325,18 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.accessor.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.actor.process.parent_process.file.accessor.type_id | The account type identifier. | keyword |
+| ocsf.actor.process.parent_process.file.accessor.type_id | The account type identifier. | integer |
 | ocsf.actor.process.parent_process.file.accessor.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.parent_process.file.attributes | The Bitmask value that represents the file attributes. | long |
 | ocsf.actor.process.parent_process.file.company_name | The name of the company that published the file. For example: Microsoft Corporation. | keyword |
 | ocsf.actor.process.parent_process.file.confidentiality | The file content confidentiality, normalized to the confidentiality_id value. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.confidentiality_id | The normalized identifier of the file content confidentiality indicator. | keyword |
+| ocsf.actor.process.parent_process.file.confidentiality_id | The normalized identifier of the file content confidentiality indicator. | integer |
 | ocsf.actor.process.parent_process.file.created_time | The time when the file was created. | date |
 | ocsf.actor.process.parent_process.file.created_time_dt | The time when the file was created. | date |
 | ocsf.actor.process.parent_process.file.creator.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.process.parent_process.file.creator.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.creator.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.actor.process.parent_process.file.creator.account.type_id | The normalized account type identifier. | integer |
 | ocsf.actor.process.parent_process.file.creator.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.actor.process.parent_process.file.creator.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.actor.process.parent_process.file.creator.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -354,12 +354,12 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.creator.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.actor.process.parent_process.file.creator.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.actor.process.parent_process.file.creator.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.actor.process.parent_process.file.creator.type_id | The account type identifier. | keyword |
+| ocsf.actor.process.parent_process.file.creator.type_id | The account type identifier. | integer |
 | ocsf.actor.process.parent_process.file.creator.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.parent_process.file.creator.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.parent_process.file.desc | The description of the file, as returned by file system. For example: the description as returned by the Unix file command or the Windows file type. | keyword |
 | ocsf.actor.process.parent_process.file.hashes.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.hashes.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
+| ocsf.actor.process.parent_process.file.hashes.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
 | ocsf.actor.process.parent_process.file.hashes.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.parent_process.file.is_system | The indication of whether the object is part of the operating system. | boolean |
 | ocsf.actor.process.parent_process.file.mime_type | The Multipurpose Internet Mail Extensions (MIME) type of the file, if applicable. | keyword |
@@ -367,7 +367,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.modified_time_dt | The time when the file was last modified. | date |
 | ocsf.actor.process.parent_process.file.modifier.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.process.parent_process.file.modifier.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.modifier.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.actor.process.parent_process.file.modifier.account.type_id | The normalized account type identifier. | integer |
 | ocsf.actor.process.parent_process.file.modifier.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.actor.process.parent_process.file.modifier.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -385,13 +385,13 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.modifier.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.actor.process.parent_process.file.modifier.type_id | The account type identifier. | keyword |
+| ocsf.actor.process.parent_process.file.modifier.type_id | The account type identifier. | integer |
 | ocsf.actor.process.parent_process.file.modifier.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.parent_process.file.name | The name of the file. For example: svchost.exe. | keyword |
 | ocsf.actor.process.parent_process.file.owner.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.process.parent_process.file.owner.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.owner.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.actor.process.parent_process.file.owner.account.type_id | The normalized account type identifier. | integer |
 | ocsf.actor.process.parent_process.file.owner.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.actor.process.parent_process.file.owner.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.actor.process.parent_process.file.owner.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -409,7 +409,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.owner.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.actor.process.parent_process.file.owner.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.actor.process.parent_process.file.owner.type | The event occurred on a personal device.The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.actor.process.parent_process.file.owner.type_id | The account type identifier. | keyword |
+| ocsf.actor.process.parent_process.file.owner.type_id | The account type identifier. | integer |
 | ocsf.actor.process.parent_process.file.owner.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.parent_process.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.parent_process.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
@@ -426,13 +426,13 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.product.version | The version of the product, as defined by the event source. For example: 2013.1.3-beta. | keyword |
 | ocsf.actor.process.parent_process.file.security_descriptor | The object security descriptor. | keyword |
 | ocsf.actor.process.parent_process.file.signature.algorithm | The digital signature algorithm used to create the signature, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.signature.algorithm_id | The identifier of the normalized digital signature algorithm. | keyword |
+| ocsf.actor.process.parent_process.file.signature.algorithm_id | The identifier of the normalized digital signature algorithm. | integer |
 | ocsf.actor.process.parent_process.file.signature.certificate.created_time | The time when the certificate was created. | date |
 | ocsf.actor.process.parent_process.file.signature.certificate.created_time_dt | The time when the certificate was created. | date |
 | ocsf.actor.process.parent_process.file.signature.certificate.expiration_time | The expiration time of the certificate. | date |
 | ocsf.actor.process.parent_process.file.signature.certificate.expiration_time_dt | The expiration time of the certificate. | date |
 | ocsf.actor.process.parent_process.file.signature.certificate.fingerprints.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.signature.certificate.fingerprints.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
+| ocsf.actor.process.parent_process.file.signature.certificate.fingerprints.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
 | ocsf.actor.process.parent_process.file.signature.certificate.fingerprints.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.issuer | The certificate issuer distinguished name. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.serial_number | The serial number of the certificate used to create the digital signature. | keyword |
@@ -443,11 +443,11 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.signature.created_time_dt | The time when the digital signature was created. | date |
 | ocsf.actor.process.parent_process.file.signature.developer_uid | The developer ID on the certificate that signed the file. | keyword |
 | ocsf.actor.process.parent_process.file.signature.digest.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.signature.digest.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
+| ocsf.actor.process.parent_process.file.signature.digest.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | integer |
 | ocsf.actor.process.parent_process.file.signature.digest.value | The digital fingerprint value. | keyword |
 | ocsf.actor.process.parent_process.file.size | The size of data, in bytes. | long |
 | ocsf.actor.process.parent_process.file.type | The file type. | keyword |
-| ocsf.actor.process.parent_process.file.type_id | The file type ID. | keyword |
+| ocsf.actor.process.parent_process.file.type_id | The file type ID. | integer |
 | ocsf.actor.process.parent_process.file.uid | The unique identifier of the file as defined by the storage system, such the file system file ID. | keyword |
 | ocsf.actor.process.parent_process.file.version | The file version. For example: 8.0.7601.17514. | keyword |
 | ocsf.actor.process.parent_process.file.xattributes | An unordered collection of zero or more name/value pairs where each pair represents a file or folder extended attribute. | flattened |
@@ -457,7 +457,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.group.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.actor.process.parent_process.integrity | The process integrity level, normalized to the caption of the direction_id value. In the case of 'Other', it is defined by the event source (Windows only). | keyword |
-| ocsf.actor.process.parent_process.integrity_id | The normalized identifier of the process integrity level (Windows only). | keyword |
+| ocsf.actor.process.parent_process.integrity_id | The normalized identifier of the process integrity level (Windows only). | integer |
 | ocsf.actor.process.parent_process.lineage | The lineage of the process, represented by a list of paths for each ancestor process. For example: ['/usr/sbin/sshd', '/usr/bin/bash', '/usr/bin/whoami']. | keyword |
 | ocsf.actor.process.parent_process.loaded_modules | The list of loaded module names. | keyword |
 | ocsf.actor.process.parent_process.name | The friendly name of the process, for example: Notepad++. | keyword |
@@ -482,7 +482,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.uid | A unique identifier for this process assigned by the producer (tool). Facilitates correlation of a process event with other events for that process. | keyword |
 | ocsf.actor.process.parent_process.user.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.process.parent_process.user.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.user.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.actor.process.parent_process.user.account.type_id | The normalized account type identifier. | integer |
 | ocsf.actor.process.parent_process.user.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.actor.process.parent_process.user.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.actor.process.parent_process.user.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -500,7 +500,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.user.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.actor.process.parent_process.user.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.actor.process.parent_process.user.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.actor.process.parent_process.user.type_id | The account type identifier. | keyword |
+| ocsf.actor.process.parent_process.user.type_id | The account type identifier. | integer |
 | ocsf.actor.process.parent_process.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.parent_process.user.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.parent_process.xattributes | An unordered collection of zero or more name/value pairs that represent a process extended attribute. | flattened |
@@ -522,7 +522,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.uid | A unique identifier for this process assigned by the producer (tool). Facilitates correlation of a process event with other events for that process. | keyword |
 | ocsf.actor.process.user.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.process.user.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.user.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.actor.process.user.account.type_id | The normalized account type identifier. | integer |
 | ocsf.actor.process.user.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.actor.process.user.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.actor.process.user.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -540,7 +540,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.user.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.actor.process.user.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.actor.process.user.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.actor.process.user.type_id | The account type identifier. | keyword |
+| ocsf.actor.process.user.type_id | The account type identifier. | integer |
 | ocsf.actor.process.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.user.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.xattributes | An unordered collection of zero or more name/value pairs that represent a process extended attribute. | flattened |
@@ -562,7 +562,7 @@ This is the `Event` dataset.
 | ocsf.actor.session.uuid | The universally unique identifier of the session. | keyword |
 | ocsf.actor.user.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.user.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.user.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.actor.user.account.type_id | The normalized account type identifier. | integer |
 | ocsf.actor.user.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
 | ocsf.actor.user.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
 | ocsf.actor.user.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
@@ -629,7 +629,7 @@ This is the `Event` dataset.
 | ocsf.actor.user.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
 | ocsf.actor.user.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
 | ocsf.actor.user.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.actor.user.type_id | The account type identifier. | keyword |
+| ocsf.actor.user.type_id | The account type identifier. | integer |
 | ocsf.actor.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.user.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actual_permissions | The permissions that were granted to the in a platform-native format. | long |
