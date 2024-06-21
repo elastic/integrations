@@ -356,5 +356,4 @@ An example event for `event` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | source.service.name |  | keyword |
-| tags | User defined tags. | keyword |
 
