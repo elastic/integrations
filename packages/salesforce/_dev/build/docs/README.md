@@ -216,7 +216,7 @@ If the error persists, follow these steps:
 
 ### Missing old events in "Login events table" panel
 
-If **Login events table** does not display older documents after upgrading to version `0.8.0` or later, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the `login_rest` data stream.
+If **Login events table** does not display older documents after upgrading to version `0.8.0` or later, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the `login` data stream.
 
 ## Logs reference
 

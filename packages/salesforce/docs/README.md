@@ -216,7 +216,7 @@ If the error persists, follow these steps:
 
 ### Missing old events in "Login events table" panel
 
-If **Login events table** does not display older documents after upgrading to version `0.8.0` or later, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the `login_rest` data stream.
+If **Login events table** does not display older documents after upgrading to version `0.8.0` or later, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the `login` data stream.
 
 ## Logs reference
 
@@ -333,26 +333,8 @@ An example event for `apex` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
-| error.message | Error message. | match_only_text |  |  |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |  |  |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |  |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
 | event.duration | Duration of the event in milliseconds. If event.start and event.end are known this value should be the difference between the end and start time | long | ms |  |
-| event.id | Unique ID to describe the event. | keyword |  |  |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |  |  |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
-| event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |  |  |
-| http.request.bytes | Total size in bytes of the request (body and headers). | long |  |  |
-| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |  |  |
-| http.response.bytes | Total size in bytes of the response (body and headers). | long |  |  |
-| http.response.status_code | HTTP response status code. | long |  |  |
 | input.type | Input type. | keyword |  |  |
-| related.ip | All of the IPs seen on your event. | ip |  |  |
 | salesforce.apex.action | Action performed by the callout. | keyword |  |  |
 | salesforce.apex.callout_time | Time spent waiting on web service callouts, in milliseconds. | float | ms | gauge |
 | salesforce.apex.class_name | The Apex class name. If the class is part of a managed package, this string includes the package namespace. | keyword |  |  |
@@ -401,19 +383,6 @@ An example event for `apex` looks as following:
 | salesforce.apex.user_agent | The numeric code for the type of client used to make the request (for example, the browser, application, or API). | keyword |  |  |
 | salesforce.apex.user_id_derived | The 18-character case-safe ID of the user who's using Salesforce services through the UI or the API. | keyword |  |  |
 | salesforce.instance_url | The Salesforce instance URL. | keyword |  |  |
-| source.geo.city_name | City name. | keyword |  |  |
-| source.geo.continent_name | Name of the continent. | keyword |  |  |
-| source.geo.country_iso_code | Country ISO code. | keyword |  |  |
-| source.geo.country_name | Country name. | keyword |  |  |
-| source.geo.location | Longitude and latitude. | geo_point |  |  |
-| source.geo.region_iso_code | Region ISO code. | keyword |  |  |
-| source.geo.region_name | Region name. | keyword |  |  |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |  |  |
-| tags | List of keywords used to tag each event. | keyword |  |  |
-| user.id | Unique identifier of the user. | keyword |  |  |
-| user.name | Short name or login of the user. | keyword |  |  |
-| user.name.text | Multi-field of `user.name`. | match_only_text |  |  |
-| user.roles | Array of user roles at the time of the event. | keyword |  |  |
 
 
 ### Login
@@ -551,22 +520,7 @@ An example event for `login` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |  |  |
-| event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |  |  |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |  |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |  |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |  |  |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |  |  |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
-| event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |  |  |
-| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |  |  |
 | input.type | Input type. | keyword |  |  |
-| related.ip | All of the IPs seen on your event. | ip |  |  |
 | salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |  |  |
 | salesforce.login.additional_info | Additional information that's captured from the HTTP headers during a login request. | match_only_text |  |  |
 | salesforce.login.api.type | The type of Salesforce API request. | keyword |  |  |
@@ -575,7 +529,6 @@ An example event for `login` looks as following:
 | salesforce.login.auth.method_reference | The authentication method reference used by a third-party identity provider for SSO using the OpenID Connect protocol. This field is available in API version 51.0 and later. | keyword |  |  |
 | salesforce.login.auth.service_id | The authentication service ID used by a third-party identity provider for single sign-on (SSO) using the OpenID Connect protocol. | keyword |  |  |
 | salesforce.login.client.ip | The IP address of the client using Salesforce services. Internal Salesforce IP addresses are shown as "Salesforce.com IP". | ip |  |  |
-| salesforce.login.client.version | The version number of the login client. If no version number is available, "Unknown" is returned. | keyword |  |  |
 | salesforce.login.client_version | The version of the client used for the login request. | keyword |  |  |
 | salesforce.login.cpu_time | The CPU time in milliseconds used to complete the login request, indicating the amount of activity in the application server layer. | long | ms | gauge |
 | salesforce.login.db_total_time | The total time in milliseconds for the database round trip during login, including time spent in the JDBC driver, network, and database CPU time. | double | ms | gauge |
@@ -590,37 +543,12 @@ An example event for `login` looks as following:
 | salesforce.login.request.id | The unique identifier for the login request transaction. | keyword |  |  |
 | salesforce.login.request.status | The status of the login request (e.g., Success, Failed). | keyword |  |  |
 | salesforce.login.run_time | The total time in milliseconds taken by the login request. | long | ms | gauge |
-| salesforce.login.session.key | The unique session ID for the user. Use this value to identify all user events within a session. This field is available in API version 46.0 and later. | keyword |  |  |
-| salesforce.login.session.level | The session-level security controls that determine user access to features supporting session-level security. This field is available in API version 42.0 and later. | keyword |  |  |
 | salesforce.login.transaction_security.evaluation_time | The time in milliseconds taken to evaluate the transaction security policy for the login event. | double | ms | gauge |
 | salesforce.login.transaction_security.policy.id | The ID of the transaction security policy used to evaluate the login event. | keyword |  |  |
 | salesforce.login.transaction_security.policy.outcome | The outcome of the transaction security policy evaluation (e.g., Block, Notified, NoAction). | keyword |  |  |
 | salesforce.login.type | The type of login used to access the session. | keyword |  |  |
 | salesforce.login.uri.id | The 18-character case-insensitive ID of the URI of the page receiving the login request. | keyword |  |  |
 | salesforce.login.user_id | The 15-character ID of the user logging in to Salesforce. | keyword |  |  |
-| source.geo.city_name | City name. | keyword |  |  |
-| source.geo.continent_name | Name of the continent. | keyword |  |  |
-| source.geo.country_iso_code | Country ISO code. | keyword |  |  |
-| source.geo.country_name | Country name. | keyword |  |  |
-| source.geo.location | Longitude and latitude. | geo_point |  |  |
-| source.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |  |
-| source.geo.region_iso_code | Region ISO code. | keyword |  |  |
-| source.geo.region_name | Region name. | keyword |  |  |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |  |  |
-| tags | List of keywords used to tag each event. | keyword |  |  |
-| tls.cipher | String indicating the cipher used during the current connection. | keyword |  |  |
-| tls.version | Numeric part of the version parsed from the original string. | keyword |  |  |
-| tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |  |  |
-| user.email | User email address. | keyword |  |  |
-| user.id | Unique identifier of the user. | keyword |  |  |
-| user.roles | Array of user roles at the time of the event. | keyword |  |  |
-| user_agent.device.name | Name of the device. | keyword |  |  |
-| user_agent.name | Name of the user agent. | keyword |  |  |
-| user_agent.os.full | Operating system name, including the version or code name. | keyword |  |  |
-| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |  |  |
-| user_agent.os.name | Operating system name, without the version. | keyword |  |  |
-| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |  |  |
-| user_agent.os.version | Operating system version as a raw string. | keyword |  |  |
 
 
 ### Logout
@@ -739,54 +667,27 @@ An example event for `logout` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Input type. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
 | salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |
 | salesforce.logout.api.type | The type of Salesforce API request. | keyword |
 | salesforce.logout.api.version | The version of the Salesforce API that's being used. | keyword |
 | salesforce.logout.app_type | The application type that was in use upon logging out. | keyword |
 | salesforce.logout.browser_type | The identifier string returned by the browser used at login. | keyword |
 | salesforce.logout.client_version | The version of the client that was in use upon logging out. | keyword |
-| salesforce.logout.created_by_id | Unavailable | keyword |
 | salesforce.logout.document_id | Unique Id. | keyword |
 | salesforce.logout.event_identifier | This field is populated only when the activity that this event monitors requires extra authentication, such as multi-factor authentication. In this case, Salesforce generates more events and sets the RelatedEventIdentifier field of the new events to the value of the EventIdentifier field of the original event. Use this field with the EventIdentifier field to correlate all the related events. If no extra authentication is required, this field is blank. | keyword |
 | salesforce.logout.event_type | The type of event. The value is always Logout. | keyword |
 | salesforce.logout.login_key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |
-| salesforce.logout.organization_by_id | The 15-character ID of the organization. | keyword |
 | salesforce.logout.organization_id | The 15-character ID of the organization. | keyword |
 | salesforce.logout.platform_type | The code for the client platform. If a timeout caused the logout, this field is null. | keyword |
 | salesforce.logout.resolution_type | The screen resolution of the client. If a timeout caused the logout, this field is null. | keyword |
 | salesforce.logout.session.key | The user's unique session ID. You can use this value to identify all user events within a session. When a user logs out and logs in again, a new session is started. | keyword |
-| salesforce.logout.session.level | The security level of the session that was used when logging out (e.g. Standard Session or High-Assurance Session). | text |
+| salesforce.logout.session.level | The security level of the session that was used when logging out (e.g. Standard Session or High-Assurance Session). | keyword |
 | salesforce.logout.session.type | The session type that was used when logging out (e.g. API, Oauth2 or UI). | keyword |
 | salesforce.logout.user.roles | The roles of the user who's using Salesforce services through the UI or the API. | keyword |
 | salesforce.logout.user_id | The 15-character ID of the user who's using Salesforce services through the UI or the API. | keyword |
 | salesforce.logout.user_id_derived | The 18-character case-safe ID of the user who's using Salesforce services through the UI or the API. | keyword |
 | salesforce.logout.user_initiated_logout | The value is 1 if the user intentionally logged out of the organization by clicking the Logout button. If the user's session timed out due to inactivity or another implicit logout action, the value is 0. | keyword |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| tags | List of keywords used to tag each event. | keyword |
-| user.email | User email address. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.roles | Array of user roles at the time of the event. | keyword |
 
 
 ### SetupAuditTrail
@@ -866,17 +767,6 @@ An example event for `setupaudittrail` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | input.type | Input type. | keyword |
 | salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |
 | salesforce.setup_audit_trail.created_by_context | The context under which the Setup change was made. For example, if Einstein uses cloud-to-cloud services to make a change in Setup, the value of this field is Einstein. | keyword |
@@ -887,8 +777,4 @@ An example event for `setupaudittrail` looks as following:
 | salesforce.setup_audit_trail.document_id | Unique Id. | keyword |
 | salesforce.setup_audit_trail.responsible_namespace_prefix | Unknown | keyword |
 | salesforce.setup_audit_trail.section | The section in the Setup menu where the action occurred. For example, Manage Users or Company Profile. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
 
