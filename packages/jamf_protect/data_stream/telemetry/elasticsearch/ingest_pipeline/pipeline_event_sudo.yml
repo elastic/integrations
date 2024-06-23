@@ -1,0 +1,32 @@
+---
+description: Pipeline for parsing specific fields related to sudo events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A sudo attempt occurred
+    - append:
+        field: event.type
+        value: start
+    - rename:
+        field: jamf_protect.telemetry.event.sudo.command
+        target_field: process.command_line
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.sudo.attribute_name
+        target_field: jamf_protect.telemetry.attribute_name
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.sudo.attribute_value
+        target_field: jamf_protect.telemetry.attribute_value
+        type: string
+        ignore_missing: true
+##########################
+## ECS Process ##
+##########################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

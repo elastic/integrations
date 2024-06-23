@@ -887,6 +887,5 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.url.action | URL action of process. | keyword |
 | sentinel_one_cloud_funnel.event.url.address | Complete URL. | keyword |
 | sentinel_one_cloud_funnel.event.url.source |  | keyword |
-| tags | User defined tags. | keyword |
 
 

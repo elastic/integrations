@@ -275,7 +275,6 @@ An example event for `saml` looks as following:
 | google_workspace.saml.status_code | SAML status code. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### User Accounts
@@ -399,7 +398,6 @@ An example event for `user_accounts` looks as following:
 | google_workspace.user_accounts.email_forwarding_destination_address | Out of domain email the actor has forwarded to. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Login Accounts
@@ -538,7 +536,6 @@ An example event for `login` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Rules
@@ -745,7 +742,6 @@ An example event for `rules` looks as following:
 | google_workspace.rules.update_time_usec | Update time (microseconds since epoch) indicating the version of rule which is used. | date |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Admin
@@ -977,7 +973,6 @@ An example event for `admin` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Drive
@@ -1145,7 +1140,6 @@ An example event for `drive` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Groups
@@ -1300,7 +1294,6 @@ An example event for `groups` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Alert
@@ -1617,7 +1610,6 @@ An example event for `alert` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 
 
 ### Device
@@ -1877,7 +1869,6 @@ An example event for `device` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Group Enterprise
@@ -2056,7 +2047,6 @@ An example event for `group_enterprise` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Token
@@ -2264,7 +2254,6 @@ An example event for `token` looks as following:
 | google_workspace.token.scope.value | Scopes under which access was granted / revoked. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Access Transparency
@@ -2435,7 +2424,6 @@ An example event for `access_transparency` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Context Aware Access
@@ -2595,7 +2583,6 @@ An example event for `context_aware_access` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### GCP
@@ -2741,5 +2728,4 @@ An example event for `gcp` looks as following:
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 

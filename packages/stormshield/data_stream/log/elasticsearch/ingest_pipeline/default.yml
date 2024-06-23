@@ -1,0 +1,503 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      copy_from: message
+      field: event.original
+      ignore_failure: true 
+  - set:
+      field: observer.vendor
+      value: Stormshield
+
+  #
+  # Extract the key=value pairs into nested objects
+  #
+  # The syslog header should have been stripped off, so we need to process the key=value data
+  # We will be using painless here, because it is the best option we have.
+  - script:
+      tag: script_kv_parse
+      description: Parse key/value pairs from message.
+      lang: painless
+      source: >-
+        ctx["stormshield"] = new HashMap();
+
+        def kvStart = 0;
+        def kvSplit = 0;
+        def kvEnd = 0;
+        def inQuote = false;
+
+        for (int i = 0, n = ctx["message"].length(); i < n; ++i) {
+          char c = ctx["message"].charAt(i);
+          if (c == (char)'"') {
+            inQuote = !inQuote;
+          }
+          if (inQuote) {
+            continue;
+          }
+          
+          if (c == (char)'=') {
+            kvSplit = i;
+          }
+          if (c == (char)' ' || (i == n - 1)) {
+            if (kvStart != kvSplit) {
+              def key = ctx["message"].substring(kvStart, kvSplit);
+              def end = i;
+              if (i == n - 1)  {
+                  end = n;
+              }
+              def value = ctx["message"].substring(kvSplit + 1, end).replace("\"", "");
+              ctx["stormshield"][key] = value;
+            }
+
+            kvStart = i + 1;
+            kvSplit = i + 1;
+          }
+        }
+
+  - grok:
+      field: stormshield.tz
+      patterns:
+        - "(?:%{OFFSET:_temp_.tz_offset})(?:%{HOUR:_temp_.tz_hour}):?(?:%{MINUTE:_temp_.tz_minute})"
+      pattern_definitions:
+        OFFSET: "[+-]?"
+  
+  # rename some fields
+
+  - set:
+      field: "event.timezone"
+      value: "{{{_temp_.tz_offset}}}{{{_temp_.tz_hour}}}:{{{_temp_.tz_minute}}}"
+      if: ctx._temp_?.tz_hour != null
+
+  - date:
+      tag: format_startime
+      field: stormshield.startime
+      target_field: "event.created"
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+      timezone: "{{{event.timezone}}}"
+      on_failure:
+        - remove:
+            field: event.created
+            ignore_missing: true
+
+  # Set @timestamp to the time when the log indicates.
+  - set:
+      copy_from: event.created
+      field: '@timestamp'
+      if: ctx.event?.created != null
+
+  - pipeline:
+      name: '{{ IngestPipeline "filterstat" }}'
+      if: ctx.stormshield?.logtype == 'filterstat'
+
+  - pipeline:
+      name: '{{ IngestPipeline "monitor" }}'
+      if: ctx.stormshield?.logtype == 'monitor'
+
+  - pipeline:
+      name: '{{ IngestPipeline "count" }}'
+      if: ctx.stormshield?.logtype == 'count'
+
+  #########################################################
+  # Now rename things to ECS
+
+  - set:
+      field: observer.name
+      copy_from: stormshield.fw
+      if: ctx.stormshield?.fw != null
+
+  - set:
+      field: observer.type
+      copy_from: stormshield.id
+      if: ctx.stormshield?.id != null
+
+  - convert:
+      field: stormshield.modsrc
+      target_field: source.nat.ip
+      type: ip
+      if: ctx.stormshield?.modsrc != null && ctx.stormshield?.modsrc != ctx.stormshield?.src
+
+  - convert:
+      field: stormshield.src
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+  - remove:
+      field: stormshield.src
+      ignore_missing: true
+  - remove:
+      field: stormshield.modsrc
+      ignore_missing: true
+
+  - convert:
+      field: stormshield.modsrcport
+      target_field: source.nat.port
+      type: long
+      if: ctx.stormshield?.modsrcport != null && ctx.source?.nat?.ip != null
+  - convert:
+      field: stormshield.srcport
+      target_field: source.port
+      type: long
+      ignore_missing: true
+  - remove:
+      field: stormshield.srcport
+      ignore_missing: true
+  - remove:
+      field: stormshield.modsrcport
+      ignore_missing: true
+
+  - convert:
+      field: stormshield.origdst
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: stormshield.dst
+      target_field: destination.ip
+      type: ip
+      if: ctx.stormshield?.origdst == null && ctx.stormshield?.dst != null
+  - convert:
+      field: stormshield.dst
+      target_field: destination.nat.ip
+      type: ip
+      if: ctx.stormshield?.origdst != null && ctx.stormshield?.dst != null && ctx.stormshield?.origdst != ctx.stormshield?.dst
+  - remove:
+      field: stormshield.dst
+      ignore_missing: true
+  - remove:
+      field: stormshield.origdst
+      ignore_missing: true
+
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      if: ctx.destination?.geo == null && ctx.destination?.ip != null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      if: ctx.source?.geo == null && ctx.source?.ip != null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  - rename:
+      field: stormshield.action
+      target_field: event.action
+      ignore_missing: true
+
+  - rename:
+      field: stormshield.ipproto
+      target_field: network.transport
+      ignore_missing: true
+
+  - rename:
+      field: stormshield.proto
+      target_field: network.protocol
+      ignore_missing: true
+
+  - rename:
+      field: stormshield.ruleid
+      target_field: rule.id
+      ignore_missing: true
+
+  - rename:
+      field: stormshield.rulename
+      target_field: rule.name
+      ignore_missing: true
+
+  - convert:
+      field: stormshield.sent
+      target_field: source.bytes
+      type: long
+      ignore_missing: true
+
+  - rename:
+      field: stormshield.dstname
+      target_field: destination.domain
+      ignore_missing: true
+
+  - convert:
+      field: destination.ip
+      type: ip
+      ignore_missing: true
+
+  - remove:
+      field: stormshield.dst
+      ignore_missing: true
+
+  - uppercase:
+      field: stormshield.dstmac
+      ignore_missing: true
+
+  - gsub:
+      field: stormshield.dstmac
+      pattern: ':'
+      replacement: '-'
+      target_field: destination.mac
+      ignore_missing: true
+      if: ctx.destination?.mac == null
+
+  - convert:
+      field: stormshield.origdstport
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: stormshield.dstport
+      target_field: destination.nat.port
+      type: long
+      if: ctx.stormshield?.dstport != null && ctx.destination?.nat?.ip != null
+  - convert:
+      field: stormshield.dstport
+      target_field: destination.port
+      type: long
+      if: ctx.stormshield?.dstport != null && ctx.destination?.nat?.ip == null
+
+  - remove:
+      field: stormshield.dstport
+      ignore_missing: true
+  - remove:
+      field: stormshield.origdstport
+      ignore_missing: true
+
+  - rename:
+      field: stormshield.dstcountry
+      target_field: destination.geo.country_iso_code
+      if: ctx.destination?.geo == null
+      ignore_missing: true
+
+  - rename:
+      field: stormshield.srccountry
+      target_field: source.geo.country_iso_code
+      if: ctx.source?.geo == null
+      ignore_missing: true
+
+  - uppercase:
+      field: stormshield.srcmac
+      ignore_missing: true
+
+  - gsub:
+      field: stormshield.srcmac
+      pattern: ':'
+      replacement: '-'
+      target_field: source.mac
+      ignore_missing: true
+      if: ctx.source?.mac == null
+
+  - remove:
+      field: stormshield.srcmac
+      ignore_missing: true
+
+  - script:
+      tag: convert_duration_to_nanoseconds
+      lang: painless
+      description: Convert SNS duration field from float (in seconds) to long (in nanoseconds).
+      source: >-
+        if (ctx.stormshield?.duration != null) {
+            def duration = Float.parseFloat(ctx.stormshield.duration);
+            duration *= 1000000000; // 10^9 nanoseconds per second
+            if (!ctx.containsKey("event")) {
+                ctx.event = [:];
+            }
+
+            ctx.event.duration = (int)duration;
+            ctx.stormshield.remove("duration");
+        }
+
+  - convert:
+      field: stormshield.srcport
+      target_field: source.port
+      type: long
+      if: ctx.source?.port == null
+      ignore_missing: true
+
+  - remove:
+      field: stormshield.srcport
+      ignore_missing: true
+
+  - remove:
+      tag: remove_source_country_reserved
+      field: source.geo
+      if: ctx.source?.geo?.country_name == 'Reserved'
+  - remove:
+      tag: remove_destination_country_reserved
+      field: destination.geo
+      if: ctx.destination?.geo?.country_name == 'Reserved'
+
+  - rename:
+      tag: rename_user_name
+      field: stormshield.user
+      target_field: user.name
+      ignore_missing: true
+
+  - script:
+      tag: handle_ipv_fields
+      lang: painless
+      description: Set the network.type for some things.
+      if: ctx.stormshield?.ipv != null
+      source: >-
+        if (ctx.stormshield.ipv == "4") {
+            ctx.network.type = "ipv4";
+            ctx.stormshield.remove("ipv");
+        } else if (ctx.stormshield.ipv == "6") {
+            ctx.network.type = "ipv6";
+            ctx.stormshield.remove("ipv");
+        }
+        
+  - script:
+      tag: script_move_things
+      lang: painless
+      description: Move the list of fields we don't want to drop.
+      params:
+        names:
+            - Pvm
+            - address
+            - alarmid
+            - arg
+            - auth
+            - authcaptive
+            - authconsole
+            - authipsec
+            - authsslvpn
+            - authtotp
+            - authwebadmin
+            - class
+            - confid
+            - dstcontinent
+            - dstcountry
+            - dstportname
+            - error
+            - id
+            - mem
+            - modsrc
+            - modsrcport
+            - op
+            - pri
+            - rcvd
+            - result
+            - security
+            - sent
+            - sessionid
+            - slotlevel
+            - slotname
+            - srccontinent
+            - srccountry
+            - srcname
+            - srcportname
+            - version
+      source: >-
+        if (!ctx.stormshield.containsKey("metadata")) {
+            ctx.stormshield.metadata = [:];
+        }
+        params.names.forEach(k -> {
+            if (ctx.stormshield.containsKey(k)) {
+                ctx.stormshield.metadata[k] = ctx.stormshield[k];
+                ctx.stormshield.remove(k);
+            }
+            return true;
+        });
+
+  - convert:
+      field: stormshield.metadata.Byte.in_count
+      target_field: stormshield.in_bytes
+      type: long
+      ignore_missing: true
+
+  - convert:
+      field: stormshield.metadata.Byte.out_count
+      target_field: stormshield.out_bytes
+      type: long
+      ignore_missing: true
+
+
+  # ------------------------------------------------------------
+  # Add the 'related' fields
+
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+
+  - append:
+      field: related.ip
+      value: "{{{source.nat.ip}}}"
+      if: ctx.source?.nat?.ip != null
+      allow_duplicates: false
+
+  - append:
+      field: related.ip
+      value: "{{{destination.ip}}}"
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+
+  - append:
+      field: related.ip
+      value: "{{{destination.nat.ip}}}"
+      if: ctx.destination?.nat?.ip != null
+      allow_duplicates: false
+
+  - append:
+      field: related.user
+      value: "{{{user.name}}}"
+      if: ctx.user?.name != null
+      allow_duplicates: false
+
+  # ------------------------------------------------------------
+  # Cleanup
+
+  - remove:
+      field: _temp_
+      ignore_missing: true
+      ignore_failure: true
+
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: message
+      ignore_failure: true
+      ignore_missing: true
+
+
+on_failure:
+- append:
+    field: error.message
+    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- set:
+    field: event.kind
+    value: pipeline_error

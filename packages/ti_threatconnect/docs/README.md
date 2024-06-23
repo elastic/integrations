@@ -349,7 +349,6 @@ An example event for `indicator` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | threat.feed.name | Display friendly feed name. | constant_keyword |
 | threat_connect.indicator.active.locked | Indicates whether the active status is locked. | boolean |
 | threat_connect.indicator.active.value | Indicates whether the indicator is active. | boolean |
