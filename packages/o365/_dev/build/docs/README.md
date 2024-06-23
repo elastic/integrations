@@ -31,7 +31,7 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 - Modify any other parameters as necessary.
 
 
-**NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input is being deprecated in favor of new [CEL](https://www.elastic.co/guide/en/beats/filebeat/8.6/filebeat-input-cel.html) input in version `1.18.0`. Hence for versions `>= 1.18.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
+**NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input is being deprecated in favor of the new [CEL](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html) input in version `1.18.0`. Hence for versions `>= 1.18.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
 
 We request users upgrading from integration version `< 1.18.0` to `>= 1.18.0` to follow these steps:
 
