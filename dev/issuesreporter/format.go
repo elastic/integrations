@@ -76,6 +76,15 @@ func (r ResultsFormatter) Description() string {
 		}
 	}
 
+	if len(r.Owners()) > 0 {
+		sb.WriteString("Owners:\n")
+		for _, owner := range r.Owners() {
+			sb.WriteString("- ")
+			sb.WriteString(strings.Replace(owner, "@", "", -1)) // TODO: remove replace or add as reviewers the teams
+			sb.WriteString("\n")
+		}
+	}
+
 	return sb.String()
 }
 
