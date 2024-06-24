@@ -101,7 +101,9 @@ An example event for `dns` looks as following:
     "event": {
         "action": "dns-query",
         "agent_id_status": "verified",
-        "category": "network",
+        "category": [
+            "network"
+        ],
         "created": "2023-10-25T04:19:40.300Z",
         "dataset": "gcp.dns",
         "id": "zir4wud11tm",

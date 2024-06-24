@@ -851,7 +851,9 @@ An example event for `dns` looks as following:
     "event": {
         "action": "dns-query",
         "agent_id_status": "verified",
-        "category": "network",
+        "category": [
+            "network"
+        ],
         "created": "2023-10-25T04:19:40.300Z",
         "dataset": "gcp.dns",
         "id": "zir4wud11tm",
@@ -972,13 +974,17 @@ An example event for `loadbalancing` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "network",
+        "category": [
+            "network"
+        ],
         "created": "2020-06-08T23:41:30.588Z",
         "dataset": "gcp.loadbalancing_logs",
         "id": "1oek5rg3l3fxj7",
         "ingested": "2023-01-13T15:02:22Z",
         "kind": "event",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "gcp": {
         "load_balancer": {
