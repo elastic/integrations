@@ -571,7 +571,7 @@ An example event for `login` looks as following:
 | salesforce.login.client.ip | The IP address of the client using Salesforce services. Internal Salesforce IP addresses are shown as "Salesforce.com IP". | ip |  |  |
 | salesforce.login.client_version | The version of the client used for the login request. | keyword |  |  |
 | salesforce.login.cpu_time | The CPU time in milliseconds used to complete the login request, indicating the amount of activity in the application server layer. | long | ms | gauge |
-| salesforce.login.db_total_time | The total time in milliseconds for the database round trip during login, including time spent in the JDBC driver, network, and database CPU time. | double | ms | gauge |
+| salesforce.login.db_total_time | The time in nanoseconds for the database round trip during login, including time spent in the JDBC driver, network, and database CPU time. | long | nanos | gauge |
 | salesforce.login.evaluation_time | The amount of time it took to evaluate the transaction security policy, in milliseconds. This field is available in API version 46.0 and later. | double | ms | gauge |
 | salesforce.login.event_type | The type of event. For login events, the value is always "Login". | keyword |  |  |
 | salesforce.login.geo_id | The Salesforce ID of the LoginGeo object associated with the user's IP address during login. | keyword |  |  |
@@ -582,7 +582,6 @@ An example event for `login` looks as following:
 | salesforce.login.request.id | The unique identifier for the login request transaction. | keyword |  |  |
 | salesforce.login.request.status | The status of the login request (e.g., Success, Failed). | keyword |  |  |
 | salesforce.login.run_time | The total time in milliseconds taken by the login request. | long | ms | gauge |
-| salesforce.login.transaction_security.evaluation_time | The time in milliseconds taken to evaluate the transaction security policy for the login event. | double | ms | gauge |
 | salesforce.login.transaction_security.policy.id | The ID of the transaction security policy used to evaluate the login event. | keyword |  |  |
 | salesforce.login.transaction_security.policy.outcome | The outcome of the transaction security policy evaluation (e.g., Block, Notified, NoAction). | keyword |  |  |
 | salesforce.login.type | The type of login used to access the session. | keyword |  |  |
