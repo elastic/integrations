@@ -22,7 +22,7 @@ if running_on_buildkite ; then
     echo "--- Installing tools"
     add_bin_path
     with_go
-    with_github_cli # to post comments in Pull Requests
+    with_github_cli # to list, create and update issues
 
     echo "--- Download Test Results"
     if ! download_test_results ; then
