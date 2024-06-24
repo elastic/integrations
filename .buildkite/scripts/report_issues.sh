@@ -31,5 +31,5 @@ if running_on_buildkite ; then
 fi
 
 echo "--- Report Issues"
-mage -v ReportIssues
+mage -v ReportIssues build/test-results
 
