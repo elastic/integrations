@@ -2,10 +2,10 @@
 This integration allows for the shipping of [Falco](https://falco.org/) alerts to Elastic for observability and organizational awareness.
 
 ## Data Streams
-The Falco integration contains a data stream for two input sources: One for syslogs and another for logfiles.
+The Falco integration contains a data stream for two input sources: One for tcp inputs and another for logfiles. These two input sources are used to collect data which can then be analyzed by using either the dashboard included with the integration or via the creation of a custom dashboard within Kibana. 
 
-### syslog
-The syslog input collects data directly pertaining to Falco alerts on host machines, as shipped by the agent itself on the machine. 
+### tcp
+The tcp input collects data directly pertaining to Falco alerts on host machines, as shipped by the agent itself on the machine. 
 
 ### logfile
 The logfile input operates in a similar manner to the syslog input, but pulls Falco events / alerts from a logfile generated and stored by the host machine in a volume.
@@ -196,7 +196,7 @@ Falco events can contain a multitude of various fields pertaining to the type of
 | event.severity|Priority of the event. Needs lowercase filter.|keyword |
 | rule.name|Name of the falco rule.|keyword |
 | tags|Non-Mitre tags from falco.|text |
-| '@timestamp'|Event timestamp with nanos.|date |
+| @timestamp|Event timestamp with nanos.|date |
 | event.start|Event timestamp with nanos.|date |
 | event.provider|Name of the source that produced the event.|keyword |
 | process.executable|Full executable path of the process.|text |
@@ -277,10 +277,10 @@ Falco events can contain a multitude of various fields pertaining to the type of
 **Exported Fields - Custom**
 | Field | Description | Type |
 |-------|-------------|------|
-| event.sequence|Event number.|long |
-| observer.hostname|Host of the originating event.|text |
-| related.hosts|Host of the originating event.|text |
-| falco|Namespace for falco-specific fields without a direct ECS equivalent.|group |
+|event.sequence|Event number.|long |
+|observer.hostname|Host of the originating event.|text |
+|related.hosts|Host of the originating event.|text |
+|falco|Namespace for falco-specific fields without a direct ECS equivalent.|group |
 |falco.evt.pluginname|Name of the plugin that generated the event (if applicable).|keyword |
 |falco.evt.plugininfo|Summary of the event if it came from a plugin-defined event source.|text |
 |falco.evt.is_async|Denotes whether the event is async or not.|boolean |
@@ -364,50 +364,50 @@ Falco events can contain a multitude of various fields pertaining to the type of
 |falco.container.image.full_id|Full container ID, enriched as part of the container engine enrichment.|keyword |
 |falco.container.image.id|Container image ID.|keyword |
 |falco.container.mounts|List of mount information.|nested |
-|falco.container.mounts.source|The container image repository.|keyword |
-|falco.container.mounts.dest|The container's health check. Will be N/A if no health check configured.|keyword |
-|falco.container.mounts.mode|The container's liveness probe. Will be N/A if no liveness probe configured.|keyword |
-|falco.container.mounts.rdrw|The container's readiness probe. Will be N/A if no readiness probe configured.|keyword |
-|falco.container.mounts.propogation|Container start as epoch timestamp.|keyword |
-|falco.container.image.repository|Number of nanoseconds since container.start_ts.|keyword |
-|falco.container.healthcheck|Container's CNI result field from the respective container status info.|text |
-|falco.container.liveness_probe|Unique number identifying the file descriptor.|text |
-|falco.container.readiness_probe|Type of FD. Can be 'file', 'directory', 'ipv4', 'ipv6', 'unix', 'pipe', 'event', 'signalfd', 'eventpoll', 'inotify' 'signalfd' or 'memfd'.|text |
-|falco.container.start_ts|Type of FD as a single character. Can be 'f' for file, 4 for IPv4 socket, 6 for IPv6 socket, 'u' for unix socket, p for pipe, 'e' for eventfd, 's' for signalfd, 'l' for eventpoll, 'i' for inotify, 'b' for bpf, 'u' for userfaultd, 'r' for io_uring, 'm' for memfd ,'o' for unknown.|date_nanos |
-|falco.container.duration|FD full name. If the fd is a file, this field contains the full path. If the FD is a socket, this field contain the connection tuple.|long |
-|falco.container.cni_json|The IP protocol of a socket. Can be 'tcp', 'udp', 'icmp' or 'raw'.|object |
-|falco.fd.num|The socket family for socket events. Can be 'ip' or 'unix'.| object_keyword |
-|falco.fd.type|Denotes if process owning the FD is the server endpoint in the connection.|long |
-|falco.fd.typechar|Unique identifier for the FD, created from the FD number and thread ID.|keyword |
-|falco.fd.name|Concatenation of the container ID and the FD name.|keyword |
-|falco.fd.I4proto|Concatenation of the container ID and the directory name.|text |
-|falco.fd.sockfamily|For TCP/UDP FDs, the client protocol.|keyword |
-|falco.fd.is_server|For TCP/UDP FDs, the server protocol.|keyword |
-|falco.fd.uid|For TCP/UDP FDs, the local protocol.|boolean |
-|falco.fd.containername|For TCP/UDP FDs, the remote protocol.|keyword |
-|falco.fd.containerdirectory|Denotes if the socket is connected for TCP/UDP FDs.|keyword |
-|falco.fd.cproto|Denotes if the name of an FD changes due to an event.|keyword |
-|falco.fd.sproto|Device number containing the referenced file.|keyword |
-|falco.fd.lproto|Major device number containing the referenced file.|keyword |
-|falco.fd.rproto|Minor device number containing the referenced file.|keyword |
-|falco.fd.connected|For any event type that deals with a filesystem path, the path the file syscall is operating on. This path is always fully resolved, prepending the thread cwd when needed.|keyword |
-|falco.fd.name_changed|For any event type that deals with a filesystem path, and specifically for a source and target like mv, cp, etc, the source path the file syscall is operating on. This path is always fully resolved, prepending the thread cwd when needed.|boolean |
-|falco.fd.dev|For any event type that deals with a filesystem path, and specifically for a target and target like mv, cp, etc, the target path the file syscall is operating on. This path is always fully resolved, prepending the thread cwd when needed.|boolean |
-|falco.fd.dev_major|For poll events, FD names in the fds argument.|integer |
-|falco.fd.dev_minor|For poll events, client IP addresses in the fds argument.|integer |
-|falco.fs.path.name|For poll events, server IP addresses in the fds argument.|integer |
-|falco.fs.path.source|For poll events / TCP/UDP FDs, client TCP/UDP ports in the fds argument.|keyword |
-|falco.fs.path.target|For poll events, server TCP/UDP ports in the fds argument.|keyword |
-|falco.fdlist.names|Truncated Kubernetes pod sandbox ID (first 12 characters).|keyword |
-|falco.fdlist.cips|Full, nontruncated Kubernetes pod sandbox ID.|keyword |
-|falco.fdlist.sips|Kubernetes CNI result field from the respective pod status info.|ip |
-|falco.fdlist.cports|Preserved falco field for event.original.|ip |
-|falco.fdlist.sports|Preserved falco field for event.severity.|ip |
-|falco.k8s.pod.sandbox_id|Preserved falco field for rule.name.|ip |
-|falco.k8s.pod.full_sandbox_id|Preserved falco field for event.sequence.|keyword |
-|falco.k8s.pod.cni_json|Preserved falco field for @timestamp.|keyword |
-|falco.output|Preserved falco field for event.original.|object |
-|falco.priority|Preserved falco field| object_keyword |
+|falco.container.mounts.source|Subfield of container.mounts|keyword |
+|falco.container.mounts.dest|Subfield of container.mounts|keyword |
+|falco.container.mounts.mode|Subfield of container.mounts|keyword |
+|falco.container.mounts.rdrw|Subfield of container.mounts|keyword |
+|falco.container.mounts.propogation|Subfield of container.mounts|keyword |
+|falco.container.image.repository|The container image repository.|keyword |
+|falco.container.healthcheck|The container's health check. Will be N/A if no health check configured.|text |
+|falco.container.liveness_probe|The container's liveness probe. Will be N/A if no liveness probe configured.|text |
+|falco.container.readiness_probe|The container's readiness probe. Will be N/A if no readiness probe configured.|text|
+|falco.container.start_ts|Container start as epoch timestamp.|date_nanos|
+|falco.container.duration|Number of nanoseconds since container.start_ts.|long|nanos|
+|falco.container.cni_json|Container's CNI result field from the respective container status info.|object|keyword|
+|falco.fd.num|Unique number identifying the file descriptor.|long|
+|falco.fd.type|Type of FD. Can be 'file', 'directory', 'ipv4', 'ipv6', 'unix', 'pipe', 'event', 'signalfd', 'eventpoll', 'inotify' 'signalfd' or 'memfd'.|keyword|
+|falco.fd.typechar|Type of FD as a single character. Can be 'f' for file, 4 for IPv4 socket, 6 for IPv6 socket, 'u' for unix socket, p for pipe, 'e' for eventfd, 's' for signalfd, 'l' for eventpoll, 'i' for inotify, 'b' for bpf, 'u' for userfaultd, 'r' for io_uring, 'm' for memfd ,'o' for unknown.|keyword|
+|falco.fd.name|FD full name. If the fd is a file, this field contains the full path. If the FD is a socket, this field contain the connection tuple.|text|
+|falco.fd.I4proto|The IP protocol of a socket. Can be 'tcp', 'udp', 'icmp' or 'raw'.|keyword|
+|falco.fd.sockfamily|The socket family for socket events. Can be 'ip' or 'unix'.|keyword|
+|falco.fd.is_server|Denotes if process owning the FD is the server endpoint in the connection.|boolean|
+|falco.fd.uid|Unique identifier for the FD, created from the FD number and thread ID.|keyword|
+|falco.fd.containername|Concatenation of the container ID and the FD name.|keyword|
+|falco.fd.containerdirectory|Concatenation of the container ID and the directory name.|keyword|
+|falco.fd.cproto|For TCP/UDP FDs, the client protocol.|keyword|
+|falco.fd.sproto|For TCP/UDP FDs, the server protocol.|keyword|
+|falco.fd.lproto|For TCP/UDP FDs, the local protocol.|keyword|
+|falco.fd.rproto|For TCP/UDP FDs, the remote protocol.|keyword|
+|falco.fd.connected|Denotes if the socket is connected for TCP/UDP FDs.|boolean|
+|falco.fd.name_changed|Denotes if the name of an FD changes due to an event.|boolean|
+|falco.fd.dev|Device number containing the referenced file.|integer|
+|falco.fd.dev_major|Major device number containing the referenced file.|integer|
+|falco.fd.dev_minor|Minor device number containing the referenced file.|integer|
+|falco.fs.path.name|For any event type that deals with a filesystem path, the path the file syscall is operating on. This path is always fully resolved, prepending the thread cwd when needed.|keyword|
+|falco.fs.path.source|For any event type that deals with a filesystem path, and specifically for a source and target like mv, cp, etc, the source path the file syscall is operating on. This path is always fully resolved, prepending the thread cwd when needed.|keyword|
+|falco.fs.path.target|For any event type that deals with a filesystem path, and specifically for a target and target like mv, cp, etc, the target path the file syscall is operating on. This path is always fully resolved, prepending the thread cwd when needed.|keyword|
+|falco.fdlist.names|For poll events, FD names in the fds argument.|keyword|
+|falco.fdlist.cips|For poll events, client IP addresses in the fds argument.|ip|
+|falco.fdlist.sips|For poll events, server IP addresses in the fds argument.|ip|
+|falco.fdlist.cports|For poll events / TCP/UDP FDs, client TCP/UDP ports in the fds argument.|ip|
+|falco.fdlist.sports|For poll events, server TCP/UDP ports in the fds argument.|ip|
+|falco.k8s.pod.sandbox_id|Truncated Kubernetes pod sandbox ID (first 12 characters).|keyword|
+|falco.k8s.pod.full_sandbox_id|Full, non-truncated Kubernetes pod sandbox ID.|keyword|
+|falco.k8s.pod.cni_json|Kubernetes CNI result field from the respective pod status info.|object|keyword|
+|falco.output|Preserved Falco field|text|
+|falco.priority|Preserved falco field|keyword |
 |falco.rule|Preserved falco field|text |
 |falco.evt.num|Preserved falco field|keyword |
 |falco.evt.time|Preserved falco field|text |
