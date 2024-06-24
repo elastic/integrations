@@ -5,6 +5,7 @@
 package issuesreporter
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -15,11 +16,17 @@ type ResultsFormatter struct {
 }
 
 func (r ResultsFormatter) Title() string {
-	return r.result.String()
+	// TODO: remove ignore statement
+	return fmt.Sprintf("%s - IGNORE testing", r.result.String())
 }
 
 func (r ResultsFormatter) Owners() []string {
-	return r.result.Teams
+	// TODO: remove replace to allow mention teams
+	teams := []string{}
+	for _, t := range r.result.Teams {
+		teams = append(teams, strings.ReplaceAll(t, "@", ""))
+	}
+	return teams
 }
 
 func (r ResultsFormatter) Description() string {
@@ -80,7 +87,7 @@ func (r ResultsFormatter) Description() string {
 		sb.WriteString("Owners:\n")
 		for _, owner := range r.Owners() {
 			sb.WriteString("- ")
-			sb.WriteString(strings.Replace(owner, "@", "", -1)) // TODO: remove replace or add as reviewers the teams
+			sb.WriteString(strings.ReplaceAll(owner, "@", "")) // TODO: remove replace or add as reviewers the teams
 			sb.WriteString("\n")
 		}
 	}
