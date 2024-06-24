@@ -881,6 +881,10 @@ This is the `pipeline` dataset, which drives the Pipeline dashboard pages.
 | logstash.pipeline.elasticsearch.cluster.id | Elasticsearch clusters this Logstash pipeline is attached to | keyword |  |  |
 | logstash.pipeline.host.address | address hosting this instance of logstash | keyword |  |  |
 | logstash.pipeline.host.name | Host name of the node running logstash | keyword |  |  |
+| logstash.pipeline.info.batch_delay | Batch delay for the running pipeline | long |  |  |
+| logstash.pipeline.info.batch_size | Batch size for the running pipeline | long |  |  |
+| logstash.pipeline.info.ephemeral_id | Ephemeral Id for the running pipeline | keyword |  |  |
+| logstash.pipeline.info.workers | Number of workers for the running pipeline | long |  |  |
 | logstash.pipeline.name | Logstash Pipeline id/name | keyword |  |  |
 | logstash.pipeline.total.events.filtered | Number of events filtered by the pipeline | long |  | counter |
 | logstash.pipeline.total.events.in | Number of events received by the pipeline | long |  | counter |
