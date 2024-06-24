@@ -54,7 +54,7 @@ require (
 	github.com/elastic/go-ucfg v0.8.8 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
-	github.com/elastic/kbncontent v0.1.3 // indirect
+	github.com/elastic/kbncontent v0.1.4 // indirect
 	github.com/elastic/package-spec/v3 v3.1.4 // indirect
 	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/evanphx/json-patch v5.7.0+incompatible // indirect
@@ -208,3 +208,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace github.com/elastic/package-spec/v3 => github.com/mgiota/package-spec/v3 v3.0.0-20240624214913-5fd725a3974f
