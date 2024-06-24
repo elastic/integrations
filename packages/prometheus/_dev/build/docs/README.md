@@ -131,6 +131,10 @@ Metrics Filters Include: ["^node_network_net_dev_group$", "^node_network_up$"]
 
 The fields reported are:
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "collector"}}
 
 
@@ -229,6 +233,10 @@ remote_write:
 {{event "remote_write"}}
 
 The fields reported are:
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "remote_write"}}
 
@@ -357,6 +365,10 @@ queries:
 {{event "query"}}
 
 The fields reported are:
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "query"}}
 

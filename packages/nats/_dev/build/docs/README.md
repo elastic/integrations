@@ -16,6 +16,10 @@ The `log` dataset collects the NATS logs.
 
 {{event "log"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "log"}}
 
 ## Metrics
@@ -31,6 +35,10 @@ metrics from a Nats instance.
 
 {{event "stats"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "stats"}}
 
 ### connections
@@ -39,6 +47,10 @@ This is the `connections` dataset of the Nats package, in charge of retrieving g
 metrics about connections from a Nats instance.
 
 {{event "connections"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "connections"}}
 
@@ -49,6 +61,10 @@ metrics about routes from a Nats instance.
 
 {{event "routes"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "routes"}}
 
 ### subscriptions
@@ -57,6 +73,10 @@ This is the `subscriptions` dataset of the Nats package, in charge of retrieving
 metrics about subscriptions from a Nats instance.
 
 {{event "subscriptions"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "subscriptions"}}
 
@@ -67,6 +87,10 @@ metrics per connection from a Nats instance.
 
 {{event "connection"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "connection"}}
 
 ### route
@@ -75,5 +99,9 @@ This is the `route` dataset of the Nats package, in charge of retrieving detaile
 metric per route from a Nats instance.
 
 {{event "route"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "route"}}

@@ -79,6 +79,10 @@ Cassandra system logs from cassandra.log files.
 
 {{event "log"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "log"}}
 
 ## Metrics
@@ -86,5 +90,9 @@ Cassandra system logs from cassandra.log files.
 Cassandra metrics using jolokia agent installed on cassandra.
 
 {{event "metrics"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "metrics"}}

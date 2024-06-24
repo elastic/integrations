@@ -177,6 +177,10 @@ An example event for `collector` looks as following:
 
 The fields reported are:
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Metric Type |
@@ -368,6 +372,10 @@ An example event for `remote_write` looks as following:
 ```
 
 The fields reported are:
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -572,6 +580,10 @@ An example event for `query` looks as following:
 ```
 
 The fields reported are:
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
