@@ -141,10 +141,11 @@ func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
 }
 
-func ReportIssues() error {
+func ReportIssues(testResultsFolder string) error {
 	stackVersion := os.Getenv("STACK_VERSION")
 	serverlessEnv := os.Getenv("SERVERLESS")
 	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
+	username := os.Getenv("GITHUB_USERNAME_SECRET")
 
 	serverless := false
 	if serverlessEnv != "" {
@@ -155,8 +156,6 @@ func ReportIssues() error {
 		}
 	}
 
-	path := defaultResultsPath
-	path = "dev/issuesreporter/testdata/"
-	mg.Deps(mg.F(issuesreporter.Check, path, buildURL, stackVersion, serverless))
+	mg.Deps(mg.F(issuesreporter.Check, username, testResultsFolder, buildURL, stackVersion, serverless))
 	return nil
 }

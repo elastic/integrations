@@ -119,6 +119,7 @@ func TestGithubIssueExists(t *testing.T) {
 			issue: *NewGithubIssue(GithubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
+				User:       "foo",
 			}),
 			found: true,
 			expected: GithubIssue{
@@ -126,7 +127,7 @@ func TestGithubIssueExists(t *testing.T) {
 				number:      42,
 				title:       "my issue",
 				description: "my issue description",
-				user:        "mrodm",
+				user:        "foo",
 			},
 		},
 		{
@@ -144,6 +145,7 @@ func TestGithubIssueExists(t *testing.T) {
 			issue: *NewGithubIssue(GithubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
+				User:       "foo",
 			}),
 			found:    false,
 			expected: GithubIssue{},
@@ -166,7 +168,6 @@ func TestGithubIssueExists(t *testing.T) {
 			assert.Equal(t, c.expected, issue)
 		})
 	}
-
 }
 
 func TestUpdateIssue(t *testing.T) {

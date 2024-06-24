@@ -92,7 +92,7 @@ type checkOptions struct {
 	CodeownersPath string
 }
 
-func Check(resultsPath, buildURL, stackVersion string, serverless bool) error {
+func Check(username, resultsPath, buildURL, stackVersion string, serverless bool) error {
 	fmt.Println("path: ", resultsPath)
 	packageErrors, err := errorsFromTests(checkOptions{
 		ResultsPath:  resultsPath,
@@ -117,6 +117,7 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool) error {
 			Description: r.Description(),
 			Labels:      []string{"failed-test", "automation"},
 			Repository:  "elastic/integrations",
+			User:        username,
 		})
 
 		ctx := context.TODO()
