@@ -3398,5 +3398,4 @@ An example event for `event` looks as following:
 | ses.verdict_id | The outcome of the Scan. | keyword |
 | ses.verdict_value | The outcome value of the Scan. | keyword |
 | ses.version | The event type version, in the form major.minor. | keyword |
-| tags | User defined tags. | keyword |
 
