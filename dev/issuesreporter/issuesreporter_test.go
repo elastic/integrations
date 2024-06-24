@@ -204,16 +204,17 @@ func TestBuildLinksFromDescription(t *testing.T) {
 		{
 			title: "happy case",
 			description: `
+CI Build: https://buildkite.com/elastic/integrations/builds/10
 Test description
 - https://buildkite.com/elastic/integrations/builds/1
 - https://buildkite.com/elastic/integrations/builds/2
-   - https://buildkite.com/elastic/integrations/builds/2
+   - https://buildkite.com/elastic/integrations/builds/3
 - https://buildkite.com/elastic/integrations-serverless/builds/5
 `,
 			expected: []string{
 				"https://buildkite.com/elastic/integrations/builds/1",
 				"https://buildkite.com/elastic/integrations/builds/2",
-				"https://buildkite.com/elastic/integrations/builds/2",
+				"https://buildkite.com/elastic/integrations/builds/3",
 				"https://buildkite.com/elastic/integrations-serverless/builds/5",
 			},
 		},

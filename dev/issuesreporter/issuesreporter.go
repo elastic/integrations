@@ -142,12 +142,18 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool) error {
 
 func buildLinksFromDescription(issue GithubIssue) ([]string, error) {
 	description := issue.description
-	re := regexp.MustCompile(`(https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
+	re := regexp.MustCompile(`- (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
 
 	links := []string{}
-	for i, match := range re.FindAllString(description, -1) {
-		fmt.Println(match, "found at index", i)
-		links = append(links, match)
+	for _, matches := range re.FindAllStringSubmatch(description, -1) {
+		for i, name := range re.SubexpNames() {
+			if i == 0 || name != "url" {
+				continue
+			}
+
+			fmt.Println("Match found:", matches[i])
+			links = append(links, matches[i])
+		}
 	}
 	return links, nil
 }
