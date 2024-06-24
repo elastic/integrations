@@ -324,7 +324,6 @@ An example event for `user` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.identity_source |  | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | user.account.activated_date |  | date |
 | user.account.change_date |  | date |
 | user.account.create_date |  | date |
