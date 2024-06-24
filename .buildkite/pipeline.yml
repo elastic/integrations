@@ -68,3 +68,8 @@ steps:
           failed-download-exit-code: 0 # Not fail the build in case there are no XML files
     agents:
       provider: "gcp"  # junit plugin requires docker
+
+  - label: ":github: Report daily issues"
+    command: ".buildkite/scripts/report_issues.sh"
+    if: >
+      build.source == "trigger_job" &&  build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == "integrations-schedule-daily"
