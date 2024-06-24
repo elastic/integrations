@@ -125,7 +125,7 @@ func TestGithubIssueExists(t *testing.T) {
 				repository:  "myorg/repo",
 				number:      42,
 				title:       "my issue",
-				description: "",
+				description: "my issue description",
 				user:        "mrodm",
 			},
 		},

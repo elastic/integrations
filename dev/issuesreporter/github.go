@@ -126,6 +126,7 @@ func (g *GhCli) Exists(ctx context.Context, issue GithubIssue) (bool, GithubIssu
 	for _, i := range list {
 		if i.Title == issue.title {
 			issue.number = i.Number
+			issue.description = i.Body
 			return true, issue, nil
 		}
 	}
