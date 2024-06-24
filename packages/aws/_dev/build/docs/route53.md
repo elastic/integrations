@@ -69,6 +69,10 @@ See the [Route 53 Documentation](https://docs.aws.amazon.com/Route53/latest/Deve
 
 {{event "route53_public_logs"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "route53_public_logs"}}
 
 ### Resolver logs
@@ -86,5 +90,9 @@ For example, suppose that an EC2 instance in one of the VPCs that a query loggin
 See the [Route 53 Documentation](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-query-logs.html) for more information.
 
 {{event "route53_resolver_logs"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "route53_resolver_logs"}}

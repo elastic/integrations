@@ -45,4 +45,8 @@ An example event for `dynamodb` looks like this:
 
 {{event "dynamodb"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "dynamodb"}}

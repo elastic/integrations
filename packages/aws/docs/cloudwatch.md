@@ -63,6 +63,10 @@ The `number_of_workers` setting defines the number of workers assigned to readin
 The `cloudwatch` data stream collects CloudWatch logs. Users can use Amazon
 CloudWatch logs to monitor, store, and access log files from different sources.
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -166,6 +170,10 @@ An example event for `cloudwatch` looks as following:
     }
 }
 ```
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 

@@ -31,6 +31,10 @@ This is the [`securityhub_findings`](https://docs.aws.amazon.com/securityhub/1.0
 
 {{event "securityhub_findings"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "securityhub_findings"}}
 
 ### Insights
@@ -38,5 +42,9 @@ This is the [`securityhub_findings`](https://docs.aws.amazon.com/securityhub/1.0
 This is the [`securityhub_insights`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetInsights.html#API_GetInsights_ResponseElements) data stream.
 
 {{event "securityhub_insights"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "securityhub_insights"}}

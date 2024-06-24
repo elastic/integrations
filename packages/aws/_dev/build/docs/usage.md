@@ -43,4 +43,8 @@ An example event for `usage`looks like this:
 
 {{event "usage"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "usage"}}

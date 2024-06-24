@@ -83,4 +83,8 @@ This is the [`GuardDuty`](https://docs.aws.amazon.com/guardduty/latest/APIRefere
 
 {{event "guardduty"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "guardduty"}}
