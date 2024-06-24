@@ -75,49 +75,16 @@ and `process.name`. For logs from other services, please use the **AWS CloudWatc
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| process.name | Process name. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
 
 
 An example event for `ec2` looks as following:
@@ -156,7 +123,7 @@ An example event for `ec2` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
@@ -197,152 +164,81 @@ An example event for `ec2` looks as following:
 ```json
 {
     "@timestamp": "2023-08-07T18:35:00.000Z",
-    "cloud": {
-        "availability_zone": "eu-north-1c",
-        "instance": {
-            "id": "i-0c08512debca266ab"
-        },
-        "provider": "aws",
-        "machine": {
-            "type": "t3.medium"
-        },
-        "region": "eu-north-1",
-        "account": {
-            "name": "MonitoringAccount",
-            "id": "627286350134"
-        }
-    },
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "72314f01-98f2-477f-978a-e98d109c640c",
-        "type": "metricbeat",
         "ephemeral_id": "b8cd4414-f528-43f4-b43f-0edbcc69b46f",
+        "id": "72314f01-98f2-477f-978a-e98d109c640c",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
         "version": "8.8.1"
     },
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "service": {
-        "type": "aws"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "aws.ec2_metrics"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.15.49-linuxkit-pr",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "20.04.6 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "containerized": false,
-        "ip": [
-            "172.20.0.7"
-        ],
-        "name": "docker-fleet-agent",
-        "cpu": {
-            "usage": 2.8849988898518673
-        },
-        "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
-        "mac": [
-            "02-42-AC-14-00-07"
-        ],
-        "architecture": "aarch64",
-        "network": {
-            "ingress": {
-                "bytes": 1608959,
-                "packets": 5334
-            },
-            "egress": {
-                "bytes": 626755,
-                "packets": 4977
-            }
-        }
-    },
-    "elastic_agent": {
-        "id": "72314f01-98f2-477f-978a-e98d109c640c",
-        "version": "8.8.1",
-        "snapshot": false
-    },
-    "metricset": {
-        "period": 300000,
-        "name": "cloudwatch"
-    },
-    "event": {
-        "duration": 5858967919,
-        "agent_id_status": "verified",
-        "ingested": "2023-08-07T18:41:31Z",
-        "module": "aws",
-        "dataset": "aws.ec2_metrics"
-    },
     "aws": {
+        "cloudwatch": {
+            "namespace": "AWS/EC2"
+        },
+        "dimensions": {
+            "InstanceId": "i-0c08512debca266ab"
+        },
         "ec2": {
             "instance": {
-                "image": {
-                    "id": "ami-00b8290583a865359"
-                },
                 "core": {
                     "count": 1
                 },
-                "private": {
-                    "ip": "172.31.13.154",
-                    "dns_name": "ip-172-31-13-154.eu-north-1.compute.internal"
+                "image": {
+                    "id": "ami-00b8290583a865359"
                 },
-                "threads_per_core": 2,
+                "monitoring": {
+                    "state": "disabled"
+                },
+                "private": {
+                    "dns_name": "ip-172-31-13-154.eu-north-1.compute.internal",
+                    "ip": "172.31.13.154"
+                },
                 "public": {
-                    "ip": "16.16.138.5",
-                    "dns_name": "ec2-16-16-138-5.eu-north-1.compute.amazonaws.com"
+                    "dns_name": "ec2-16-16-138-5.eu-north-1.compute.amazonaws.com",
+                    "ip": "16.16.138.5"
                 },
                 "state": {
                     "code": 16,
                     "name": "running"
                 },
-                "monitoring": {
-                    "state": "disabled"
-                }
+                "threads_per_core": 2
             },
             "metrics": {
-                "NetworkOut": {
-                    "rate": 10445.916666666666,
-                    "sum": 626755
-                },
-                "CPUUtilization": {
-                    "avg": 2.8849988898518673
-                },
-                "StatusCheckFailed_Instance": {
-                    "avg": 0
+                "CPUCreditBalance": {
+                    "avg": 576
                 },
                 "CPUCreditUsage": {
                     "avg": 0.29100543333333334
                 },
-                "CPUCreditBalance": {
-                    "avg": 576
-                },
-                "NetworkPacketsOut": {
-                    "rate": 82.95,
-                    "sum": 4977
-                },
-                "NetworkPacketsIn": {
-                    "rate": 88.9,
-                    "sum": 5334
-                },
-                "NetworkIn": {
-                    "rate": 26815.983333333334,
-                    "sum": 1608959
-                },
-                "StatusCheckFailed": {
+                "CPUSurplusCreditBalance": {
                     "avg": 0
                 },
                 "CPUSurplusCreditsCharged": {
                     "avg": 0
                 },
-                "CPUSurplusCreditBalance": {
+                "CPUUtilization": {
+                    "avg": 2.8849988898518673
+                },
+                "NetworkIn": {
+                    "rate": 26815.983333333334,
+                    "sum": 1608959
+                },
+                "NetworkOut": {
+                    "rate": 10445.916666666666,
+                    "sum": 626755
+                },
+                "NetworkPacketsIn": {
+                    "rate": 88.9,
+                    "sum": 5334
+                },
+                "NetworkPacketsOut": {
+                    "rate": 82.95,
+                    "sum": 4977
+                },
+                "StatusCheckFailed": {
+                    "avg": 0
+                },
+                "StatusCheckFailed_Instance": {
                     "avg": 0
                 },
                 "StatusCheckFailed_System": {
@@ -350,17 +246,88 @@ An example event for `ec2` looks as following:
                 }
             }
         },
-        "cloudwatch": {
-            "namespace": "AWS/EC2"
-        },
-        "dimensions": {
-            "InstanceId": "i-0c08512debca266ab"
-        },
         "tags": {
             "aws:autoscaling:groupName": "eks-firehose-50c386d7-c8b1-bde8-5d42-d3841ca7ecfe",
-            "aws:ec2launchtemplate:version": "1",
-            "aws:ec2launchtemplate:id": "lt-09e1cdf590e35c687"
+            "aws:ec2launchtemplate:id": "lt-09e1cdf590e35c687",
+            "aws:ec2launchtemplate:version": "1"
         }
+    },
+    "cloud": {
+        "account": {
+            "id": "627286350134",
+            "name": "MonitoringAccount"
+        },
+        "availability_zone": "eu-north-1c",
+        "instance": {
+            "id": "i-0c08512debca266ab"
+        },
+        "machine": {
+            "type": "t3.medium"
+        },
+        "provider": "aws",
+        "region": "eu-north-1"
+    },
+    "data_stream": {
+        "dataset": "aws.ec2_metrics",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "72314f01-98f2-477f-978a-e98d109c640c",
+        "snapshot": false,
+        "version": "8.8.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws.ec2_metrics",
+        "duration": 5858967919,
+        "ingested": "2023-08-07T18:41:31Z",
+        "module": "aws"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "cpu": {
+            "usage": 2.8849988898518673
+        },
+        "hostname": "docker-fleet-agent",
+        "id": "d08b346fbb8f49f5a2bb1a477f8ceb54",
+        "ip": [
+            "172.20.0.7"
+        ],
+        "mac": [
+            "02-42-AC-14-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "network": {
+            "egress": {
+                "bytes": 626755,
+                "packets": 4977
+            },
+            "ingress": {
+                "bytes": 1608959,
+                "packets": 5334
+            }
+        },
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.49-linuxkit-pr",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "cloudwatch",
+        "period": 300000
+    },
+    "service": {
+        "type": "aws"
     }
 }
 ```
@@ -413,29 +380,13 @@ An example event for `ec2` looks as following:
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
-| error.message | Error message. | match_only_text |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |  |
-| host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |  |
-| host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |  |
-| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
-| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
-| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |  |
-| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
