@@ -20,14 +20,9 @@ type GhRunner struct {
 	DryRun bool
 }
 
-type GhRunnerOptions struct {
+type GithubOptions struct {
 	DryRun bool
-}
-
-func NewGithubRunner(options GhRunnerOptions) *GhRunner {
-	return &GhRunner{
-		DryRun: options.DryRun,
-	}
+	Runner CommandRunner
 }
 
 func (g *GhRunner) Exec(ctx context.Context, args ...string) (stdout, stdErr bytes.Buffer, err error) {
@@ -78,8 +73,26 @@ func NewGithubIssue(options GithubIssueOptions) *GithubIssue {
 	return &issue
 }
 
-func (g *GhRunner) Exists(ctx context.Context, issue GithubIssue) (bool, GithubIssue, error) {
-	stdout, stderr, err := g.Exec(ctx,
+type GhCli struct {
+	runner CommandRunner
+}
+
+func NewGhCli(options GithubOptions) *GhCli {
+	var runner CommandRunner
+	runner = options.Runner
+	if runner == nil {
+		runner = &GhRunner{
+			DryRun: options.DryRun,
+		}
+	}
+
+	return &GhCli{
+		runner: runner,
+	}
+}
+
+func (g *GhCli) Exists(ctx context.Context, issue GithubIssue) (bool, GithubIssue, error) {
+	stdout, stderr, err := g.runner.Exec(ctx,
 		"issue",
 		"list",
 		"--author",
@@ -116,7 +129,7 @@ func (g *GhRunner) Exists(ctx context.Context, issue GithubIssue) (bool, GithubI
 	return false, GithubIssue{}, nil
 }
 
-func (g *GhRunner) Create(ctx context.Context, issue GithubIssue) error {
+func (g *GhCli) Create(ctx context.Context, issue GithubIssue) error {
 	params := []string{
 		"issue",
 		"create",
@@ -130,14 +143,14 @@ func (g *GhRunner) Create(ctx context.Context, issue GithubIssue) error {
 	for _, label := range issue.labels {
 		params = append(params, "--label", label)
 	}
-	_, stderr, err := g.Exec(ctx, params...)
+	_, stderr, err := g.runner.Exec(ctx, params...)
 	if err != nil {
 		return fmt.Errorf("failed to create issue: %w\n%s", err, stderr.String())
 	}
 	return nil
 }
 
-func (g *GhRunner) Update(ctx context.Context, issue GithubIssue) error {
+func (g *GhCli) Update(ctx context.Context, issue GithubIssue) error {
 	params := []string{
 		"issue",
 		"edit",
@@ -146,7 +159,7 @@ func (g *GhRunner) Update(ctx context.Context, issue GithubIssue) error {
 		"--repo",
 		issue.repository,
 	}
-	_, stderr, err := g.Exec(ctx, params...)
+	_, stderr, err := g.runner.Exec(ctx, params...)
 	if err != nil {
 		return fmt.Errorf("failed to update issue: %w\n%s", err, stderr.String())
 	}

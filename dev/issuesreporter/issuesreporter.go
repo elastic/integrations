@@ -99,7 +99,9 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool) error {
 	if err != nil {
 		return err
 	}
-	ghRunner := NewGithubRunner(GhRunnerOptions{DryRun: true})
+	ghCli := NewGhCli(GithubOptions{
+		DryRun: true,
+	})
 	for _, e := range packageErrors {
 		r := ResultsFormatter{e}
 		fmt.Printf("Title: %q\n", r.Title())
@@ -114,14 +116,14 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool) error {
 		})
 
 		ctx := context.TODO()
-		found, issue, err := ghRunner.Exists(ctx, *ghIssue)
+		found, issue, err := ghCli.Exists(ctx, *ghIssue)
 		if err != nil {
 			return fmt.Errorf("failed to check if issue exists: %w", err)
 		}
 		fmt.Printf("Issue found: %t (%d)\n", found, issue.Number())
 		if !found {
 			// create issue
-			err := ghRunner.Create(ctx, *ghIssue)
+			err := ghCli.Create(ctx, *ghIssue)
 			if err != nil {
 				log.Printf("Failed to create issue: %s", err)
 			}
