@@ -29,9 +29,9 @@ type GithubOptions struct {
 }
 
 func (g *GhRunner) Exec(ctx context.Context, args ...string) (stdout, stdErr bytes.Buffer, err error) {
-	log.Printf("Running command: %s", strings.Join(args, " "))
+	log.Printf("Running command: %s", strings.Join(args[:4], " "))
 	if g.DryRun {
-		if !(args[0] == "issue" && args[1] == "list") {
+		if args[0] != "issue" || args[1] != "list" {
 			log.Printf("DRY-RUN> not run command")
 			return bytes.Buffer{}, bytes.Buffer{}, nil
 		}

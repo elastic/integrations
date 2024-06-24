@@ -108,9 +108,13 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 	})
 	for _, e := range packageErrors {
 		r := ResultsFormatter{e}
+		fmt.Println()
+		fmt.Println("---- Issue ----")
 		fmt.Printf("Title: %q\n", r.Title())
 		fmt.Printf("Teams: %q\n", strings.Join(r.Owners(), ", "))
 		fmt.Printf("Description:\n%s\n", r.Description())
+		fmt.Println("----")
+		fmt.Println()
 
 		ghIssue := NewGithubIssue(GithubIssueOptions{
 			Title:       r.Title(),
