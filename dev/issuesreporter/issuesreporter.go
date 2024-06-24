@@ -117,9 +117,9 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 		fmt.Println()
 
 		ghIssue := NewGithubIssue(GithubIssueOptions{
-			Title:       r.Title(),
+			Title:       r.Title(), // "Data stream not found in Beat package", // TODO: remove debug
 			Description: r.Description(),
-			Labels:      []string{"failed-test", "automation"},
+			Labels:      []string{"flaky-test", "automation"},
 			Repository:  "elastic/integrations",
 			User:        username,
 		})
@@ -131,16 +131,13 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 		}
 		fmt.Printf("Issue found: %t (%d)\n", found, issue.Number())
 		if !found {
-			// create issue
 			err := ghCli.Create(ctx, *ghIssue)
 			if err != nil {
 				log.Printf("Failed to create issue: %s", err)
 			}
 			continue
 		}
-		// update issue
-
-		return nil
+		fmt.Printf("Updating issue... \n")
 	}
 	return nil
 }
