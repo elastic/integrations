@@ -19,11 +19,13 @@ Access logs collects the Apache access logs.
 | Field | Description | Type | Unit |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
+| apache.access.http.request_headers | Http request headers. | keyword |  |
 | apache.access.identity | The client's identity, as specified in RFC 1413, determined by the identd on the client's machine. | keyword |  |
 | apache.access.remote_addresses | An array of remote addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. | keyword |  |
 | apache.access.response_time | Time to serve the request in microseconds. | long | micros |
 | apache.access.ssl.cipher | SSL cipher name. - name: nginx.access | keyword |  |
 | apache.access.ssl.protocol | SSL protocol version. | keyword |  |
+| apache.access.tls_handshake.error | TLS handshake error. | keyword |  |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
@@ -42,6 +44,7 @@ Access logs collects the Apache access logs.
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |  |
+| destination.port | Port of the destination. | long |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error.message | Error message. | match_only_text |  |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
@@ -82,6 +85,8 @@ Access logs collects the Apache access logs.
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |  |
 | process.pid | Process id. | long |  |
 | process.thread.id | Thread ID. | long |  |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |  |
+| related.ip | All of the IPs seen on your event. | ip |  |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |  |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |  |
 | source.as.organization.name | Organization name. | keyword |  |
@@ -95,6 +100,7 @@ Access logs collects the Apache access logs.
 | source.geo.region_iso_code | Region ISO code. | keyword |  |
 | source.geo.region_name | Region name. | keyword |  |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |  |
+| source.port | Port of the source. | long |  |
 | tags | List of keywords used to tag each event. | keyword |  |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |  |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |  |
@@ -122,25 +128,42 @@ Access logs collects the Apache access logs.
 Supported format for the access logs are:
 
 - [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)
-  - Defined in apache `LogFormat` by : 
+
+  - Defined in apache `LogFormat` by :
+ 
     >```%h %l %u %t \"%r\" %>s %b```
+
   - Example:
+
     > `127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326`
+
 - Combined Log Format
+
   - Defined in apache `LogFormat` by:
-    >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
+    >I. ```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
+    >II. ```%A:%p %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
+    >III. ```%h:%p %l %u %t \"%{req}i %U %H\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
   - Example:
-    >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)"```
+
+    >I. ```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)"```
+
+    >II. ```127.0.0.1:80 127.0.0.1 - - [20/Jun/2024:16:23:43 +0530] "\x16\x03\x01" 400 226 "-" "-"```
+
+    >III. ```127.0.0.1:80 - - [20/Jun/2024:16:31:41 +0530] "<SCRIPT>NXSSTEST</SCRIPT> / HTTP/1.1" 403 4897 "-" "-"```
+
 - Combined Log Format + X-Forwarded-For header
+
   - Defined in apache `LogFormat` by:
+
     >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
+
   - Example:
+
     >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)" X-Forwarded-For="10.225.192.17, 10.2.2.121"```
-- Combined Log Format + X-Forwarded-For header + Response time
-  - Defined in apache `LogFormat` by:
-    >```%h %l %u %t \"%r\" %>s %b %D \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
-  - Example:
-    >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 3413 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)" X-Forwarded-For="10.225.192.17, 10.2.2.121"```
 
 ### Error Logs
 
