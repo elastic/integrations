@@ -16,11 +16,19 @@ with all versions `>= 3.0`.
 
 The `log` dataset collects the Redis standard logs.
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "log"}}
 
 ### slowlog
 
 The `slowlog` dataset collects the Redis slow logs.
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "log"}}
 
@@ -32,6 +40,10 @@ The `info` dataset collects information and statistics from Redis by running the
 result.
 
 {{event "info"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "info"}}
 
@@ -50,6 +62,10 @@ Patterns are configured as a list containing these fields:
 
 {{event "key"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "key"}}
 
 ### keyspace
@@ -58,5 +74,9 @@ The `keyspace` dataset collects information about the Redis keyspaces. For each 
 Elasticsearch. The keyspace information is fetched from the `INFO` command.
 
 {{event "keyspace"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "keyspace"}}

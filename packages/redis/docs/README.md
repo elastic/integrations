@@ -16,6 +16,10 @@ with all versions `>= 3.0`.
 
 The `log` dataset collects the Redis standard logs.
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -36,6 +40,10 @@ The `log` dataset collects the Redis standard logs.
 ### slowlog
 
 The `slowlog` dataset collects the Redis slow logs.
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -249,6 +257,10 @@ An example event for `info` looks as following:
 }
 ```
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Metric Type |
@@ -432,6 +444,10 @@ An example event for `key` looks as following:
 }
 ```
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Metric Type |
@@ -498,6 +514,10 @@ An example event for `keyspace` looks as following:
     }
 }
 ```
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 

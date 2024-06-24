@@ -72,6 +72,10 @@ https://management.usgovcloudapi.net/
 
 {{event "functionapplogs"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "functionapplogs"}}
 
 ### Metrics
@@ -200,5 +204,9 @@ Examples:
 #### Metrics Reference
 
 {{event "metrics"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "metrics"}}

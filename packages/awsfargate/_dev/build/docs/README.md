@@ -293,6 +293,10 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 
 ### Task Stats
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "task_stats"}}
 
 {{event "task_stats"}}

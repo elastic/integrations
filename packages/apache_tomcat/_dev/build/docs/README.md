@@ -158,6 +158,10 @@ This is the `Access` data stream. This data stream collects logs related to the 
 
 {{event "access"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "access"}}
 
 ### Catalina
@@ -166,6 +170,10 @@ This is the `Catalina` data stream. This data stream collects logs related to th
 
 {{event "catalina"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "catalina"}}
 
 ### Localhost
@@ -173,6 +181,10 @@ This is the `Catalina` data stream. This data stream collects logs related to th
 This is the `Localhost` data stream. This data stream collects logs related to Web application activity which is related to HTTP transactions between the application server and the client.
 
 {{event "localhost"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "localhost"}}
 
@@ -184,6 +196,10 @@ This is the `Cache` data stream. This data stream collects metrics related to th
 
 {{event "cache"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "cache"}}
 
 ### Connection Pool
@@ -191,6 +207,10 @@ This is the `Cache` data stream. This data stream collects metrics related to th
 This is the `connection pool` data stream. This data stream collects metrics related to connection pool such as number of active and idle connections.
 
 {{event "connection_pool"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "connection_pool"}}
 
@@ -200,6 +220,10 @@ This is the `memory` data stream. This data stream collects metrics related to t
 
 {{event "memory"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "memory"}}
 
 ### Request
@@ -207,6 +231,10 @@ This is the `memory` data stream. This data stream collects metrics related to t
 This is the `Request` data stream. This data stream collects metrics related to request count, and amount of data received and sent.
 
 {{event "request"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "request"}}
 
@@ -216,6 +244,10 @@ This is the `session` data stream. This data stream collects metrics related to 
 
 {{event "session"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "session"}}
 
 ### Thread Pool
@@ -223,5 +255,9 @@ This is the `session` data stream. This data stream collects metrics related to 
 This is the `thread pool` data stream. This data stream collects metrics related to the total, active, current, daemon, busy and peak threads, CPU time and processing termination time of the threads.
 
 {{event "thread_pool"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "thread_pool"}}

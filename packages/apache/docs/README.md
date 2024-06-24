@@ -14,6 +14,10 @@ all versions >= 2.2.31 and >= 2.4.16 (independent from operating system).
 
 Access logs collects the Apache access logs.
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -57,6 +61,10 @@ Supported format for the access logs are:
 ### Error Logs
 
 Error logs collects the Apache error logs.
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -199,6 +207,10 @@ An example event for `status` looks as following:
     }
 }
 ```
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 

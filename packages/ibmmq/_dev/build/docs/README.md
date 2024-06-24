@@ -65,6 +65,10 @@ The `qmgr` data stream collects [performance metrics of Queue Manager](https://w
 
 {{event "qmgr"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "qmgr"}}
 
 ## Logs reference
@@ -74,5 +78,9 @@ The `qmgr` data stream collects [performance metrics of Queue Manager](https://w
 The `errorlog` data stream collects [Error logs of Queue Manager](https://www.site24x7.com/help/log-management/ibm-mq-error-logs.html) which include the description, action, explanation and code of the error.
 
 {{event "errorlog"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "errorlog"}}

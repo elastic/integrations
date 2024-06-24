@@ -153,6 +153,10 @@ An example event for `access` looks as following:
 
 The fields reported are:
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -229,6 +233,10 @@ An example event for `error` looks as following:
 ```
 
 The fields reported are:
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -344,6 +352,10 @@ An example event for `webserver` looks as following:
 ```
 
 The fields reported are:
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -473,6 +485,10 @@ An example event for `website` looks as following:
 
 The fields reported are:
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -563,6 +579,10 @@ An example event for `application_pool` looks as following:
 ```
 
 The fields reported are:
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 

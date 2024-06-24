@@ -40,6 +40,10 @@ a value greater than 0.
 Both `log_connections` and `log_disconnections` can cause a lot of events if you don't have
 persistent connections, so enable with care.
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "log"}}
 
 ## Metrics access permission
@@ -67,6 +71,10 @@ The `activity` dataset periodically fetches metrics from PostgreSQL servers.
 
 {{event "activity"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "activity"}}
 
 ### bgwriter
@@ -74,6 +82,10 @@ The `activity` dataset periodically fetches metrics from PostgreSQL servers.
 The PostgreSQL `bgwriter` dataset collects data from PostgreSQL by running a `SELECT * FROM pg_stat_bgwriter;` SQL query.
 
 {{event "bgwriter"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "bgwriter"}}
 
@@ -83,6 +95,10 @@ The `database` dataset periodically fetches metrics from PostgreSQL servers.
 
 {{event "database"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "database"}}
 
 ### statement
@@ -90,5 +106,9 @@ The `database` dataset periodically fetches metrics from PostgreSQL servers.
 The `statement` dataset periodically fetches metrics from PostgreSQL servers.
 
 {{event "statement"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "statement"}}

@@ -47,6 +47,10 @@ This is the `expvar` data stream. Metrics of garbage collector, mcache structure
 
 {{event "expvar"}}
 
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "expvar"}}
 
 ### Heap
@@ -54,5 +58,9 @@ This is the `expvar` data stream. Metrics of garbage collector, mcache structure
 This is the `heap` data stream. Metrics like heap allocations and GC pause can be collected using `heap` data stream.
 
 {{event "heap"}}
+
+## ECS Field Reference
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "heap"}}
