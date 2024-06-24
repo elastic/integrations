@@ -2033,53 +2033,41 @@ processors:
 
   # Registry Mapping
   # registry hive abbreviation taken from current or previous registry key
+  - grok:
+      field: m365_defender.event.registry.key
+      description: Extract and remove HIVE_NAMES from registry key
+      tag: grok_registry_key
+      if: ctx.m365_defender?.event?.registry?.key != null && ctx.m365_defender.event.registry.key != ''
+      patterns:
+        - '^(%{HIVE_NAMES:_tmp.registry.hive}\\)?%{GREEDYDATA:registry.key}$'
+      pattern_definitions:
+        HIVE_NAMES: "(?i:HKEY_CLASSES_ROOT|HKCR|HKEY_CURRENT_USER|HKCU|HKEY_LOCAL_MACHINE|HKLM|HKEY_USERS|HKU|HKEY_CURRENT_CONFIG|HKCC)"
+  - grok:
+      field: m365_defender.event.previous.registry_key
+      description: Extract and remove HIVE_NAMES from previous registry key
+      tag: grok_registry_previous_key
+      if: ctx.registry?.key == null && ctx.m365_defender?.event?.previous?.registry_key != null && ctx.m365_defender.event.previous.registry_key != ''
+      patterns:
+        - '^(%{HIVE_NAMES:_tmp.registry.hive}\\)?%{GREEDYDATA:registry.key}$'
+      pattern_definitions:
+        HIVE_NAMES: "(?i:HKEY_CLASSES_ROOT|HKCR|HKEY_CURRENT_USER|HKCU|HKEY_LOCAL_MACHINE|HKLM|HKEY_USERS|HKU|HKEY_CURRENT_CONFIG|HKCC)"
   - script:
-      description: Abbreviated registry.hive derived from https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users
+      description: Normalize hive names (ECS uses abbreviated names) derived from https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users
       tag: set_registry_hive
       lang: painless
-      if: (ctx.m365_defender?.event?.registry?.key != null && ctx.m365_defender.event.registry.key != '') || (ctx.m365_defender?.event?.previous?.registry_key != null && ctx.m365_defender.event.previous.registry_key != '')
+      if: ctx._tmp?.registry?.hive != null
       params:
+        HKEY_CLASSES_ROOT: HKCR
         HKEY_CURRENT_USER: HKCU
         HKEY_LOCAL_MACHINE: HKLM
         HKEY_USERS: HKU
-        HKEY_CLASSES_ROOT: HKCR
         HKEY_CURRENT_CONFIG: HKCC
       source: |
-        String key = ctx.m365_defender?.event?.registry?.key;
-        if (key == null || key == '') {
-          key = ctx.m365_defender.event.previous.registry_key;
-        }
-        String hive_full = key.splitOnToken('\\')[0];
-        if (params.get(hive_full) != null) {
-          if (ctx.registry == null) {
-            ctx.registry = new HashMap();
-          }
-          ctx.registry.hive = params.get(hive_full);
-        }
-  - script:
-      description: Remove HKEY_CURRENT_USER\ and HKEY_LOCAL_MACHINE\ before populating registry.key
-      lang: painless
-      tag: set_registry_key
-      if: ctx.m365_defender?.event?.registry?.key != null && ctx.m365_defender.event.registry.key != ''
-      source: |
-        String key = ctx.m365_defender.event.registry.key;
-        def regex = /HKEY_CURRENT_USER\\|HKEY_LOCAL_MACHINE\\/;
+        def name = ctx._tmp.registry.hive.toUpperCase();
         if (ctx.registry == null) {
           ctx.registry = new HashMap();
         }
-        ctx.registry.key = regex.matcher(key).replaceAll('');
-  - script:
-      description: During registry changes. Remove HKEY_CURRENT_USER\ and HKEY_LOCAL_MACHINE\ before populating registry.key
-      tag: set_registry_key_prev
-      lang: painless
-      if: ctx.registry?.key == null && ctx.m365_defender?.event?.previous?.registry_key != null && ctx.m365_defender.event.previous.registry_key != ''
-      source: |
-        String key = ctx.m365_defender.event.previous.registry_key;
-        def regex = /HKEY_CURRENT_USER\\|HKEY_LOCAL_MACHINE\\/;
-        if (ctx.registry == null) {
-          ctx.registry = new HashMap();
-        }
-        ctx.registry.key = regex.matcher(key).replaceAll('');
+        ctx.registry.hive = params.getOrDefault(name, name);
   - set:
       field: registry.value
       copy_from: m365_defender.event.registry.value_name
