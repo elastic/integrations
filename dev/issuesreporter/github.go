@@ -64,19 +64,26 @@ func (g *GhCli) Exists(ctx context.Context, issue GithubIssue) (bool, GithubIssu
 		"--author",
 		issue.user,
 		"--json",
-		"title,body,number,createdAt",
+		"title,body,number,labels,createdAt",
 		"--repo",
 		issue.repository,
+		"--search",
+		fmt.Sprintf("%s in:title sort:created-desc", issue.title),
+		"--limit",
+		"1000",
+		"--jq",
+		"map(select((.labels | length) > 0))| map(.labels = (.labels | map(.name)))",
 	)
 	if err != nil {
 		return false, GithubIssue{}, fmt.Errorf("failed to list issues: %w\n%s", err, stderr.String())
 	}
 
 	type ResponseListIssue struct {
-		CreatedAt string `json:"createdAt"`
-		Title     string `json:"title"`
-		Body      string `json:"body"`
-		Number    int    `json:"number"`
+		CreatedAt string   `json:"createdAt"`
+		Title     string   `json:"title"`
+		Body      string   `json:"body"`
+		Number    int      `json:"number"`
+		Labels    []string `json:"labels"`
 	}
 
 	var list []ResponseListIssue
@@ -89,6 +96,7 @@ func (g *GhCli) Exists(ctx context.Context, issue GithubIssue) (bool, GithubIssu
 		if i.Title == issue.title {
 			issue.number = i.Number
 			issue.description = i.Body
+			issue.labels = i.Labels
 			return true, issue, nil
 		}
 	}
