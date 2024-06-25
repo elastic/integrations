@@ -69,29 +69,9 @@ An example event for `event` looks as following:
                 "uid": "45a19de5-5eef-4090-a2d3-dbceb0a28af8"
             }
         }
-    },
-    "host": {
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "ip": [
-            "172.17.0.11"
-        ],
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ],
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "os": {
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core"
-        }
     }
 }
+
 ```
 
 **Exported fields**

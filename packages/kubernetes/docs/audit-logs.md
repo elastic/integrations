@@ -65,38 +65,6 @@ An example event for `audit` looks as following:
         "type": "logs",
         "dataset": "kubernetes.audit_logs"
     },
-    "host": {
-        "hostname": "kind-control-plane",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "20.04.4 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "containerized": false,
-        "ip": [
-            "10.244.0.1",
-            "10.244.0.1",
-            "10.244.0.1",
-            "172.30.0.3",
-            "172.18.0.2",
-            "fc00:f853:ccd:e793::2",
-            "fe80::42:acff:fe12:2"
-        ],
-        "name": "kind-control-plane",
-        "id": "5016511f0829451ea244f458eebf2212",
-        "mac": [
-            "02:42:ac:12:00:02",
-            "02:42:ac:1e:00:03",
-            "3a:ba:49:df:78:35",
-            "86:c7:fe:c8:fa:22",
-            "d6:48:c1:a2:a4:15"
-        ],
-        "architecture": "x86_64"
-    },
     "elastic_agent": {
         "id": "6e730a0c-7da5-48ff-b4c9-f6c63844975d",
         "version": "8.4.0",
@@ -108,6 +76,7 @@ An example event for `audit` looks as following:
         "dataset": "kubernetes.audit_logs"
     }
 }
+
 ```
 
 **Exported fields**

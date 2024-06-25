@@ -152,28 +152,6 @@ An example event for `container` looks as following:
         "address": "https://kind-control-plane:10250/stats/summary",
         "type": "kubernetes"
     },
-    "host": {
-        "hostname": "kind-control-plane",
-        "os": {
-            "kernel": "5.10.47-linuxkit",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "10.244.0.1"
-        ],
-        "name": "kind-control-plane",
-        "id": "85e35c2b5e1b39ba72393a6baf6ee7cd",
-        "mac": [
-            "fe:ec:82:9f:29:19"
-        ],
-        "architecture": "x86_64"
-    },
     "metricset": {
         "period": 10000,
         "name": "container"
@@ -186,6 +164,7 @@ An example event for `container` looks as following:
         "dataset": "kubernetes.container"
     }
 }
+
 ```
 
 **Exported fields**
@@ -303,51 +282,6 @@ An example event for `node` looks as following:
         "type": "kubernetes",
         "address": "minikube:10250"
     },
-    "host": {
-        "containerized": false,
-        "ip": [
-            "192.168.64.10",
-            "fe80::a883:2fff:fe7f:6b12",
-            "172.17.0.1",
-            "fe80::42:d4ff:fe8c:9493",
-            "fe80::2859:80ff:fe9e:fcd6",
-            "fe80::d83a:d9ff:fee9:7052",
-            "fe80::880a:b6ff:fe18:ba76",
-            "fe80::f447:faff:fe80:e88b",
-            "fe80::9cc3:ffff:fe95:e48e",
-            "fe80::6c1c:29ff:fe50:d40c",
-            "fe80::b4f3:11ff:fe60:14ed",
-            "fe80::20f2:2aff:fe96:1e7b",
-            "fe80::5434:baff:fede:5720",
-            "fe80::a878:91ff:fe29:81f7"
-        ],
-        "mac": [
-            "aa:83:2f:7f:6b:12",
-            "02:42:d4:8c:94:93",
-            "2a:59:80:9e:fc:d6",
-            "da:3a:d9:e9:70:52",
-            "8a:0a:b6:18:ba:76",
-            "f6:47:fa:80:e8:8b",
-            "9e:c3:ff:95:e4:8e",
-            "6e:1c:29:50:d4:0c",
-            "b6:f3:11:60:14:ed",
-            "22:f2:2a:96:1e:7b",
-            "56:34:ba:de:57:20",
-            "aa:78:91:29:81:f7"
-        ],
-        "name": "minikube",
-        "hostname": "minikube",
-        "architecture": "x86_64",
-        "os": {
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81"
-        },
-        "id": "b0e83d397c054b8a99a431072fe4617b"
-    },
     "metricset": {
         "name": "node",
         "period": 10000
@@ -440,6 +374,7 @@ An example event for `node` looks as following:
         "version": "1.5.0"
     }
 }
+
 ```
 
 **Exported fields**
@@ -642,28 +577,6 @@ An example event for `pod` looks as following:
         "type": "metrics",
         "dataset": "kubernetes.pod"
     },
-    "host": {
-        "hostname": "kind-control-plane",
-        "os": {
-            "kernel": "5.10.47-linuxkit",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "10.244.0.1"
-        ],
-        "name": "kind-control-plane",
-        "id": "85e35c2b5e1b39ba72393a6baf6ee7cd",
-        "mac": [
-            "fe:ec:82:9f:29:19"
-        ],
-        "architecture": "x86_64"
-    },
     "metricset": {
         "period": 10000,
         "name": "pod"
@@ -676,6 +589,7 @@ An example event for `pod` looks as following:
         "dataset": "kubernetes.pod"
     }
 }
+
 ```
 
 **Exported fields**
@@ -788,51 +702,6 @@ An example event for `system` looks as following:
     "ecs": {
         "version": "1.5.0"
     },
-    "host": {
-        "mac": [
-            "aa:83:2f:7f:6b:12",
-            "02:42:d4:8c:94:93",
-            "2a:59:80:9e:fc:d6",
-            "da:3a:d9:e9:70:52",
-            "8a:0a:b6:18:ba:76",
-            "f6:47:fa:80:e8:8b",
-            "9e:c3:ff:95:e4:8e",
-            "6e:1c:29:50:d4:0c",
-            "b6:f3:11:60:14:ed",
-            "22:f2:2a:96:1e:7b",
-            "56:34:ba:de:57:20",
-            "aa:78:91:29:81:f7"
-        ],
-        "hostname": "minikube",
-        "name": "minikube",
-        "architecture": "x86_64",
-        "os": {
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core",
-            "platform": "centos"
-        },
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "ip": [
-            "192.168.64.10",
-            "fe80::a883:2fff:fe7f:6b12",
-            "172.17.0.1",
-            "fe80::42:d4ff:fe8c:9493",
-            "fe80::2859:80ff:fe9e:fcd6",
-            "fe80::d83a:d9ff:fee9:7052",
-            "fe80::880a:b6ff:fe18:ba76",
-            "fe80::f447:faff:fe80:e88b",
-            "fe80::9cc3:ffff:fe95:e48e",
-            "fe80::6c1c:29ff:fe50:d40c",
-            "fe80::b4f3:11ff:fe60:14ed",
-            "fe80::20f2:2aff:fe96:1e7b",
-            "fe80::5434:baff:fede:5720",
-            "fe80::a878:91ff:fe29:81f7"
-        ]
-    },
     "agent": {
         "ephemeral_id": "b964a246-96c0-456a-a5c2-8c8b1040ecaf",
         "id": "f7ec69f9-4997-4e76-b6c7-0c75206b727a",
@@ -875,6 +744,7 @@ An example event for `system` looks as following:
         "period": 10000
     }
 }
+
 ```
 
 **Exported fields**
@@ -996,51 +866,6 @@ An example event for `volume` looks as following:
             "name": "minikube"
         }
     },
-    "host": {
-        "architecture": "x86_64",
-        "os": {
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core"
-        },
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "ip": [
-            "192.168.64.10",
-            "fe80::a883:2fff:fe7f:6b12",
-            "172.17.0.1",
-            "fe80::42:d4ff:fe8c:9493",
-            "fe80::2859:80ff:fe9e:fcd6",
-            "fe80::d83a:d9ff:fee9:7052",
-            "fe80::880a:b6ff:fe18:ba76",
-            "fe80::f447:faff:fe80:e88b",
-            "fe80::9cc3:ffff:fe95:e48e",
-            "fe80::6c1c:29ff:fe50:d40c",
-            "fe80::b4f3:11ff:fe60:14ed",
-            "fe80::20f2:2aff:fe96:1e7b",
-            "fe80::5434:baff:fede:5720",
-            "fe80::a878:91ff:fe29:81f7"
-        ],
-        "name": "minikube",
-        "mac": [
-            "aa:83:2f:7f:6b:12",
-            "02:42:d4:8c:94:93",
-            "2a:59:80:9e:fc:d6",
-            "da:3a:d9:e9:70:52",
-            "8a:0a:b6:18:ba:76",
-            "f6:47:fa:80:e8:8b",
-            "9e:c3:ff:95:e4:8e",
-            "6e:1c:29:50:d4:0c",
-            "b6:f3:11:60:14:ed",
-            "22:f2:2a:96:1e:7b",
-            "56:34:ba:de:57:20",
-            "aa:78:91:29:81:f7"
-        ],
-        "hostname": "minikube"
-    },
     "agent": {
         "type": "metricbeat",
         "version": "8.0.0",
@@ -1054,6 +879,7 @@ An example event for `volume` looks as following:
         "duration": 12481688
     }
 }
+
 ```
 
 **Exported fields**
