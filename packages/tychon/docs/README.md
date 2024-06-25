@@ -96,6 +96,7 @@ TYCHON scans Endpoint ARP Tables and returns the results.
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
 
@@ -185,6 +186,7 @@ TYCHON scans for Endpoint CPU's and returns the results.
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
 
@@ -267,6 +269,7 @@ TYCHON scans for Endpoint vulnerablities and returns the results.
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 | vulnerability.category | The type of system or architecture that the vulnerability affects. These may be platform-specific (for example, Debian or SUSE) or general (for example, Database or Firewall). For example (https://qualysguard.qualys.com/qwebhelp/fo_portal/knowledgebase/vulnerability_categories.htm[Qualys vulnerability categories]) This field must be an array. | keyword |
 | vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
@@ -395,6 +398,7 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | trellix.service.pa.version | Trellix Service Pa Version. | version |
 | trellix.service.rsd.status | Trellix Service Rsd Status. | keyword |
 | trellix.service.rsd.version | Trellix Service Rsd Version. | version |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 | windows_defender.service.antimalware.engine_version | Windows Defender Service Antimalware Engine Version. | keyword |
 | windows_defender.service.antimalware.product_version | Windows Defender Service Antimalware Product Version. | keyword |
@@ -511,6 +515,7 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
@@ -618,6 +623,7 @@ The TYCHON script scans an endpoint's Hard Drive Configurations and returns info
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
 
@@ -707,6 +713,7 @@ The TYCHON script scans an endpoint's Hardware Configurations and returns inform
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
 
@@ -819,6 +826,7 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.definition.oval | Tychon Definition Oval. | date |
 | tychon.definition.stig | Tychon Definition Stig. | date |
 | tychon.id | TYCHON unique host identifier. | keyword |
@@ -924,6 +932,7 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
 
@@ -1021,6 +1030,7 @@ The TYCHON script scans an endpoint's Software Inventory and returns information
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
 
@@ -1130,6 +1140,7 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
 
@@ -1210,6 +1221,7 @@ The TYCHON script scans an endpoint's Volume Configurations and returns informat
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 | volume.automount | Volume Automount. | boolean |
 | volume.block_size | Volume Block Size. | long |
@@ -1319,6 +1331,7 @@ TYCHON gathers which Windows features have been enabled on endpoints and returns
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
 
@@ -1404,6 +1417,7 @@ TYCHON has integtred with DISA DATT and gathering what Operational Attributes ha
 | script.type | Scanner Script Type. | keyword |
 | script.version | Scanner Script Version. | version |
 | tags | List of keywords used to tag each event. | keyword |
+| tychon.data.version | Tychon data version | keyword |
 | tychon.id | TYCHON unique host identifier. | keyword |
 
 
