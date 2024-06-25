@@ -32,12 +32,12 @@ func (t *testRunner) Exec(ctx context.Context, args ...string) (stdout, stderr b
 func TestCreateIssue(t *testing.T) {
 	cases := []struct {
 		title    string
-		issue    GithubIssue
+		issue    *GithubIssue
 		expected []string
 	}{
 		{
 			title: "issue without labels",
-			issue: *NewGithubIssue(GithubIssueOptions{
+			issue: NewGithubIssue(GithubIssueOptions{
 				Title:       "my issue",
 				Description: "This is my issue",
 				Repository:  "myorg/repo",
@@ -55,7 +55,7 @@ func TestCreateIssue(t *testing.T) {
 		},
 		{
 			title: "issue with labels",
-			issue: *NewGithubIssue(GithubIssueOptions{
+			issue: NewGithubIssue(GithubIssueOptions{
 				Title:       "my issue labels",
 				Description: "This is my issue",
 				Repository:  "myorg/repo",
@@ -97,11 +97,11 @@ func TestCreateIssue(t *testing.T) {
 func TestGithubIssueExists(t *testing.T) {
 	cases := []struct {
 		title    string
-		issue    GithubIssue
+		issue    *GithubIssue
 		response string
 		found    bool
 		open     bool
-		expected GithubIssue
+		expected *GithubIssue
 	}{
 		{
 			title: "issue found",
@@ -116,14 +116,14 @@ func TestGithubIssueExists(t *testing.T) {
 			  }
 			]
 			`,
-			issue: *NewGithubIssue(GithubIssueOptions{
+			issue: NewGithubIssue(GithubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 				User:       "foo",
 			}),
 			found: true,
 			open:  true,
-			expected: GithubIssue{
+			expected: &GithubIssue{
 				repository:  "myorg/repo",
 				number:      42,
 				title:       "my issue",
@@ -145,14 +145,14 @@ func TestGithubIssueExists(t *testing.T) {
 			  }
 			]
 			`,
-			issue: *NewGithubIssue(GithubIssueOptions{
+			issue: NewGithubIssue(GithubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 				User:       "foo",
 			}),
 			open:     true,
 			found:    false,
-			expected: GithubIssue{},
+			expected: nil,
 		},
 		{
 			title: "issue closed found",
@@ -168,7 +168,7 @@ func TestGithubIssueExists(t *testing.T) {
 			  }
 			]
 			`,
-			issue: *NewGithubIssue(GithubIssueOptions{
+			issue: NewGithubIssue(GithubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 				User:       "foo",
@@ -176,7 +176,7 @@ func TestGithubIssueExists(t *testing.T) {
 			}),
 			open:  false,
 			found: true,
-			expected: GithubIssue{
+			expected: &GithubIssue{
 				repository:  "myorg/repo",
 				number:      42,
 				title:       "my issue",
@@ -208,12 +208,12 @@ func TestGithubIssueExists(t *testing.T) {
 func TestUpdateIssue(t *testing.T) {
 	cases := []struct {
 		title    string
-		issue    GithubIssue
+		issue    *GithubIssue
 		expected []string
 	}{
 		{
 			title: "issue",
-			issue: *NewGithubIssue(GithubIssueOptions{
+			issue: NewGithubIssue(GithubIssueOptions{
 				Title:       "my issue",
 				Description: "This is my new issue",
 				Repository:  "myorg/repo",

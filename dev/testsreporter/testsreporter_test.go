@@ -229,7 +229,7 @@ Test description
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			links, err := previousBuildLinksFromDescription(GithubIssue{description: c.description})
+			links, err := previousBuildLinksFromDescription(&GithubIssue{description: c.description})
 			require.NoError(t, err)
 
 			assert.Len(t, links, len(c.expected))
@@ -279,7 +279,7 @@ First build failed: https://buildkite.com/elastic/integrations/builds/12
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			link, err := firstBuildLinkFromDescription(GithubIssue{description: c.description})
+			link, err := firstBuildLinkFromDescription(&GithubIssue{description: c.description})
 			if c.expectedError {
 				assert.Error(t, err)
 				return

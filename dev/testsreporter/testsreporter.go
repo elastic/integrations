@@ -135,14 +135,14 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 			User:        username,
 		})
 
-		found, issue, err := ghCli.Exists(ctx, *ghIssue, true)
+		found, issue, err := ghCli.Exists(ctx, ghIssue, true)
 		if err != nil {
 			return fmt.Errorf("failed to check if issue already exists: %w", err)
 		}
 
 		if !found {
 			fmt.Println("Issue not found, creating a new one...")
-			if err := createNewIssueForError(ctx, ghCli, *ghIssue, pError, maxPreviousLinks); err != nil {
+			if err := createNewIssueForError(ctx, ghCli, ghIssue, pError, maxPreviousLinks); err != nil {
 				multiErr = errors.Join(multiErr, err)
 			}
 			continue
@@ -158,7 +158,7 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 	return multiErr
 }
 
-func createNewIssueForError(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError, maxPreviousLinks int) error {
+func createNewIssueForError(ctx context.Context, ghCli *GhCli, issue *GithubIssue, packageError PackageError, maxPreviousLinks int) error {
 	found, closedIssue, err := ghCli.Exists(ctx, issue, false)
 	if err != nil {
 		return fmt.Errorf("failed to check if there is a closed issue: %w", err)
@@ -173,7 +173,7 @@ func createNewIssueForError(ctx context.Context, ghCli *GhCli, issue GithubIssue
 	return nil
 }
 
-func updateDescriptionClosedIssueURL(issue GithubIssue, closedIssueURL string, packageError PackageError, maxPreviousLinks int) GithubIssue {
+func updateDescriptionClosedIssueURL(issue *GithubIssue, closedIssueURL string, packageError PackageError, maxPreviousLinks int) *GithubIssue {
 	packageError.ClosedIssueURL = closedIssueURL
 	formatter := ResultsFormatter{
 		result:           packageError,
@@ -190,10 +190,10 @@ func updateDescriptionClosedIssueURL(issue GithubIssue, closedIssueURL string, p
 		Repository:  issue.repository,
 	})
 
-	return *updatedIssue
+	return updatedIssue
 }
 
-func updateIssueLatestBuildLinks(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError, maxPreviousLinks int) error {
+func updateIssueLatestBuildLinks(ctx context.Context, ghCli *GhCli, issue *GithubIssue, packageError PackageError, maxPreviousLinks int) error {
 	currentBuild := packageError.BuildURL
 
 	firstBuild, err := firstBuildLinkFromDescription(issue)
@@ -237,7 +237,7 @@ func updatePreviousLinks(previousLinks []string, currentBuild string, maxPreviou
 	return newLinks
 }
 
-func firstBuildLinkFromDescription(issue GithubIssue) (string, error) {
+func firstBuildLinkFromDescription(issue *GithubIssue) (string, error) {
 	description := issue.description
 	fmt.Printf("description:\n%s\n", description)
 	re := regexp.MustCompile(`First build failed: (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
@@ -259,7 +259,7 @@ func firstBuildLinkFromDescription(issue GithubIssue) (string, error) {
 	return links[0], nil
 }
 
-func previousBuildLinksFromDescription(issue GithubIssue) ([]string, error) {
+func previousBuildLinksFromDescription(issue *GithubIssue) ([]string, error) {
 	description := issue.description
 	re := regexp.MustCompile(`- (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
 

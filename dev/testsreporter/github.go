@@ -60,7 +60,7 @@ func NewGhCli(options GithubOptions) *GhCli {
 	}
 }
 
-func (g *GhCli) Exists(ctx context.Context, issue GithubIssue, open bool) (bool, GithubIssue, error) {
+func (g *GhCli) Exists(ctx context.Context, issue *GithubIssue, open bool) (bool, *GithubIssue, error) {
 	stateIssue := "open"
 	if !open {
 		stateIssue = "closed"
@@ -84,7 +84,7 @@ func (g *GhCli) Exists(ctx context.Context, issue GithubIssue, open bool) (bool,
 		stateIssue,
 	)
 	if err != nil {
-		return false, GithubIssue{}, fmt.Errorf("failed to list issues: %w\n%s", err, stderr.String())
+		return false, nil, fmt.Errorf("failed to list issues: %w\n%s", err, stderr.String())
 	}
 
 	type ResponseListIssue struct {
@@ -101,7 +101,7 @@ func (g *GhCli) Exists(ctx context.Context, issue GithubIssue, open bool) (bool,
 	var list []ResponseListIssue
 	err = json.Unmarshal(stdout.Bytes(), &list)
 	if err != nil {
-		return false, GithubIssue{}, fmt.Errorf("failed to unmarshal list of issues: %w", err)
+		return false, nil, fmt.Errorf("failed to unmarshal list of issues: %w", err)
 	}
 
 	if !open {
@@ -128,14 +128,14 @@ func (g *GhCli) Exists(ctx context.Context, issue GithubIssue, open bool) (bool,
 				User:        issue.user,
 				URL:         i.URL,
 			})
-			return true, *issueGot, nil
+			return true, issueGot, nil
 		}
 	}
 
-	return false, GithubIssue{}, nil
+	return false, nil, nil
 }
 
-func (g *GhCli) Create(ctx context.Context, issue GithubIssue) error {
+func (g *GhCli) Create(ctx context.Context, issue *GithubIssue) error {
 	params := []string{
 		"issue",
 		"create",
@@ -157,7 +157,7 @@ func (g *GhCli) Create(ctx context.Context, issue GithubIssue) error {
 	return nil
 }
 
-func (g *GhCli) Update(ctx context.Context, issue GithubIssue) error {
+func (g *GhCli) Update(ctx context.Context, issue *GithubIssue) error {
 	params := []string{
 		"issue",
 		"edit",
