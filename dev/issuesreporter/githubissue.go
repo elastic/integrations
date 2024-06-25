@@ -23,6 +23,7 @@ type GithubIssueOptions struct {
 	Description string
 	User        string
 	Labels      []string
+	Number      int
 }
 
 func NewGithubIssue(options GithubIssueOptions) *GithubIssue {
@@ -32,6 +33,7 @@ func NewGithubIssue(options GithubIssueOptions) *GithubIssue {
 		repository:  options.Repository,
 		labels:      options.Labels,
 		user:        options.User,
+		number:      options.Number,
 	}
 
 	return &issue

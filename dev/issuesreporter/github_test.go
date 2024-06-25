@@ -92,8 +92,6 @@ func TestCreateIssue(t *testing.T) {
 			assert.Equal(t, c.expected, runner.args)
 		})
 	}
-
-	return
 }
 
 func TestGithubIssueExists(t *testing.T) {
@@ -182,10 +180,12 @@ func TestUpdateIssue(t *testing.T) {
 				Title:       "my issue",
 				Description: "This is my new issue",
 				Repository:  "myorg/repo",
+				Number:      42,
 			}),
 			expected: []string{
 				"issue",
 				"edit",
+				"42",
 				"--body",
 				"This is my new issue",
 				"--repo",
@@ -208,6 +208,4 @@ func TestUpdateIssue(t *testing.T) {
 			assert.Equal(t, c.expected, runner.args)
 		})
 	}
-
-	return
 }
