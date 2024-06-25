@@ -204,7 +204,7 @@ func TestPreviousBuildLinksFromDescription(t *testing.T) {
 		{
 			title: "happy case",
 			description: `
-CI Build: https://buildkite.com/elastic/integrations/builds/10
+First build failed: https://buildkite.com/elastic/integrations/builds/10
 Test description
 - https://buildkite.com/elastic/integrations/builds/1
 - https://buildkite.com/elastic/integrations/builds/2
@@ -248,7 +248,7 @@ func TestFirstLinkFromDescription(t *testing.T) {
 		{
 			title: "happy case",
 			description: `
-First build: https://buildkite.com/elastic/integrations/builds/10
+First build failed: https://buildkite.com/elastic/integrations/builds/10
 Test description
 - https://buildkite.com/elastic/integrations/builds/1
 - https://buildkite.com/elastic/integrations/builds/2
@@ -269,8 +269,8 @@ Test description
 		{
 			title: "more than one link",
 			description: `
-First build: https://buildkite.com/elastic/integrations/builds/10
-First build: https://buildkite.com/elastic/integrations/builds/12
+First build failed: https://buildkite.com/elastic/integrations/builds/10
+First build failed: https://buildkite.com/elastic/integrations/builds/12
 `,
 			expected:      "",
 			expectedError: true,
