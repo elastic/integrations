@@ -222,10 +222,6 @@ processors:
       ignore_missing: true
       if: ctx.file?.extension == null
   - rename:
-      field: fortinet.firewall.hostname
-      target_field: url.domain
-      ignore_missing: true
-  - rename:
       field: fortinet.firewall.ipaddr
       target_field: dns.resolved_ip
       ignore_missing: true
@@ -284,9 +280,23 @@ processors:
   - lowercase:
       field: network.protocol
       ignore_missing: true
-  - rename:
+  - uri_parts:
       field: fortinet.firewall.url
-      target_field: url.path
+      target_field: url
+      keep_original: false
+      if: ctx.fortinet?.firewall?.url != null
+  # Need to do a set, then remove since rename w/ override
+  # is not supported in 8.3.0
+  - set:
+      field: url.domain
+      copy_from: fortinet.firewall.hostname
+      ignore_empty_value: true
+      override: true
+  - remove:
+      field: fortinet.firewall.hostname
+      ignore_missing: true
+  - remove:
+      field: fortinet.firewall.url
       ignore_missing: true
   - rename:
       field: fortinet.firewall.xid

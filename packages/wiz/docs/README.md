@@ -190,7 +190,6 @@ An example event for `audit` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | wiz.audit.action |  | keyword |
 | wiz.audit.action_parameters.client_id |  | keyword |
 | wiz.audit.action_parameters.groups |  | flattened |
@@ -430,7 +429,6 @@ An example event for `issue` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | wiz.issue.created_at |  | date |
 | wiz.issue.due_at |  | date |
 | wiz.issue.entity_snapshot.cloud.platform |  | keyword |
@@ -677,7 +675,6 @@ An example event for `vulnerability` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | wiz.vulnerability.cve_description |  | keyword |
 | wiz.vulnerability.cvss_severity |  | keyword |
 | wiz.vulnerability.data_source_name |  | keyword |

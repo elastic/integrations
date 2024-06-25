@@ -197,6 +197,22 @@ streams:
         required: false
         show_user: false
         description: If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that don’t match one of the regexes will not be processed.
+      - name: endpoint
+        type: text
+        title: Endpoint
+        multi: false
+        required: false
+        show_user: false
+        default: ""
+        description: URL of the entry point for an AWS web service
+      - name: region
+        type: text
+        title: Region
+        multi: false
+        required: false
+        show_user: false
+        default: ""
+        description: The name of the AWS region of the end point
       - name: fips_enabled
         type: bool
         title: Enable S3 FIPS
@@ -238,3 +254,12 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: custom
+        type: yaml
+        title: Custom configurations
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Additional settings to be added to the configuration. Be careful using this as it might break the input as those settings are not validated and can override the settings specified above. See [`aws-s3` input settings docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html) for details.
+

@@ -495,7 +495,6 @@ An example event for `asset` looks as following:
 | google_scc.asset.window.start_time |  | date |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Finding
@@ -782,7 +781,6 @@ An example event for `finding` looks as following:
 | google_scc.finding.vulnerability.cve.upstream_fix_available | Whether upstream fix is available for the CVE. | boolean |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Source
@@ -867,7 +865,6 @@ An example event for `source` looks as following:
 | google_scc.source.name | The relative resource name of this source. See: https://cloud.google.com/apis/design/resource_names#relative_resource_name Example: "organizations/\{organization_id\}/sources/\{source_id\}". | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Audit
@@ -1086,4 +1083,3 @@ An example event for `audit` looks as following:
 | google_scc.audit.trace_sampled | The sampling decision of the trace associated with the log entry. | boolean |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |

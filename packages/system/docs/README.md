@@ -710,6 +710,8 @@ An example event for `security` looks as following:
 | winlog.event_data.AccountName |  | keyword |
 | winlog.event_data.AllowedToDelegateTo |  | keyword |
 | winlog.event_data.Application |  | keyword |
+| winlog.event_data.AttributeValue |  | keyword |
+| winlog.event_data.AttributeValue.wildcard | Multi-field of `winlog.event_data.AttributeValue`. | wildcard |
 | winlog.event_data.AuditPolicyChanges |  | keyword |
 | winlog.event_data.AuditPolicyChangesDescription |  | keyword |
 | winlog.event_data.AuditSourceName |  | keyword |
