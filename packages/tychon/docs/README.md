@@ -412,14 +412,30 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | windows_defender.service.antimalware.product_version | Windows Defender Service Antimalware Product Version. | keyword |
 | windows_defender.service.antimalware.signature_version | Windows Defender Service Antimalware Signature Version. | keyword |
 | windows_defender.service.antimalware.status | Windows Defender Service Antimalware Status. | keyword |
+| windows_defender.service.antispyware.signature_age | Windows Defender Service Antispyware Signature Age. | long |
+| windows_defender.service.antispyware.signature_last_updated | Windows Defender Service Antispyware Signature Last Updated. | date |
 | windows_defender.service.antispyware.signature_version | Windows Defender Service Antispyware Signature Version. | keyword |
 | windows_defender.service.antispyware.status | Windows Defender Service Antispyware Status. | keyword |
 | windows_defender.service.antivirus.full_scan.signature_version | Windows Defender Service Antivirus Full Scan Signature Version. | keyword |
 | windows_defender.service.antivirus.quick_scan.signature_version | Windows Defender Service Antivirus Quick Scan Signature Version. | keyword |
+| windows_defender.service.antivirus.signature_age | Windows Defender Service Antivirus Signature Age. | long |
+| windows_defender.service.antivirus.signature_last_updated | Windows Defender Service Antivirus Signature Last Updated. | date |
 | windows_defender.service.antivirus.status | Windows Defender Service Antivirus Status. | keyword |
 | windows_defender.service.behavior_monitor.status | Windows Defender Service Behavior Monitor Status. | keyword |
+| windows_defender.service.firewall.domain.default_inbound_action | Windows Defender Service Firewall Domain Default Inbound Action. | keyword |
+| windows_defender.service.firewall.domain.enabled | Windows Defender Service Firewall Domain Enabled. | boolean |
+| windows_defender.service.firewall.domain.log_blocked | Windows Defender Service Firewall Domain Log Blocked. | boolean |
+| windows_defender.service.firewall.private.default_inbound_action | Windows Defender Service Firewall Private Default Inbound Action. | keyword |
+| windows_defender.service.firewall.private.enabled | Windows Defender Service Firewall Private Enabled. | boolean |
+| windows_defender.service.firewall.private.log_blocked | Windows Defender Service Firewall Private Log Blocked. | boolean |
+| windows_defender.service.firewall.public.default_inbound_action | Windows Defender Service Firewall Public Default Inbound Action. | keyword |
+| windows_defender.service.firewall.public.enabled | Windows Defender Service Firewall Public Enabled. | boolean |
+| windows_defender.service.firewall.public.log_blocked | Windows Defender Service Firewall Public Log Blocked. | boolean |
+| windows_defender.service.firewall.status | Windows Defender Service Firewall Status. | keyword |
 | windows_defender.service.ioav_protection.status | Windows Defender Service Ioav Protection Status. | keyword |
 | windows_defender.service.nis.engine_version | Windows Defender Service Nis Engine Version. | keyword |
+| windows_defender.service.nis.signature_age | Windows Defender Service Nis Signature Age. | long |
+| windows_defender.service.nis.signature_out_of_date | Windows Defender Service Nis Signature Out Of Date. | boolean |
 | windows_defender.service.nis.signature_version | Windows Defender Service Nis Signature Version. | keyword |
 | windows_defender.service.nis.status | Windows Defender Service Nis Status. | keyword |
 | windows_defender.service.on_access_protection.status | Windows Defender Service On Access Protection Status. | keyword |
