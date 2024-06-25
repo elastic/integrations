@@ -195,7 +195,7 @@ func TestErrorPackageName(t *testing.T) {
 	}
 }
 
-func TestBuildLinksFromDescription(t *testing.T) {
+func TestPreviousBuildLinksFromDescription(t *testing.T) {
 	cases := []struct {
 		title       string
 		description string
@@ -229,11 +229,64 @@ Test description
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			links, err := buildLinksFromDescription(GithubIssue{description: c.description})
+			links, err := previousBuildLinksFromDescription(GithubIssue{description: c.description})
 			require.NoError(t, err)
 
 			assert.Len(t, links, len(c.expected))
 			assert.Equal(t, c.expected, links)
+		})
+	}
+}
+
+func TestFirstLinkFromDescription(t *testing.T) {
+	cases := []struct {
+		title         string
+		description   string
+		expected      string
+		expectedError bool
+	}{
+		{
+			title: "happy case",
+			description: `
+First build: https://buildkite.com/elastic/integrations/builds/10
+Test description
+- https://buildkite.com/elastic/integrations/builds/1
+- https://buildkite.com/elastic/integrations/builds/2
+   - https://buildkite.com/elastic/integrations/builds/3
+- https://buildkite.com/elastic/integrations-serverless/builds/5
+`,
+			expected:      "https://buildkite.com/elastic/integrations/builds/10",
+			expectedError: false,
+		},
+		{
+			title: "no links",
+			description: `
+Test description
+`,
+			expected:      "",
+			expectedError: true,
+		},
+		{
+			title: "more than one link",
+			description: `
+First build: https://buildkite.com/elastic/integrations/builds/10
+First build: https://buildkite.com/elastic/integrations/builds/12
+`,
+			expected:      "",
+			expectedError: true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			link, err := firstBuildLinkFromDescription(GithubIssue{description: c.description})
+			if c.expectedError {
+				assert.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Equal(t, c.expected, link)
 		})
 	}
 }

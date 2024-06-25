@@ -133,19 +133,65 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 		}
 		fmt.Printf("Issue found: %t (%d)\n", found, issue.Number())
 		if !found {
-			err := ghCli.Create(ctx, *ghIssue)
-			if err != nil {
+			if err := ghCli.Create(ctx, *ghIssue); err != nil {
 				log.Printf("Failed to create issue (title: %s): %s", ghIssue.title, err)
-				multiErr = errors.Join(multiErr, err)
+				multiErr = errors.Join(multiErr, fmt.Errorf("failed to create issue (title: %s): %w", ghIssue.title, err))
 			}
 			continue
 		}
-		fmt.Printf("Updating issue... \n")
+
+		if err := updateIssueDescription(ctx, ghCli, *ghIssue, e); err != nil {
+			multiErr = errors.Join(multiErr, fmt.Errorf("failed to update issue (title: %s): %w", ghIssue.title, err))
+		}
 	}
 	return multiErr
 }
 
-func buildLinksFromDescription(issue GithubIssue) ([]string, error) {
+func updateIssueDescription(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError) error {
+	fmt.Printf("Updating issue... \n")
+	firstBuild, err := firstBuildLinkFromDescription(issue)
+	if err != nil {
+		return fmt.Errorf("failed to read first link from issue (title: %s): %w", issue.title, err)
+	}
+
+	previousLinks, err := previousBuildLinksFromDescription(issue)
+	if err != nil {
+		return fmt.Errorf("failed to read previous links from issue (title: %s): %w", issue.title, err)
+	}
+
+	packageError.PreviousBuilds = previousLinks
+	packageError.BuildURL = firstBuild
+	formatter := ResultsFormatter{packageError}
+	issue.description = formatter.Description()
+
+	if err := ghCli.Update(ctx, issue); err != nil {
+		return fmt.Errorf("failed to update issue (title: %s): %w", issue.title, err)
+	}
+	return nil
+}
+
+func firstBuildLinkFromDescription(issue GithubIssue) (string, error) {
+	description := issue.description
+	re := regexp.MustCompile(`First build: (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
+
+	links := []string{}
+	for _, matches := range re.FindAllStringSubmatch(description, -1) {
+		for i, name := range re.SubexpNames() {
+			if i == 0 || name != "url" {
+				continue
+			}
+
+			fmt.Println("Match found:", matches[i])
+			links = append(links, matches[i])
+		}
+	}
+	if len(links) != 1 {
+		return "", fmt.Errorf("incorrect number of links found for the first build: %d", len(links))
+	}
+	return links[0], nil
+}
+
+func previousBuildLinksFromDescription(issue GithubIssue) ([]string, error) {
 	description := issue.description
 	re := regexp.MustCompile(`- (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
 
