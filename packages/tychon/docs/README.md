@@ -390,9 +390,16 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | trellix.service.dlp.status | Trellix Service Dlp Status. | keyword |
 | trellix.service.dlp.version | Trellix Service Dlp Version. | version |
 | trellix.service.ens.cloud_enabled | Trellix Service Ens Cloud Enabled. | boolean |
+| trellix.service.ens.engine_version | Trellix Service Ens Engine Version. | version |
+| trellix.service.ens.oas_enabled | Trellix Service Ens OAS enabled. | boolean |
+| trellix.service.ens.signature_date | Trellix Service Ens Signature Date. | date |
 | trellix.service.ens.signature_version | Trellix Service Ens Signature Version. | keyword |
 | trellix.service.ens.status | Trellix Service Ens Status. | keyword |
 | trellix.service.ens.version | Trellix Service Ens Version. | version |
+| trellix.service.epo.guid | Trellix Service EPO GUID. | keyword |
+| trellix.service.epo.version | Trellix Service EPO Version. | version |
+| trellix.service.ma.guid | Trellix Service Ma GUID. | keyword |
+| trellix.service.ma.last_checkin | Trellix Service Ma Last Check-in. | keyword |
 | trellix.service.ma.status | Trellix Service Ma Status. | keyword |
 | trellix.service.ma.version | Trellix Service Ma Version. | version |
 | trellix.service.pa.status | Trellix Service Pa Status. | keyword |
