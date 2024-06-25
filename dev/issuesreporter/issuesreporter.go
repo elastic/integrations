@@ -105,7 +105,7 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 		return err
 	}
 	ghCli := NewGhCli(GithubOptions{
-		DryRun: true,
+		DryRun: false,
 	})
 	var multiErr error
 	for _, e := range packageErrors {
