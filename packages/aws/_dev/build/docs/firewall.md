@@ -65,7 +65,7 @@ monitor network activity.
 
 {{event "firewall_logs" }}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -77,7 +77,7 @@ The `firewall_metrics` dataset collects AWS Network Firewall metrics.
 
 {{event "firewall_metrics" }}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

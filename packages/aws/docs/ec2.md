@@ -66,7 +66,7 @@ For logs stored in S3, you must export logs from log groups to an Amazon S3 buck
 With this data stream, EC2 logs will be parsed into fields like  `ip_address`
 and `process.name`. For logs from other services, please use the **AWS CloudWatch** integration.
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -336,7 +336,7 @@ An example event for `ec2` looks as following:
 }
 ```
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

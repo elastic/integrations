@@ -69,7 +69,7 @@ The `number_of_workers` setting defines the number of workers assigned to readin
 
 The `elb` dataset collects logs from AWS ELBs.
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -81,7 +81,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{event "elb_metrics"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

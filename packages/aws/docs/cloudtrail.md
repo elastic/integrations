@@ -68,7 +68,7 @@ files to a specific Amazon S3 bucket.
 of the CloudTrail Digest S3 Objects you'd like to read.
 If blank, CloudTrail Digest logs will be skipped.
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
