@@ -64,7 +64,7 @@ The `activitylogs` data stream of the Azure Logs package will collect any activi
 
 {{event "activitylogs"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

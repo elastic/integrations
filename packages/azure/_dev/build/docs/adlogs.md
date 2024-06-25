@@ -86,7 +86,7 @@ Retrieves Microsoft Entra ID sign-in logs. The sign-ins report provides informat
 
 {{event "signinlogs"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -98,7 +98,7 @@ Retrieves Microsoft Entra ID Protection logs. The [Microsoft Entra ID Protection
 
 {{event "identity_protection"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -117,7 +117,7 @@ The Provisioning Logs contain a lot of details about a inbound/outbound sync act
 
 {{event "provisioning"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -129,7 +129,7 @@ Retrieves Microsoft Entra ID audit logs. The audit logs provide traceability thr
 
 {{event "auditlogs"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
