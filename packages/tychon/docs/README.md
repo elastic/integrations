@@ -389,6 +389,7 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | trellix.service.accm.version | Trellix Service Accm Version. | version |
 | trellix.service.dlp.status | Trellix Service Dlp Status. | keyword |
 | trellix.service.dlp.version | Trellix Service Dlp Version. | version |
+| trellix.service.ens.cloud_enabled | Trellix Service Ens Cloud Enabled. | boolean |
 | trellix.service.ens.signature_version | Trellix Service Ens Signature Version. | keyword |
 | trellix.service.ens.status | Trellix Service Ens Status. | keyword |
 | trellix.service.ens.version | Trellix Service Ens Version. | version |
