@@ -52,6 +52,15 @@ func (r ResultsFormatter) Summary() string {
 		sb.WriteString(r.result.DataStream)
 		sb.WriteString("`\n")
 	}
+	if len(r.Owners()) > 0 {
+		sb.WriteString("\n")
+		sb.WriteString("Owners:\n")
+		for _, owner := range r.Owners() {
+			sb.WriteString("- ")
+			sb.WriteString(owner)
+			sb.WriteString("\n")
+		}
+	}
 
 	return sb.String()
 }
@@ -88,15 +97,6 @@ func (r ResultsFormatter) Description() string {
 		for _, link := range r.result.PreviousBuilds {
 			sb.WriteString("- ")
 			sb.WriteString(link)
-			sb.WriteString("\n")
-		}
-	}
-
-	if len(r.Owners()) > 0 {
-		sb.WriteString("Owners:\n")
-		for _, owner := range r.Owners() {
-			sb.WriteString("- ")
-			sb.WriteString(owner)
 			sb.WriteString("\n")
 		}
 	}
