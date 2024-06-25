@@ -21,7 +21,7 @@ The application logs dataset parses single file format introduced in 3.7.0.
 Application logs collects standard RabbitMQ logs.
 It will only support RabbitMQ default i.e RFC 3339 timestamp format.
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -33,7 +33,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{event "connection"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -43,7 +43,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{event "exchange"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -60,7 +60,7 @@ It supports two modes to collect data which can be selected with the "Collection
 
 {{event "node"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -70,7 +70,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{event "queue"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

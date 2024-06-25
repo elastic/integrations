@@ -47,7 +47,7 @@ The `access` data stream collects Access logs form `Access.log`.
 
 {{event "access"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -59,7 +59,7 @@ The `admin_server` data stream collects Admin Server logs from `Adminserver.log`
 
 {{event "admin_server"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -71,7 +71,7 @@ The `domain` data stream collects Domain logs from `Domain.log`.
 
 {{event "domain"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -83,7 +83,7 @@ The `managed_server` data stream collects Managed Server logs from `Managedserve
 
 {{event "managed_server"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -97,7 +97,7 @@ The `deployed_application` data stream collects metrics of Deployed Application.
 
 {{event "deployed_application"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -109,7 +109,7 @@ This `threadpool` data stream collects metrics of ThreadPool.
 
 {{event "threadpool"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
