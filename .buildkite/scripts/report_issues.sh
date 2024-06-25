@@ -12,8 +12,13 @@ download_test_results() {
     mkdir -p "${test_results_folder}"
 
     if ! buildkite-agent artifact download "${buildkite_pattern}" . ; then
-      echo "[report] No test results generated"
-      return 1
+        message="Could not download XML artifacts. Skip creating issues."
+        echo "--- :boom: ${message}"
+        buildkite-agent annotate \
+            "[Report Failed Tests] ${message}" \
+            --context "ctx-report-failed-tests-no-files" \
+            --style "warning"
+        return 1
     fi
     return 0
 }
@@ -30,6 +35,6 @@ if running_on_buildkite ; then
     fi
 fi
 
-echo "--- Report Issues"
+echo "--- Create GitHub Issues for failed tests"
 mage -v ReportIssues build/test-results
 
