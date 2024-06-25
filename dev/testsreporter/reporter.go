@@ -118,7 +118,6 @@ func updatePreviousLinks(previousLinks []string, currentBuild string, maxPreviou
 
 func firstBuildLinkFromDescription(issue *GithubIssue) (string, error) {
 	description := issue.description
-	fmt.Printf("description:\n%s\n", description)
 	re := regexp.MustCompile(`First build failed: (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
 
 	links := []string{}
@@ -128,7 +127,6 @@ func firstBuildLinkFromDescription(issue *GithubIssue) (string, error) {
 				continue
 			}
 
-			fmt.Println("Match found:", matches[i])
 			links = append(links, matches[i])
 		}
 	}
@@ -149,7 +147,6 @@ func previousBuildLinksFromDescription(issue *GithubIssue) ([]string, error) {
 				continue
 			}
 
-			fmt.Println("Match found:", matches[i])
 			links = append(links, matches[i])
 		}
 	}
