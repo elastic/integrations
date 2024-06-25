@@ -93,7 +93,7 @@ type checkOptions struct {
 	CodeownersPath string
 }
 
-func Check(username, resultsPath, buildURL, stackVersion string, serverless bool) error {
+func Check(username, resultsPath, buildURL, stackVersion string, serverless bool, maxPreviousLinks int) error {
 	fmt.Println("path: ", resultsPath)
 	packageErrors, err := errorsFromTests(checkOptions{
 		ResultsPath:  resultsPath,
@@ -131,8 +131,8 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 		if err != nil {
 			return fmt.Errorf("failed to check if issue already exists: %w", err)
 		}
-		fmt.Printf("Issue found: %t (%d)\n", found, issue.Number())
 		if !found {
+			fmt.Printf("Issue not found, creating a new one...")
 			if err := ghCli.Create(ctx, *ghIssue); err != nil {
 				log.Printf("Failed to create issue (title: %s): %s", ghIssue.title, err)
 				multiErr = errors.Join(multiErr, fmt.Errorf("failed to create issue (title: %s): %w", ghIssue.title, err))
@@ -140,15 +140,18 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 			continue
 		}
 
-		if err := updateIssueDescription(ctx, ghCli, *ghIssue, e); err != nil {
+		fmt.Printf("Issue found: %t (%d)\n", found, issue.Number())
+		if err := updateIssueDescription(ctx, ghCli, issue, e, maxPreviousLinks); err != nil {
 			multiErr = errors.Join(multiErr, fmt.Errorf("failed to update issue (title: %s): %w", ghIssue.title, err))
 		}
 	}
 	return multiErr
 }
 
-func updateIssueDescription(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError) error {
+func updateIssueDescription(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError, previousLinksNumber int) error {
 	fmt.Printf("Updating issue... \n")
+	currentBuild := packageError.BuildURL
+
 	firstBuild, err := firstBuildLinkFromDescription(issue)
 	if err != nil {
 		return fmt.Errorf("failed to read first link from issue (title: %s): %w", issue.title, err)
@@ -159,7 +162,7 @@ func updateIssueDescription(ctx context.Context, ghCli *GhCli, issue GithubIssue
 		return fmt.Errorf("failed to read previous links from issue (title: %s): %w", issue.title, err)
 	}
 
-	packageError.PreviousBuilds = previousLinks
+	packageError.PreviousBuilds = updatePreviousLinks(previousLinks, currentBuild, previousLinksNumber)
 	packageError.BuildURL = firstBuild
 	formatter := ResultsFormatter{packageError}
 	issue.description = formatter.Description()
@@ -170,9 +173,23 @@ func updateIssueDescription(ctx context.Context, ghCli *GhCli, issue GithubIssue
 	return nil
 }
 
+func updatePreviousLinks(previousLinks []string, currentBuild string, previousLinksNumber int) []string {
+	var newLinks []string
+	newLinks = append(newLinks, previousLinks...)
+	newLinks = append(newLinks, currentBuild)
+
+	if len(newLinks) > previousLinksNumber {
+		firstIndex := len(newLinks) - previousLinksNumber
+		newLinks = newLinks[firstIndex:]
+	}
+
+	return newLinks
+}
+
 func firstBuildLinkFromDescription(issue GithubIssue) (string, error) {
 	description := issue.description
-	re := regexp.MustCompile(`First build: (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
+	fmt.Printf("description:\n%s\n", description)
+	re := regexp.MustCompile(`First build failed: (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
 
 	links := []string{}
 	for _, matches := range re.FindAllStringSubmatch(description, -1) {

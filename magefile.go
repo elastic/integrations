@@ -22,7 +22,8 @@ import (
 )
 
 const (
-	defaultResultsPath = "build/test-results/"
+	defaultResultsPath         = "build/test-results/"
+	defaultPreviousLinksNumber = 10
 )
 
 var (
@@ -156,6 +157,6 @@ func ReportIssues(testResultsFolder string) error {
 		}
 	}
 
-	mg.Deps(mg.F(issuesreporter.Check, username, testResultsFolder, buildURL, stackVersion, serverless))
+	mg.Deps(mg.F(issuesreporter.Check, username, testResultsFolder, buildURL, stackVersion, serverless, defaultPreviousLinksNumber))
 	return nil
 }

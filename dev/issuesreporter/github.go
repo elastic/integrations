@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/cli/go-gh/v2"
@@ -129,6 +130,7 @@ func (g *GhCli) Update(ctx context.Context, issue GithubIssue) error {
 	params := []string{
 		"issue",
 		"edit",
+		strconv.Itoa(issue.number),
 		"--body",
 		issue.description,
 		"--repo",

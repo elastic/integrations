@@ -21,12 +21,6 @@ func (r ResultsFormatter) Title() string {
 }
 
 func (r ResultsFormatter) Owners() []string {
-	// TODO: remove replace to allow mention teams
-	// teams := []string{}
-	// for _, t := range r.result.Teams {
-	// 	teams = append(teams, strings.ReplaceAll(t, "@", ""))
-	// }
-	// return teams
 	return r.result.Teams
 }
 
@@ -87,13 +81,13 @@ func (r ResultsFormatter) Description() string {
 		sb.WriteString("\n")
 	}
 	sb.WriteString("\n")
-	sb.WriteString("CI Builds:\n")
-	sb.WriteString("- ")
+	sb.WriteString("First build failed: ")
 	sb.WriteString(r.result.BuildURL)
+	sb.WriteString("\n")
 	sb.WriteString("\n")
 
 	if len(r.result.PreviousBuilds) > 0 {
-		sb.WriteString("Previous failed builds:\n")
+		sb.WriteString(fmt.Sprintf("Latest %d failed builds:\n", len(r.result.PreviousBuilds)))
 		for _, link := range r.result.PreviousBuilds {
 			sb.WriteString("- ")
 			sb.WriteString(link)
