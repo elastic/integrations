@@ -96,12 +96,13 @@ func (r ResultsFormatter) Description() string {
 	}
 
 	if len(r.result.PreviousBuilds) > 0 {
-		message := "Latest failed builds"
+		message := "Latest failed builds:"
 		if len(r.result.PreviousBuilds) == r.maxPreviousLinks {
-			message = fmt.Sprintf("Latest %d failed builds", r.maxPreviousLinks)
+			message = fmt.Sprintf("Latest %d failed builds:", r.maxPreviousLinks)
 		}
 
 		sb.WriteString(message)
+		sb.WriteString("\n")
 		for _, link := range r.result.PreviousBuilds {
 			sb.WriteString("- ")
 			sb.WriteString(link)
