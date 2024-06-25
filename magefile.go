@@ -44,11 +44,6 @@ func Check() error {
 	return nil
 }
 
-func Test() error {
-	mg.Deps(goTest)
-	return nil
-}
-
 func Clean() error {
 	return os.RemoveAll(buildDir)
 }
