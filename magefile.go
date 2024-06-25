@@ -23,7 +23,7 @@ import (
 
 const (
 	defaultResultsPath           = "build/test-results/"
-	defaultPreviousLinksNumber   = 10
+	defaultPreviousLinksNumber   = 4
 	defaultServerlessProjectType = "observability"
 )
 
