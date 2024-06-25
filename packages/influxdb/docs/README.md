@@ -19,7 +19,7 @@ This integration has been tested against InfluxDB OSS 2.4, InfluxDB OSS 2.0
 
 Status metrics include details of memory usage, OS thread usage, query statistics, organization & users statistics, tasks & task workers, WAL size etc.
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -204,7 +204,7 @@ An example event for `status` looks as following:
 
 Advanced status metric include details of query execution statistics, compaction levels, retention details, errors & partial writes, latency etc.
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

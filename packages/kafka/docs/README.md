@@ -16,7 +16,7 @@ The `broker` metricset requires Jolokia to fetch JMX metrics. Refer to the Metri
 
 The `log` dataset collects and parses logs from Kafka servers.
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -90,7 +90,7 @@ An example event for `broker` looks as following:
 }
 ```
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -207,7 +207,7 @@ An example event for `consumergroup` looks as following:
 }
 ```
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -308,7 +308,7 @@ An example event for `partition` looks as following:
 }
 ```
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

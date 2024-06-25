@@ -133,7 +133,7 @@ When the password contains special characters, pass these special characters usi
 
 The SQL Server audit dataset provides events from the configured Windows event log channel. All SQL Server audit-specific fields are available in the `sqlserver.audit` field group.
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -145,7 +145,7 @@ The Microsoft SQL Server `log` dataset parses error logs created by the Microsof
 
 {{event "log"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -159,7 +159,7 @@ The Microsoft SQL Server `performance` dataset provides metrics from the perform
 
 {{event "performance"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -171,7 +171,7 @@ The Microsoft SQL Server `transaction_log` dataset provides metrics from the log
 
 {{event "transaction_log"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

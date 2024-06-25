@@ -166,7 +166,7 @@ An example event for `log` looks as following:
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -337,7 +337,7 @@ An example event for `collstats` looks as following:
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -490,7 +490,7 @@ An example event for `dbstats` looks as following:
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -864,7 +864,7 @@ An example event for `metrics` looks as following:
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -1107,7 +1107,7 @@ An example event for `replstatus` looks as following:
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -1445,7 +1445,7 @@ An example event for `status` looks as following:
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

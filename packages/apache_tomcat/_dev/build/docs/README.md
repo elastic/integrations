@@ -158,7 +158,7 @@ This is the `Access` data stream. This data stream collects logs related to the 
 
 {{event "access"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -170,7 +170,7 @@ This is the `Catalina` data stream. This data stream collects logs related to th
 
 {{event "catalina"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -182,7 +182,7 @@ This is the `Localhost` data stream. This data stream collects logs related to W
 
 {{event "localhost"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -196,7 +196,7 @@ This is the `Cache` data stream. This data stream collects metrics related to th
 
 {{event "cache"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -208,7 +208,7 @@ This is the `connection pool` data stream. This data stream collects metrics rel
 
 {{event "connection_pool"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -220,7 +220,7 @@ This is the `memory` data stream. This data stream collects metrics related to t
 
 {{event "memory"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -232,7 +232,7 @@ This is the `Request` data stream. This data stream collects metrics related to 
 
 {{event "request"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -244,7 +244,7 @@ This is the `session` data stream. This data stream collects metrics related to 
 
 {{event "session"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -256,7 +256,7 @@ This is the `thread pool` data stream. This data stream collects metrics related
 
 {{event "thread_pool"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

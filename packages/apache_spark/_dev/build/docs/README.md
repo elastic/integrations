@@ -108,7 +108,7 @@ The `application` data stream collects metrics related to the number of cores us
 
 {{event "application"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -120,7 +120,7 @@ The `driver` data stream collects metrics related to the driver details, job dur
 
 {{event "driver"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -132,7 +132,7 @@ The `executor` data stream collects metrics related to the operations, memory us
 
 {{event "executor"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -144,7 +144,7 @@ The `node` data stream collects metrics related to the application count, waitin
 
 {{event "node"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

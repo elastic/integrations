@@ -25,7 +25,7 @@ This data stream collects JDBC (Java Database Connectivity) related metrics.
 
 {{event "jdbc"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -37,7 +37,7 @@ This data stream collects Servlet related metrics.
 
 {{event "servlet"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -49,7 +49,7 @@ This data stream collects metrics related to Sessions.
 
 {{event "session_manager"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -61,7 +61,7 @@ This data stream collects Thread related metrics.
 
 {{event "threadpool"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

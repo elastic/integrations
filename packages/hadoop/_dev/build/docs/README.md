@@ -25,7 +25,7 @@ This data stream collects Application metrics.
 
 {{event "application"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -37,7 +37,7 @@ This data stream collects Cluster metrics.
 
 {{event "cluster"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -49,7 +49,7 @@ This data stream collects Datanode metrics.
 
 {{event "datanode"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -61,7 +61,7 @@ This data stream collects Namenode metrics.
 
 {{event "namenode"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -72,7 +72,7 @@ This data stream collects Node Manager metrics.
 
 {{event "node_manager"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

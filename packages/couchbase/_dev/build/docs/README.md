@@ -56,7 +56,7 @@ This is the `bucket` data stream. A bucket is a logical container for a related 
 
 {{event "bucket"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -68,7 +68,7 @@ This is the `cache` data stream. The cache is hardware or software that is used 
 
 {{event "cache"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -80,7 +80,7 @@ This is the `cluster` data stream. A cluster is a collection of nodes that are a
 
 {{event "cluster"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -96,7 +96,7 @@ CBL Replication pull is a process by which clients download database changes fro
 
 {{event "cbl_replication"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -108,7 +108,7 @@ This is the `database_stats` data stream. Database statistics provides stats rel
 
 {{event "database_stats"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -128,7 +128,7 @@ Global Secondary Indexes (GSI) support queries made by the Query Service.
 
 {{event "miscellaneous"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -140,7 +140,7 @@ This is the `resource` data stream. The Resource Utilization metrics are related
 
 {{event "resource"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -152,7 +152,7 @@ This is the `node` data stream. A Couchbase Server node is a physical or virtual
 
 {{event "node"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -164,7 +164,7 @@ This is the `query_index` data stream. The Query service enables you to issue qu
 
 {{event "query_index"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -178,7 +178,7 @@ Note: It is preferable to add a new integration if user requires to fetch metric
 
 {{event "xdcr"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

@@ -99,7 +99,7 @@ This is the `cluster_disk` data stream. This data stream collects metrics relate
 
 {{event "cluster_disk"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -111,7 +111,7 @@ This is the `cluster_health` data stream. This data stream collects metrics rela
 
 {{event "cluster_health"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -123,7 +123,7 @@ This is the `cluster_status` data stream. This data stream collects metrics rela
 
 {{event "cluster_status"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -135,7 +135,7 @@ This is the `osd_performance` data stream. This data stream collects metrics rel
 
 {{event "osd_performance"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -147,7 +147,7 @@ This is the `osd_pool_stats` data stream. This data stream collects metrics rela
 
 {{event "osd_pool_stats"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -159,7 +159,7 @@ This is the `osd_tree` data stream. This data stream collects metrics related to
 
 {{event "osd_tree"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -171,7 +171,7 @@ This is the `pool_disk` data stream. This data stream collects metrics related t
 
 {{event "pool_disk"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

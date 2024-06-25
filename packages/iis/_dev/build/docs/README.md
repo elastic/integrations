@@ -78,7 +78,7 @@ Please ensure that the IIS log format configuration matches one of the formats b
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -92,7 +92,7 @@ This data stream will collect and parse error IIS logs.
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -109,7 +109,7 @@ The `webserver` data stream allows users to retrieve aggregated metrics for the 
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -123,7 +123,7 @@ This data stream will collect metrics of specific sites, users can configure whi
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -137,7 +137,7 @@ This data stream will collect metrics of specific application pools, users can c
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

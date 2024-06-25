@@ -115,7 +115,7 @@ An example event for `virtualmachine` looks as following:
 }
 ```
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -255,7 +255,7 @@ An example event for `host` looks as following:
 }
 ```
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -378,7 +378,7 @@ An example event for `datastore` looks as following:
 }
 ```
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -418,7 +418,7 @@ To collect logs, a syslog daemon is used. First, you must configure the listenin
 
 ### vSphere Logs
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

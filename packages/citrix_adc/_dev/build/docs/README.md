@@ -120,7 +120,7 @@ This is the `interface` data stream. The Citrix ADC interfaces are numbered in s
 
 {{event "interface"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -132,7 +132,7 @@ This is the `lbvserver` data stream. The load balancing server is logically loca
 
 {{event "lbvserver"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -144,7 +144,7 @@ This is the `service` data stream. With the help of the service endpoint, metric
 
 {{event "service"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -156,7 +156,7 @@ This is the `system` data stream. With the help of the system endpoint, metrics 
 
 {{event "system"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -168,7 +168,7 @@ This is the `vpn` data stream. Citrix VPN is the add-on that provides full Secur
 
 {{event "vpn"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -180,7 +180,7 @@ The `citrix_adc.log` dataset provides events from the configured syslog server.
 
 {{event "log"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

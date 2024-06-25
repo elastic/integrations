@@ -26,7 +26,7 @@ The `log` dataset collects the HAProxy application logs.
 
 {{event "log"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -43,7 +43,7 @@ The HAProxy `info` dataset collects general information about HAProxy processes.
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -59,7 +59,7 @@ See section "9.1. CSV format" of the official [HAProxy Management Guide](http://
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

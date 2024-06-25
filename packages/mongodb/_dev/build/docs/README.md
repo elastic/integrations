@@ -80,7 +80,7 @@ The `log` dataset collects the MongoDB logs.
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -103,7 +103,7 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -125,7 +125,7 @@ action on the [database resource](https://docs.mongodb.com/manual/reference/reso
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -142,7 +142,7 @@ action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -160,7 +160,7 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -179,7 +179,7 @@ action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-
 
 The fields reported are:
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

@@ -60,7 +60,7 @@ The Nginx access logs stream was tested with Nginx 1.19.5.
 
 {{event "access"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -76,7 +76,7 @@ The Nginx error logs stream was tested with Nginx 1.19.5.
 
 {{event "error"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -106,7 +106,7 @@ The Nginx `stubstatus` stream was tested with Nginx 1.19.5 and is expected to wo
 
 {{event "stubstatus"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 

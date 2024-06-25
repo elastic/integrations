@@ -96,7 +96,7 @@ These logs are System logs of ActiveMQ.
 
 {{event "log"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -108,7 +108,7 @@ In secured environments, it is required to log every user management action. Act
 
 {{event "audit"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -122,7 +122,7 @@ ActiveMQ brokers serve as implementations of the Java Messaging Service (JMS), a
 
 {{event "broker"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -134,7 +134,7 @@ Queues are FIFO (first-in, first-out) pipelines of messages produced and consume
 
 {{event "queue"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
@@ -146,7 +146,7 @@ Topics are subscription-based message broadcast channels. When a producing appli
 
 {{event "topic"}}
 
-## ECS Field Reference
+**ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
