@@ -97,6 +97,11 @@ type checkOptions struct {
 	CodeownersPath    string
 }
 
+type reporter struct {
+	ghCli            *ghCli
+	maxPreviousLinks int
+}
+
 func Check(username, resultsPath, buildURL, stackVersion string, serverless bool, serverlessProject string, maxPreviousLinks int) error {
 	fmt.Println("path: ", resultsPath)
 	packageErrors, err := errorsFromTests(checkOptions{
@@ -112,6 +117,12 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 	ghCli := NewGhCli(GithubOptions{
 		DryRun: false,
 	})
+
+	reporter := reporter{
+		ghCli:            ghCli,
+		maxPreviousLinks: maxPreviousLinks,
+	}
+
 	var multiErr error
 	for _, pError := range packageErrors {
 		ctx := context.TODO()
@@ -142,7 +153,7 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 
 		if !found {
 			fmt.Println("Issue not found, creating a new one...")
-			if err := createNewIssueForError(ctx, ghCli, ghIssue, pError, maxPreviousLinks); err != nil {
+			if err := reporter.createNewIssueForError(ctx, ghIssue, pError); err != nil {
 				multiErr = errors.Join(multiErr, err)
 			}
 			continue
@@ -150,7 +161,7 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 
 		fmt.Printf("Issue found: %t (%d)\n", found, issue.Number())
 		fmt.Println("Updating issue...")
-		if err := updateIssueLatestBuildLinks(ctx, ghCli, issue, pError, maxPreviousLinks); err != nil {
+		if err := reporter.updateIssueLatestBuildLinks(ctx, issue, pError); err != nil {
 			multiErr = errors.Join(multiErr, fmt.Errorf("failed to update previous links in issue (title: %s): %w", ghIssue.title, err))
 		}
 
@@ -158,16 +169,16 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 	return multiErr
 }
 
-func createNewIssueForError(ctx context.Context, ghCli *GhCli, issue *GithubIssue, packageError PackageError, maxPreviousLinks int) error {
-	found, closedIssue, err := ghCli.Exists(ctx, issue, false)
+func (r reporter) createNewIssueForError(ctx context.Context, issue *GithubIssue, packageError PackageError) error {
+	found, closedIssue, err := r.ghCli.Exists(ctx, issue, false)
 	if err != nil {
 		return fmt.Errorf("failed to check if there is a closed issue: %w", err)
 	}
 	if found {
-		issue = updateDescriptionClosedIssueURL(issue, closedIssue.URL(), packageError, maxPreviousLinks)
+		issue = updateDescriptionClosedIssueURL(issue, closedIssue.URL(), packageError, r.maxPreviousLinks)
 	}
 
-	if err := ghCli.Create(ctx, issue); err != nil {
+	if err := r.ghCli.Create(ctx, issue); err != nil {
 		return fmt.Errorf("failed to create issue (title: %s): %w", issue.title, err)
 	}
 	return nil
@@ -193,7 +204,7 @@ func updateDescriptionClosedIssueURL(issue *GithubIssue, closedIssueURL string, 
 	return updatedIssue
 }
 
-func updateIssueLatestBuildLinks(ctx context.Context, ghCli *GhCli, issue *GithubIssue, packageError PackageError, maxPreviousLinks int) error {
+func (r reporter) updateIssueLatestBuildLinks(ctx context.Context, issue *GithubIssue, packageError PackageError) error {
 	currentBuild := packageError.BuildURL
 
 	firstBuild, err := firstBuildLinkFromDescription(issue)
@@ -210,15 +221,15 @@ func updateIssueLatestBuildLinks(ctx context.Context, ghCli *GhCli, issue *Githu
 		return fmt.Errorf("failed to read previous links from issue (title: %s): %w", issue.title, err)
 	}
 
-	packageError.PreviousBuilds = updatePreviousLinks(previousLinks, currentBuild, maxPreviousLinks)
+	packageError.PreviousBuilds = updatePreviousLinks(previousLinks, currentBuild, r.maxPreviousLinks)
 	packageError.BuildURL = firstBuild
 	formatter := ResultsFormatter{
 		result:           packageError,
-		maxPreviousLinks: maxPreviousLinks,
+		maxPreviousLinks: r.maxPreviousLinks,
 	}
 	issue.description = formatter.Description()
 
-	if err := ghCli.Update(ctx, issue); err != nil {
+	if err := r.ghCli.Update(ctx, issue); err != nil {
 		return fmt.Errorf("failed to update issue (title: %s): %w", issue.title, err)
 	}
 	return nil
