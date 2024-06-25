@@ -21,7 +21,7 @@ download_test_results() {
 if running_on_buildkite ; then
     echo "--- Installing tools"
     add_bin_path
-    with_go
+    with_mage
     with_github_cli # to list, create and update issues
 
     echo "--- Download Test Results"
