@@ -128,7 +128,6 @@ Sample Response:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | zscaler_zpa.app_connector_status.connector.group | The App Connector group name. | keyword |
 | zscaler_zpa.app_connector_status.connector.name | The App Connector name. | keyword |
 | zscaler_zpa.app_connector_status.connector_start_time | Time in seconds at which App Connector was started. | date |
@@ -318,7 +317,6 @@ An example event for `app_connector_status` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | zscaler_zpa.audit.client_audit_update | The flag to represent if the event is a client Audit log. | long |
 | zscaler_zpa.audit.object.id | The ID associated with the object name. | keyword |
 | zscaler_zpa.audit.object.name | The name of the object. This corresponds to the Resource Name in the Audit Log page. | keyword |
@@ -445,7 +443,6 @@ An example event for `audit` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | zscaler_zpa.browser_access.client_private_ip | The private IP address of the user's device. | ip |
 | zscaler_zpa.browser_access.connection.id | The application connection ID. | keyword |
 | zscaler_zpa.browser_access.connection.status | The status of the connection. | keyword |
@@ -656,7 +653,6 @@ An example event for `browser_access` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | zscaler_zpa.user_activity.app_group | The application group name. | keyword |
 | zscaler_zpa.user_activity.app_learn_time | Time in microseconds taken for App Connectors to learn about the requested application and report the learned information to the central authority. | long |
 | zscaler_zpa.user_activity.application | The application name. | keyword |
@@ -894,7 +890,6 @@ An example event for `user_activity` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | zscaler_zpa.user_status.client.type | The client type for the request (i.e., Zscaler Client Connector, ZPA LSS, or Web Browser). | keyword |
 | zscaler_zpa.user_status.fqdn.registered | The status of the hostname for the client-to-client connection. The expected values for this field are true or false. | boolean |
 | zscaler_zpa.user_status.fqdn.registered_error | The status of the registered hostname. | keyword |
