@@ -21,8 +21,8 @@ Once the application is registered, configure and/or note the following to setup
     - If `User.Read` permission under `Microsoft.Graph` tile is not added by default, add this permission.
     - After the permissions are added, the admin has to grant consent for these permissions.
 
-Once the secret is created and permissions are granted by admin, setup Elastic Agent's Microsoft O365 integration:
-- Click `Add Microsoft Office 365`.
+Once the secret is created and permissions are granted by admin, setup Elastic Agent's O365 integration:
+- Click `Add Microsoft 365`.
 - Enable `Collect Office 365 audit logs via Management Activity API using CEL Input`.
 - Add `Directory (tenant) ID` noted in Step 1 into `Directory (tenant) ID` parameter. This is required field.
 - Add `Application (client) ID` noted in Step 1 into `Application (client) ID` parameter. This is required field.
@@ -31,13 +31,13 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 - Modify any other parameters as necessary.
 
 
-**NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input has been deprecated in favor of the [CEL](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html) input in version `1.18.0`. Hence for versions `>= 1.18.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
+**NOTE:** As Microsoft is no longer supporting Azure Active Directory Authentication Library (ADAL), the existing o365audit input is being deprecated in favor of new [CEL](https://www.elastic.co/guide/en/beats/filebeat/8.6/filebeat-input-cel.html) input in version `1.18.0`. Hence for versions `>= 1.18.0`, certificate based authentication (provided by earlier o365audit input) is no longer supported. 
 
 We request users upgrading from integration version `< 1.18.0` to `>= 1.18.0` to follow these steps:
 
 1. Upgrade the Elastic Stack version to `>= 8.7.1`.
-2. Upgrade the integration navigating via `Integrations -> Microsoft Office 365 -> Settings -> Upgrade`
-3. Upgrade the integration policy navigating via `Integrations -> Microsoft Office 365 -> integration policies -> Version (Upgrade)`. If `Upgrade` option doesn't appear under the `Version`, that means the policy is already upgraded in the previous step. Please go to the next step.
+2. Upgrade the integration navigating via `Integrations -> Microsoft 365 -> Settings -> Upgrade`
+3. Upgrade the integration policy navigating via `Integrations -> Microsoft 365 -> integration policies -> Version (Upgrade)`. If `Upgrade` option doesn't appear under the `Version`, that means the policy is already upgraded in the previous step. Please go to the next step.
 4. Modify the integration policy:
     
     * Disable existing configuration (marked as `Deprecated`) and enable `Collect Office 365 audit logs via CEL` configuration.
