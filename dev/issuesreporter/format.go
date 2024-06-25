@@ -22,11 +22,12 @@ func (r ResultsFormatter) Title() string {
 
 func (r ResultsFormatter) Owners() []string {
 	// TODO: remove replace to allow mention teams
-	teams := []string{}
-	for _, t := range r.result.Teams {
-		teams = append(teams, strings.ReplaceAll(t, "@", ""))
-	}
-	return teams
+	// teams := []string{}
+	// for _, t := range r.result.Teams {
+	// 	teams = append(teams, strings.ReplaceAll(t, "@", ""))
+	// }
+	// return teams
+	return r.result.Teams
 }
 
 func (r ResultsFormatter) Summary() string {
@@ -95,7 +96,7 @@ func (r ResultsFormatter) Description() string {
 		sb.WriteString("Owners:\n")
 		for _, owner := range r.Owners() {
 			sb.WriteString("- ")
-			sb.WriteString(strings.ReplaceAll(owner, "@", "")) // TODO: remove replace or add as reviewers the teams
+			sb.WriteString(owner)
 			sb.WriteString("\n")
 		}
 	}
