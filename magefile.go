@@ -18,7 +18,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/elastic/integrations/dev/codeowners"
-	"github.com/elastic/integrations/dev/issuesreporter"
+	"github.com/elastic/integrations/dev/testsreporter"
 )
 
 const (
@@ -162,6 +162,6 @@ func ReportFailedTests(testResultsFolder string) error {
 		}
 	}
 
-	mg.Deps(mg.F(issuesreporter.Check, username, testResultsFolder, buildURL, stackVersion, serverless, serverlessProjectEnv, defaultPreviousLinksNumber))
+	mg.Deps(mg.F(testsreporter.Check, username, testResultsFolder, buildURL, stackVersion, serverless, serverlessProjectEnv, defaultPreviousLinksNumber))
 	return nil
 }
