@@ -290,3 +290,65 @@ First build failed: https://buildkite.com/elastic/integrations/builds/12
 		})
 	}
 }
+
+func TestUpdatePreviousLinksSlice(t *testing.T) {
+	cases := []struct {
+		title        string
+		currentLinks []string
+		newLink      string
+		maxLinks     int
+		expected     []string
+	}{
+		{
+			title: "add new link",
+			currentLinks: []string{
+				"https://buildkite.com/elastic/integrations/builds/1",
+				"https://buildkite.com/elastic/integrations/builds/2",
+				"https://buildkite.com/elastic/integrations/builds/3",
+				"https://buildkite.com/elastic/integrations/builds/4",
+			},
+			maxLinks: 5,
+			newLink:  "https://buildkite.com/elastic/integrations/builds/5",
+			expected: []string{
+				"https://buildkite.com/elastic/integrations/builds/1",
+				"https://buildkite.com/elastic/integrations/builds/2",
+				"https://buildkite.com/elastic/integrations/builds/3",
+				"https://buildkite.com/elastic/integrations/builds/4",
+				"https://buildkite.com/elastic/integrations/builds/5",
+			},
+		},
+		{
+			title: "add new link remove oldest one",
+			currentLinks: []string{
+				"https://buildkite.com/elastic/integrations/builds/1",
+				"https://buildkite.com/elastic/integrations/builds/2",
+				"https://buildkite.com/elastic/integrations/builds/3",
+				"https://buildkite.com/elastic/integrations/builds/4",
+			},
+			maxLinks: 4,
+			newLink:  "https://buildkite.com/elastic/integrations/builds/5",
+			expected: []string{
+				"https://buildkite.com/elastic/integrations/builds/2",
+				"https://buildkite.com/elastic/integrations/builds/3",
+				"https://buildkite.com/elastic/integrations/builds/4",
+				"https://buildkite.com/elastic/integrations/builds/5",
+			},
+		},
+		{
+			title:        "no current links",
+			currentLinks: []string{},
+			maxLinks:     4,
+			newLink:      "https://buildkite.com/elastic/integrations/builds/5",
+			expected: []string{
+				"https://buildkite.com/elastic/integrations/builds/5",
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.title, func(t *testing.T) {
+			links := updatePreviousLinks(c.currentLinks, c.newLink, c.maxLinks)
+			assert.Equal(t, c.expected, links)
+		})
+	}
+}
