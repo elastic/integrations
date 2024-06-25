@@ -19,29 +19,32 @@ import (
 
 type PackageError struct {
 	testCase
-	Serverless     bool
-	StackVersion   string
-	BuildURL       string
-	Teams          []string
-	PackageName    string
-	DataStream     string
-	PreviousBuilds []string
+	Serverless        bool
+	ServerlessProject string
+	StackVersion      string
+	BuildURL          string
+	Teams             []string
+	PackageName       string
+	DataStream        string
+	PreviousBuilds    []string
 }
 
 type PackageErrorOptions struct {
-	Serverless     bool
-	StackVersion   string
-	BuildURL       string
-	TestCase       testCase
-	CodeownersPath string
+	Serverless        bool
+	ServerlessProject string
+	StackVersion      string
+	BuildURL          string
+	TestCase          testCase
+	CodeownersPath    string
 }
 
 func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 	p := PackageError{
-		Serverless:   options.Serverless,
-		StackVersion: options.StackVersion,
-		BuildURL:     options.BuildURL,
-		testCase:     options.TestCase,
+		Serverless:        options.Serverless,
+		ServerlessProject: options.ServerlessProject,
+		StackVersion:      options.StackVersion,
+		BuildURL:          options.BuildURL,
+		testCase:          options.TestCase,
 	}
 
 	values := strings.Split(p.testCase.ClassName, ".")
@@ -69,7 +72,7 @@ func (p PackageError) String() string {
 	var sb strings.Builder
 
 	if p.Serverless {
-		sb.WriteString("[Serverless] ")
+		sb.WriteString(fmt.Sprintf("[Serverless %s] ", p.ServerlessProject))
 	}
 	if p.StackVersion != "" {
 		sb.WriteString("[Stack ")
@@ -86,20 +89,22 @@ func (p PackageError) String() string {
 }
 
 type checkOptions struct {
-	ResultsPath    string
-	Serverless     bool
-	StackVersion   string
-	BuildURL       string
-	CodeownersPath string
+	ResultsPath       string
+	Serverless        bool
+	ServerlessProject string
+	StackVersion      string
+	BuildURL          string
+	CodeownersPath    string
 }
 
-func Check(username, resultsPath, buildURL, stackVersion string, serverless bool, maxPreviousLinks int) error {
+func Check(username, resultsPath, buildURL, stackVersion string, serverless bool, serverlessProject string, maxPreviousLinks int) error {
 	fmt.Println("path: ", resultsPath)
 	packageErrors, err := errorsFromTests(checkOptions{
-		ResultsPath:  resultsPath,
-		Serverless:   serverless,
-		StackVersion: stackVersion,
-		BuildURL:     buildURL,
+		ResultsPath:       resultsPath,
+		Serverless:        serverless,
+		ServerlessProject: serverlessProject,
+		StackVersion:      stackVersion,
+		BuildURL:          buildURL,
 	})
 	if err != nil {
 		return err
@@ -246,11 +251,12 @@ func errorsFromTests(options checkOptions) ([]PackageError, error) {
 
 		for _, c := range cases {
 			packageError, err := NewPackageError(PackageErrorOptions{
-				Serverless:     options.Serverless,
-				StackVersion:   options.StackVersion,
-				BuildURL:       options.BuildURL,
-				TestCase:       c,
-				CodeownersPath: options.CodeownersPath,
+				Serverless:        options.Serverless,
+				ServerlessProject: options.ServerlessProject,
+				StackVersion:      options.StackVersion,
+				BuildURL:          options.BuildURL,
+				TestCase:          c,
+				CodeownersPath:    options.CodeownersPath,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to create package error: %w", err)

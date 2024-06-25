@@ -22,8 +22,9 @@ import (
 )
 
 const (
-	defaultResultsPath         = "build/test-results/"
-	defaultPreviousLinksNumber = 10
+	defaultResultsPath           = "build/test-results/"
+	defaultPreviousLinksNumber   = 10
+	defaultServerlessProjectType = "observability"
 )
 
 var (
@@ -145,6 +146,7 @@ func ModTidy() error {
 func ReportIssues(testResultsFolder string) error {
 	stackVersion := os.Getenv("STACK_VERSION")
 	serverlessEnv := os.Getenv("SERVERLESS")
+	serverlessProjectEnv := os.Getenv("SERVERLESS_PROJECT")
 	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
 	username := os.Getenv("GITHUB_USERNAME_SECRET")
 
@@ -155,8 +157,11 @@ func ReportIssues(testResultsFolder string) error {
 		if err != err {
 			return fmt.Errorf("failed to parse SERVERLESS value: %w", err)
 		}
+		if serverlessProjectEnv == "" {
+			serverlessProjectEnv = defaultServerlessProjectType
+		}
 	}
 
-	mg.Deps(mg.F(issuesreporter.Check, username, testResultsFolder, buildURL, stackVersion, serverless, defaultPreviousLinksNumber))
+	mg.Deps(mg.F(issuesreporter.Check, username, testResultsFolder, buildURL, stackVersion, serverless, serverlessProjectEnv, defaultPreviousLinksNumber))
 	return nil
 }
