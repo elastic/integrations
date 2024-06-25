@@ -143,7 +143,7 @@ func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
 }
 
-func ReportIssues(testResultsFolder string) error {
+func ReportFailedTests(testResultsFolder string) error {
 	stackVersion := os.Getenv("STACK_VERSION")
 	serverlessEnv := os.Getenv("SERVERLESS")
 	serverlessProjectEnv := os.Getenv("SERVERLESS_PROJECT")

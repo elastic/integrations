@@ -36,5 +36,5 @@ if running_on_buildkite ; then
 fi
 
 echo "--- Create GitHub Issues for failed tests"
-mage -v ReportIssues build/test-results
+mage -v ReportFailedTests build/test-results
 
