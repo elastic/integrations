@@ -440,6 +440,7 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | windows_defender.service.nis.status | Windows Defender Service Nis Status. | keyword |
 | windows_defender.service.on_access_protection.status | Windows Defender Service On Access Protection Status. | keyword |
 | windows_defender.service.real_time_protection.status | Windows Defender Service Real Time Protection Status. | keyword |
+| windows_defender.service.signature_out_of_date | Windows Defender Service Signature Out Of Date. | boolean |
 
 
 ### Endpoint Exposed Services Information
