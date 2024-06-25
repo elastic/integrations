@@ -115,7 +115,10 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 	var multiErr error
 	for _, pError := range packageErrors {
 		ctx := context.TODO()
-		r := ResultsFormatter{pError}
+		r := ResultsFormatter{
+			result:           pError,
+			maxPreviousLinks: maxPreviousLinks,
+		}
 		fmt.Println()
 		fmt.Println("---- Issue ----")
 		fmt.Printf("Title: %q\n", r.Title())
@@ -139,7 +142,7 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 
 		if !found {
 			fmt.Println("Issue not found, creating a new one...")
-			if err := createNewIssueForError(ctx, ghCli, *ghIssue, pError); err != nil {
+			if err := createNewIssueForError(ctx, ghCli, *ghIssue, pError, maxPreviousLinks); err != nil {
 				multiErr = errors.Join(multiErr, err)
 			}
 			continue
@@ -155,13 +158,13 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 	return multiErr
 }
 
-func createNewIssueForError(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError) error {
+func createNewIssueForError(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError, maxPreviousLinks int) error {
 	found, closedIssue, err := ghCli.Exists(ctx, issue, false)
 	if err != nil {
 		return fmt.Errorf("failed to check if there is a closed issue: %w", err)
 	}
 	if found {
-		issue = updateDescriptionClosedIssueURL(issue, closedIssue.URL(), packageError)
+		issue = updateDescriptionClosedIssueURL(issue, closedIssue.URL(), packageError, maxPreviousLinks)
 	}
 
 	if err := ghCli.Create(ctx, issue); err != nil {
@@ -170,9 +173,12 @@ func createNewIssueForError(ctx context.Context, ghCli *GhCli, issue GithubIssue
 	return nil
 }
 
-func updateDescriptionClosedIssueURL(issue GithubIssue, closedIssueURL string, packageError PackageError) GithubIssue {
+func updateDescriptionClosedIssueURL(issue GithubIssue, closedIssueURL string, packageError PackageError, maxPreviousLinks int) GithubIssue {
 	packageError.ClosedIssueURL = closedIssueURL
-	formatter := ResultsFormatter{packageError}
+	formatter := ResultsFormatter{
+		result:           packageError,
+		maxPreviousLinks: maxPreviousLinks,
+	}
 	updatedIssue := NewGithubIssue(GithubIssueOptions{
 		Title:       issue.title,
 		Number:      issue.number,
@@ -206,7 +212,10 @@ func updateIssueLatestBuildLinks(ctx context.Context, ghCli *GhCli, issue Github
 
 	packageError.PreviousBuilds = updatePreviousLinks(previousLinks, currentBuild, maxPreviousLinks)
 	packageError.BuildURL = firstBuild
-	formatter := ResultsFormatter{packageError}
+	formatter := ResultsFormatter{
+		result:           packageError,
+		maxPreviousLinks: maxPreviousLinks,
+	}
 	issue.description = formatter.Description()
 
 	if err := ghCli.Update(ctx, issue); err != nil {

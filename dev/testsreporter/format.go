@@ -12,7 +12,8 @@ import (
 const defaultMaxLengthMessages = 1000
 
 type ResultsFormatter struct {
-	result PackageError
+	result           PackageError
+	maxPreviousLinks int
 }
 
 func (r ResultsFormatter) Title() string {
@@ -95,7 +96,12 @@ func (r ResultsFormatter) Description() string {
 	}
 
 	if len(r.result.PreviousBuilds) > 0 {
-		sb.WriteString(fmt.Sprintf("Latest %d failed builds:\n", len(r.result.PreviousBuilds)))
+		message := "Latest failed builds"
+		if len(r.result.PreviousBuilds) == r.maxPreviousLinks {
+			message = fmt.Sprintf("Latest %d failed builds", r.maxPreviousLinks)
+		}
+
+		sb.WriteString(message)
 		for _, link := range r.result.PreviousBuilds {
 			sb.WriteString("- ")
 			sb.WriteString(link)
