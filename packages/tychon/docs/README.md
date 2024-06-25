@@ -1477,6 +1477,7 @@ TYCHON searches the computer and hard drive for certificate files that stored in
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | file.accessed | Last time the file was accessed. Note that not all filesystems keep track of access time. | date |
 | file.attributes | Array of file attributes. Attributes names will vary by platform. Here's a non-exhaustive list of values that are expected in this field: archive, compressed, directory, encrypted, execute, hidden, read, readonly, system, write. | keyword |
+| file.code_signature.friendly_name | The Friendly Name of the signing certificate | keyword |
 | file.created | File creation time. Note that not all filesystems store the creation time. | date |
 | file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | file.hash.md5 | MD5 hash. | keyword |
