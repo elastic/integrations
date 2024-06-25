@@ -153,7 +153,7 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 	return multiErr
 }
 
-func updateIssueDescription(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError, previousLinksNumber int) error {
+func updateIssueDescription(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError, maxPreviousLinks int) error {
 	fmt.Printf("Updating issue... \n")
 	currentBuild := packageError.BuildURL
 
@@ -167,7 +167,7 @@ func updateIssueDescription(ctx context.Context, ghCli *GhCli, issue GithubIssue
 		return fmt.Errorf("failed to read previous links from issue (title: %s): %w", issue.title, err)
 	}
 
-	packageError.PreviousBuilds = updatePreviousLinks(previousLinks, currentBuild, previousLinksNumber)
+	packageError.PreviousBuilds = updatePreviousLinks(previousLinks, currentBuild, maxPreviousLinks)
 	packageError.BuildURL = firstBuild
 	formatter := ResultsFormatter{packageError}
 	issue.description = formatter.Description()
@@ -178,13 +178,13 @@ func updateIssueDescription(ctx context.Context, ghCli *GhCli, issue GithubIssue
 	return nil
 }
 
-func updatePreviousLinks(previousLinks []string, currentBuild string, previousLinksNumber int) []string {
+func updatePreviousLinks(previousLinks []string, currentBuild string, maxPreviousLinks int) []string {
 	var newLinks []string
 	newLinks = append(newLinks, previousLinks...)
 	newLinks = append(newLinks, currentBuild)
 
-	if len(newLinks) > previousLinksNumber {
-		firstIndex := len(newLinks) - previousLinksNumber
+	if len(newLinks) > maxPreviousLinks {
+		firstIndex := len(newLinks) - maxPreviousLinks
 		newLinks = newLinks[firstIndex:]
 	}
 
