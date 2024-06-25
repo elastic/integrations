@@ -6,6 +6,7 @@ package issuesreporter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -106,6 +107,7 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 	ghCli := NewGhCli(GithubOptions{
 		DryRun: true,
 	})
+	var multiErr error
 	for _, e := range packageErrors {
 		r := ResultsFormatter{e}
 		fmt.Println()
@@ -127,19 +129,20 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 		ctx := context.TODO()
 		found, issue, err := ghCli.Exists(ctx, *ghIssue)
 		if err != nil {
-			return fmt.Errorf("failed to check if issue exists: %w", err)
+			return fmt.Errorf("failed to check if issue already exists: %w", err)
 		}
 		fmt.Printf("Issue found: %t (%d)\n", found, issue.Number())
 		if !found {
 			err := ghCli.Create(ctx, *ghIssue)
 			if err != nil {
-				log.Printf("Failed to create issue: %s", err)
+				log.Printf("Failed to create issue (title: %s): %s", ghIssue.title, err)
+				multiErr = errors.Join(multiErr, err)
 			}
 			continue
 		}
 		fmt.Printf("Updating issue... \n")
 	}
-	return nil
+	return multiErr
 }
 
 func buildLinksFromDescription(issue GithubIssue) ([]string, error) {
