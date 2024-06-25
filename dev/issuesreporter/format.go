@@ -86,6 +86,14 @@ func (r ResultsFormatter) Description() string {
 	sb.WriteString("\n")
 	sb.WriteString("\n")
 
+	if r.result.ClosedIssueURL != "" {
+		sb.WriteString("\n")
+		sb.WriteString("Latest issue closed for the same test: ")
+		sb.WriteString(r.result.ClosedIssueURL)
+		sb.WriteString("\n")
+		sb.WriteString("\n")
+	}
+
 	if len(r.result.PreviousBuilds) > 0 {
 		sb.WriteString(fmt.Sprintf("Latest %d failed builds:\n", len(r.result.PreviousBuilds)))
 		for _, link := range r.result.PreviousBuilds {

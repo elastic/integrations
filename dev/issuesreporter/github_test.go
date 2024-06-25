@@ -100,6 +100,7 @@ func TestGithubIssueExists(t *testing.T) {
 		issue    GithubIssue
 		response string
 		found    bool
+		open     bool
 		expected GithubIssue
 	}{
 		{
@@ -107,10 +108,11 @@ func TestGithubIssueExists(t *testing.T) {
 			response: `
 			[
 			  {
-			     "createdAt": "2024-06-24",
+			     "createdAt": "2024-06-24T15:04:05Z",
 				 "title": "my issue",
 				 "body": "my issue description",
-				 "number": 42
+				 "number": 42,
+				 "state": "OPEN"
 			  }
 			]
 			`,
@@ -120,12 +122,14 @@ func TestGithubIssueExists(t *testing.T) {
 				User:       "foo",
 			}),
 			found: true,
+			open:  true,
 			expected: GithubIssue{
 				repository:  "myorg/repo",
 				number:      42,
 				title:       "my issue",
 				description: "my issue description",
 				user:        "foo",
+				state:       "OPEN",
 			},
 		},
 		{
@@ -133,10 +137,11 @@ func TestGithubIssueExists(t *testing.T) {
 			response: `
 			[
 			  {
-			     "createdAt": "2024-06-24",
+			     "createdAt": "2024-06-24T15:04:05Z",
 				 "title": "not my issue",
 				 "body": "my issue description",
-				 "number": 42
+				 "number": 42,
+				 "state": "OPEN"
 			  }
 			]
 			`,
@@ -145,8 +150,40 @@ func TestGithubIssueExists(t *testing.T) {
 				Repository: "myorg/repo",
 				User:       "foo",
 			}),
+			open:     true,
 			found:    false,
 			expected: GithubIssue{},
+		},
+		{
+			title: "issue closed found",
+			response: `
+			[
+			  {
+			     "createdAt": "2024-06-24T15:04:05Z",
+			     "closedAt": "2024-06-24T16:04:05Z",
+				 "title": "my issue",
+				 "body": "my issue description",
+				 "number": 42,
+				 "state": "CLOSED"
+			  }
+			]
+			`,
+			issue: *NewGithubIssue(GithubIssueOptions{
+				Title:      "my issue",
+				Repository: "myorg/repo",
+				User:       "foo",
+				Number:     42,
+			}),
+			open:  false,
+			found: true,
+			expected: GithubIssue{
+				repository:  "myorg/repo",
+				number:      42,
+				title:       "my issue",
+				description: "my issue description",
+				user:        "foo",
+				state:       "CLOSED",
+			},
 		},
 	}
 
@@ -160,7 +197,7 @@ func TestGithubIssueExists(t *testing.T) {
 				Runner: &runner,
 			})
 
-			found, issue, err := ghCli.Exists(context.Background(), c.issue)
+			found, issue, err := ghCli.Exists(context.Background(), c.issue, c.open)
 			require.NoError(t, err)
 			assert.Equal(t, c.found, found)
 			assert.Equal(t, c.expected, issue)

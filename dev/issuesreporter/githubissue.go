@@ -11,10 +11,20 @@ type GithubIssue struct {
 	title       string
 	description string
 	labels      []string
+	state       string
+	url         string
 }
 
 func (i *GithubIssue) Number() int {
 	return i.number
+}
+
+func (i *GithubIssue) Open() bool {
+	return i.state == "OPEN"
+}
+
+func (i *GithubIssue) URL() string {
+	return i.url
 }
 
 type GithubIssueOptions struct {
@@ -24,6 +34,8 @@ type GithubIssueOptions struct {
 	User        string
 	Labels      []string
 	Number      int
+	State       string
+	URL         string
 }
 
 func NewGithubIssue(options GithubIssueOptions) *GithubIssue {
@@ -34,6 +46,8 @@ func NewGithubIssue(options GithubIssueOptions) *GithubIssue {
 		labels:      options.Labels,
 		user:        options.User,
 		number:      options.Number,
+		state:       options.State,
+		url:         options.URL,
 	}
 
 	return &issue

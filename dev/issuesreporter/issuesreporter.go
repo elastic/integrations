@@ -8,7 +8,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -27,6 +26,7 @@ type PackageError struct {
 	PackageName       string
 	DataStream        string
 	PreviousBuilds    []string
+	ClosedIssueURL    string
 }
 
 type PackageErrorOptions struct {
@@ -113,8 +113,9 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 		DryRun: false,
 	})
 	var multiErr error
-	for _, e := range packageErrors {
-		r := ResultsFormatter{e}
+	for _, pError := range packageErrors {
+		ctx := context.TODO()
+		r := ResultsFormatter{pError}
 		fmt.Println()
 		fmt.Println("---- Issue ----")
 		fmt.Printf("Title: %q\n", r.Title())
@@ -124,42 +125,78 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 		fmt.Println()
 
 		ghIssue := NewGithubIssue(GithubIssueOptions{
-			Title:       r.Title(), // "Data stream not found in Beat package", // TODO: remove debug
+			Title:       r.Title(),
 			Description: r.Description(),
 			Labels:      []string{"flaky-test", "automation"},
 			Repository:  "elastic/integrations",
 			User:        username,
 		})
 
-		ctx := context.TODO()
-		found, issue, err := ghCli.Exists(ctx, *ghIssue)
+		found, issue, err := ghCli.Exists(ctx, *ghIssue, true)
 		if err != nil {
 			return fmt.Errorf("failed to check if issue already exists: %w", err)
 		}
+
 		if !found {
-			fmt.Printf("Issue not found, creating a new one...")
-			if err := ghCli.Create(ctx, *ghIssue); err != nil {
-				log.Printf("Failed to create issue (title: %s): %s", ghIssue.title, err)
-				multiErr = errors.Join(multiErr, fmt.Errorf("failed to create issue (title: %s): %w", ghIssue.title, err))
+			fmt.Println("Issue not found, creating a new one...")
+			if err := createNewIssueForError(ctx, ghCli, *ghIssue, pError); err != nil {
+				multiErr = errors.Join(multiErr, err)
 			}
 			continue
 		}
 
 		fmt.Printf("Issue found: %t (%d)\n", found, issue.Number())
-		if err := updateIssueDescription(ctx, ghCli, issue, e, maxPreviousLinks); err != nil {
-			multiErr = errors.Join(multiErr, fmt.Errorf("failed to update issue (title: %s): %w", ghIssue.title, err))
+		fmt.Println("Updating issue...")
+		if err := updateIssueLatestBuildLinks(ctx, ghCli, issue, pError, maxPreviousLinks); err != nil {
+			multiErr = errors.Join(multiErr, fmt.Errorf("failed to update previous links in issue (title: %s): %w", ghIssue.title, err))
 		}
+
 	}
 	return multiErr
 }
 
-func updateIssueDescription(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError, maxPreviousLinks int) error {
-	fmt.Printf("Updating issue... \n")
+func createNewIssueForError(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError) error {
+	found, closedIssue, err := ghCli.Exists(ctx, issue, false)
+	if err != nil {
+		return fmt.Errorf("failed to check if there is a closed issue: %w", err)
+	}
+	if found {
+		issue = updateDescriptionClosedIssueURL(issue, closedIssue.URL(), packageError)
+	}
+
+	if err := ghCli.Create(ctx, issue); err != nil {
+		return fmt.Errorf("failed to create issue (title: %s): %w", issue.title, err)
+	}
+	return nil
+}
+
+func updateDescriptionClosedIssueURL(issue GithubIssue, closedIssueURL string, packageError PackageError) GithubIssue {
+	packageError.ClosedIssueURL = closedIssueURL
+	formatter := ResultsFormatter{packageError}
+	updatedIssue := NewGithubIssue(GithubIssueOptions{
+		Title:       issue.title,
+		Number:      issue.number,
+		Description: formatter.Description(),
+		Labels:      issue.labels,
+		State:       issue.state,
+		User:        issue.user,
+		URL:         issue.url,
+		Repository:  issue.repository,
+	})
+
+	return *updatedIssue
+}
+
+func updateIssueLatestBuildLinks(ctx context.Context, ghCli *GhCli, issue GithubIssue, packageError PackageError, maxPreviousLinks int) error {
 	currentBuild := packageError.BuildURL
 
 	firstBuild, err := firstBuildLinkFromDescription(issue)
 	if err != nil {
 		return fmt.Errorf("failed to read first link from issue (title: %s): %w", issue.title, err)
+	}
+
+	if firstBuild == currentBuild {
+		return nil
 	}
 
 	previousLinks, err := previousBuildLinksFromDescription(issue)

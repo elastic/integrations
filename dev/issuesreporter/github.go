@@ -10,8 +10,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cli/go-gh/v2"
 )
@@ -58,14 +60,18 @@ func NewGhCli(options GithubOptions) *GhCli {
 	}
 }
 
-func (g *GhCli) Exists(ctx context.Context, issue GithubIssue) (bool, GithubIssue, error) {
+func (g *GhCli) Exists(ctx context.Context, issue GithubIssue, open bool) (bool, GithubIssue, error) {
+	stateIssue := "open"
+	if !open {
+		stateIssue = "closed"
+	}
 	stdout, stderr, err := g.runner.Exec(ctx,
 		"issue",
 		"list",
 		"--author",
 		issue.user,
 		"--json",
-		"title,body,number,labels,createdAt",
+		"title,body,number,labels,state,url,createdAt,closedAt",
 		"--repo",
 		issue.repository,
 		"--search",
@@ -74,17 +80,22 @@ func (g *GhCli) Exists(ctx context.Context, issue GithubIssue) (bool, GithubIssu
 		"1000",
 		"--jq",
 		"map(select((.labels | length) > 0))| map(.labels = (.labels | map(.name)))",
+		"--state",
+		stateIssue,
 	)
 	if err != nil {
 		return false, GithubIssue{}, fmt.Errorf("failed to list issues: %w\n%s", err, stderr.String())
 	}
 
 	type ResponseListIssue struct {
-		CreatedAt string   `json:"createdAt"`
-		Title     string   `json:"title"`
-		Body      string   `json:"body"`
-		Number    int      `json:"number"`
-		Labels    []string `json:"labels"`
+		CreatedAt time.Time `json:"createdAt"`
+		ClosedAt  time.Time `json:"closedAt"`
+		Title     string    `json:"title"`
+		Body      string    `json:"body"`
+		Number    int       `json:"number"`
+		Labels    []string  `json:"labels"`
+		State     string    `json:"state"`
+		URL       string    `json:"url"`
 	}
 
 	var list []ResponseListIssue
@@ -93,12 +104,31 @@ func (g *GhCli) Exists(ctx context.Context, issue GithubIssue) (bool, GithubIssu
 		return false, GithubIssue{}, fmt.Errorf("failed to unmarshal list of issues: %w", err)
 	}
 
+	if !open {
+		// Not able to find a sort query to order by closing time
+		sort.Slice(list, func(i, j int) bool {
+			return list[i].ClosedAt.After(list[j].ClosedAt)
+		})
+
+		fmt.Println("Issues found", len(list))
+		for _, elem := range list {
+			fmt.Printf("Issue %d Closed At %s\n", elem.Number, elem.ClosedAt)
+		}
+	}
+
 	for _, i := range list {
 		if i.Title == issue.title {
-			issue.number = i.Number
-			issue.description = i.Body
-			issue.labels = i.Labels
-			return true, issue, nil
+			issueGot := NewGithubIssue(GithubIssueOptions{
+				Number:      i.Number,
+				Title:       i.Title,
+				Description: i.Body,
+				Labels:      i.Labels,
+				State:       i.State,
+				Repository:  issue.repository,
+				User:        issue.user,
+				URL:         i.URL,
+			})
+			return true, *issueGot, nil
 		}
 	}
 
@@ -119,10 +149,11 @@ func (g *GhCli) Create(ctx context.Context, issue GithubIssue) error {
 	for _, label := range issue.labels {
 		params = append(params, "--label", label)
 	}
-	_, stderr, err := g.runner.Exec(ctx, params...)
+	stdout, stderr, err := g.runner.Exec(ctx, params...)
 	if err != nil {
 		return fmt.Errorf("failed to create issue: %w\n%s", err, stderr.String())
 	}
+	fmt.Println("Created issue:", stdout.String())
 	return nil
 }
 
