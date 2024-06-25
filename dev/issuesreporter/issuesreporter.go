@@ -112,7 +112,7 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 		fmt.Println("---- Issue ----")
 		fmt.Printf("Title: %q\n", r.Title())
 		fmt.Printf("Teams: %q\n", strings.Join(r.Owners(), ", "))
-		fmt.Printf("Description:\n%s\n", r.Description())
+		fmt.Printf("Summary:\n%s\n", r.Summary())
 		fmt.Println("----")
 		fmt.Println()
 

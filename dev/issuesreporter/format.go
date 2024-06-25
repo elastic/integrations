@@ -29,7 +29,7 @@ func (r ResultsFormatter) Owners() []string {
 	return teams
 }
 
-func (r ResultsFormatter) Description() string {
+func (r ResultsFormatter) Summary() string {
 	var sb strings.Builder
 	if r.result.StackVersion != "" {
 		sb.WriteString("- Stack version: `")
@@ -51,7 +51,15 @@ func (r ResultsFormatter) Description() string {
 		sb.WriteString(r.result.DataStream)
 		sb.WriteString("`\n")
 	}
+
+	return sb.String()
+}
+
+func (r ResultsFormatter) Description() string {
+	var sb strings.Builder
+	sb.WriteString(r.Summary())
 	sb.WriteString("\n")
+
 	if r.result.Failure != "" {
 		sb.WriteString("Failure:\n")
 		sb.WriteString("```\n")
