@@ -61,9 +61,17 @@ processors:
       target_field: rule.description
       ignore_missing: true
       tag: rename_detect_description
-  - set:
+  - set: 
+      field: threat.framework
+      value: CrowdStrike Falcon Detections Framework
+      tag: set_threat_framework_cs
+      if: ctx.crowdstrike?.event?.TacticId != null && ctx.crowdstrike.event.TacticId.startsWith("CS") && ctx.crowdstrike?.event?.TechniqueId != null && ctx.crowdstrike.event.TechniqueId.startsWith("CS")
+  - set: 
       field: threat.framework
       value: MITRE ATT&CK
+      override: false
+      tag: set_threat_framework
+      if: ctx.threat?.framework == null && ctx.crowdstrike?.event?.TacticId != null && ctx.crowdstrike.event.TacticId.startsWith("TA")
   - append:
       field: threat.technique.name
       value: "{{{crowdstrike.event.Technique}}}"

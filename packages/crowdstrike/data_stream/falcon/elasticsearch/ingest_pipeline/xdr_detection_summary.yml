@@ -232,6 +232,19 @@ processors:
       target_field: threat.tactic.id
       tag: split_tactic_ids
       if: ctx.crowdstrike?.event?.TacticIds != null
+  - set: 
+      field: threat.framework
+      value: CrowdStrike Falcon Detections Framework
+      description: First tactic from crowdstrike.event.TacticIds is used to determine threat.framework
+      tag: set_threat_framework_cs
+      if: ctx.crowdstrike?.event?.TacticIds != null && ctx.crowdstrike.event.TacticIds.startsWith("CS")
+  - set: 
+      field: threat.framework
+      value: MITRE ATT&CK
+      description: First tactic from crowdstrike.event.TacticIds is used to determine threat.framework
+      override: false
+      tag: set_threat_framework
+      if: ctx.threat?.framework == null && ctx.crowdstrike?.event?.TacticIds != null && ctx.crowdstrike.event.TacticIds.startsWith("TA")
 
 on_failure:
   - append:
