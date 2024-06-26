@@ -73,12 +73,8 @@ processors:
       tag: date_set_syslog_time
       if: ctx.watchguard_firebox?.log?.syslog_timestamp != null && ctx.watchguard_firebox.log.syslog_timestamp != ''
       formats:
-        - MMM  d HH:mm:ss
-        - MMM dd HH:mm:ss
         - MMM d HH:mm:ss
-        - MMM  d HH:mm:ss.SSS
-        - MMM dd HH:mm:ss.SSS
-        - MMM d HH:mm:ss.SSS
+        - MMM dd HH:mm:ss
       on_failure:
         - append:
             field: error.message
@@ -99,17 +95,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - grok:
+  - dissect:
       field: watchguard_firebox.log.body
-      tag: grok_msg_id
+      tag: dissect_msg_id
       if: ctx.watchguard_firebox?.log?.body != null && ctx.watchguard_firebox?.log?.body != ''
-      patterns:
-        - '^msg_id="%{DATA:watchguard_firebox.log.msg_id}"%{SPACE}%{GREEDYDATA:watchguard_firebox.log.body}$'
-        - '^%{GREEDYDATA:message}$'
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      pattern: 'msg_id="%{watchguard_firebox.log.msg_id}" %{watchguard_firebox.log.body}'
+      ignore_failure: true
+  - set:
+      field: message
+      if: ctx.watchguard_firebox?.log?.msg_id == null
+      copy_from: watchguard_firebox.log.body
   - script:
       description: Set ECS categorization fields
       tag: set_ecs_categorization_fields

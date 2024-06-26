@@ -61,8 +61,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2024-01-16T15:19:05.000Z",
     "agent": {
-        "ephemeral_id": "0efda6dc-6996-4c86-a37d-68125181265b",
-        "id": "3eb3c86f-0b95-4d56-b523-e1eadfcf7d94",
+        "ephemeral_id": "9dab5cdf-2dc2-40fe-8bbd-9143e0a97883",
+        "id": "3f70f7e3-d316-4640-96bf-5b6aa9041bb8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -97,7 +97,7 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3eb3c86f-0b95-4d56-b523-e1eadfcf7d94",
+        "id": "3f70f7e3-d316-4640-96bf-5b6aa9041bb8",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -117,7 +117,7 @@ An example event for `log` looks as following:
             "email"
         ],
         "dataset": "watchguard_firebox.log",
-        "ingested": "2024-06-07T11:01:58Z",
+        "ingested": "2024-06-26T09:19:47Z",
         "kind": "event",
         "original": "<139>Jan 16 15:19:05 WatchGuard-Firebox FVE6035FD3AE3 (2024-01-19T08:48:15) firewall: msg_id=\"1BFF-000F\" Allow 1-Trusted 0-External tcp 10.0.1.2 175.16.199.1 39398 25 msg=\"SMTP request\" proxy_act=\"SMTP-Outgoing.1\" rcvd_bytes=\"272\" sent_bytes=\"282\" sender=\"tester@testnet.com\" recipients=\"wg@localhost\" server_ssl=\"ECDHE-RSA-AES256-GCMSHA384\" client_ssl=\"AES128-SHA256\" tls_profile=\"TLS-Client.Standard\" (SMTP-proxy-00)",
         "outcome": "success",
@@ -131,7 +131,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.252.5:42614"
+            "address": "192.168.254.1:55027"
         },
         "syslog": {
             "appname": "firewall",
@@ -362,6 +362,8 @@ An example event for `log` looks as following:
 | watchguard_firebox.log.host_dest_domain |  | keyword |
 | watchguard_firebox.log.host_dest_ip |  | ip |
 | watchguard_firebox.log.hostname |  | keyword |
+| watchguard_firebox.log.http_status |  | long |
+| watchguard_firebox.log.http_version |  | keyword |
 | watchguard_firebox.log.ikev2_ikesa_state |  | keyword |
 | watchguard_firebox.log.image_source |  | keyword |
 | watchguard_firebox.log.in_interface_name |  | keyword |
@@ -409,7 +411,7 @@ An example event for `log` looks as following:
 | watchguard_firebox.log.new_ip |  | ip |
 | watchguard_firebox.log.new_ipv6 |  | keyword |
 | watchguard_firebox.log.new_mask |  | long |
-| watchguard_firebox.log.new_policy_position |  | keyword |
+| watchguard_firebox.log.new_policy_position |  | long |
 | watchguard_firebox.log.new_system_time |  | keyword |
 | watchguard_firebox.log.next_update_time |  | date |
 | watchguard_firebox.log.notification_gap_duration |  | long |
@@ -471,9 +473,11 @@ An example event for `log` looks as following:
 | watchguard_firebox.log.record_type |  | keyword |
 | watchguard_firebox.log.redirect_action |  | keyword |
 | watchguard_firebox.log.remote |  | keyword |
-| watchguard_firebox.log.remote_ip |  | ip |
 | watchguard_firebox.log.remote_mask_ip |  | keyword |
 | watchguard_firebox.log.reply |  | keyword |
+| watchguard_firebox.log.reply_ip |  | ip |
+| watchguard_firebox.log.reply_protocol |  | keyword |
+| watchguard_firebox.log.reply_time |  | date |
 | watchguard_firebox.log.reputation |  | long |
 | watchguard_firebox.log.req_or_resp |  | keyword |
 | watchguard_firebox.log.response |  | keyword |
@@ -558,7 +562,7 @@ An example event for `log` looks as following:
 | watchguard_firebox.log.version_number |  | keyword |
 | watchguard_firebox.log.virtual_ip_address |  | ip |
 | watchguard_firebox.log.virus |  | keyword |
-| watchguard_firebox.log.vlan_id |  | long |
+| watchguard_firebox.log.vlan_id |  | keyword |
 | watchguard_firebox.log.vpn_connection_type |  | keyword |
 | watchguard_firebox.log.vpn_user_type |  | keyword |
 | watchguard_firebox.log.wgrd_spam_id |  | keyword |

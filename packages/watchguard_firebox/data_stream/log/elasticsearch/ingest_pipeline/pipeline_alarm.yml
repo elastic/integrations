@@ -3,47 +3,188 @@ description: Pipeline for processing alarm category logs.
 processors:
   - grok:
       field: watchguard_firebox.log.body
-      tag: grok_for_policy_name
       patterns:
         - '^%{GREEDYDATA:watchguard_firebox.log.body} %{SPACE}\(%{DATA:watchguard_firebox.log.policy_name}\)$'
+      tag: grok_for_policy_name
+      ignore_failure: true
   - grok:
       field: watchguard_firebox.log.body
-      tag: grok_for_firewall_log_messages
-      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0152','3000-0153','3000-0154','3000-0155','3000-0156','3000-0157','3000-0158','3000-0159','3000-0160','3000-0161','3000-0162','3000-0163','3000-0164','3000-0165','3000-0166','3000-0167','3000-0168','3000-0169','3000-0170','3000-0171','3000-0172','020B-0001'].contains(ctx.watchguard_firebox?.log?.msg_id)
       patterns:
-        - '^IPv4 source route attack from %{IP:watchguard_firebox.log.source_ip} detected.$'
-        - '^SYN flood attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected. %{NUMBER:watchguard_firebox.log.packets_count:long} SYN packets dropped since last alarm.$'
-        - '^ICMP flood attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected. %{NUMBER:watchguard_firebox.log.packets_count:long} ICMP flood packets dropped since last alarm.$'
-        - '^UDP flood attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected. %{NUMBER:watchguard_firebox.log.packets_count:long} UDP flood packets dropped since last alarm.$'
-        - '^IPSEC flood attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected. %{NUMBER:watchguard_firebox.log.packets_count:long} IPSEC flood packets dropped since last alarm.$'
-        - '^IKE flood attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected. %{NUMBER:watchguard_firebox.log.packets_count:long} IKE flood packets dropped since last alarm.$'
-        - '^IP scan attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected.$'
-        - '^IP scan attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected.$'
-        - '^PORT scan attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected.$'
-        - '^DDOS against server %{IP:watchguard_firebox.log.destination_ip} detected.$'
-        - '^DDOS from client %{IP:watchguard_firebox.log.source_ip} detected.$'
-        - '^SYN flood attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected. %{NUMBER:watchguard_firebox.log.packets_count:long} SYN packets dropped since last alarm.$'
-        - '^ICMP flood attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected. %{NUMBER:watchguard_firebox.log.packets_count:long} ICMP packets dropped since last alarm.$'
-        - '^UDP flood attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected. %{NUMBER:watchguard_firebox.log.packets_count:long} UDP packets dropped since last alarm.$'
-        - '^IPSEC flood attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected. %{NUMBER:watchguard_firebox.log.packets_count:long} IPSEC packets dropped since last alarm.$'
-        - '^IKE flood attack against %{IP:watchguard_firebox.log.destination_ip} from %{IP:watchguard_firebox.log.source_ip} detected. %{NUMBER:watchguard_firebox.log.packets_count:long} IKE packets dropped since last alarm.$'
-        - '^Policy Name: %{DATA:watchguard_firebox.log.pcy_name} Source IP Address: %{IP:watchguard_firebox.log.source_ip} Source Port: %{NUMBER:watchguard_firebox.log.source_port:long} Destination IP Address: %{IP:watchguard_firebox.log.destination_ip} Destination Port: %{NUMBER:watchguard_firebox.log.destination_port:long}$'
-        - '^Blocked site: Traffic detected from %{IP:watchguard_firebox.log.source_ip} to %{IP:watchguard_firebox.log.destination_ip}.$'
-        - '^IP spoofing: Traffic detected from %{IP:watchguard_firebox.log.source_ip} to %{IP:watchguard_firebox.log.destination_ip}.$'
-        - '^The total number of current sessions \(%{NUMBER:watchguard_firebox.log.current_session:long}\) has reached the high water mark \(%{NUMBER:watchguard_firebox.log.limit:long}\).$'
-        - '^The number of connections \(%{NUMBER:watchguard_firebox.log.current_connection:long}\) has reached the configured limit \(%{NUMBER:watchguard_firebox.log.limit:long}\).$'
-        - '^Blocked port: Traffic detected from %{IP:watchguard_firebox.log.source_ip} to %{IP:watchguard_firebox.log.destination_ip} on port %{NUMBER:watchguard_firebox.log.port:long}.$'
-        - "%{DATA:watchguard_firebox.log.tunnel_type} tunnel '%{DATA:watchguard_firebox.log.tunnel_name}' local %{DATA:watchguard_firebox.log.local} remote %{DATA:watchguard_firebox.log.remote} under gateway '%{DATA:watchguard_firebox.log.gateway}' is %{WORD:watchguard_firebox.log.status}."
-        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+        - '^%{DATA} Traffic detected from %{IP:watchguard_firebox.log.source_ip} to %{IP:watchguard_firebox.log.destination_ip}.$'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0168','3000-0169'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_message_id_3000-0168_3000-0169
       ignore_failure: true
-  - grok:
-      field: 'watchguard_firebox.log.body'
-      tag: grok_for_vpn_log_messages
-      if: ctx.watchguard_firebox.log?.msg_id == '020B-0001'
-      patterns:
-        - "^%{DATA:watchguard_firebox.log.tunnel_type} tunnel '%{DATA:watchguard_firebox.log.tunnel_name}' local %{DATA:watchguard_firebox.log.local} remote %{DATA:watchguard_firebox.log.remote} under gateway '%{DATA:watchguard_firebox.log.gateway}' is %{WORD:watchguard_firebox.log.status}$"
-        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'IPv4 source route attack from %{watchguard_firebox.log.source_ip} detected.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0152'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-0152
       ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '%{} against %{watchguard_firebox.log.destination_ip} from %{watchguard_firebox.log.source_ip} detected. %{watchguard_firebox.log.packets_count} %{}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0153','3000-0154','3000-0155','3000-0156','3000-0157','3000-0162','3000-0163','3000-0164','3000-0165','3000-0166'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-0153_3000-0154_3000-0155_3000-0156_3000-0157_3000-0162_3000-0163_3000-0164_3000-0165_3000-0166
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '%{} against %{watchguard_firebox.log.destination_ip} from %{watchguard_firebox.log.source_ip} detected.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0158','3000-0159'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-0158_3000-0159
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'DDOS against server %{watchguard_firebox.log.destination_ip} detected.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0160'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-0160
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'DDOS from client %{watchguard_firebox.log.source_ip} detected.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0161'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-0161
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Policy Name: %{watchguard_firebox.log.pcy_name} Source IP Address: %{watchguard_firebox.log.source_ip} Source Port: %{watchguard_firebox.log.source_port} Destination IP Address: %{watchguard_firebox.log.destination_ip} Destination Port: %{watchguard_firebox.log.destination_port}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0167'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-0167
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'The total number of current sessions (%{watchguard_firebox.log.current_session}) has reached the high water mark (%{watchguard_firebox.log.limit}).'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0170'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-0170
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'The number of connections (%{watchguard_firebox.log.current_connection}) has reached the configured limit (%{watchguard_firebox.log.limit}).'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0171'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-0171
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '%{} Traffic detected from %{watchguard_firebox.log.source_ip} to %{watchguard_firebox.log.destination_ip} on port %{watchguard_firebox.log.port}.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0172'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-0172
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: "%{watchguard_firebox.log.tunnel_type} tunnel '%{watchguard_firebox.log.tunnel_name}' local %{watchguard_firebox.log.local} remote %{watchguard_firebox.log.remote} under gateway '%{watchguard_firebox.log.gateway}' is %{watchguard_firebox.log.status}."
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['020B-0001'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_020B-0001
+      ignore_failure: true
+  - convert:
+      field: watchguard_firebox.log.current_connection
+      tag: convert_current_connection_to_long
+      target_field: watchguard_firebox.log.current_connection
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.current_connection
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.limit
+      tag: convert_value2_to_long
+      target_field: watchguard_firebox.log.limit
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.limit
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.source_ip
+      tag: convert_src_to_ip
+      target_field: watchguard_firebox.log.source_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.source_ip != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.source_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.packets_count
+      tag: convert_gap_to_long
+      target_field: watchguard_firebox.log.packets_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.packets_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.destination_ip
+      tag: convert_dst_to_ip
+      target_field: watchguard_firebox.log.destination_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.destination_ip != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.destination_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.source_port
+      tag: convert_source_port_to_long
+      target_field: watchguard_firebox.log.source_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.source_port
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.destination_port
+      tag: convert_destination_port_to_long
+      target_field: watchguard_firebox.log.destination_port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.destination_port
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.current_session
+      tag: convert_current_session_to_long
+      target_field: watchguard_firebox.log.current_session
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.current_session
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.port
+      tag: convert_port_to_long
+      target_field: watchguard_firebox.log.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.port
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - set:
       field: message
       tag: set_message_from_log_body
