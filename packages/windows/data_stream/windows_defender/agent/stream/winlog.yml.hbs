@@ -9,22 +9,29 @@ ignore_older: {{ignore_older}}
 {{#if language}}
 language: {{language}}
 {{/if}}
+
+# if we have tags defined add the tags object
 {{#if tags.length}}
 tags:
+{{/if}}
+
+# if tags aren't defined but preserver original is, add tags object
+{{#unless tags.length}}
+{{#if preserve_original_event}}
+tags:
+{{/if}}
+{{/unless}}
+
+# if tags are defined, add them
+{{#if tags.length}}
 {{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
+{{/if}}
+
+# if preserver original event is defined add that tag
 {{#if preserve_original_event}}
   - preserve_original_event
-{{/if}}
-{{else}}
-{{#if preserve_original_event}}
-tags:
-  - preserve_original_event
-{{/if}}
-{{/if}}
-{{#if preserve_original_event}}
-include_xml: true
 {{/if}}
 processors:
 - translate_sid:
