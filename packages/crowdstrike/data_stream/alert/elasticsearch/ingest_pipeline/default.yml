@@ -1179,21 +1179,12 @@ processors:
       tag: rename_tactic_id
       target_field: crowdstrike.alert.tactic_id
       ignore_missing: true
-  - script:
-      lang: painless
-      tag: script_to_set_threat_tactic_id
+  - append:
+      field: threat.tactic.id
+      tag: append_threat_tactic_id
+      value: '{{{crowdstrike.alert.tactic_id}}}'
+      allow_duplicates: false
       if: ctx.crowdstrike?.alert?.tactic_id != null
-      description: Script to set threat tactic ID.
-      source: |
-        def v = ctx.crowdstrike.alert.tactic_id;
-        if (v.startsWith("CS")) {
-          v = v.substring(2, v.length());
-        }
-        ctx.threat.tactic.id = [v];
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.technique
       tag: rename_technique
@@ -1210,21 +1201,20 @@ processors:
       tag: rename_technique_id
       target_field: crowdstrike.alert.technique_id
       ignore_missing: true
-  - script:
-      lang: painless
-      tag: script_to_set_threat_technique_id
+  - append:
+      field: threat.technique.id
+      tag: append_threat_technique_id
+      value: '{{{crowdstrike.alert.technique_id}}}'
+      allow_duplicates: false
       if: ctx.crowdstrike?.alert?.technique_id != null
-      description: Script to set threat technique ID.
-      source: |
-        def v = ctx.crowdstrike.alert.technique_id;
-        if (v.startsWith("CS")) {
-          v = v.substring(2, v.length());
-        }
-        ctx.threat.technique.id = [v];
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.framework
+      value: CrowdStrike Falcon Detections Framework
+      if: ctx.crowdstrike?.alert?.tactic_id != null && ctx.crowdstrike.alert.tactic_id.startsWith("CS") && ctx.crowdstrike?.alert?.technique_id != null && ctx.crowdstrike.alert.technique_id.startsWith("CS")
+  - set:
+      field: threat.framework
+      value: MITRE ATT&CK
+      if: ctx.crowdstrike?.alert?.tactic_id != null && ctx.crowdstrike.alert.tactic_id.startsWith("TA")
   - date:
       field: json.timestamp
       tag: date_timestamp
