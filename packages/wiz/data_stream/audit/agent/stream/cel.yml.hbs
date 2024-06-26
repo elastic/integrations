@@ -100,8 +100,10 @@ program: |
             state.?cursor.last_timestamp.orValue(null)
           ),
         "first_timestamp": (
-            has(body.data) && state.?cursor.first_timestamp.orValue(null) != null
+            !has(body.data) || state.?cursor.first_timestamp.orValue(null) == null
             ?
+              string(now() - duration(state.initial_interval))
+            :
               (
                 body.data.auditLogEntries.pageInfo.hasNextPage
                 ?
@@ -109,8 +111,6 @@ program: |
                 :
                   state.cursor.last_timestamp
               )
-            :
-              string(now() - duration(state.initial_interval))
           ),
       },
       "end_cursor": {
