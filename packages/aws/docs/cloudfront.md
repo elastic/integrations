@@ -133,7 +133,9 @@ An example event for `cloudfront` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "web",
+        "category": [
+            "web"
+        ],
         "dataset": "aws.cloudfront_logs",
         "id": "SOX4xwn4XV6Q4rgb7XiVGOHms_BGlTAC4KyHmureZmBNrjGdRLiNIQ==",
         "ingested": "2023-11-03T13:01:05Z",

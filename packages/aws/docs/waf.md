@@ -168,7 +168,9 @@ An example event for `waf` looks as following:
     "event": {
         "action": "BLOCK",
         "agent_id_status": "verified",
-        "category": "web",
+        "category": [
+            "web"
+        ],
         "dataset": "aws.waf",
         "ingested": "2023-11-08T08:24:54Z",
         "kind": "event",
