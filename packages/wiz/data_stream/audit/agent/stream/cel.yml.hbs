@@ -96,11 +96,11 @@ program: |
           has(body.data.auditLogEntries.nodes) && body.data.auditLogEntries.nodes.size() > 0
           ?
             (
-              has(state.cursor) && has(state.cursor.last_timestamp) && body.data.auditLogEntries.nodes.map(e, e.timestamp).max() < state.cursor.last_timestamp
+              has(state.cursor) && has(state.cursor.last_timestamp) && body.data.auditLogEntries.nodes.map(e, timestamp(e.timestamp)).max() < timestamp(state.cursor.last_timestamp)
               ?
                 state.cursor.last_timestamp
               :
-                body.data.auditLogEntries.nodes.map(e, e.timestamp).max()
+                string(body.data.auditLogEntries.nodes.map(e, timestamp(e.timestamp)).max())
             )
           :
             (

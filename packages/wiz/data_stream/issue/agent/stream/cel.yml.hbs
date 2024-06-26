@@ -163,11 +163,11 @@ program: |
           has(body.data.issues.nodes) && body.data.issues.nodes.size() > 0
           ?
             (
-              has(state.cursor) && has(state.cursor.last_timestamp) && body.data.issues.nodes.map(e, e.statusChangedAt).max() < state.cursor.last_timestamp
+              has(state.cursor) && has(state.cursor.last_timestamp) && body.data.issues.nodes.map(e, timestamp(e.statusChangedAt)).max() < timestamp(state.cursor.last_timestamp)
               ?
                 state.cursor.last_timestamp
               :
-                body.data.issues.nodes.map(e, e.statusChangedAt).max()
+                string(body.data.issues.nodes.map(e, timestamp(e.statusChangedAt)).max())
             )
           :
             (
