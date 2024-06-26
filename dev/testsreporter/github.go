@@ -68,8 +68,6 @@ func (g *GhCli) Exists(ctx context.Context, issue *GithubIssue, open bool) (bool
 	stdout, stderr, err := g.runner.Exec(ctx,
 		"issue",
 		"list",
-		"--author",
-		issue.user,
 		"--json",
 		"title,body,number,labels,state,url,createdAt,closedAt",
 		"--repo",
@@ -125,7 +123,6 @@ func (g *GhCli) Exists(ctx context.Context, issue *GithubIssue, open bool) (bool
 				Labels:      i.Labels,
 				State:       i.State,
 				Repository:  issue.repository,
-				User:        issue.user,
 				URL:         i.URL,
 			})
 			return true, issueGot, nil

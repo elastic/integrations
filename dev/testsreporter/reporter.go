@@ -64,7 +64,6 @@ func updateDescriptionClosedIssueURL(issue *GithubIssue, closedIssueURL string, 
 		Description: formatter.Description(),
 		Labels:      issue.labels,
 		State:       issue.state,
-		User:        issue.user,
 		URL:         issue.url,
 		Repository:  issue.repository,
 	})

@@ -6,7 +6,6 @@ package testsreporter
 
 type GithubIssue struct {
 	repository  string
-	user        string
 	number      int
 	title       string
 	description string
@@ -31,7 +30,6 @@ type GithubIssueOptions struct {
 	Repository  string
 	Title       string
 	Description string
-	User        string
 	Labels      []string
 	Number      int
 	State       string
@@ -44,7 +42,6 @@ func NewGithubIssue(options GithubIssueOptions) *GithubIssue {
 		description: options.Description,
 		repository:  options.Repository,
 		labels:      options.Labels,
-		user:        options.User,
 		number:      options.Number,
 		state:       options.State,
 		url:         options.URL,

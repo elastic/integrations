@@ -119,7 +119,6 @@ func TestGithubIssueExists(t *testing.T) {
 			issue: NewGithubIssue(GithubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
-				User:       "foo",
 			}),
 			found: true,
 			open:  true,
@@ -128,7 +127,6 @@ func TestGithubIssueExists(t *testing.T) {
 				number:      42,
 				title:       "my issue",
 				description: "my issue description",
-				user:        "foo",
 				state:       "OPEN",
 			},
 		},
@@ -148,7 +146,6 @@ func TestGithubIssueExists(t *testing.T) {
 			issue: NewGithubIssue(GithubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
-				User:       "foo",
 			}),
 			open:     true,
 			found:    false,
@@ -171,7 +168,6 @@ func TestGithubIssueExists(t *testing.T) {
 			issue: NewGithubIssue(GithubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
-				User:       "foo",
 				Number:     42,
 			}),
 			open:  false,
@@ -181,7 +177,6 @@ func TestGithubIssueExists(t *testing.T) {
 				number:      42,
 				title:       "my issue",
 				description: "my issue description",
-				user:        "foo",
 				state:       "CLOSED",
 			},
 		},

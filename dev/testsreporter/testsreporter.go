@@ -22,7 +22,7 @@ type checkOptions struct {
 	CodeownersPath    string
 }
 
-func Check(username, resultsPath, buildURL, stackVersion string, serverless bool, serverlessProject string, maxPreviousLinks int) error {
+func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverlessProject string, maxPreviousLinks int) error {
 	fmt.Println("path: ", resultsPath)
 	packageErrors, err := errorsFromTests(checkOptions{
 		ResultsPath:       resultsPath,
@@ -63,7 +63,6 @@ func Check(username, resultsPath, buildURL, stackVersion string, serverless bool
 			Description: r.Description(),
 			Labels:      []string{"flaky-test", "automation"},
 			Repository:  "elastic/integrations",
-			User:        username,
 		})
 
 		if err := reporter.Report(ctx, ghIssue, pError); err != nil {

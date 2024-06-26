@@ -151,12 +151,3 @@ if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" ]]; then
   fi
 fi
 
-if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations" ]]; then
-  if [[ "$BUILDKITE_STEP_KEY" == "report-failed-tests" ]]; then
-    GITHUB_USERNAME_SECRET=$(retry 5 vault kv get -field username "${GITHUB_TOKEN_VAULT_PATH}")
-    export GITHUB_USERNAME_SECRET
-
-    GITHUB_TOKEN=$(retry 5 vault kv get -field token "${GITHUB_TOKEN_VAULT_PATH}")
-    export GITHUB_TOKEN
-  fi
-fi

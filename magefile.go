@@ -143,7 +143,6 @@ func ReportFailedTests(testResultsFolder string) error {
 	serverlessEnv := os.Getenv("SERVERLESS")
 	serverlessProjectEnv := os.Getenv("SERVERLESS_PROJECT")
 	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
-	username := os.Getenv("GITHUB_USERNAME_SECRET")
 
 	serverless := false
 	if serverlessEnv != "" {
@@ -157,6 +156,6 @@ func ReportFailedTests(testResultsFolder string) error {
 		}
 	}
 
-	mg.Deps(mg.F(testsreporter.Check, username, testResultsFolder, buildURL, stackVersion, serverless, serverlessProjectEnv, defaultPreviousLinksNumber))
+	mg.Deps(mg.F(testsreporter.Check, testResultsFolder, buildURL, stackVersion, serverless, serverlessProjectEnv, defaultPreviousLinksNumber))
 	return nil
 }
