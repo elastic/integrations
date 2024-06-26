@@ -1,23 +1,51 @@
 {
-    "id": "spring_boot-c89e1510-ca15-11ec-b4b1-b57f75afa7dd",
-    "type": "dashboard",
-    "namespaces": [
-        "default"
-    ],
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
-    "coreMigrationVersion": "8.8.0",
-    "typeMigrationVersion": "8.7.0",
-    "updated_at": "2024-01-03T20:12:28.833Z",
-    "created_at": "2024-01-03T20:12:28.833Z",
-    "version": "WzEwMSwxXQ==",
     "attributes": {
         "description": "Metrics related to threads, heap and non heap memory.",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "spring_boot.gc",
+                                "spring_boot.memory",
+                                "spring_boot.threading"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "spring_boot.gc"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "spring_boot.memory"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "spring_boot.threading"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -27,14 +55,21 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
                     "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-31ad067d-6820-43dc-a6fd-7a32a6a121f5",
+                                "type": "index-pattern"
+                            }
+                        ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
@@ -104,29 +139,7 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "8a86b358-6960-40ef-91ed-05c2c2e7c40f",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "spring_boot.memory"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "spring_boot.memory"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -167,20 +180,11 @@
                             }
                         },
                         "title": "Heap and non-heap memory [Metrics Spring Boot]",
-                        "visualizationType": "lnsXY",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-31ad067d-6820-43dc-a6fd-7a32a6a121f5",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "8a86b358-6960-40ef-91ed-05c2c2e7c40f",
-                                "type": "index-pattern"
-                            }
-                        ]
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -190,14 +194,18 @@
                     "y": 0
                 },
                 "panelIndex": "12e70c57-6059-400c-974f-b69423d435e9",
-                "type": "lens",
-                "version": "8.6.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
                     "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+                                "type": "index-pattern"
+                            }
+                        ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
@@ -247,29 +255,7 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "61418bc6-4106-4f91-81ea-1e1071b7c9bb",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "spring_boot.threading"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "spring_boot.threading"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -316,20 +302,11 @@
                             }
                         },
                         "title": "Threads [Metrics Spring Boot]",
-                        "visualizationType": "lnsXY",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "61418bc6-4106-4f91-81ea-1e1071b7c9bb",
-                                "type": "index-pattern"
-                            }
-                        ]
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 10,
@@ -340,14 +317,18 @@
                 },
                 "panelIndex": "eb0fc5f9-1c7d-48bc-8098-ba58f9962dee",
                 "title": "Total threads [Metrics Spring Boot]",
-                "type": "lens",
-                "version": "8.6.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
                     "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-e937f0c4-f880-4837-9315-69d043a3f6b1",
+                                "type": "index-pattern"
+                            }
+                        ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
@@ -849,29 +830,7 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "8aabc9bc-b40b-4f3c-b077-c4d19cd6b477",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "spring_boot.gc"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "spring_boot.gc"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -933,20 +892,11 @@
                             }
                         },
                         "title": "Memory usage after and before GC [Metrics Spring Boot]",
-                        "visualizationType": "lnsXY",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-e937f0c4-f880-4837-9315-69d043a3f6b1",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "8aabc9bc-b40b-4f3c-b077-c4d19cd6b477",
-                                "type": "index-pattern"
-                            }
-                        ]
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -956,14 +906,18 @@
                     "y": 15
                 },
                 "panelIndex": "f3782cac-5b20-413c-a88d-cb01ebee5772",
-                "type": "lens",
-                "version": "8.6.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
                     "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+                                "type": "index-pattern"
+                            }
+                        ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
@@ -1013,29 +967,7 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "6502fda4-d554-4b5d-8e8b-e6d3c873901b",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "spring_boot.threading"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "spring_boot.threading"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1075,20 +1007,11 @@
                             }
                         },
                         "title": "Current threads [Metrics Spring Boot]",
-                        "visualizationType": "lnsXY",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "6502fda4-d554-4b5d-8e8b-e6d3c873901b",
-                                "type": "index-pattern"
-                            }
-                        ]
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 10,
@@ -1098,14 +1021,18 @@
                     "y": 10
                 },
                 "panelIndex": "b55b6992-8179-4bf9-8e79-8354509a956e",
-                "type": "lens",
-                "version": "8.6.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": false,
                     "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
+                                "type": "index-pattern"
+                            }
+                        ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
@@ -1155,29 +1082,7 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "702499ca-434e-41d4-b9a1-1d0bb27b244a",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "spring_boot.threading"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "spring_boot.threading"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1217,20 +1122,11 @@
                             }
                         },
                         "title": "Daemon threads [Metrics Spring Boot]",
-                        "visualizationType": "lnsXY",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "702499ca-434e-41d4-b9a1-1d0bb27b244a",
-                                "type": "index-pattern"
-                            }
-                        ]
-                    }
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 10,
@@ -1240,65 +1136,49 @@
                     "y": 20
                 },
                 "panelIndex": "e7826ce5-e7f7-4f33-87c6-2f74fc9fa508",
-                "type": "lens",
-                "version": "8.6.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Spring Boot] Memory and Threads",
         "version": 1
     },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-19T06:26:43.135Z",
+    "id": "spring_boot-c89e1510-ca15-11ec-b4b1-b57f75afa7dd",
+    "managed": false,
     "references": [
         {
-            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
             "name": "12e70c57-6059-400c-974f-b69423d435e9:indexpattern-datasource-layer-31ad067d-6820-43dc-a6fd-7a32a6a121f5",
-            "id": "metrics-*"
+            "type": "index-pattern"
         },
         {
-            "type": "index-pattern",
-            "name": "12e70c57-6059-400c-974f-b69423d435e9:8a86b358-6960-40ef-91ed-05c2c2e7c40f",
-            "id": "metrics-*"
-        },
-        {
-            "type": "index-pattern",
+            "id": "metrics-*",
             "name": "eb0fc5f9-1c7d-48bc-8098-ba58f9962dee:indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-            "id": "metrics-*"
+            "type": "index-pattern"
         },
         {
-            "type": "index-pattern",
-            "name": "eb0fc5f9-1c7d-48bc-8098-ba58f9962dee:61418bc6-4106-4f91-81ea-1e1071b7c9bb",
-            "id": "metrics-*"
-        },
-        {
-            "type": "index-pattern",
+            "id": "metrics-*",
             "name": "f3782cac-5b20-413c-a88d-cb01ebee5772:indexpattern-datasource-layer-e937f0c4-f880-4837-9315-69d043a3f6b1",
-            "id": "metrics-*"
+            "type": "index-pattern"
         },
         {
-            "type": "index-pattern",
-            "name": "f3782cac-5b20-413c-a88d-cb01ebee5772:8aabc9bc-b40b-4f3c-b077-c4d19cd6b477",
-            "id": "metrics-*"
-        },
-        {
-            "type": "index-pattern",
+            "id": "metrics-*",
             "name": "b55b6992-8179-4bf9-8e79-8354509a956e:indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-            "id": "metrics-*"
+            "type": "index-pattern"
         },
         {
-            "type": "index-pattern",
-            "name": "b55b6992-8179-4bf9-8e79-8354509a956e:6502fda4-d554-4b5d-8e8b-e6d3c873901b",
-            "id": "metrics-*"
-        },
-        {
-            "type": "index-pattern",
+            "id": "metrics-*",
             "name": "e7826ce5-e7f7-4f33-87c6-2f74fc9fa508:indexpattern-datasource-layer-760bf001-a3ae-46e6-a366-ab2c9c777cfc",
-            "id": "metrics-*"
-        },
-        {
-            "type": "index-pattern",
-            "name": "e7826ce5-e7f7-4f33-87c6-2f74fc9fa508:702499ca-434e-41d4-b9a1-1d0bb27b244a",
-            "id": "metrics-*"
+            "type": "index-pattern"
         }
     ],
-    "managed": false
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }
