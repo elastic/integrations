@@ -121,7 +121,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| dns.response_code |  |  |
 | geo.city_name | City name. | keyword |
 | geo.continent_name | Name of the continent. | keyword |
 | geo.country_iso_code | Country ISO code. | keyword |
