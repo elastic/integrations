@@ -1,0 +1,256 @@
+---
+description: Pipeline for Gigamon Ami logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: json
+      target_field: event.original
+      if: ctx.json != null && ctx.event?.original == null
+      tag: rename_json
+  - json:
+      field: event.original
+      target_field: gigamon.ami
+      if: ctx.event?.original != null
+      tag: json_event_original
+  
+  # process dates on base fields
+  - date:
+      field: gigamon.ami.ts
+      tag: date_gigamon_ami_ts
+      formats:
+        - 'EEE MMM dd HH:mm:ss yyyy'
+        - 'EEE MMM  d HH:mm:ss yyyy'
+        - 'EEE MMM d HH:mm:ss yyyy'
+        - ISO8601
+      if: ctx.gigamon?.ami?.ts != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.ts
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gigamon.ami.start_time
+      target_field: gigamon.ami.start_time
+      tag: date_gigamon_ami_start_time
+      formats:
+        - 'yyyy:MM:dd HH:mm:ss.SSS'
+        - 'EEE MMM dd HH:mm:ss yyyy'
+        - 'EEE MMM  d HH:mm:ss yyyy'
+        - 'EEE MMM d HH:mm:ss yyyy'
+        - ISO8601
+      if: ctx.gigamon?.ami?.start_time != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.start_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gigamon.ami.end_time
+      target_field: gigamon.ami.end_time
+      tag: date_gigamon_ami_end_time
+      formats:
+        - 'yyyy:MM:dd HH:mm:ss.SSS'
+        - 'EEE MMM dd HH:mm:ss yyyy'
+        - 'EEE MMM  d HH:mm:ss yyyy'
+        - 'EEE MMM d HH:mm:ss yyyy'
+        - ISO8601
+      if: ctx.gigamon?.ami?.end_time != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.end_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # process dates on base fields
+  - date:
+      field: gigamon.ami.ssl_validity_not_before
+      target_field: gigamon.ami.ssl_validity_not_before
+      tag: date_gigamon_ami_ssl_validity_not_before
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+        - ISO8601
+      if: ctx.gigamon?.ami?.ssl_validity_not_before != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.ssl_validity_not_before
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: gigamon.ami.ssl_validity_not_after
+      target_field: gigamon.ami.ssl_validity_not_after
+      tag: date_gigamon_ami_ssl_validity_not_after
+      formats:
+        - 'yyyy-MM-dd HH:mm:ss'
+        - ISO8601
+      if: ctx.gigamon?.ami?.ssl_validity_not_after != null
+      on_failure:
+        - remove:
+            field: gigamon.ami.ssl_validity_not_after
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # convert base fields to long
+  - convert:
+      field: gigamon.ami.seq_num
+      if: ctx.gigamon?.ami?.seq_num != null
+      tag: convert_seq_num
+      type: long
+  - convert:
+      field: gigamon.ami.app_id
+      if: ctx.gigamon?.ami?.app_id != null
+      tag: convert_app_id
+      type: long
+  - convert:
+      field: gigamon.ami.sys_up_time_first
+      if: ctx.gigamon?.ami?.sys_up_time_first != null
+      tag: convert_sys_up_time_first
+      type: long
+  - convert:
+      field: gigamon.ami.sys_up_time_last
+      if: ctx.gigamon?.ami?.sys_up_time_last != null
+      tag: convert_sys_up_time_last
+      type: long
+  - convert:
+      field: gigamon.ami.dst_bytes
+      if: ctx.gigamon?.ami?.dst_bytes != null
+      tag: convert_dst_bytes
+      type: long
+  - convert:
+      field: gigamon.ami.dst_packets
+      if: ctx.gigamon?.ami?.dst_packets != null
+      tag: convert_dst_packets
+      type: long
+  - convert:
+      field: gigamon.ami.dst_port
+      if: ctx.gigamon?.ami?.dst_port != null
+      tag: convert_dst_port
+      type: long
+  - convert:
+      field: gigamon.ami.src_bytes
+      if: ctx.gigamon?.ami?.src_bytes != null
+      tag: convert_src_bytes
+      type: long
+  - convert:
+      field: gigamon.ami.src_packets
+      if: ctx.gigamon?.ami?.src_packets != null
+      tag: convert_src_packets
+      type: long
+  - convert:
+      field: gigamon.ami.src_port
+      if: ctx.gigamon?.ami?.src_port != null
+      tag: convert_src_port
+      type: long
+  # convert dns_ fields to long
+  - convert:
+      field: gigamon.ami.dns_qdcount
+      if: ctx.gigamon?.ami?.dns_qdcount != null
+      tag: convert_dns_qdcount
+      type: long
+  - convert:
+      field: gigamon.ami.dns_transaction_id
+      if: ctx.gigamon?.ami?.dns_transaction_id != null
+      tag: convert_dns_transaction_id
+      type: long
+  - convert:
+      field: gigamon.ami.dns_ttl
+      if: ctx.gigamon?.ami?.dns_ttl != null
+      tag: convert_dns_ttl
+      type: long
+  - convert:
+      field: gigamon.ami.dns_ancount
+      if: ctx.gigamon?.ami?.dns_ancount != null
+      tag: convert_dns_ancount
+      type: long
+  # convert dns_ fields to double
+  - convert:
+      field: gigamon.ami.dns_response_time
+      if: ctx.gigamon?.ami?.dns_response_time != null
+      tag: convert_dns_response_time
+      type: double
+  # convert http_ fields to long
+  - convert:
+      field: gigamon.ami.http_code
+      if: ctx.gigamon?.ami?.http_code != null
+      tag: convert_http_code
+      type: long
+  - convert:
+      field: gigamon.ami.http_content_len
+      if: ctx.gigamon?.ami?.http_content_len != null
+      tag: convert_http_content_len
+      type: long
+  - convert:
+      field: gigamon.ami.http_request_size
+      if: ctx.gigamon?.ami?.http_request_size != null
+      tag: convert_http_request_size
+      type: long
+  # convert ssl_ fields to long
+  - convert:
+      field: gigamon.ami.ssl_request_size
+      if: ctx.gigamon?.ami?.ssl_request_size != null
+      tag: convert_ssl_request_size
+      type: long
+  - convert:
+      field: gigamon.ami.ssl_client_hello_extension_len
+      if: ctx.gigamon?.ami?.ssl_client_hello_extension_len != null
+      tag: convert_ssl_client_hello_extension_len
+      type: long
+  - convert:
+      field: gigamon.ami.ssl_server_hello_extension_len
+      if: ctx.gigamon?.ami?.ssl_server_hello_extension_len != null
+      tag: convert_ssl_server_hello_extension_len
+      type: long
+  - convert:
+      field: gigamon.ami.ssl_ext_sig_algorithms_len
+      if: ctx.gigamon?.ami?.ssl_ext_sig_algorithms_len != null
+      tag: convert_ssl_ext_sig_algorithms_len
+      type: long
+  - convert:
+      field: gigamon.ami.ssl_certificate_subject_key_size
+      if: ctx.gigamon?.ami?.ssl_certificate_subject_key_size != null
+      tag: convert_ssl_certificate_subject_key_size
+      type: long
+  - remove:
+      field:
+        - ts
+        - json
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error

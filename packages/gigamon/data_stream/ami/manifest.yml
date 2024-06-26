@@ -1,0 +1,526 @@
+title: Custom HTTP Endpoint Logs
+type: logs
+streams:
+  - input: http_endpoint
+    template_path: http_endpoint.yml.hbs
+    title: Gigamon Ami logs
+    description: Collect json data from gigamon ami
+    vars:
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9559
+      - name: secret_header
+        type: text
+        title: Secret Header
+        description: The header to check for a specific value specified by `secret.value`.
+        required: false
+        show_user: false
+        secret: false
+      - name: secret_value
+        type: password
+        title: Secret Value
+        description: The secret stored in the header name specified by `secret.header`.
+        required: false
+        show_user: false
+        secret: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - gigamon-ami
+      - name: preserve_original_event
+        type: bool
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original.
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: true
+        title: Preserve duplicate custom fields
+        description: Preserve custom fields for all ECS mappings.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic_templates:
+        - _embedded_ecs-ecs_timestamp:
+            mapping:
+              ignore_malformed: false
+              type: date
+            path_match: '@timestamp'
+        - _embedded_ecs-data_stream_to_constant:
+            mapping:
+              type: constant_keyword
+            path_match: data_stream.*
+        - _embedded_ecs-resolved_ip_to_ip:
+            mapping:
+              type: ip
+            match: resolved_ip
+        - _embedded_ecs-forwarded_ip_to_ip:
+            mapping:
+              type: ip
+            match: forwarded_ip
+            match_mapping_type: string
+        - _embedded_ecs-ip_to_ip:
+            mapping:
+              type: ip
+            match: ip
+            match_mapping_type: string
+        - _embedded_ecs-x509_public_key_exponent_non_indexed_long:
+            mapping:
+              doc_values: false
+              index: false
+              type: long
+            path_match: '*.x509.public_key_exponent'
+        - _embedded_ecs-port_to_long:
+            mapping:
+              type: long
+            match: port
+        - _embedded_ecs-thread_id_to_long:
+            mapping:
+              type: long
+            path_match: '*.thread.id'
+        - _embedded_ecs-status_code_to_long:
+            mapping:
+              type: long
+            match: status_code
+        - _embedded_ecs-line_to_long:
+            mapping:
+              type: long
+            path_match: '*.file.line'
+        - _embedded_ecs-priority_to_long:
+            mapping:
+              type: long
+            path_match: log.syslog.priority
+        - _embedded_ecs-code_to_long:
+            mapping:
+              type: long
+            path_match: '*.facility.code'
+        - _embedded_ecs-code_to_long:
+            mapping:
+              type: long
+            path_match: '*.severity.code'
+        - _embedded_ecs-bytes_to_long:
+            mapping:
+              type: long
+            match: bytes
+            path_unmatch: '*.data.bytes'
+        - _embedded_ecs-packets_to_long:
+            mapping:
+              type: long
+            match: packets
+        - _embedded_ecs-public_key_exponent_to_long:
+            mapping:
+              type: long
+            match: public_key_exponent
+        - _embedded_ecs-severity_to_long:
+            mapping:
+              type: long
+            path_match: event.severity
+        - _embedded_ecs-duration_to_long:
+            mapping:
+              type: long
+            path_match: event.duration
+        - _embedded_ecs-pid_to_long:
+            mapping:
+              type: long
+            match: pid
+        - _embedded_ecs-uptime_to_long:
+            mapping:
+              type: long
+            match: uptime
+        - _embedded_ecs-sequence_to_long:
+            mapping:
+              type: long
+            match: sequence
+        - _embedded_ecs-entropy_to_long:
+            mapping:
+              type: long
+            match: '*entropy'
+        - _embedded_ecs-size_to_long:
+            mapping:
+              type: long
+            match: '*size'
+        - _embedded_ecs-entrypoint_to_long:
+            mapping:
+              type: long
+            match: entrypoint
+        - _embedded_ecs-ttl_to_long:
+            mapping:
+              type: long
+            match: ttl
+        - _embedded_ecs-major_to_long:
+            mapping:
+              type: long
+            match: major
+        - _embedded_ecs-minor_to_long:
+            mapping:
+              type: long
+            match: minor
+        - _embedded_ecs-as_number_to_long:
+            mapping:
+              type: long
+            path_match: '*.as.number'
+        - _embedded_ecs-pgid_to_long:
+            mapping:
+              type: long
+            match: pgid
+        - _embedded_ecs-exit_code_to_long:
+            mapping:
+              type: long
+            match: exit_code
+        - _embedded_ecs-chi_to_long:
+            mapping:
+              type: long
+            match: chi2
+        - _embedded_ecs-args_count_to_long:
+            mapping:
+              type: long
+            match: args_count
+        - _embedded_ecs-virtual_address_to_long:
+            mapping:
+              type: long
+            match: virtual_address
+        - _embedded_ecs-io_text_to_wildcard:
+            mapping:
+              type: wildcard
+            path_match: '*.io.text'
+        - _embedded_ecs-strings_to_wildcard:
+            mapping:
+              type: wildcard
+            path_match: registry.data.strings
+        - _embedded_ecs-path_to_wildcard:
+            mapping:
+              type: wildcard
+            path_match: '*url.path'
+        - _embedded_ecs-message_id_to_wildcard:
+            mapping:
+              type: wildcard
+            match: message_id
+        - _embedded_ecs-command_line_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: wildcard
+            match: command_line
+        - _embedded_ecs-error_stack_trace_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: wildcard
+            match: stack_trace
+        - _embedded_ecs-http_content_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: wildcard
+            path_match: '*.body.content'
+        - _embedded_ecs-url_full_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: wildcard
+            path_match: '*.url.full'
+        - _embedded_ecs-url_original_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: wildcard
+            path_match: '*.url.original'
+        - _embedded_ecs-user_agent_original_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: wildcard
+            path_match: user_agent.original
+        - _embedded_ecs-error_message_to_match_only:
+            mapping:
+              type: match_only_text
+            path_match: error.message
+        - _embedded_ecs-message_match_only_text:
+            mapping:
+              type: match_only_text
+            path_match: message
+        - _embedded_ecs-event_original_non_indexed_keyword:
+            mapping:
+              doc_values: false
+              index: false
+              type: keyword
+            path_match: event.original
+        - _embedded_ecs-agent_name_to_keyword:
+            mapping:
+              type: keyword
+            path_match: agent.name
+        - _embedded_ecs-service_name_to_keyword:
+            mapping:
+              type: keyword
+            path_match: '*.service.name'
+        - _embedded_ecs-sections_name_to_keyword:
+            mapping:
+              type: keyword
+            path_match: '*.sections.name'
+        - _embedded_ecs-resource_name_to_keyword:
+            mapping:
+              type: keyword
+            path_match: '*.resource.name'
+        - _embedded_ecs-observer_name_to_keyword:
+            mapping:
+              type: keyword
+            path_match: observer.name
+        - _embedded_ecs-question_name_to_keyword:
+            mapping:
+              type: keyword
+            path_match: '*.question.name'
+        - _embedded_ecs-group_name_to_keyword:
+            mapping:
+              type: keyword
+            path_match: '*.group.name'
+        - _embedded_ecs-geo_name_to_keyword:
+            mapping:
+              type: keyword
+            path_match: '*.geo.name'
+        - _embedded_ecs-host_name_to_keyword:
+            mapping:
+              type: keyword
+            path_match: host.name
+        - _embedded_ecs-severity_name_to_keyword:
+            mapping:
+              type: keyword
+            path_match: '*.severity.name'
+        - _embedded_ecs-title_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: keyword
+            match: title
+        - _embedded_ecs-executable_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: keyword
+            match: executable
+        - _embedded_ecs-file_path_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: keyword
+            path_match: '*.file.path'
+        - _embedded_ecs-file_target_path_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: keyword
+            path_match: '*.file.target_path'
+        - _embedded_ecs-name_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: keyword
+            match: name
+        - _embedded_ecs-full_name_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: keyword
+            match: full_name
+        - _embedded_ecs-os_full_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: keyword
+            path_match: '*.os.full'
+        - _embedded_ecs-working_directory_to_multifield:
+            mapping:
+              fields:
+                text:
+                  type: match_only_text
+              type: keyword
+            match: working_directory
+        - _embedded_ecs-timestamp_to_date:
+            mapping:
+              type: date
+            match: timestamp
+        - _embedded_ecs-delivery_timestamp_to_date:
+            mapping:
+              type: date
+            match: delivery_timestamp
+        - _embedded_ecs-not_after_to_date:
+            mapping:
+              type: date
+            match: not_after
+        - _embedded_ecs-not_before_to_date:
+            mapping:
+              type: date
+            match: not_before
+        - _embedded_ecs-accessed_to_date:
+            mapping:
+              type: date
+            match: accessed
+        - _embedded_ecs-origination_timestamp_to_date:
+            mapping:
+              type: date
+            match: origination_timestamp
+        - _embedded_ecs-created_to_date:
+            mapping:
+              type: date
+            match: created
+        - _embedded_ecs-installed_to_date:
+            mapping:
+              type: date
+            match: installed
+        - _embedded_ecs-creation_date_to_date:
+            mapping:
+              type: date
+            match: creation_date
+        - _embedded_ecs-ctime_to_date:
+            mapping:
+              type: date
+            match: ctime
+        - _embedded_ecs-mtime_to_date:
+            mapping:
+              type: date
+            match: mtime
+        - _embedded_ecs-ingested_to_date:
+            mapping:
+              type: date
+            match: ingested
+        - _embedded_ecs-start_to_date:
+            mapping:
+              type: date
+            match: start
+        - _embedded_ecs-end_to_date:
+            mapping:
+              type: date
+            match: end
+        - _embedded_ecs-score_base_to_float:
+            mapping:
+              type: float
+            path_match: '*.score.base'
+        - _embedded_ecs-score_temporal_to_float:
+            mapping:
+              type: float
+            path_match: '*.score.temporal'
+        - _embedded_ecs-score_to_float:
+            mapping:
+              type: float
+            match: '*_score'
+        - _embedded_ecs-score_norm_to_float:
+            mapping:
+              type: float
+            match: '*_score_norm'
+        - _embedded_ecs-usage_to_float:
+            mapping:
+              scaling_factor: 1000
+              type: scaled_float
+            match: usage
+        - _embedded_ecs-location_to_geo_point:
+            mapping:
+              type: geo_point
+            match: location
+        - _embedded_ecs-same_as_process_to_boolean:
+            mapping:
+              type: boolean
+            match: same_as_process
+        - _embedded_ecs-established_to_boolean:
+            mapping:
+              type: boolean
+            match: established
+        - _embedded_ecs-resumed_to_boolean:
+            mapping:
+              type: boolean
+            match: resumed
+        - _embedded_ecs-max_bytes_per_process_exceeded_to_boolean:
+            mapping:
+              type: boolean
+            match: max_bytes_per_process_exceeded
+        - _embedded_ecs-interactive_to_boolean:
+            mapping:
+              type: boolean
+            match: interactive
+        - _embedded_ecs-exists_to_boolean:
+            mapping:
+              type: boolean
+            match: exists
+        - _embedded_ecs-trusted_to_boolean:
+            mapping:
+              type: boolean
+            match: trusted
+        - _embedded_ecs-valid_to_boolean:
+            mapping:
+              type: boolean
+            match: valid
+        - _embedded_ecs-go_stripped_to_boolean:
+            mapping:
+              type: boolean
+            match: go_stripped
+        - _embedded_ecs-coldstart_to_boolean:
+            mapping:
+              type: boolean
+            match: coldstart
+        - _embedded_ecs-exports_to_flattened:
+            mapping:
+              type: flattened
+            match: exports
+        - _embedded_ecs-structured_data_to_flattened:
+            mapping:
+              type: flattened
+            match: structured_data
+        - _embedded_ecs-imports_to_flattened:
+            mapping:
+              type: flattened
+            match: '*imports'
+        - _embedded_ecs-attachments_to_nested:
+            mapping:
+              type: nested
+            match: attachments
+        - _embedded_ecs-segments_to_nested:
+            mapping:
+              type: nested
+            match: segments
+        - _embedded_ecs-elf_sections_to_nested:
+            mapping:
+              type: nested
+            path_match: '*.elf.sections'
+        - _embedded_ecs-pe_sections_to_nested:
+            mapping:
+              type: nested
+            path_match: '*.pe.sections'
+        - _embedded_ecs-macho_sections_to_nested:
+            mapping:
+              type: nested
+            path_match: '*.macho.sections'
