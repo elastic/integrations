@@ -1,115 +1,200 @@
-- name: zscaler_zia.tunnel
+- name: zscaler_zia
   type: group
   fields:
-    - name: action.type
-      type: keyword
-      description: |
-        Type of the record. Possible values [ WL_TUNNEL_IPSECPHASE1, WL_TUNNEL_IPSECPHASE2, WL_TUNNEL_EVENT, WL_TUNNEL_SAMPLES ].
-    - name: authentication
+    - name: tunnel
       type: group
       fields:
-        - name: algorithm
-          type: keyword
-          description: |
-            Authentication algorithm.
-        - name: type
-          type: keyword
-          description: |
-            Authentication type.
-    - name: destination.end.ip
-      type: ip
-      description: |
-        Phase 2 policy proposal - Destination IP end.
-    - name: destination.start
-      type: group
-      fields:
-        - name: ip
-          type: ip
-          description: |
-            Phase 2 policy proposal - Destination IP start.
-        - name: port
-          type: long
-          description: |
-            Phase 2 policy proposal - Destination port end.
-    - name: dpd_packets
-      type: keyword
-      description: |
-        Number of DPD packets received in 60-second sample window.
-    - name: encryption.algorithm
-      type: keyword
-      description: |
-        Encryption algorithm.
-    - name: ike.version
-      type: long
-      description: |
-        IKE version (1 or 2).
-    - name: life
-      type: group
-      fields:
+        - name: action
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: The action type.
+        - name: authentication
+          type: group
+          fields:
+            - name: algorithm
+              type: keyword
+              description: The authentication algorithm.
+            - name: type
+              type: keyword
+              description: The authentication type.
         - name: bytes
-          type: long
-          description: |
-            Life bytes (number of traffic to be transacted through tunnel before renegotiation).
-        - name: time
-          type: long
-          description: |
-            Lifetime of IKE Phase 1/2 in seconds.
-    - name: location.name
-      type: keyword
-      description: |
-        Location name.
-    - name: policy
-      type: group
-      fields:
-        - name: direction
+          type: group
+          fields:
+            - name: received
+              type: long
+              description: The bytes received in a 60-second sample window by Zscaler from the customer.
+            - name: sent
+              type: long
+              description: The bytes transmitted in a 60-second sample window from Zscaler to the customer.
+        - name: datetime
+          type: date
+          description: The date and time of the event.
+        - name: day
           type: keyword
-          description: |
-            N/A
+          description: The day of the week.
+        - name: day_of_month
+          type: long
+          description: The day of the month.
+        - name: destination
+          type: group
+          fields:
+            - name: end
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: Phase 2 policy proposal - Destination IP end.
+            - name: port
+              type: long
+              description: The tunnel destination port.
+            - name: start
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: Phase 2 policy proposal - Destination IP start.
+                - name: port
+                  type: long
+                  description: Phase 2 policy proposal - Destination port start.
+            - name: vip
+              type: group
+              fields:
+                - name: address
+                  type: ip
+                  description: The tunnel destination VIP address.
+        - name: dpd_packets
+          type: long
+          description: The number of DPD packets received in a 60-second sample window.
+        - name: encryption
+          type: group
+          fields:
+            - name: algorithm
+              type: keyword
+              description: The encryption algorithm.
+        - name: event
+          type: keyword
+          description: The tunnel status.
+        - name: event_reason
+          type: keyword
+          description: The reason for the tunnel status change.
+        - name: hour
+          type: long
+          description: Hours.
+        - name: ikeversion
+          type: keyword
+          description: The IKE version.
+        - name: life
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: Life bytes.
+            - name: time
+              type: long
+              description: The lifetime of IKE Phase 2 (seconds).
+        - name: locationname
+          type: keyword
+          description: The location name.
+        - name: minute
+          type: long
+          description: Minutes.
+        - name: month
+          type: keyword
+          description: The name of the month.
+        - name: month_of_year
+          type: long
+          description: The month of the year.
+        - name: obfuscated
+          type: group
+          fields:
+            - name: location_name
+              type: keyword
+              description: The obfuscated version of the location name.
+            - name: vpn_credential_name
+              type: keyword
+              description: The obfuscated version of the VPN credential name for the IPSec tunnel.
+        - name: packets
+          type: group
+          fields:
+            - name: received
+              type: long
+              description: The packets received in a 60-second sample window by Zscaler from the customer.
+            - name: sent
+              type: long
+              description: The packets transmitted in a 60-second sample window from Zscaler to the customer.
+        - name: policy
+          type: group
+          fields:
+            - name: protocol
+              type: keyword
+              description: Phase 2 policy proposal - Protocol.
         - name: protocol
           type: keyword
-          description: |
-            Phase 2 policy proposal - Protocol.
-    - name: protocol
-      type: keyword
-      description: |
-        IPSec tunnel protocol type (Zscaler only supports ESP).
-    - name: source.end.ip
-      type: ip
-      description: |
-        Phase 2 policy proposal - Source IP end.
-    - name: source.start
-      type: group
-      fields:
-        - name: ip
-          type: ip
-          description: |
-            Phase 2 policy proposal - Source IP start.
-        - name: port
+          description: The IPSec tunnel protocol type.
+        - name: record
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The unique record identifier for each log.
+        - name: second
           type: long
-          description: |
-            Phase 2 policy proposal - Source port start.
-    - name: spi
-      type: keyword
-      description: |
-        Security Parameter Index.
-    - name: spi_in
-      type: keyword
-      description: |
-        Initiator cookie.
-    - name: spi_out
-      type: keyword
-      description: |
-        Responder cookie.
-    - name: type
-      type: keyword
-      description: |
-        Tunnel type.
-    - name: user_ip
-      type: ip
-    - name: vendor.name
-      type: keyword
-      description: |-
-        Vendor name of the edge device.
+          description: Seconds.
+        - name: source
+          type: group
+          fields:
+            - name: end
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: Phase 2 policy proposal - Source IP end.
+            - name: ip
+              type: ip
+              description: The tunnel source IP address.
+            - name: port
+              type: long
+              description: The tunnel source port.
+            - name: start
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: Phase 2 policy proposal - Source IP start.
+                - name: port
+                  type: long
+                  description: Phase 2 policy proposal - Source port start.
+        - name: spi
+          type: keyword
+          description: The Security Parameter Index.
+        - name: spi_in
+          type: keyword
+          description: The initiator cookie.
+        - name: spi_out
+          type: keyword
+          description: The responder cookie.
+        - name: timezone
+          type: keyword
+          description: The time zone.
+        - name: type
+          type: keyword
+          description: The tunnel type.
+        - name: user_ip
+          type: ip
+        - name: vendor
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The vendor name of the edge device.
+        - name: vpn_credential_name
+          type: keyword
+          description: The VPN credential name for the IPSec tunnel.
+        - name: year
+          type: long
+          description: Year.
 - name: log.source.address
   type: keyword
   description: Source address from which the log event was read / sent from.

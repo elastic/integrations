@@ -1,0 +1,759 @@
+---
+description: Pipeline for processing Endpoint DLP logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: resp
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json
+      tag: remove_json_if_input_type_http_endpoint
+      if: ctx.input?.type == 'http_endpoint'
+      ignore_missing: true
+  - rename:
+      field: resp.event
+      tag: rename_resp_event
+      target_field: json
+      ignore_missing: true
+  - remove:
+      field: resp
+      tag: remove_resp
+      ignore_missing: true
+  - append:
+      field: event.category
+      tag: append_intrusion_detection_into_event_category
+      value: intrusion_detection
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_alert_to_event_kind
+      value: alert
+  - rename:
+      field: json.actiontaken
+      tag: rename_actiontaken
+      target_field: zscaler_zia.endpoint_dlp.action_taken
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_endpoint_dlp_action_taken
+      copy_from: zscaler_zia.endpoint_dlp.action_taken
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: ' '
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.activitytype
+      tag: rename_activitytype
+      target_field: zscaler_zia.endpoint_dlp.activity_type
+      ignore_missing: true
+  - rename:
+      field: json.additionalinfo
+      tag: rename_additionalinfo
+      target_field: zscaler_zia.endpoint_dlp.additional_info
+      ignore_missing: true
+  - rename:
+      field: json.channel
+      tag: rename_channel
+      target_field: zscaler_zia.endpoint_dlp.channel
+      ignore_missing: true
+  - rename:
+      field: json.confirmaction
+      tag: rename_confirmaction
+      target_field: zscaler_zia.endpoint_dlp.confirm_action
+      ignore_missing: true
+  - rename:
+      field: json.confirmjustification
+      tag: rename_confirmjustification
+      target_field: zscaler_zia.endpoint_dlp.confirm_just
+      ignore_missing: true
+  - foreach:
+      field: json.dlpdictcount
+      if: ctx.json?.dlpdictcount instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_dlpdictcount_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.dlpdictcount
+      tag: rename_dlpdictcount
+      target_field: zscaler_zia.endpoint_dlp.counts
+      ignore_missing: true
+  - rename:
+      field: json.datacentercity
+      tag: rename_datacentercity
+      target_field: zscaler_zia.endpoint_dlp.datacenter.city
+      ignore_missing: true
+  - rename:
+      field: json.datacentercountry
+      tag: rename_datacentercountry
+      target_field: zscaler_zia.endpoint_dlp.datacenter.country
+      ignore_missing: true
+  - rename:
+      field: json.datacenter
+      tag: rename_datacenter
+      target_field: zscaler_zia.endpoint_dlp.datacenter.name
+      ignore_missing: true
+  - rename:
+      field: json.day
+      tag: rename_day
+      target_field: zscaler_zia.endpoint_dlp.day
+      ignore_missing: true
+  - convert:
+      field: json.dd
+      tag: convert_dd_to_long
+      target_field: zscaler_zia.endpoint_dlp.day_of_month
+      type: long
+      if: ctx.json?.dd != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.department
+      tag: rename_department
+      target_field: zscaler_zia.endpoint_dlp.department
+      ignore_missing: true
+  - rename:
+      field: json.dsttype
+      tag: rename_dsttype
+      target_field: zscaler_zia.endpoint_dlp.destination_type
+      ignore_missing: true
+  - rename:
+      field: json.deviceappversion
+      tag: rename_deviceappversion
+      target_field: zscaler_zia.endpoint_dlp.device.appversion
+      ignore_missing: true
+  - rename:
+      field: json.devicehostname
+      tag: rename_devicehostname
+      target_field: zscaler_zia.endpoint_dlp.device.hostname
+      ignore_missing: true
+  - lowercase:
+      field: zscaler_zia.endpoint_dlp.device.hostname
+      target_field: host.name
+      ignore_missing: true
+      if: ctx.zscaler_zia?.endpoint_dlp?.device?.hostname != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      tag: append_host_name_into_related_hosts
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - rename:
+      field: json.devicemodel
+      tag: rename_devicemodel
+      target_field: zscaler_zia.endpoint_dlp.device.model
+      ignore_missing: true
+  - set:
+      field: device.model.identifier
+      tag: set_device_model_identifier_from_endpoint_dlp_device_model
+      copy_from: zscaler_zia.endpoint_dlp.device.model
+      ignore_empty_value: true
+  - rename:
+      field: json.devicename
+      tag: rename_devicename
+      target_field: zscaler_zia.endpoint_dlp.device.name
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_endpoint_dlp_device_name
+      copy_from: zscaler_zia.endpoint_dlp.device.name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_host_hostname_into_related_hosts
+      value: '{{{host.hostname}}}'
+      allow_duplicates: false
+      if: ctx.host?.hostname != null
+  - rename:
+      field: json.deviceostype
+      tag: rename_deviceostype
+      target_field: zscaler_zia.endpoint_dlp.device.os.type
+      ignore_missing: true
+  - set:
+      field: host.os.family
+      tag: set_host_os_family_from_endpoint_dlp_device_os_type
+      copy_from: zscaler_zia.endpoint_dlp.device.os.type
+      ignore_empty_value: true
+  - rename:
+      field: json.deviceosversion
+      tag: rename_deviceosversion
+      target_field: zscaler_zia.endpoint_dlp.device.os.version
+      ignore_missing: true
+  - set:
+      field: host.os.version
+      tag: set_host_os_version_from_endpoint_dlp_device_os_version
+      copy_from: zscaler_zia.endpoint_dlp.device.os.version
+      ignore_empty_value: true
+  - rename:
+      field: json.deviceowner
+      tag: rename_deviceowner
+      target_field: zscaler_zia.endpoint_dlp.device.owner
+      ignore_missing: true
+  - rename:
+      field: json.deviceplatform
+      tag: rename_deviceplatform
+      target_field: zscaler_zia.endpoint_dlp.device.platform
+      ignore_missing: true
+  - set:
+      field: host.os.platform
+      tag: set_host_os_platform_from_endpoint_dlp_device_platform
+      copy_from: zscaler_zia.endpoint_dlp.device.platform
+      ignore_empty_value: true
+  - rename:
+      field: json.devicetype
+      tag: rename_devicetype
+      target_field: zscaler_zia.endpoint_dlp.device.type
+      ignore_missing: true
+  - set:
+      field: host.type
+      tag: set_host_type_from_endpoint_dlp_device_type
+      copy_from: zscaler_zia.endpoint_dlp.device.type
+      ignore_empty_value: true
+  - convert:
+      field: json.numdlpdictids
+      tag: convert_numdlpdictids_to_long
+      target_field: zscaler_zia.endpoint_dlp.dictionary.id
+      type: long
+      if: ctx.json?.numdlpdictids != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.dlpdictnames
+      tag: rename_dlpdictnames
+      target_field: zscaler_zia.endpoint_dlp.dictionary_names
+      ignore_missing: true
+  - convert:
+      field: json.numdlpengineids
+      tag: convert_numdlpengineids_to_long
+      target_field: zscaler_zia.endpoint_dlp.engine.id
+      type: long
+      if: ctx.json?.numdlpengineids != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.dlpenginenames
+      tag: rename_dlpenginenames
+      target_field: zscaler_zia.endpoint_dlp.engine_names
+      ignore_missing: true
+  - rename:
+      field: json.timezone
+      tag: rename_timezone
+      target_field: zscaler_zia.endpoint_dlp.timezone
+      ignore_missing: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_endpoint_dlp_timezone
+      copy_from: zscaler_zia.endpoint_dlp.timezone
+      ignore_empty_value: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_to_utc
+      value: UTC
+      if: ctx.event?.timezone == null
+  - date:
+      field: json.eventtime
+      tag: date_eventtime
+      target_field: zscaler_zia.endpoint_dlp.event_time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{event.timezone}}}'
+      if: ctx.json?.eventtime != null && ctx.json.eventtime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.expectedaction
+      tag: rename_expectedaction
+      target_field: zscaler_zia.endpoint_dlp.expected_action
+      ignore_missing: true
+  - date:
+      field: json.feedtime
+      tag: date_feedtime
+      target_field: zscaler_zia.endpoint_dlp.feed_time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{event.timezone}}}'
+      if: ctx.json?.feedtime != null && ctx.json.feedtime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.filedstpath
+      tag: rename_filedstpath
+      target_field: zscaler_zia.endpoint_dlp.file.destination_path
+      ignore_missing: true
+  - set:
+      field: file.target_path
+      tag: set_file_target_path_from_endpoint_dlp_file_destination_path
+      copy_from: zscaler_zia.endpoint_dlp.file.destination_path
+      ignore_empty_value: true
+  - rename:
+      field: json.filedoctype
+      tag: rename_filedoctype
+      target_field: zscaler_zia.endpoint_dlp.file.doc_type
+      ignore_missing: true
+  - rename:
+      field: json.filemd5
+      tag: rename_filemd5
+      target_field: zscaler_zia.endpoint_dlp.file.md5
+      ignore_missing: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_endpoint_dlp_file_md5
+      copy_from: zscaler_zia.endpoint_dlp.file.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_hash_md5_into_related_hash
+      value: '{{{file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - rename:
+      field: json.filesha
+      tag: rename_filesha
+      target_field: zscaler_zia.endpoint_dlp.file.sha256
+      ignore_missing: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_endpoint_dlp_file_sha256
+      copy_from: zscaler_zia.endpoint_dlp.file.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha256_into_related_hash
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - rename:
+      field: json.filesrcpath
+      tag: rename_filesrcpath
+      target_field: zscaler_zia.endpoint_dlp.file.source_path
+      ignore_missing: true
+  - rename:
+      field: json.filetypename
+      tag: rename_filetypename
+      target_field: zscaler_zia.endpoint_dlp.file.type.name
+      ignore_missing: true
+  - set:
+      field: file.type
+      tag: set_file_type_file
+      value: file
+  - rename:
+      field: json.filetypecategory
+      tag: rename_filetypecategory
+      target_field: zscaler_zia.endpoint_dlp.file.type_category
+      ignore_missing: true
+  - convert:
+      field: json.hh
+      tag: convert_hh_to_long
+      target_field: zscaler_zia.endpoint_dlp.hour
+      type: long
+      if: ctx.json?.hh != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.dlpidentifier
+      tag: convert_dlpidentifier_to_string
+      target_field: zscaler_zia.endpoint_dlp.identifier
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.itemdstname
+      tag: rename_itemdstname
+      target_field: zscaler_zia.endpoint_dlp.item.destination_name
+      ignore_missing: true
+  - rename:
+      field: json.itemname
+      tag: rename_itemname
+      target_field: zscaler_zia.endpoint_dlp.item.name
+      ignore_missing: true
+  - rename:
+      field: json.itemsrcname
+      tag: rename_itemsrcname
+      target_field: zscaler_zia.endpoint_dlp.item.source_name
+      ignore_missing: true
+  - rename:
+      field: json.itemtype
+      tag: rename_itemtype
+      target_field: zscaler_zia.endpoint_dlp.item.type
+      ignore_missing: true
+  - rename:
+      field: json.logtype
+      tag: rename_logtype
+      target_field: zscaler_zia.endpoint_dlp.log_type
+      ignore_missing: true
+  - convert:
+      field: json.mm
+      tag: convert_mm_to_long
+      target_field: zscaler_zia.endpoint_dlp.minute
+      type: long
+      if: ctx.json?.mm != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mon
+      tag: rename_mon
+      target_field: zscaler_zia.endpoint_dlp.month
+      ignore_missing: true
+  - convert:
+      field: json.mth
+      tag: convert_mth_to_long
+      target_field: zscaler_zia.endpoint_dlp.month_of_year
+      type: long
+      if: ctx.json?.mth != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.odepartment
+      tag: rename_odepartment
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.department
+      ignore_missing: true
+  - rename:
+      field: json.odevicehostname
+      tag: rename_odevicehostname
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.device.hostname
+      ignore_missing: true
+  - rename:
+      field: json.odevicename
+      tag: rename_odevicename
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.device.name
+      ignore_missing: true
+  - rename:
+      field: json.odeviceowner
+      tag: rename_odeviceowner
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.device.owner
+      ignore_missing: true
+  - rename:
+      field: json.odlpdictnames
+      tag: rename_odlpdictnames
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.dlp.dictionary_names
+      ignore_missing: true
+  - rename:
+      field: json.odlpenginenames
+      tag: rename_odlpenginenames
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.dlp.engine_names
+      ignore_missing: true
+  - rename:
+      field: json.ofiledstpath
+      tag: rename_ofiledstpath
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.file.destination_path
+      ignore_missing: true
+  - rename:
+      field: json.ofilesrcpath
+      tag: rename_ofilesrcpath
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.file.source_path
+      ignore_missing: true
+  - rename:
+      field: json.oitemdstname
+      tag: rename_oitemdstname
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.item.destination_names
+      ignore_missing: true
+  - rename:
+      field: json.oitemname
+      tag: rename_oitemname
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.item.name
+      ignore_missing: true
+  - rename:
+      field: json.oitemsrcname
+      tag: rename_oitemsrcname
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.item.source_names
+      ignore_missing: true
+  - rename:
+      field: json.ootherrulelabels
+      tag: rename_ootherrulelabels
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.other_rule_labels
+      ignore_missing: true
+  - rename:
+      field: json.orulename
+      tag: rename_orulename
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.triggered_rule_label
+      ignore_missing: true
+  - rename:
+      field: json.ouser
+      tag: rename_ouser
+      target_field: zscaler_zia.endpoint_dlp.obfuscated.user
+      ignore_missing: true
+  - rename:
+      field: json.otherrulelabels
+      tag: rename_otherrulelabels
+      target_field: zscaler_zia.endpoint_dlp.other_rule_labels
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_endpoint_dlp_other_rule_labels
+      copy_from: zscaler_zia.endpoint_dlp.other_rule_labels
+      ignore_empty_value: true
+  - convert:
+      field: json.recordid
+      tag: convert_recordid_to_string
+      target_field: zscaler_zia.endpoint_dlp.record.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_endpoint_dlp_record_id
+      copy_from: zscaler_zia.endpoint_dlp.record.id
+      ignore_empty_value: true
+  - convert:
+      field: json.scantime
+      tag: convert_scantime_to_long
+      target_field: zscaler_zia.endpoint_dlp.scan_time
+      type: long
+      if: ctx.json?.scantime != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.scannedbytes
+      tag: convert_scannedbytes_to_long
+      target_field: zscaler_zia.endpoint_dlp.scanned_bytes
+      type: long
+      if: ctx.json?.scannedbytes != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ss
+      tag: convert_ss_to_long
+      target_field: zscaler_zia.endpoint_dlp.second
+      type: long
+      if: ctx.json?.ss != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.severity
+      tag: rename_severity
+      target_field: zscaler_zia.endpoint_dlp.severity
+      ignore_missing: true
+  - rename:
+      field: json.srctype
+      tag: rename_srctype
+      target_field: zscaler_zia.endpoint_dlp.source_type
+      ignore_missing: true
+  - date:
+      field: json.datetime
+      tag: date_datetime
+      target_field: zscaler_zia.endpoint_dlp.time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{event.timezone}}}'
+      if: ctx.json?.datetime != null && ctx.json.datetime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_endpoint_dlp_time
+      copy_from: zscaler_zia.endpoint_dlp.time
+      ignore_empty_value: true
+  - rename:
+      field: json.rulename
+      tag: rename_rulename
+      target_field: zscaler_zia.endpoint_dlp.triggered_rule_label
+      ignore_missing: true
+  - append:
+      field: rule.name
+      tag: append_zscaler_zia_endpoint_dlp_triggered_rule_label_into_rule_name
+      value: '{{{zscaler_zia.endpoint_dlp.triggered_rule_label}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.endpoint_dlp?.triggered_rule_label != null
+  - rename:
+      field: json.user
+      tag: rename_user
+      target_field: zscaler_zia.endpoint_dlp.user
+      ignore_missing: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_endpoint_dlp_user
+      copy_from: zscaler_zia.endpoint_dlp.user
+      ignore_empty_value: true
+  - dissect:
+      field: user.email
+      tag: create_user_name_and_user_domain
+      pattern: "%{user.name}@%{user.domain}"
+      ignore_missing: true
+      if: ctx.user?.email != null
+      on_failure:
+        - rename:
+            field: user.email
+            target_field: user.name
+            tag: rename_user_email_to_user_name
+            ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_user_name_to_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_user_email_to_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - convert:
+      field: json.yyyy
+      tag: convert_yyyy_to_long
+      target_field: zscaler_zia.endpoint_dlp.year
+      type: long
+      if: ctx.json?.yyyy != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.zdpmode
+      tag: rename_zdpmode
+      target_field: zscaler_zia.endpoint_dlp.zdp_mode
+      ignore_missing: true
+  - remove:
+      field:
+        - zscaler_zia.endpoint_dlp.action_taken
+        - zscaler_zia.endpoint_dlp.device.hostname
+        - zscaler_zia.endpoint_dlp.device.model
+        - zscaler_zia.endpoint_dlp.device.name
+        - zscaler_zia.endpoint_dlp.device.os.type
+        - zscaler_zia.endpoint_dlp.device.os.version
+        - zscaler_zia.endpoint_dlp.device.platform
+        - zscaler_zia.endpoint_dlp.device.type
+        - zscaler_zia.endpoint_dlp.file.destination_path
+        - zscaler_zia.endpoint_dlp.file.md5
+        - zscaler_zia.endpoint_dlp.file.sha256
+        - zscaler_zia.endpoint_dlp.other_rule_labels
+        - zscaler_zia.endpoint_dlp.record.id
+        - zscaler_zia.endpoint_dlp.time
+        - zscaler_zia.endpoint_dlp.triggered_rule_label
+        - zscaler_zia.endpoint_dlp.user
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

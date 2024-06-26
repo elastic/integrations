@@ -1,48 +1,249 @@
-- name: zscaler_zia.dns
+- name: zscaler_zia
   type: group
   fields:
-    - name: department
-      type: keyword
-      description: |
-        Department of the user.
-    - name: dom.category
-      type: keyword
-      description: |
-        URL Category of the FQDN in the DNS request.
-    - name: duration.milliseconds
-      type: long
-      description: |
-        Duration of the DNS request in milliseconds.
-    - name: hostname
-      type: keyword
-      description: |
-        N/A
-    - name: location
-      type: keyword
-      description: |
-        Gateway location or sub-location of the source.
-    - name: request
+    - name: dns
       type: group
       fields:
-        - name: action
+        - name: client
+          type: group
+          fields:
+            - name: ip
+              type: ip
+              description: The IP address of the user.
+        - name: cloud
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The Zscaler cloud name.
+        - name: company
           type: keyword
-          description: |
-            Name of the action that was applied to the DNS request.
-        - name: rule.label
+          description: The company name.
+        - name: datacenter
+          type: group
+          fields:
+            - name: city
+              type: keyword
+              description: The city where the data center is located.
+            - name: country
+              type: keyword
+              description: The country where the data center is located.
+            - name: name
+              type: keyword
+              description: The name of the data center.
+        - name: day
           type: keyword
-          description: |
-            Name of the rule that was applied to the DNS request.
-    - name: response
-      type: group
-      fields:
-        - name: action
+          description: The day of the week.
+        - name: day_of_month
+          type: long
+          description: The day of the month.
+        - name: dept
           type: keyword
-          description: |
-            Name of the action that was applied to the DNS response.
-        - name: rule.label
+          description: The department.
+        - name: department
           type: keyword
-          description: |-
-            Name of the rule that was applied to the DNS response.
+        - name: device
+          type: group
+          fields:
+            - name: appversion
+              type: keyword
+              description: The app version that the device uses.
+            - name: hostname
+              type: keyword
+              description: The host name of the device.
+            - name: model
+              type: keyword
+              description: The model of the device.
+            - name: name
+              type: keyword
+              description: The name of the device.
+            - name: os
+              type: group
+              fields:
+                - name: type
+                  type: keyword
+                  description: The OS type of the device.
+                - name: version
+                  type: keyword
+                  description: The OS version that the device uses.
+            - name: owner
+              type: keyword
+              description: The owner of the device.
+            - name: type
+              type: keyword
+              description: The type of device.
+        - name: dns
+          type: group
+          fields:
+            - name: category
+              type: keyword
+              description: The DNS tunnel or network application category.
+            - name: gateway
+              type: group
+              fields:
+                - name: rule
+                  type: keyword
+                  description: The name of the DNS Gateway rule.
+                - name: server_protocol
+                  type: keyword
+                  description: The DNS Gateway server protocol.
+                - name: status
+                  type: keyword
+                  description: Flags indicating the DNS Gateway status for the transaction.
+            - name: type
+              type: keyword
+              description: The type of DNS tunnel or network application.
+        - name: dom
+          type: group
+          fields:
+            - name: category
+              type: keyword
+              description: The URL Category of the FQDN in the DNS request.
+        - name: duration
+          type: group
+          fields:
+            - name: milliseconds
+              type: long
+              description: The duration of the DNS request in milliseconds.
+        - name: ecs
+          type: group
+          fields:
+            - name: prefix
+              type: keyword
+              description: The EDNS Client Subnet (ECS) prefix used in the DNS request.
+            - name: slot
+              type: keyword
+              description: The name of the EDNS Client Subnet (ECS) rule that was applied to the DNS transaction.
+        - name: eedone
+          type: keyword
+          description: Indicates if the characters specified in the Feed Escape Character field of the NSS configuration page were hex encoded.
+        - name: epochtime
+          type: date
+          description: The epoch time of the transaction.
+        - name: error
+          type: keyword
+          description: The DNS error code.
+        - name: hour
+          type: long
+          description: Hours.
+        - name: http_code
+          type: keyword
+          description: The HTTP return code.
+        - name: istcp
+          type: keyword
+          description: Indicates if the DNS transaction uses TCP.
+        - name: loc
+          type: keyword
+          description: The gateway location or sub-location of the source.
+        - name: location
+          type: keyword
+        - name: login
+          type: keyword
+          description: The login name in email address format.
+        - name: minutes
+          type: long
+          description: Minutes.
+        - name: month
+          type: keyword
+          description: The name of the month.
+        - name: month_of_year
+          type: long
+          description: The month of the year.
+        - name: obfuscated
+          type: group
+          fields:
+            - name: client_source_ip
+              type: keyword
+              description: The obfuscated version of the client source IP address.
+            - name: device
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: The obfuscated version of the name of the device.
+                - name: owner
+                  type: keyword
+                  description: The obfuscated version of the owner of the device.
+            - name: dom
+              type: group
+              fields:
+                - name: category
+                  type: keyword
+                  description: The obfuscated version of the FQDN in the DNS request.
+            - name: host_name
+              type: keyword
+              description: The obfuscated version of the host name of the device.
+        - name: protocol
+          type: keyword
+          description: The protocol type.
+        - name: record
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The unique record identifier for each log.
+        - name: request
+          type: group
+          fields:
+            - name: action
+              type: keyword
+              description: The name of the action that was applied to the DNS request.
+            - name: name
+              type: keyword
+              description: The Fully Qualified Domain Name (FQDN) in the DNS request.
+            - name: rule
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name of the rule that was applied to the DNS request.
+            - name: type
+              type: keyword
+              description: The DNS request type.
+        - name: response
+          type: group
+          fields:
+            - name: action
+              type: keyword
+              description: The name of the action that was applied to the DNS response.
+            - name: category
+              type: keyword
+              description: The URL Category of the FQDN in the DNS response.
+            - name: name
+              type: keyword
+              description: The resolved IP or NAME in the DNS response.
+            - name: rule
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name of the rule that was applied to the DNS response.
+            - name: type
+              type: keyword
+              description: The DNS response type.
+        - name: second
+          type: long
+          description: Seconds.
+        - name: server
+          type: group
+          fields:
+            - name: ip
+              type: ip
+              description: The server IP address of the request.
+            - name: port
+              type: long
+              description: The server port of the request.
+        - name: time
+          type: date
+          description: The time and date of the transaction.
+        - name: timezone
+          type: keyword
+          description: The time zone. This is the same as the time zone you specified when you configured the NSS feed.
+        - name: user
+          type: keyword
+        - name: year
+          type: long
+          description: Year.
 - name: log.source.address
   type: keyword
   description: Source address from which the log event was read / sent from.
