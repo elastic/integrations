@@ -1,0 +1,34 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-cloud_security_posture.findings-*"
+# The version suffix on the dest.index should be incremented if a breaking change
+# is made to the index mapping. You must also bump the fleet_transform_version
+# for any change to this transform configuration to take effect. The old destination
+# index is not automatically removed.
+dest:
+  index: "logs-csp.findings_misconfig-1"
+  aliases:
+    - alias: "logs-csp.findings_misconfig_cdr"
+      move_on_creation: true
+latest:
+  unique_key:
+    - rule.id
+    - resource.id
+    - datastream.namespace
+  sort: "@timestamp"
+description: Defines findings misconfigurations latest transformation
+frequency: 30s
+sync:
+  time:
+    field: "event.ingested"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s, sometimes transform wouldn't process all documents.
+    delay: 120s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 26h
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  fleet_transform_version: 0.1.0
