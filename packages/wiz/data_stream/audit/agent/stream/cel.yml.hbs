@@ -61,26 +61,20 @@ program: |
         "query": state.query,
         "variables": {
           "first": state.batch_size,
-          "after": (has(state.end_cursor) && has(state.end_cursor.value) && state.end_cursor.value != null ? state.end_cursor.value : null),
+          "after": state.?end_cursor.value.orValue(null),
           "filterBy": {
             "timestamp": {
               "after": (
-                has(state.want_more) && !state.want_more
+                state.?want_more.orValue(true)
                 ?
+                  state.?cursor.first_timestamp.orValue(null)
+                :
                   (
-                    has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null
+                    state.?cursor.last_timestamp.orValue(null) != null
                     ?
                       state.cursor.last_timestamp
                     :
                       string(now() - duration(state.initial_interval))
-                  )
-                :
-                  (
-                    has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null
-                    ?
-                      state.cursor.first_timestamp
-                    :
-                      null
                   )
               )
             }
@@ -95,24 +89,18 @@ program: |
         "last_timestamp": (
           has(body.data.auditLogEntries.nodes) && body.data.auditLogEntries.nodes.size() > 0
           ?
-            (
-              has(state.cursor) && has(state.cursor.last_timestamp) && body.data.auditLogEntries.nodes.map(e, timestamp(e.timestamp)).max() < timestamp(state.cursor.last_timestamp)
+            body.data.auditLogEntries.nodes.map(e, timestamp(e.timestamp)).max().as(last,
+              has(state.?cursor.last_timestamp) && last < timestamp(state.cursor.last_timestamp)
               ?
                 state.cursor.last_timestamp
               :
-                string(body.data.auditLogEntries.nodes.map(e, timestamp(e.timestamp)).max())
+                string(last)
             )
           :
-            (
-              has(state.cursor) && has(state.cursor.last_timestamp)
-              ?
-                state.cursor.last_timestamp
-              :
-                null
-            )
+            state.?cursor.last_timestamp.orValue(null)
           ),
         "first_timestamp": (
-            has(state.cursor) && has(state.cursor.first_timestamp) && has(body.data) && state.cursor.first_timestamp != null
+            has(body.data) && state.?cursor.first_timestamp.orValue(null) != null
             ?
               (
                 body.data.auditLogEntries.pageInfo.hasNextPage
@@ -127,14 +115,14 @@ program: |
       },
       "end_cursor": {
         "value": (
-          has(body.data) && has(body.data.auditLogEntries) && has(body.data.auditLogEntries.pageInfo) && has(body.data.auditLogEntries.pageInfo.hasNextPage) && body.data.auditLogEntries.pageInfo.hasNextPage
+          body.?data.auditLogEntries.pageInfo.hasNextPage.orValue(false)
           ?
             body.data.auditLogEntries.pageInfo.endCursor
           :
             null
         )
       },
-      "want_more": body.data.auditLogEntries.pageInfo.hasNextPage,
+      "want_more": body.?data.auditLogEntries.pageInfo.hasNextPage.orValue(false),
     }))
   )
 tags:
