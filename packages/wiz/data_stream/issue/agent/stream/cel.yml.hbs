@@ -132,13 +132,11 @@ program: |
           "filterBy": {
             "statusChangedAt": {
               "after": (
-                state.?want_more.orValue(true)
-                ?
+                state.?want_more.orValue(true) ?
                   state.?cursor.first_timestamp.orValue(null)
                 :
                   (
-                    state.?cursor.last_timestamp.orValue(null) != null
-                    ?
+                    state.?cursor.last_timestamp.orValue(null) != null ?
                       state.cursor.last_timestamp
                     :
                       string(now() - duration(state.initial_interval))
@@ -154,11 +152,9 @@ program: |
       }),
       "cursor": {
         "last_timestamp": (
-          has(body.data.issues.nodes) && body.data.issues.nodes.size() > 0
-          ?
+          has(body.data.issues.nodes) && body.data.issues.nodes.size() > 0 ?
             body.data.issues.nodes.map(e, timestamp(e.statusChangedAt)).max().as(last,
-              has(state.?cursor.last_timestamp) && last < timestamp(state.cursor.last_timestamp)
-              ?
+              has(state.?cursor.last_timestamp) && last < timestamp(state.cursor.last_timestamp) ?
                 state.cursor.last_timestamp
               :
                 string(last)
@@ -167,13 +163,11 @@ program: |
             state.?cursor.last_timestamp.orValue(null)
         ),
         "first_timestamp": (
-          !has(body.data) || state.?cursor.first_timestamp.orValue(null) == null
-          ?
+          !has(body.data) || state.?cursor.first_timestamp.orValue(null) == null ?
             string(now() - duration(state.initial_interval))
           :
             (
-              body.data.issues.pageInfo.hasNextPage
-              ?
+              body.data.issues.pageInfo.hasNextPage ?
                 state.cursor.first_timestamp
               :
                 state.cursor.last_timestamp
@@ -182,8 +176,7 @@ program: |
       },
       "end_cursor": {
         "value": (
-          body.?data.issues.pageInfo.hasNextPage.orValue(false)
-          ?
+          body.?data.issues.pageInfo.hasNextPage.orValue(false) ?
             body.data.issues.pageInfo.endCursor
           :
             null

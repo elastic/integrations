@@ -65,13 +65,11 @@ program: |
           "filterBy": {
             "timestamp": {
               "after": (
-                state.?want_more.orValue(true)
-                ?
+                state.?want_more.orValue(true) ?
                   state.?cursor.first_timestamp.orValue(null)
                 :
                   (
-                    state.?cursor.last_timestamp.orValue(null) != null
-                    ?
+                    state.?cursor.last_timestamp.orValue(null) != null ?
                       state.cursor.last_timestamp
                     :
                       string(now() - duration(state.initial_interval))
@@ -87,11 +85,9 @@ program: |
       }),
       "cursor": {
         "last_timestamp": (
-          has(body.data.auditLogEntries.nodes) && body.data.auditLogEntries.nodes.size() > 0
-          ?
+          has(body.data.auditLogEntries.nodes) && body.data.auditLogEntries.nodes.size() > 0 ?
             body.data.auditLogEntries.nodes.map(e, timestamp(e.timestamp)).max().as(last,
-              has(state.?cursor.last_timestamp) && last < timestamp(state.cursor.last_timestamp)
-              ?
+              has(state.?cursor.last_timestamp) && last < timestamp(state.cursor.last_timestamp) ?
                 state.cursor.last_timestamp
               :
                 string(last)
@@ -100,13 +96,11 @@ program: |
             state.?cursor.last_timestamp.orValue(null)
           ),
         "first_timestamp": (
-            !has(body.data) || state.?cursor.first_timestamp.orValue(null) == null
-            ?
+            !has(body.data) || state.?cursor.first_timestamp.orValue(null) == null ?
               string(now() - duration(state.initial_interval))
             :
               (
-                body.data.auditLogEntries.pageInfo.hasNextPage
-                ?
+                body.data.auditLogEntries.pageInfo.hasNextPage ?
                   state.cursor.first_timestamp
                 :
                   state.cursor.last_timestamp
@@ -115,8 +109,7 @@ program: |
       },
       "end_cursor": {
         "value": (
-          body.?data.auditLogEntries.pageInfo.hasNextPage.orValue(false)
-          ?
+          body.?data.auditLogEntries.pageInfo.hasNextPage.orValue(false) ?
             body.data.auditLogEntries.pageInfo.endCursor
           :
             null
