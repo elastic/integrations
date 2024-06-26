@@ -246,7 +246,7 @@ The `logout` data stream captures events that detail the logout history of users
 
 ### SetupAuditTrail
 
-The `setupaudittrail` data stream captures and records changes made by users in the organization's Setup area over the past 180 days.
+The `setupaudittrail` data stream captures and records changes made by users in the organization's Setup area. By default, it collects data from the last week, but users can configure it to collect data from up to the last 180 days by adjusting the initial interval in the configuration.
 
 {{event "setupaudittrail"}}
 
