@@ -1,10 +1,14 @@
 config_version: 2
 interval: 1m
-request.url: {{url}}
+request.url: "https://api.openai.com/v1/usage"
 request.transforms:
   - set:
       target: "header.Authorization"
       value: 'Bearer {{api_key}}'
+  - set:
+      target: url.params.date
+      value: '[[ formatDate (now) "2006-01-02" ]]'
 response.split:
   target: body.data
   ignore_empty_value: true
+
