@@ -1,0 +1,81 @@
+---
+description: Pipeline for Jamf instigator_object audit logs.
+processors:
+##########################
+## ECS Process ##
+##########################
+  - rename:
+      field: jamf_protect.telemetry.process.start_time
+      target_field: process.start
+      ignore_missing: true
+  - convert:
+      field: jamf_protect.telemetry.process.audit_token.egid
+      target_field: jamf_protect.telemetry.process.audit_token.egid
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: jamf_protect.telemetry.process.audit_token.euid
+      target_field: jamf_protect.telemetry.process.audit_token.euid
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: user.effective.id
+      value: '{{{jamf_protect.telemetry.process.audit_token.euid}}}'
+      if: ctx.jamf_protect.telemetry?.process?.audit_token?.euid != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: jamf_protect.telemetry.process.executable.sha1
+      target_field: process.hash.sha1
+      ignore_missing: true
+  - rename:
+      field: jamf_protect.telemetry.process.executable.sha256
+      target_field: process.hash.sha256
+      ignore_missing: true
+  - rename:
+      field: jamf_protect.telemetry.custom.tty.path
+      target_field: jamf_protect.telemetry.tty
+      ignore_missing: true
+  - set:
+      field: process.interactive
+      value: true
+      if: ctx.jamf_protect.telemetry?.process?.tty != null
+  - append:
+      field: related.hash
+      value: '{{{jamf_protect.telemetry.process.executable.sha1}}}'
+      if: ctx.jamf_protect.telemetry?.process?.instigator?.executable?.sha1 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: jamf_protect.telemetry.process.audit_token.pid
+      target_field: process.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: jamf_protect.telemetry.process.audit_token.uuid
+      target_field: process.entity_id
+      ignore_missing: true
+  - rename:
+      field: jamf_protect.telemetry.process.executable.path
+      target_field: process.executable
+      ignore_missing: true
+  - rename:
+      field: jamf_protect.telemetry.thread.thread_id
+      target_field: process.thread.id
+      ignore_missing: true
+
+
+##########################
+## ECS Code Signing ##
+##########################
+
+  - rename:
+      field: jamf_protect.telemetry.process.signing_id
+      target_field: process.code_signature.signing_id
+      ignore_missing: true
