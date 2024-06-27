@@ -163,7 +163,6 @@ An example event for `deep_security` looks as following:
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | source.process.name | Source process name. | keyword |
-| tags | User defined tags. | keyword |
 | trendmicro.deep_security.action | The action detected by the integrity rule. | keyword |
 | trendmicro.deep_security.aggregation_type | An integer that indicates how the event is aggregated:. | keyword |
 | trendmicro.deep_security.base_event_count | Base event count. | long |

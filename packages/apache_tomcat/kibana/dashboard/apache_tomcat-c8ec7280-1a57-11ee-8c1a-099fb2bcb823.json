@@ -17,18 +17,55 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "event.module",
+                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.module",
+                            "key": "data_stream.dataset",
                             "negate": false,
-                            "params": {
-                                "query": "apache_tomcat"
-                            },
-                            "type": "phrase"
+                            "params": [
+                                "apache_tomcat.session",
+                                "apache_tomcat.cache",
+                                "apache_tomcat.connection_pool",
+                                "apache_tomcat.memory",
+                                "apache_tomcat.request",
+                                "apache_tomcat.thread_pool"
+                            ],
+                            "type": "phrases"
                         },
                         "query": {
-                            "match_phrase": {
-                                "event.module": "apache_tomcat"
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_tomcat.session"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_tomcat.cache"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_tomcat.connection_pool"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_tomcat.memory"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_tomcat.request"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_tomcat.thread_pool"
+                                        }
+                                    }
+                                ]
                             }
                         }
                     }
@@ -53,17 +90,12 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-99998251-2f00-4a88-bf98-07e7d8e3ac81",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-207a8774-23b1-43df-831f-56cb6d093dc0",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "f3e87a81-2a03-49e7-b465-ae2e5540cfd7",
+                                "name": "indexpattern-datasource-layer-99998251-2f00-4a88-bf98-07e7d8e3ac81",
                                 "type": "index-pattern"
                             }
                         ],
@@ -137,30 +169,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "f3e87a81-2a03-49e7-b465-ae2e5540cfd7",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_tomcat.session"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_tomcat.session"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -193,8 +202,7 @@
                 },
                 "panelIndex": "06854553-1f37-41b0-972c-380acf5cb39f",
                 "title": "Number of Applications [Metrics Apache Tomcat]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -203,11 +211,6 @@
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-e6ec4f57-529c-490f-86c3-5ae4140dc908",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "791b20c2-6ace-42e3-a393-51b4f378bd2a",
                                 "type": "index-pattern"
                             }
                         ],
@@ -288,30 +291,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "791b20c2-6ace-42e3-a393-51b4f378bd2a",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_tomcat.cache"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_tomcat.cache"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -380,8 +360,7 @@
                 },
                 "panelIndex": "b8716edd-6941-4cba-9f1a-b3a08c7fc647",
                 "title": "Top 5 requests per application over time [Metrics Apache Tomcat]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -396,11 +375,6 @@
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-e4ff0e97-e884-4a2e-859a-f16a579acd75",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "e03e36e7-2153-4e6b-ad73-0b3f58c89969",
                                 "type": "index-pattern"
                             }
                         ],
@@ -604,30 +578,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "e03e36e7-2153-4e6b-ad73-0b3f58c89969",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_tomcat.request"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_tomcat.request"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -660,8 +611,7 @@
                 },
                 "panelIndex": "9e8b29e7-3679-4e44-a585-f4cf7f17044f",
                 "title": "Average request processing time [Metrics Apache Tomcat]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -670,11 +620,6 @@
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-7c4da97e-7d47-4847-87ae-0fbdcc983343",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "38cc0910-5849-444d-ba26-a9dab625f549",
                                 "type": "index-pattern"
                             }
                         ],
@@ -745,30 +690,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "38cc0910-5849-444d-ba26-a9dab625f549",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_tomcat.connection_pool"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_tomcat.connection_pool"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -836,8 +758,7 @@
                 },
                 "panelIndex": "ba5d9b2e-689c-4472-aa89-bc355a5cc780",
                 "title": "Connections over time [Metrics Apache Tomcat]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -846,11 +767,6 @@
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-b09c20e6-d7d3-4fe2-8490-2c6feedb02c9",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "44b26cb6-1625-4950-9cd5-a079004b991b",
                                 "type": "index-pattern"
                             }
                         ],
@@ -933,30 +849,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "44b26cb6-1625-4950-9cd5-a079004b991b",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_tomcat.memory"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_tomcat.memory"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1009,8 +902,7 @@
                 },
                 "panelIndex": "38423062-d16c-4911-a9e9-dfdfba9d19b5",
                 "title": "Memory usage over time [Metrics Apache Tomcat]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1019,11 +911,6 @@
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-365e11cb-9eed-4fd4-a335-2b8ee3f454c5",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "c9861b14-6ccb-4a1a-b38f-4d7c01febfc8",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1106,30 +993,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "c9861b14-6ccb-4a1a-b38f-4d7c01febfc8",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_tomcat.request"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_tomcat.request"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1182,8 +1046,7 @@
                 },
                 "panelIndex": "5862d24f-ecf5-41fd-93b4-3d214e834361",
                 "title": "Throughput over time [Metrics Apache Tomcat]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1193,11 +1056,6 @@
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-bdd64b4a-4147-4624-8e56-78dbbddd5986",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "1a9a387d-da2b-46c0-9d67-d84642c4450d",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1319,30 +1177,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "event.dataset",
-                                        "index": "1a9a387d-da2b-46c0-9d67-d84642c4450d",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_tomcat.thread_pool"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_tomcat.thread_pool"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
@@ -1395,33 +1230,25 @@
                     "i": "8d71c0de-16f1-4231-97ff-0bf7e1af5db0",
                     "w": 24,
                     "x": 0,
-                    "y": 34
+                    "y": 28
                 },
                 "panelIndex": "8d71c0de-16f1-4231-97ff-0bf7e1af5db0",
                 "title": "Thread distribution by server over time [Metrics Apache Tomcat]",
-                "type": "lens",
-                "version": "8.8.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Apache Tomcat] Overview ",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.0",
-    "created_at": "2023-07-19T08:01:33.946Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-13T09:09:11.916Z",
     "id": "apache_tomcat-c8ec7280-1a57-11ee-8c1a-099fb2bcb823",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "06854553-1f37-41b0-972c-380acf5cb39f:indexpattern-datasource-layer-99998251-2f00-4a88-bf98-07e7d8e3ac81",
             "type": "index-pattern"
         },
         {
@@ -1431,17 +1258,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "06854553-1f37-41b0-972c-380acf5cb39f:f3e87a81-2a03-49e7-b465-ae2e5540cfd7",
+            "name": "06854553-1f37-41b0-972c-380acf5cb39f:indexpattern-datasource-layer-99998251-2f00-4a88-bf98-07e7d8e3ac81",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
             "name": "b8716edd-6941-4cba-9f1a-b3a08c7fc647:indexpattern-datasource-layer-e6ec4f57-529c-490f-86c3-5ae4140dc908",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "b8716edd-6941-4cba-9f1a-b3a08c7fc647:791b20c2-6ace-42e3-a393-51b4f378bd2a",
             "type": "index-pattern"
         },
         {
@@ -1456,17 +1278,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "9e8b29e7-3679-4e44-a585-f4cf7f17044f:e03e36e7-2153-4e6b-ad73-0b3f58c89969",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "ba5d9b2e-689c-4472-aa89-bc355a5cc780:indexpattern-datasource-layer-7c4da97e-7d47-4847-87ae-0fbdcc983343",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "ba5d9b2e-689c-4472-aa89-bc355a5cc780:38cc0910-5849-444d-ba26-a9dab625f549",
             "type": "index-pattern"
         },
         {
@@ -1476,17 +1288,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "38423062-d16c-4911-a9e9-dfdfba9d19b5:44b26cb6-1625-4950-9cd5-a079004b991b",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "5862d24f-ecf5-41fd-93b4-3d214e834361:indexpattern-datasource-layer-365e11cb-9eed-4fd4-a335-2b8ee3f454c5",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "5862d24f-ecf5-41fd-93b4-3d214e834361:c9861b14-6ccb-4a1a-b38f-4d7c01febfc8",
             "type": "index-pattern"
         },
         {
@@ -1496,14 +1298,10 @@
         },
         {
             "id": "metrics-*",
-            "name": "8d71c0de-16f1-4231-97ff-0bf7e1af5db0:1a9a387d-da2b-46c0-9d67-d84642c4450d",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "controlGroup_389cb789-1fc8-43c8-b276-08d02bae4cee:optionsListDataView",
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

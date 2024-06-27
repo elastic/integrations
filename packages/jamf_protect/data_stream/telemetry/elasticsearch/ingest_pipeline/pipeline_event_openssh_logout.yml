@@ -1,0 +1,59 @@
+---
+description: Pipeline for parsing specific fields related to openssh logout events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A user has logged out of an OpenSSH session
+    - append:
+        field: event.type
+        value: start
+    - append:
+        field: event.category
+        value: authentication
+    - append:
+        field: event.category
+        value: session  
+    - convert:
+        field: jamf_protect.telemetry.event.openssh_logout.graphical_session_id
+        target_field: jamf_protect.telemetry.graphical_authentication_username
+        type: string
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.openssh_logout.username
+        target_field: user.name
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.openssh_logout.uid
+        target_field: user.id
+        type: string
+        ignore_missing: true
+        
+    - rename:
+        field: jamf_protect.telemetry.event.openssh_logout.source_address
+        target_field: source.ip
+        ignore_missing: true
+    - script:
+        lang: painless
+        params:
+            itemTypeMap:
+                '0': Unknown
+                '1': IPv4
+                '2': IPv6
+                '3': UNIX Socket
+        source: >
+            if (ctx.jamf_protect?.telemetry?.event?.openssh_logout?.source_address_type != null) {
+                String itemType = ctx.jamf_protect.telemetry.event.openssh_logout.source_address_type.toString();
+                def itemTypeString = params.itemTypeMap.containsKey(itemType) ? params.itemTypeMap[itemType] : 'Unknown';
+                ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
+                ctx.jamf_protect.telemetry.source_address_type = itemTypeString;
+            }
+            
+##########################
+## ECS Process ##
+##########################  
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

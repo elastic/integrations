@@ -1,0 +1,100 @@
+---
+description: Pipeline for parsing specific fields related to su events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A user attempts to start a new shell using a substitute user identity
+    - append:
+        field: event.type
+        value: start
+    - append:
+        field: event.category
+        value: authentication
+    - script:
+        lang: painless
+        source: >
+            ctx.event = ctx.event != null ? ctx.event : new HashMap();
+            if (ctx.jamf_protect?.telemetry?.event?.su?.success instanceof boolean) {
+              if (ctx.jamf_protect.telemetry.event.su.success) {
+                ctx.event.outcome = 'success';
+              } else {
+                ctx.event.outcome = 'failure';
+              }
+            }
+            if (ctx.event.outcome == null) {
+              ctx.event.outcome = 'unknown';
+            }
+    - rename:
+        field: jamf_protect.telemetry.event.su.username
+        target_field: user.name
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.su.uid
+        target_field: user.id
+        type: string
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.su.argv
+        target_field: process.args
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.su?.argv != null
+    - script:
+        description: Counts the indexes of the arguments
+        lang: painless
+        source: >
+            if (ctx.process.args instanceof List) {            
+                ctx.process.args_count = ctx.process.args.size();
+            } else {
+                ctx.process = ctx.process != null ? ctx.process : new HashMap();
+                ctx.process.args_count = 0;
+            }
+        ignore_failure: true
+    - rename:
+        field: jamf_protect.telemetry.event.su.env
+        target_field: process.env_vars
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.su?.env != null
+    - convert:
+        field: jamf_protect.telemetry.event.su.env_count
+        target_field: jamf_protect.telemetry.env_count
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.su.shell
+        target_field: jamf_protect.telemetry.shell
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.su.from_username
+        target_field: jamf_protect.telemetry.from_username
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.su.to_username
+        target_field: jamf_protect.telemetry.to_username
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.su.failure_message
+        target_field: jamf_protect.failure_reason
+        type: string
+        ignore_missing: true
+    - append:
+        field: related.user
+        value: '{{{jamf_protect.telemetry.to_username}}}'
+        if: ctx.jamf_protect?.to_username != null
+        allow_duplicates: false
+    - append:
+        field: related.user
+        value: '{{{jamf_protect.telemetry.from_username}}}'
+        if: ctx.jamf_protect?.from_username != null
+        allow_duplicates: false
+##########################
+## ECS Process ##
+##########################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

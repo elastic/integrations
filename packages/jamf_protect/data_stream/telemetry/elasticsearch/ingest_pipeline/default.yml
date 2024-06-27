@@ -1,54 +1,361 @@
 ---
 description: Pipeline for Jamf Protect Telemetry logs.
 processors:
-  - set:
-      field: ecs.version
-      value: '8.11.0'
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
-  - json:
-      field: event.original
-      target_field: json
-      ignore_failure: true
-  - pipeline:
-      name: '{{ IngestPipeline "pipeline_system_performance_metrics" }}'
-      if: ctx.json?.header?.event_name == 'SYSTEM_PERFORMANCE_METRICS'
-  - pipeline:
-      name: '{{ IngestPipeline "pipeline_audit" }}'
-      if: ctx.json?.header?.event_name != null && ctx.json?.header?.event_name.startsWith('AUE_')
-  - pipeline:
-      name: '{{ IngestPipeline "pipeline_bios_firmware_versions" }}'
-      if: ctx.json?.header?.event_name == 'BIOS_FIRMWARE_VERSIONS'
-  - pipeline:
-      name: '{{ IngestPipeline "pipeline_event" }}'
-      if: "['FILE_COLLECTION_EVENT','PLAINTEXT_LOG_COLLECTION'].contains(ctx.json?.header?.event_name)"
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-  - remove:
-      field: json
-      ignore_missing: true
-  - script:
-      description: Drops null/empty values recursively.
-      lang: painless
-      source:
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
+    - set:
+        field: ecs.version
+        value: '8.11.0'
+    - json:
+        field: message
+        target_field: jamf_protect.telemetry
+        if: ctx.message != null
+    - rename:
+        field: json
+        target_field: jamf_protect.telemetry
+        if: ctx.json != null
+
+##########################
+## ECS Observer Mapping ##
+##########################
+    - set:
+        field: observer.product
+        value: Jamf Protect
+    - set:
+        field: observer.vendor
+        value: Jamf
+    - set:
+        field: observer.type
+        value: Endpoint Security
+    - rename:
+        field: jamf_protect.telemetry.host.protectVersion
+        target_field: observer.version
+        ignore_missing: true
+
+#######################
+## ECS Event Mapping ##
+#######################
+    - set:
+        field: event.kind
+        value: event
+    - append:
+        field: event.type
+        value: info
+    - append:
+        field: event.category
+        value: process
+    - set:
+        field: event.provider
+        value: Jamf Protect
+    - date:
+        field: jamf_protect.telemetry.time
+        target_field: event.start
+        formats: 
+        - date_optional_time
+        if: ctx.jamf_protect?.telemetry?.time != null
+    - rename:
+        field: jamf_protect.telemetry.uuid
+        target_field: event.id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.glob_seq_num
+        target_field: event.sequence
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event_type
+        target_field: event.code
+        type: string
+        ignore_missing: true
+    - script:
+        description: Populates event.action with the name of the event
+        lang: painless
+        source: >
+          if (ctx.jamf_protect.telemetry.containsKey('event')) {
+            def eventObject = ctx.jamf_protect.telemetry.event;
+            for (def key : eventObject.keySet()) {
+              if (eventObject[key] != null) {
+                if (!ctx.containsKey('event')) {
+                  ctx.event = new HashMap();
+                }
+                ctx.event.action = key;
+                break;
+              }
+            }
           }
-          return false;
-        }
-        dropEmptyFields(ctx);
+        ignore_failure: true
+    - script:
+        lang: painless
+        params:
+            authTypeMap:
+                '0': true
+                '1': false
+        source: |
+            if (ctx.jamf_protect?.telemetry?.action?.result?.result?.auth != null) {
+                def authValue = ctx.jamf_protect.telemetry.action.result.result.auth.toString();
+                def authTypeBoolean = params.authTypeMap.containsKey(authValue) ? params.authTypeMap[authValue] : 'Unknown';
+                ctx.jamf_protect.telemetry = ctx.jamf_protect.telemetry != null ? ctx.jamf_protect.telemetry : new HashMap();
+                ctx.jamf_protect.telemetry.event_allowed_by_esclient = authTypeBoolean;
+            }
+#######################
+## ECS Host Mapping ##
+#######################
+    - rename:
+        field: jamf_protect.telemetry.host.hostname
+        target_field: host.hostname
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.host.provisioningUDID
+        target_field: host.id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.host.ips
+        target_field: host.ip
+        if: ctx.jamf_protect?.telemetry?.host?.ips != null && ctx.jamf_protect?.telemetry?.host?.ips != ""
+    - rename:
+        field: jamf_protect.telemetry.host.os
+        target_field: host.os.full
+        ignore_missing: true
+    - gsub:
+        field: host.os.full
+        pattern: '^Version\s*'
+        replacement: ""
+        if: ctx.host?.os?.full != null
+    - gsub:
+        field: host.os.full
+        pattern: ^([^\s]+).*
+        replacement: "$1"
+        target_field: host.os.version
+        if: ctx.host?.os?.full != null
+    - set:
+        field: host.os.family
+        value: macos
+    - set:
+        field: host.os.type
+        value: macos
+    - set:
+        field: host.os.name
+        value: macOS
+#######################
+## ECS Device Mapping ##
+#######################
+    - rename:
+        field: jamf_protect.telemetry.host.serial
+        target_field: device.id
+        ignore_missing: true
+    - set:
+        field: device.manufacturer
+        value: Apple
+########################
+# ECS Related Mapping ##
+########################
+    - append:
+        field: related.hosts
+        value: '{{{ host.hostname }}}'
+        if: ctx.host?.hostname != null
+        allow_duplicates: false
+        ignore_failure: true
+    - append:
+        field: related.user
+        value: "{{{ user.name }}}"
+        if: ctx.user?.name != null
+        allow_duplicates: false
+    - foreach:
+        field: host.ip
+        if: ctx.host?.ip instanceof List
+        processor:
+            append: 
+                field: related.ip
+                value: '{{{_ingest._value}}}'
+                allow_duplicates: false
+#######################
+## ECS Pipelines ##
+#######################
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_exec" }}'
+        if: ctx.event.action == "exec"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_kextload" }}'
+        if: ctx.event.action == "kextload"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_kextunload" }}'
+        if: ctx.event.action == "kextunload"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_mount" }}'
+        if: ctx.event.action == "mount"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_unmount" }}'
+        if: ctx.event.action == "unmount"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_chroot" }}'
+        if: ctx.event.action == "chroot"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_settime" }}'
+        if: ctx.event.action == "settime"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_cs_invalidated" }}'
+        if: ctx.event.action == "cs_invalidated"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_remount" }}'
+        if: ctx.event.action == "remount"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_xp_malware_detected" }}'
+        if: ctx.event.action == "xp_malware_detected"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_xp_malware_remediated" }}'
+        if: ctx.event.action == "xp_malware_remediated"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_lw_session_login" }}'
+        if: ctx.event.action == "lw_session_login"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_lw_session_logout" }}'
+        if: ctx.event.action == "lw_session_logout"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_lw_session_lock" }}'
+        if: ctx.event.action == "lw_session_lock"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_lw_session_unlock" }}'
+        if: ctx.event.action == "lw_session_unlock"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_screensharing_attach" }}'
+        if: ctx.event.action == "screensharing_attach"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_screensharing_detach" }}'
+        if: ctx.event.action == "screensharing_detach"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_openssh_login" }}'
+        if: ctx.event.action == "openssh_login"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_openssh_logout" }}'
+        if: ctx.event.action == "openssh_logout"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_login_login" }}'
+        if: ctx.event.action == "login_login"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_login_logout" }}'
+        if: ctx.event.action == "login_logout"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_btm_launch_item_add" }}'
+        if: ctx.event.action == "btm_launch_item_add"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_btm_launch_item_remove" }}'
+        if: ctx.event.action == "btm_launch_item_remove"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_profile_add" }}'
+        if: ctx.event.action == "profile_add"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_profile_remove" }}'
+        if: ctx.event.action == "profile_remove"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_su" }}'
+        if: ctx.event.action == "su"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_authentication" }}'
+        if: ctx.event.action == "authentication"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_sudo" }}'
+        if: ctx.event.action == "sudo"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_group_add" }}'
+        if: ctx.event.action == "od_group_add"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_group_remove" }}'
+        if: ctx.event.action == "od_group_remove"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_group_set" }}'
+        if: ctx.event.action == "od_group_set"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_modify_password" }}'
+        if: ctx.event.action == "od_modify_password"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_disable_user" }}'
+        if: ctx.event.action == "od_disable_user"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_enable_user" }}'
+        if: ctx.event.action == "od_enable_user"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_attribute_value_add" }}'
+        if: ctx.event.action == "od_attribute_value_add"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_attribute_value_remove" }}'
+        if: ctx.event.action == "od_attribute_value_remove"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_attribute_set" }}'
+        if: ctx.event.action == "od_attribute_set"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_create_user" }}'
+        if: ctx.event.action == "od_create_user"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_create_group" }}'
+        if: ctx.event.action == "od_create_group"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_delete_user" }}'
+        if: ctx.event.action == "od_delete_user"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_od_delete_group" }}'
+        if: ctx.event.action == "od_delete_group"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_log_collection" }}'
+        if: ctx.event.action == "log_collection"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_file_collection" }}'
+        if: ctx.event.action == "file_collection"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_system_performance" }}'
+        if: ctx.event.action == "system_performance"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_bios_uefi" }}'
+        if: ctx.event.action == "bios_uefi"
+    - remove:
+        field: event.original
+        if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
+        ignore_failure: true
+
+#############
+## Cleanup ##
+#############
+    - remove:
+        field:
+        # - jamf_protect.telemetry
+        - jamf_protect.telemetry.event
+        - jamf_protect.telemetry.process
+        - jamf_protect.telemetry.action.result.result.auth
+        - jamf_protect.telemetry.action.result.result_type
+        - jamf_protect.telemetry.action_type
+        - jamf_protect.telemetry.deadline
+        - jamf_protect.telemetry.event_type
+        - jamf_protect.telemetry.is_telemetry
+        - jamf_protect.telemetry.mach_time
+        - jamf_protect.telemetry.metadata.product
+        - jamf_protect.telemetry.metadata.schemaVersion
+        - jamf_protect.telemetry.metadata.vendor
+        - jamf_protect.telemetry.seq_num
+        - jamf_protect.telemetry.thread.uuid
+        - jamf_protect.telemetry.time
+        - jamf_protect.telemetry.version
+        - message
+        ignore_missing: true
+    - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == '') {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
 on_failure:
   - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

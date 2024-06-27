@@ -1,10 +1,32 @@
 {
     "attributes": {
         "description": "Hashicorp Vault operational logs.",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "hashicorp_vault.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "hashicorp_vault.log"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -14,6 +36,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -23,23 +47,14 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-27ad0671-d838-464d-9949-250e95bf8ebf",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "filter-index-pattern-0",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "27ad0671-d838-464d-9949-250e95bf8ebf": {
                                             "columnOrder": [
@@ -54,7 +69,7 @@
                                                     "label": "Count of records",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "fd82c7ab-1504-4210-a3bd-bdee3f875c72": {
                                                     "dataType": "date",
@@ -62,6 +77,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -91,29 +107,8 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "hashicorp_vault.log"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "hashicorp_vault.log"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -141,6 +136,7 @@
                                             "834ca219-ed3e-4a48-b865-ac6e9d562b36"
                                         ],
                                         "layerId": "27ad0671-d838-464d-9949-250e95bf8ebf",
+                                        "layerType": "data",
                                         "palette": {
                                             "name": "default",
                                             "type": "palette"
@@ -154,6 +150,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "right"
                                 },
                                 "preferredSeriesType": "bar_stacked",
@@ -187,8 +184,7 @@
                 },
                 "panelIndex": "1ac68c0e-3c5a-49d6-81d3-5f4700cc709f",
                 "title": "Log Volume by Agent",
-                "type": "lens",
-                "version": "7.15.0-SNAPSHOT"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -196,23 +192,14 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-47ee6385-76b6-4b42-b35d-583cd8208fb4",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "filter-index-pattern-0",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "47ee6385-76b6-4b42-b35d-583cd8208fb4": {
                                             "columnOrder": [
@@ -226,7 +213,7 @@
                                                     "label": "Logs",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -234,41 +221,24 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "hashicorp_vault.log"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "hashicorp_vault.log"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
                                 "accessor": "f9cb4f81-44c1-4b1b-9a1e-b4087e7c562f",
-                                "layerId": "47ee6385-76b6-4b42-b35d-583cd8208fb4"
+                                "layerId": "47ee6385-76b6-4b42-b35d-583cd8208fb4",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {}
                 },
@@ -280,8 +250,7 @@
                     "y": 0
                 },
                 "panelIndex": "c875e4a1-139b-4197-b9cb-fffb0fa5ab72",
-                "type": "lens",
-                "version": "7.15.0-SNAPSHOT"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -289,28 +258,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-47ee6385-76b6-4b42-b35d-583cd8208fb4",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "filter-index-pattern-0",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "filter-index-pattern-1",
+                                "name": "790f312a-9594-41aa-b6a7-1c822da2114e",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "47ee6385-76b6-4b42-b35d-583cd8208fb4": {
                                             "columnOrder": [
@@ -324,7 +284,7 @@
                                                     "label": "Errors",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -340,28 +300,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "hashicorp_vault.log"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "hashicorp_vault.log"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "indexRefName": "filter-index-pattern-1",
+                                        "index": "790f312a-9594-41aa-b6a7-1c822da2114e",
                                         "key": "log.level",
                                         "negate": false,
                                         "params": {
@@ -376,18 +315,23 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
                                 "accessor": "f9cb4f81-44c1-4b1b-9a1e-b4087e7c562f",
-                                "layerId": "47ee6385-76b6-4b42-b35d-583cd8208fb4"
+                                "layerId": "47ee6385-76b6-4b42-b35d-583cd8208fb4",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {}
                 },
@@ -399,8 +343,7 @@
                     "y": 0
                 },
                 "panelIndex": "fa55332a-4ac9-4c7f-b8f1-a4031542120d",
-                "type": "lens",
-                "version": "7.15.0-SNAPSHOT"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -408,28 +351,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-47ee6385-76b6-4b42-b35d-583cd8208fb4",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "filter-index-pattern-0",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "filter-index-pattern-1",
+                                "name": "a78d053d-68f2-4f2c-8164-c627e4a0cf84",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "47ee6385-76b6-4b42-b35d-583cd8208fb4": {
                                             "columnOrder": [
@@ -459,28 +393,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "hashicorp_vault.log"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "hashicorp_vault.log"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "indexRefName": "filter-index-pattern-1",
+                                        "index": "a78d053d-68f2-4f2c-8164-c627e4a0cf84",
                                         "key": "log.level",
                                         "negate": false,
                                         "params": {
@@ -495,18 +408,23 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
                                 "accessor": "85994c44-017f-4c95-9bec-f54add925f28",
-                                "layerId": "47ee6385-76b6-4b42-b35d-583cd8208fb4"
+                                "layerId": "47ee6385-76b6-4b42-b35d-583cd8208fb4",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {}
                 },
@@ -518,24 +436,51 @@
                     "y": 0
                 },
                 "panelIndex": "759e3b76-90f0-453a-932c-5aee1c56ad73",
-                "type": "lens",
-                "version": "7.15.0-SNAPSHOT"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "agent.name",
+                            "log.level",
+                            "message",
+                            "hashicorp_vault.log"
+                        ],
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"filter\":[{\"$state\":{\"store\":\"appState\"},\"meta\":{\"alias\":null,\"disabled\":false,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\",\"key\":\"data_stream.dataset\",\"negate\":false,\"params\":{\"query\":\"hashicorp_vault.log\"},\"type\":\"phrase\"},\"query\":{\"match_phrase\":{\"data_stream.dataset\":\"hashicorp_vault.log\"}}}],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"query\":{\"language\":\"kuery\",\"query\":\"\"}}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ]
+                    },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 21,
-                    "i": "12f4a1f5-9ea6-423c-9c5a-7ab88558f5a6",
+                    "i": "699f7654-8949-409e-9993-24b0f4e54545",
                     "w": 24,
                     "x": 24,
                     "y": 6
                 },
-                "panelIndex": "12f4a1f5-9ea6-423c-9c5a-7ab88558f5a6",
-                "panelRefName": "panel_12f4a1f5-9ea6-423c-9c5a-7ab88558f5a6",
-                "type": "search",
-                "version": "7.15.0-SNAPSHOT"
+                "panelIndex": "699f7654-8949-409e-9993-24b0f4e54545",
+                "title": "[Hashicorp Vault] Operational Logs",
+                "type": "search"
             },
             {
                 "embeddableConfig": {
@@ -543,23 +488,14 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-27ad0671-d838-464d-9949-250e95bf8ebf",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "filter-index-pattern-0",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "27ad0671-d838-464d-9949-250e95bf8ebf": {
                                             "columnOrder": [
@@ -592,7 +528,7 @@
                                                     "label": "Count of records",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "fd82c7ab-1504-4210-a3bd-bdee3f875c72": {
                                                     "dataType": "date",
@@ -600,6 +536,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -611,29 +548,8 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "hashicorp_vault.log"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "hashicorp_vault.log"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -661,6 +577,7 @@
                                             "834ca219-ed3e-4a48-b865-ac6e9d562b36"
                                         ],
                                         "layerId": "27ad0671-d838-464d-9949-250e95bf8ebf",
+                                        "layerType": "data",
                                         "position": "top",
                                         "seriesType": "bar_stacked",
                                         "showGridlines": false,
@@ -670,6 +587,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "right"
                                 },
                                 "preferredSeriesType": "bar_stacked",
@@ -703,8 +621,7 @@
                 },
                 "panelIndex": "58781719-8e14-400f-963a-8652bcf90d28",
                 "title": "Log Volume by Level",
-                "type": "lens",
-                "version": "7.15.0-SNAPSHOT"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -712,23 +629,14 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-27ad0671-d838-464d-9949-250e95bf8ebf",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "filter-index-pattern-0",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "27ad0671-d838-464d-9949-250e95bf8ebf": {
                                             "columnOrder": [
@@ -761,7 +669,7 @@
                                                     "label": "Count of records",
                                                     "operationType": "count",
                                                     "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "fd82c7ab-1504-4210-a3bd-bdee3f875c72": {
                                                     "dataType": "date",
@@ -769,6 +677,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -780,29 +689,8 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "hashicorp_vault.log"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "hashicorp_vault.log"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -830,6 +718,7 @@
                                             "834ca219-ed3e-4a48-b865-ac6e9d562b36"
                                         ],
                                         "layerId": "27ad0671-d838-464d-9949-250e95bf8ebf",
+                                        "layerType": "data",
                                         "position": "top",
                                         "seriesType": "bar_stacked",
                                         "showGridlines": false,
@@ -839,6 +728,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "right"
                                 },
                                 "preferredSeriesType": "bar_stacked",
@@ -872,23 +762,21 @@
                 },
                 "panelIndex": "f9db514e-50b6-44bc-b142-252f6b11ba02",
                 "title": "Log Volume by Logger",
-                "type": "lens",
-                "version": "7.15.0-SNAPSHOT"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Hashicorp Vault] Operational Logs",
         "version": 1
     },
-    "coreMigrationVersion": "7.15.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-15T06:22:35.792Z",
     "id": "hashicorp_vault-1f321db0-f4b8-11eb-a89a-7378b1713db5",
-    "migrationVersion": {
-        "dashboard": "7.14.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
-            "name": "1ac68c0e-3c5a-49d6-81d3-5f4700cc709f:indexpattern-datasource-current-indexpattern",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
@@ -898,27 +786,7 @@
         },
         {
             "id": "logs-*",
-            "name": "1ac68c0e-3c5a-49d6-81d3-5f4700cc709f:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c875e4a1-139b-4197-b9cb-fffb0fa5ab72:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "c875e4a1-139b-4197-b9cb-fffb0fa5ab72:indexpattern-datasource-layer-47ee6385-76b6-4b42-b35d-583cd8208fb4",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c875e4a1-139b-4197-b9cb-fffb0fa5ab72:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "fa55332a-4ac9-4c7f-b8f1-a4031542120d:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
@@ -928,17 +796,7 @@
         },
         {
             "id": "logs-*",
-            "name": "fa55332a-4ac9-4c7f-b8f1-a4031542120d:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "fa55332a-4ac9-4c7f-b8f1-a4031542120d:filter-index-pattern-1",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "759e3b76-90f0-453a-932c-5aee1c56ad73:indexpattern-datasource-current-indexpattern",
+            "name": "fa55332a-4ac9-4c7f-b8f1-a4031542120d:790f312a-9594-41aa-b6a7-1c822da2114e",
             "type": "index-pattern"
         },
         {
@@ -948,22 +806,17 @@
         },
         {
             "id": "logs-*",
-            "name": "759e3b76-90f0-453a-932c-5aee1c56ad73:filter-index-pattern-0",
+            "name": "759e3b76-90f0-453a-932c-5aee1c56ad73:a78d053d-68f2-4f2c-8164-c627e4a0cf84",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "759e3b76-90f0-453a-932c-5aee1c56ad73:filter-index-pattern-1",
+            "name": "699f7654-8949-409e-9993-24b0f4e54545:kibanaSavedObjectMeta.searchSourceJSON.index",
             "type": "index-pattern"
         },
         {
-            "id": "hashicorp_vault-80603d50-f4b9-11eb-a89a-7378b1713db5",
-            "name": "12f4a1f5-9ea6-423c-9c5a-7ab88558f5a6:panel_12f4a1f5-9ea6-423c-9c5a-7ab88558f5a6",
-            "type": "search"
-        },
-        {
             "id": "logs-*",
-            "name": "58781719-8e14-400f-963a-8652bcf90d28:indexpattern-datasource-current-indexpattern",
+            "name": "699f7654-8949-409e-9993-24b0f4e54545:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
@@ -973,24 +826,10 @@
         },
         {
             "id": "logs-*",
-            "name": "58781719-8e14-400f-963a-8652bcf90d28:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "f9db514e-50b6-44bc-b142-252f6b11ba02:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "f9db514e-50b6-44bc-b142-252f6b11ba02:indexpattern-datasource-layer-27ad0671-d838-464d-9949-250e95bf8ebf",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "f9db514e-50b6-44bc-b142-252f6b11ba02:filter-index-pattern-0",
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

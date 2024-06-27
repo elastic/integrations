@@ -57,8 +57,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.11.0**.
-
 ## Setup
 
 ### To collect data from an AWS S3 bucket, follow the below steps:
@@ -887,6 +885,5 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.url.action | URL action of process. | keyword |
 | sentinel_one_cloud_funnel.event.url.address | Complete URL. | keyword |
 | sentinel_one_cloud_funnel.event.url.source |  | keyword |
-| tags | User defined tags. | keyword |
 
 

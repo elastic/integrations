@@ -530,14 +530,6 @@ processors:
       target_field: m365_defender.event.registry.key
       tag: rename_json_properties_RegistryKey
       ignore_missing: true
-  - script:
-      description: Remove HKEY_CURRENT_USER\ and HKEY_LOCAL_MACHINE\ from registry key
-      lang: painless
-      if: ctx.m365_defender?.event?.registry?.key != null
-      source: |
-        String key = ctx.m365_defender.event.registry.key;
-        def regex = /HKEY_CURRENT_USER\\|HKEY_LOCAL_MACHINE\\/;
-        ctx.m365_defender.event.registry.key = regex.matcher(key).replaceAll('');
   - rename:
       field: json.properties.RegistryValueName
       target_field: m365_defender.event.registry.value_name
@@ -1950,6 +1942,48 @@ processors:
       field: host.os.type
       value: macos
       if: ctx.m365_defender?.event?.os?.platform != null && ctx.m365_defender.event.os.platform.toLowerCase().contains('macos')
+  # host.os.type can also be derived for Windows based on event.category
+  - set:
+      field: host.os.type
+      value: windows
+      if: >- 
+        ctx.event?.category != null && (
+            ctx.event.category.contains('api') || 
+            ctx.event.category.contains('registry') || 
+            ctx.event.category.contains('library') || 
+            ctx.event.category.contains('driver')
+        )
+  - set:
+      field: host.os.type
+      value: windows
+      if: >- 
+        ctx.event?.category != null && ctx.event.category.contains('file') && (
+            ctx.m365_defender?.event?.initiating_process?.account_sid != null || 
+            ctx.m365_defender?.event?.request?.account_sid != null
+        )
+  - set:
+      field: host.os.type
+      value: windows
+      if: >- 
+        ctx.event?.category != null && ctx.event.category.contains('process') && (
+            ctx.m365_defender?.event?.initiating_process?.account_sid != null
+        )
+  - set:
+      field: host.os.type
+      value: windows
+      if: >- 
+        ctx.event?.category != null && ctx.event.category.contains('authentication') && (
+            ctx.m365_defender?.event?.initiating_process?.account_sid != null ||
+            ctx.m365_defender?.event?.account?.sid != null
+        )
+  - set:
+      field: host.os.type
+      value: windows
+      if: >- 
+        ctx.event?.category != null && ctx.event.category.contains('network') && (
+            ctx.m365_defender?.event?.initiating_process?.account_sid != null
+        )
+
   - set:
       field: host.os.full
       copy_from: m365_defender.event.os.platform
@@ -1998,22 +2032,61 @@ processors:
       allow_duplicates: false
 
   # Registry Mapping
-  - set:
-      field: registry.key
-      copy_from: m365_defender.event.registry.key
-      tag: set_registry_key
-      ignore_empty_value: true
+  # registry hive abbreviation taken from current or previous registry key
+  - grok:
+      field: m365_defender.event.registry.key
+      description: Extract and remove HIVE_NAMES from registry key
+      tag: grok_registry_key
+      if: ctx.m365_defender?.event?.registry?.key != null && ctx.m365_defender.event.registry.key != ''
+      patterns:
+        - '^(%{HIVE_NAMES:_tmp.registry.hive}\\)?%{GREEDYDATA:registry.key}$'
+      pattern_definitions:
+        HIVE_NAMES: "(?i:HKEY_CLASSES_ROOT|HKCR|HKEY_CURRENT_USER|HKCU|HKEY_LOCAL_MACHINE|HKLM|HKEY_USERS|HKU|HKEY_CURRENT_CONFIG|HKCC)"
+  - grok:
+      field: m365_defender.event.previous.registry_key
+      description: Extract and remove HIVE_NAMES from previous registry key
+      tag: grok_registry_previous_key
+      if: ctx.registry?.key == null && ctx.m365_defender?.event?.previous?.registry_key != null && ctx.m365_defender.event.previous.registry_key != ''
+      patterns:
+        - '^(%{HIVE_NAMES:_tmp.registry.hive}\\)?%{GREEDYDATA:registry.key}$'
+      pattern_definitions:
+        HIVE_NAMES: "(?i:HKEY_CLASSES_ROOT|HKCR|HKEY_CURRENT_USER|HKCU|HKEY_LOCAL_MACHINE|HKLM|HKEY_USERS|HKU|HKEY_CURRENT_CONFIG|HKCC)"
+  - script:
+      description: Normalize hive names (ECS uses abbreviated names) derived from https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users
+      tag: set_registry_hive
+      lang: painless
+      if: ctx._tmp?.registry?.hive != null
+      params:
+        HKEY_CLASSES_ROOT: HKCR
+        HKEY_CURRENT_USER: HKCU
+        HKEY_LOCAL_MACHINE: HKLM
+        HKEY_USERS: HKU
+        HKEY_CURRENT_CONFIG: HKCC
+      source: |
+        def name = ctx._tmp.registry.hive.toUpperCase();
+        if (ctx.registry == null) {
+          ctx.registry = new HashMap();
+        }
+        ctx.registry.hive = params.getOrDefault(name, name);
   - set:
       field: registry.value
       copy_from: m365_defender.event.registry.value_name
       tag: set_registry_value
       ignore_empty_value: true
   - set:
+      field: registry.value
+      description: Derived from previous value during registry changes.
+      copy_from: m365_defender.event.previous.registry_value_name
+      if: ctx.registry?.value == null
+      tag: set_registry_value_prev
+      ignore_empty_value: true
+  - set:
       field: registry.path
+      description: registry.hive + registry.key + registry.value
       value: >-
-        {{{registry.key}}}\{{{registry.value}}}
+        {{{#registry.hive}}}{{{registry.hive}}}{{{/registry.hive}}}\{{{registry.key}}}\{{{registry.value}}}
       tag: set_registry_path
-      if: ctx.registry?.key != null && ctx.registry.value != null
+      if: ctx.registry?.key != null && ctx.registry.key != '' && ctx.registry.value != null
       ignore_empty_value: true
   - append:
       field: registry.data.strings
@@ -2021,6 +2094,13 @@ processors:
       tag: append_registry_data_strings
       allow_duplicates: false
       if: ctx.m365_defender?.event?.registry?.value_data != null
+  - append:
+      field: registry.data.strings
+      description: Derived from previous value during registry changes.
+      value: '{{{m365_defender.event.previous.registry_value_data}}}'
+      tag: append_registry_data_strings_prev
+      allow_duplicates: false
+      if: ctx.m365_defender?.event?.previous?.registry_value_data != null
   - set:
       field: registry.data.type
       copy_from: m365_defender.event.registry.value_type
@@ -2159,7 +2239,7 @@ processors:
       copy_from: m365_defender.event.initiating_process.account_name
       tag: set_user_name_initiating_process_account_name
       ignore_empty_value: true
-      if: ctx.event?.category != null && (ctx.event.category.contains('library') || ctx.event.category.contains('registry') || ctx.event.category.contains('network') || ctx.event.category.contains('driver')) && ctx.user?.name == null
+      if: ctx.event?.category != null && (ctx.event.category.contains('library') || ctx.event.category.contains('registry') || ctx.event.category.contains('network') || ctx.event.category.contains('driver') || ctx.event.category.contains('api')) && ctx.user?.name == null
   - set:
       field: user.domain
       copy_from: m365_defender.event.account.domain
@@ -2170,7 +2250,7 @@ processors:
       copy_from: m365_defender.event.initiating_process.account_domain
       tag: set_user_domain_initiating_process_account_domain
       ignore_empty_value: true
-      if: ctx.event?.category != null && (ctx.event.category.contains('library') || ctx.event.category.contains('registry') || ctx.event.category.contains('network') || ctx.event.category.contains('driver')) && ctx.user?.domain == null
+      if: ctx.event?.category != null && (ctx.event.category.contains('library') || ctx.event.category.contains('registry') || ctx.event.category.contains('network') || ctx.event.category.contains('driver') || ctx.event.category.contains('api')) && ctx.user?.domain == null
   - set:
       field: user.id
       copy_from: m365_defender.event.account.sid
@@ -2181,7 +2261,7 @@ processors:
       copy_from: m365_defender.event.initiating_process.account_sid
       tag: set_user_id_initiating_process_account_sid
       ignore_empty_value: true
-      if: ctx.event?.category != null && (ctx.event.category.contains('library') || ctx.event.category.contains('file') || ctx.event.category.contains('registry') || ctx.event.category.contains('network') || ctx.event.category.contains('driver')) && ctx.user?.id == null
+      if: ctx.event?.category != null && (ctx.event.category.contains('library') || ctx.event.category.contains('file') || ctx.event.category.contains('registry') || ctx.event.category.contains('network') || ctx.event.category.contains('driver') || ctx.event.category.contains('api')) && ctx.user?.id == null
   - set:
       field: user.id
       copy_from: m365_defender.event.request.account_sid
@@ -2264,7 +2344,7 @@ processors:
       if: ctx.event?.category != null && ctx.event.category.contains('network') && ctx.m365_defender?.event?.network_direction == null
 
   # Event Outcome/Actions mapping
-  # Special handling when event.category is 'file' or 'registry' or 'driver' for better compatibility and detection rules.
+  # Special handling when event.category is 'file' or 'registry' or 'driver' or 'process' for better compatibility and detection rules.
   - set:
       field: event.action
       value: deletion
@@ -2300,6 +2380,11 @@ processors:
       value: load
       tag: set_event_action_load
       if: ctx.event?.category != null && ctx.event.category.contains('driver')
+  - set:
+      field: event.action
+      value: start
+      tag: set_event_action_start
+      if: ctx.event?.category != null && ctx.event.category.contains('process') && ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase() == 'processcreated'
   # For all other categories, copy the value from m365_defender.event.action.type
   - set:
       field: event.action

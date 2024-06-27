@@ -226,7 +226,6 @@ An example event for `asset` looks as following:
 | rapid7.insightvm.asset.type | Enum: "hypervisor" "mobile" "guest" "physical" "unknown" The type of asset. | keyword |
 | rapid7.insightvm.asset.unique_identifiers.id | The unique identifier. | keyword |
 | rapid7.insightvm.asset.unique_identifiers.source | The source of the unique identifier. | keyword |
-| tags | User defined tags. | keyword |
 
 
 ### vulnerability
@@ -481,4 +480,3 @@ An example event for `vulnerability` looks as following:
 | rapid7.insightvm.vulnerability.severity | Enum: "critical" "low" "severe" "informational" "none" "moderate" The severity of the vulnerability. | keyword |
 | rapid7.insightvm.vulnerability.severity_score | The severity score of the vulnerability, on a scale of 0-10. | long |
 | rapid7.insightvm.vulnerability.title | The title (summary) of the vulnerability. | keyword |
-| tags | User defined tags. | keyword |

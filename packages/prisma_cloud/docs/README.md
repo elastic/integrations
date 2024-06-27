@@ -480,7 +480,6 @@ An example event for `alert` looks as following:
 | prisma_cloud.alert.status |  | keyword |
 | prisma_cloud.alert.time | Timestamp when alert was last reopened for resource update, or the same as firstSeen if there are no status changes. | date |
 | prisma_cloud.alert.triggered_by |  | keyword |
-| tags | User defined tags. | keyword |
 
 
 ### Audit
@@ -596,7 +595,6 @@ An example event for `audit` looks as following:
 | prisma_cloud.audit.result |  | keyword |
 | prisma_cloud.audit.timestamp | Timestamp. | date |
 | prisma_cloud.audit.user | User. | keyword |
-| tags | User defined tags. | keyword |
 
 
 ### Host
@@ -1575,7 +1573,6 @@ An example event for `host` looks as following:
 | prisma_cloud.host.wild_fire_usage.bytes | Bytes is the total number of bytes uploaded to the WildFire API. | long |
 | prisma_cloud.host.wild_fire_usage.queries | Queries is the number of queries to the WildFire API. | long |
 | prisma_cloud.host.wild_fire_usage.uploads | Uploads is the number of uploads to the WildFire API. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Host Profile
@@ -1724,7 +1721,6 @@ An example event for `host_profile` looks as following:
 | prisma_cloud.host_profile.ssh_events.time | Time is the time in which the process was added. If the process was modified, Time is the modification time. | date |
 | prisma_cloud.host_profile.ssh_events.user | User represents the username that started the process. | keyword |
 | prisma_cloud.host_profile.time | Time is the last time when this profile was modified. | date |
-| tags | User defined tags. | keyword |
 
 
 ### Incident Audit
@@ -2071,4 +2067,3 @@ An example event for `incident_audit` looks as following:
 | prisma_cloud.incident_audit.type | Possible values: [host,container,function,appEmbedded,fargate]. | keyword |
 | prisma_cloud.incident_audit.vm_id | Azure unique VM ID on which the incident was found. | keyword |
 | prisma_cloud.incident_audit.windows | Windows indicates if defender OS type is Windows. | boolean |
-| tags | User defined tags. | keyword |

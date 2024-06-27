@@ -357,7 +357,6 @@ An example event for `event` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | trellix_edr_cloud.event.access_type |  | keyword |
 | trellix_edr_cloud.event.action |  | keyword |
 | trellix_edr_cloud.event.arguments |  | keyword |

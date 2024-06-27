@@ -7,10 +7,32 @@
             "panelsJSON": "{\"a168cb45-cd9f-450c-963b-4097bcf5ba0b\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"service.address\",\"title\":\"Hosts\",\"id\":\"a168cb45-cd9f-450c-963b-4097bcf5ba0b\",\"enhancements\":{}}}}"
         },
         "description": "",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "oracle_weblogic.deployed_application"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "oracle_weblogic.deployed_application"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -20,42 +42,228 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-233f39ce-3204-41c1-8a39-a3f09ec68e98",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "ee8578ca-8856-48fc-8702-f54a285bb32b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "233f39ce-3204-41c1-8a39-a3f09ec68e98": {
+                                            "columnOrder": [
+                                                "839a3574-1c41-4cad-a6e2-a72211d806c8",
+                                                "839a3574-1c41-4cad-a6e2-a72211d806c8X0",
+                                                "839a3574-1c41-4cad-a6e2-a72211d806c8X1"
+                                            ],
+                                            "columns": {
+                                                "839a3574-1c41-4cad-a6e2-a72211d806c8": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Session Timeout (minutes)",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "last_value(oracle_weblogic.deployed_application.session_timeout) / 60",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "839a3574-1c41-4cad-a6e2-a72211d806c8X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "839a3574-1c41-4cad-a6e2-a72211d806c8X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Session Timeout (minutes)",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "oracle_weblogic.deployed_application.session_timeout"
+                                                },
+                                                "839a3574-1c41-4cad-a6e2-a72211d806c8X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Session Timeout (minutes)",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "839a3574-1c41-4cad-a6e2-a72211d806c8X0",
+                                                                60
+                                                            ],
+                                                            "location": {
+                                                                "max": 69,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "last_value(oracle_weblogic.deployed_application.session_timeout) / 60",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "839a3574-1c41-4cad-a6e2-a72211d806c8X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "ee8578ca-8856-48fc-8702-f54a285bb32b",
+                                        "key": "oracle_weblogic.deployed_application.session_timeout",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "oracle_weblogic.deployed_application.session_timeout"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "839a3574-1c41-4cad-a6e2-a72211d806c8",
+                                "layerId": "233f39ce-3204-41c1-8a39-a3f09ec68e98",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "visualizationType": "lnsLegacyMetric"
+                    },
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
                 "gridData": {
                     "h": 8,
-                    "i": "4a393609-f811-4b5f-a0f1-17c100df4331",
+                    "i": "be4df99d-f7d2-4613-a188-80dba5a502dc",
                     "w": 9,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "4a393609-f811-4b5f-a0f1-17c100df4331",
-                "panelRefName": "panel_4a393609-f811-4b5f-a0f1-17c100df4331",
-                "type": "lens",
-                "version": "8.4.0"
+                "panelIndex": "be4df99d-f7d2-4613-a188-80dba5a502dc",
+                "title": "",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-4d728377-768d-4db2-90bb-00c68302f995",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-oracle_weblogic-default",
+                                "name": "tag-ref-fleet-pkg-oracle_weblogic-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "4d728377-768d-4db2-90bb-00c68302f995": {
+                                            "columnOrder": [
+                                                "fda03f8a-3784-43db-a7e7-9b47166cd9ce"
+                                            ],
+                                            "columns": {
+                                                "fda03f8a-3784-43db-a7e7-9b47166cd9ce": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Deployed Applications",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "oracle_weblogic.deployed_application.source_info"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "fda03f8a-3784-43db-a7e7-9b47166cd9ce",
+                                "colorMode": "None",
+                                "layerId": "4d728377-768d-4db2-90bb-00c68302f995",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "visualizationType": "lnsLegacyMetric"
+                    },
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
                 "gridData": {
                     "h": 8,
-                    "i": "5e8ca216-039d-4816-a616-ec69d650d604",
+                    "i": "13df8052-b174-46a8-8a47-ff7f75552844",
                     "w": 9,
                     "x": 9,
                     "y": 0
                 },
-                "panelIndex": "5e8ca216-039d-4816-a616-ec69d650d604",
-                "panelRefName": "panel_5e8ca216-039d-4816-a616-ec69d650d604",
-                "type": "lens",
-                "version": "8.4.0"
+                "panelIndex": "13df8052-b174-46a8-8a47-ff7f75552844",
+                "title": "",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -74,7 +282,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "6442e283-4ffa-4fe9-96c7-365d5405a7ac": {
                                             "columnOrder": [
@@ -230,80 +438,405 @@
                 },
                 "panelIndex": "83fccf78-5106-422a-9629-217abfc1b17c",
                 "title": "Total Number of Applications over time [Metrics Oracle WebLogic]",
-                "type": "lens",
-                "version": "8.4.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-90391621-eb85-427c-861a-6b4894aa2b8e",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "00204c91-621b-4290-8142-f0a187a703ef",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-oracle_weblogic-default",
+                                "name": "tag-ref-fleet-pkg-oracle_weblogic-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "90391621-eb85-427c-861a-6b4894aa2b8e": {
+                                            "columnOrder": [
+                                                "51c9ce17-2ce5-4952-a8bd-ae6ab8512301",
+                                                "51c9ce17-2ce5-4952-a8bd-ae6ab8512301X0"
+                                            ],
+                                            "columns": {
+                                                "51c9ce17-2ce5-4952-a8bd-ae6ab8512301": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Highest Open Sessions ",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "last_value(oracle_weblogic.deployed_application.sessions.open.high)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "51c9ce17-2ce5-4952-a8bd-ae6ab8512301X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "51c9ce17-2ce5-4952-a8bd-ae6ab8512301X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Highest Open Sessions ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "oracle_weblogic.deployed_application.sessions.open.high"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "00204c91-621b-4290-8142-f0a187a703ef",
+                                        "key": "oracle_weblogic.deployed_application.sessions.open.high",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "oracle_weblogic.deployed_application.sessions.open.high"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "51c9ce17-2ce5-4952-a8bd-ae6ab8512301",
+                                "layerId": "90391621-eb85-427c-861a-6b4894aa2b8e",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "visualizationType": "lnsLegacyMetric"
+                    },
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
                 "gridData": {
                     "h": 8,
-                    "i": "a5ef4e81-0efc-40df-804d-7e26fdc977f1",
+                    "i": "53bf37e6-45a4-46e7-9b30-194bd25d6bdf",
                     "w": 6,
                     "x": 0,
                     "y": 8
                 },
-                "panelIndex": "a5ef4e81-0efc-40df-804d-7e26fdc977f1",
-                "panelRefName": "panel_a5ef4e81-0efc-40df-804d-7e26fdc977f1",
-                "type": "lens",
-                "version": "8.4.0"
+                "panelIndex": "53bf37e6-45a4-46e7-9b30-194bd25d6bdf",
+                "title": "",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-55ae72ad-512a-4911-9095-c60031301f1c",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "9637a035-b065-4a59-8a41-4cdf63c0c51b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-oracle_weblogic-default",
+                                "name": "tag-ref-fleet-pkg-oracle_weblogic-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "55ae72ad-512a-4911-9095-c60031301f1c": {
+                                            "columnOrder": [
+                                                "6bfc7188-10f2-4ac0-b409-bf9429a2ff90",
+                                                "6bfc7188-10f2-4ac0-b409-bf9429a2ff90X0"
+                                            ],
+                                            "columns": {
+                                                "6bfc7188-10f2-4ac0-b409-bf9429a2ff90": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Opened Sessions",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "last_value(oracle_weblogic.deployed_application.sessions.open.total)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "6bfc7188-10f2-4ac0-b409-bf9429a2ff90X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "6bfc7188-10f2-4ac0-b409-bf9429a2ff90X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Opened Sessions",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "oracle_weblogic.deployed_application.sessions.open.total"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "9637a035-b065-4a59-8a41-4cdf63c0c51b",
+                                        "key": "oracle_weblogic.deployed_application.sessions.open.total",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "oracle_weblogic.deployed_application.sessions.open.total"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "6bfc7188-10f2-4ac0-b409-bf9429a2ff90",
+                                "layerId": "55ae72ad-512a-4911-9095-c60031301f1c",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "visualizationType": "lnsLegacyMetric"
+                    },
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
                 "gridData": {
                     "h": 8,
-                    "i": "19632149-a145-46e7-ac81-55654f6b0b8e",
+                    "i": "1ee22713-9054-4465-8a32-339eb74a0407",
                     "w": 6,
                     "x": 6,
                     "y": 8
                 },
-                "panelIndex": "19632149-a145-46e7-ac81-55654f6b0b8e",
-                "panelRefName": "panel_19632149-a145-46e7-ac81-55654f6b0b8e",
-                "type": "lens",
-                "version": "8.4.0"
+                "panelIndex": "1ee22713-9054-4465-8a32-339eb74a0407",
+                "title": "",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-99e15505-c3b0-4dba-b0c3-6dbc3c17705d",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "72a0ed00-4579-49d1-aa35-e90aedb0bd9b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "fleet-managed-default",
+                                "name": "tag-ref-fleet-managed-default",
+                                "type": "tag"
+                            },
+                            {
+                                "id": "fleet-pkg-oracle_weblogic-default",
+                                "name": "tag-ref-fleet-pkg-oracle_weblogic-default",
+                                "type": "tag"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "99e15505-c3b0-4dba-b0c3-6dbc3c17705d": {
+                                            "columnOrder": [
+                                                "2508193e-7f52-44b3-a786-f09a713b0909",
+                                                "2508193e-7f52-44b3-a786-f09a713b0909X0"
+                                            ],
+                                            "columns": {
+                                                "2508193e-7f52-44b3-a786-f09a713b0909": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Current Open Sessions ",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "formula": "last_value(oracle_weblogic.deployed_application.sessions.open.current)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "2508193e-7f52-44b3-a786-f09a713b0909X0"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "2508193e-7f52-44b3-a786-f09a713b0909X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Current Open Sessions ",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "oracle_weblogic.deployed_application.sessions.open.current"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "72a0ed00-4579-49d1-aa35-e90aedb0bd9b",
+                                        "key": "oracle_weblogic.deployed_application.sessions.open.current",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "oracle_weblogic.deployed_application.sessions.open.current"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "2508193e-7f52-44b3-a786-f09a713b0909",
+                                "layerId": "99e15505-c3b0-4dba-b0c3-6dbc3c17705d",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "visualizationType": "lnsLegacyMetric"
+                    },
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
                 "gridData": {
                     "h": 8,
-                    "i": "af455a35-2eb1-4e33-8374-fdae09eb52f8",
+                    "i": "c2f4df51-dd88-4fe4-a751-fd4e1da2d05b",
                     "w": 6,
                     "x": 12,
                     "y": 8
                 },
-                "panelIndex": "af455a35-2eb1-4e33-8374-fdae09eb52f8",
-                "panelRefName": "panel_af455a35-2eb1-4e33-8374-fdae09eb52f8",
-                "type": "lens",
-                "version": "8.4.0"
+                "panelIndex": "c2f4df51-dd88-4fe4-a751-fd4e1da2d05b",
+                "title": "",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Oracle WebLogic] Deployed Application",
         "version": 1
     },
-    "coreMigrationVersion": "8.4.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-19T05:22:06.879Z",
     "id": "oracle_weblogic-ea8cae80-ba24-11ec-913e-9be55c877bed",
-    "migrationVersion": {
-        "dashboard": "8.4.0"
-    },
+    "managed": false,
     "references": [
         {
-            "id": "oracle_weblogic-1df7e830-baf6-11ec-bb0c-dbfaa8a6536b",
-            "name": "4a393609-f811-4b5f-a0f1-17c100df4331:panel_4a393609-f811-4b5f-a0f1-17c100df4331",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "oracle_weblogic-0a14bf00-ba29-11ec-913e-9be55c877bed",
-            "name": "5e8ca216-039d-4816-a616-ec69d650d604:panel_5e8ca216-039d-4816-a616-ec69d650d604",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "be4df99d-f7d2-4613-a188-80dba5a502dc:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "be4df99d-f7d2-4613-a188-80dba5a502dc:indexpattern-datasource-layer-233f39ce-3204-41c1-8a39-a3f09ec68e98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "be4df99d-f7d2-4613-a188-80dba5a502dc:ee8578ca-8856-48fc-8702-f54a285bb32b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "13df8052-b174-46a8-8a47-ff7f75552844:indexpattern-datasource-layer-4d728377-768d-4db2-90bb-00c68302f995",
+            "type": "index-pattern"
         },
         {
             "id": "metrics-*",
@@ -316,19 +849,34 @@
             "type": "index-pattern"
         },
         {
-            "id": "oracle_weblogic-12f42b60-ba29-11ec-913e-9be55c877bed",
-            "name": "a5ef4e81-0efc-40df-804d-7e26fdc977f1:panel_a5ef4e81-0efc-40df-804d-7e26fdc977f1",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "53bf37e6-45a4-46e7-9b30-194bd25d6bdf:indexpattern-datasource-layer-90391621-eb85-427c-861a-6b4894aa2b8e",
+            "type": "index-pattern"
         },
         {
-            "id": "oracle_weblogic-15cc2a90-ba29-11ec-913e-9be55c877bed",
-            "name": "19632149-a145-46e7-ac81-55654f6b0b8e:panel_19632149-a145-46e7-ac81-55654f6b0b8e",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "53bf37e6-45a4-46e7-9b30-194bd25d6bdf:00204c91-621b-4290-8142-f0a187a703ef",
+            "type": "index-pattern"
         },
         {
-            "id": "oracle_weblogic-0ddf0d70-ba29-11ec-913e-9be55c877bed",
-            "name": "af455a35-2eb1-4e33-8374-fdae09eb52f8:panel_af455a35-2eb1-4e33-8374-fdae09eb52f8",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "1ee22713-9054-4465-8a32-339eb74a0407:indexpattern-datasource-layer-55ae72ad-512a-4911-9095-c60031301f1c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "1ee22713-9054-4465-8a32-339eb74a0407:9637a035-b065-4a59-8a41-4cdf63c0c51b",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "c2f4df51-dd88-4fe4-a751-fd4e1da2d05b:indexpattern-datasource-layer-99e15505-c3b0-4dba-b0c3-6dbc3c17705d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "c2f4df51-dd88-4fe4-a751-fd4e1da2d05b:72a0ed00-4579-49d1-aa35-e90aedb0bd9b",
+            "type": "index-pattern"
         },
         {
             "id": "metrics-*",
@@ -336,5 +884,6 @@
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

@@ -250,7 +250,6 @@ An example event for `alerts` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | zscaler_zia.alerts.connection_lost_minutes | Amount of time after loosing connection to a server in Minutes. | double |
 | zscaler_zia.alerts.log_feed_name | Name of the NSS log feed. | keyword |
 
@@ -383,7 +382,6 @@ An example event for `dns` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | zscaler_zia.dns.department | Department of the user. | keyword |
 | zscaler_zia.dns.dom.category | URL Category of the FQDN in the DNS request. | keyword |
 | zscaler_zia.dns.duration.milliseconds | Duration of the DNS request in milliseconds. | long |
@@ -538,7 +536,6 @@ An example event for `firewall` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | zscaler_zia.firewall.aggregate |  | keyword |
 | zscaler_zia.firewall.client.destination.ip | Client destination IP address. For aggregated sessions, this is the client destination IP address of the last session in the aggregate. | ip |
 | zscaler_zia.firewall.client.destination.port | Client destination port. For aggregated sessions, this is the client destination port of the last session in the aggregate. | long |
@@ -666,7 +663,6 @@ An example event for `tunnel` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | zscaler_zia.tunnel.action.type | Type of the record. Possible values [ WL_TUNNEL_IPSECPHASE1, WL_TUNNEL_IPSECPHASE2, WL_TUNNEL_EVENT, WL_TUNNEL_SAMPLES ]. | keyword |
 | zscaler_zia.tunnel.authentication.algorithm | Authentication algorithm. | keyword |
 | zscaler_zia.tunnel.authentication.type | Authentication type. | keyword |
@@ -868,7 +864,6 @@ An example event for `web` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | zscaler_zia.web.app.class | The web application class of the application that was accessed. Equivalent to module. | keyword |
 | zscaler_zia.web.app.name | Cloud application name. | keyword |
 | zscaler_zia.web.bandwidth_throttle | Indicates whether the transaction was throttled due to a configured bandwidth policy. | keyword |

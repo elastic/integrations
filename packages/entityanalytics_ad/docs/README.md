@@ -202,7 +202,6 @@ An example event for `user` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.identity_source |  | keyword |
-| tags | User defined tags. | keyword |
 | user.account.activated_date |  | date |
 | user.account.change_date |  | date |
 | user.account.create_date |  | date |
