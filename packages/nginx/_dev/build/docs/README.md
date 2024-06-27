@@ -121,7 +121,7 @@ Find unusual activity in HTTP access logs.
 ## SLOs
 
 SLOs are usually defined in terms of metrics such as availability, response time, and throughput, and they are used to ensure that the service meets the needs of its users.
-You can use the Nginx integration to measure the availability of the Nginx service. The SLOs gets created automatically during the installation of the integration. The user can view the created SLOs in the Kibana dashboard panel.
+You can use the Nginx integration to measure the availability of the Nginx service. The SLOs gets created automatically during the installation of the integration. The user can view the created SLOs in the Observability -> SLOs page.
 >Note: To create and manage SLOs you need an appropriate [license](https://www.elastic.co/subscriptions).
 
 | Events      | Query                             |
