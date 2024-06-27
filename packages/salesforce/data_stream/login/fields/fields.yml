@@ -1,0 +1,113 @@
+- name: salesforce
+  type: group
+  fields:
+    - name: instance_url
+      type: keyword
+      description: The Instance URL of the Salesforce instance.
+    - name: login
+      type: group
+      fields:
+        - name: application
+          type: keyword
+          description: The application used to access the Salesforce organization.
+        - name: api
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: The type of Salesforce API request.
+            - name: version
+              type: keyword
+              description: The version of the Salesforce API used for the login request.
+        - name: auth
+          type: group
+          fields:
+            - name: service_id
+              type: keyword
+              description: The authentication service ID used by a third-party identity provider for single sign-on (SSO) using the OpenID Connect protocol.
+            - name: method_reference
+              type: keyword
+              description: The authentication method reference used by a third-party identity provider for SSO using the OpenID Connect protocol. This field is available in API version 51.0 and later.
+        - name: key
+          type: keyword
+          description: The string that ties together all events in a given user's login session, starting with the login event and ending with either a logout event or the user session expiring.
+        - name: history_id
+          type: keyword
+          description: The identifier that tracks a user session, allowing correlation of user activity with a specific login instance.
+        - name: type
+          type: keyword
+          description: The type of login used to access the session.
+        - name: geo_id
+          type: keyword
+          description: The Salesforce ID of the LoginGeo object associated with the user's IP address during login.
+        - name: client
+          type: group
+          fields:
+            - name: ip
+              type: ip
+              description: The IP address of the client using Salesforce services. Internal Salesforce IP addresses are shown as "Salesforce.com IP".
+        - name: cpu_time
+          type: long
+          description: The CPU time in milliseconds used to complete the login request, indicating the amount of activity in the application server layer.
+          unit: ms
+          metric_type: gauge
+        - name: db_total_time
+          type: long
+          description: The time in nanoseconds for the database round trip during login, including time spent in the JDBC driver, network, and database CPU time.
+          unit: nanos
+          metric_type: gauge
+        - name: event_type
+          type: keyword
+          description: The type of event. For login events, the value is always "Login".
+        - name: organization_id
+          type: keyword
+          description: The 15-character ID of the Salesforce organization.
+        - name: request
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The unique identifier for the login request transaction.
+            - name: status
+              type: keyword
+              description: The status of the login request (e.g., Success, Failed).
+        - name: run_time
+          type: long
+          description: The total time in milliseconds taken by the login request.
+          unit: ms
+          metric_type: gauge
+        - name: user_id
+          type: keyword
+          description: The 15-character ID of the user logging in to Salesforce.
+        - name: uri
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The 18-character case-insensitive ID of the URI of the page receiving the login request.
+        - name: transaction_security
+          type: group
+          fields:
+            - name: policy
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: The ID of the transaction security policy used to evaluate the login event.
+                - name: outcome
+                  type: keyword
+                  description: The outcome of the transaction security policy evaluation (e.g., Block, Notified, NoAction).
+        - name: related_event_identifier
+          type: keyword
+          description: The identifier of a related event associated with the login event.
+        - name: additional_info
+          type: match_only_text
+          description: Additional information that's captured from the HTTP headers during a login request.
+        - name: client_version
+          type: keyword
+          description: The version of the client used for the login request.
+        - name: evaluation_time
+          type: double
+          description: The amount of time it took to evaluate the transaction security policy, in milliseconds. This field is available in API version 46.0 and later.
+          unit: ms
+          metric_type: gauge
