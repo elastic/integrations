@@ -107,12 +107,14 @@ processors:
 
   - grok:
       field: _temp_.srcuser
+      tag: process_srcuser
       ignore_missing: true
       patterns:
         - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
         - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
         - '^%{USERNAME:source.user.name}@%{PATRUNKATEDHOSTNAME:source.user.domain}$'
         - '^%{USERNAME:source.user.name}$'
+        - '^%{GREEDYDATA:source.user.name}$'
       pattern_definitions:
         USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
         PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
