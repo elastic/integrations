@@ -131,17 +131,12 @@ program: |
           "after": state.?end_cursor.value.orValue(null),
           "filterBy": {
             "statusChangedAt": {
-              "after": (
-                state.?want_more.orValue(true) ?
+              "after": state.?want_more.orValue(true) ?
                   state.?cursor.first_timestamp.orValue(null)
+                : state.?cursor.last_timestamp.orValue(null) != null ?
+                  state.cursor.last_timestamp
                 :
-                  (
-                    state.?cursor.last_timestamp.orValue(null) != null ?
-                      state.cursor.last_timestamp
-                    :
-                      string(now() - duration(state.initial_interval))
-                  )
-              )
+                  string(now() - duration(state.initial_interval))
             }
           }
         }
@@ -151,8 +146,7 @@ program: |
         "message": e.encode_json(),
       }),
       "cursor": {
-        "last_timestamp": (
-          has(body.data.issues.nodes) && body.data.issues.nodes.size() > 0 ?
+        "last_timestamp": has(body.data.issues.nodes) && body.data.issues.nodes.size() > 0 ?
             body.data.issues.nodes.map(e, timestamp(e.statusChangedAt)).max().as(last,
               has(state.?cursor.last_timestamp) && last < timestamp(state.cursor.last_timestamp) ?
                 state.cursor.last_timestamp
@@ -160,27 +154,19 @@ program: |
                 string(last)
             )
           :
-            state.?cursor.last_timestamp.orValue(null)
-        ),
-        "first_timestamp": (
-          !has(body.data) || state.?cursor.first_timestamp.orValue(null) == null ?
+            state.?cursor.last_timestamp.orValue(null),
+        "first_timestamp": !has(body.data) || state.?cursor.first_timestamp.orValue(null) == null ?
             string(now() - duration(state.initial_interval))
+          : body.data.issues.pageInfo.hasNextPage ?
+            state.cursor.first_timestamp
           :
-            (
-              body.data.issues.pageInfo.hasNextPage ?
-                state.cursor.first_timestamp
-              :
-                state.cursor.last_timestamp
-            )
-        ),
+            state.cursor.last_timestamp,
       },
       "end_cursor": {
-        "value": (
-          body.?data.issues.pageInfo.hasNextPage.orValue(false) ?
+        "value": body.?data.issues.pageInfo.hasNextPage.orValue(false) ?
             body.data.issues.pageInfo.endCursor
           :
             null
-        )
       },
       "want_more": body.?data.issues.pageInfo.hasNextPage.orValue(false),
     }))
