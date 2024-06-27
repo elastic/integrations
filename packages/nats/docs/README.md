@@ -18,118 +18,112 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "nats": {
-        "log": {
-            "msg": {
-                "type": "payload"
-            },
-            "client": {
-                "id": "86"
-            }
-        }
-    },
+    "@timestamp": "2020-11-25T11:50:17.759Z",
     "agent": {
-        "hostname": "5706c620a165",
-        "name": "5706c620a165",
-        "id": "25c804ef-d8c8-4a2e-9228-64213daef566",
-        "type": "filebeat",
         "ephemeral_id": "4f1426bb-db10-4b5d-9e1c-ba6da401dc34",
+        "hostname": "5706c620a165",
+        "id": "25c804ef-d8c8-4a2e-9228-64213daef566",
+        "name": "5706c620a165",
+        "type": "filebeat",
         "version": "7.11.0"
     },
-    "process": {
-        "pid": 6
+    "client": {
+        "ip": "192.168.192.3",
+        "port": 53482
+    },
+    "data_stream": {
+        "dataset": "nats.log",
+        "namespace": "default",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "5a7b52c1-66ae-47ce-ad18-70dadf1bedfa",
+        "snapshot": true,
+        "version": "7.11.0"
+    },
+    "event": {
+        "created": "2020-11-25T11:53:04.192Z",
+        "dataset": "nats.log",
+        "ingested": "2020-11-25T11:53:10.021181400Z",
+        "kind": "event",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "5706c620a165",
+        "id": "06c26569966fd125c15acac5d7feffb6",
+        "ip": [
+            "192.168.192.8"
+        ],
+        "mac": [
+            "02-42-C0-A8-F5-07"
+        ],
+        "name": "5706c620a165",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "4.9.184-linuxkit",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "version": "7 (Core)"
+        }
+    },
+    "input": {
+        "type": "log"
     },
     "log": {
         "file": {
             "path": "/var/log/nats/nats.log"
         },
-        "offset": 36865655,
-        "level": "trace"
+        "level": "trace",
+        "offset": 36865655
     },
-    "elastic_agent": {
-        "id": "5a7b52c1-66ae-47ce-ad18-70dadf1bedfa",
-        "version": "7.11.0",
-        "snapshot": true
+    "nats": {
+        "log": {
+            "client": {
+                "id": "86"
+            },
+            "msg": {
+                "type": "payload"
+            }
+        }
     },
     "network": {
         "direction": "inbound"
     },
-    "input": {
-        "type": "log"
-    },
-    "@timestamp": "2020-11-25T11:50:17.759Z",
-    "ecs": {
-        "version": "1.6.0"
+    "process": {
+        "pid": 6
     },
     "related": {
         "ip": [
             "192.168.192.3"
         ]
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "nats.log"
-    },
-    "host": {
-        "hostname": "5706c620a165",
-        "os": {
-            "kernel": "4.9.184-linuxkit",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "192.168.192.8"
-        ],
-        "name": "5706c620a165",
-        "id": "06c26569966fd125c15acac5d7feffb6",
-        "mac": [
-            "02:42:c0:a8:c0:08"
-        ],
-        "architecture": "x86_64"
-    },
-    "client": {
-        "port": 53482,
-        "ip": "192.168.192.3"
-    },
-    "event": {
-        "ingested": "2020-11-25T11:53:10.021181400Z",
-        "created": "2020-11-25T11:53:04.192Z",
-        "kind": "event",
-        "type": [
-            "info"
-        ],
-        "dataset": "nats.log"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
-| client.port | Port of the client. | long |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Full path to the log file this event came from. | keyword |
-| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | nats.log.client.id | The id of the client | integer |
 | nats.log.msg.bytes | Size of the payload in bytes | long |
 | nats.log.msg.error.message | Details about the error occurred | text |
@@ -139,10 +133,6 @@ An example event for `log` looks as following:
 | nats.log.msg.sid | The unique alphanumeric subscription ID of the subject | integer |
 | nats.log.msg.subject | Subject name this message was received on | keyword |
 | nats.log.msg.type | The protocol message type | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
-| process.pid | Process id. | long |
-| related.ip | All of the IPs seen on your event. | ip |
-| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
@@ -160,13 +150,13 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:55:11.384Z",
+    "@timestamp": "2024-06-18T06:49:17.492Z",
     "agent": {
-        "ephemeral_id": "259312b7-26e3-4a70-8c3a-720386a6a71e",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "4b9c9086-97a0-4aec-9cc4-b227f25eaf7b",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.stats",
@@ -174,40 +164,36 @@ An example event for `stats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.stats",
-        "duration": 49665904,
-        "ingested": "2022-01-12T02:55:14Z",
+        "duration": 1739425,
+        "ingested": "2024-06-18T06:49:29Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -216,12 +202,12 @@ An example event for `stats` looks as following:
     },
     "nats": {
         "server": {
-            "id": "NCXFULRLCZMWAWXMVPHIAESOUAOURC2INJOQFODIMJ2IHZ3QE7BH7X74",
-            "time": "2022-01-12T02:55:11.384194105Z"
+            "id": "NDCZVPEIJLTFLUSYR6Y4OSKTDJ5QD4LTTBSOKJ6HPX3K3QZPF6CI6VMI",
+            "time": "2024-06-18T06:49:17.492Z"
         },
         "stats": {
-            "cores": 1,
-            "cpu": 0.28,
+            "cores": 12,
+            "cpu": 1.03,
             "http": {
                 "req_stats": {
                     "uri": {
@@ -229,16 +215,16 @@ An example event for `stats` looks as following:
                         "root": 0,
                         "routez": 0,
                         "subsz": 0,
-                        "varz": 2
+                        "varz": 1
                     }
                 }
             },
             "in": {
-                "bytes": 13072240,
-                "messages": 817015
+                "bytes": 29849184,
+                "messages": 1865574
             },
             "mem": {
-                "bytes": 12103680
+                "bytes": 8806400
             },
             "out": {
                 "bytes": 0,
@@ -247,7 +233,7 @@ An example event for `stats` looks as following:
             "remotes": 1,
             "slow_consumers": 0,
             "total_connections": 1,
-            "uptime": 23
+            "uptime": 13
         }
     },
     "service": {
@@ -256,6 +242,10 @@ An example event for `stats` looks as following:
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -272,10 +262,9 @@ An example event for `stats` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | nats.server.id | The server ID | keyword |  |
 | nats.server.time | Server time of metric creation | date |  |
 | nats.stats.cores | The number of logical cores the NATS process runs on | integer | gauge |
@@ -295,7 +284,6 @@ An example event for `stats` looks as following:
 | nats.stats.total_connections | The number of totally created clients | long | counter |
 | nats.stats.uptime | The period the server is up (sec) | long | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### connections
@@ -307,13 +295,13 @@ An example event for `connections` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:46:48.367Z",
+    "@timestamp": "2024-06-18T06:42:06.763Z",
     "agent": {
-        "ephemeral_id": "3886806d-b880-4842-a4be-79391a8fc2e4",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "dd10a7db-f158-4b9b-aaf2-af4cdc3d6b06",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.connections",
@@ -321,40 +309,36 @@ An example event for `connections` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.connections",
-        "duration": 125128016,
-        "ingested": "2022-01-12T02:46:50Z",
+        "duration": 1514602,
+        "ingested": "2024-06-18T06:42:18Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -366,8 +350,8 @@ An example event for `connections` looks as following:
             "total": 1
         },
         "server": {
-            "id": "NBBIEC4H2KI3XR4SUAATGL5INXZZS72ZUYMVJBCLKVDDEWCJCFZOXH7W",
-            "time": "2022-01-12T02:46:48.367495135Z"
+            "id": "NCNKDXBFQLH5L4U6H3BPZX2CYTOLLFFFKKMAPUCSKE2QYMMS2S7HGYMN",
+            "time": "2024-06-18T06:42:06.763Z"
         }
     },
     "service": {
@@ -376,6 +360,10 @@ An example event for `connections` looks as following:
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -392,15 +380,13 @@ An example event for `connections` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | nats.connections.total | The number of currently active clients | integer | gauge |
 | nats.server.id | The server ID | keyword |  |
 | nats.server.time | Server time of metric creation | date |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### routes
@@ -412,13 +398,13 @@ An example event for `routes` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:52:26.015Z",
+    "@timestamp": "2024-06-18T06:46:57.937Z",
     "agent": {
-        "ephemeral_id": "5ca072d2-2eac-4cad-9a39-bdfec64f2640",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "109393c6-0e20-4b2a-b653-3fa5e35b5f7c",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.routes",
@@ -426,40 +412,36 @@ An example event for `routes` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.routes",
-        "duration": 29566227,
-        "ingested": "2022-01-12T02:52:29Z",
+        "duration": 1390061,
+        "ingested": "2024-06-18T06:47:09Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -471,8 +453,8 @@ An example event for `routes` looks as following:
             "total": 1
         },
         "server": {
-            "id": "NAGYMNF4IADKFHPNJEJMQUWPYUVOWX3KC3V2UINL5QJYDVGIAZB7N3L6",
-            "time": "2022-01-12T02:52:26.015311657Z"
+            "id": "NCTCCFMHSIRDQEDRY54BNE6H5D2S476BITJEDHPZMOMCKZOITM6WWA6V",
+            "time": "2024-06-18T06:46:57.937Z"
         }
     },
     "service": {
@@ -481,6 +463,10 @@ An example event for `routes` looks as following:
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -497,15 +483,13 @@ An example event for `routes` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | nats.routes.total | The number of registered routes | integer | gauge |
 | nats.server.id | The server ID | keyword |  |
 | nats.server.time | Server time of metric creation | date |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### subscriptions
@@ -517,13 +501,13 @@ An example event for `subscriptions` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:57:55.837Z",
+    "@timestamp": "2024-06-18T06:51:43.719Z",
     "agent": {
-        "ephemeral_id": "29d75d7c-e650-4bf4-ba7a-f769e4edd5da",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "20d397d4-1143-4670-8a66-d8b8bceb57ac",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.subscriptions",
@@ -531,40 +515,36 @@ An example event for `subscriptions` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.subscriptions",
-        "duration": 11100010,
-        "ingested": "2022-01-12T02:57:59Z",
+        "duration": 1163583,
+        "ingested": "2024-06-18T06:51:55Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -594,6 +574,10 @@ An example event for `subscriptions` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Metric Type |
@@ -609,10 +593,9 @@ An example event for `subscriptions` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | nats.server.id | The server ID | keyword |  |
 | nats.server.time | Server time of metric creation | date |  |
 | nats.subscriptions.cache.fanout.avg | The average fanout served by cache | double | gauge |
@@ -624,7 +607,6 @@ An example event for `subscriptions` looks as following:
 | nats.subscriptions.removes | The number of remove operations in subscriptions list | long | counter |
 | nats.subscriptions.total | The number of active subscriptions | integer | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### connection
@@ -636,13 +618,13 @@ An example event for `connection` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:43:51.172Z",
+    "@timestamp": "2024-06-18T06:39:34.665Z",
     "agent": {
-        "ephemeral_id": "3cf8068e-3998-4da7-b2f1-de14207c5d44",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "3565b6dd-89b9-4d31-bc0e-52bd652289ee",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.connection",
@@ -650,40 +632,36 @@ An example event for `connection` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.connection",
-        "duration": 276175024,
-        "ingested": "2022-01-12T02:43:52Z",
+        "duration": 1778759,
+        "ingested": "2024-06-18T06:39:46Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -694,8 +672,8 @@ An example event for `connection` looks as following:
         "connection": {
             "idle_time": 0,
             "in": {
-                "bytes": 10310992,
-                "messages": 644437
+                "bytes": 31946336,
+                "messages": 1996646
             },
             "name": "NATS Benchmark",
             "out": {
@@ -704,10 +682,10 @@ An example event for `connection` looks as following:
             },
             "pending_bytes": 0,
             "subscriptions": 0,
-            "uptime": 24
+            "uptime": 14
         },
         "server": {
-            "id": "NAMJNT4IYFE3N7FCYJWAKX3OKMQVIUSL7CN4EPBUXJNKSCTYCRHSVNTB"
+            "id": "NCKVGU7EX4KDOQDL6CQIEYBWSAVCA37KXRD5UOGRNGIFXOMDAV3VYKFJ"
         }
     },
     "service": {
@@ -716,6 +694,10 @@ An example event for `connection` looks as following:
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -732,10 +714,9 @@ An example event for `connection` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | nats.connection.idle_time | The period the connection is idle (sec) | long | counter |
 | nats.connection.in.bytes | The amount of incoming bytes | long | counter |
 | nats.connection.in.messages | The amount of incoming messages | long | counter |
@@ -748,7 +729,6 @@ An example event for `connection` looks as following:
 | nats.server.id | The server ID | keyword |  |
 | nats.server.time | Server time of metric creation | date |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### route
@@ -760,13 +740,13 @@ An example event for `route` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T02:49:43.071Z",
+    "@timestamp": "2024-06-18T06:44:35.066Z",
     "agent": {
-        "ephemeral_id": "7603b971-4c23-4474-94d7-736540cccfbc",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "6003d8f1-6313-4eb7-8d62-101876d13951",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "nats.route",
@@ -774,40 +754,36 @@ An example event for `route` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nats.route",
-        "duration": 37120483,
-        "ingested": "2022-01-12T02:49:47Z",
+        "duration": 1372502,
+        "ingested": "2024-06-18T06:44:47Z",
         "module": "nats"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.245.7",
+        "mac": "02-42-C0-A8-F5-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -820,18 +796,18 @@ An example event for `route` looks as following:
                 "bytes": 0,
                 "messages": 0
             },
-            "ip": "172.23.0.2",
+            "ip": "192.168.254.2",
             "out": {
                 "bytes": 0,
                 "messages": 0
             },
             "pending_size": 0,
-            "port": 43132,
-            "remote_id": "ND6TIOITFXLQL7IOQ6YF4YA76FO5DZKZ7RADTQFJH5Y22554RBAN23HE",
+            "port": 43212,
+            "remote_id": "NDLBUBM32KU4PB6T3NDNQOFUCNPVHPGEVLS5K2CYY2RHGOV6M3UBBXCF",
             "subscriptions": 0
         },
         "server": {
-            "id": "NDLSAJ5QGWF5IZJSOSOC7P22NTXGFIQMULUEZR2VC4HT4STJU6L36AIB"
+            "id": "NADJLTRJXDJIDP4EJTJ2ZLIYQENQKIRX23VYDPNGHPAWEAHLESEEENNM"
         }
     },
     "service": {
@@ -840,6 +816,10 @@ An example event for `route` looks as following:
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -856,10 +836,9 @@ An example event for `route` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | nats.route.in.bytes | The amount of incoming bytes | long | counter |
 | nats.route.in.messages | The amount of incoming messages | long | counter |
 | nats.route.ip | The ip of the route | ip |  |
@@ -872,5 +851,4 @@ An example event for `route` looks as following:
 | nats.server.id | The server ID | keyword |  |
 | nats.server.time | Server time of metric creation | date |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
