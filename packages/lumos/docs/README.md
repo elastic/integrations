@@ -34,12 +34,7 @@ Activity Logs summarize the history of changes and events occurring within Lumos
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The activity that occurred | keyword |
-| event.created | The time the event began | date |
-| event.id | The event hash | keyword |
 | event.module | Event module | constant_keyword |
-| event.outcome | The outcome of the event, whether it succeeded or failed | keyword |
 | input.type | Input type | keyword |
 | lumos.activity_logs.actor.actor_type | The type of actor | keyword |
 | lumos.activity_logs.actor.email | The email of the actor | keyword |
@@ -49,7 +44,6 @@ Activity Logs summarize the history of changes and events occurring within Lumos
 | lumos.activity_logs.event_type_user_friendly | The user friendly type of the event | keyword |
 | lumos.activity_logs.targets.name |  | keyword |
 | lumos.activity_logs.targets.target_type |  | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 
 
 An example event for `activity` looks as following:
