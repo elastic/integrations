@@ -99,9 +99,6 @@ An example event for `audit` looks as following:
 | cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.name | Container name. | keyword |
-| container.security_context.privileged | Indicates whether the container is running in privileged mode. | boolean |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -195,7 +192,7 @@ An example event for `audit` looks as following:
 | kubernetes.audit.user.groups | The names of groups this user is a part of | text |
 | kubernetes.audit.user.uid | A unique value that identifies this user across time. If this user is deleted and another user by the same name is added, they will have different UIDs | keyword |
 | kubernetes.audit.user.username | The name that uniquely identifies this user among all active users | keyword |
-| kubernetes.audit.userAgent | UserAgent records the user agent string reported by the client. Note that the UserAgent is provided by the client, and must not be trusted | keyword |
+| kubernetes.audit.userAgent | UserAgent records the user agent string reported by the client. Note that the UserAgent is provided by the client, and must not be trusted | text |
 | kubernetes.audit.verb | Verb is the kubernetes verb associated with the request. For non-resource requests, this is the lower-cased HTTP method | keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
