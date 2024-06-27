@@ -1210,10 +1210,16 @@ processors:
   - set:
       field: threat.framework
       value: CrowdStrike Falcon Detections Framework
-      if: ctx.crowdstrike?.alert?.tactic_id != null && ctx.crowdstrike.alert.tactic_id.startsWith("CS") && ctx.crowdstrike?.alert?.technique_id != null && ctx.crowdstrike.alert.technique_id.startsWith("CS")
+      tag: set_threat_framework_cs
+      description: For Crowdstrike Falcon Detection tactics and/or that are prefixed with "CS"
+      if: >- 
+        (ctx.crowdstrike?.alert?.tactic_id != null && ctx.crowdstrike.alert.tactic_id.startsWith("CS"))
+        || (ctx.crowdstrike?.alert?.technique_id != null && ctx.crowdstrike.alert.technique_id.startsWith("CS"))
+        || (ctx.crowdstrike?.alert?.tactic != null && ['malware','exploit','post-exploit','machine learning','custom intelligence','falcon overwatch','falcon intel','ai powered ioa','insecure security posture'].contains(ctx.crowdstrike.alert.tactic.toLowerCase()))
   - set:
       field: threat.framework
       value: MITRE ATT&CK
+      tag: set_threat_framework_mitre
       if: ctx.crowdstrike?.alert?.tactic_id != null && ctx.crowdstrike.alert.tactic_id.startsWith("TA")
   - date:
       field: json.timestamp

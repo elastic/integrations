@@ -205,9 +205,6 @@ processors:
         - UNIX
       tag: date_event_end_time_epoch
       if: "ctx.crowdstrike?.event?.EndTimeEpoch != null && String.valueOf(ctx.crowdstrike.event.EndTimeEpoch).length() <= 11"
-  - set: 
-      field: threat.framework
-      value: MITRE ATT&CK
   - split:
       field: crowdstrike.event.Techniques
       separator: ","
@@ -235,9 +232,11 @@ processors:
   - set: 
       field: threat.framework
       value: CrowdStrike Falcon Detections Framework
-      description: First tactic from crowdstrike.event.TacticIds is used to determine threat.framework
+      description: For Crowdstrike Falcon Detection tactics and/or that are prefixed with "CS". First tactic from crowdstrike.event.TacticIds is used to determine threat.framework
       tag: set_threat_framework_cs
-      if: ctx.crowdstrike?.event?.TacticIds != null && ctx.crowdstrike.event.TacticIds.startsWith("CS")
+      if: >-
+        (ctx.crowdstrike?.event?.TacticIds != null && ctx.crowdstrike.event.TacticIds.startsWith("CS"))
+        || (ctx.crowdstrike?.event?.TechniqueIds != null && ctx.crowdstrike.event.TechniqueIds.startsWith("CS"))
   - set: 
       field: threat.framework
       value: MITRE ATT&CK
