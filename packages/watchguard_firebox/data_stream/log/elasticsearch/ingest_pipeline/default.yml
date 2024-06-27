@@ -24,10 +24,6 @@ processors:
       if: ctx.event?.original != null && ctx.event.original != ''
       patterns:
         - '^<%{POSINT:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:watchguard_firebox.log.syslog_timestamp} %{SYSLOGHOST:log.syslog.hostname}(?: %{WORD:watchguard_firebox.log.serial_number})?(?: \(%{TIMESTAMP_ISO8601:watchguard_firebox.log.timestamp}\))? %{PROG:log.syslog.appname}(?:\[%{POSINT:log.syslog.procid}\])?: %{GREEDYDATA:watchguard_firebox.log.body}$'
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -4620,8 +4616,7 @@ processors:
         if (ctx.watchguard_firebox?.log?.msg_id == null || params.get(ctx.watchguard_firebox.log.msg_id) == null) {
           return;
         }
-        def hm = new HashMap(params.get(ctx.watchguard_firebox.log.msg_id));
-        hm.forEach((k, v) -> {
+        params.get(ctx.watchguard_firebox.log.msg_id).forEach((k, v) -> {
           if (k.equals("log_type")) {
             ctx.watchguard_firebox.log[k] = v;
           } else {
