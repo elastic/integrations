@@ -1,6 +1,6 @@
 # Teleport Audit Events Integration
 
-[Teleport](https://goteleport.com/docs/) provides connectivity, authentication, access controls and audit for infrastructure.
+[Teleport](https://goteleport.com/docs/) provides connectivity, authentication, access controls, and audit for infrastructure.
 
 This integration ingests audit events from Teleport. You can use it to perform historical analysis, 
 detect unusual behavior, and form a better understanding of how users interact with your Teleport cluster.
