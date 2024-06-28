@@ -1,10 +1,16 @@
-- name: event.sequence
-  type: long
-  description: Event number.
-- name: related.hosts
+- name: process.group_leader.vpid.exepath
   type: text
-  description: Host of the originating event.
-- name: Falco
+  description: Preserved Falco field
+- name: process.group_leader.vpid.name
+  type: text
+  description: Preserved Falco field
+- name: process.pid.ts
+  type: text
+  description: Preserved Falco field
+- name: process.session_leader.pid.exepath
+  type: text
+  description: Preserved Falco field
+- name: falco
   type: group
   description: Namespace for Falco-specific fields without a direct ECS equivalent.
   fields:
@@ -248,24 +254,20 @@
         - name: proc.vmswap
           type: unsigned_long
           description: Swapped memory for the process.
-          unit: byte
-        - name: proc.aname[2]
-          type: null
+        - name: proc.ppid.duration
+          type: long
           description: Preserved Falco field
-        - name: proc.aname[3]
-          type: null
+        - name: process.parent.pid
+          type: long
           description: Preserved Falco field
-        - name: proc.aname[4]
-          type: null
+        - name: process.pid
+          type: long
           description: Preserved Falco field
-        - name: proc.aname[5]
-          type: null
+        - name: process.session_leader.pid
+          type: long
           description: Preserved Falco field
-        - name: proc.aname[6]
-          type: null
-          description: Preserved Falco field
-        - name: proc.aname[7]
-          type: null
+        - name: process.group_leader.vpid
+          type: long
           description: Preserved Falco field
         - name: thread.pfmajor
           type: unsigned_long
@@ -433,6 +435,18 @@
         - name: fdlist.sports
           type: ip
           description: For poll events, server TCP/UDP ports in the fds argument.
+        - name: client.ip
+          type: ip
+          description: Falco copy of the ECS field of the same name
+        - name: server.ip
+          type: ip
+          description: Falco copy of the ECS field of the same name
+        - name: source.ip
+          type: ip
+          description: Falco copy of the ECS field of the same name
+        - name: destination.ip
+          type: ip
+          description: Falco copy of the ECS field of the same name
         - name: k8s.pod.sandbox_id
           type: keyword
           description: Truncated Kubernetes pod sandbox ID (first 12 characters).
@@ -593,6 +607,15 @@
         - name: container.ip
           type: text
           description: Preserved Falco field
+        - name: container.full_id
+          type: text
+          description: Falco copy of the ECS field of the same name
+        - name: container.image.name
+          type: text
+          description: Falco copy of the ECS field of the same name
+        - name: container.image.tag
+          type: text
+          description: Falco copy of the ECS field of the same name
         - name: fd.directory
           type: text
           description: Preserved Falco field
