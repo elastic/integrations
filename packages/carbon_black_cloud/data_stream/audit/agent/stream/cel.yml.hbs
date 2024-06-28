@@ -1,7 +1,7 @@
 config_version: 2
 interval: {{interval}}
 {{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 resource.tracer.maxbackups: 5
 {{/if}}
 {{#if proxy_url}}
@@ -22,11 +22,23 @@ program: |
           "Content-Type": ["application/json"],
           "X-Auth-Token": [state.api_key],
       },
-  }).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
-      "events": body.notifications.map(e, {
-          "message": e.encode_json(),
-      }),
-  }))
+  }).do_request().as(resp, resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body, {
+        "events": body.notifications.map(e, {
+            "message": e.encode_json(),
+        }),
+      })
+    :
+      {
+        "events": {
+          "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": string(resp.Body)
+          }
+        }   
+      }
+    )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

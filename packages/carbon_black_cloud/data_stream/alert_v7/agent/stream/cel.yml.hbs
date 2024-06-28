@@ -4,7 +4,7 @@ interval: {{interval}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 {{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 resource.tracer.maxbackups: 5
 {{/if}}
 {{#if proxy_url}}
@@ -35,29 +35,42 @@ program: |
                 },
                 "sort" : [{ "field": "backend_update_timestamp", "order": "ASC"}],
             }.encode_json(),
-        }).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
-            "events": body.results.map(e, {
-                "message": e.encode_json(),
-            }),
-            "cursor": {
-                  ?"last_backend_update_timestamp": (
-                      has(body.results) && body.results.size() > 0 ?
-                          optional.of(body.results.map(e, e.backend_update_timestamp).max().as(last_update,
-                              !has(state.?cursor.last_backend_update_timestamp) ?
-                                  last_update
-                              : last_update < state.cursor.last_backend_update_timestamp ?
-                                  state.cursor.last_backend_update_timestamp
-                              :
-                                  last_update
-                          ))
-                      :
-                          state.?cursor.last_backend_update_timestamp
-                  ),
-               },
-            "want_more": body.?num_found != body.?num_available,
-            "api_key": state.api_key,
-            "initial_interval": state.initial_interval,
-        }))
+        }).do_request().as(resp, resp.StatusCode == 200 ?
+            bytes(resp.Body).decode_json().as(body, {
+                "events": body.results.map(e, {
+                    "message": e.encode_json(),
+                }),
+                "cursor": {
+                    ?"last_backend_update_timestamp": (
+                        has(body.results) && body.results.size() > 0 ?
+                            optional.of(body.results.map(e, e.backend_update_timestamp).max().as(last_update,
+                                !has(state.?cursor.last_backend_update_timestamp) ?
+                                    last_update
+                                : last_update < state.cursor.last_backend_update_timestamp ?
+                                    state.cursor.last_backend_update_timestamp
+                                :
+                                    last_update
+                            ))
+                        :
+                            state.?cursor.last_backend_update_timestamp
+                    ),
+                },
+                "want_more": body.?num_found != body.?num_available,
+                "api_key": state.api_key,
+                "initial_interval": state.initial_interval,
+            })
+        :
+            {
+                "events": {
+                    "error": {
+                        "code": string(resp.StatusCode),
+                        "id": string(resp.Status),
+                        "message": string(resp.Body)
+                    }
+                },
+                "want_more": false,
+            }
+        )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
