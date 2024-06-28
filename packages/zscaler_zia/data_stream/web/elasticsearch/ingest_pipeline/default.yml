@@ -28,7 +28,7 @@ processors:
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == '' || object == "NA") {
+          if (object == null || object == '' || object == "NA" || object == "NotFound") {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -155,7 +155,6 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-            if: ctx.json?.respcode != 'NotFound'
   - rename:
       field: json.rulelabel
       target_field: rule.name
