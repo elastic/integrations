@@ -16,7 +16,7 @@ by time, as well as such data points as the geographical location of clients and
 
 ## Data streams
 
-The [data stream `audit`](#audit) provides events from Teleport audit logs.
+The data stream `audit` provides events from Teleport audit logs.
 
 ## Requirements
 
@@ -26,27 +26,25 @@ on your own hardware.
 
 ## Setup
 
-Check out [Teleport's guide on configuring Teleport's Event Handler plugin](https://goteleport.com/docs/management/export-audit-events/)
+Check out [the guide on configuring Teleport's Event Handler plugin](https://goteleport.com/docs/management/export-audit-events/)
 to make it send audit logs to the Elasticsearch instance.
 
-See the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) for instructions on setting up the Elastic Stack.
+See the [Getting started guide](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) for instructions on setting up the Elastic Stack.
 
 
 
 ## Reference
 
-Provide detailed information about the log or metric types we support within the integration. Check the [reference guidelines](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-reference) for more information.
-
-## Logs
-
 **Logs** help you keep a record of events happening in Teleport.
 
-### Audit
+### Audit Events Log
 
-Collects JSON documents from Teleport audit logs.
+The `audit` data stream collects JSON documents from Teleport audit logs.
 
-Event fields are mapped into the Elastic Common Schema, its extensions, or into custom fields. The latter are grouped
-into logical categories, such as `teleport.audit.session.*`. Each event is categorized into the four Elastic Common Schema
+Event fields are mapped either into the Elastic Common Schema, its extensions, or into custom fields. The latter are grouped
+into logical categories, such as `teleport.audit.session.*`. 
+
+Each event is categorized into the four Elastic Common Schema
 categorizations fields: `event.kind`, `event.category`, `event.type`, and `event.outcome`.
 
 An example event for `audit` looks as following:
