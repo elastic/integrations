@@ -3,42 +3,78 @@ description: Pipeline for Zscaler alert logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
+      tag: set_ecs_version
+      value: 8.11.0
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - grok:
       field: event.original
+      tag: grok_event_original
       patterns:
-        - '^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} \[%{IPORHOST:destination.address}\] %{GREEDYDATA:message}$'
+        - '^<%{NUMBER:zscaler_zia.alerts.log_syslog_priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} \[%{IPORHOST:zscaler_zia.alerts.destination.address}\] %{GREEDYDATA:zscaler_zia.alerts.message}$'
       ignore_failure: true
+  - set:
+      field: message
+      tag: set_message_from_alerts_message
+      copy_from: zscaler_zia.alerts.message
+      ignore_empty_value: true
   - grok:
       field: message
+      tag: grok_message
       patterns:
-        - '^ZscalerNSS: Zscaler cloud configuration connection to  %{IPORHOST:destination.address}:%{NUMBER:destination.port:long} lost and unavailable for the past %{NUMBER:zscaler_zia.alerts.connection_lost_minutes:double} minutes$'
-        - '^ZscalerNSS: SIEM Feed connection "%{GREEDYDATA:zscaler_zia.alerts.log_feed_name}" to %{IPORHOST:destination.address}:%{NUMBER:destination.port:long} lost and unavailable for the past %{NUMBER:zscaler_zia.alerts.connection_lost_minutes:double} minutes$'
+        - '^ZscalerNSS: Zscaler cloud configuration connection to  %{IPORHOST:zscaler_zia.alerts.destination.address}:%{NUMBER:zscaler_zia.alerts.destination.port:long} lost and unavailable for the past %{NUMBER:zscaler_zia.alerts.connection_lost_minutes:double} minutes$'
+        - '^ZscalerNSS: SIEM Feed connection "%{GREEDYDATA:zscaler_zia.alerts.log_feed_name}" to %{IPORHOST:zscaler_zia.alerts.destination.address}:%{NUMBER:zscaler_zia.alerts.destination.port:long} lost and unavailable for the past %{NUMBER:zscaler_zia.alerts.connection_lost_minutes:double} minutes$'
       ignore_failure: true
+  - set:
+      field: destination.address
+      tag: set_destination_address_from_alerts_destination_address
+      copy_from: zscaler_zia.alerts.destination.address
+      ignore_empty_value: true
   - convert:
       field: destination.address
-      target_field: destination.ip
+      tag: convert_destination_address_to_ip
+      target_field: zscaler_zia.alerts.destination.ip
       type: ip
       ignore_missing: true
+      if: ctx.destination?.address != ''
       on_failure:
         - remove:
             field: destination.address
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_alerts_destination_ip
+      copy_from: zscaler_zia.alerts.destination.ip
+      ignore_empty_value: true
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_alerts_destination_port
+      copy_from: zscaler_zia.alerts.destination.port
+      ignore_empty_value: true
   - append:
       field: related.ip
+      tag: append_destination_ip_into_related_ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - date:
       field: _tmp.timestamp
+      tag: date_timestamp
+      target_field: zscaler_zia.alerts.timestamp
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
@@ -50,20 +86,66 @@ processors:
             field: _tmp.timestamp
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_alerts_timestamp
+      copy_from: zscaler_zia.alerts.timestamp
+      ignore_empty_value: true
+  - set:
+      field: log.syslog.priority
+      tag: set_log_syslog_priority_from_alerts_log_syslog_priority
+      copy_from: zscaler_zia.alerts.log_syslog_priority
+      ignore_empty_value: true
+  - remove:
+      field:
+        - zscaler_zia.alerts.destination.address
+        - zscaler_zia.alerts.destination.port
+        - zscaler_zia.alerts.log_syslog_priority
+        - zscaler_zia.alerts.timestamp
+        - zscaler_zia.alerts.message
+        - zscaler_zia.alerts.destination.ip
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field:
         - _tmp
+      tag: remove_tmp
       ignore_missing: true
   - remove:
       field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
+      tag: remove_event_original
       ignore_missing: true
-on_failure:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
   - set:
       field: event.kind
       value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

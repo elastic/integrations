@@ -1,107 +1,316 @@
-- name: zscaler_zia.firewall
+- name: zscaler_zia
   type: group
   fields:
-    - name: department
-      type: keyword
-      description: |
-        Department of the user.
-    - name: hostname
-      type: keyword
-    - name: location
+    - name: firewall
       type: group
       fields:
-        - name: name
+        - name: action
           type: keyword
-          description: |
-            Name of the location from which the session was initiated.
-    - name: client
-      type: group
-      fields:
+          description: The action that the service took on the transaction.
+        - name: aggregate
+          type: keyword
+          description: Indicates whether the Firewall session is aggregated.
+        - name: bypassed
+          type: group
+          fields:
+            - name: session
+              type: keyword
+              description: Indicates whether the traffic bypassed the Zscaler Client Connector.
+            - name: time
+              type: date
+              description: The date and time when the traffic bypassed the Zscaler Client Connector.
+        - name: bytes_in
+          type: long
+          description: The number of bytes sent from the server to the client.
+        - name: client
+          type: group
+          fields:
+            - name: destination
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: The client destination IP address.
+                - name: port
+                  type: long
+                  description: The client destination port.
+            - name: domain
+              type: keyword
+              description: The client destination FDQN.
+            - name: source
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: The client source IP address.
+                - name: port
+                  type: long
+                  description: The client source port.
+        - name: datacenter
+          type: group
+          fields:
+            - name: city
+              type: keyword
+              description: The city where the data center is located.
+            - name: country
+              type: keyword
+              description: The country where the data center is located.
+            - name: name
+              type: keyword
+              description: The name of the data center.
+        - name: day
+          type: keyword
+          description: The day of the week.
+        - name: day_of_month
+          type: long
+          description: The day of the month.
+        - name: department
+          type: keyword
+        - name: dept
+          type: keyword
+          description: The department of the user.
         - name: destination
           type: group
           fields:
-            - name: port
-              type: long
-              description: |
-                Client destination port. For aggregated sessions, this is the client destination port of the last session in the aggregate.
-            - name: ip
-              type: ip
-              description: |
-                Client destination IP address. For aggregated sessions, this is the client destination IP address of the last session in the aggregate.
-    - name: server
-      type: group
-      fields:
-        - name: source
+            - name: country
+              type: keyword
+              description: The abbreviated code of the country of the destination IP address.
+        - name: device
           type: group
           fields:
-            - name: port
+            - name: appversion
+              type: keyword
+              description: The app version that the device app uses.
+            - name: hostname
+              type: keyword
+              description: The host name of the device.
+            - name: model
+              type: keyword
+              description: The model of the device.
+            - name: name
+              type: keyword
+              description: The name of the device.
+            - name: os
+              type: group
+              fields:
+                - name: type
+                  type: keyword
+                  description: The OS type of the device.
+                - name: version
+                  type: keyword
+                  description: The OS version that the device uses.
+            - name: owner
+              type: keyword
+              description: The owner of the device.
+        - name: duration
+          type: group
+          fields:
+            - name: average_duration
               type: long
-              description: |
-                Server source port. For aggregated sessions, this is the server source port of the last session in the aggregate.
+              description: The average session duration, in milliseconds, if the sessions were aggregated.
+            - name: milliseconds
+              type: long
+              description: The session or request duration in milliseconds.
+            - name: seconds
+              type: long
+              description: The session or request duration in seconds.
+        - name: eedone
+          type: keyword
+          description: Indicates if the characters specified in the Feed Escape Character field of the NSS feed configuration page were hex encoded.
+        - name: epochtime
+          type: date
+          description: The epoch time of the transaction.
+        - name: external_device_id
+          type: keyword
+          description: The external device ID that associates a user’s device with the mobile device management (MDM) solution.
+        - name: flow_type
+          type: keyword
+          description: The flow type of the transaction.
+        - name: forward_gateway_name
+          type: keyword
+          description: The name of the gateway defined in a forwarding rule.
+        - name: hour
+          type: long
+          description: Hours.
+        - name: ip_category
+          type: keyword
+          description: The URL category that corresponds to the server IP address.
+        - name: ip_protocol
+          type: keyword
+          description: The type of IP protocol.
+        - name: ips
+          type: group
+          fields:
+            - name: custom_signature
+              type: keyword
+              description: Indicates if a custom IPS signature rule was applied.
+            - name: rule_label
+              type: keyword
+              description: The name of the IPS policy that was applied to the Firewall session.
+        - name: location
+          type: keyword
+          description: The name of the location from which the session was initiated.
+        - name: location_name
+          type: keyword
+        - name: login
+          type: keyword
+          description: The user's login name in email address format.
+        - name: minutes
+          type: long
+          description: Minutes.
+        - name: month
+          type: keyword
+          description: The name of the month.
+        - name: month_of_year
+          type: long
+          description: The month of the year.
+        - name: nat
+          type: keyword
+          description: Indicates if the destination NAT policy was applied.
+        - name: nat_rule_label
+          type: keyword
+          description: The name of the destination NAT policy that was applied.
+        - name: network
+          type: group
+          fields:
+            - name: application
+              type: keyword
+              description: The network application that was accessed.
+            - name: service
+              type: keyword
+              description: The network service that was used.
+        - name: obfuscated
+          type: group
+          fields:
+            - name: client_source_ip
+              type: keyword
+              description: The obfuscated version of the client source IP address.
+            - name: device
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: The obfuscated version of the name of the device.
+                - name: owner
+                  type: keyword
+                  description: The obfuscated version of the owner of the device.
+            - name: forward_gateway_name
+              type: keyword
+              description: The obfuscated version of the gateway defined in a forwarding rule.
+            - name: host_name
+              type: keyword
+              description: The obfuscated version of the host name of the device.
+            - name: ip
+              type: group
+              fields:
+                - name: category
+                  type: keyword
+                  description: The obfuscated version of the URL category that corresponds to the server IP address.
+            - name: ips_rule_label
+              type: keyword
+              description: The obfuscated version of the name of the IPS policy that was applied to the Firewall session.
+            - name: nat_label
+              type: keyword
+              description: The obfuscated version of the name of the destination NAT policy that was applied.
+            - name: redirect_policy_name
+              type: keyword
+              description: The obfuscated version of the name of the redirect/forwarding policy.
+            - name: rule_label
+              type: keyword
+              description: The obfuscated version of the name of the rule that was applied to the transaction.
+            - name: zpa_app_segment
+              type: keyword
+              description: The obfuscated version of the ZPA application segment.
+        - name: out_bytes
+          type: long
+          description: The number of bytes sent from the client to the server.
+        - name: record
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The record ID.
+        - name: redirect_policy_name
+          type: keyword
+          description: The name of the redirect/forwarding policy.
+        - name: rule
+          type: keyword
+          description: The name of the rule that was applied to the transaction.
+        - name: rule_label
+          type: keyword
+        - name: second
+          type: long
+          description: Seconds.
+        - name: server
+          type: group
+          fields:
+            - name: destination
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: The server destination IP address.
+                - name: port
+                  type: long
+                  description: The server destination port.
+            - name: source
+              type: group
+              fields:
+                - name: ip
+                  type: ip
+                  description: The server source IP address.
+                - name: port
+                  type: long
+                  description: The server source port.
+        - name: session
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: The number of sessions that were aggregated.
+        - name: source_ip_country
+          type: keyword
+          description: The traffic's source country, which is determined by the client IP address location.
+        - name: stateful
+          type: keyword
+          description: Indicates if the Firewall session is stateful.
+        - name: threat
+          type: group
+          fields:
+            - name: category
+              type: keyword
+              description: The category of the threat in the Firewall session by the IPS engine.
+            - name: name
+              type: keyword
+        - name: threat_name
+          type: keyword
+          description: The name of the threat detected in the Firewall session by the IPS engine.
+        - name: time
+          type: date
+          description: The time and date of the transaction.
+        - name: timezone
+          type: keyword
+          description: The time zone.
+        - name: tunnel
+          type: group
+          fields:
             - name: ip
               type: ip
-              description: |
-                Server source IP address. For aggregated sessions, this is the server source IP address of the last session in the aggregate.
-    - name: tunnel
-      type: group
-      fields:
-        - name: ip
-          type: ip
-          description: |
-            Tunnel IP address of the client (source). For aggregated sessions, this is the client's tunnel IP address corresponding to the last session in the aggregate.
-        - name: port
-          type: long
-          description: |
-            Tunnel port on the client side. For aggregated sessions, this is the client's tunnel port corresponding to the last session in the aggregate.
-        - name: type
+              description: The tunnel IP address of the client (source).
+            - name: type
+              type: keyword
+              description: The traffic forwarding method used to send the traffic to the Firewall.
+        - name: user
           type: keyword
-          description: |
-            Traffic forwarding method used to send the traffic to the firewall.
-    - name: nat
-      type: keyword
-      description: |
-        Indicates if the destination NAT policy was applied.
-    - name: stateful
-      type: keyword
-    - name: aggregate
-      type: keyword
-    - name: ip_category
-      type: keyword
-      description: |
-        URL category that corresponds to the server IP address.
-    - name: duration
-      type: group
-      fields:
-        - name: avg
+        - name: year
           type: long
-          description: |
-            Average session duration, in milliseconds, if the sessions were aggregated.
-        - name: seconds
-          type: long
-          description: |
-            Average session duration, in milliseconds, if the sessions were aggregated.
-        - name: milliseconds
-          type: long
-          description: |
-            Session or request duration in milliseconds.
-    - name: session
-      type: group
-      fields:
-        - name: count
-          type: double
-          description: |
-            Number of sessions that were aggregated.
-    - name: threat
-      type: group
-      fields:
-        - name: category
+          description: Year.
+        - name: z_tunnel_version
           type: keyword
-          description: |
-            Category of the threat in the Firewall session by the IPS engine.
-        - name: name
+          description: The Z-Tunnel version.
+        - name: zpa_app_segment
           type: keyword
-          description: |
-            Name of the threat detected in the Firewall session by the IPS engine.
+          description: The name of the Zscaler Private Access (ZPA) application segment.
 - name: log.source.address
   type: keyword
   description: Source address from which the log event was read / sent from.

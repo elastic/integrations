@@ -1,0 +1,510 @@
+---
+description: Pipeline for processing audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: resp
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json
+      tag: remove_json_if_input_type_http_endpoint
+      if: ctx.input?.type == 'http_endpoint'
+      ignore_missing: true
+  - rename:
+      field: resp.event
+      tag: rename_resp_event
+      target_field: json
+      ignore_missing: true
+  - remove:
+      field: resp
+      tag: remove_resp
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - script:
+      lang: painless
+      ignore_failure: false
+      tag: Set ECS categorization fields
+      description: Set ECS categorization fields
+      params:
+        'ACCESS_CONTROL_RESOURCE':
+          category:
+            - configuration
+          type:
+            - change
+        'ACTIVATION':
+          category:
+            - configuration
+          type:
+            - change
+        'ADMINISTRATOR_MANAGEMENT':
+          category:
+            - iam
+          type:
+            - admin
+        'ADVANCED_SETTINGS':
+          category:
+            - configuration
+          type:
+            - change
+        'ALERT':
+          category:
+            - intrusion_detection
+          type:
+            - info
+        'AUDIT_LOGS':
+          category:
+            - file
+          type:
+            - access
+        'AUTHENTICATION_SETTINGS':
+          category:
+            - authentication
+          type:
+            - info
+        'BACKUP_&_RESTORE':
+          category:
+            - configuration
+          type:
+            - change
+        'CLOUD_APPLICATION_STATUS':
+          category:
+            - api
+          type:
+            - info
+        'CLOUD_SERVICE_API_KEY':
+          category:
+            - api
+          type:
+            - info
+        'COMPANY_PROFILE':
+          category:
+            - configuration
+          type:
+            - info
+        'DATA_LOSS_PREVENTION_RESOURCE':
+          category:
+            - configuration
+          type:
+            - change
+        'DC_EXCLUSION':
+          category:
+            - configuration
+          type:
+            - change
+        'DLP_INCIDENT_RECEIVER':
+          category:
+            - intrusion_detection
+          type:
+            - info
+        'FIREWALL_ACCESS_CONTROL':
+          category:
+            - network
+          type:
+            - access
+        'FIREWALL_RESOURCE':
+          category:
+            - network
+          type:
+            - info
+        'FORWARDING_METHOD':
+          category:
+            - network
+          type:
+            - change
+        'HELP':
+          category:
+            - web
+          type:
+            - info
+        'IDENTITY_PROXY_SETTINGS':
+          category:
+            - configuration
+          type:
+            - change
+        'IPV6_CONFIGURATION':
+          category:
+            - configuration
+          type:
+            - change
+        'ISOLATION_MANAGEMENT':
+          category:
+            - network
+          type:
+            - info
+        'LOGIN':
+          category:
+            - authentication
+          type:
+            - info
+        'MOBILE_ACCESS_CONTROL':
+          category:
+            - network
+          type:
+            - access
+        'MOBILE_SECURITY':
+          category:
+            - configuration
+          type:
+            - info
+        'NSS':
+          category:
+            - network
+          type:
+            - info
+        'ORGANIZATION_INFO':
+          category:
+            - web
+          type:
+            - info
+        'PARTNER_INTEGRATION':
+          category:
+            - configuration
+          type:
+            - info
+        'REPORT':
+          category:
+            - web
+          type:
+            - info
+        'ROLE_MANAGEMENT':
+          category:
+            - iam
+          type:
+            - admin
+        'ROOT_CERTIFICATE_MANAGEMENT':
+          category:
+            - configuration
+          type:
+            - info
+        'RULE_LABEL_MANAGEMENT':
+          category:
+            - configuration
+          type:
+            - info
+        'SAAS_ASSETS_REPORT':
+          category:
+            - web
+          type:
+            - info
+        'SAAS_SECURITY_API':
+          category:
+            - api
+          type:
+            - info
+        'TRAFFIC_CAPTURE':
+          category:
+            - network
+          type:
+            - info
+        'TRAFFIC_FORWARDING_RESOURCE':
+          category:
+            - network
+          type:
+            - info
+        'USER_MANAGEMENT':
+          category:
+            - iam
+          type:
+            - user
+        'VIRTUAL_SERVICE_EDGE':
+          category:
+            - network
+          type:
+            - info
+        'VIRTUAL_ZEN':
+          category:
+            - network
+          type:
+            - info
+        'WEB_ACCESS_CONTROL':
+          category:
+            - web
+          type:
+            - access
+        'WEB_DATA_LOSS_PREVENTION':
+          category:
+            - configuration
+          type:
+            - info
+        'WEB_SECURITY':
+          category:
+            - network
+          type:
+            - info
+        'WORKLOAD_GROUP_MANAGEMENT':
+          category:
+            - configuration
+          type:
+            - change
+        'CASB':
+          category:
+            - configuration
+          type:
+            - change
+      source: |-
+        if (ctx.json?.category == null || params.get(ctx.json.category) == null) {
+          return;
+        }
+        def hm = new HashMap(params.get(ctx.json.category));
+        hm.forEach((k, v) -> ctx.event[k] = v);
+  - rename:
+      field: json.action
+      tag: rename_action
+      target_field: zscaler_zia.audit.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_audit_action
+      copy_from: zscaler_zia.audit.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: ' '
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.adminid
+      tag: rename_adminid
+      target_field: zscaler_zia.audit.admin_id
+      ignore_missing: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_audit_admin_id
+      copy_from: zscaler_zia.audit.admin_id
+      ignore_empty_value: true
+  - dissect:
+      field: user.email
+      tag: create_user_name_and_user_domain
+      pattern: "%{user.name}@%{user.domain}"
+      ignore_missing: true
+      if: ctx.user?.email != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_user_name_to_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_user_email_to_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - rename:
+      field: json.auditlogtype
+      tag: rename_auditlogtype
+      target_field: zscaler_zia.audit.audit_log_type
+      ignore_missing: true
+  - rename:
+      field: json.category
+      tag: rename_category
+      target_field: zscaler_zia.audit.category
+      ignore_missing: true
+  - convert:
+      field: json.clientip
+      tag: convert_clientip_to_ip
+      target_field: zscaler_zia.audit.client_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.clientip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_audit_client_ip
+      copy_from: zscaler_zia.audit.client_ip
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip_to_source_geo
+      target_field: source.geo
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_source_ip_into_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - rename:
+      field: json.errorcode
+      tag: rename_errorcode
+      target_field: zscaler_zia.audit.error_code
+      ignore_missing: true
+  - rename:
+      field: json.interface
+      tag: rename_interface
+      target_field: zscaler_zia.audit.interface
+      ignore_missing: true
+  - rename:
+      field: json.postaction
+      tag: rename_postaction
+      target_field: zscaler_zia.audit.post_action
+      ignore_missing: true
+  - rename:
+      field: json.preaction
+      tag: rename_preaction
+      target_field: zscaler_zia.audit.pre_action
+      ignore_missing: true
+  - rename:
+      field: json.recordid
+      tag: rename_recordid
+      target_field: zscaler_zia.audit.record.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_audit_record_id
+      copy_from: zscaler_zia.audit.record.id
+      ignore_empty_value: true
+  - rename:
+      field: json.resource
+      tag: rename_resource
+      target_field: zscaler_zia.audit.resource
+      ignore_missing: true
+  - rename:
+      field: json.result
+      tag: rename_result
+      target_field: zscaler_zia.audit.result
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success_from_audit_result
+      value: success
+      if: ctx.zscaler_zia?.audit?.result == 'SUCCESS'
+      ignore_failure: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure_from_audit_result
+      value: failure
+      if: ctx.zscaler_zia?.audit?.result == 'FAILURE'
+      ignore_failure: true
+  - rename:
+      field: json.subcategory
+      tag: rename_subcategory
+      target_field: zscaler_zia.audit.sub_category
+      ignore_missing: true
+  - rename:
+      field: json.timezone
+      tag: rename_timezone
+      target_field: zscaler_zia.audit.timezone
+      ignore_missing: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_audit_timezone
+      copy_from: zscaler_zia.audit.timezone
+      ignore_empty_value: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_to_utc
+      value: UTC
+      if: ctx.event?.timezone == null
+  - date:
+      field: json.time
+      tag: date_time_if_timezone
+      target_field: zscaler_zia.audit.time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+      timezone: '{{{event.timezone}}}'
+      if: ctx.json?.time != null && ctx.json.time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_audit_time
+      copy_from: zscaler_zia.audit.time
+      ignore_empty_value: true
+  - remove:
+      field:
+        - zscaler_zia.audit.action
+        - zscaler_zia.audit.admin_id
+        - zscaler_zia.audit.client_ip
+        - zscaler_zia.audit.record.id
+        - zscaler_zia.audit.time
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
