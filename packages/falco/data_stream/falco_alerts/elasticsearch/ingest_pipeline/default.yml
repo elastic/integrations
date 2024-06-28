@@ -8,6 +8,69 @@ processors:
     field: message
     target_field: Falco
 - dot_expander:
+    field: 'container.image'
+    path: Falco.output_fields
+- dot_expander:
+    field: 'fd.cip'
+    path: Falco.output_fields
+- dot_expander:
+    field: 'fd.sip'
+    path: Falco.output_fields
+- dot_expander:
+    field: 'fd.lip'
+    path: Falco.output_fields
+- dot_expander:
+    field: 'fd.rip'
+    path: Falco.output_fields
+- dot_expander:
+    field: 'proc.ppid'
+    path: Falco.output_fields
+- dot_expander:
+    field: 'proc.pid'
+    path: Falco.output_fields
+- dot_expander:
+    field: 'proc.sid'
+    path: Falco.output_fields
+- dot_expander:
+    field: 'proc.vpgid'
+    path: Falco.output_fields
+- rename:
+    field: Falco.output_fields.container.image
+    target_field: Falco.output_fields.container.image.name
+    ignore_missing: true
+- rename:
+    field: Falco.output_fields.fd.cip
+    target_field: Falco.output_fields.client.ip
+    ignore_missing: true
+- rename:
+    field: Falco.output_fields.fd.sip
+    target_field: Falco.output_fields.server.ip
+    ignore_missing: true
+- rename:
+    field: Falco.output_fields.fd.lip
+    target_field: Falco.output_fields.source.ip
+    ignore_missing: true
+- rename:
+    field: Falco.output_fields.fd.rip
+    target_field: Falco.output_fields.destination.ip
+    ignore_missing: true
+- rename:
+    field: Falco.output_fields.proc.ppid
+    target_field: Falco.output_fields.process.parent.pid
+    ignore_missing: true
+- rename:
+    field: Falco.output_fields.proc.pid
+    target_field: Falco.output_fields.process.pid
+    ignore_missing: true
+- rename:
+    field: Falco.output_fields.proc.sid
+    target_field: Falco.output_fields.process.session_leader.pid
+    ignore_missing: true
+- rename:
+    field: Falco.output_fields.proc.vpgid
+    target_field: Falco.output_fields.process.group_leader.vpid
+    ignore_missing: true
+- dot_expander:
     field: '*'
     path: Falco.output_fields
 # Overarching event fields
@@ -321,7 +384,7 @@ processors:
     ignore_empty_value: true
 - set:
     field: process.parent.pid
-    copy_from: Falco.output_fields.proc.ppid # problem field
+    copy_from: Falco.output_fields.process.parent.pid
     ignore_empty_value: true
 - set:
     field: process.vpid
@@ -333,7 +396,7 @@ processors:
     ignore_empty_value: true
 - set:
     field: process.session_leader.pid
-    copy_from: Falco.output_fields.proc.sid # problem field
+    copy_from: Falco.output_fields.proc.sid
     ignore_empty_value: true
 - set:
     field: process.session_leader.name
@@ -341,15 +404,15 @@ processors:
     ignore_empty_value: true
 - set:
     field: process.session_leader.executable
-    copy_from: Falco.output_fields.proc.sid.exepath # problem field
+    copy_from: Falco.output_fields.proc.sid.exepath
     ignore_empty_value: true
 - set:
     field: process.group_leader.vpid
-    copy_from: Falco.output_fields.proc.vpgid # problem field
+    copy_from: Falco.output_fields.proc.vpgid
     ignore_empty_value: true
 - set:
     field: process.group_leader.name
-    copy_from: Falco.output_fields.proc.vpgid.name # problem field
+    copy_from: Falco.output_fields.proc.vpgid.name
     ignore_empty_value: true
 - set:
     field: process.group_leader.executable
@@ -366,11 +429,11 @@ processors:
     ignore_empty_value: true
 - set:
     field: process.start
-    copy_from: Falco.output_fields.proc.pid.ts # problem field
+    copy_from: Falco.output_fields.proc.pid.ts
     ignore_empty_value: true
 - set:
     field: process.parent.start
-    copy_from: Falco.output_fields.proc.ppid.ts # problem field
+    copy_from: Falco.output_fields.proc.ppid.ts
     ignore_empty_value: true
 - set:
     field: process.session_leader.same_as_process
@@ -422,7 +485,7 @@ processors:
     ignore_empty_value: true
 - set:
     field: container.image.name
-    copy_from: Falco.output_fields.container.image # problem field
+    copy_from: Falco.output_fields.container.image.name
     ignore_empty_value: true
 - set:
     field: container.runtime
@@ -441,7 +504,7 @@ processors:
     value: ['{{Falco.output_fields.container.ip}}']
     if: ctx?.Falco?.output_fields?.container?.ip != null
     ignore_empty_value: true
-# File-spcecifc fields
+# File-specifc fields
 - set:
     field: file.directory
     copy_from: Falco.output_fields.fd.directory
@@ -451,53 +514,45 @@ processors:
     copy_from: Falco.output_fields.fd.filename
     ignore_empty_value: true
 - convert:
-    field: Falco.output_fields.fd.cip # problem field
+    field: Falco.output_fields.client.ip
     target_field: client.ip
     type: ip
     ignore_missing: true
     ignore_failure: true
+- set:
+    field: client.address
+    copy_from: client.ip
+    ignore_empty_value: true
 - convert:
-    field: Falco.output_fields.fd.cip # problem field
-    target_field: client.address
-    type: ip
-    ignore_missing: true
-    ignore_failure: true
-- convert:
-    field: Falco.output_fields.fd.sip # problem field
+    field: Falco.output_fields.server.ip
     target_field: server.ip
     type: ip
     ignore_missing: true
     ignore_failure: true
+- set:
+    field: server.address
+    copy_from: server.ip
+    ignore_empty_value: true
 - convert:
-    field: Falco.output_fields.fd.sip # problem field
-    target_field: server.address
-    type: ip
-    ignore_missing: true
-    ignore_failure: true
-- convert:
-    field: Falco.output_fields.fd.lip # problem field
+    field: Falco.output_fields.source.ip
     target_field: source.ip
     type: ip
     ignore_missing: true
     ignore_failure: true
+- set:
+    field: source.address
+    copy_from: source.ip
+    ignore_empty_value: true
 - convert:
-    field: Falco.output_fields.fd.lip # problem field
-    target_field: source.address
-    type: ip
-    ignore_missing: true
-    ignore_failure: true
-- convert:
-    field: Falco.output_fields.fd.rip # problem field
+    field: Falco.output_fields.destination.ip
     target_field: destination.ip
     type: ip
     ignore_missing: true
     ignore_failure: true
-- convert:
-    field: Falco.output_fields.fd.rip # problem field
-    target_field: destination.address
-    type: ip
-    ignore_missing: true
-    ignore_failure: true
+- set:
+    field: destination.address
+    copy_from: destination.ip
+    ignore_empty_value: true
 - set:
     field: client.port
     copy_from: Falco.output_fields.fd.cport
@@ -516,19 +571,19 @@ processors:
     ignore_empty_value: true
 - set:
     field: client.domain
-    copy_from: Falco.output_fields.fd.cip.name # problem field
+    copy_from: Falco.output_fields.fd.cip.name
     ignore_empty_value: true
 - set:
     field: server.domain
-    copy_from: Falco.output_fields.fd.sip.name # problem field
+    copy_from: Falco.output_fields.fd.sip.name
     ignore_empty_value: true
 - set:
     field: source.domain
-    copy_from: Falco.output_fields.fd.lip.name # problem field
+    copy_from: Falco.output_fields.fd.lip.name
     ignore_empty_value: true
 - set:
     field: destination.domain
-    copy_from: Falco.output_fields.fd.rip.name # problem field
+    copy_from: Falco.output_fields.fd.rip.name
     ignore_empty_value: true
 - set:
     field: file.inode
