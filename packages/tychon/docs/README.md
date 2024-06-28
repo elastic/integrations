@@ -77,6 +77,7 @@ TYCHON scans Endpoint ARP Tables and returns the results.
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -171,6 +172,7 @@ TYCHON scans for Endpoint CPU's and returns the results.
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -254,6 +256,7 @@ TYCHON scans for Endpoint vulnerablities and returns the results.
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -365,6 +368,7 @@ TYCHON scans the Endpoint's Windows Defender and returns protection status and v
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -506,6 +510,7 @@ The TYCHON script to scan Endpoint Exposed Services and returns information.
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -633,6 +638,7 @@ The TYCHON script scans an endpoint's Hard Drive Configurations and returns info
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -723,6 +729,7 @@ The TYCHON script scans an endpoint's Hardware Configurations and returns inform
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -836,6 +843,7 @@ The TYCHON script scans an endpoint's OS Configurations and returns information.
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -942,6 +950,7 @@ The TYCHON script scans an endpoint's Network Adapter Configurations and returns
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -1023,6 +1032,7 @@ The TYCHON script scans an endpoint's Software Inventory and returns information
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -1127,6 +1137,7 @@ The TYCHON benchmark script scans an endpoint's Windows configuration for STIG/X
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -1231,6 +1242,7 @@ The TYCHON script scans an endpoint's Volume Configurations and returns informat
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -1336,6 +1348,7 @@ TYCHON gathers which Windows features have been enabled on endpoints and returns
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -1427,6 +1440,7 @@ TYCHON has integtred with DISA DATT and gathering what Operational Attributes ha
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -1523,6 +1537,7 @@ TYCHON searches the computer and hard drive for certificate files that stored in
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -1590,26 +1605,26 @@ TYCHON searches the computer and hard drive for certificate files that stored in
 | tychon.x509.subject_key_identifier | Subject Key identifer | keyword |
 | url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
 | url.full.text | Multi-field of `url.full`. | match_only_text |
-| x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| x509.issuer.country | List of country \(C) codes | keyword |
-| x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
-| x509.issuer.locality | List of locality names (L) | keyword |
-| x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
-| x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
-| x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| x509.issuer.common_name | List of common names (CN) of issuer. | keyword |
+| x509.issuer.country | List of country (C) code. | keyword |
+| x509.issuer.distinguished_name | Distinguished name (DN) of the certificate issuer entity. | keyword |
+| x509.issuer.locality | List of locality names (L). | keyword |
+| x509.issuer.organization | List of organizations (O) of issuer. | keyword |
+| x509.issuer.organizational_unit | List of organizational units (OU) of issuer. | keyword |
+| x509.issuer.state_or_province | List of state or province names (ST, S, or P). | keyword |
 | x509.not_after | Time at which the certificate is no longer considered valid. | date |
 | x509.not_before | Time at which the certificate is first considered valid. | date |
 | x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
 | x509.public_key_size | The size of the public key space in bits. | long |
 | x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
-| x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
+| x509.signature_algorithm | Identifier for certificate signature algorithm. | keyword |
 | x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| x509.subject.country | List of country \(C) code | keyword |
+| x509.subject.country | List of country (C) code. | keyword |
 | x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
-| x509.subject.locality | List of locality names (L) | keyword |
+| x509.subject.locality | List of locality names (L). | keyword |
 | x509.subject.organization | List of organizations (O) of subject. | keyword |
 | x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
-| x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| x509.subject.state_or_province | List of state or province names (ST, S, or P). | keyword |
 | x509.version_number | Version of x509 format. | keyword |
 
 
@@ -1688,6 +1703,7 @@ TYCHON connects to open ports on the computer and reports back if it is hosting 
 | host.workgroup | Host Workgroup Network Name. | keyword |
 | id | TYCHON unique document identifier. | keyword |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
@@ -1792,6 +1808,7 @@ TYCHON checks local browser configuration settings.
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | host.uptime | Seconds the host has been up. | long |
 | input.type | Input Type. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.idxhi | The high-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
