@@ -20,10 +20,17 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  -  rename:
+  - date:
       field: json.aggregation_timestamp
-      target_field: openai.aggregation_timestamp
-      ignore_missing: true
+      target_field: openai.aggregation_timestamp 
+      formats:
+        - epoch_second
+        - epoch_millis
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   -  rename:
       field: json.n_context_tokens_total
       target_field: openai.n_context_tokens_total
@@ -31,6 +38,14 @@ processors:
   -  rename:
       field: json.n_generated_tokens_total
       target_field: openai.n_generated_tokens_total
+      ignore_missing: true
+  -  rename:
+      field: json.n_requests
+      target_field: openai.n_requests
+      ignore_missing: true
+  -  rename:
+      field: json.snapshot_id
+      target_field: openai.snapshot_id
       ignore_missing: true
   - remove:
       field:
