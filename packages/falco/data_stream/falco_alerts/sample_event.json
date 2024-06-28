@@ -1,14 +1,14 @@
 {
-    "@timestamp": "2024-06-28T12:55:13.217Z",
+    "@timestamp": "2024-06-28T13:34:49.212Z",
     "agent": {
-        "ephemeral_id": "edccd672-3fad-4883-967f-d98aff38877b",
+        "ephemeral_id": "355001ec-4907-4836-8a90-2ce3ce3d67c4",
         "id": "60a7d31f-715b-4de1-9641-ff9af2bc3161",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.2"
     },
     "container": {
-        "id": "4d037be57631",
+        "id": "f52e08514869",
         "name": "elastic-package-service-falco-event-generator-1"
     },
     "data_stream": {
@@ -27,62 +27,64 @@
     "event": {
         "agent_id_status": "verified",
         "dataset": "falco.falco_alerts",
-        "ingested": "2024-06-28T12:55:24Z",
+        "ingested": "2024-06-28T13:35:00Z",
         "kind": "alert",
-        "original": "{\"uuid\":\"50d9d2e4-2d27-419b-91cc-ea7a03d14b11\",\"output\":\"2024-06-28T12:55:13.217094223+0000: Informational System user ran an interactive command (evt_type=execve user=daemon user_uid=2 user_loginuid=-1 process=login proc_exepath=/bin/busybox parent=event-generator command=login terminal=0 exe_flags=0 container_id=4d037be57631 container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Informational\",\"rule\":\"System user interactive\",\"time\":\"2024-06-28T12:55:13.217094223Z\",\"output_fields\":{\"container.id\":\"4d037be57631\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.arg.flags\":\"0\",\"evt.time.iso8601\":1719579313217094223,\"evt.type\":\"execve\",\"proc.cmdline\":\"login\",\"proc.exepath\":\"/bin/busybox\",\"proc.name\":\"login\",\"proc.pname\":\"event-generator\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"daemon\",\"user.uid\":2},\"source\":\"syscall\",\"tags\":[\"NIST_800-53_AC-2\",\"T1059\",\"container\",\"host\",\"maturity_stable\",\"mitre_execution\",\"users\"],\"hostname\":\"c7c8c715c818\"}",
+        "original": "{\"uuid\":\"f55b583f-19b6-43b6-a151-e817e063062a\",\"output\":\"2024-06-28T13:34:49.212927976+0000: Warning Sensitive file opened for reading by trusted program after startup (file=/etc/shadow pcmdline=event-generator run --loop gparent=containerd-shim ggparent=containerd-shim gggparent=init evt_type=openat user=root user_uid=0 user_loginuid=-1 process=httpd proc_exepath=/bin/event-generator parent=event-generator command=httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s terminal=0 container_id=f52e08514869 container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Warning\",\"rule\":\"Read sensitive file trusted after startup\",\"time\":\"2024-06-28T13:34:49.212927976Z\",\"output_fields\":{\"container.id\":\"f52e08514869\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.time.iso8601\":1719581689212927976,\"evt.type\":\"openat\",\"fd.name\":\"/etc/shadow\",\"proc.aname[2]\":\"containerd-shim\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"init\",\"proc.cmdline\":\"httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s\",\"proc.exepath\":\"/bin/event-generator\",\"proc.name\":\"httpd\",\"proc.pcmdline\":\"event-generator run --loop\",\"proc.pname\":\"event-generator\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1555\",\"container\",\"filesystem\",\"host\",\"maturity_stable\",\"mitre_credential_access\"],\"hostname\":\"a011b7054464\"}",
         "provider": "syscall",
-        "start": 1719579313217094100,
+        "start": 1719581689212928000,
         "timezone": "+00:00"
     },
     "event.category": [
         "process"
     ],
-    "event.severity": 1,
+    "event.severity": 3,
     "event.type": [
-        "start"
+        "access"
     ],
     "falco": {
-        "hostname": "c7c8c715c818",
-        "output": "2024-06-28T12:55:13.217094223+0000: Informational System user ran an interactive command (evt_type=execve user=daemon user_uid=2 user_loginuid=-1 process=login proc_exepath=/bin/busybox parent=event-generator command=login terminal=0 exe_flags=0 container_id=4d037be57631 container_name=elastic-package-service-falco-event-generator-1)",
+        "hostname": "a011b7054464",
+        "output": "2024-06-28T13:34:49.212927976+0000: Warning Sensitive file opened for reading by trusted program after startup (file=/etc/shadow pcmdline=event-generator run --loop gparent=containerd-shim ggparent=containerd-shim gggparent=init evt_type=openat user=root user_uid=0 user_loginuid=-1 process=httpd proc_exepath=/bin/event-generator parent=event-generator command=httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s terminal=0 container_id=f52e08514869 container_name=elastic-package-service-falco-event-generator-1)",
         "output_fields": {
             "container": {
-                "id": "4d037be57631",
+                "id": "f52e08514869",
                 "name": "elastic-package-service-falco-event-generator-1"
             },
             "evt": {
-                "arg": {},
                 "time": {
-                    "iso8601": 1719579313217094100
+                    "iso8601": 1719581689212928000
                 },
-                "type": "execve"
+                "type": "openat"
+            },
+            "fd": {
+                "name": "/etc/shadow"
             },
             "proc": {
-                "cmdline": "login",
-                "exepath": "/bin/busybox",
-                "name": "login",
+                "cmdline": "httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s",
+                "exepath": "/bin/event-generator",
+                "name": "httpd",
+                "pcmdline": "event-generator run --loop",
                 "pname": "event-generator",
                 "tty": 0
             },
             "user": {
                 "loginuid": -1,
-                "name": "daemon",
-                "uid": "2"
+                "name": "root",
+                "uid": "0"
             }
         },
-        "priority": "Informational",
-        "rule": "System user interactive",
+        "priority": "Warning",
+        "rule": "Read sensitive file trusted after startup",
         "source": "syscall",
         "tags": [
-            "NIST_800-53_AC-2",
-            "T1059",
+            "T1555",
             "container",
+            "filesystem",
             "host",
             "maturity_stable",
-            "mitre_execution",
-            "users"
+            "mitre_credential_access"
         ],
-        "time": "2024-06-28T12:55:13.217094223Z",
-        "uuid": "50d9d2e4-2d27-419b-91cc-ea7a03d14b11"
+        "time": "2024-06-28T13:34:49.212927976Z",
+        "uuid": "f55b583f-19b6-43b6-a151-e817e063062a"
     },
     "falco.container.mounts": null,
     "host": {
@@ -112,7 +114,7 @@
     },
     "log": {
         "source": {
-            "address": "172.25.0.4:54182"
+            "address": "172.25.0.4:55052"
         },
         "syslog": {
             "appname": "Falco",
@@ -120,37 +122,38 @@
                 "code": 0,
                 "name": "kernel"
             },
-            "hostname": "d0a6dbca1485",
-            "priority": 6,
-            "procid": "{\"uuid\":\"50d9d2e4-2d27-419b-91cc-ea7a03d14b11\",\"output\":\"2024-06-28T12:55:13.217094223+0000: Informational System user ran an interactive command (evt_type=execve user=daemon user_uid=2 user_loginuid=-1 process=login proc_exepath=/bin/busybox parent=event-generator command=login terminal=0 exe_flags=0 container_id=4d037be57631 container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Informational\",\"rule\":\"System user interactive\",\"time\":\"2024-06-28T12:55:13.217094223Z\",\"output_fields\":{\"container.id\":\"4d037be57631\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.arg.flags\":\"0\",\"evt.time.iso8601\":1719579313217094223,\"evt.type\":\"execve\",\"proc.cmdline\":\"login\",\"proc.exepath\":\"/bin/busybox\",\"proc.name\":\"login\",\"proc.pname\":\"event-generator\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"daemon\",\"user.uid\":2},\"source\":\"syscall\",\"tags\":[\"NIST_800-53_AC-2\",\"T1059\",\"container\",\"host\",\"maturity_stable\",\"mitre_execution\",\"users\"",
+            "hostname": "2759c8db4817",
+            "priority": 4,
+            "procid": "{\"uuid\":\"f55b583f-19b6-43b6-a151-e817e063062a\",\"output\":\"2024-06-28T13:34:49.212927976+0000: Warning Sensitive file opened for reading by trusted program after startup (file=/etc/shadow pcmdline=event-generator run --loop gparent=containerd-shim ggparent=containerd-shim gggparent=init evt_type=openat user=root user_uid=0 user_loginuid=-1 process=httpd proc_exepath=/bin/event-generator parent=event-generator command=httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s terminal=0 container_id=f52e08514869 container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Warning\",\"rule\":\"Read sensitive file trusted after startup\",\"time\":\"2024-06-28T13:34:49.212927976Z\",\"output_fields\":{\"container.id\":\"f52e08514869\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.time.iso8601\":1719581689212927976,\"evt.type\":\"openat\",\"fd.name\":\"/etc/shadow\",\"proc.aname[2]\":\"containerd-shim\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"init\",\"proc.cmdline\":\"httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s\",\"proc.exepath\":\"/bin/event-generator\",\"proc.name\":\"httpd\",\"proc.pcmdline\":\"event-generator run --loop\",\"proc.pname\":\"event-generator\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1555\",\"container\",\"filesystem\",\"host\",\"maturity_stable\",\"mitre_credential_access\"",
             "severity": {
-                "code": 6,
-                "name": "Informational"
+                "code": 4,
+                "name": "Warning"
             }
         }
     },
     "observer": {
-        "hostname": "c7c8c715c818"
+        "hostname": "a011b7054464"
     },
     "process": {
-        "command_line": "login",
-        "executable": "/bin/busybox",
-        "name": "login",
+        "command_line": "httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s",
+        "executable": "/bin/event-generator",
+        "name": "httpd",
         "parent": {
+            "command_line": "event-generator run --loop",
             "name": "event-generator"
         },
         "user": {
-            "id": "2",
-            "name": "daemon"
+            "id": "0",
+            "name": "root"
         }
     },
     "related": {
         "hosts": [
-            "c7c8c715c818"
+            "a011b7054464"
         ]
     },
     "rule": {
-        "name": "System user interactive"
+        "name": "Read sensitive file trusted after startup"
     },
     "tags": [
         "preserve_original_event",
