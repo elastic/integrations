@@ -10,7 +10,43 @@
         "description": "Dashboard for access and error logs of Nginx Ingress Controller",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "nginx_ingress_controller.error",
+                                "nginx_ingress_controller.access"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nginx_ingress_controller.error"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "nginx_ingress_controller.access"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -317,29 +353,7 @@
                                     "layers": {}
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "tsvb_ad_hoc_logs-*/@timestamp",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "nginx_ingress_controller.error"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "nginx_ingress_controller.error"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
                             "internalReferences": [
                                 {
                                     "id": "tsvb_ad_hoc_logs-*/@timestamp",
@@ -725,6 +739,11 @@
     "id": "nginx_ingress_controller-ba23759b-1201-4c5c-aff5-f0addd7eee9e",
     "managed": false,
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "59f1cf23-7bf1-4856-ab9e-ae30e16f56bf:kibanaSavedObjectMeta.searchSourceJSON.index",
