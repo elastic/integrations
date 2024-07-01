@@ -61,8 +61,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2024-01-16T15:19:05.000Z",
     "agent": {
-        "ephemeral_id": "ca599f14-d92b-4067-b7a6-9051bbeeddde",
-        "id": "50b3ec08-69c9-43b4-9b7c-259ae132bafe",
+        "ephemeral_id": "34bcf544-db58-4ce0-96de-c2f14acdd31e",
+        "id": "9be89764-7d34-4a0d-92e7-5d3794c2fe75",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -97,7 +97,7 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "50b3ec08-69c9-43b4-9b7c-259ae132bafe",
+        "id": "9be89764-7d34-4a0d-92e7-5d3794c2fe75",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -117,7 +117,7 @@ An example event for `log` looks as following:
             "email"
         ],
         "dataset": "watchguard_firebox.log",
-        "ingested": "2024-06-27T07:23:13Z",
+        "ingested": "2024-07-01T16:30:13Z",
         "kind": "event",
         "original": "<139>Jan 16 15:19:05 WatchGuard-Firebox FVE6035FD3AE3 (2024-01-19T08:48:15) firewall: msg_id=\"1BFF-000F\" Allow 1-Trusted 0-External tcp 10.0.1.2 175.16.199.1 39398 25 msg=\"SMTP request\" proxy_act=\"SMTP-Outgoing.1\" rcvd_bytes=\"272\" sent_bytes=\"282\" sender=\"tester@testnet.com\" recipients=\"wg@localhost\" server_ssl=\"ECDHE-RSA-AES256-GCMSHA384\" client_ssl=\"AES128-SHA256\" tls_profile=\"TLS-Client.Standard\" (SMTP-proxy-00)",
         "outcome": "success",
@@ -131,7 +131,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.246.1:38868"
+            "address": "192.168.242.7:60340"
         },
         "syslog": {
             "appname": "firewall",
@@ -256,7 +256,6 @@ An example event for `log` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 | watchguard_firebox.log.action |  | keyword |
 | watchguard_firebox.log.action_name |  | keyword |
 | watchguard_firebox.log.address |  | keyword |
