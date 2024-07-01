@@ -6,9 +6,19 @@ vars:
   preserve_original_event: true
   listen_address: 0.0.0.0
   url: /json
-  prefix: event
+  # Replace 'json' with '.' when kibana.version is ^8.15.0.
+  prefix: 'json'
   listen_port: 9515
   basic_auth: true
   username: abc123
   password: abc123
   enable_request_tracer: true
+  # Remove processors when kibana.version is ^8.15.0.
+  processors: |
+    - rename:
+        fields:
+          - from: json.message
+            to: message
+    - drop_fields:
+        fields:
+          - json
