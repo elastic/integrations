@@ -16,12 +16,6 @@ processors:
       target_field: mimecast
   - drop:
       if: ctx?.mimecast?.datetime == null
-  - fingerprint:
-      fields:
-        - mimecast.MsgId
-        - mimecast.datetime
-      target_field: "_id"
-      ignore_missing: true
 
   - date:
       description: Use 'mimecast.datetime' as the '@timestamp'
@@ -29,6 +23,189 @@ processors:
       timezone: UTC
       formats:
         - yyyy-MM-dd'T'HH:mm:ssZ
+
+  ### NOTE LOG TYPE
+  - script:
+      lang: painless
+      params:
+        definite_positive:
+          action: receipt
+          attempt: delivery
+          attnames: process
+          customerip: avlog
+          customname: impersonation-protect
+          customthreatdictionary: impersonation-protect
+          definition: impersonation-protect
+          delivered: delivery
+          err: delivery
+          error: receipt
+          filename: attachment-protect
+          hits: impersonation-protect
+          hld: process
+          internalname: impersonation-protect
+          ipinternalname: process
+          ipnewdomain: process
+          ipreplymismatch: process
+          ipsimilardomain: process
+          ipthreaddict: process
+          latency: delivery
+          mimecastip: avlog
+          msgsize: process
+          newdomain: impersonation-protect
+          reason: url-protect
+          receiptack: delivery
+          replymismatch: impersonation-protect
+          rcptacttype: jrnl
+          scanresultinfo: internal-email-protect
+          senderdomaininternal: avlog
+          similarcustomexternaldomain: impersonation-protect
+          similarinternaldomain: impersonation-protect
+          similarmimecastexternaldomain: impersonation-protect
+          snt: delivery
+          spaminfo: receipt
+          spamlimit: receipt
+          spamprocessingdetail: receipt
+          spamscore: receipt
+          taggedexternal: impersonation-protect
+          taggedmalicious: impersonation-protect
+          threatdictionary: impersonation-protect
+          usetls: delivery
+        negative:
+          acode: [avlog, url-protect, attachment-protect]
+          act: [delivery, avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect, jrnl]
+          attcnt: [receipt, avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect, jrnl]
+          attsize: [receipt, avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect, jrnl]
+          cphr: [process,avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect, jrnl]
+          dir: [process, avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect]
+          fileext: [receipt, process, delivery, spam, internal-email-protect, impersonation-protect, url-protect, jrnl]
+          filemime: [receipt, process, delivery, spam, internal-email-protect, impersonation-protect, url-protect, jrnl]
+          headerfrom: [process, delivery, avlog, internal-email-protect, impersonation-protect, url-protect, attachment-protect, jrnl]
+          ip: [process, spam, internal-email-protect, url-protect, jrnl]
+          md5: [receipt, process, delivery, spam, internal-email-protect, impersonation-protect, url-protect, jrnl]
+          rcpt: [process, avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect]
+          recipient: [receipt, process, delivery, jrnl]
+          rejcode: [process, avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect, jrnl]
+          rejinfo: [process, avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect, jrnl]
+          rejtype: [process, avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect, jrnl]
+          route: [receipt, process, jrnl]
+          senderdomain: [receipt, process, delivery, internal-email-protect, impersonation-protect, jrnl]
+          sha1: [receipt, process, delivery, spam, internal-email-protect, impersonation-protect, url-protect, jrnl]
+          sha256: [receipt, process, delivery, spam, internal-email-protect, impersonation-protect, url-protect, jrnl]
+          size: [receipt, process, delivery, spam, internal-email-protect, impersonation-protect, url-protect, jrnl]
+          sourceip: [receipt, process, delivery, avlog, internal-email-protect, impersonation-protect, attachment-protect, jrnl]
+          tlsver: [process, avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect, jrnl]
+          url: [receipt, process, delivery, avlog, spam, impersonation-protect, attachment-protect, jrnl]
+          urlcategory: [receipt, process, delivery, avlog, spam, impersonation-protect, attachment-protect, jrnl]
+          virus: [process, delivery, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect, jrnl]
+        positive:
+          acode: [receipt, process, delivery, spam, internal-email-protect, impersonation-protect, jrnl]
+          act: [receipt, process]
+          attcnt: [process, delivery]
+          attsize: [process, delivery]
+          cphr: [receipt, delivery]
+          dir: [receipt, delivery, jrnl]
+          fileext: [avlog, attachment-protect]
+          filemime: [avlog, attachment-protect]
+          headerfrom: [receipt, spam]
+          ip: [receipt, delivery, avlog, impersonation-protect, attachment-protect]
+          md5: [avlog, attachment-protect]
+          rcpt: [receipt, delivery, jrnl]
+          recipient: [avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect]
+          rejcode: [receipt, delivery]
+          rejinfo: [receipt, delivery]
+          rejtype: [receipt, delivery]
+          route: [delivery, avlog, spam, internal-email-protect, impersonation-protect, url-protect, attachment-protect]
+          senderdomain: [avlog, spam, url-protect, attachment-protect]
+          sha1: [avlog, attachment-protect]
+          sha256: [avlog, attachment-protect]
+          size: [avlog, attachment-protect]
+          sourceip: [spam, url-protect]
+          tlsver: [receipt, delivery]
+          url: [internal-email-protect, url-protect]
+          urlcategory: [internal-email-protect, url-protect]
+          virus: [receipt, avlog]
+        candidates:
+          receipt: 0
+          process: 0
+          delivery: 0
+          jrnl: 0
+          avlog: 0
+          spam: 0
+          internal-email-protect: 0
+          impersonation-protect: 0
+          url-protect: 0
+          attachment-protect: 0
+      if: ctx.mimecast instanceof Map
+      source: |
+        // Canonicalise keys to lowercase. If this causes issues in future
+        // because case becomes significant, this table space optimisation
+        // will need to be reverted.
+        def keys = new HashSet();
+        for (def k: ctx.mimecast.keySet()) {
+          keys.add(k.toLowerCase());
+        }        
+        for (def k: keys) {
+          def typ = params.definite_positive.get(k);
+          if (typ != null) {
+            // We have a definitive known log_type.
+            ctx.mimecast.log_type = typ;
+            return;
+          }
+        }
+        def score = params.candidates.clone();
+        for (def k: keys) {
+          def typ = params.negative.get(k);
+          if (typ == null) {
+            continue;
+          }
+          for (String e: typ) {
+            score.remove(e);
+          }
+        }
+        if (score.size() == 1) {
+          // We have removed all but one of the candidates.
+          ctx.mimecast.log_type = score.keySet().toArray()[0];
+          return;
+        }
+        // Find best remaining and list all co-equal winners.
+        int max = 0;
+        for (def k: keys) {
+          def typ = params.positive.get(k);
+          if (typ == null) {
+            continue;
+          }
+          for (String e: typ) {
+            def s = score.get(e);
+            if (s == null) {
+              continue;
+            }
+            s++;
+            if (s > max) {
+              max = s;
+            }
+            score.put(e, s);
+          }
+        }
+        for (def e: score.entrySet()) {
+          if (e.getValue() < max) {
+            score.remove(e.getKey());
+          }
+        }
+        ctx.mimecast.log_type = score.keySet();
+
+  - fingerprint:
+      fields:
+        - mimecast.MsgId
+        - mimecast.aCode
+        - mimecast.datetime
+        - mimecast.Sender
+        - mimecast.Rcpt
+        - mimecast.Attempt
+        - mimecast.log_type
+        - mimecast.sha256
+        - mimecast.url
+      target_field: "_id"
+      ignore_missing: true
 
   ### RECEIPT LOGS
   - rename:
@@ -94,6 +271,7 @@ processors:
       field: mimecast.TlsVer
       target_field: tls.version
       ignore_missing: true
+
   ### PROCESS LOGS
   - rename:
       field: mimecast.AttSize
@@ -107,7 +285,8 @@ processors:
       field: mimecast.Hld
       target_field: event.reason
       ignore_missing: true
-    ### DELIVERY LOGS
+
+  ### DELIVERY LOGS
   - rename:
       field: mimecast.Err
       target_field: error.message
@@ -124,7 +303,8 @@ processors:
       field: tls.established
       value: false
       if: 'ctx.tls?.established instanceof String && ctx.tls.established.toLowerCase() == "no"'
-      ### AV LOGS
+
+  ### AV LOGS
   - rename:
       field: mimecast.fileExt
       target_field: email.attachments.file.extension
@@ -162,17 +342,20 @@ processors:
       field: mimecast.fileName
       target_field: email.attachments.file.name
       ignore_missing: true
-      ### SPAM EVENT THREAD LOGS
+
+  ### SPAM EVENT THREAD LOGS
   - rename:
       field: mimecast.SourceIP
       target_field: source.ip
       ignore_missing: true
-      ### SIEM Email Protect Logs
+
+  ### SIEM Email Protect Logs
   - rename:
       field: mimecast.URL
       target_field: url.full
       ignore_missing: true
-      ### SIEM Impersonation logs                       
+
+  ### SIEM Impersonation logs                       
   - rename:
       field: mimecast.Action
       target_field: event.action
@@ -185,7 +368,8 @@ processors:
       field: mimecast.NewDomain
       target_field: source.domain
       ignore_missing: true
-      ### SIEM TTP Url Logs
+
+  ### SIEM TTP Url Logs
   - rename:
       field: mimecast.reason
       target_field: event.reason
@@ -224,33 +408,6 @@ processors:
       field: mimecast.action
       target_field: event.action
       ignore_missing: true
-  - dissect:
-      field: mimecast.Content-Disposition
-      pattern: "%{?drop->}=\"%{mimecast.log_type}.%{?drop->}"
-      ignore_missing: true
-  - split:
-      field: mimecast.log_type
-      separator: "_"
-      target_field: mimecast.log_type_parts
-      if: 'ctx?.mimecast?.log_type != null'
-  - set:
-      field: mimecast.log_type_part1
-      copy_from: mimecast.log_type_parts.0
-      if: 'ctx?.mimecast?.log_type_parts instanceof List && ctx.mimecast.log_type_parts.size() > 0'
-  - set:
-      field: mimecast.log_type_part2
-      copy_from: mimecast.log_type_parts.1
-      if: 'ctx?.mimecast?.log_type_parts instanceof List && ctx.mimecast.log_type_parts.size() > 1'
-  - set:
-      field: mimecast.log_type
-      value: "{{mimecast.log_type_part1}}"
-      if: 'ctx?.mimecast?.log_type_part1 != "ttp"'
-      ignore_failure: true
-  - set:
-      field: mimecast.log_type
-      value: "{{mimecast.log_type_part1}}_{{mimecast.log_type_part2}}"
-      if: 'ctx?.mimecast?.log_type_part1 =="ttp" && ctx?.mimecast?.log_type_part2 != null'
-      ignore_failure: true 
   - set:
       field: event.created
       value: "{{mimecast.datetime}}"
@@ -270,15 +427,15 @@ processors:
   - set:
       field: event.outcome
       value: "success"
-      if: 'ctx?.event?.outcome ==true'
+      if: ctx?.event?.outcome == true
   - set:
       field: event.outcome
       value: "failure"
-      if: 'ctx?.event?.outcome ==false'
+      if: ctx?.event?.outcome == false
   - set:
       field: event.outcome
       value: "unknown"
-      if: 'ctx?.event?.outcome ==null'
+      if: ctx?.event?.outcome == null
   - lowercase:
       field: email.direction
       ignore_missing: true
@@ -349,7 +506,6 @@ processors:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true  
-  ###
 
 # Error handling
 on_failure:

@@ -1,0 +1,60 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+redact:
+  fields: ~
+program: |
+    request("GET", state.url).with({
+      "Header":{
+        "Content-Type": ["application/zip"],
+      }
+    })
+    .do_request()
+    .as(resp, resp.Body.mime("application/zip").File.as(file, file.size() > 0 ? 
+      file[0].Data.as(data, bytes(data).decode_json().as(body, {
+        "events": body.map(id, body[id].size() > 0 ? 
+          {"message": body[id][0].with({"id": id}).encode_json()}
+        :
+          {"message": ""}
+        ),
+        "url": state.url
+      }))
+    :
+      {
+        "events": [],
+        "url": state.url
+      }
+    ))
+
+fields_under_root: true
+fields:
+  _conf:
+    interval: "{{interval}}"
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,3 +1,7 @@
+variable "TEST_RUN_ID" {
+  default = "detached"
+}
+
 variable "BRANCH" {
   description = "Branch name or pull request for tagging purposes"
   default     = "unknown-branch"

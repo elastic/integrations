@@ -419,6 +419,7 @@ An example event for `alert` looks as following:
 | prisma_cloud.alert.resource.url |  | keyword |
 | prisma_cloud.alert.risk_detail.policy_scores.cloud_type |  | keyword |
 | prisma_cloud.alert.risk_detail.policy_scores.compliance_metadata.compliance.id |  | keyword |
+| prisma_cloud.alert.risk_detail.policy_scores.compliance_metadata.compliance_id |  | keyword |
 | prisma_cloud.alert.risk_detail.policy_scores.compliance_metadata.custom_assigned |  | boolean |
 | prisma_cloud.alert.risk_detail.policy_scores.compliance_metadata.policy.id |  | keyword |
 | prisma_cloud.alert.risk_detail.policy_scores.compliance_metadata.requirement.description |  | keyword |
@@ -479,7 +480,6 @@ An example event for `alert` looks as following:
 | prisma_cloud.alert.status |  | keyword |
 | prisma_cloud.alert.time | Timestamp when alert was last reopened for resource update, or the same as firstSeen if there are no status changes. | date |
 | prisma_cloud.alert.triggered_by |  | keyword |
-| tags | User defined tags. | keyword |
 
 
 ### Audit
@@ -595,7 +595,6 @@ An example event for `audit` looks as following:
 | prisma_cloud.audit.result |  | keyword |
 | prisma_cloud.audit.timestamp | Timestamp. | date |
 | prisma_cloud.audit.user | User. | keyword |
-| tags | User defined tags. | keyword |
 
 
 ### Host
@@ -608,13 +607,13 @@ An example event for `host` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-11-03T06:33:54.250Z",
+    "@timestamp": "2024-04-03T23:20:14.863Z",
     "agent": {
-        "ephemeral_id": "64d561d9-fd72-4f78-b68c-87702b5c3493",
-        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
+        "ephemeral_id": "a2e1faf9-a21e-4a2e-a964-e756be243ce0",
+        "id": "633dac72-aecd-41d9-88df-dd066a3b83ea",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "cloud": {
         "account": {
@@ -641,9 +640,9 @@ An example event for `host` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f2974986-16b8-49d0-803d-316e0e9f4e94",
+        "id": "633dac72-aecd-41d9-88df-dd066a3b83ea",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -652,7 +651,7 @@ An example event for `host` looks as following:
         ],
         "dataset": "prisma_cloud.host",
         "id": "DESKTOP-6PQXXMS",
-        "ingested": "2023-11-03T06:33:55Z",
+        "ingested": "2024-04-03T23:20:24Z",
         "kind": "event",
         "original": "{\"_id\":\"DESKTOP-6PQXXMS\",\"binaries\":[{\"altered\":true,\"cveCount\":0,\"deps\":[\"string\"],\"fileMode\":0,\"functionLayer\":\"string\",\"md5\":\"string\",\"missingPkg\":true,\"name\":\"string\",\"path\":\"string\",\"pkgRootDir\":\"string\",\"services\":[\"string\"],\"version\":\"string\"}],\"cloudMetadata\":{\"accountID\":\"Non-onboarded cloud accounts\",\"awsExecutionEnv\":\"string\",\"image\":\"string\",\"labels\":[{\"key\":\"string\",\"sourceName\":\"string\",\"sourceType\":[\"namespace\"],\"timestamp\":\"2023-09-08T04:01:49.949Z\",\"value\":\"string\"}],\"name\":\"string\",\"provider\":[\"aws\"],\"region\":\"string\",\"resourceID\":\"string\",\"resourceURL\":\"string\",\"type\":\"string\",\"vmID\":\"string\",\"vmImageID\":\"string\"},\"type\":\"host\",\"hostname\":\"DESKTOP-6PQXXMS\",\"scanTime\":\"2023-08-23T11:48:41.803Z\",\"Secrets\":[],\"osDistro\":\"windows\",\"osDistroVersion\":\"string\",\"osDistroRelease\":\"Windows\",\"distro\":\"Microsoft Windows [Version 10.0.19045.2006]\",\"packageManager\":true,\"packages\":[{\"pkgs\":[{\"binaryIdx\":[0],\"binaryPkgs\":[\"string\"],\"cveCount\":0,\"defaultGem\":true,\"files\":[{\"md5\":\"string\",\"path\":\"string\",\"sha1\":\"string\",\"sha256\":\"string\"}],\"functionLayer\":\"string\",\"goPkg\":true,\"jarIdentifier\":\"string\",\"layerTime\":0,\"license\":\"string\",\"name\":\"string\",\"osPackage\":true,\"path\":\"string\",\"version\":\"string\"}],\"pkgsType\":\"nodejs\"}],\"isARM64\":false,\"packageCorrelationDone\":true,\"redHatNonRPMImage\":false,\"image\":{\"created\":\"0001-01-01T00:00:00Z\",\"entrypoint\":[\"string\"],\"env\":[\"string\"],\"healthcheck\":true,\"id\":\"string\",\"labels\":{},\"layers\":[\"string\"],\"os\":\"string\",\"repoDigest\":[\"string\"],\"repoTags\":[\"string\"],\"user\":\"string\",\"workingDir\":\"string\"},\"allCompliance\":{\"compliance\":[{\"applicableRules\":[\"string\"],\"binaryPkgs\":[\"string\"],\"block\":true,\"cause\":\"string\",\"cri\":true,\"custom\":true,\"cve\":\"string\",\"cvss\":0,\"description\":\"string\",\"discovered\":\"2023-09-08T04:01:49.949Z\",\"exploit\":[\"exploit-db\"],\"fixDate\":0,\"fixLink\":\"string\",\"functionLayer\":\"string\",\"gracePeriodDays\":0,\"id\":0,\"layerTime\":0,\"link\":\"string\",\"packageName\":\"string\",\"packageVersion\":\"string\",\"published\":0,\"riskFactors\":{},\"severity\":\"string\",\"status\":\"string\",\"templates\":[[\"PCI\"]],\"text\":\"string\",\"title\":\"string\",\"twistlock\":true,\"type\":[\"container\"],\"vecStr\":\"string\",\"vulnTagInfos\":[{\"color\":\"string\",\"comment\":\"string\",\"name\":\"string\"}],\"wildfireMalware\":{\"md5\":\"string\",\"path\":\"string\",\"verdict\":\"string\"}}],\"enabled\":\"true\"},\"clusters\":[\"string\"],\"repoTag\":null,\"tags\":[{\"digest\":\"string\",\"id\":\"string\",\"registry\":\"string\",\"repo\":\"string\",\"tag\":\"string\"}],\"trustResult\":{\"hostsStatuses\":[{\"host\":\"string\",\"status\":\"trusted\"}]},\"repoDigests\":[],\"creationTime\":\"0001-01-01T00:00:00Z\",\"pushTime\":\"0001-01-01T00:00:00Z\",\"vulnerabilitiesCount\":0,\"complianceIssuesCount\":4,\"vulnerabilityDistribution\":{\"critical\":0,\"high\":0,\"medium\":0,\"low\":0,\"total\":0},\"complianceDistribution\":{\"critical\":4,\"high\":0,\"medium\":0,\"low\":0,\"total\":4},\"vulnerabilityRiskScore\":0,\"complianceRiskScore\":4000000,\"riskFactors\":{},\"firstScanTime\":\"2023-08-11T06:53:57.456Z\",\"history\":[{\"baseLayer\":true,\"created\":0,\"emptyLayer\":true,\"id\":\"string\",\"instruction\":\"string\",\"sizeBytes\":0,\"tags\":[\"string\"],\"vulnerabilities\":[{\"applicableRules\":[\"string\"],\"binaryPkgs\":[\"string\"],\"block\":true,\"cause\":\"string\",\"cri\":true,\"custom\":true,\"cve\":\"string\",\"cvss\":0,\"description\":\"string\",\"discovered\":\"2023-09-08T04:01:49.950Z\",\"exploit\":[\"exploit-db\"],\"exploits\":[{\"kind\":[\"poc\",\"in-the-wild\"],\"link\":\"string\",\"source\":[\"\",\"exploit-db\"]}],\"fixDate\":0,\"fixLink\":\"string\",\"functionLayer\":\"string\",\"gracePeriodDays\":0,\"id\":0,\"layerTime\":0,\"link\":\"string\",\"packageName\":\"string\",\"packageVersion\":\"string\",\"published\":0,\"riskFactors\":{},\"severity\":\"string\",\"status\":\"string\",\"templates\":[[\"PCI\"]],\"text\":\"string\",\"title\":\"string\",\"twistlock\":true,\"type\":[\"container\"],\"vecStr\":\"string\",\"vulnTagInfos\":[{\"color\":\"string\",\"comment\":\"string\",\"name\":\"string\"}],\"wildfireMalware\":{\"md5\":\"string\",\"path\":\"string\",\"verdict\":\"string\"}}]}],\"hostDevices\":[{\"ip\":\"0.0.0.0\",\"name\":\"string\"}],\"hosts\":{},\"id\":\"string\",\"err\":\"\",\"collections\":[\"All\"],\"instances\":[{\"host\":\"string\",\"image\":\"string\",\"modified\":\"2023-09-08T04:01:49.951Z\",\"registry\":\"string\",\"repo\":\"string\",\"tag\":\"string\"}],\"scanID\":0,\"trustStatus\":\"\",\"externalLabels\":[{\"key\":\"string\",\"sourceName\":\"string\",\"sourceType\":[\"namespace\"],\"timestamp\":\"2023-09-08T04:01:49.949Z\",\"value\":\"string\"}],\"files\":[{\"md5\":\"string\",\"path\":\"string\",\"sha1\":\"string\",\"sha256\":\"string\"}],\"firewallProtection\":{\"enabled\":false,\"supported\":false,\"outOfBandMode\":\"Observation\",\"ports\":[0],\"tlsPorts\":[0],\"unprotectedProcesses\":[{\"port\":0,\"process\":\"string\",\"tls\":true}]},\"applications\":[{\"installedFromPackage\":true,\"knownVulnerabilities\":0,\"layerTime\":0,\"name\":\"string\",\"path\":\"string\",\"service\":true,\"version\":\"string\"}],\"appEmbedded\":false,\"wildFireUsage\":null,\"agentless\":false,\"malwareAnalyzedTime\":\"0001-01-01T00:00:00Z\"}",
         "start": "0001-01-01T00:00:00.000Z",
@@ -684,11 +683,11 @@ An example event for `host` looks as following:
         "type": "host"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.243.5:34718"
+            "address": "172.18.0.4:60388"
         }
     },
     "os": {
@@ -752,9 +751,7 @@ An example event for `host` looks as following:
                         "severity": "string",
                         "status": "string",
                         "templates": [
-                            [
-                                "PCI"
-                            ]
+                            "PCI"
                         ],
                         "text": "string",
                         "title": "string",
@@ -965,9 +962,7 @@ An example event for `host` looks as following:
                             "severity": "string",
                             "status": "string",
                             "templates": [
-                                [
-                                    "PCI"
-                                ]
+                                "PCI"
                             ],
                             "text": "string",
                             "title": "string",
@@ -1272,6 +1267,7 @@ An example event for `host` looks as following:
 | prisma_cloud.host.compliance_issues.data.risk_factors | RiskFactors maps the existence of vulnerability risk factors. | flattened |
 | prisma_cloud.host.compliance_issues.data.severity | Textual representation of the vulnerability's severity. | keyword |
 | prisma_cloud.host.compliance_issues.data.status | Vendor status for the vulnerability. | keyword |
+| prisma_cloud.host.compliance_issues.data.templates | List of templates with which the vulnerability is associated. | keyword |
 | prisma_cloud.host.compliance_issues.data.text | Description of the violation. | keyword |
 | prisma_cloud.host.compliance_issues.data.title | Compliance title. | keyword |
 | prisma_cloud.host.compliance_issues.data.twistlock | Indicates if this is a Twistlock-specific vulnerability (true) or not (false). | boolean |
@@ -1280,9 +1276,9 @@ An example event for `host` looks as following:
 | prisma_cloud.host.compliance_issues.data.vuln_tag_infos.color | Color is a hexadecimal representation of color code value. | keyword |
 | prisma_cloud.host.compliance_issues.data.vuln_tag_infos.comment | Tag comment in a specific vulnerability context. | keyword |
 | prisma_cloud.host.compliance_issues.data.vuln_tag_infos.name | Name of the tag. | keyword |
-| prisma_cloud.host.compliance_issues.data.wildfire_malware.md5 | MD5 is the hash of the malicious binary. | keyword |
-| prisma_cloud.host.compliance_issues.data.wildfire_malware.path | Path is the path to malicious binary. | keyword |
-| prisma_cloud.host.compliance_issues.data.wildfire_malware.verdict | Verdict is the malicious source like grayware, malware and phishing. | keyword |
+| prisma_cloud.host.compliance_issues.data.wild_fire_malware.md5 | MD5 is the hash of the malicious binary. | keyword |
+| prisma_cloud.host.compliance_issues.data.wild_fire_malware.path | Path is the path to malicious binary. | keyword |
+| prisma_cloud.host.compliance_issues.data.wild_fire_malware.verdict | Verdict is the malicious source like grayware, malware and phishing. | keyword |
 | prisma_cloud.host.compliance_risk_score | Compliance risk score for the image. | float |
 | prisma_cloud.host.creation_time | Specifies the time of creation for the latest version of the image. | date |
 | prisma_cloud.host.devices.ip | Network device IPv4 address. | ip |
@@ -1369,7 +1365,7 @@ An example event for `host` looks as following:
 | prisma_cloud.host.image.history.size_bytes | Size of the layer (in bytes). | long |
 | prisma_cloud.host.image.history.tags | Holds the image tags. | keyword |
 | prisma_cloud.host.image.history.vulnerabilities.applicable_rules | Rules applied on the package. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.binaryPkgs | Names of the distro binary package names (packages which are built from the source of the package). | keyword |
+| prisma_cloud.host.image.history.vulnerabilities.binary_pkgs | Names of the distro binary package names (packages which are built from the source of the package). | keyword |
 | prisma_cloud.host.image.history.vulnerabilities.block | Indicates if the vulnerability has a block effect (true) or not (false). | boolean |
 | prisma_cloud.host.image.history.vulnerabilities.cause | Additional information regarding the root cause for the vulnerability. | keyword |
 | prisma_cloud.host.image.history.vulnerabilities.cri | Indicates if this is a CRI-specific vulnerability (true) or not (false). | boolean |
@@ -1541,6 +1537,7 @@ An example event for `host` looks as following:
 | prisma_cloud.host.vulnerabilities.data.discovered | Specifies the time of discovery for the vulnerability. | date |
 | prisma_cloud.host.vulnerabilities.data.exploit | ExploitType represents the source of an exploit. | keyword |
 | prisma_cloud.host.vulnerabilities.data.exploits.kind | ExploitKind represents the kind of the exploit. | keyword |
+| prisma_cloud.host.vulnerabilities.data.exploits.link | Link is a link to information about the exploit. | keyword |
 | prisma_cloud.host.vulnerabilities.data.exploits.source | ExploitType represents the source of an exploit. | keyword |
 | prisma_cloud.host.vulnerabilities.data.fix_date | Date/time when the vulnerability was fixed (in Unix time). | date |
 | prisma_cloud.host.vulnerabilities.data.fix_link | Link to the vendor's fixed-version information. | keyword |
@@ -1576,7 +1573,6 @@ An example event for `host` looks as following:
 | prisma_cloud.host.wild_fire_usage.bytes | Bytes is the total number of bytes uploaded to the WildFire API. | long |
 | prisma_cloud.host.wild_fire_usage.queries | Queries is the number of queries to the WildFire API. | long |
 | prisma_cloud.host.wild_fire_usage.uploads | Uploads is the number of uploads to the WildFire API. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Host Profile
@@ -1725,7 +1721,6 @@ An example event for `host_profile` looks as following:
 | prisma_cloud.host_profile.ssh_events.time | Time is the time in which the process was added. If the process was modified, Time is the modification time. | date |
 | prisma_cloud.host_profile.ssh_events.user | User represents the username that started the process. | keyword |
 | prisma_cloud.host_profile.time | Time is the last time when this profile was modified. | date |
-| tags | User defined tags. | keyword |
 
 
 ### Incident Audit
@@ -2072,4 +2067,3 @@ An example event for `incident_audit` looks as following:
 | prisma_cloud.incident_audit.type | Possible values: [host,container,function,appEmbedded,fargate]. | keyword |
 | prisma_cloud.incident_audit.vm_id | Azure unique VM ID on which the incident was found. | keyword |
 | prisma_cloud.incident_audit.windows | Windows indicates if defender OS type is Windows. | boolean |
-| tags | User defined tags. | keyword |

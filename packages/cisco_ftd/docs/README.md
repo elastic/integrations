@@ -215,6 +215,7 @@ An example event for `log` looks as following:
 | cisco.ftd.connection_type | The VPN connection type | keyword |
 | cisco.ftd.dap_records | The assigned DAP records | keyword |
 | cisco.ftd.destination_interface | Destination interface for the flow or event. | keyword |
+| cisco.ftd.destination_user_or_sgt | The destination user or security group tag. | keyword |
 | cisco.ftd.destination_username | Name of the user that is the destination for this event. | keyword |
 | cisco.ftd.icmp_code | ICMP code. | short |
 | cisco.ftd.icmp_type | ICMP type. | short |
@@ -295,11 +296,13 @@ An example event for `log` looks as following:
 | cisco.ftd.security_event.web_application |  | keyword |
 | cisco.ftd.session_type | Session type (for example, IPsec or UDP). | keyword |
 | cisco.ftd.source_interface | Source interface for the flow or event. | keyword |
+| cisco.ftd.source_user_or_sgt | The source user or security group tag. | keyword |
 | cisco.ftd.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.ftd.suffix | Optional suffix after %FTD identifier. | keyword |
 | cisco.ftd.termination_user | AAA name of user requesting termination | keyword |
 | cisco.ftd.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.ftd.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
+| cisco.ftd.translation_type | The translation type | keyword |
 | cisco.ftd.tunnel_type | SA type (remote access or L2L) | keyword |
 | cisco.ftd.username |  | keyword |
 | cisco.ftd.webvpn.group_name | The WebVPN group name the user belongs to | keyword |

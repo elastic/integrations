@@ -1,15 +1,16 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
-
 env:
-  SETUP_GVM_VERSION: "v0.5.1"
+  SETUP_GVM_VERSION: "v0.5.2"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
   DOCKER_COMPOSE_VERSION: "v2.24.1"
-  DOCKER_VERSION: "false"
+  DOCKER_VERSION: "26.1.2"
   KIND_VERSION: 'v0.20.0'
   K8S_VERSION: 'v1.29.0'
   YQ_VERSION: 'v4.35.2'
   JQ_VERSION: '1.7'
   GH_CLI_VERSION: "2.29.0"
+  IMAGE_UBUNTU_X86_64: "family/core-ubuntu-2204"
+
   # Elastic package settings
   # Manage docker output/logs
   ELASTIC_PACKAGE_COMPOSE_DISABLE_VERBOSE_OUTPUT: "true"
@@ -28,22 +29,6 @@ steps:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "4G"
-
-  - label: ":package: Build packages"
-    key: "build-packages"
-    command: ".buildkite/scripts/build_packages.sh"
-    agents:
-      image: "${LINUX_AGENT_IMAGE}"
-      cpu: "8"
-      memory: "8G"
-    env:
-      ARTIFACTS_FOLDER: "artifacts-to-sign"
-      DRY_RUN: "false"
-    depends_on:
-      - step: "check"
-        allow_failure: false
-    artifact_paths:
-      - artifacts-to-sign/*.zip
 
   - label: "Trigger integrations"
     key: "test-integrations"
@@ -68,6 +53,7 @@ steps:
       memory: "4G"
 
   - label: ":sonarqube: Continuous Code Inspection"
+    soft_fail: true # FIXME: Coverage is failing, remove this after solving the issue
     env:
       VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
     agents:

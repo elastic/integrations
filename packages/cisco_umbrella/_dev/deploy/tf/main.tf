@@ -1,7 +1,3 @@
-variable "TEST_RUN_ID" {
-  default = "detached"
-}
-
 provider "aws" {
   default_tags {
     tags = {
@@ -14,13 +10,48 @@ provider "aws" {
   }
 }
 
-resource "aws_s3_bucket" "bucket" {
+resource "aws_s3_bucket" "cisco_umbrella" {
   bucket = "elastic-package-cisco-umbrella-bucket-${var.TEST_RUN_ID}"
 }
 
-resource "aws_sqs_queue" "queue" {
+resource "aws_s3_object" "cisco_umbrella_auditlogs" {
+  bucket = aws_s3_bucket.cisco_umbrella.id
+  key    = "auditlogs.log"
+  source = "./files/test-umbrella-auditlogs.log"
+  depends_on = [aws_sqs_queue.cisco_umbrella_queue]
+}
+
+resource "aws_s3_object" "cisco_umbrella_dnslogs" {
+  bucket = aws_s3_bucket.cisco_umbrella.id
+  key    = "dnslogs.log"
+  source = "./files/test-umbrella-dnslogs.log"
+  depends_on = [aws_sqs_queue.cisco_umbrella_queue]
+}
+
+resource "aws_s3_object" "cisco_umbrella_firewalllogs" {
+  bucket = aws_s3_bucket.cisco_umbrella.id
+  key    = "firewalllogs.log"
+  source = "./files/test-umbrella-firewalllogs.log"
+  depends_on = [aws_sqs_queue.cisco_umbrella_queue]
+}
+
+resource "aws_s3_object" "cisco_umbrella_intrusionlogs" {
+  bucket = aws_s3_bucket.cisco_umbrella.id
+  key    = "intrusionlogs.log"
+  source = "./files/test-umbrella-intrusionlogs.log"
+  depends_on = [aws_sqs_queue.cisco_umbrella_queue]
+}
+
+resource "aws_s3_object" "cisco_umbrella_proxylogs" {
+  bucket = aws_s3_bucket.cisco_umbrella.id
+  key    = "proxylogs.log"
+  source = "./files/test-umbrella-proxylogs.log"
+  depends_on = [aws_sqs_queue.cisco_umbrella_queue]
+}
+
+resource "aws_sqs_queue" "cisco_umbrella_queue" {
   name       = "elastic-package-cisco-umbrella-queue-${var.TEST_RUN_ID}"
-  policy     = <<POLICY
+  policy     = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -30,30 +61,19 @@ resource "aws_sqs_queue" "queue" {
       "Action": "sqs:SendMessage",
       "Resource": "arn:aws:sqs:*:*:elastic-package-cisco-umbrella-queue-${var.TEST_RUN_ID}",
       "Condition": {
-        "ArnEquals": { "aws:SourceArn": "${aws_s3_bucket.bucket.arn}" }
+        "ArnEquals": { "aws:SourceArn": "${aws_s3_bucket.cisco_umbrella.arn}" }
       }
     }
   ]
 }
-POLICY
+EOF
 }
 
 resource "aws_s3_bucket_notification" "bucket_notification" {
-  bucket = aws_s3_bucket.bucket.id
+  bucket = aws_s3_bucket.cisco_umbrella.id
 
   queue {
-    queue_arn = aws_sqs_queue.queue.arn
+    queue_arn = aws_sqs_queue.cisco_umbrella_queue.arn
     events    = ["s3:ObjectCreated:*"]
   }
-}
-
-resource "aws_s3_object" "object" {
-  bucket = aws_s3_bucket.bucket.id
-  key    = "new_object_key"
-  source = "./files/test-umbrella-proxylogs.log"
-  depends_on = [aws_sqs_queue.queue]
-}
-
-output "queue_url" {
-  value = aws_sqs_queue.queue.url
 }
