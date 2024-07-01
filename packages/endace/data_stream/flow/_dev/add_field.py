@@ -24,6 +24,7 @@ def process_events():
     for event in events['events']:
         if '_conf' not in event:
             event['_conf'] = {}
+            event['_conf']['event'] = {}
         event['_conf']['endace_url'] = 'https://test.test.local'
         event['_conf']['endace_datasources'] = 'tag:rotation-file'
         event['_conf']['endace_tools'] = 'trafficOverTime_by_app,conversations_by_ipaddress'
@@ -34,14 +35,14 @@ def process_events():
         if 'event' in event and 'start' in event['event']:
             start_str = event['event']['start']
             # Assuming the date format is ISO 8601, e.g., "2023-01-01T00:00:00Z"
-            start_dt = datetime.strptime(start_str, "%Y-%m-%dT%H:%M:%SZ")
+            start_dt = datetime.strptime(start_str, "%Y-%m-%dT%H:%M:%S.%fZ")
             event['_conf']['event']['start'] = int(time.mktime(start_dt.timetuple()))
 
         # Convert event.end to epoch
         if 'event' in event and 'end' in event['event']:
             end_str = event['event']['end']
             # Assuming the date format is ISO 8601, e.g., "2023-01-01T00:00:00Z"
-            end_dt = datetime.strptime(end_str, "%Y-%m-%dT%H:%M:%SZ")
+            end_dt = datetime.strptime(end_str, "%Y-%m-%dT%H:%M:%S.%fZ")
             event['_conf']['event']['end'] = int(time.mktime(end_dt.timetuple()))
 
 
