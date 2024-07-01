@@ -44,8 +44,8 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverle
 	}
 
 	if len(packageErrors) > maxTestsReported {
-		fmt.Printf("Reporting the first %d failing tests (total failing tests %d).\n", maxTestsReported, len(packageErrors))
-		packageErrors = packageErrors[:maxTestsReported]
+		fmt.Printf("Skip creating GitHub issues, hit the maximum number (%d) of tests to be reported. Total failing tests: %d.\n", maxTestsReported, len(packageErrors))
+		return nil
 	}
 
 	var multiErr error
