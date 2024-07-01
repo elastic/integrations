@@ -1,0 +1,345 @@
+title: Symantec Endpoint Security Event
+type: logs
+streams:
+  - input: aws-s3
+    enabled: false
+    template_path: aws-s3.yml.hbs
+    title: Event logs
+    description: Collect Symantec Endpoint Security logs via AWS S3 input.
+    vars:
+      - name: collect_s3_logs
+        required: true
+        show_user: true
+        title: Collect logs via S3 Bucket
+        description: To collect logs via S3 bucket enable the toggle switch. By default, it will collect logs via SQS Queue.
+        type: bool
+        multi: false
+        default: false
+      - name: bucket_arn
+        type: text
+        title: "[S3] Bucket ARN"
+        multi: false
+        required: false
+        show_user: true
+        description: It is a required parameter for collecting logs via the AWS S3 Bucket.
+      - name: queue_url
+        type: text
+        title: "[SQS] Queue URL"
+        multi: false
+        required: false
+        show_user: true
+        description: URL of the AWS SQS queue that messages will be received from. It is a required parameter for collecting logs via the AWS SQS.
+      - name: access_key_id
+        type: password
+        title: Access Key ID
+        multi: false
+        required: false
+        secret: true
+        show_user: true
+        description: First part of access key. This parameter along with the secret_access_key parameter is required if we are not providing shared_credential_file.
+      - name: secret_access_key
+        type: password
+        title: Secret Access Key
+        multi: false
+        required: false
+        secret: true
+        show_user: true
+        description: Second part of access key. This parameter along with the access_key_id parameter is required if we are not providing shared_credential_file.
+      - name: session_token
+        type: password
+        title: Session Token
+        multi: false
+        required: false
+        secret: true
+        show_user: true
+        description: Required when using temporary security credentials.
+      - name: shared_credential_file
+        type: text
+        title: Shared Credential File
+        multi: false
+        required: false
+        show_user: false
+        description: Directory of the shared credentials file. This parameter is required if we are not providing value for the parameters - secret_access_key and access_key_id.
+      - name: credential_profile_name
+        type: text
+        title: Credential Profile Name
+        multi: false
+        required: false
+        show_user: false
+        description: Profile name in shared credentials file.
+      - name: role_arn
+        type: text
+        title: Role ARN
+        multi: false
+        required: false
+        show_user: false
+        description: AWS IAM Role to assume.
+      - name: region
+        type: text
+        title: "[SQS] Region"
+        multi: false
+        required: false
+        show_user: true
+        description: The name of the AWS region of the end point. If this option is given it takes precedence over the region name obtained from the queue_url value.
+      - name: fips_enabled
+        type: bool
+        title: Enable S3 FIPS
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+      - name: bucket_list_prefix
+        type: text
+        title: "[S3] Bucket Prefix"
+        multi: false
+        required: false
+        show_user: true
+        description: Prefix to apply for the list request to the S3 bucket.
+      - name: interval
+        type: text
+        title: "[S3] Interval"
+        multi: false
+        required: false
+        show_user: true
+        default: 3m
+        description: "Time interval for polling listing of the S3 bucket. NOTE: Supported units are h/m/s."
+      - name: number_of_workers
+        type: integer
+        title: "[S3] Number of Workers"
+        multi: false
+        required: false
+        show_user: true
+        default: 5
+        description: Number of workers that will process the S3 objects listed.
+      - name: visibility_timeout
+        type: text
+        title: "[SQS] Visibility Timeout"
+        multi: false
+        required: false
+        show_user: true
+        default: 300s
+        description: "The duration that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request. The maximum is 12 hours. NOTE: Supported units for this parameter are h/m/s."
+      - name: api_timeout
+        type: text
+        title: "[SQS] API Timeout"
+        multi: false
+        required: false
+        show_user: true
+        default: 120s
+        description: "The maximum duration of AWS API can take. The maximum is half of the visibility timeout value. NOTE: Supported units for this parameter are h/m/s."
+      - name: max_number_of_messages
+        type: integer
+        title: "[SQS] Maximum Concurrent SQS Messages"
+        required: false
+        show_user: true
+        default: 5
+        description: The maximum number of SQS messages that can be inflight at any time.
+      - name: file_selectors
+        type: yaml
+        title: "[SQS] File Selectors"
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # - regex: "event/"
+        description: If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that don’t match one of the regexes will not be processed.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - symantec_endpoint_security-event
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve symantec_endpoint_security.event fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+          #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+          #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+          #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+          #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+          #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+          #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+          #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+          #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+          #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+          #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+          #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+          #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+          #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+          #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+          #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+          #    sxSmbIUfc2SGJGCJD4I=
+          #    -----END CERTIFICATE-----
+  - input: gcs
+    enabled: false
+    description: Collect Symantec Endpoint Security logs via GCS input.
+    title: Event logs
+    template_path: gcs.yml.hbs
+    vars:
+      - name: project_id
+        type: text
+        title: Project ID
+        description: It is a required parameter to collect logs via GCS.
+        required: true
+        show_user: true
+        default: my-project-id
+      - name: service_account_key
+        type: password
+        title: Service Account Key
+        description: |
+          The json service account credentials string, which can be generated from the google cloud console, ref [Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+          This should be the entire JSON object that is present in the credentials.json file. Required if a Service Account Credentials File is not provided.
+        required: false
+        show_user: true
+        secret: true
+      - name: service_account_file
+        type: text
+        title: Service Account Credentials File
+        description: |
+          Path to a file containing the service account key text to authenticate to the data store, which can be generated from the google cloud console, ref [Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+          Required if a Service Account Key is not provided.
+        required: false
+        show_user: true
+      - name: number_of_workers
+        type: integer
+        title: Maximum number of workers
+        multi: false
+        required: false
+        show_user: true
+        default: 3
+        description: Determines how many workers are spawned per bucket.
+      - name: poll
+        type: bool
+        title: Polling
+        multi: false
+        required: false
+        show_user: true
+        default: true
+        description: Determines if the bucket will be continuously polled for new documents.
+      - name: poll_interval
+        type: text
+        title: Polling interval
+        multi: false
+        required: false
+        show_user: true
+        default: 15s
+        description: Determines the time interval between polling operations.
+      - name: bucket_timeout
+        type: text
+        title: Bucket Timeout
+        multi: false
+        required: false
+        show_user: true
+        default: 120s
+        description: Defines the maximum time that the sdk will wait for a bucket api response before timing out. Valid time units are ns, us, ms, s, m, h.
+      - name: buckets
+        type: yaml
+        title: Buckets
+        description: "This attribute contains the details about a specific bucket like name, max_workers, poll, poll_interval and bucket_timeout. The attribute name is specific to a bucket as it describes the bucket name, while the fields max_workers, poll, poll_interval and bucket_timeout can exist both at the bucket level and the root level. \nIt is internally represented as an array, so multiple buckets can be provided.\nFor more information about each attribute, please see the relevant [Documentation](https://www.elastic.co/guide/en/beats/filebeat/8.5/filebeat-input-gcs.html#attrib-buckets).\n"
+        required: true
+        show_user: true
+        default: |
+          # You can define as many buckets as you want here.
+
+          - name: event_logs
+          - name: event_logs_2
+
+          # The config below is an example of how to override the global config.
+
+          #- name: event_logs_3
+          #  number_of_workers: 3
+          #  poll: true
+          #  poll_interval: 10s
+          #  bucket_timeout: 30s
+      - name: file_selectors
+        type: yaml
+        title: "[GCS] File Selectors"
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # - regex: "event/"
+        description: If the GCS bucket will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which is made up of regex patters. The regex should match the GCS bucket filepath. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that don’t match one of the regexes will not be processed.
+      - name: timestamp_epoch
+        type: integer
+        title: Timestamp Epoch
+        multi: false
+        required: false
+        show_user: false
+        description: Defines the epoch time in seconds, which is used to filter out objects/files that are older than the specified timestamp.
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: false
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve symantec_endpoint_security.event fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        required: true
+        default:
+          - forwarded
+          - symantec_endpoint_security-event
+        multi: true
+        show_user: false

@@ -7,17 +7,17 @@ services:
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
   panw-panos-tls:
-    image: docker.elastic.co/observability/stream:v0.8.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./syslog_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9515 -p=tls --insecure /sample_logs/*.log
   panw-panos-tcp:
-    image: docker.elastic.co/observability/stream:v0.8.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./syslog_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=tcp /sample_logs/*.log
   panw-panos-udp:
-    image: docker.elastic.co/observability/stream:v0.8.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./syslog_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=udp /sample_logs/*.log

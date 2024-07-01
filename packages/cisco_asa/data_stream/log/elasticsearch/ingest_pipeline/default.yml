@@ -1,21 +1,21 @@
 ---
 description: "Pipeline for Cisco ASA logs"
 processors:
-  - rename:
+  - set:
+      field: event.original
+      copy_from: message
+  - remove:
       field: message
-      target_field: event.original
-      tag: "rename_message"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
-      ignore_missing: true
-      if: ctx.event?.original == null
   - set:
       field: ecs.version
       value: '8.11.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [ network ]
+
   #
   # Parse the syslog header
   #
@@ -23,7 +23,7 @@ processors:
   # from the header and stores the message contents in _temp_.full_message.
   - grok:
       field: event.original
-      tag: "grok_event_original"
+      tag: grok_event_original
       if: ctx.event?.original != null
       patterns:
         - "(?:%{SYSLOG_HEADER})?\\s*%{GREEDYDATA:_temp_.full_message}"
@@ -41,15 +41,9 @@ processors:
         # exactly match the syntax for firepower management logs
         PROCESS_HOST: "(?:%{PROCESS:process.name}:\\s%{SYSLOGHOST:host.name})"
         HOST_PROCESS: "(?:%{SYSLOGHOST:host.hostname}:?\\s+)?(?:%{PROCESS:process.name}?(?:\\[%{POSINT:process.pid:long}\\])?)?"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - script:
       lang: painless
-      tag: "script_log_syslog"
+      tag: script_log_syslog
       source: |
         if (ctx.log?.syslog?.priority != null) {
           def severity = new HashMap();
@@ -59,10 +53,6 @@ processors:
           facility['code'] = ctx.log.syslog.priority>>3;
           ctx.log.syslog['facility'] = facility;
         }
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
 
   #
   # Parse FTD/ASA style message
@@ -71,7 +61,7 @@ processors:
   - grok:
       field: _temp_.full_message
       if: ctx._temp_?.full_message != null
-      tag: "grok_full_message"
+      tag: grok_full_message
       patterns:
         - "%{FTD_PREFIX}-(?:%{FTD_SUFFIX:_temp_.cisco.suffix}-)?%{NONNEGINT:event.severity:int}-%{POSINT:_temp_.cisco.message_id}?:?\\s*%{GREEDYDATA:message}"
         # Before version 6.3, messages for connection, security intelligence, and intrusion events didn't include an event type ID in the message header.
@@ -80,12 +70,6 @@ processors:
         FTD_SUFFIX: "[^0-9-]+"
         # Before version 6.3, FTD used ASA prefix in syslog messages
         FTD_PREFIX: "%{DATA}%(?:[A-Z]+)"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
   #
   # Create missing fields when no %FTD label is present
@@ -179,10 +163,6 @@ processors:
               - "MMM dd yyyy HH:mm:ss z"
               - "EEE MMM  d yyyy HH:mm:ss z"
               - "EEE MMM dd yyyy HH:mm:ss z"
-            on_failure:
-              - append:
-                  field: error.message
-                  value: "{{{ _ingest.on_failure_message }}}"
 
   #
   # Set log.level
@@ -224,84 +204,50 @@ processors:
   # Firewall messages
   #
   # This set of messages is shared between FTD and ASA.
-  - set:
-      if: 'ctx._temp_?.cisco?.message_id != ""'
-      field: "event.action"
-      value: "firewall-rule"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106001'"
-      tag: "dissect_message_id_106001"
+      tag: parse_106001
       field: "message"
       description: "106001"
-      pattern: "%{network.direction} %{network.transport} connection %{event.outcome} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} flags %{} on interface %{_temp_.cisco.source_interface}"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+      pattern: "%{network.direction} %{network.transport} connection denied from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} flags %{} on interface %{_temp_.cisco.source_interface}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106002'"
-      tag: "dissect_message_id_106002"
+      tag: parse_106002
       field: "message"
       description: "106002"
-      pattern: "%{network.transport} Connection %{event.outcome} by %{network.direction} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+      pattern: "%{network.transport} Connection denied by %{network.direction} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106006'"
-      tag: "dissect_message_id_106006"
+      tag: parse_106006
       field: "message"
       description: "106006"
-      pattern: "%{event.outcome} %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.source_interface}"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+      pattern: "Deny %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} on interface %{_temp_.cisco.source_interface}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106007'"
-      tag: "dissect_message_id_106007"
+      tag: parse_106007
       field: "message"
       description: "106007"
-      pattern: "%{event.outcome} %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} due to %{network.protocol} %{}"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+      pattern: "Deny %{network.direction} %{network.transport} from %{source.address}/%{source.port} to %{destination.address}/%{destination.port} due to %{network.protocol} %{}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '106010'"
-      tag: "grok_message_id_106010"
+      tag: parse_106010
       field: "message"
       description: "106010"
       patterns:
-      - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{POSINT:source.port} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{POSINT:destination.port}(%{GREEDYDATA})?"
-      - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}(/%{POSINT:source.port})? (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}(/%{POSINT:destination.port})?(%{GREEDYDATA})?"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+      - "Deny %{NOTSPACE:network.direction} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}/%{POSINT:source.port} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{POSINT:destination.port}(%{GREEDYDATA})?"
+      - "Deny %{NOTSPACE:network.direction} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address}(/%{POSINT:source.port})? (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}(/%{POSINT:destination.port})?(%{GREEDYDATA})?"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106012'"
+      tag: parse_106012
+      field: "message"
+      description: "106012"
+      pattern: 'Deny IP from %{source.address} to %{destination.address}, %{event.reason}'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106013'"
-      tag: "dissect_message_id_106013"
+      tag: parse_106013
       field: "message"
       description: "106013"
       pattern: "Dropping echo request from %{source.address} to PAT address %{destination.address}"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - set:
       if: "ctx._temp_.cisco.message_id == '106013'"
       field: "network.transport"
@@ -314,147 +260,126 @@ processors:
       value: inbound
   - grok:
       if: "ctx._temp_.cisco.message_id == '106014'"
-      tag: "grok_message_id_106014"
+      tag: parse_106014
       field: "message"
       description: "106014"
       patterns:
-      - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.direction} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:(?<destination.address>[^ (]*)(%{GREEDYDATA})?"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+      - "Deny %{NOTSPACE:network.direction} %{NOTSPACE:network.transport} src %{NOTSPACE:_temp_.cisco.source_interface}:%{NOTSPACE:source.address} (%{DATA})?dst %{NOTSPACE:_temp_.cisco.destination_interface}:(?<destination.address>[^ (]*)(%{GREEDYDATA})?"
   - grok:
       if: "ctx._temp_.cisco.message_id == '106015'"
-      tag: "grok_message_id_106015"
+      tag: parse_106015
       field: "message"
       description: "106015"
       patterns:
-      - "%{NOTSPACE:event.outcome} %{NOTSPACE:network.transport} %{NOTSPACE} %{NOTSPACE} from %{IPORHOST:source.address}/%{POSINT:source.port} to %{IPORHOST:destination.address}/%{POSINT:destination.port} flags %{DATA} on interface %{NOTSPACE:_temp_.cisco.source_interface}"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+      - "Deny %{NOTSPACE:network.transport} %{NOTSPACE} %{NOTSPACE} from %{IPORHOST:source.address}/%{POSINT:source.port} to %{IPORHOST:destination.address}/%{POSINT:destination.port} flags %{DATA} on interface %{NOTSPACE:_temp_.cisco.source_interface}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106016'"
-      tag: "dissect_message_id_106016"
+      tag: parse_106016
       field: "message"
-      pattern: "%{event.outcome} IP spoof from (%{source.address}) to %{destination.address} on interface %{_temp_.cisco.source_interface}"
+      pattern: "Deny IP spoof from (%{source.address}) to %{destination.address} on interface %{_temp_.cisco.source_interface}"
       description: "106016"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106017'"
-      tag: "dissect_message_id_106017"
+      tag: parse_106017
       field: "message"
-      pattern: "%{event.outcome} IP due to Land Attack from %{source.address} to %{destination.address}"
+      pattern: "Deny IP due to Land Attack from %{source.address} to %{destination.address}"
       description: "106017"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106018'"
+      tag: parse_106018
       field: "message"
-      pattern: "%{network.transport} packet type %{_temp_.cisco.icmp_type} %{event.outcome} by %{network.direction} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
+      pattern: "%{network.transport} packet type %{_temp_.cisco.icmp_type} denied by %{network.direction} list %{_temp_.cisco.list_id} src %{source.address} dest %{destination.address}"
       description: "106018"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106020'"
+      tag: parse_106020
       field: "message"
-      pattern: "%{event.outcome} IP teardrop fragment (size = %{}, offset = %{}) from %{source.address} to %{destination.address}"
+      pattern: "Deny IP teardrop fragment (size = %{}, offset = %{}) from %{source.address} to %{destination.address}"
       description: "106020"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106021'"
+      tag: parse_106021
       field: "message"
-      pattern: "%{event.outcome} %{network.transport} reverse path check from %{source.address} to %{destination.address} on interface %{_temp_.cisco.source_interface}"
+      pattern: "Deny %{network.transport} reverse path check from %{source.address} to %{destination.address} on interface %{_temp_.cisco.source_interface}"
       description: "106021"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106022'"
+      tag: parse_106022
       field: "message"
-      pattern: "%{event.outcome} %{network.transport} connection spoof from %{source.address} to %{destination.address} on interface %{_temp_.cisco.source_interface}"
+      pattern: "Deny %{network.transport} connection spoof from %{source.address} to %{destination.address} on interface %{_temp_.cisco.source_interface}"
       description: "106022"
   - grok:
       if: "ctx._temp_.cisco.message_id == '106023'"
+      tag: parse_106023
       field: "message"
       description: "106023"
       patterns:
-        - ^%{NOTSPACE:event.outcome} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{NUMBER:source.port})?\s*(\(%{CISCO_USER_OR_SGT_SRC}\) )?dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{NUMBER:destination.port})?%{DATA}by access-group "%{NOTSPACE:_temp_.cisco.list_id}"
+        - ^Deny ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{NUMBER:source.port})?\s*(\(%{CISCO_USER_OR_SGT_SRC}\) )?dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{NUMBER:destination.port})?%{DATA}by access-group "%{NOTSPACE:_temp_.cisco.list_id}"
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
+        USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106027'"
+      tag: parse_106027
       field: "message"
       description: "106027"
-      pattern: '%{} %{event.outcome} src %{source.address} dst %{destination.address} by access-group "%{_temp_.cisco.list_id}"'
+      pattern: '%{} Deny src %{source.address} dst %{destination.address} by access-group "%{_temp_.cisco.list_id}"'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106100'"
+      tag: parse_106100
       field: "message"
       description: "106100"
-      pattern: "access-list %{_temp_.cisco.list_id} %{event.outcome} %{network.transport} %{_temp_.cisco.source_interface}/%{source.address}(%{source.port})%{}-> %{_temp_.cisco.destination_interface}/%{destination.address}(%{destination.port})%{}"
+      pattern: "access-list %{_temp_.cisco.list_id} %{_temp_.outcome} %{network.transport} %{_temp_.cisco.source_interface}/%{source.address}(%{source.port})%{}-> %{_temp_.cisco.destination_interface}/%{destination.address}(%{destination.port})%{}"
   - dissect:
-      if: "ctx._temp_.cisco.message_id == '106102' || ctx._temp_.cisco.message_id == '106103'"
+      if: "ctx._temp_.cisco.message_id == '106102'"
+      tag: parse_106102
+      field: "message"
+      description: "106102"
+      pattern: "access-list %{_temp_.cisco.list_id} %{_temp_.outcome} %{network.transport} for user %{user.name} %{_temp_.cisco.source_interface}/%{source.address}(%{source.port})%{}-> %{_temp_.cisco.destination_interface}/%{destination.address}(%{destination.port})%{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '106103'"
+      tag: parse_106103
       field: "message"
       description: "106103"
-      pattern: "access-list %{_temp_.cisco.list_id} %{event.outcome} %{network.transport} for user %{user.name} %{_temp_.cisco.source_interface}/%{source.address}(%{source.port})%{}-> %{_temp_.cisco.destination_interface}/%{destination.address}(%{destination.port})%{}"
+      pattern: "access-list %{_temp_.cisco.list_id} denied %{network.transport} for user %{user.name} %{_temp_.cisco.source_interface}/%{source.address}(%{source.port})%{}-> %{_temp_.cisco.destination_interface}/%{destination.address}(%{destination.port})%{}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '111004'"
+      tag: parse_111004
       field: "message"
       description: "111004"
-      pattern: "%{source.address} end configuration: %{_temp_.cisco.cli_outcome}"
-  - set:
-      field: event.outcome
-      description: "111004"
-      value: "success"
-      if: "ctx._temp_.cisco.message_id == '111004' && ctx?._temp_?.cisco?.cli_outcome == 'OK'"
-  - set:
-      field: event.outcome
-      description: "111004"
-      value: "failure"
-      if: "ctx._temp_.cisco.message_id == '111004' && ctx?._temp_?.cisco?.cli_outcome == 'FAILED'"
-  - remove:
-      field: _temp_.cisco.cli_outcome
-      ignore_missing: true
-  - append:
-      field: event.type
-      description: "111004"
-      value: "change"
-      if: "ctx._temp_.cisco.message_id == '111004'"
+      pattern: "%{source.address} end configuration: %{_temp_.outcome}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '111009'"
+      tag: parse_111009
       description: "111009"
       field: "message"
       patterns:
       - "^%{NOTSPACE} '%{NOTSPACE:server.user.name}' executed %{NOTSPACE} %{GREEDYDATA:_temp_.cisco.command_line_arguments}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '111010'"
+      tag: parse_111010
       field: "message"
       description: "111010"
       patterns:
       - "User '%{NOTSPACE:server.user.name}', running %{QUOTEDSTRING} from IP %{IP:source.address}, executed %{QUOTEDSTRING:_temp_.cisco.command_line_arguments}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '113004'"
+      tag: parse_113004
       field: "message"
       description: "113004"
       patterns:
       - "AAA user %{DATA:_temp_.cisco.aaa_type} Successful(%{SPACE})?: server =(%{SPACE})?%{IP:destination.address} [:,] [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
+        USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
   - grok:
       if: "ctx._temp_.cisco.message_id == '113005'"
+      tag: parse_113005
       description: "113005"
       field: "message"
       patterns:
@@ -462,60 +387,90 @@ processors:
       pattern_definitions:
         AUTH: (authentication|authorization)
         REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified)
+        USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
         IPORNONE: (%{IP:source.address}|None)
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113008'"
+      tag: parse_113008
+      field: message
+      description: "113008"
+      pattern: 'AAA transaction status ACCEPT: user = %{source.user.name}'
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113009'"
+      tag: parse_113009
+      field: message
+      description: "113008"
+      pattern: 'AAA retrieved default group policy %{_temp_.cisco.group_policy} for user %{source.user.name}'
   - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
+      tag: parse_113012
       field: "message"
       description: "113012"
       patterns:
       - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
+        USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
   - grok:
       if: "ctx._temp_.cisco.message_id == '113015'"
+      tag: parse_113015
       field: "message"
       description: "113015"
       patterns:
       - "AAA user authentication Rejected(%{SPACE})?: reason = %{REASON:_temp_.cisco.rejection_reason}(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}(%{SPACE})?: [Uu]ser IP = %{IP:source.address}"
       pattern_definitions:
         REASON: (AAA failure|Account has been disabled|Invalid password|Password is expiring|Password has expired|Password malformed|Unspecified|User was not found)
+        USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
 
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
+      tag: parse_113019
       field: "message"
       description: "113019"
       pattern: "Group = %{source.user.group.name}, Username = %{source.user.name}, IP = %{destination.address}, Session disconnected. Session Type: %{_temp_.cisco.session_type}, Duration: %{_temp_.duration_hms}, Bytes xmt: %{source.bytes}, Bytes rcv: %{destination.bytes}, Reason: %{event.reason}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113021'"
+      tag: parse_113021
       field: "message"
       description: "113021"
       pattern: "Attempted console login failed. User %{source.user.name} did NOT have appropriate Admin Rights."
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113040'"
+      tag: parse_113040
       field: "message"
       description: "113040"
       pattern: "Terminating the VPN connection attempt from %{source.user.group.name}. Reason: This connection is group locked to %{}."
   - grok:
       if: '["113029","113030","113031","113032","113033","113034","113035","113036","113038","113039"].contains(ctx._temp_.cisco.message_id)'
+      tag: parse_113029-113039
       field: "message"
       description: "113029, 113030, 113031, 113032, 113033, 113034, 113035, 113036, 113038, 113039"
       patterns:
-      - "Group <%{NOTSPACE:source.user.group.name}> User <%{CISCO_USER:source.user.name}> IP <%{IP:source.address}>"
+      - "Group <%{DATA:source.user.group.name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}>"
       - "Group %{NOTSPACE:source.user.group.name} User %{CISCO_USER:source.user.name} IP %{IP:source.address}"
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+        USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '302010'"
+      tag: parse_302010
+      field: "message"
+      description: "302010"
+      pattern: '%{_temp_.cisco.connections_in_use} in use, %{_temp_.cisco.connections_most_used} most used'
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id)'
+      tag: parse_302013-302015
       field: "message"
       description: "302013, 302015"
       patterns:
         - Built %{NOTSPACE:network.direction} %{GREEDYDATA:_temp_.var_302013_302015}
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id) && ctx.network.direction == "inbound"'
+      tag: parse_302013-302015_inbound
       field: "_temp_.var_302013_302015"
       description: "inbound: 302013, 302015"
       patterns:
@@ -524,6 +479,7 @@ processors:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
+        USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
         CISCO_USER_OR_SGT_DST: (?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt})\))
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
@@ -533,6 +489,7 @@ processors:
 # https://www.cisco.com/c/en/us/td/docs/security/asa/syslog/b_syslog/syslogs3.html#con_4770603
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id) && ctx.network.direction == "outbound"'
+      tag: parse_302013-302015_outbound
       field: "_temp_.var_302013_302015"
       description: "outbound: 302013, 302015"
       patterns:
@@ -541,17 +498,20 @@ processors:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
+        USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
         CISCO_USER_OR_SGT_DST: (?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt})\))
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '303002'"
+      tag: parse_303002
       field: "message"
       description: "303002"
       pattern: "%{network.protocol} connection from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}, user %{client.user.name} %{} file %{file.path}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '305012'"
+      tag: parse_305012
       field: "message"
       description: "305012"
       patterns:
@@ -563,17 +523,13 @@ processors:
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(%{HOSTNAME}\\)?(?:%{USERNAME})\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?(?:%{NUMBER}:%{DATA})?))
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
-  - set:
-      if: '["302020"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.action"
-      value: "flow-creation"
-      description: "302020"
   - grok:
       if: "ctx._temp_.cisco.message_id == '302020'"
+      tag: parse_302020
       field: "message"
       description: "302020"
       patterns:
-        - "Built %{NOTSPACE:network.direction} %{NOTSPACE:network.protocol} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_DST}\\) )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_SRC}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
+        - "Built %{NOTSPACE:network.direction} %{NOTSPACE:network.type} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_DST}\\) )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER_OR_SGT_SRC}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
       pattern_definitions:
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
@@ -581,54 +537,58 @@ processors:
         ECSSOURCEIPORHOST: "(?:%{IP:source.address}|%{HOSTNAME:source.domain})"
         ECSDESTIPORHOST: "(?:%{IP:destination.address}|%{HOSTNAME:destination.domain})"
         MAPPEDSRC: "(?:%{DATA:_temp_.natsrcip}|%{HOSTNAME})"
+        USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
         CISCO_USER_OR_SGT_DST: (?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt})\))
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '302022'"
+      tag: parse_302022
       field: "message"
       description: "302022"
       pattern: "Built %{} stub %{network.transport} connection for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} %{} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} %{}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '302023'"
+      tag: parse_302023
       field: "message"
       description: "302023"
       pattern: "Teardown stub %{network.transport} connection for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} duration %{_temp_.duration_hms} forwarded bytes %{network.bytes} %{event.reason}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '304001'"
+      tag: parse_304001
       field: "message"
       description: "304001"
       patterns:
         - "(%{NOTSPACE:source.user.name}@)?%{IP:source.address}(\\(%{DATA}\\))? %{DATA} (%{NOTSPACE}@)?%{IPORHOST:destination.address}:%{GREEDYDATA:url.original}"
-  - set:
-      if: "ctx._temp_.cisco.message_id == '304001'"
-      field: "event.outcome"
-      description: "304001"
-      value: allowed
   - dissect:
       if: "ctx._temp_.cisco.message_id == '304002'"
+      tag: parse_304002
       field: "message"
       description: "304002"
-      pattern: "Access %{event.outcome} URL %{url.original} SRC %{source.address} %{}EST %{destination.address} on interface %{_temp_.cisco.source_interface}"
+      pattern: "Access denied URL %{url.original} SRC %{source.address} %{}EST %{destination.address} on interface %{_temp_.cisco.source_interface}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '305011'"
+      tag: parse_305011
       field: "message"
       description: "305011"
       patterns:
         - Built %{NOTSPACE} %{NOTSPACE:network.transport} translation from %{NOTSPACE:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\(%{NOTSPACE:source.user.name}\))? to %{NOTSPACE:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port}
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313001'"
+      tag: parse_313001
       field: "message"
       description: "313001"
-      pattern: "%{event.outcome} %{network.transport} type=%{_temp_.cisco.icmp_type}, code=%{_temp_.cisco.icmp_code} from %{source.address} on interface %{_temp_.cisco.source_interface}"
+      pattern: "Denied %{network.transport} type=%{_temp_.cisco.icmp_type}, code=%{_temp_.cisco.icmp_code} from %{source.address} on interface %{_temp_.cisco.source_interface}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313004'"
+      tag: parse_313004
       field: "message"
       description: "313004"
-      pattern: "%{event.outcome} %{network.transport} type=%{_temp_.cisco.icmp_type}, from%{}addr %{source.address} on interface %{_temp_.cisco.source_interface} to %{destination.address}: no matching session"
+      pattern: "Denied %{network.transport} type=%{_temp_.cisco.icmp_type}, from%{}addr %{source.address} on interface %{_temp_.cisco.source_interface} to %{destination.address}: no matching session"
   - grok:
       if: "ctx._temp_.cisco.message_id == '313005'"
+      tag: parse_313005
       field: "message"
       description: "313005"
       patterns:
@@ -641,30 +601,41 @@ processors:
         NOTCOLON: "[^:]*"
         HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+        USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
         CISCO_USER_OR_SGT_DST: (?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt})\))
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313008'"
+      tag: parse_313008
       field: "message"
       description: "313008"
-      pattern: "%{event.outcome} %{network.transport} type=%{_temp_.cisco.icmp_type}, code=%{_temp_.cisco.icmp_code} from %{source.address} on interface %{_temp_.cisco.source_interface}"
+      pattern: "Denied %{network.transport} type=%{_temp_.cisco.icmp_type}, code=%{_temp_.cisco.icmp_code} from %{source.address} on interface %{_temp_.cisco.source_interface}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313009'"
+      tag: parse_313009
       field: "message"
       description: "313009"
-      pattern: "%{event.outcome} invalid %{network.transport} code %{_temp_.cisco.icmp_code}, for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}"
+      pattern: "Denied invalid %{network.transport} code %{_temp_.cisco.icmp_code}, for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '315011'"
+      tag: parse_315011
+      field: "message"
+      description: "315011"
+      pattern: 'SSH session from %{source.ip} on interface %{_temp_.cisco.source_interface} for user %{source.user.name} disconnected by SSH server, reason: %{event.reason}'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '322001'"
+      tag: parse_322001
       field: "message"
       description: "322001"
-      pattern: "%{event.outcome} MAC address %{source.mac}, possible spoof attempt on interface %{_temp_.cisco.source_interface}"
+      pattern: "Deny MAC address %{source.mac}, possible spoof attempt on interface %{_temp_.cisco.source_interface}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338001'"
+      tag: parse_338001
       field: "message"
       description: "338001"
-      pattern: "Dynamic filter %{event.outcome} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{source.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
+      pattern: "Dynamic filter %{} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{source.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
   - set:
       if: "ctx._temp_.cisco.message_id == '338001'"
       field: "server.domain"
@@ -673,9 +644,10 @@ processors:
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338002'"
+      tag: parse_338002
       field: "message"
       description: "338002"
-      pattern: "Dynamic %{}ilter %{event.outcome} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{destination.domain}"
+      pattern: "Dynamic %{}ilter %{} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{destination.domain}"
   - set:
       if: "ctx._temp_.cisco.message_id == '338002'"
       field: "server.domain"
@@ -684,19 +656,22 @@ processors:
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338003'"
+      tag: parse_338003
       field: "message"
       description: "338003"
-      pattern: "Dynamic %{}ilter %{event.outcome} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
+      pattern: "Dynamic %{}ilter %{} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338004'"
+      tag: parse_338004
       field: "message"
       description: "338004"
-      pattern: "Dynamic %{}ilter %{event.outcome} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
+      pattern: "Dynamic %{}ilter %{} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338005'"
+      tag: parse_338005
       field: "message"
       description: "338005"
-      pattern: "Dynamic %{}ilter %{event.outcome} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{source.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
+      pattern: "Dynamic %{}ilter %{} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{source.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
   - set:
       if: "ctx._temp_.cisco.message_id == '338005'"
       field: "server.domain"
@@ -705,9 +680,10 @@ processors:
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338006'"
+      tag: parse_338006
       field: "message"
       description: "338006"
-      pattern: "Dynamic %{}ilter %{event.outcome} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{destination.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
+      pattern: "Dynamic %{}ilter %{} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{destination.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
   - set:
       if: "ctx._temp_.cisco.message_id == '338006'"
       field: "server.domain"
@@ -716,19 +692,22 @@ processors:
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338007'"
+      tag: parse_338007
       field: "message"
       description: "338007"
-      pattern: "Dynamic %{}ilter %{event.outcome} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
+      pattern: "Dynamic %{}ilter %{} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338008'"
+      tag: parse_338008
       field: "message"
       description: "338008"
-      pattern: "Dynamic %{}ilter %{event.outcome} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
+      pattern: "Dynamic %{}ilter %{} black%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338101'"
+      tag: parse_338101
       field: "message"
       description: "338101"
-      pattern: "Dynamic %{}ilter %{event.outcome} white%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{source.domain}"
+      pattern: "Dynamic %{}ilter %{} white%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{source.domain}"
   - set:
       if: "ctx._temp_.cisco.message_id == '338101'"
       field: "server.domain"
@@ -737,9 +716,10 @@ processors:
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338102'"
+      tag: parse_338102
       field: "message"
       description: "338102"
-      pattern: "Dynamic %{}ilter %{event.outcome} white%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{destination.domain}"
+      pattern: "Dynamic %{}ilter %{} white%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{destination.domain}"
   - set:
       if: "ctx._temp_.cisco.message_id == '338102'"
       field: "server.domain"
@@ -748,19 +728,22 @@ processors:
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338103'"
+      tag: parse_338103
       field: "message"
       description: "338103"
-      pattern: "Dynamic %{}ilter %{event.outcome} white%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{}"
+      pattern: "Dynamic %{}ilter %{} white%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338104'"
+      tag: parse_338104
       field: "message"
       description: "338104"
-      pattern: "Dynamic %{}ilter %{event.outcome} white%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{}"
+      pattern: "Dynamic %{}ilter %{} white%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338201'"
+      tag: parse_338201
       field: "message"
       description: "338201"
-      pattern: "Dynamic %{}ilter %{event.outcome} grey%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{source.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
+      pattern: "Dynamic %{}ilter %{} grey%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{source.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
   - set:
       if: "ctx._temp_.cisco.message_id == '338201'"
       field: "server.domain"
@@ -769,9 +752,10 @@ processors:
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338202'"
+      tag: parse_338202
       field: "message"
       description: "338202"
-      pattern: "Dynamic %{}ilter %{event.outcome} grey%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{destination.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
+      pattern: "Dynamic %{}ilter %{} grey%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{destination.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
   - set:
       if: "ctx._temp_.cisco.message_id == '338202'"
       field: "server.domain"
@@ -780,9 +764,10 @@ processors:
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338203'"
+      tag: parse_338203
       field: "message"
       description: "338203"
-      pattern: "Dynamic %{}ilter %{event.outcome} grey%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{source.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
+      pattern: "Dynamic %{}ilter %{} grey%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}source %{} resolved from %{_temp_.cisco.list_id} list: %{source.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
   - set:
       if: "ctx._temp_.cisco.message_id == '338203'"
       field: "server.domain"
@@ -791,9 +776,10 @@ processors:
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338204'"
+      tag: parse_338204
       field: "message"
       description: "338204"
-      pattern: "Dynamic %{}ilter %{event.outcome} grey%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{destination.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
+      pattern: "Dynamic %{}ilter %{} grey%{}d %{network.transport} traffic from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}destination %{} resolved from %{_temp_.cisco.list_id} list: %{destination.domain}, threat-level: %{_temp_.cisco.threat_level}, category: %{_temp_.cisco.threat_category}"
   - set:
       if: "ctx._temp_.cisco.message_id == '338204'"
       field: "server.domain"
@@ -802,6 +788,7 @@ processors:
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338301'"
+      tag: parse_338301
       field: "message"
       description: "338301"
       pattern: "Intercepted DNS reply for domain %{source.domain} from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}, matched %{_temp_.cisco.list_id}"
@@ -831,45 +818,38 @@ processors:
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '502103'"
+      tag: parse_502103
       field: "message"
       description: "502103"
       pattern: "User priv level changed: Uname: %{server.user.name} From: %{_temp_.cisco.privilege.old} To: %{_temp_.cisco.privilege.new}"
-  - append:
-      if: "ctx._temp_.cisco.message_id == '502103'"
-      field: "event.type"
-      description: "502103"
-      value:
-        - "group"
-        - "change"
-  - append:
-      if: "ctx._temp_.cisco.message_id == '502103'"
-      field: "event.category"
-      description: "502103"
-      value: "iam"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '507003'"
+      tag: parse_507003
       field: "message"
       description: "507003"
       pattern: "%{network.transport} flow from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} terminated by inspection engine, reason - %{message}"
   - dissect:
       if: '["605004", "605005"].contains(ctx._temp_.cisco.message_id)'
+      tag: parse_605004-605005
       field: "message"
       description: "605004, 605005"
-      pattern: 'Login %{event.outcome} from %{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{network.protocol} for user "%{source.user.name}"'
+      pattern: 'Login %{} from %{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{network.protocol} for user "%{source.user.name}"'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '609001'"
+      tag: parse_609001
       field: "message"
       description: "609001"
       pattern: "Built local-host %{_temp_.cisco.source_interface}:%{source.address}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '607001'"
+      tag: parse_607001
       field: "message"
       description: "607001"
       pattern: "Pre-allocate SIP %{_temp_.cisco.connection_type} secondary channel for %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} to %{_temp_.cisco.source_interface}:%{source.address} from %{_temp_.cisco.message} message"
   - grok:
       if: "ctx._temp_.cisco.message_id == '607001'"
+      tag: parse_607001_connection_type
       description: "607001"
-      tag: "grok_connection_type"
       field: "_temp_.cisco.connection_type"
       patterns:
         - "%{CONNECTION}"
@@ -877,263 +857,287 @@ processors:
         TRANSPORTS: "(?:UDP|TCP)"
         PROTOCOLS: "(?:RTP|RTCP)"
         CONNECTION: "(?:%{TRANSPORTS:network.transport}|%{PROTOCOLS:network.protocol})"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '609002'"
+      tag: parse_609002
       field: "message"
       description: "609002"
       pattern: "Teardown local-host %{_temp_.cisco.source_interface}:%{source.address} duration %{_temp_.duration_hms}"
   - dissect:
       if: '["611102", "611101"].contains(ctx._temp_.cisco.message_id)'
+      tag: parse_611101-611102
       field: "message"
       description: "611102, 611101"
-      pattern: 'User authentication %{event.outcome}: IP address: %{source.address}, Uname: %{server.user.name}'
+      pattern: 'User authentication %{}: IP address: %{source.address}, Uname: %{server.user.name}'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '710003'"
+      tag: parse_710003
       field: "message"
       description: "710003"
-      pattern: "%{network.transport} access %{event.outcome} by ACL from %{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
+      pattern: "%{network.transport} access denied by ACL from %{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '710005'"
+      tag: parse_710005
       field: "message"
       description: "710005"
-      pattern: "%{network.transport} request %{event.outcome} from %{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
+      pattern: "%{network.transport} request discarded from %{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '713049'"
-      tag: "grok_message_713049"
+      tag: parse_713049
       field: "message"
       description: "713049"
       patterns:
         - "Group = %{NOTSPACE}, IP = %{IP:source.address}, Security negotiation complete for LAN-to-LAN Group (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
         - "Group = %{NOTSPACE}, Username = %{NOTSPACE:user.name}, IP = %{IP:source.address}, Security negotiation complete for User (%{DATA}) %{DATA}, Inbound SPI = %{DATA}, Outbound SPI = %{DATA}"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '716002'"
+      tag: parse_716002
       field: "message"
       description: "716002"
       patterns:
-        - "Group <%{NOTSPACE:_temp_.cisco.webvpn.group_name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> WebVPN session terminated: %{GREEDYDATA:event.reason}."
-        - "Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} WebVPN session terminated: %{GREEDYDATA:event.reason}."
+        - 'Group <%{DATA:_temp_.cisco.webvpn.group_name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}> WebVPN session terminated: %{GREEDYDATA:event.reason}.'
+        - 'Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} WebVPN session terminated: %{GREEDYDATA:event.reason}.'
   - grok:
-      if: "ctx._temp_.cisco.message_id == '722011'"
+      if: "ctx._temp_.cisco.message_id == '716003'"
+      tag: parse_716003
       field: "message"
-      description: "722011"
+      description: "716003"
       patterns:
-        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> SVC Message: %{GREEDYDATA:event.reason}\.'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} SVC Message: %{GREEDYDATA:event.reason}\.'
-
-
+        - '^Group <%{NOTBRACKET:_temp_.cisco.webvpn.group_name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}> WebVPN access GRANTED: "?%{DATA:url.original}"?$'
+        - '^Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address} WebVPN access GRANTED: "?%{DATA:url.original}"?$'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
   - grok:
-      if: '["722022", "722023"].contains(ctx._temp_.cisco.message_id)'
+      if: "ctx._temp_.cisco.message_id == '716058'"
+      tag: parse_716058
       field: "message"
-      description: "722022, 722023"
+      description: "716058"
       patterns:
-        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> %{GREEDYDATA:event.reason}'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} %{GREEDYDATA:event.reason}'
+        - '^Group <%{NOTBRACKET:_temp_.cisco.webvpn.group_name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}>'
+        - '^Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address}'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
   - grok:
+      if: "ctx._temp_.cisco.message_id == '716059'"
+      tag: parse_716059
+      field: "message"
+      description: "716059"
+      patterns:
+        - '^Group <%{NOTBRACKET:_temp_.cisco.webvpn.group_name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:destination.address}> AnyConnect session resumed. Connection from %{NOTSPACE:source.address}\.$'
+        - '^Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:destination.address} AnyConnect session resumed. Connection from %{NOTSPACE:source.address}\.$'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '721016'"
+      tag: parse_721016
+      field: message
+      description: "721016"
+      pattern: '(%{_temp_.cisco.device_type}) WebVPN session for client user %{source.user.name}, IP %{destination.ip} has been created.'
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '721018'"
+      tag: parse_721018
+      field: message
+      description: "721018"
+      pattern: '(%{_temp_.cisco.device_type}) WebVPN session for client user %{source.user.name}, IP %{destination.ip} has been deleted.'
+  - grok:
+      if: "['722011', '722022', '722023', '722028', '722032', '722033', '722034', '722037', '722051'].contains(ctx._temp_.cisco.message_id)"
+      tag: parse_svc_message
+      field: "message"
+      description: "svc_message"
+      patterns:
+        - '^Group <%{NOTBRACKET:source.user.group.name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}> %{GREEDYDATA:event.reason}$'
+        - '^Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address} %{GREEDYDATA:event.reason}$'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
+  - dissect:
       if: "ctx._temp_.cisco.message_id == '722033'"
-      field: "message"
+      tag: parse_722033
+      field: "event.reason"
       description: "722033"
-      patterns:
-        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} First %{NOTSPACE:network.transport} SVC connection established for SVC session\.'
-  - grok:
+      pattern: 'First %{network.transport} SVC connection established for SVC session.'
+  - dissect:
       if: "ctx._temp_.cisco.message_id == '722034'"
-      field: "message"
+      tag: parse_722034
+      field: "event.reason"
       description: "722034"
-      patterns:
-        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> New %{NOTSPACE:network.transport} SVC connection, no existing connection\.'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} New %{NOTSPACE:network.transport} SVC connection, no existing connection\.'
-  - grok:
-      if: "ctx._temp_.cisco.message_id == '722037'"
-      field: "message"
-      description: "722037"
-      patterns:
-        - 'Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> SVC closing connection: %{GREEDYDATA:event.reason}\.'
-        - 'Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} SVC closing connection: %{GREEDYDATA:event.reason}\.'
-  - grok:
+      pattern: 'New %{network.transport} SVC connection, no existing connection.'
+  - dissect:
       if: "ctx._temp_.cisco.message_id == '722051'"
-      field: "message"
+      tag: parse_722051
+      field: "event.reason"
       description: "722051"
+      pattern: 'IPv4 Address <%{_temp_.cisco.assigned_ip}> %{}'
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '722055'"
+      tag: parse_722055
+      field: "message"
+      description: "722055"
       patterns:
-        - "Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> IPv4 Address <%{IP:_temp_.cisco.assigned_ip}> %{GREEDYDATA}"
-        - "Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{IP:source.address} IPv4 Address %{IP:_temp_.cisco.assigned_ip} %{GREEDYDATA}"
+        - '^Group <%{NOTBRACKET:source.user.group.name}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}> Client Type: %{GREEDYDATA:user_agent.original}$'
+        - '^Group %{NOTSPACE:source.user.group.name} User %{NOTSPACE:source.user.name} IP %{NOTSPACE:source.address} Client Type: %{GREEDYDATA:user_agent.original}$'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '725001'"
+      tag: parse_725001
+      patterns:
+        - '^Starting SSL handshake with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.ip}/%{NOTSPACE:source.port} to %{NOTSPACE:destination.ip}/%{NOTSPACE:destination.port} for %{NOTSPACE:_temp_.cisco.tls_version} session'
+        - '^Starting SSL handshake with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.ip}/%{NOTSPACE:source.port} for %{NOTSPACE:_temp_.cisco.tls_version} session'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '725002'"
+      tag: parse_725002
+      patterns:
+        - '^Device completed SSL handshake with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.ip}/%{NOTSPACE:source.port} to %{NOTSPACE:destination.ip}/%{NOTSPACE:destination.port} for %{NOTSPACE:_temp_.cisco.tls_version}'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '725007'"
+      tag: parse_725007
+      patterns:
+        - '^SSL session with %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.ip}/%{NOTSPACE:source.port} to %{NOTSPACE:destination.ip}/%{NOTSPACE:destination.port} terminated'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '725016'"
+      tag: parse_725016
+      patterns:
+        - '^Device selects trust-point %{DATA:_temp_.cisco.trustpoint} for %{NOTSPACE:_temp_.cisco.peer_type} %{DATA:_temp_.cisco.source_interface}:%{NOTSPACE:source.ip}/%{NOTSPACE:source.port} to %{NOTSPACE:destination.ip}/%{NOTSPACE:destination.port}$'
   - grok:
       if: "ctx._temp_.cisco.message_id == '733100'"
+      tag: parse_733100
       field: "message"
       description: "733100"
       patterns:
         - \[(%{SPACE})?%{DATA:_temp_.cisco.burst.object}\] drop %{NOTSPACE:_temp_.cisco.burst.id} exceeded. Current burst rate is %{INT:_temp_.cisco.burst.current_rate} per second, max configured rate is %{INT:_temp_.cisco.burst.configured_rate}; Current average rate is %{INT:_temp_.cisco.burst.avg_rate} per second, max configured rate is %{INT:_temp_.cisco.burst.configured_avg_rate}; Cumulative total count is %{INT:_temp_.cisco.burst.cumulative_count}
   - dissect:
       if: "ctx._temp_.cisco.message_id == '734001'"
+      tag: parse_734001
       field: "message"
       description: "734001"
       pattern: "DAP: User %{user.email}, Addr %{source.address}, Connection %{_temp_.cisco.connection_type}: The following DAP records were selected for this connection: %{_temp_.cisco.dap_records->}"
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '737003'"
+      tag: parse_737003
+      patterns:
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, DHCP configured, no viable servers found for tunnel-group %{NOTSPACE:_temp_.cisco.tunnel_group}$'
+        - '^IPAA: DHCP configured, no viable servers found for tunnel-group %{NOTSPACE:_temp_.cisco.tunnel_group}$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '737006'"
+      tag: parse_737006
+      patterns:
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, Local pool request succeeded for tunnel-group %{NOTSPACE:_temp_.cisco.tunnel_group}$'
+        - '^IPAA: Local pool request succeeded for tunnel-group %{NOTSPACE:_temp_.cisco.tunnel_group}$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '737016'"
+      tag: parse_737016
+      patterns:
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, Freeing local pool %{NOTSPACE:_temp_.cisco.pool_name} address %{NOTSPACE:_temp_.cisco.pool_address}$'
+        - '^IPAA: Freeing local pool %{NOTSPACE:_temp_.cisco.pool_name} address %{NOTSPACE:_temp_.cisco.pool_address}$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '737026'"
+      tag: parse_737026
+      patterns:
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, Client assigned %{NOTSPACE:_temp_.cisco.pool_address} from local pool %{NOTSPACE:_temp_.cisco.pool_name}$'
+        - '^IPAA: Client assigned %{NOTSPACE:_temp_.cisco.pool_address} from local pool %{NOTSPACE:_temp_.cisco.pool_name}$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '737034'"
+      tag: parse_737034
+      patterns:
+        - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, %{GREEDYDATA:event.reason}$'
+        - '^IPAA: %{GREEDYDATA:event.reason}$'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '805001'"
+      tag: parse_805001
       field: "message"
       description: "805001"
       pattern: "Offloaded %{network.transport} Flow for connection %{_temp_.cisco.connection_id} from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '805002'"
+      tag: parse_805002
       field: "message"
       description: "805002"
       pattern: "%{network.transport} Flow is no longer offloaded for connection %{_temp_.cisco.connection_id} from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})"
   - split:
       field: "_temp_.cisco.dap_records"
+      tag: split_dap_records
       separator: ",\\s+"
       ignore_missing: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '434002'"
+      tag: parse_434002
       field: "message"
-      pattern: "SFR requested to %{event.action} %{network.protocol} packet from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
+      pattern: "SFR requested to drop %{network.transport} packet from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '434004'"
+      tag: parse_434004
       field: "message"
-      pattern: "SFR requested ASA to %{event.action} further packet redirection and process %{network.protocol} flow from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} locally"
+      pattern: "SFR requested ASA to bypass further packet redirection and process %{network.transport} flow from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} locally"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '110002'"
+      tag: parse_110002
       field: "message"
-      pattern: "%{event.reason} for %{network.protocol} from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{destination.address}/%{destination.port}"
+      pattern: "%{event.reason} for %{network.transport} from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{destination.address}/%{destination.port}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '419002'"
+      tag: parse_419002
       field: "message"
       pattern: "%{event.reason}from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} %{+event.reason}"
   - dissect:
       if: '["602303", "602304"].contains(ctx._temp_.cisco.message_id)'
+      tag: parse_602303-602304
       field: "message"
-      pattern: "%{network.type}: An %{network.direction} %{_temp_.cisco.tunnel_type} SA (SPI= %{}) between %{source.address} and %{destination.address} (user= %{user.name}) has been %{event.action}."
+      pattern: "%{network.type}: An %{network.direction} %{_temp_.cisco.tunnel_type} SA (SPI= %{}) between %{source.address} and %{destination.address} (user= %{user.name}) has been %{}."
   - dissect:
       if: "ctx._temp_.cisco.message_id == '750002'"
+      tag: parse_750002
       field: "message"
       pattern: "Local:%{source.address}:%{source.port} Remote:%{destination.address}:%{destination.port} Username:%{user.name} %{event.reason}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '713120'"
+      tag: parse_713120
       field: "message"
       pattern: "Group = %{}, IP = %{source.address}, %{event.reason} (msgid=%{event.id})"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '713202'"
+      tag: parse_713202
       field: "message"
       pattern: "IP = %{source.address}, %{event.reason}. %{} packet."
 # Support masked user
   - grok:
       if: "ctx._temp_.cisco.message_id == '716039'"
+      tag: parse_716039
       field: "message"
       patterns:
         - "Authentication: rejected, group = %{NOTSPACE:source.user.group.name} user = %{USER:source.user.name} , Session Type: %{NOTSPACE:_temp_.cisco.session_type}"
-        - "Group <%{NOTSPACE:source.user.group.name}> User <%{NOTSPACE:source.user.name}> IP <%{IP:source.address}> Authentication: rejected, Session Type: %{NOTSPACE:_temp_.cisco.session_type}\\."
+        - "Group <%{DATA:source.user.group.name}> User <%{DATA:source.user.name}> IP <%{IP:source.address}> Authentication: rejected, Session Type: %{NOTSPACE:_temp_.cisco.session_type}\\."
   - dissect:
       if: "ctx._temp_.cisco.message_id == '750003'"
+      tag: parse_750003
       field: "message"
       pattern: "Local:%{source.address}:%{source.port} Remote:%{destination.address}:%{destination.port} Username:%{user.name} %{event.reason} ERROR:%{+event.reason}"
   - grok:
       if: '["713905", "713904", "713906", "713902", "713901"].contains(ctx._temp_.cisco.message_id)'
+      tag: parse_713901-713906
       field: "message"
       patterns:
         - "^(Group = %{IP}, )?(IP = %{IP:source.address}, )?%{GREEDYDATA:event.reason}$"
-   # Handle ecs action outcome protocol
-  - set:
-      if: '["434002", "434004"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.outcome"
-      value: "unknown"
   - set:
       if: '["419002"].contains(ctx._temp_.cisco.message_id)'
-      field: "network.protocol"
+      tag: parse_419002
+      field: "network.transport"
       value: "tcp"
-  - set:
-      if: '["110002"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.outcome"
-      value: "dropped"
-  - set:
-      if: '["713120"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.outcome"
-      value: "success"
-  - set:
-      if: '["113004", "113012"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.outcome"
-      value: "success"
-  - set:
-      if: '["113002", "113005", "113021"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.outcome"
-      value: "failure"
-  - set:
-      if: '["602303", "602304", "611101"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.outcome"
-      value: "success"
-  - set:
-      if: '["605004", "611102"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.outcome"
-      value: "failure"
-  - set:
-      if: '["734001"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.outcome"
-      value: "success"
-  - set:
-      if: '["716039"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.outcome"
-      value: "failure"
-  - set:
-      if: '["710005"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.outcome"
-      value: "dropped"
-  - set:
-      if: '["713901", "713902", "713903", "713904", "713905"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.outcome"
-      value: "failure"
-  - set:
-      if: '["113039"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.action"
-      value: "client-vpn-connected"
-  - set:
-      if: '["113029","113030","113031","113032","113033","113034","113035","113036","113037","113038","113040"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.action"
-      value: "client-vpn-error"
-  - set:
-      if: '["113019"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.action"
-      value: "client-vpn-disconnected"
-  - set:
-      if: '["750002", "750003"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.action"
-      value: "connection-started"
-  - set:
-      if: '["750003", "713905", "713904", "713906", "713902", "713901"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.action"
-      value: "error"
-  - set:
-      if: '["113005", "113021", "605004", "611102", "716039"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.action"
-      value: "logon-failed"
-  - set:
-      if: '["113004", "113012", "611101", "734001"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.action"
-      value: "logged-in"
-  - append:
-      if: '["750003", "713905", "713904", "713906", "713902", "713901"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.type"
-      value: "error"
 
   #
   # Handle 302xxx messages (Flow expiration a.k.a "Teardown")
   #
-  - set:
-      if: '["305012", "302014", "302016", "302018", "302021", "302036", "302304", "302306", "609001", "609002"].contains(ctx._temp_.cisco.message_id)'
-      field: "event.action"
-      value: "flow-expiration"
-      description: "305012, 302014, 302016, 302018, 302021, 302036, 302304, 302306, 609001, 609002"
   - grok:
       field: "message"
-      tag: "grok_message_302xxx_teardown"
+      tag: parse_302xxx
       if: '["302014", "302016", "302018", "302021", "302036", "302304", "302306"].contains(ctx._temp_.cisco.message_id)'
       description: "302014, 302016, 302018, 302021, 302036, 302304, 302306"
       patterns:
@@ -1152,16 +1156,11 @@ processors:
         ECSDESTIPORHOST: "(?:%{IP:destination.address}|%{HOSTNAME:destination.domain})"
         MAPPEDSRC: "(?:%{IPORHOST:_temp_.natsrcip}|%{HOSTNAME})"
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
+        USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
         CISCO_USER_OR_SGT_DST: (?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt})\))
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
         CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
   #
   # Decode FTD's Security Event Syslog Messages
@@ -1180,12 +1179,6 @@ processors:
       target_field: "_temp_.orig_security"
       trim_key: " "
       trim_value: " "
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
   #
   # Remove _temp_.full_message.
@@ -1196,6 +1189,7 @@ processors:
   - rename:
       description: Retain full log message without the Cisco codes for later search.
       if: ctx.tags != null && ctx.tags.contains('keep_message') && ctx._temp_?.cisco?.full_message == null
+      tag: rename_full_message
       field: message
       target_field: _temp_.cisco.full_message
   - remove:
@@ -1228,6 +1222,7 @@ processors:
   #*******************************************************************************
   - script:
       if: ctx._temp_?.orig_security != null
+      tag: script_ftd_events
       params:
         ACPolicy:
           target: ac_policy
@@ -1592,6 +1587,7 @@ processors:
   # Normalize ECS field values
   #
   - script:
+      tag: script_normalize_ftd_events
       lang: painless
       params:
         "ctx._temp_.cisco.message_id":
@@ -1687,6 +1683,7 @@ processors:
   # This will fill event.start, event.end and event.duration
   #
   - script:
+      tag: script_process_flow_duration
       lang: painless
       if: "ctx?._temp_?.duration_hms != null"
       source: >
@@ -1731,12 +1728,6 @@ processors:
         CISCO_SGT: (, *(%{CISCO_SGT_TAG}:%{CISCO_SGT_NAME}|%{CISCO_SGT_TAG}))|(%{CISCO_SGT_TAG}:%{CISCO_SGT_NAME})
         CISCO_SGT_TAG: (%{NUMBER:_temp_.cisco.source_user_security_group_tag})
         CISCO_SGT_NAME: (%{WORD:_temp_.cisco.source_user_security_group_tag_name})
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   # Parse Source without User only containing SGT
   - grok:
       field: "_temp_.cisco.source_sgt"
@@ -1746,14 +1737,9 @@ processors:
         - '%{CISCO_SGT}'
       pattern_definitions:
         CISCO_SGT: (, *)?(%{NUMBER:_temp_.cisco.source_user_security_group_tag})?:?%{WORD:_temp_.cisco.source_user_security_group_tag_name}?
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - convert:
       field: _temp_.cisco.source_user_security_group_tag
+      tag: convert_source_user_security_group_tag
       type: long
       ignore_missing: true
   - grok:
@@ -1770,12 +1756,6 @@ processors:
         CISCO_SGT: (, *(%{CISCO_SGT_TAG}:%{CISCO_SGT_NAME}|%{CISCO_SGT_TAG}))|(%{CISCO_SGT_TAG}:%{CISCO_SGT_NAME})
         CISCO_SGT_TAG: (%{NUMBER:_temp_.cisco.destination_user_security_group_tag})
         CISCO_SGT_NAME: (%{WORD:_temp_.cisco.destination_user_security_group_tag_name})
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   # Parse Destination without User only containing SGT
   - grok:
       field: "_temp_.cisco.destination_sgt"
@@ -1785,14 +1765,9 @@ processors:
         - '%{CISCO_SGT}'
       pattern_definitions:
         CISCO_SGT: (, *)?(%{NUMBER:_temp_.cisco.destination_user_security_group_tag})?:?%{WORD:_temp_.cisco.destination_user_security_group_tag_name}?
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - convert:
       field: _temp_.cisco.destination_user_security_group_tag
+      tag: convert_destination_user_security_group_tag
       type: long
       ignore_missing: true
   - remove: 
@@ -1808,10 +1783,12 @@ processors:
       field: _temp_.cisco.destination_username
       if: ctx._temp_?.cisco?.destination_username != null && ctx._temp_.cisco.destination_username == ""
   - set:
+      tag: set_source_user_name
       field: source.user.name
       value: "{{{ _temp_.cisco.source_username }}}"
       if: 'ctx?.source?.user?.name == null && ctx._temp_?.cisco?.source_username != null'
   - set:
+      tag: set_destination_user_name
       field: destination.user.name
       value: "{{{ _temp_.cisco.destination_username }}}"
       if: 'ctx?.destination?.user?.name == null && ctx._temp_?.cisco?.destination_username != null'
@@ -1829,12 +1806,6 @@ processors:
         CISCO_USER_EMAIL: "%{CISCO_USER}@%{HOSTNAME:source.user.domain}"
         CISCO_USER: "%{USERNAME:source.user.name}"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME:source.user.domain}\\)?
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: "destination.user.name"
       tag: "grok_destination_user_name"
@@ -1847,12 +1818,6 @@ processors:
         CISCO_USER_EMAIL: "%{CISCO_USER}@%{HOSTNAME:destination.user.domain}"
         CISCO_USER: "%{USERNAME:destination.user.name}"
         CISCO_DOMAIN: (LOCAL\\)?(%{HOSTNAME:destination.user.domain}\\)?
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
 
   #
   # Normalize protocol names
@@ -1881,6 +1846,7 @@ processors:
   #
   - script:
       if: "ctx?.network?.transport != null"
+      tag: script_process_iana_number
       lang: painless
       params:
         icmp: 1
@@ -1922,32 +1888,21 @@ processors:
           net['iana_number'] = net.transport;
           net['transport'] = trans;
         }
-  #
-  # Normalize event.outcome
-  #
-  - lowercase:
-      field: "event.outcome"
-      ignore_missing: true
-  - set:
-      field: "event.outcome"
-      if: 'ctx.event?.outcome == "est-allowed"'
-      value: "allowed"
-  - set:
-      field: "event.outcome"
-      if: 'ctx.event?.outcome == "permitted"'
-      value: "allowed"
-  - set:
-      field: "event.outcome"
-      if: 'ctx.event?.outcome == "allow"'
-      value: allowed
-  - set:
-      field: "event.outcome"
-      if: 'ctx.event?.outcome == "deny"'
-      value: denied
   - set:
       field: "network.transport"
       if: 'ctx.network?.transport == "icmpv6"'
       value: "ipv6-icmp"
+
+  #
+  # Normalize event.outcome
+  #
+  - lowercase:
+      field: "_temp_.outcome"
+      ignore_missing: true
+  - lowercase:
+      field: "event.outcome"
+      ignore_missing: true
+
   #
   # Convert numeric fields to integer or long, as output of dissect and kv processors is always a string
   #
@@ -1956,150 +1911,92 @@ processors:
       tag: "convert_source_port"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: destination.port
       tag: "convert_destination_port"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: source.bytes
       tag: "convert_source_bytes"
       type: long
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: destination.bytes
       tag: "convert_destination_bytes"
       type: long
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: network.bytes
       tag: "convert_network_bytes"
       type: long
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: source.packets
       tag: "convert_source_packets"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: destination.packets
       tag: "convert_destination_packets"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: _temp_.cisco.mapped_source_port
       tag: "convert_mapped_source_port"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - convert:
       field: _temp_.cisco.mapped_destination_port
       tag: "convert_mapped_destination_port"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - convert:
       field: _temp_.cisco.icmp_code
       tag: "convert_icmp_code"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: _temp_.cisco.icmp_type
       tag: "convert_icmp_type"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: _temp_.cisco.original_iana_number
       tag: "convert_original_iana_number"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: http.response.status_code
       tag: "convert_http_resp_status_code"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: file.size
       tag: "convert_file_size"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: network.iana_number
       tag: "convert_iana_number"
       type: string
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - convert:
       field: sip.to.uri.port
       tag: "convert_sip_to_uri_port"
       type: integer
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
-      
+  - convert:
+      field: _temp_.cisco.connections_in_use
+      tag: "convert_connections_in_use"
+      type: long
+      ignore_missing: true
+  - convert:
+      field: _temp_.cisco.connections_most_used
+      tag: "convert_connections_most_used"
+      type: long
+      ignore_missing: true
+
   #
   # Assign ECS .ip fields from .address is a valid IP address is found,
   # otherwise set .domain field.
@@ -2110,44 +2007,24 @@ processors:
       tag: "grok_source_address"
       patterns:
         - "^(?:%{IP:source.ip}|%{GREEDYDATA:source.domain})$"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: destination.address
       if: ctx.destination?.address != null
       tag: "grok_destination_address"
       patterns:
         - "^(?:%{IP:destination.ip}|%{GREEDYDATA:destination.domain})$"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: client.address
       if: ctx.client?.address != null
       tag: "grok_client_address"
       patterns:
         - "^(?:%{IP:client.ip}|%{GREEDYDATA:client.domain})$"
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - grok:
       field: server.address
       if: ctx.server?.address != null
       tag: "grok_server_address"
       patterns:
         - "^(?:%{IP:server.ip}|%{GREEDYDATA:server.domain})$"
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   #
   # Geolocation for source and destination addresses
   #
@@ -2203,24 +2080,12 @@ processors:
       tag: "grok_natsrcip"
       patterns:
         - "^(?:%{IP:_temp_.cisco.mapped_source_ip}|%{GREEDYDATA:_temp_.cisco.mapped_source_host})$"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   - grok:
       field: _temp_.natdstip
       if: ctx._temp_?.natdstip != null
       tag: "grok_natdstip"
       patterns:
         - "^(?:%{IP:_temp_.cisco.mapped_destination_ip}|%{GREEDYDATA:_temp_.cisco.mapped_destination_host})$"
-      on_failure:
-        - append:
-            field: error.message
-            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
-        - fail:
-            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
   #
   # NAT fields
   #
@@ -2228,38 +2093,46 @@ processors:
   # This populates both nat.ip and nat.port only when some translation is done.
   # Fills nat.ip and nat.port even when only the ip or port changed.
   - set:
+      tag: set_source_nat_ip
       field: source.nat.ip
       value: "{{{_temp_.cisco.mapped_source_ip}}}"
       if: "ctx?._temp_?.cisco?.mapped_source_ip != ctx?.source?.ip"
       ignore_empty_value: true
   - convert:
+      tag: convert_source_nat_ip
       field: source.nat.ip
       type: ip
       ignore_missing: true
   - set:
+      tag: set_source_nat_port
       field: source.nat.port
       value: "{{{_temp_.cisco.mapped_source_port}}}"
       if: "ctx?._temp_?.cisco?.mapped_source_port != ctx?.source?.port"
       ignore_empty_value: true
   - convert:
+      tag: convert_source_nat_port
       field: source.nat.port
       type: long
       ignore_missing: true
   - set:
+      tag: set_destination_nat_ip
       field: destination.nat.ip
       value: "{{{_temp_.cisco.mapped_destination_ip}}}"
       if: "ctx?._temp_?.cisco.mapped_destination_ip != ctx?.destination?.ip"
       ignore_empty_value: true
   - convert:
+      tag: convert_destination_nat_ip
       field: destination.nat.ip
       type: ip
       ignore_missing: true
   - set:
+      tag: set_destination_nat_port
       field: destination.nat.port
       value: "{{{_temp_.cisco.mapped_destination_port}}}"
       if: "ctx?._temp_?.cisco?.mapped_destination_port != ctx?.destination?.port"
       ignore_empty_value: true
   - convert:
+      tag: convert_destination_nat_port
       field: destination.nat.port
       type: long
       ignore_missing: true
@@ -2337,15 +2210,26 @@ processors:
       field: url.original
       tag: "uriparts_url_original"
       if: ctx.url?.original != null
-      on_failure:
-        - append:
-            field: error.message
-            value: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - append:
       field: url.domain
       value: "{{{_temp_.url_domain}}}"
       allow_duplicates: false
       if: ctx?._temp_?.url_domain != null
+
+  - grok:
+      field: _temp_.cisco.tls_version
+      if: "ctx._temp_?.cisco?.tls_version != null"
+      tag: parse_tls_version
+      patterns:
+        - "%{PROTO:tls.version_protocol}v%{NUMBER:tls.version}"
+      pattern_definitions:
+        PROTO: "[A-Z]+"
+  - lowercase:
+      field: tls.version_protocol
+      ignore_missing: true
+  - remove:
+      field: _temp_.cisco.tls_version
+      ignore_missing: true
 
   #
   # Populate ECS event.code
@@ -2361,14 +2245,7 @@ processors:
       field: _temp_.cisco
       target_field: "cisco.asa"
       if: ctx._temp_?.cisco != null
-  #
-  # Remove temporary fields
-  #
-  - remove:
-      field:
-        - _temp_
-        - _conf
-      ignore_missing: true
+
   #
   # Rename some 7.x fields
   #
@@ -2378,155 +2255,608 @@ processors:
       ignore_missing: true
   # ECS categorization
   - script:
+      tag: script_ecs_outcome_categorization
       lang: painless
+      description: >-
+        Sets the ECS event categorization fields for given message type and outcome.
+        The top-level keys are the Cisco message IDs, which will match against
+        'event.code' in the document. The next level of keys are outcome values,
+        which match against '_temp_.outcome' in the document. The final level of
+        keys are ECS event fields.
       params:
-        connection-finished:
-          kind: event
-          category:
-            - network
-          type:
-            - end
-        connection-started:
-          kind: event
-          category:
-            - network
-          type:
-            - start
-        file-detected:
-          kind: alert
-          category:
-            - malware
-          type:
-            - info
-        firewall-rule:
-          kind: event
-          category:
-            - network
-          type: []
-        flow-creation:
-          kind: event
-          category:
-            - network
-          type:
-            - connection
-            - start
-        flow-expiration:
-          kind: event
-          category:
-            - network
-          type:
-            - connection
-            - end
-        intrusion-detected:
-          kind: alert
-          category:
-            - intrusion_detection
-          type:
-            - info
-        logged-in:
-          kind: event
-          category:
-            - authentication
-            - network
-          type: ['allowed', 'info']
-        logon-failed:
-          kind: event
-          category:
-            - authentication
-            - network
-          type: ['denied', 'info']
-        malware-detected:
-          kind: alert
-          category:
-            - malware
-          type:
-            - info
-        bypass:
-          kind: event
-          category:
-            - network
-          type:
-            - info
-        error:
-          kind: event
-          outcome: failure
-          category:
-            - network
-          type:
-            - info
-        deleted:
-          kind: event
-          category:
-            - network
-          type:
-            - info
-            - end
-        creation:
-          kind: event
-          category:
-            - network
-          type:
-            - info
-            - access
-        client-vpn-connected:
-          kind: event
-          category:
-            - network
-            - session
-          type:
-            - connection
-            - start
-        client-vpn-error:
-          kind: event
-          category:
-            - network
-          type:
-            - connection
-            - denied
-        client-vpn-disconnected:
-          kind: event
-          category:
-            - network
-          type:
-            - connection
-            - end
+        "106100":
+          denied:
+            type: [ connection, denied ]
+            outcome: success
+            action: firewall-rule
+          permitted:
+            type: [ connection, allowed ]
+            outcome: success
+            action: firewall-rule
+          est-allowed:
+            type: [ connection, allowed ]
+            outcome: success
+            action: firewall-rule
+        "106102":
+          denied:
+            type: [ connection, denied ]
+            outcome: success
+            action: firewall-rule
+          permitted:
+            type: [ connection, allowed ]
+            outcome: success
+            action: firewall-rule
+        "111004":
+          failed:
+            category: [ configuration ]
+            type: [ info ]
+            outcome: failure
+            action: configuration
+          ok:
+            category: [ configuration ]
+            type: [ change ]
+            outcome: success
+            action: configuration
       source: >-
-        if (ctx?.event?.action == null || !params.containsKey(ctx.event.action)) {
-          return;
-        }
+        params.get(ctx.event.code)?.get(ctx._temp_.outcome)?.forEach((k, v) -> ctx.event[k] = v);
 
-        ctx.event.kind = params.get(ctx.event.action).get('kind');
-        ctx.event.category = params.get(ctx.event.action).get('category').clone();
-        ctx.event.type = params.get(ctx.event.action).get('type').clone();
-        if (ctx?.event?.outcome == null || (!ctx.event.category.contains('network') && !ctx.event.category.contains('intrusion_detection'))) {
-          if (ctx?.event?.action == 'firewall-rule') {
-            ctx.event.type.add('info');
-          } else if (ctx?.event?.action.startsWith('connection-')) {
-            ctx.event.type.add('connection');
-          }
-          return;
-        }
-        if (ctx.event.outcome == 'allowed') {
-          ctx.event.outcome = 'success';
-          ctx.event.type.add('connection');
-          ctx.event.type.add('allowed');
-        } else if (ctx.event.outcome == 'denied' || ctx.event.outcome == 'block') {
-          ctx.event.outcome = 'success';
-          ctx.event.type.add('connection');
-          ctx.event.type.add('denied');
-        } else if (ctx.event.outcome == 'dropped') {
-          ctx.event.outcome = 'failure';
-          ctx.event.type.add('connection');
-          ctx.event.type.add('denied');
-        } else if (ctx?.event?.action == 'firewall-rule') {
-          ctx.event.type.add('info');
-        } else if (ctx?.event?.action.startsWith('connection-')) {
-          ctx.event.type.add('connection');
-        }
-        if (ctx.event.outcome == 'monitored') {
-          ctx.event.category.add('intrusion_detection');
-          ctx.event.outcome = 'success';
-        }
+  - script:
+      tag: script_ecs_categorization
+      lang: painless
+      description: >-
+        This script will set the ECS event categorization fields for a given
+        message type. The top-level keys are the Cisco message IDs. The next
+        level of keys are ECS event fields.
+      params:
+        "106001":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106002":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106006":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106007":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106010":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106012":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106013":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106014":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106015":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106016":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106017":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106018":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106020":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106021":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106022":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106023":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106027":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "106103":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "110002":
+          type: [ connection, info ]
+          outcome: failure
+          action: firewall-rule
+        "111009":
+          category: [ configuration ]
+          type: [ info ]
+          outcome: success
+          action: configuration
+        "111010":
+          category: [ configuration ]
+          type: [ change ]
+          outcome: success
+          action: configuration
+        "113004":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+          action: logged-in
+        "113005":
+          category: [ authentication, network ]
+          type: [ denied, info ]
+          outcome: failure
+          action: logon-failed
+        "113008":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+          action: logged-in
+        "113009":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+          action: logged-in
+        "113012":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+          action: logged-in
+        "113015":
+          category: [ authentication, network ]
+          type: [ denied, info ]
+          outcome: failure
+          action: logon-failed
+        "113019":
+          type: [ connection, end ]
+          outcome: success
+          action: client-vpn-disconnected
+        "113021":
+          category: [ authentication, network ]
+          type: [ denied, info ]
+          outcome: failure
+          action: logon-failed
+        "113029":
+          type: [ connection, denied ]
+          outcome: failure
+          action: client-vpn-error
+        "113030":
+          type: [ connection, denied ]
+          outcome: failure
+          action: client-vpn-error
+        "113031":
+          type: [ connection, denied ]
+          outcome: failure
+          action: client-vpn-error
+        "113032":
+          type: [ connection, denied ]
+          outcome: failure
+          action: client-vpn-error
+        "113033":
+          type: [ connection, denied ]
+          outcome: failure
+          action: client-vpn-error
+        "113034":
+          type: [ connection, denied ]
+          outcome: failure
+          action: client-vpn-error
+        "113035":
+          type: [ connection, denied ]
+          outcome: failure
+          action: client-vpn-error
+        "113036":
+          type: [ connection, denied ]
+          outcome: failure
+          action: client-vpn-error
+        "113037":
+          type: [ connection, denied ]
+          outcome: failure
+          action: client-vpn-error
+        "113038":
+          type: [ connection, denied ]
+          outcome: failure
+          action: client-vpn-error
+        "113039":
+          category: [ network, session ]
+          type: [ connection, start ]
+          action: client-vpn-connected
+          outcome: success
+        "113040":
+          type: [ connection, denied ]
+          outcome: failure
+          action: client-vpn-error
+        "302013":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
+        "302014":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302015":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
+        "302016":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302018":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302020":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
+        "302021":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302022":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
+        "302023":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302024":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
+        "302025":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302026":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
+        "302027":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302036":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302304":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "302306":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "303002":
+          category: [ network, file ]
+          type: [ access ]
+          outcome: success
+          action: ftp
+        "304001":
+          type: [ access, allowed ]
+          outcome: success
+          action: url-access
+        "304002":
+          type: [ access, denied ]
+          outcome: success
+          action: url-access
+        "305011":
+          category: [ network, configuration ]
+          type: [ creation ]
+          outcome: success
+          action: nat-slot
+        "305012":
+          category: [ network, configuration ]
+          type: [ deletion ]
+          outcome: success
+          action: nat-slot
+        "313001":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "313004":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "313005":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "313008":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "313009":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "315011":
+          type: [ connection, end ]
+          action: ssh-session-ended
+        "322001":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "338001":
+          type: [ connection, info ]
+          action: dynamic-filter
+        "338002":
+          type: [ connection, info ]
+          action: dynamic-filter
+        "338003":
+          type: [ connection, info ]
+          action: dynamic-filter
+        "338004":
+          type: [ connection, info ]
+          action: dynamic-filter
+        "338005":
+          type: [ connection, denied ]
+          outcome: success
+          action: dynamic-filter
+        "338006":
+          type: [ connection, denied ]
+          outcome: success
+          action: dynamic-filter
+        "338007":
+          type: [ connection, denied ]
+          outcome: success
+          action: dynamic-filter
+        "338008":
+          type: [ connection, denied ]
+          outcome: success
+          action: dynamic-filter
+        "338101":
+          type: [ connection, info ]
+          action: dynamic-filter
+        "338102":
+          type: [ connection, info ]
+          action: dynamic-filter
+        "338103":
+          type: [ connection, info ]
+          action: dynamic-filter
+        "338104":
+          type: [ connection, info ]
+          action: dynamic-filter
+        "338201":
+          type: [ connection, info ]
+          action: dynamic-filter
+        "338202":
+          type: [ connection, info ]
+          action: dynamic-filter
+        "338203":
+          type: [ connection, denied ]
+          outcome: success
+          action: dynamic-filter
+        "338204":
+          type: [ connection, denied ]
+          outcome: success
+          action: dynamic-filter
+        "338301":
+          type: [ connection, info ]
+          action: firewall-rule
+        "419002":
+          type: [ connection, info ]
+          action: firewall-rule
+        "434002":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "434004":
+          type: [ info ]
+          action: bypass
+        "502103":
+          category: [ iam ]
+          type: [ user, change ]
+          outcome: success
+          action: privilege-level-changed
+        "507003":
+          type: [ connection, end ]
+          action: flow-termination
+        "602303":
+          type: [ connection, start ]
+          outcome: success
+          action: sa-created
+        "602304":
+          type: [ connection, end ]
+          outcome: success
+          action: sa-deleted
+        "605004":
+          category: [ authentication, network ]
+          type: [ denied, info ]
+          outcome: failure
+          action: logon-failed
+        "605005":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+          action: logged-in
+        "607001":
+          type: [ info ]
+          outcome: success
+          action: firewall-rule
+        "609001":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-creation
+        "609002":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-expiration
+        "611101":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+          action: logged-in
+        "611102":
+          category: [ authentication, network ]
+          type: [ denied, info ]
+          outcome: failure
+          action: logon-failed
+        "710003":
+          type: [ connection, denied ]
+          outcome: success
+          action: firewall-rule
+        "710005":
+          type: [ connection, denied ]
+          outcome: failure
+          action: firewall-rule
+        "710006":
+          type: [ connection, denied ]
+          outcome: failure
+          action: firewall-rule
+        "713049":
+          type: [ connection, start ]
+          outcome: success
+          action: firewall-rule
+        "713120":
+          type: [ connection, info ]
+          outcome: success
+          action: firewall-rule
+        "713202":
+          type: [ connection, info ]
+          action: firewall-rule
+        "713901":
+          type: [ info ]
+          outcome: failure
+          action: client-vpn-error
+        "713902":
+          type: [ info ]
+          outcome: failure
+          action: client-vpn-error
+        "713903":
+          type: [ info ]
+        "713904":
+          type: [ info ]
+        "713905":
+          type: [ info ]
+        "713906":
+          type: [ info ]
+        "716002":
+          type: [ connection, end ]
+          outcome: success
+          action: client-vpn-disconnected
+        "716003":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+        "716039":
+          category: [ authentication, network ]
+          type: [ denied, info ]
+          action: logon-failed
+          outcome: failure
+        "716058":
+          type: [ connection, end ]
+          outcome: success
+          action: client-vpn-disconnected
+        "716059":
+          type: [ connection, start ]
+          outcome: success
+          action: client-vpn-resumed
+        "721016":
+          type: [ connection, start ]
+          outcome: success
+          action: client-vpn-connected
+        "721018":
+          type: [ connection, end ]
+          outcome: success
+          action: client-vpn-disconnected
+        "722011":
+          type: [ info ]
+        "722022":
+          type: [ connection, info ]
+          outcome: success
+        "722023":
+          type: [ connection, end ]
+          outcome: success
+        "722028":
+          type: [ connection, end ]
+          outcome: success
+        "722032":
+          type: [ connection, start ]
+          outcome: success
+        "722033":
+          type: [ connection, start ]
+          outcome: success
+        "722034":
+          type: [ connection, info ]
+        "722037":
+          type: [ connection, end ]
+        "722051":
+          type: [ connection, info ]
+          outcome: success
+          action: address-assigned
+        "722055":
+          type: [ connection, info ]
+        "725001":
+          type: [ connection, start ]
+          outcome: success
+        "725002":
+          type: [ connection, info ]
+          outcome: success
+        "725007":
+          type: [ connection, end ]
+          outcome: success
+        "725016":
+          type: [ connection, info ]
+          outcome: success
+        "733100":
+          type: [ info ]
+        "734001":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+          action: logged-in
+        "737003":
+          type: [ connection, info ]
+          outcome: failure
+        "737006":
+          type: [ connection, info ]
+          outcome: success
+        "737016":
+          type: [ connection, info ]
+          outcome: success
+        "737026":
+          type: [ connection, info ]
+          outcome: success
+        "737034":
+          type: [ connection, info ]
+          outcome: failure
+        "750002":
+          type: [ connection, start ]
+          outcome: success
+          action: connection-started
+        "750003":
+          type: [ connection, start ]
+          outcome: failure
+        "805001":
+          type: [ connection, start ]
+          outcome: success
+          action: flow-offload-started
+        "805002":
+          type: [ connection, end ]
+          outcome: success
+          action: flow-offload-ended
+      source: >-
+        params.get(ctx.event.code)?.forEach((k, v) -> ctx.event[k] = v);
 
   # Malware event kind is classified as alert when sha_disposition is "Malware", "Custom Detection" not for other cases.
   - set:
@@ -2553,15 +2883,12 @@ processors:
   - set:
       field: observer.vendor
       value: "Cisco"
-      ignore_empty_value: true
   - set:
       field: observer.type
       value: "firewall"
-      ignore_empty_value: true
   - set:
       field: observer.product
       value: "asa"
-      ignore_empty_value: true
   - set:
       field: observer.egress.interface.name
       value: "{{{ cisco.asa.destination_interface }}}"
@@ -2646,6 +2973,7 @@ processors:
       if: ctx.destination?.user?.domain != null && ctx.destination?.user?.domain != ''
       allow_duplicates: false
   - script:
+      tag: script_remove_null_values
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -2685,6 +3013,12 @@ processors:
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+  - remove:
+      field:
+        - _temp_
+        - _conf
+      ignore_missing: true
+
 on_failure:
   # Copy any fields under _temp_.cisco to its final destination. Those can help
   # with diagnosing the failure.
@@ -2702,5 +3036,5 @@ on_failure:
       field: event.kind
       value: pipeline_error
   - append:
-      field: "error.message"
-      value: "{{{ _ingest.on_failure_message }}}"
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

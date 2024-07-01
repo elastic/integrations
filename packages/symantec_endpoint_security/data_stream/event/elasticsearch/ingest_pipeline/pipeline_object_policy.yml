@@ -1,0 +1,163 @@
+---
+description: Pipeline for processing policy object.
+processors:
+  - date:
+      field: ses.policy.effective_date
+      tag: date_policy_effective_date
+      target_field: ses.policy.effective_date
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.policy?.effective_date != null && ctx.ses.policy.effective_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.policy.effective_date
+            ignore_missing: true
+  - convert:
+      field: ses.policy.rule_category_id
+      tag: convert_policy_rule_category_id_to_string
+      type: string
+      if: ctx.ses?.policy?.rule_category_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.policy.rule_category_id
+            ignore_missing: true
+  - foreach:
+      field: ses.policy.rules
+      if: ctx.ses?.policy?.rules instanceof List
+      tag: foreach_policy_rules_category_id
+      processor:
+        convert:
+          field: _ingest._value.category_id
+          tag: convert_policy_rules_category_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.category_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.policy.rules
+      if: ctx.ses?.policy?.rules instanceof List
+      tag: foreach_policy_rules_desc
+      processor:
+        append:
+          field: rule.description
+          tag: append_policy_rules_desc_into_rule_description
+          value: '{{{_ingest._value.desc}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.policy.rules
+      if: ctx.ses?.policy?.rules instanceof List
+      tag: foreach_policy_rules_dlp_type_id
+      processor:
+        convert:
+          field: _ingest._value.dlp_type_id
+          tag: convert_policy_rules_dlp_type_id_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.dlp_type_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.policy.rules
+      if: ctx.ses?.policy?.rules instanceof List
+      tag: foreach_policy_rules_name
+      processor:
+        append:
+          field: rule.name
+          tag: append_policy_rules_name_into_rule_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.policy.rules
+      if: ctx.ses?.policy?.rules instanceof List
+      tag: foreach_policy_rules_num_violations
+      processor:
+        convert:
+          field: _ingest._value.num_violations
+          tag: convert_policy_rules_num_violations_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.num_violations
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.policy.rules
+      if: ctx.ses?.policy?.rules instanceof List
+      tag: foreach_policy_rules_uid
+      processor:
+        append:
+          field: rule.id
+          tag: append_policy_rules_uid_into_rule_id
+          value: '{{{_ingest._value.uid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.policy.state_ids
+      if: ctx.ses?.policy?.state_ids instanceof List
+      tag: foreach_policy_state_ids
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_policy_state_ids_to_string
+          type: string
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.policy.type_id
+      tag: convert_policy_type_id_to_string
+      type: string
+      if: ctx.ses?.policy?.type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.policy.type_id
+            ignore_missing: true
+  - foreach:
+      field: ses.policy.rules
+      if: ctx.ses?.policy?.rules instanceof List
+      tag: foreach_remove_custom_duplicate_fields_from_ses_policy_rules
+      processor:
+        remove:
+          field:
+            - _ingest._value.desc
+            - _ingest._value.uid
+            - _ingest._value.name
+          tag: remove_custom_duplicate_fields_from_ses_policy_rules
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

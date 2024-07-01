@@ -1,0 +1,68 @@
+---
+description: Pipeline for processing license object.
+processors:
+  - convert:
+      field: ses.license.count
+      tag: convert_license_count_to_long
+      type: long
+      if: ctx.ses?.license?.count != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.license.count
+            ignore_missing: true
+  - date:
+      field: ses.license.end_time
+      tag: date_license_end_time
+      target_field: ses.license.end_time
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.license?.end_time != null && ctx.ses.license.end_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.license.end_time
+            ignore_missing: true
+  - date:
+      field: ses.license.start_time
+      tag: date_license_start_time
+      target_field: ses.license.start_time
+      formats:
+        - UNIX_MS
+        - ISO8601
+      if: ctx.ses?.license?.start_time != null && ctx.ses.license.start_time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.license.start_time
+            ignore_missing: true
+  - convert:
+      field: ses.license.type_id
+      tag: convert_license_type_id_to_string
+      type: string
+      if: ctx.ses?.license?.type_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: ses.license.type_id
+            ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+        in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
