@@ -37,6 +37,10 @@ type githubOwners struct {
 	path   string
 }
 
+// validatePackages checks if all packages in packagesDir have a manifest.yml file
+// with the correct owner as captured in codeowners. Also, for packages that share ownership across
+// data_streams, it checks that all data_streams are explicitly owned by a single owner. Such ownership
+// sharing packages are identified by having at least one data_stream with explicit ownership in codeowners.
 func validatePackages(codeowners *githubOwners, packagesDir string) error {
 	packageDirEntries, err := os.ReadDir(packagesDir)
 	if err != nil {
