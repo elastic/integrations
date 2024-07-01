@@ -150,54 +150,53 @@ An example event for `activity` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:37:42.425Z",
+    "@timestamp": "2024-04-30T09:14:50.873Z",
     "agent": {
-        "ephemeral_id": "095c21dc-35b1-42c4-88f3-56972ef6626a",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "f065ed3c-78fb-41da-9fe6-88ab3ff0f088",
+        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "postgresql.activity",
         "namespace": "ep",
         "type": "metrics"
     },
+    "database": {
+        "oid": 12379
+    },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.activity",
-        "duration": 4068224,
-        "ingested": "2022-01-12T03:37:43Z",
+        "duration": 6165334,
+        "ingested": "2024-04-30T09:15:02Z",
         "module": "postgresql"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.251.4",
+        "mac": "02-42-C0-A8-FB-04",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.99.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -207,22 +206,23 @@ An example event for `activity` looks as following:
     "postgresql": {
         "activity": {
             "application_name": "",
-            "backend_start": "2022-01-12T03:37:42.427Z",
+            "backend_start": "2024-04-30T09:14:50.875Z",
             "client": {
-                "address": "172.18.0.4",
+                "address": "192.168.251.4",
                 "hostname": "",
-                "port": 32884
+                "port": 49266
             },
             "database": {
                 "name": "postgres",
                 "oid": 12379
             },
-            "pid": 111,
+            "pid": 113,
             "query": "SELECT * FROM pg_stat_activity",
-            "query_start": "2022-01-12T03:37:42.428Z",
+            "query_id": "W/d3kCHhA8b/M4YpzDBJHlJM7xU=",
+            "query_start": "2024-04-30T09:14:50.877Z",
             "state": "active",
-            "state_change": "2022-01-12T03:37:42.428Z",
-            "transaction_start": "2022-01-12T03:37:42.428Z",
+            "state_change": "2024-04-30T09:14:50.877Z",
+            "transaction_start": "2024-04-30T09:14:50.877Z",
             "user": {
                 "id": 10,
                 "name": "postgres"
@@ -231,7 +231,7 @@ An example event for `activity` looks as following:
         }
     },
     "service": {
-        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10\u0026sslmode=disable",
+        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10&sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -259,6 +259,7 @@ An example event for `activity` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| database.oid | OID of the database that this event is related to. | alias |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
@@ -466,54 +467,53 @@ An example event for `database` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:39:15.742Z",
+    "@timestamp": "2024-05-01T09:58:10.541Z",
     "agent": {
-        "ephemeral_id": "ee7be3cd-b6c4-4228-84e5-1c5b44ddfee2",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "f01bc762-745d-4991-8e9e-72d8b06d0460",
+        "id": "de455097-cace-48cd-b1db-e2dda1bf1ecd",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "postgresql.database",
         "namespace": "ep",
         "type": "metrics"
     },
+    "database": {
+        "oid": 12379
+    },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "de455097-cace-48cd-b1db-e2dda1bf1ecd",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.database",
-        "duration": 31647610,
-        "ingested": "2022-01-12T03:39:16Z",
+        "duration": 17453448,
+        "ingested": "2024-05-01T09:58:22Z",
         "module": "postgresql"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.241.7",
+        "mac": "02-42-C0-A8-F1-07",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.99.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -523,8 +523,8 @@ An example event for `database` looks as following:
     "postgresql": {
         "database": {
             "blocks": {
-                "hit": 0,
-                "read": 0,
+                "hit": 2604,
+                "read": 256,
                 "time": {
                     "read": {
                         "ms": 0
@@ -536,28 +536,29 @@ An example event for `database` looks as following:
             },
             "conflicts": 0,
             "deadlocks": 0,
-            "name": "template1",
-            "number_of_backends": 0,
-            "oid": 1,
+            "name": "postgres",
+            "number_of_backends": 1,
+            "oid": 12379,
             "rows": {
                 "deleted": 0,
-                "fetched": 0,
-                "inserted": 0,
-                "returned": 0,
-                "updated": 0
+                "fetched": 1514,
+                "inserted": 43,
+                "returned": 1719,
+                "updated": 3
             },
+            "stats_reset": "2024-05-01T09:57:46.179Z",
             "temporary": {
                 "bytes": 0,
                 "files": 0
             },
             "transactions": {
-                "commit": 0,
+                "commit": 10,
                 "rollback": 0
             }
         }
     },
     "service": {
-        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10\u0026sslmode=disable",
+        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10&sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -585,6 +586,7 @@ An example event for `database` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+| database.oid | OID of the database that this event is related to. | alias |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error.message | Error message. | match_only_text |  |
 | event.dataset | Event dataset | constant_keyword |  |
@@ -637,54 +639,53 @@ An example event for `statement` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:40:04.168Z",
+    "@timestamp": "2024-04-30T09:17:42.181Z",
     "agent": {
-        "ephemeral_id": "9ffa86f7-ad81-4b53-84c2-9d263b6b9522",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "0bad7d4e-66f6-408c-9ae4-f6f4daddb7ab",
+        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "postgresql.statement",
         "namespace": "ep",
         "type": "metrics"
     },
+    "database": {
+        "oid": 12379
+    },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "69c77328-4412-45c4-8f98-cc7e7b1fc216",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "postgresql.statement",
-        "duration": 3146548,
-        "ingested": "2022-01-12T03:40:05Z",
+        "duration": 5544043,
+        "ingested": "2024-04-30T09:17:54Z",
         "module": "postgresql"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": "192.168.251.4",
+        "mac": "02-42-C0-A8-FB-04",
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.99.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -697,8 +698,8 @@ An example event for `statement` looks as following:
                 "oid": 12379
             },
             "query": {
-                "calls": 1,
-                "id": 1592910677,
+                "calls": 2,
+                "id": 1691311383,
                 "memory": {
                     "local": {
                         "dirtied": 0,
@@ -708,7 +709,7 @@ An example event for `statement` looks as following:
                     },
                     "shared": {
                         "dirtied": 0,
-                        "hit": 0,
+                        "hit": 12,
                         "read": 0,
                         "written": 0
                     },
@@ -717,23 +718,23 @@ An example event for `statement` looks as following:
                         "written": 0
                     }
                 },
-                "rows": 1,
-                "text": "SELECT * FROM pg_stat_statements",
+                "rows": 6,
+                "text": "SELECT d.datname as \"Name\",\n       pg_catalog.pg_get_userbyid(d.datdba) as \"Owner\",\n       pg_catalog.pg_encoding_to_char(d.encoding) as \"Encoding\",\n       d.datcollate as \"Collate\",\n       d.datctype as \"Ctype\",\n       pg_catalog.array_to_string(d.datacl, ?) AS \"Access privileges\"\nFROM pg_catalog.pg_database d\nORDER BY 1;",
                 "time": {
                     "max": {
-                        "ms": 0.10900000000000001
+                        "ms": 0.107
                     },
                     "mean": {
-                        "ms": 0.10900000000000001
+                        "ms": 0
                     },
                     "min": {
-                        "ms": 0.10900000000000001
+                        "ms": 0.096
                     },
                     "stddev": {
                         "ms": 0
                     },
                     "total": {
-                        "ms": 0.10900000000000001
+                        "ms": 0.203
                     }
                 }
             },
@@ -743,7 +744,7 @@ An example event for `statement` looks as following:
         }
     },
     "service": {
-        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10\u0026sslmode=disable",
+        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10&sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -771,6 +772,7 @@ An example event for `statement` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+| database.oid | OID of the database that this event is related to. | alias |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error.message | Error message. | match_only_text |  |
 | event.dataset | Event dataset | constant_keyword |  |

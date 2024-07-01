@@ -1,15 +1,18 @@
 type: logs
 title: AbuseCH URL logs
+ilm_policy: logs-ti_abusech.url-default_policy
 streams:
-  - input: httpjson
+  - input: cel
+    enabled: true
     vars:
       - name: url
         type: text
-        title: AbuseCH URL API endpoint
+        title: AbuseCH Active URL API
+        description: Active URL API fetches URLs that are either actively distributing malware or that have been added to URLhaus within the past 90 days.
         multi: false
         required: true
         show_user: false
-        default: https://urlhaus-api.abuse.ch/v1/urls/recent/
+        default: https://urlhaus.abuse.ch/downloads/json
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -31,7 +34,8 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: 10m
+        default: 1h
+        description: Interval for polling indicators from AbuseCH data dump. As data dump is generated every 5 minutes, it should be greater than 5 minutes. Default `1h`.
       - name: ssl
         type: yaml
         title: SSL
@@ -64,6 +68,6 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-    template_path: httpjson.yml.hbs
-    title: AbuseCH URL logs
-    description: Collect AbuseCH URL logs
+    template_path: cel.yml.hbs
+    title: AbuseCH URL logs using Elastic Agent
+    description: Collect AbuseCH URL logs using Elastic Agent

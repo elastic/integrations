@@ -3,7 +3,30 @@
         "description": "An overview of key metrics from all Metricsets in the Oracle database ",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "oracle.tablespace"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "oracle.tablespace"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -185,8 +208,7 @@
                 },
                 "panelIndex": "5e206919-734c-40b5-a7c8-382c24cbd202",
                 "title": "Avg data file size by filename [Metrics Oracle]",
-                "type": "lens",
-                "version": "8.10.2"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -384,18 +406,12 @@
                 },
                 "panelIndex": "2956d826-979d-46e0-9970-5baf8f7c30cf",
                 "title": "Ratio of used space in Tablespaces [Metrics Oracle]",
-                "type": "lens",
-                "version": "8.10.2"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-0bc41f96-27f3-4602-911b-57c54e7b76bc",
-                                "type": "index-pattern"
-                            },
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-8b82fbef-b200-410d-8be5-bf42b9140e38",
@@ -407,73 +423,6 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "0bc41f96-27f3-4602-911b-57c54e7b76bc": {
-                                            "columnOrder": [
-                                                "f714c3f5-80a5-4950-8dda-d96542bd26cb",
-                                                "aed8e383-c38d-40b9-97c9-aaa1e535b205",
-                                                "d027ff14-f71e-40c8-8682-531b444f8ce4"
-                                            ],
-                                            "columns": {
-                                                "aed8e383-c38d-40b9-97c9-aaa1e535b205": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "d027ff14-f71e-40c8-8682-531b444f8ce4": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Tablespace Total Size (TEMP)",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "oracle.tablespace.space.total.bytes"
-                                                },
-                                                "f714c3f5-80a5-4950-8dda-d96542bd26cb": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of oracle.tablespace.name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "excludeIsRegex": false,
-                                                        "include": [
-                                                            "TEMP"
-                                                        ],
-                                                        "includeIsRegex": true,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "d027ff14-f71e-40c8-8682-531b444f8ce4",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "oracle.tablespace.name"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        },
                                         "8b82fbef-b200-410d-8be5-bf42b9140e38": {
                                             "columnOrder": [
                                                 "e0c84a4a-b571-4d96-a87d-928664948de3",
@@ -488,7 +437,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Tablespace Total Size (Non - TEMP)",
+                                                    "label": "Tablespace Total Size",
                                                     "operationType": "formula",
                                                     "params": {
                                                         "format": {
@@ -562,10 +511,8 @@
                                                     "label": "Top 10 values of oracle.tablespace.name",
                                                     "operationType": "terms",
                                                     "params": {
-                                                        "exclude": [
-                                                            "TEMP"
-                                                        ],
-                                                        "excludeIsRegex": true,
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderAgg": {
@@ -638,27 +585,6 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "d027ff14-f71e-40c8-8682-531b444f8ce4"
-                                        ],
-                                        "layerId": "0bc41f96-27f3-4602-911b-57c54e7b76bc",
-                                        "layerType": "data",
-                                        "palette": {
-                                            "name": "default",
-                                            "type": "palette"
-                                        },
-                                        "seriesType": "area",
-                                        "splitAccessor": "f714c3f5-80a5-4950-8dda-d96542bd26cb",
-                                        "xAccessor": "aed8e383-c38d-40b9-97c9-aaa1e535b205",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "color": "rgba(96,146,192,1)",
-                                                "forAccessor": "d027ff14-f71e-40c8-8682-531b444f8ce4"
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        "accessors": [
                                             "6128fad4-73b7-467f-b59b-c628912912dc"
                                         ],
                                         "layerId": "8b82fbef-b200-410d-8be5-bf42b9140e38",
@@ -719,8 +645,7 @@
                 },
                 "panelIndex": "14d04a9d-5a41-47e0-a188-297dbf41776e",
                 "title": "Tablespace Total Size [Metrics Oracle]",
-                "type": "lens",
-                "version": "8.10.2"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -925,8 +850,7 @@
                 },
                 "panelIndex": "e48ae1de-162d-4911-bc19-06af5c9cba1d",
                 "title": "Ratio of used space in data files [Metrics Oracle]",
-                "type": "lens",
-                "version": "8.10.2"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
@@ -934,10 +858,15 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2023-11-29T05:52:37.429Z",
+    "created_at": "2024-05-24T05:41:54.082Z",
     "id": "oracle-9e19fb00-08e1-11ed-9abf-15e60715cfab",
     "managed": false,
     "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "metrics-*",
             "name": "5e206919-734c-40b5-a7c8-382c24cbd202:indexpattern-datasource-layer-19153c24-9aa2-48c0-8401-502157a56e55",
@@ -946,11 +875,6 @@
         {
             "id": "metrics-*",
             "name": "2956d826-979d-46e0-9970-5baf8f7c30cf:indexpattern-datasource-layer-2be206e6-2fbc-4adc-b5e5-c951d475f2cf",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "14d04a9d-5a41-47e0-a188-297dbf41776e:indexpattern-datasource-layer-0bc41f96-27f3-4602-911b-57c54e7b76bc",
             "type": "index-pattern"
         },
         {

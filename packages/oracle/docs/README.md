@@ -80,6 +80,8 @@ In the seoncd, logfmt-encoded DSN format, if the password contains a backslash
 character (`\`), it must be escaped with another backslash. For example, if the
 password is `my\_password`, it must be written as `my\\_password`.
 
+> Note: To mask the password shown in the DSN, remove the username and password from the DSN string, and configure the DSN to only include the host address and any additional parameters required for the connection. Subsquently, use the `username` and `password` fields under advanced options to configure them. 
+
 ## Compatibility
 
 This integration has been tested with Oracle Database 19c, and should work for 18c as well though it has not been tested.

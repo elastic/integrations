@@ -14,14 +14,169 @@ processors:
       field: json.event.dns.request
       target_field: sentinel_one_cloud_funnel.event.dns.request
       ignore_missing: true
-  - set:
-      field: dns.question.name
-      copy_from: sentinel_one_cloud_funnel.event.dns.request
-      ignore_empty_value: true
   - rename:
       field: json.event.dns.response
       target_field: sentinel_one_cloud_funnel.event.dns.response
       ignore_missing: true
+  - script:
+      description: |
+        Splits the ctx.sentinel_one_cloud_funnel?.event?.dns?.response field that contains the DNS answers.
+        Example: "type:  5 f2.taboola.map.fastly.net;::ffff:151.101.66.2;::ffff:151.101.130.2;::ffff:151.101.194.2;::ffff:151.101.2.2;"
+        Process the ctx.sentinel_one_cloud_funnel?.event?.dns?.request field that contains the DNS question.
+        Example: "type: 1 cloudflare.com"
+      lang: painless
+      tag: script_dnsFieldParsing_to_ecs
+      if: >-
+        (ctx.sentinel_one_cloud_funnel?.event?.dns?.response != null && ctx.sentinel_one_cloud_funnel.event.dns.response != "") ||
+        (ctx.sentinel_one_cloud_funnel?.event?.dns?.request != null && ctx.sentinel_one_cloud_funnel.event.dns.request != "")
+      params:
+        "1": "A"
+        "2": "NS"
+        "3": "MD"
+        "4": "MF"
+        "5": "CNAME"
+        "6": "SOA"
+        "7": "MB"
+        "8": "MG"
+        "9": "MR"
+        "10": "NULL"
+        "11": "WKS"
+        "12": "PTR"
+        "13": "HINFO"
+        "14": "MINFO"
+        "15": "MX"
+        "16": "TXT"
+        "17": "RP"
+        "18": "AFSDB"
+        "19": "X25"
+        "20": "ISDN"
+        "21": "RT"
+        "22": "NSAP"
+        "23": "NSAPPTR"
+        "24": "SIG"
+        "25": "KEY"
+        "26": "PX"
+        "27": "GPOS"
+        "28": "AAAA"
+        "29": "LOC"
+        "30": "NXT"
+        "31": "EID"
+        "32": "NIMLOC"
+        "33": "SRV"
+        "34": "ATMA"
+        "35": "NAPTR"
+        "36": "KX"
+        "37": "CERT"
+        "38": "A6"
+        "39": "DNAME"
+        "40": "SINK"
+        "41": "OPT"
+        "43": "DS"
+        "46": "RRSIG"
+        "47": "NSEC"
+        "48": "DNSKEY"
+        "49": "DHCID"
+        "100": "UINFO"
+        "101": "UID"
+        "102": "GID"
+        "103": "UNSPEC"
+        "248": "ADDRS"
+        "249": "TKEY"
+        "250": "TSIG"
+        "251": "IXFR"
+        "252": "AXFR"
+        "253": "MAILB"
+        "254": "MAILA"
+        "255": "ANY"
+        "65281": "WINS"
+        "65282": "WINSR"
+      source: |-
+        def ips = new ArrayList();
+        def relatedHosts = new ArrayList();
+        def dns = new HashMap();
+
+        if (ctx.sentinel_one_cloud_funnel?.event?.dns?.request != null && ctx.sentinel_one_cloud_funnel.event.dns.request != "") {
+          def request = ctx.sentinel_one_cloud_funnel.event.dns.request;
+          def question = new HashMap();
+          def parts = /\s+/.split(request);
+
+          if (parts.length == 3) {
+            question.put("type", params[parts[1]]);
+            question.put("name", parts[2]);   
+            relatedHosts.add(parts[2]);
+          } else {
+            question.put("name", request); 
+          }
+          dns.question = question;
+        }
+        
+        if (ctx.sentinel_one_cloud_funnel?.event?.dns?.response != null && ctx.sentinel_one_cloud_funnel.event.dns.response != "") {
+          def response = /;/.split(ctx.sentinel_one_cloud_funnel.event.dns.response);
+          def answers = new ArrayList();
+
+          for (def i = 0; i < response.length; i++) {
+            def answer = response[i];
+            if (answer == "") {
+              continue;
+            }
+
+            if (answer.startsWith("type:")) {
+              def parts = /\s+/.split(answer);
+              if (parts.length < 2) {
+                throw new Exception("unexpected event.dns.response format");
+              }
+              if (parts.length == 3) {
+                answers.add([
+                  "type": params[parts[1]],
+                  "data": parts[2]
+                ]);
+                relatedHosts.add(parts[2]);
+              } else {
+                answers.add([
+                  "type": params[parts[1]]
+                ]);
+              }
+            } else {
+              answer = answer.replace("::ffff:", "");
+              ips.add(answer);
+            }
+          }
+
+          if (answers.length > 0) {
+            dns.answers = answers;
+          }
+          if (ips.length > 0) {
+            dns.resolved_ip = ips;
+          }
+          if (relatedHosts.length > 0) {
+            if (ctx?.related == null) {
+              ctx.related = new HashMap();
+            }
+            ctx.related.hosts = relatedHosts;
+          }
+        }
+        if (dns != null) {
+          ctx.dns = dns;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - foreach:
+      field: dns.resolved_ip
+      if: ctx.dns?.resolved_ip instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_dns_resolved_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
 on_failure:
   - append:
       field: error.message

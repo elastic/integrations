@@ -1,7 +1,7 @@
 version: '2.3'
 services:
   meraki-webhook-http:
-    image: docker.elastic.co/observability/stream:v0.6.2
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_events:/sample_events:ro
     environment:
@@ -9,7 +9,7 @@ services:
       - STREAM_ADDR=http://elastic-agent:8686/meraki/events
     command: log --start-signal=SIGHUP --delay=5s /sample_events/meraki-mx-ndjson.log
   meraki-webhook-https:
-    image: docker.elastic.co/observability/stream:v0.6.2
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_events:/sample_events:ro
     environment:
@@ -24,12 +24,12 @@ services:
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
   cisco_meraki-log-udp:
-    image: docker.elastic.co/observability/stream:v0.6.2
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:8685 -p=udp /sample_logs/cisco-meraki.log
   cisco_meraki-log-tcp:
-    image: docker.elastic.co/observability/stream:v0.6.2
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:8685 -p=tcp /sample_logs/cisco-meraki.log
