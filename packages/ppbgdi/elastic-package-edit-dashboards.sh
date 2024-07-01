@@ -10,5 +10,5 @@ EOF
   exit 0
 fi
 
-summon -p ssm elastic-package export dashboards
+summon -p ssm elastic-package edit dashboards
 

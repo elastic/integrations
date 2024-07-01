@@ -1,0 +1,24 @@
+---
+description: Pipeline to mock up logs in test environment
+processors:
+  - rename:
+      field: message
+      target_field: temp_message
+  - json:
+      field: temp_message
+      add_to_root: true
+  - remove:
+      field: temp_message
+  - script:
+      lang: painless
+      description: This script removes the 'elastic-package-test' tag for cleaner expected log
+      source: ctx?.tags.removeIf(item -> item == 'elastic-package-test')
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
+
