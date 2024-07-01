@@ -23,7 +23,8 @@ import (
 
 const (
 	defaultResultsPath           = "build/test-results/"
-	defaultPreviousLinksNumber   = 4
+	defaultPreviousLinksNumber   = 5
+	defaultMaximumTestsReported  = 20
 	defaultServerlessProjectType = "observability"
 )
 
@@ -156,6 +157,16 @@ func ReportFailedTests(testResultsFolder string) error {
 		}
 	}
 
-	mg.Deps(mg.F(testsreporter.Check, testResultsFolder, buildURL, stackVersion, serverless, serverlessProjectEnv, defaultPreviousLinksNumber))
+	maxIssuesString := os.Getenv("CI_MAX_TESTS_REPORTED")
+	maxIssues := defaultMaximumTestsReported
+	if maxIssuesString != "" {
+		var err error
+		maxIssues, err = strconv.Atoi(maxIssuesString)
+		if err != nil {
+			return fmt.Errorf("failed to convert to int env. variable CI_MAX_TESTS_REPORTED %s: %w", maxIssuesString, err)
+		}
+	}
+
+	mg.Deps(mg.F(testsreporter.Check, testResultsFolder, buildURL, stackVersion, serverless, serverlessProjectEnv, defaultPreviousLinksNumber, maxIssues))
 	return nil
 }

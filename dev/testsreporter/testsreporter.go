@@ -22,7 +22,7 @@ type checkOptions struct {
 	CodeownersPath    string
 }
 
-func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverlessProject string, maxPreviousLinks int) error {
+func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverlessProject string, maxPreviousLinks, maxTestsReported int) error {
 	fmt.Println("path: ", resultsPath)
 	packageErrors, err := errorsFromTests(checkOptions{
 		ResultsPath:       resultsPath,
@@ -38,9 +38,14 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverle
 		DryRun: false,
 	})
 
-	reporter := reporter{
+	aReporter := reporter{
 		ghCli:            ghCli,
 		maxPreviousLinks: maxPreviousLinks,
+	}
+
+	if len(packageErrors) > maxTestsReported {
+		fmt.Printf("Reporting the first %d failing tests (total failing tests %d).\n", maxTestsReported, len(packageErrors))
+		packageErrors = packageErrors[:maxTestsReported]
 	}
 
 	var multiErr error
@@ -65,7 +70,7 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverle
 			Repository:  "elastic/integrations",
 		})
 
-		if err := reporter.Report(ctx, ghIssue, pError); err != nil {
+		if err := aReporter.Report(ctx, ghIssue, pError); err != nil {
 			multiErr = errors.Join(multiErr, err)
 		}
 	}
