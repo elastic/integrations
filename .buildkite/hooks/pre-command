@@ -33,7 +33,7 @@ AWS_SERVICE_ACCOUNT_SECRET_PATH=kv/ci-shared/platform-ingest/aws_account_auth
 PRIVATE_CI_GCS_CREDENTIALS_PATH=kv/ci-shared/platform-ingest/gcp-platform-ingest-ci-service-account
 
 BUILDKITE_API_TOKEN_PATH=kv/ci-shared/platform-ingest/buildkite_token
-GITHUB_TOKEN_VAULT_PATH=kv/ci-shared/platform-ingest/github_token
+#GITHUB_TOKEN_VAULT_PATH=kv/ci-shared/platform-ingest/github_token
 
 EC_TOKEN_PATH=kv/ci-shared/platform-ingest/platform-ingest-ec-qa
 EC_DATA_PATH=secret/ci/elastic-integrations/ec_data
@@ -90,8 +90,13 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" ]]; then
     if [[ "${BUILDKITE_STEP_KEY}" == "publish-benchmarks" ]]; then
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
-        GITHUB_TOKEN=$(retry 5 vault kv get -field token "${GITHUB_TOKEN_VAULT_PATH}")
-        export GITHUB_TOKEN
+        #GITHUB_TOKEN=$(retry 5 vault kv get -field token "${GITHUB_TOKEN_VAULT_PATH}")
+        #export GITHUB_TOKEN
+        GITHUB_USERNAME_SECRET="elasticmachine"
+        export GITHUB_USERNAME_SECRET=$GITHUB_USERNAME_SECRET
+        export GITHUB_USER=$GITHUB_USERNAME_SECRET # required by hub cli command
+        export GITHUB_EMAIL_SECRET="elasticmachine@elastic.co"
+        export GITHUB_TOKEN=$VAULT_GITHUB_TOKEN
     fi
 
     if [[ "${BUILDKITE_STEP_KEY}" =~ ^test-integrations- ]]; then
@@ -142,11 +147,10 @@ fi
 
 if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" ]]; then
   if [[ "$BUILDKITE_STEP_KEY" == "create-backport-branch" ]]; then
-    GITHUB_USERNAME_SECRET=$(retry 5 vault kv get -field username ${GITHUB_TOKEN_VAULT_PATH})
-    export GITHUB_USERNAME_SECRET
-    GITHUB_EMAIL_SECRET=$(retry 5 vault kv get -field email ${GITHUB_TOKEN_VAULT_PATH})
-    export GITHUB_EMAIL_SECRET
-    GITHUB_TOKEN=$(retry 5 vault kv get -field token "${GITHUB_TOKEN_VAULT_PATH}")
-    export GITHUB_TOKEN
+    GITHUB_USERNAME_SECRET="elasticmachine"
+    export GITHUB_USERNAME_SECRET=$GITHUB_USERNAME_SECRET
+    export GITHUB_USER=$GITHUB_USERNAME_SECRET # required by hub cli command
+    export GITHUB_EMAIL_SECRET="elasticmachine@elastic.co"
+    export GITHUB_TOKEN=$VAULT_GITHUB_TOKEN
   fi
 fi
