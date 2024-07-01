@@ -170,7 +170,7 @@ An example event for `waf` looks as following:
         "agent_id_status": "verified",
         "category": [
             "web",
-            "api"
+            "network"
         ],
         "dataset": "aws.waf",
         "ingested": "2023-11-08T08:24:54Z",
