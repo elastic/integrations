@@ -1,0 +1,40 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: elastic_package_registry
+      name: test-default-elastic_package_registry
+      streams:
+        - data_stream:
+            dataset: elastic_package_registry.metrics
+            type: metrics
+          hosts:
+            - http://localhost:9000
+          metrics_filters.exclude:
+            - ^go_*
+            - ^promhttp_*
+          metrics_path: /metrics
+          metricsets:
+            - collector
+          period: 30s
+          rate_counters: false
+          tags: null
+          use_types: true
+      type: prometheus/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-elastic_package_registry.metrics-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
