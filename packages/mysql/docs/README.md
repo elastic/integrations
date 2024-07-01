@@ -15,118 +15,55 @@ versions >= 5.7.0. It is also tested with MariaDB 10.2, 10.3 and 10.4.
 
 The `error` dataset collects the MySQL error logs.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | Event category (e.g. database) | keyword |
-| event.code | Identification code for this event | keyword |
-| event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | Event kind (e.g. event) | keyword |
 | event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.provider | Source of the event (e.g. Server) | keyword |
-| event.timezone | Time zone information | keyword |
-| event.type | Event severity (e.g. info, error) | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Log flags. | keyword |
-| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | mysql.thread_id | The connection or thread ID for the query. | long |
-| tags | List of keywords used to tag each event. | keyword |
 
 
 ### slowlog
 
 The `slowlog` dataset collects the MySQL slow logs.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Log flags. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | mysql.slowlog.bytes_received | The number of bytes received from client. | long |
 | mysql.slowlog.bytes_sent | The number of bytes sent to client. | long |
 | mysql.slowlog.current_user | Current authenticated user, used to determine access privileges. Can differ from the value for user. | keyword |
@@ -171,11 +108,6 @@ The `slowlog` dataset collects the MySQL slow logs.
 | mysql.slowlog.tmp_table_sizes | Size of temporary tables created for this query. | long |
 | mysql.slowlog.tmp_tables | Number of temporary tables created for this query | long |
 | mysql.thread_id | The connection or thread ID for the query. | long |
-| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| tags | List of keywords used to tag each event. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ## Metrics
@@ -202,7 +134,7 @@ An example event for `galera_status` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a6bbda96-646d-4211-bac8-b40bdd093a0c",
@@ -244,77 +176,81 @@ An example event for `galera_status` looks as following:
     },
     "mysql": {
         "galera_status": {
-            "connected": "ON",
-            "cluster": {
-                "size": 1,
-                "conf_id": 1,
-                "status": "Primary"
-            },
-            "evs": {
-                "state": "OPERATIONAL",
-                "evict": ""
-            },
             "apply": {
                 "oooe": 0,
                 "oool": 0,
                 "window": 0
             },
-            "ready": "ON",
-            "flow_ctl": {
-                "paused_ns": 0,
-                "paused": 0,
-                "recv": 0,
-                "sent": 0
+            "cert": {
+                "deps_distance": 0,
+                "index_size": 0,
+                "interval": 0
             },
-            "last_committed": 0,
+            "cluster": {
+                "conf_id": 1,
+                "size": 1,
+                "status": "Primary"
+            },
             "commit": {
                 "oooe": 0,
                 "window": 0
             },
-            "cert": {
-                "index_size": 0,
-                "deps_distance": 0,
-                "interval": 0
+            "connected": "ON",
+            "evs": {
+                "evict": "",
+                "state": "OPERATIONAL"
             },
+            "flow_ctl": {
+                "paused": 0,
+                "paused_ns": 0,
+                "recv": 0,
+                "sent": 0
+            },
+            "last_committed": 0,
+            "local": {
+                "bf_aborts": 0,
+                "cert_failures": 0,
+                "commits": 0,
+                "recv": {
+                    "queue": 0,
+                    "queue_avg": 0,
+                    "queue_max": 1,
+                    "queue_min": 0
+                },
+                "replays": 0,
+                "send": {
+                    "queue": 0,
+                    "queue_avg": 0.5,
+                    "queue_max": 2,
+                    "queue_min": 0
+                },
+                "state": "Synced"
+            },
+            "ready": "ON",
             "received": {
                 "bytes": 147,
                 "count": 2
             },
             "repl": {
                 "bytes": 0,
+                "count": 0,
+                "data_bytes": 0,
                 "keys": 0,
                 "keys_bytes": 0,
-                "count": 0,
-                "other_bytes": 0,
-                "data_bytes": 0
-            },
-            "local": {
-                "replays": 0,
-                "recv": {
-                    "queue_max": 1,
-                    "queue_min": 0,
-                    "queue_avg": 0,
-                    "queue": 0
-                },
-                "bf_aborts": 0,
-                "commits": 0,
-                "state": "Synced",
-                "cert_failures": 0,
-                "send": {
-                    "queue_max": 2,
-                    "queue_min": 0,
-                    "queue_avg": 0.5,
-                    "queue": 0
-                }
+                "other_bytes": 0
             }
         }
     },
     "service": {
-        "address": "tcp(host.docker.internal:3306)/?readTimeout=10s\u0026timeout=10s\u0026writeTimeout=10s",
+        "address": "tcp(host.docker.internal:3306)/?readTimeout=10s&timeout=10s&writeTimeout=10s",
         "type": "mysql"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -322,42 +258,22 @@ An example event for `galera_status` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | mysql.galera_status.apply.oooe | How often applier started write-set applying out-of-order (parallelization efficiency). | double | gauge |
 | mysql.galera_status.apply.oool | How often write-set was so slow to apply that write-set with higher seqno's were applied earlier. Values closer to 0 refer to a greater gap between slow and fast write-sets. | double | gauge |
 | mysql.galera_status.apply.window | Average distance between highest and lowest concurrently applied seqno. | double | gauge |
@@ -400,7 +316,6 @@ An example event for `galera_status` looks as following:
 | mysql.galera_status.repl.keys_bytes | Total size of keys replicated. | long | counter |
 | mysql.galera_status.repl.other_bytes | Total size of other bits replicated. | long | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### status
@@ -412,42 +327,48 @@ An example event for `status` looks as following:
 ```json
 {
     "@timestamp": "2020-04-20T12:32:54.614Z",
+    "agent": {
+        "ephemeral_id": "4c773a2e-16d5-4d86-be49-cfb3573f4f4f",
+        "hostname": "MacBook-Elastic.local",
+        "id": "ede0be38-46a9-4ffc-8f1e-2ff9195193b6",
+        "type": "metricbeat",
+        "version": "8.0.0"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "dataset": "mysql.status",
+        "duration": 4708776,
+        "module": "mysql"
+    },
+    "metricset": {
+        "name": "status",
+        "period": 10000
+    },
     "mysql": {
         "status": {
-            "max_used_connections": 3,
-            "queries": 479,
-            "handler": {
-                "prepare": 0,
-                "savepoint": 0,
-                "update": 0,
-                "delete": 0,
-                "read": {
-                    "rnd_next": 59604,
-                    "first": 8,
-                    "key": 6,
-                    "last": 0,
-                    "next": 1,
-                    "prev": 0,
-                    "rnd": 0
-                },
-                "rollback": 0,
-                "write": 0,
-                "commit": 5,
-                "savepoint_rollback": 0,
-                "external_lock": 552,
-                "mrr_init": 0
-            },
             "aborted": {
                 "clients": 0,
                 "connects": 0
             },
-            "threads": {
-                "running": 2,
-                "cached": 1,
-                "created": 3,
-                "connected": 2
+            "binlog": {
+                "cache": {
+                    "disk_use": 0,
+                    "use": 0
+                }
             },
-            "flush_commands": 1,
+            "bytes": {
+                "received": 38468,
+                "sent": 1622162
+            },
+            "command": {
+                "delete": 0,
+                "insert": 0,
+                "select": 155,
+                "update": 0
+            },
+            "connections": 159,
             "created": {
                 "tmp": {
                     "disk_tables": 0,
@@ -455,82 +376,76 @@ An example event for `status` looks as following:
                     "tables": 0
                 }
             },
-            "connections": 159,
-            "command": {
-                "insert": 0,
-                "select": 155,
-                "update": 0,
-                "delete": 0
-            },
-            "opened_tables": 122,
-            "binlog": {
-                "cache": {
-                    "use": 0,
-                    "disk_use": 0
-                }
-            },
             "delayed": {
-                "writes": 0,
                 "errors": 0,
-                "insert_threads": 0
+                "insert_threads": 0,
+                "writes": 0
             },
-            "questions": 479,
+            "flush_commands": 1,
+            "handler": {
+                "commit": 5,
+                "delete": 0,
+                "external_lock": 552,
+                "mrr_init": 0,
+                "prepare": 0,
+                "read": {
+                    "first": 8,
+                    "key": 6,
+                    "last": 0,
+                    "next": 1,
+                    "prev": 0,
+                    "rnd": 0,
+                    "rnd_next": 59604
+                },
+                "rollback": 0,
+                "savepoint": 0,
+                "savepoint_rollback": 0,
+                "update": 0,
+                "write": 0
+            },
             "innodb": {
                 "buffer_pool": {
-                    "read": {
-                        "ahead_rnd": 0,
-                        "requests": 1488,
-                        "ahead": 0,
-                        "ahead_evicted": 0
-                    },
-                    "pool": {
-                        "wait_free": 0,
-                        "reads": 405
-                    },
-                    "write_requests": 325,
                     "bytes": {
                         "data": 7176192,
                         "dirty": 0
                     },
                     "pages": {
+                        "data": 438,
                         "dirty": 0,
                         "flushed": 36,
                         "free": 7753,
                         "misc": 0,
-                        "total": 8191,
-                        "data": 438
-                    }
+                        "total": 8191
+                    },
+                    "pool": {
+                        "reads": 405,
+                        "wait_free": 0
+                    },
+                    "read": {
+                        "ahead": 0,
+                        "ahead_evicted": 0,
+                        "ahead_rnd": 0,
+                        "requests": 1488
+                    },
+                    "write_requests": 325
                 }
             },
-            "bytes": {
-                "received": 38468,
-                "sent": 1622162
-            },
+            "max_used_connections": 3,
             "open": {
+                "files": 14,
                 "streams": 0,
-                "tables": 115,
-                "files": 14
+                "tables": 115
+            },
+            "opened_tables": 122,
+            "queries": 479,
+            "questions": 479,
+            "threads": {
+                "cached": 1,
+                "connected": 2,
+                "created": 3,
+                "running": 2
             }
         }
-    },
-    "event": {
-        "dataset": "mysql.status",
-        "module": "mysql",
-        "duration": 4708776
-    },
-    "metricset": {
-        "name": "status",
-        "period": 10000
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "agent": {
-        "id": "ede0be38-46a9-4ffc-8f1e-2ff9195193b6",
-        "version": "8.0.0",
-        "type": "metricbeat",
-        "ephemeral_id": "4c773a2e-16d5-4d86-be49-cfb3573f4f4f",
-        "hostname": "MacBook-Elastic.local"
     },
     "service": {
         "address": "127.0.0.1:3306",
@@ -539,48 +454,32 @@ An example event for `status` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | mysql.status.aborted.clients | The number of connections that were aborted because the client died without closing the connection properly. | long | counter |
 | mysql.status.aborted.connects | The number of failed attempts to connect to the MySQL server. | long | counter |
 | mysql.status.binlog.cache.disk_use |  | long | counter |
@@ -663,5 +562,4 @@ An example event for `status` looks as following:
 | mysql.status.threads.created | The number of created threads. | long | gauge |
 | mysql.status.threads.running | The number of running threads. | long | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 

@@ -99,6 +99,10 @@ This is the `cluster_disk` data stream. This data stream collects metrics relate
 
 {{event "cluster_disk"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "cluster_disk"}}
 
 ### Cluster Health
@@ -106,6 +110,10 @@ This is the `cluster_disk` data stream. This data stream collects metrics relate
 This is the `cluster_health` data stream. This data stream collects metrics related to the cluster health.
 
 {{event "cluster_health"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "cluster_health"}}
 
@@ -115,6 +123,10 @@ This is the `cluster_status` data stream. This data stream collects metrics rela
 
 {{event "cluster_status"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "cluster_status"}}
 
 ### OSD Performance
@@ -122,6 +134,10 @@ This is the `cluster_status` data stream. This data stream collects metrics rela
 This is the `osd_performance` data stream. This data stream collects metrics related to Object Storage Daemon (OSD) id, commit latency and apply latency.
 
 {{event "osd_performance"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "osd_performance"}}
 
@@ -131,6 +147,10 @@ This is the `osd_pool_stats` data stream. This data stream collects metrics rela
 
 {{event "osd_pool_stats"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "osd_pool_stats"}}
 
 ### OSD Tree
@@ -139,6 +159,10 @@ This is the `osd_tree` data stream. This data stream collects metrics related to
 
 {{event "osd_tree"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "osd_tree"}}
 
 ### Pool Disk
@@ -146,5 +170,9 @@ This is the `osd_tree` data stream. This data stream collects metrics related to
 This is the `pool_disk` data stream. This data stream collects metrics related to pool id, pool name, pool objects, used bytes and available bytes of the pool disk.
 
 {{event "pool_disk"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "pool_disk"}}
