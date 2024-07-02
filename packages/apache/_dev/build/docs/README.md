@@ -19,25 +19,42 @@ Access logs collects the Apache access logs.
 Supported format for the access logs are:
 
 - [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)
-  - Defined in apache `LogFormat` by : 
+
+  - Defined in apache `LogFormat` by :
+ 
     >```%h %l %u %t \"%r\" %>s %b```
+
   - Example:
+
     > `127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326`
+
 - Combined Log Format
+
   - Defined in apache `LogFormat` by:
-    >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
+    >I. ```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
+    >II. ```%A:%p %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
+    >III. ```%h:%p %l %u %t \"%{req}i %U %H\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+
   - Example:
-    >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)"```
+
+    >I. ```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)"```
+
+    >II. ```127.0.0.1:80 127.0.0.1 - - [20/Jun/2024:16:23:43 +0530] "\x16\x03\x01" 400 226 "-" "-"```
+
+    >III. ```127.0.0.1:80 - - [20/Jun/2024:16:31:41 +0530] "<SCRIPT>NXSSTEST</SCRIPT> / HTTP/1.1" 403 4897 "-" "-"```
+
 - Combined Log Format + X-Forwarded-For header
+
   - Defined in apache `LogFormat` by:
+
     >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
+
   - Example:
+
     >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)" X-Forwarded-For="10.225.192.17, 10.2.2.121"```
-- Combined Log Format + X-Forwarded-For header + Response time
-  - Defined in apache `LogFormat` by:
-    >```%h %l %u %t \"%r\" %>s %b %D \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
-  - Example:
-    >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 3413 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)" X-Forwarded-For="10.225.192.17, 10.2.2.121"```
 
 ### Error Logs
 
