@@ -1,0 +1,148 @@
+format_version: 3.0.2
+name: websocket
+title: Custom Websocket logs
+version: 0.1.0
+description: Collect custom events from a socket server with Elastic agent.
+type: input
+categories:
+  - custom
+conditions:
+  kibana:
+    version: "^8.13.0"
+  elastic:
+    subscription: "basic"
+policy_templates:
+  - name: websocket
+    title: Websocket Custom Socket Input
+    description: Collect custom data from websocket server.
+    input: websocket
+    type: logs
+    template_path: websocket.yml.hbs
+    vars:
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: |
+          Dataset to write data to. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: websocket.websocket
+        required: true
+        show_user: true
+      - name: url
+        type: text
+        title: URL
+        description: URL of the Websocket Server.
+        required: true
+        show_user: true
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+        required: false
+        show_user: true
+      - name: program
+        type: textarea
+        title: The CEL program to be run for each message.
+        description: |
+          Program is the The CEL program that is executed on each message received.
+          More information can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-websocket.html#_execution_2).
+        show_user: true
+        multi: false
+        required: true
+        default: |
+          # // Read and process simple websocket messages from a local websocket server.
+          # bytes(state.response).decode_json().as(inner_body,{
+          #   "events": inner_body.encode_json(),
+          # })
+      - name: state
+        type: yaml
+        title: Initial CEL evaluation state
+        description: |
+          State is the initial state to be provided to the program. If it has a cursor field, that field will be overwritten by any stored cursor, but will be available if no stored cursor exists.
+          More information can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-websocket.html#state-websocket).
+        show_user: true
+        multi: false
+        required: false
+      - name: regexp
+        type: yaml
+        title: Defined Regular Expressions
+        description: |
+          Regexps is the set of regular expression to be made available to the program by name. The syntax used is [RE2](https://github.com/google/re2/wiki/Syntax).
+          More information can be found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-websocket.html#regexp-websocket).
+        show_user: true
+        multi: false
+        required: false
+        default: |
+          #products: '(?i)(Elasticsearch|Beats|Logstash|Kibana)'
+          #solutions: '(?i)(Search|Observability|Security)'
+      - name: basic_token
+        type: password
+        title: Basic Auth Token
+        show_user: true
+        required: false
+        description: The token to be used for Basic Authentication.
+        secret: true
+      - name: bearer_token
+        type: password
+        title: Bearer Auth Token
+        show_user: true
+        required: false
+        description: The token to be used for Bearer Authentication.
+        secret: true
+      - name: header_key
+        type: text
+        title: Custom Header Key
+        show_user: true
+        required: false
+        description: The custom header key name for Authentication.
+      - name: header_value
+        type: password
+        title: Custom Header Value
+        show_user: true
+        required: false
+        description: The custom header key value for Authentication.
+        secret: true
+      - name: redact_fields
+        type: text
+        title: Redacted fields
+        description: |
+          Fields to redact in debug logs. When logging at debug-level the input state and CEL evaluation state are included
+          in logs. This may leak secrets, so list sensitive state fields in this configuration.
+        show_user: true
+        multi: true
+        required: false
+      - name: delete_redacted_fields
+        type: bool
+        title: Delete redacted fields
+        description: |
+          The default behavior for field redaction is to replace characters with `*`s. If field value length or presence will
+          leak information, the fields can be deleted from logging by setting this configuration to true.
+        show_user: true
+        multi: false
+        default: false
+        required: true
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc, more examples found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config).
+        multi: false
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
