@@ -94,3 +94,7 @@ func (p *PackageError) SetPreviousLinks(builds []string) {
 func (p *PackageError) SetFirstBuild(url string) {
 	p.BuildURL = url
 }
+
+func (p *PackageError) SetClosedIssue(url string) {
+	p.ClosedIssueURL = url
+}
