@@ -3,7 +3,7 @@ name: http_endpoint
 title: Custom HTTP Endpoint Logs
 description: Collect JSON data from listening HTTP port with Elastic Agent.
 type: input
-version: "2.1.0"
+version: "2.2.1"
 conditions:
   kibana:
     version: "^8.14.0"
@@ -79,7 +79,11 @@ policy_templates:
       - name: prefix
         type: text
         title: Prefix
-        description: This option specifies which prefix field the incoming request will be mapped to.
+        description: >-
+          This option specifies which prefix field the incoming request will be mapped to. Care should be taken when
+          setting this option in conjunction with the Preserve Original Event or the Include Headers options. These will
+          collide the `event` and `headers` fields respecetively, so avoid using a prefix that would result in data being
+          placed in those fields if those other options are used. If a collision occurs the behavior is unspecified.
         required: false
         show_user: false
       - name: basic_auth
