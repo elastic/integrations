@@ -1,6 +1,6 @@
 name: logstash
 title: Logstash
-version: 2.4.10
+version: 2.4.11
 description: Collect logs and metrics from Logstash with Elastic Agent.
 type: integration
 icons:
@@ -45,9 +45,51 @@ policy_templates:
             multi: false
             required: false
             show_user: false
+      - type: cel
+        title: "Metrics (Agent-driven Monitoring). Should only be enabled when using Elastic Agent with Logstash dashboards.\n"
+        description: "Collect Metrics and stats from Logstash instances to power dedicated Logstash Dashboards in Kibana"
+        vars:
+          - name: url
+            type: text
+            title: Logstash URL
+            show_user: true
+            required: true
+            default: http://localhost:9600
+          - name: username
+            type: text
+            title: Username
+            description: Use when connecting to logstash
+            multi: false
+            required: false
+            show_user: false
+          - name: password
+            type: password
+            title: Password
+            description: Use when connecting to logstash
+            multi: false
+            required: false
+            show_user: false
+          - name: resource_ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate, certificate_authorities, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-ssl.html#ssl-client-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities: ["/etc/ca.crt"]
+              #certificate: "/etc/client.crt"
+              #key: "/etc/client.key"
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input
+            type: text
+            multi: false
+            required: false
+            show_user: false
       - type: logstash/metrics
-        title: "Metrics (Stack Monitoring)"
-        description: "Collect node metrics and stats from Logstash instances to power the Stack Monitoring application in Kibana.\n Please disable if only using Technical Preview Logstash Monitoring"
+        title: "Metrics (Stack Monitoring). Should only be enabled when using traditional Stack Monitoring."
+        description: "Collect node metrics and stats from Logstash instances to power the Stack Monitoring application in Kibana.\n Please disable if using Agent-driven Logstash Monitoring"
         vars:
           - name: hosts
             type: text
@@ -89,45 +131,4 @@ policy_templates:
             multi: false
             required: false
             show_user: false
-      - type: cel
-        title: "Metrics (Technical Preview).\nPlease disable if using Stack Monitoring"
-        description: "Collect Metrics and stats from Logstash instances to power dedicated Logstash Dashboards in Kibana"
-        vars:
-          - name: url
-            type: text
-            title: Logstash URL
-            show_user: true
-            required: true
-            default: http://localhost:9600
-          - name: username
-            type: text
-            title: Username
-            description: Use when connecting to logstash
-            multi: false
-            required: false
-            show_user: false
-          - name: password
-            type: password
-            title: Password
-            description: Use when connecting to logstash
-            multi: false
-            required: false
-            show_user: false
-          - name: resource_ssl
-            type: yaml
-            title: SSL Configuration
-            description: i.e. certificate, certificate_authorities, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-ssl.html#ssl-client-config) for details.
-            multi: false
-            required: false
-            show_user: false
-            default: |
-              #certificate_authorities: ["/etc/ca.crt"]
-              #certificate: "/etc/client.crt"
-              #key: "/etc/client.key"
-          - name: condition
-            title: Condition
-            description: Condition to filter when to collect this input
-            type: text
-            multi: false
-            required: false
-            show_user: false
+
