@@ -80,6 +80,17 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
+      source: |
+        if (ctx.azure?.open_ai.properties instanceof Map) {
+          if (ctx.azure.open_ai.properties.model_name == "dall-e-3" && ctx.event.duration != null) {
+            if (ctx.azure.open_ai.properties.request_time != null && ctx.azure.open_ai.properties.response_time != null) {
+              ctx.event.duration = (ctx.azure.open_ai.properties.response_time - ctx.azure.open_ai.properties.request_time)/10000;
+            }
+          }
+        }
+      ignore_failure: true
+  - script:
+      lang: painless
       source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
         * params.param_nano;}
       params:
