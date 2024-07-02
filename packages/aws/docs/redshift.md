@@ -228,13 +228,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.redshift.metrics.WriteLatency.avg | The average amount of time taken for disk write I/O operations. | long | gauge |
 | aws.redshift.metrics.WriteThroughput.avg | The average number of bytes written to disk per second. | long | gauge |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |  |
 | container | Container fields are used for meta information about the specific container that is the source of information. These fields help correlate data based containers from any runtime. | group |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
 | event.module | Event module | constant_keyword |  |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
