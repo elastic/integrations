@@ -74,6 +74,44 @@ func TestCheckManifest(t *testing.T) {
 	}
 }
 
+func TestValidatePackages(t *testing.T) {
+	cases := []struct {
+		codeownersPath string
+		packageDir     string
+		valid          bool
+	}{
+		{
+			codeownersPath: "testdata/CODEOWNERS-streams-missing-owners",
+			packageDir:     "testdata/test_packages",
+			valid:          false,
+		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-streams-multiple-owners",
+			packageDir:     "testdata/test_packages",
+			valid:          false,
+		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-streams-valid",
+			packageDir:     "testdata/test_packages",
+			valid:          true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.codeownersPath, func(t *testing.T) {
+			owners, err := readGithubOwners(c.codeownersPath)
+			require.NoError(t, err)
+
+			err = validatePackages(owners, c.packageDir)
+			if c.valid {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+			}
+		})
+	}
+}
+
 func TestReadGithubOwners(t *testing.T) {
 	cases := []struct {
 		codeownersPath string
