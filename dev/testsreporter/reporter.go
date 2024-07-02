@@ -34,6 +34,8 @@ func (r reporter) Report(ctx context.Context, issue *GithubIssue, packageError P
 	if closedIssueURL != "" {
 		fmt.Println("Found previous closed issue:", closedIssueURL)
 		packageError.SetClosedURL(closedIssueURL)
+
+		r.updateDescriptionClosedIssueURL(issue, packageError)
 	}
 
 	if !found {
@@ -63,10 +65,10 @@ func (r reporter) closedIssueURL(ctx context.Context, issue *GithubIssue) (strin
 	return "", nil
 }
 
-func updateDescriptionClosedIssueURL(issue *GithubIssue, packageError PackageError, maxPreviousLinks int) *GithubIssue {
+func (r reporter) updateDescriptionClosedIssueURL(issue *GithubIssue, packageError PackageError) *GithubIssue {
 	formatter := ResultsFormatter{
 		result:           packageError,
-		maxPreviousLinks: maxPreviousLinks,
+		maxPreviousLinks: r.maxPreviousLinks,
 	}
 
 	issue.SetDescription(formatter.Description())

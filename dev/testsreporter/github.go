@@ -108,6 +108,7 @@ func (g *GhCli) Exists(ctx context.Context, issue *GithubIssue, open bool) (bool
 			return list[i].ClosedAt.After(list[j].ClosedAt)
 		})
 
+		// TODO remove this messages
 		fmt.Println("Issues found", len(list))
 		for _, elem := range list {
 			fmt.Printf("Issue %d Closed At %s\n", elem.Number, elem.ClosedAt)
