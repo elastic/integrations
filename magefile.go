@@ -18,6 +18,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/elastic/integrations/dev/codeowners"
+	"github.com/elastic/integrations/dev/coverage"
 	"github.com/elastic/integrations/dev/testsreporter"
 )
 
@@ -59,6 +60,14 @@ func ImportBeats() error {
 	}
 	args = append(args, "*.go")
 	return sh.Run("go", args...)
+}
+
+func MergeCoverage() error {
+	coverageFiles, err := filepath.Glob("build/test-coverage/coverage-*.xml")
+	if err != nil {
+		return fmt.Errorf("glob failed: %w", err)
+	}
+	return coverage.MergeGenericCoverageFiles(coverageFiles, "build/test-coverage/coverage_merged.xml")
 }
 
 func build() error {
