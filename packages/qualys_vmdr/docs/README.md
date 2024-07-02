@@ -315,7 +315,6 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.vulnerability.times.reopened |  | long |
 | qualys_vmdr.asset_host_detection.vulnerability.type |  | keyword |
 | qualys_vmdr.asset_host_detection.vulnerability.unique_vuln_id |  | keyword |
-| tags | User defined tags. | keyword |
 
 
 ### Knowledge Base
@@ -506,7 +505,6 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.vendor_reference_list.id |  | keyword |
 | qualys_vmdr.knowledge_base.vendor_reference_list.url |  | keyword |
 | qualys_vmdr.knowledge_base.vuln_type |  | keyword |
-| tags | User defined tags. | keyword |
 
 
 ### User Activity
@@ -604,12 +602,9 @@ An example event for `user_activity` looks as following:
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | input.type | Type of filebeat input. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | qualys_vmdr.user_activity.Action |  | keyword |
 | qualys_vmdr.user_activity.Date |  | date |
 | qualys_vmdr.user_activity.Details |  | keyword |
@@ -617,18 +612,3 @@ An example event for `user_activity` looks as following:
 | qualys_vmdr.user_activity.User_IP |  | keyword |
 | qualys_vmdr.user_activity.User_Name |  | keyword |
 | qualys_vmdr.user_activity.User_Role |  | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
-| user.roles | Array of user roles at the time of the event. | keyword |

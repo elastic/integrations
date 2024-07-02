@@ -97,7 +97,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.redis.keyspace.avg_ttl.sec | Average TTL for keys in this database. | double | s | gauge |
 | gcp.redis.keyspace.keys.count | Number of keys stored in this database. | long |  | gauge |
 | gcp.redis.keyspace.keys_with_expiration.count | Number of keys with an expiration in this database. | long |  | gauge |
-| gcp.redis.persistence.rdb.bgsave_in_progress | Flag indicating a RDB save is on-going. | long |  | gauge |
+| gcp.redis.persistence.rdb.bgsave_in_progress | Flag indicating a RDB save is on-going. | boolean |  |  |
 | gcp.redis.replication.master.slaves.lag.sec | The number of seconds that replica is lagging behind primary. | long | s | gauge |
 | gcp.redis.replication.master.slaves.offset.bytes | The number of bytes that have been acknowledged by replicas. | long | byte | gauge |
 | gcp.redis.replication.master_repl_offset.bytes | The number of bytes that master has produced and sent to replicas. | long | byte | gauge |
