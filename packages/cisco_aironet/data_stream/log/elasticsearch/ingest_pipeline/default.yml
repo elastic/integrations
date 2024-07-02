@@ -14,13 +14,12 @@ processors:
       field: event.original
       patterns:
         - "%{SYSLOG_HEADER}:\\s%%{GREEDYDATA:_temp_.full_message}"
-        - "%{SYSLOGFACILITY}%{INT}: AP:%{MAC:host.mac}: \\*%{AIRONET_DATE:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
-        - "%{SYSLOGFACILITY}%{INT}: %{AIRONET_DATE:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
+        - "%{SYSLOGFACILITY}%{INT}: AP:%{MAC:host.mac}: \\*%{SYSLOGTIMESTAMP:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
+        - "%{SYSLOGFACILITY}%{INT}: %{SYSLOGTIMESTAMP:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
         - "%{SYSLOGFACILITY}%{DATA:host.name}: -%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
-        SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{AIRONET_DATE:_temp_.raw_date}"
+        SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{SYSLOGTIMESTAMP:_temp_.raw_date}"
         SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.priority:int}>"
-        AIRONET_DATE: "%{MONTH} %{MONTHDAY} %{TIME}"
   - script:
       lang: painless
       source: |
@@ -88,6 +87,10 @@ processors:
       target_field: "@timestamp"
       formats:
         - "MMM d HH:mm:ss.SSS"
+        - "MMM  d HH:mm:ss.SSS"
+        - "MMM  d HH:mm:ss"
+        - "MMM dd HH:mm:ss"
+        - "MMM d HH:mm:ss"
       timezone: '{{{_conf.tz_offset}}}'
 
   # Adding information to event types
