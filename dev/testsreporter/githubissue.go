@@ -49,3 +49,7 @@ func NewGithubIssue(options GithubIssueOptions) *GithubIssue {
 
 	return &issue
 }
+
+func (i *GithubIssue) SetDescription(description string) {
+	i.description = description
+}

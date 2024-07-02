@@ -82,3 +82,15 @@ func (p PackageError) String() string {
 
 	return sb.String()
 }
+
+func (p *PackageError) SetClosedURL(url string) {
+	p.ClosedIssueURL = url
+}
+
+func (p *PackageError) SetPreviousLinks(builds []string) {
+	p.PreviousBuilds = builds
+}
+
+func (p *PackageError) SetFirstBuild(url string) {
+	p.BuildURL = url
+}
