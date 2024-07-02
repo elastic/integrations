@@ -1,17 +1,73 @@
 # MySQL Integration
 
-This integration periodically fetches logs and metrics from [MySQL](https://www.mysql.com/) servers.
+## Overview
+
+[MySQL](https://www.mysql.com/) is an open-source Relational Database Management System (RDBMS) that enables users to store, manage, and retrieve structured data efficiently.
+
+Use the MySQL integration to:
+
+- Collect error and slow query logs, as well as status, galera status, and replication status metrics, to provide insights into database operations, query performance and replication health.
+- Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
+- Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
+
+## Data streams
+
+The MySQL integration collects logs and metrics data, providing comprehensive insights into database operations and performance.
+
+Logs provide insights into the operations and events within the MySQL environment. The MySQL integration collects `error` logs helping users to track errors and warnings, understand their causes, and address database-related issues efficiently. This includes monitoring for slow-performing queries through the `slowlog` data stream, which is critical for identifying and resolving queries that negatively affect database performance. 
+
+Metrics offer statistics that reflect the performance and health of MySQL. The `status` data stream, for instance, gathers a variety of performance metrics, including connection errors, cache efficiency, and InnoDB storage engine details. The `galera_status` data stream offers a view into the health and performance of Galera Clusters, which is vital for the maintenance of distributed database systems. For replication health, the `replica_status` data stream provides metrics that shed light on the state of replication between the source and replica servers, ensuring the replication process is functioning correctly. 
+
+Data streams:
+
+- `error`: Collect error logs from the MySQL server, helping to detect and troubleshoot issues that may affect database functionality. This data stream includes information such as error messages, severities, and error codes.
+- `slowlog`: Collect slow-performing queries that exceed a defined time threshold. This data stream includes details such as query execution time, lock time, rows affected, and the actual query text, which are crucial for pinpointing and optimizing slow queries.
+- `status`: Collect various status and performance indicators, including connection errors, cache performance, binary log usage, network I/O, thread activity, and detailed InnoDB metrics, allowing for a thorough analysis of the MySQL server's health and efficiency.
+- `galera_status`: Collect various status and performance metrics, which provide insights into cluster performance, including replication health and node status, to maintain the robustness and fault tolerance of the distributed database system.
+- `replica_status`:  Collect metrics related to status and performance of the replication process, including details from source and replica servers.
+
+Note:
+- Users can monitor MySQL logs by using the logs-* index pattern in the Discover feature, while metrics can be viewed using the metrics-* index pattern.
 
 ## Compatibility
 
-The `error` and `slowlog` datasets were tested with logs from MySQL 5.5, 5.7 and 8.0, MariaDB 10.1, 10.2 and 10.3, and Percona 5.7 and 8.0.
+The `error` and `slowlog` datasets were tested with logs from MySQL `5.5`, `5.7` and `8.0`, MariaDB `10.1`, `10.2` and `10.3`, and Percona `5.7` and `8.0`.
 
-The `galera_status` and `status` datasets were tested with MySQL and Percona 5.7 and 8.0 and are expected to work with all
-versions >= 5.7.0. It is also tested with MariaDB 10.2, 10.3 and 10.4.
+The `galera_status` and `status` datasets were tested with MySQL and Percona `5.7` and `8.0` and are expected to work with all versions >= `5.7.0`. It is also tested with MariaDB `10.2`, `10.3` and `10.4`.
 
-## Logs
+The `replica_status` was tested with MySQL `5.7` and `8.0.22`,  MariaDB `10.4` and `10.5.1`, Percona `5.7` and `8.0.22`.
 
-### error
+Note:
+
+Information about which query is used to fetch replica status in Mysql, MariaDB and Percona:
+- MySQL versions `8.0.22` and newer support both [`SHOW REPLICA STATUS;`](https://dev.mysql.com/doc/refman/8.0/en/show-replica-status.html) and [`SHOW SLAVE STATUS;`](https://dev.mysql.com/doc/refman/8.0/en/show-slave-status.html) queries. However, versions older than `8.0.22` only support the `SHOW SLAVE STATUS;` query.
+- MariaDB versions `10.5.1` and newer support both [`SHOW REPLICA STATUS;`](https://mariadb.com/kb/en/show-replica-status/) and `SHOW SLAVE STATUS;` queries. However, versions older than `10.5.1` only support the `SHOW SLAVE STATUS;` query. Also, the output of both commands are identical, with the Replica Status metrics names remaining consistent across versions in MariaDB.
+- Percona versions `8.0.22` and newer support both [`SHOW REPLICA STATUS;`](https://docs.percona.com/percona-server/8.0/release-notes/Percona-Server-8.0.22-13.html) and `SHOW SLAVE STATUS;` queries. However, versions older than `8.0.22` only support the `SHOW SLAVE STATUS;` query.
+
+## Prerequisites
+
+Users require Elasticsearch for storing and searching their data, and Kibana for visualizing and managing it. They can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on their own hardware.
+
+In order to ingest data from MySQL:
+
+- Users should specify the hostname, username, and password to connect to the MySQL database. Additionally, there is query parameter in replica_status data stream(default query is `SHOW REPLICA STATUS;` user can change it to `SHOW SLAVE STATUS`).
+- Users should specify the paths of MySQL error logs and slow logs. (default paths are:- Error logs: `/var/log/mysql/error.log*` and `/var/log/mysqld.log*`, Slow logs: `/var/log/mysql/*-slow.log*` and `/var/lib/mysql/*-slow.log*`)
+
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Validation
+
+After the integration is successfully configured, clicking on the Assets tab of the MySQL Integration should display a list of available dashboards. Click on the dashboard available for the user's configured data stream. It should be populated with the required data.
+
+## Troubleshooting
+
+For MySQL, MariaDB and Percona the query to check replica status varies depending on the version of the database. Users should adjust the query in the integration configuration accordingly. 
+
+## Logs reference
+
+### Error
 
 The `error` dataset collects the MySQL error logs.
 
@@ -75,7 +131,7 @@ The `error` dataset collects the MySQL error logs.
 | tags | List of keywords used to tag each event. | keyword |
 
 
-### slowlog
+### Slow Log
 
 The `slowlog` dataset collects the MySQL slow logs.
 
@@ -178,9 +234,9 @@ The `slowlog` dataset collects the MySQL slow logs.
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
-## Metrics
+## Metrics reference
 
-### galera_status
+### Galera Status
 
 The `galera_status` dataset periodically fetches metrics from [Galera](http://galeracluster.com/)-MySQL cluster servers.
 
@@ -403,9 +459,253 @@ An example event for `galera_status` looks as following:
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
-### status
+### Replica Status
 
-The MySQL `status` dataset collects data from MySQL by running a `SHOW GLOBAL STATUS;` SQL query. This query returns a large number of metrics.
+The `replica_status` dataset collects data from MySQL by running a `SHOW REPLICA STATUS;` or `SHOW SLAVE STATUS;` query. This data stream provides information about the configuration and status of the connection between the replica server and the source server.
+
+An example event for `replica_status` looks as following:
+
+```json
+{
+    "@timestamp": "2024-07-02T06:55:25.261Z",
+    "agent": {
+        "ephemeral_id": "b77a09cc-307e-44e2-b160-46f99f4cb4a0",
+        "id": "28f4cba6-6329-4d26-a9cc-489d23e88ac5",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.12.0"
+    },
+    "data_stream": {
+        "dataset": "mysql.replica_status",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "28f4cba6-6329-4d26-a9cc-489d23e88ac5",
+        "snapshot": false,
+        "version": "8.12.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "dataset": "mysql.replica_status",
+        "duration": 2201778,
+        "ingested": "2024-07-02T06:55:37Z",
+        "kind": "event",
+        "module": "mysql",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "829324aac17946dcace17006fa82a2d2",
+        "ip": [
+            "192.168.240.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-F0-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "query",
+        "period": 600000
+    },
+    "mysql": {
+        "replica_status": {
+            "connection": {
+                "retry": {
+                    "sec": 60
+                }
+            },
+            "event_skip": {
+                "count": 0
+            },
+            "gtid": {
+                "executed": {
+                    "set": "ff38050c-383f-11ef-a4e5-0242c0a8f604:1-10"
+                }
+            },
+            "is_auto_position": false,
+            "is_io_thread_running": "Yes",
+            "is_sql_thread_running": "Yes",
+            "last_error": {
+                "io": {
+                    "number": 0
+                },
+                "number": 0,
+                "sql": {
+                    "number": 0
+                }
+            },
+            "relay": {
+                "log_file": "64cab54eb43a-relay-bin.000002",
+                "log_position": 326,
+                "log_space": 543
+            },
+            "replica": {
+                "io": {
+                    "state": "Waiting for source to send event"
+                },
+                "sql": {
+                    "running_state": "Replica has read all relay log; waiting for more updates"
+                }
+            },
+            "seconds_behind_source": 0,
+            "source": {
+                "binary_log_file": "mysql-bin.000003",
+                "file_info": "mysql.slave_master_info",
+                "host": {
+                    "name": "mysql_master"
+                },
+                "is_get_public_key": false,
+                "log_file": {
+                    "relay": "mysql-bin.000003"
+                },
+                "log_position": {
+                    "exec": 893,
+                    "read": 893
+                },
+                "retry_count": 86400,
+                "server": {
+                    "id": 1,
+                    "uuid": "ff0470fd-383f-11ef-a484-0242c0a8f602"
+                },
+                "ssl": {
+                    "allowed": "No",
+                    "is_verify_server_cert": false
+                }
+            },
+            "thread": {
+                "sql": {
+                    "delay": {
+                        "sec": 0
+                    }
+                }
+            },
+            "until": {
+                "condition": "None",
+                "log_position": 0
+            }
+        }
+    },
+    "service": {
+        "address": "elastic-package-service-mysql_replica-1:3306",
+        "type": "mysql"
+    },
+    "source": {
+        "port": 3306
+    },
+    "user": {
+        "name": "mydb_replica_user"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| mysql.replica_status.channel.name | The replication channel which is being displayed. There is always a default replication channel, and more replication channels can be added. | keyword |  |
+| mysql.replica_status.connection.retry.sec | The number of seconds between connect retries. | long | gauge |
+| mysql.replica_status.event_skip.count | Number of events that a replica skips from the master, as recorded in the sql_slave_skip_counter system variable. | long | counter |
+| mysql.replica_status.gtid.executed.set | The set of global transaction IDs written in the binary log. This is same as the value for the global gtid_executed system variable on this server, as well as the value for Executed_Gtid_Set in the output of SHOW MASTER STATUS on this server. | keyword |  |
+| mysql.replica_status.gtid.retrieved.set | The set of global transaction IDs corresponding to all transactions received by this replica. Empty if GTIDs are not in use. | keyword |  |
+| mysql.replica_status.gtid_io_position | Current global transaction ID value. | long | counter |
+| mysql.replica_status.is_auto_position | true if GTID auto-positioning is in use for the channel, otherwise false. | boolean |  |
+| mysql.replica_status.is_gtid_using | Whether or not global transaction ID's are being used for replication (can be No, Slave_Pos, or Current_Pos). | keyword |  |
+| mysql.replica_status.is_io_thread_running | Whether the replication I/O (receiver) thread is started and has connected successfully to the source. | keyword |  |
+| mysql.replica_status.is_sql_thread_running | Whether the replication SQL (applier) thread is started. | keyword |  |
+| mysql.replica_status.last_error.io.message | The error message of the most recent error that caused the replication I/O (receiver) thread to stop. | keyword |  |
+| mysql.replica_status.last_error.io.number | The error number of the most recent error that caused the replication I/O (receiver) thread to stop. | long | gauge |
+| mysql.replica_status.last_error.io.timestamp | A timestamp in YYMMDD hh:mm:ss format that shows when the most recent I/O error took place. | date |  |
+| mysql.replica_status.last_error.message | It is an alias of Last_SQL_Error. | keyword |  |
+| mysql.replica_status.last_error.number | It is an alias of Last_SQL_Errno. | long | gauge |
+| mysql.replica_status.last_error.sql.message | The error message of the most recent error that caused the SQL thread to stop. | keyword |  |
+| mysql.replica_status.last_error.sql.number | The error number of the most recent error that caused the SQL thread to stop. | long | gauge |
+| mysql.replica_status.last_error.sql.timestamp | A timestamp in YYMMDD hh:mm:ss format that shows when the most recent SQL error occurred. | date |  |
+| mysql.replica_status.parallel_mode | Controls what transactions are applied in parallel when using parallel replication. | keyword |  |
+| mysql.replica_status.relay.log_file | The name of the relay log file from which the SQL (applier) thread is currently reading and executing. | keyword |  |
+| mysql.replica_status.relay.log_position | The position in the current relay log file up to which the SQL (applier) thread has read and executed. | long | counter |
+| mysql.replica_status.relay.log_space | The total combined size of all existing relay log files. | long | counter |
+| mysql.replica_status.replica.io.state | The current status of the replica. | keyword |  |
+| mysql.replica_status.replica.sql.running_state | The state of the SQL thread (analogous to Replica_IO_State). | keyword |  |
+| mysql.replica_status.replicate.do_db | The names of any databases that were specified with the --replicate-do-db option, or the CHANGE REPLICATION FILTER statement. | keyword |  |
+| mysql.replica_status.replicate.do_table | Tables specified with the replicate_do_table option. | keyword |  |
+| mysql.replica_status.replicate.ignore.do_db | The names of any databases that were specified with the --replicate-ignore-db option, or the CHANGE REPLICATION FILTER statement. | keyword |  |
+| mysql.replica_status.replicate.ignore.server_id | The server IDs that are currently being ignored for replication. | keyword |  |
+| mysql.replica_status.replicate.ignore.table | Tables specified for ignoring with the replicate_ignore_table option. | keyword |  |
+| mysql.replica_status.replicate.ignore.wild_table | Tables specified with replicate-wild-ignore-table option. | keyword |  |
+| mysql.replica_status.replicate.rewrite_db | This field displays any replication filtering rules that were specified. | keyword |  |
+| mysql.replica_status.replicate.wild_do_table | Tables specified for replicating with the replicate_wild_do_table option. | keyword |  |
+| mysql.replica_status.replicate_do_domain_ids | The do_domain_id option vlaue for change master.(The DO_DOMAIN_IDS option for CHANGE MASTER can be used to configure a replica to only apply binary log events if the transaction's GTID is in a specific gtid_domain_id value.) | keyword |  |
+| mysql.replica_status.replicate_ignore_domain_ids | The ignore_domain_id option vlaue for change master.(The IGNORE_DOMAIN_IDS option for CHANGE MASTER can be used to configure a replica to ignore binary log events if the transaction's GTID is in a specific gtid_domain_id value) | keyword |  |
+| mysql.replica_status.seconds_behind_source | This field is an indication of how 'late' the replica is: : When the replica is actively processing updates, this field shows the difference between the current timestamp on the replica and the original timestamp logged on the source for the event currently being processed on the replica and when no event is currently being processed on the replica, this value is 0. | long | gauge |
+| mysql.replica_status.slave.ddl_groups | This status variable counts the occurrence of DDL statements. This is a replica-side counter for optimistic parallel replication. | long | counter |
+| mysql.replica_status.slave.non_transactional_groups | This status variable counts the occurrence of non-transactional event groups. This is a replica-side counter for optimistic parallel replication. | long | counter |
+| mysql.replica_status.slave.transactional_groups | This status variable counts the occurrence of transactional event groups. This is a replica-side counter for optimistic parallel replication. | long | counter |
+| mysql.replica_status.source.binary_log_file | The name of the source binary log file from which the I/O (receiver) thread is currently reading. | keyword |  |
+| mysql.replica_status.source.bind.interface.name | The network interface that the replica is bound to, if any. | keyword |  |
+| mysql.replica_status.source.file_info | The location of the master.info file. | keyword |  |
+| mysql.replica_status.source.host.name | The source host that the replica is connected to. | keyword |  |
+| mysql.replica_status.source.is_get_public_key | Whether to request from the source the public key required for RSA key pair-based password exchange. | boolean |  |
+| mysql.replica_status.source.log_file.relay | The name of the source binary log file containing the most recent event executed by the SQL (applier) thread. | keyword |  |
+| mysql.replica_status.source.log_position.exec | The position in the current source binary log file to which the replication SQL thread has read and executed. | long | counter |
+| mysql.replica_status.source.log_position.read | The position in the current source binary log file up to which the I/O (receiver) thread has read. | long | counter |
+| mysql.replica_status.source.public_key_path | The path name to a file containing a replica-side copy of the public key required by the source. | keyword |  |
+| mysql.replica_status.source.retry_count | The number of times the replica can attempt to reconnect to the source in the event of a lost connection. | long | gauge |
+| mysql.replica_status.source.server.id | Value of the server_id system variable from the source. | long |  |
+| mysql.replica_status.source.server.uuid | Value of the server_uuid system variable from the source. | keyword |  |
+| mysql.replica_status.source.ssl.allowed | Whether the replica supports SSL connections. | keyword |  |
+| mysql.replica_status.source.ssl.ca_file | The file used for the Certificate Authority (CA) certificate. | keyword |  |
+| mysql.replica_status.source.ssl.ca_path | The path to the Certificate Authority (CA) certificate. | keyword |  |
+| mysql.replica_status.source.ssl.cert | The name of the SSL certificate file. | keyword |  |
+| mysql.replica_status.source.ssl.cipher | The list of possible ciphers used in the handshake for the SSL connection. | keyword |  |
+| mysql.replica_status.source.ssl.crl | The SOURCE_SSL_CRL option of the CHANGE REPLICATION SOURCE TO Statement. | keyword |  |
+| mysql.replica_status.source.ssl.crl_path | The SOURCE_SSL_CRLPATH option of the CHANGE REPLICATION SOURCE TO Statement. | keyword |  |
+| mysql.replica_status.source.ssl.is_verify_server_cert | Whether to verify the server certificate. | boolean |  |
+| mysql.replica_status.source.ssl.key | The name of the SSL key file. | keyword |  |
+| mysql.replica_status.source.tls_version | The TLS version used on the source. | keyword |  |
+| mysql.replica_status.thread.sql.delay.sec | The number of seconds that the replica must lag the source. | long | gauge |
+| mysql.replica_status.thread.sql.delay_remaining.sec | When Replica_SQL_Running_State is Waiting until MASTER_DELAY seconds after source executed event, this field contains the number of delay seconds remaining. At other times, this field is NULL. | long | gauge |
+| mysql.replica_status.until.condition | The values specified in the UNTIL clause of the START SLAVE statement. | keyword |  |
+| mysql.replica_status.until.log_file | Indicates the log file name that defines the coordinates at which the replication SQL thread stops executing. | keyword |  |
+| mysql.replica_status.until.log_position | Indicates the log file position that defines the coordinates at which the replication SQL thread stops executing. | long | counter |
+| network.name | Name given by operators to sections of their network. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| source.port | Port of the source. | long |  |
+| user.name | Short name or login of the user. | keyword |  |
+| user.name.text | Multi-field of `user.name`. | match_only_text |  |
+
+
+### Status
+
+The `status` dataset collects data from MySQL by running a `SHOW GLOBAL STATUS;` SQL query. This query returns a large number of metrics.
 
 An example event for `status` looks as following:
 
@@ -664,4 +964,3 @@ An example event for `status` looks as following:
 | mysql.status.threads.running | The number of running threads. | long | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-

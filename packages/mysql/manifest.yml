@@ -1,7 +1,7 @@
 format_version: "3.0.2"
 name: mysql
 title: MySQL
-version: "1.21.0"
+version: "1.22.0"
 description: Collect logs and metrics from MySQL servers with Elastic Agent.
 type: integration
 categories:
@@ -20,6 +20,10 @@ screenshots:
   - src: /img/metricbeat-mysql.png
     title: metricbeat mysql
     size: 2562x2540
+    type: image/png
+  - src: /img/mysql-replica_status-dashboard.png
+    title: mysql replica status
+    size: 1898x1190
     type: image/png
 icons:
   - src: /img/logo_mysql.svg
@@ -84,6 +88,25 @@ policy_templates:
               #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
+      - type: sql/metrics
+        title: Collect replica status metrics from MySQL hosts
+        description: Collecting replica status metrics
+        vars:
+          - name: hosts
+            type: text
+            title: MySQL DSN
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - username:password@tcp(localhost:3306)/
+          - name: replication_status_query
+            type: text
+            title: Replica status query
+            multi: false
+            required: true
+            show_user: true
+            default: "SHOW REPLICA STATUS;"
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic
