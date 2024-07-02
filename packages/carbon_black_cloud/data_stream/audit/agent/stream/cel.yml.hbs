@@ -13,33 +13,35 @@ resource.ssl: {{ssl}}
 resource.url: {{hostname}}/integrationServices/v3/auditlogs
 state:
   api_key: '{{custom_api_secret_key}}/{{custom_api_id}}'
-  want_more: false
 redact:
   fields:
     - api_key
 program: |
-  request("GET", (state.url)).with({
-    "Header":{
-        "Content-Type": ["application/json"],
-        "X-Auth-Token": [state.api_key],
+  request("GET", state.url).with({
+    "Header": {
+      "Content-Type": ["application/json"],
+      "X-Auth-Token": [state.api_key],
     },
-    }).do_request().as(resp, resp.StatusCode == 200 ?
-      bytes(resp.Body).decode_json().as(body,{
-        "events": body.notifications.map(e, {"message": e.encode_json(),}),
-        "want_more": false,
-      })
-    :
-      {
-        "events": {
-          "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": string(resp.Body)
-          },
-        },
-        "want_more": false,   
-      }
-    )
+  }).do_request().as(resp, resp.StatusCode == 200 ?
+    bytes(resp.Body).decode_json().as(body, {
+      "events": body.notifications.map(e, {
+        "message": e.encode_json(),
+      }),
+    })
+  :
+    {
+      "events": [{
+        "error": dyn({
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": size(resp.Body) != 0 ? 
+            string(resp.Body)
+          :
+            string(resp.Status) + ' (' + string(resp.StatusCode) + ')',
+        }),
+      }],
+    }
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
