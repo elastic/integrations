@@ -7,7 +7,6 @@ package testsreporter
 import (
 	"bytes"
 	_ "embed"
-	"fmt"
 	"strings"
 	"text/template"
 )
@@ -26,8 +25,7 @@ type ResultsFormatter struct {
 }
 
 func (r ResultsFormatter) Title() string {
-	// TODO: remove ignore statement
-	return fmt.Sprintf("%s - IGNORE testing", r.result.String())
+	return r.result.String()
 }
 
 func (r ResultsFormatter) Owners() []string {
