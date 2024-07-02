@@ -2082,4 +2082,3 @@ This is the `Event` dataset.
 | process.user.full_name |  | keyword |
 | process.user.group.id |  | keyword |
 | process.user.group.name |  | keyword |
-| tags | User defined tags. | keyword |
