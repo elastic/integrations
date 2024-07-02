@@ -36,11 +36,11 @@ This module has been tested against `Trend Micro Vision One API version 3.0`.
     - **Expiration time**: The time the API key remains valid. By default, authentication tokens expire one year after creation. However, a master administrator can delete and re-generate tokens at any time.
     - **Status**: Whether the API key is enabled.
     - **Details**: Extra information about the API key.
-    
+
     Click **Add**.
 4. Copy the Authentication token.
 
-Refer to [Obtain authentication tokens](https://automation.trendmicro.com/xdr/Guides/First-steps-toward-using-the-APIs#Obtain-authentication-tokens) for details on setting up API Token.
+Refer to [Obtain authentication tokens](https://automation.trendmicro.com/xdr/Guides/First-steps-toward-using-the-APIs#Obtain-authentication-tokens) for more details on setting up API Token.
 
 ## Logs Reference
 
