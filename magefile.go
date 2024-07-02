@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
@@ -18,6 +19,14 @@ import (
 
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
+	"github.com/elastic/integrations/dev/testsreporter"
+)
+
+const (
+	defaultResultsPath           = "build/test-results/"
+	defaultPreviousLinksNumber   = 5
+	defaultMaximumTestsReported  = 20
+	defaultServerlessProjectType = "observability"
 )
 
 var (
@@ -137,4 +146,36 @@ func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 
 func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
+}
+
+func ReportFailedTests(testResultsFolder string) error {
+	stackVersion := os.Getenv("STACK_VERSION")
+	serverlessEnv := os.Getenv("SERVERLESS")
+	serverlessProjectEnv := os.Getenv("SERVERLESS_PROJECT")
+	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
+
+	serverless := false
+	if serverlessEnv != "" {
+		var err error
+		serverless, err = strconv.ParseBool(serverlessEnv)
+		if err != err {
+			return fmt.Errorf("failed to parse SERVERLESS value: %w", err)
+		}
+		if serverlessProjectEnv == "" {
+			serverlessProjectEnv = defaultServerlessProjectType
+		}
+	}
+
+	maxIssuesString := os.Getenv("CI_MAX_TESTS_REPORTED")
+	maxIssues := defaultMaximumTestsReported
+	if maxIssuesString != "" {
+		var err error
+		maxIssues, err = strconv.Atoi(maxIssuesString)
+		if err != nil {
+			return fmt.Errorf("failed to convert to int env. variable CI_MAX_TESTS_REPORTED %s: %w", maxIssuesString, err)
+		}
+	}
+
+	mg.Deps(mg.F(testsreporter.Check, testResultsFolder, buildURL, stackVersion, serverless, serverlessProjectEnv, defaultPreviousLinksNumber, maxIssues))
+	return nil
 }

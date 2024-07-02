@@ -74,3 +74,16 @@ steps:
           artifacts: "build/test-results/*.xml"
     agents:
       provider: "gcp"  # junit plugin requires docker
+
+  - label: ":github: Report failed tests"
+    key: report-failed-tests
+    command: ".buildkite/scripts/report_issues.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
+    # not fail build if this step fails
+    soft_fail: true
+    # run this step when if it is triggered by the daily job
+    if: >
+      build.source == "trigger_job" &&  build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == "integrations-schedule-daily"
