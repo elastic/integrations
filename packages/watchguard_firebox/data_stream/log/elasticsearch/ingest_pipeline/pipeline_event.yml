@@ -1,0 +1,1130 @@
+---
+description: Pipeline for processing event category logs.
+processors:
+  - grok:
+      field: watchguard_firebox.log.body
+      patterns:
+        - '^Feature key does not support the feature %{GREEDYDATA:watchguard_firebox.log.feature_name}.$'
+        - '^No valid %{DATA:watchguard_firebox.log.feature_name} feature$'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-002F'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_message_id_3000-002F
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '%{watchguard_firebox.log.probe_method} %{watchguard_firebox.log.reason}, Load Balance Server %{watchguard_firebox.log.ip_address} port %{watchguard_firebox.log.port} is %{watchguard_firebox.log.status}.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-00C9'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-00C9
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '%{watchguard_firebox.log.probe_method} %{watchguard_firebox.log.reason}, Load Balance Server %{watchguard_firebox.log.ip_address} is %{watchguard_firebox.log.status}.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-00CB'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-00CB
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      patterns:
+        - '^ARP spoofing attack detected, ip=%{IP:watchguard_firebox.log.ip_address}, mac=%{MAC:watchguard_firebox.log.mac_address}, interface=%{NUMBER:watchguard_firebox.log.interface_id}$'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-012C'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_message_id_3000-012C
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'SD-WAN action %{watchguard_firebox.log.action_name} %{watchguard_firebox.log.update} from interface %{watchguard_firebox.log.previous_interface} to %{watchguard_firebox.log.new_interface}.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3000-0174'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3000-0174
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Temporarily blocking host %{watchguard_firebox.log.ip_address} (reason = %{watchguard_firebox.log.reason})'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3001-1001'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3001-1001
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'The Temporary Blocked Sites list is full (capacity=%{watchguard_firebox.log.blocked_site_limit}). The oldest entry %{watchguard_firebox.log.ip_address} was removed.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3001-1002'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3001-1002
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: "APT threat notified. Details='Policy Name: %{watchguard_firebox.log.policy_name} Reason: %{watchguard_firebox.log.reason} Task_UUID: %{watchguard_firebox.log.task_uuid} Source IP: %{watchguard_firebox.log.source_ip} Source Port: %{watchguard_firebox.log.source_port} Destination IP: %{watchguard_firebox.log.destination_ip} Destination Port: %{watchguard_firebox.log.destination_port} Proxy Type: %{watchguard_firebox.log.proxy_type} Proxy Host: %{watchguard_firebox.log.proxy_host} Path: %{watchguard_firebox.log.path}'"
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['0F01-0015'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0F01-0015
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: "APT safe result from file submission. Details='Policy Name: %{watchguard_firebox.log.policy_name} Reason: %{watchguard_firebox.log.reason} Message: %{watchguard_firebox.log.message} Task_UUID: %{watchguard_firebox.log.task_uuid} MD5: %{watchguard_firebox.log.md5} Source IP: %{watchguard_firebox.log.source_ip} Source Port: %{watchguard_firebox.log.source_port} Destination IP: %{watchguard_firebox.log.destination_ip} Destination Port: %{watchguard_firebox.log.destination_port} Proxy Type: %{watchguard_firebox.log.proxy_type} Proxy Host: %{watchguard_firebox.log.proxy_host} Path: %{watchguard_firebox.log.path}'"
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['0F01-0016'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0F01-0016
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: "Ruleset '%{watchguard_firebox.log.ruleset_name}' lookup failed"
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['1B04-00CE'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_1B04-00CE
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: "Cannot get the rule from ruleset '%{watchguard_firebox.log.ruleset_name}'"
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['1C02-00CD'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_1C02-00CD
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '[%{watchguard_firebox.log.dev_name} (%{watchguard_firebox.log.interface_name})] %{_tmp_msg}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3100-0074','3100-0072','0900-000A','0203-0025','3100-0071','3100-0073','0900-0008','3100-0009','3100-000A','3100-000B','3100-000D','3100-0029','3100-002B','3100-002C','3100-0046','3100-0047','3100-0069','3100-006A','3100-006C','3100-006D'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3100-0074_0900-000A_3100-0072_0203-0025_3100-0071_3100-0073_0900-0008_3100-0009_3100-000A_3100-000B_3100-000D_3100-0029_3100-002B_3100-002C_3100-0046_3100-0047_3100-0069_3100-006A_3100-006C_3100-006D'
+      ignore_failure: true
+  - dissect:
+      field: _tmp_msg
+      pattern: 'Enforced PPPoE static IP address: %{watchguard_firebox.log.negotiation_ip} is replaced with %{watchguard_firebox.log.static_ip}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['0900-0008'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0900-0008
+      ignore_failure: true
+  - dissect:
+      field: _tmp_msg
+      pattern: '%{}, from %{watchguard_firebox.log.previous_ip} to %{watchguard_firebox.log.new_ip}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3100-0071','3100-0073'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3100-0071_3100-0073
+      ignore_failure: true
+  - dissect:
+      field: _tmp_msg
+      pattern: '%{} IP address %{watchguard_firebox.log.ip_address} did not change during cluster failover'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3100-0072','3100-0074'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3100-0072_3100-0074
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '[%{watchguard_firebox.log.physical_name} (%{watchguard_firebox.log.interface_name})] PPPoE session[%{watchguard_firebox.log.session_id}] is established, acquired IP address %{watchguard_firebox.log.ip_address}, peer %{watchguard_firebox.log.peer_address}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['0900-0009'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0900-0009
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Failed to add bridge %{} VLAN ID %{watchguard_firebox.log.vlan_id}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3100-0010'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3100-0010
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '[%{watchguard_firebox.log.physical_name} (%{watchguard_firebox.log.interface_name})] PPPoE session[%{watchguard_firebox.log.session_id}] is established, acquired IP address %{watchguard_firebox.log.ip_address}, peer %{watchguard_firebox.log.peer_address}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['0900-0009'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0900-0009
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '[Link Monitor] No response received on %{watchguard_firebox.log.interface_name} from %{watchguard_firebox.log.target}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['4900-0002'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_4900-0002
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '%{watchguard_firebox.log.scan_type} scan completed'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['6800-0001'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_6800-0001
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '%{watchguard_firebox.log.scan_type} scan - %{watchguard_firebox.log.scan_stage} started'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['6800-0002'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_6800-0002
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '[%{watchguard_firebox.log.physical_name} (%{watchguard_firebox.log.interface_name})] PPPoE session[%{watchguard_firebox.log.session_id}] is established, acquired IP address %{watchguard_firebox.log.ip_address}, peer %{watchguard_firebox.log.peer_address}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['0900-0009'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0900-0009
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '[Cluster] Management interface setting is changed: interface from %{watchguard_firebox.log.previous_interface} to %{watchguard_firebox.log.new_interface}, IPv4 address from %{watchguard_firebox.log.previous_ip} to %{watchguard_firebox.log.new_ip}, IPv4 mask from %{watchguard_firebox.log.previous_mask} to %{watchguard_firebox.log.new_mask}, IPv6 CIDR from %{watchguard_firebox.log.previous_ipv6} to %{watchguard_firebox.log.new_ipv6}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3100-0039'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3100-0039
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Virtual Router with cluster ID %{watchguard_firebox.log.cluster_id} %{}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3A00-000E','3A00-000F'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0203-0025
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Cluster disabled. Nonmaster member %{watchguard_firebox.log.member_id} will be reset to factory-default settings.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3800-0278'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3800-0278
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Non-master member %{watchguard_firebox.log.member_id} will be reset to factory-default settings due to a critical cluster configuration change.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3800-0279'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3800-0279
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Cluster master %{watchguard_firebox.log.master_id} was unable to issue a device discovery message.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3800-0280'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0203-0025
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Member %{watchguard_firebox.log.member_id} is %{}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3800-0282','3900-0005'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3800-0282_3900-0005
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Cluster enabled on member %{watchguard_firebox.log.member_id}.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3800-025A'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3800-025A
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Cluster disabled on cluster master %{watchguard_firebox.log.master_id}.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3800-025B'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3800-025B
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Non-master cluster member %{watchguard_firebox.log.member_id} was removed from cluster, and will be reset to factory-default settings.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3800-027A'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3800-027A
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Failed to reset cluster member %{watchguard_firebox.log.member_id} to factory-default settings.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3800-027E'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3800-027E
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Master %{watchguard_firebox.log.master_id} detected loss of heartbeat from member %{watchguard_firebox.log.member_id}, cluster channel is up.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3900-0003'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3900-0003
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Master %{watchguard_firebox.log.master_id} failed over to member %{watchguard_firebox.log.member_id}, which has a greater Weighted Average Index.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3900-0007'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3900-0007
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Member %{watchguard_firebox.log.member_id} changed role to %{watchguard_firebox.log.role}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3900-0010'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3900-0010
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Monitored interface %{watchguard_firebox.log.interface_name} link is %{watchguard_firebox.log.link_state}.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3900-0011'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3900-0011
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      patterns:
+        - '^Member %{DATA:watchguard_firebox.log.member_id} took over as master from member %{DATA:watchguard_firebox.log.member_id}.$'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3900-0012'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_message_id_3900-0012
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Master %{watchguard_firebox.log.master_id} initiated failover by administrator request.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3900-0015'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3900-0015
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Cannot initiate failover from master %{watchguard_firebox.log.master_id} to member %{watchguard_firebox.log.member_id} due to higher Weighted Average Index on current master or backup master is unreachable.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3900-0016'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3900-0016
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Cluster failover due to interface %{watchguard_firebox.log.interface_name} link %{watchguard_firebox.log.link_state} event.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3900-0019'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3900-0019
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Cluster member %{watchguard_firebox.log.member_id} changed role from %{watchguard_firebox.log.role} to %{watchguard_firebox.log.updated_role}'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3900-0058'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3900-0058
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Full state synchronization from master %{watchguard_firebox.log.master_id} to backup master %{watchguard_firebox.log.member_id} %{}.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3900-000C','3900-000D','3900-000E'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3900-000C_3900-000D_3900-000E
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Master %{watchguard_firebox.log.master_id} failed-over to member %{watchguard_firebox.log.member_id} due to a link-down event on interface %{watchguard_firebox.log.interface_name}.'
+      if: ctx.watchguard_firebox?.log?.msg_id != null && ['3900-000F'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3900-000F
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: "%{watchguard_firebox.log.user_name} added feature key '%{watchguard_firebox.log.feature_key}'"
+      ignore_failure: true
+      if: ctx.watchguard_firebox.log.msg_id != null && ['0102-0001'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0102-0001
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: "%{watchguard_firebox.log.user_name} removed feature key '%{watchguard_firebox.log.feature_key}'"
+      ignore_failure: true
+      if: ctx.watchguard_firebox.log.msg_id != null && ['0102-0002'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0102-0002
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Moved %{watchguard_firebox.log.policy_name} from position %{watchguard_firebox.log.old_policy_position} to %{watchguard_firebox.log.new_policy_position}'
+      ignore_failure: true
+      if: ctx.watchguard_firebox.log.msg_id != null && ['0105-0001'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0105-0001
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Authentication of %{watchguard_firebox.log.user_type} user [%{_tmp_user}] from %{watchguard_firebox.log.ip_address} was accepted'
+      ignore_failure: true
+      if: ctx.watchguard_firebox.log.msg_id != null && ['1100-0004'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_1100-0004
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Authentication of %{watchguard_firebox.log.user_type} user [%{_tmp_user}] from %{watchguard_firebox.log.ip_address} was rejected, %{watchguard_firebox.log.reason}'
+      ignore_failure: true
+      if: ctx.watchguard_firebox.log.msg_id != null && ['1100-0005'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_1100-0005
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'User %{_tmp_user} is unlocked %{watchguard_firebox.log.unlocked_by}'
+      ignore_failure: true
+      if: ctx.watchguard_firebox.log.msg_id != null && ['1100-0006'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_1100-0006
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'User %{_tmp_user} is locked out %{watchguard_firebox.log.lockout_type} after %{watchguard_firebox.log.failure_count} login failures'
+      ignore_failure: true
+      if: ctx.watchguard_firebox.log.msg_id != null && ['1100-0007'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0101-0007
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Authentication of BOVPN TLS client [%{watchguard_firebox.log.client_name}] from %{watchguard_firebox.log.ip_address} was rejected, %{watchguard_firebox.log.reason}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['1100-0008'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_1100-0008
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Authentication error. %{watchguard_firebox.log.error} for %{watchguard_firebox.log.user_name}.'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['1100-000C'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_1100-000C
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Authentication of user [%{_tmp_user}] failed. Both primary and secondary servers are unavailable.'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['1100-000D'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_1100-000D
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Authentication of firewall user [%{_tmp_user}] failed. RADIUS authentication method MSCHAP_V1 is not supported.'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['1100-000E'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_1100-000E
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Firebox connected to the SSO agent at %{watchguard_firebox.log.ip_address} successfully.'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['1100-0010'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_1100-0010
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Firebox failed to connect to the SSO agent at %{watchguard_firebox.log.ip_address}. Reason: %{watchguard_firebox.log.reason}.'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['1100-0012'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_1100-0012
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: '%{} Log Server at %{watchguard_firebox.log.ip_address}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['3D04-0001','3D04-0002'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_3D04-0001_3D04-0002
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      patterns:
+        - '^%{DATA:watchguard_firebox.log.user_type} %{WORD:watchguard_firebox.log.user_name}(?:@%{DATA:watchguard_firebox.log.authentication_server})? from %{IP:watchguard_firebox.log.ip_address} logged in(?: %{IP:watchguard_firebox.log.virtual_ip} %{GREEDYDATA:watchguard_firebox.log.message})?$'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['3E00-0002'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_message_id_3E00-0002
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      patterns:
+        - '^%{DATA:watchguard_firebox.log.user_type} %{WORD:watchguard_firebox.log.user_name}(?:@%{DATA:watchguard_firebox.log.authentication_server})? from %{IP:watchguard_firebox.log.ip_address} log in attempt was rejected(?: %{IP:watchguard_firebox.log.virtual_ip} %{GREEDYDATA:watchguard_firebox.log.message})?.$'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['3E00-0003'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_message_id_3E00-0003
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      patterns:
+        - '^%{DATA:watchguard_firebox.log.user_type} %{WORD:watchguard_firebox.log.user_name}(?:@%{DATA:watchguard_firebox.log.authentication_server})? from %{IP:watchguard_firebox.log.ip_address} logged out(?: %{IP:watchguard_firebox.log.virtual_ip} %{GREEDYDATA:watchguard_firebox.log.message})?$'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['3E00-0004'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_message_id_3E00-0004
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      patterns:
+        - '^Updated the value of %{DATA:watchguard_firebox.log.property_name} from %{DATA:watchguard_firebox.log.previous_system_time} %{DATA:watchguard_firebox.log.unit} to %{DATA:watchguard_firebox.log.new_system_time} %{DATA:watchguard_firebox.log.unit}$'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['3E00-0005'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_message_id_3E00-0005
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      patterns:
+        - '^CA certificate updated successfully to version %{DATA:watchguard_firebox.log.new_ca_certificate_version}.$'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['4001-0001'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_message_id_4001-0001
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      patterns:
+        - '^CA certificate update failed. Current CA certificate version: %{DATA:watchguard_firebox.log.current_ca_certificate_version}.$'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['4001-0002'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_message_id_4001-0002
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Certificate (subject=%{watchguard_firebox.log.certificate_subject}) is %{}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['4001-0003','4001-0004','4001-0005'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_4001-0003_4001-0004_4001-0005
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'RapidDeploy configuration from a USB drive was not applied: %{watchguard_firebox.log.message}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['4101-0002'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_4100-0001
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'RapidDeploy package was not applied: %{watchguard_firebox.log.reason}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['4100-0002'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_4100-0002
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      patterns:
+        - '^%{DATA:watchguard_firebox.log.ui_type} %{NOTSPACE:_tmp_user} from %{IP:watchguard_firebox.log.ip_address} log in attempt was rejected - %{GREEDYDATA:watchguard_firebox.log.message}.$'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5000-0001'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_5000-0001
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'System boot up at %{watchguard_firebox.log.bootup_time}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-0000'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_5501-0000
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: "LIVESECURITY' feature expired (%{watchguard_firebox.log.feature_expiration_date}) prior to package release date (%{watchguard_firebox.log.package_release_time})"
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-0003'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_5501-0003
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'System upgrade to %{watchguard_firebox.log.software_version} successful, %{watchguard_firebox.log.reboot_status}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-0006'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_5501-0006
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'System is automatically rebooting at %{watchguard_firebox.log.reboot_hour}:%{watchguard_firebox.log.reboot_second}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-0007'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_5501-0007
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'System time changed from %{watchguard_firebox.log.previous_system_time} to %{watchguard_firebox.log.new_system_time}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-0008'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_5501-0008
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Device %{watchguard_firebox.log.restore_type} restore from %{watchguard_firebox.log.image_source} image initiated, %{watchguard_firebox.log.reboot_option}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-000B'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_5501-000B
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Device %{watchguard_firebox.log.restore_type} restore from %{watchguard_firebox.log.image_source} succeeded'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-0021'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_5501-0021
+      ignore_failure: true
+  - grok:
+      field: watchguard_firebox.log.body
+      patterns:
+        - "^LIVESECURITY' feature will expire on %{GREEDYDATA:watchguard_firebox.log.feature_expiration_date}.$"
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-0016'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: grok_for_message_id_5501-0016
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'System upgrade failed: %{watchguard_firebox.log.reason}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-001A'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_5501-001A
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: System integrity check failed. %{watchguard_firebox.log.reason}
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-0025'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_5501-0025
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: System integrity check could not complete because of an error. %{watchguard_firebox.log.reason}
+      if: ctx.watchguard_firebox.log.msg_id != null && ['5501-0026'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_5501-0026
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Management user %{_tmp_user} from %{watchguard_firebox.log.ip_address} %{watchguard_firebox.log.operation} %{watchguard_firebox.log.subsystem}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['0101-0001'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0101-0001
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: "'%{watchguard_firebox.log.gateway}' %{watchguard_firebox.log.tunnel_type} IPSec tunnel is %{watchguard_firebox.log.action}. local:%{watchguard_firebox.log.local_mask_ip} remote:%{watchguard_firebox.log.remote_mask_ip} inSA:%{watchguard_firebox.log.in_spi} outSA:%{watchguard_firebox.log.out_spi} role:%{watchguard_firebox.log.negotiation_role}"
+      if: ctx.watchguard_firebox.log.msg_id != null && ['0207-0001'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_0207-0001
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'VPN (%{watchguard_firebox.log.vpn_connection_type}) connection by user %{_tmp_user} failed to meet TDR Host Sensor Enforcement requirement: %{watchguard_firebox.log.reason}.'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['7800-0000'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_7800-0000
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'VPN (%{watchguard_firebox.log.vpn_connection_type}) connection by user %{_tmp_user} met all TDR Host Sensor Enforcement requirements.'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['7800-0001'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_7800-0001
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Mobile device %{watchguard_firebox.log.device_id}: user %{_tmp_user} %{}.'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['7001-0001','7001-0002','7001-0003'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_7001-0001_7001-0002_7001-0003
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Mobile device %{watchguard_firebox.log.device_id}: session for user %{_tmp_user} is recreated.'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['7001-0009'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_7001-0009
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Mobile device %{watchguard_firebox.log.device_id}: device authorization agreement (version %{watchguard_firebox.log.version_number}) is %{watchguard_firebox.log.action} by user %{watchguard_firebox.log.user_name} on %{watchguard_firebox.log.user_response_time}.'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['7002-0000'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_7002-0000
+      ignore_failure: true
+  - dissect:
+      field: watchguard_firebox.log.body
+      pattern: 'Mobile device %{watchguard_firebox.log.device_id} %{}'
+      if: ctx.watchguard_firebox.log.msg_id != null && ['7001-0000','7001-0004','7001-0005','7001-0006','7001-0007','7001-0008'].contains(ctx.watchguard_firebox.log.msg_id)
+      tag: dissect_message_id_7001-0000_7001-0004_7001-0005_7001-0006_7001-0007_7001-0008
+      ignore_failure: true
+  - grok:
+      field: _tmp_user
+      tag: grok_parse_user_name_and_user_domain
+      patterns:
+        - '^%{HOSTNAME:watchguard_firebox.log.user_domain}\\%{USERNAME:watchguard_firebox.log.user_name}$'
+        - '^%{HOSTNAME:watchguard_firebox.log.user_domain}\\\\%{USERNAME:watchguard_firebox.log.user_name}$'
+        - '^%{USERNAME:watchguard_firebox.log.user_name}@%{HOSTNAME:watchguard_firebox.log.user_domain}$'
+        - '^%{USERNAME:watchguard_firebox.log.user_name}$'
+      ignore_failure: true
+  - convert:
+      field: watchguard_firebox.log.blocked_site_limit
+      tag: convert_limit_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.blocked_site_limit
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.destination_ip
+      tag: convert_dst_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.destination_ip != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.destination_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.destination_port
+      tag: convert_destination_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.destination_port
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.failure_count
+      tag: convert_failure_count_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.failure_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.ip_address
+      tag: convert_ipaddr_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.ip_address != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.ip_address
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.negotiation_ip
+      tag: convert_nego_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.negotiation_ip != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.negotiation_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.new_ip
+      tag: convert_new_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.new_ip != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.new_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.new_mask
+      tag: convert_new_mask_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.new_mask
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.old_policy_position
+      tag: convert_old_policy_position_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.old_policy_position
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.new_policy_position
+      tag: convert_new_policy_position_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.new_policy_position
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.peer_address
+      tag: convert_peer_addr_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.peer_address != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.peer_address
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.port
+      tag: convert_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.port
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.previous_ip
+      tag: convert_pre_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.previous_ip != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.previous_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.previous_mask
+      tag: convert_pre_mask_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.previous_mask
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.reboot_hour
+      tag: convert_hour_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.reboot_hour
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.reboot_second
+      tag: convert_second_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.reboot_second
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.source_ip
+      tag: convert_src_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.source_ip != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.source_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.source_port
+      tag: convert_src_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.source_port
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.static_ip
+      tag: convert_static_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.static_ip != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.static_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.virtual_ip_address
+      tag: convert_virtual_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.virtual_ip_address != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.virtual_ip_address
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: message
+      tag: set_message_from_log_body
+      copy_from: watchguard_firebox.log.body
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_log_action
+      copy_from: watchguard_firebox.log.action
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_message
+      copy_from: watchguard_firebox.log.message
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_operation
+      copy_from: watchguard_firebox.log.operation
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_update
+      copy_from: watchguard_firebox.log.update
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - set:
+      field: user.domain
+      tag: set_user_domain_from_log_authentication_server
+      copy_from: watchguard_firebox.log.authentication_server
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_log_authentication_server_into_related_hosts
+      value: '{{{watchguard_firebox.log.authentication_server}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.authentication_server != null
+  - set:
+      field: user.domain
+      tag: set_user_domain_from_log_domain
+      copy_from: watchguard_firebox.log.domain
+      ignore_empty_value: true
+  - set:
+      field: tls.server.x509.subject.distinguished_name
+      tag: set_tls_server_x509_subject_distinguished_name_from_log_certificate_subject
+      copy_from: watchguard_firebox.log.certificate_subject
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_log_client_name
+      copy_from: watchguard_firebox.log.client_name
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_log_user_name
+      copy_from: watchguard_firebox.log.user_name
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      tag: set_user_domain_from_log_user_domain
+      copy_from: watchguard_firebox.log.user_domain
+      ignore_empty_value: true
+  - set:
+      field: tls.server.x509.version_number
+      tag: set_tls_server_x509_version_number_from_log_current_ca_certificate_version
+      copy_from: watchguard_firebox.log.current_ca_certificate_version
+      ignore_empty_value: true
+  - set:
+      field: tls.server.x509.version_number
+      tag: set_tls_server_x509_version_number_from_log_new_ca_certificate_version
+      copy_from: watchguard_firebox.log.new_ca_certificate_version
+      ignore_empty_value: true
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_log_destination_ip
+      copy_from: watchguard_firebox.log.destination_ip
+      ignore_empty_value: true
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_log_peer_address
+      copy_from: watchguard_firebox.log.peer_address
+      ignore_empty_value: true
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_log_virtual_ip_address
+      copy_from: watchguard_firebox.log.virtual_ip_address
+      ignore_empty_value: true
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_log_destination_port
+      copy_from: watchguard_firebox.log.destination_port
+      ignore_empty_value: true
+  - set:
+      field: source.port
+      tag: set_source_port_from_log_source_port
+      copy_from: watchguard_firebox.log.source_port
+      ignore_empty_value: true
+  - set:
+      field: observer.ingress.interface.name
+      tag: set_observer_ingress_interface_name_from_log_dev_name
+      copy_from: watchguard_firebox.log.dev_name
+      ignore_empty_value: true
+  - set:
+      field: device.id
+      tag: set_device_id_from_log_device_id
+      copy_from: watchguard_firebox.log.device_id
+      ignore_empty_value: true
+  - set:
+      field: observer.ingress.interface.id
+      tag: set_observer_ingress_interface_id_from_log_interface_id
+      copy_from: watchguard_firebox.log.interface_id
+      ignore_empty_value: true
+  - set:
+      field: observer.ingress.interface.alias
+      tag: set_observer_ingress_interface_alias_from_log_interface_name
+      copy_from: watchguard_firebox.log.interface_name
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_log_ip_address
+      copy_from: watchguard_firebox.log.ip_address
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_log_ip_address
+      copy_from: watchguard_firebox.log.source_ip
+      ignore_empty_value: true
+  - gsub:
+      field: watchguard_firebox.log.mac_address
+      tag: gsub_watchguard_firebox_log_mac_address
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: watchguard_firebox.log.mac_address
+      tag: uppercase_mac_address
+      ignore_missing: true
+  - set:
+      field: source.mac
+      tag: set_source_mac_from_log_mac_address
+      copy_from: watchguard_firebox.log.mac_address
+      ignore_empty_value: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_log_md5
+      copy_from: watchguard_firebox.log.md5
+      ignore_empty_value: true
+  - set:
+      field: file.path
+      tag: set_file_path_from_log_path
+      copy_from: watchguard_firebox.log.path
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_log_policy_name
+      copy_from: watchguard_firebox.log.policy_name
+      ignore_empty_value: true
+  - set:
+      field: source.port
+      tag: set_source_port_from_log_port
+      copy_from: watchguard_firebox.log.port
+      ignore_empty_value: true
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_log_reason
+      copy_from: watchguard_firebox.log.reason
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_log_peer_address_into_related_ip
+      value: '{{{watchguard_firebox.log.peer_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.peer_address != null
+  - append:
+      field: related.ip
+      tag: append_log_previous_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.previous_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.previous_ip != null
+  - append:
+      field: related.ip
+      tag: append_log_virtual_ip_address_into_related_ip
+      value: '{{{watchguard_firebox.log.virtual_ip_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.virtual_ip_address != null
+  - append:
+      field: related.ip
+      tag: append_log_ip_address_into_related_ip
+      value: '{{{watchguard_firebox.log.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.ip_address != null
+  - append:
+      field: related.ip
+      tag: append_log_destination_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.destination_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.destination_ip != null
+  - append:
+      field: related.ip
+      tag: append_log_source_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.source_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.source_ip != null
+  - append:
+      field: related.hosts
+      tag: append_log_domain_into_related_hosts
+      value: '{{{watchguard_firebox.log.domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.domain != null
+  - append:
+      field: related.hosts
+      tag: append_log_user_domain_into_related_hosts
+      value: '{{{watchguard_firebox.log.user_domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.user_domain != null
+  - append:
+      field: related.user
+      tag: append_log_user_name_into_related_user
+      value: '{{{watchguard_firebox.log.user_name}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.user_name != null
+  - append:
+      field: related.user
+      tag: append_log_client_name_into_related_user
+      value: '{{{watchguard_firebox.log.client_name}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.client_name != null
+  - append:
+      field: related.ip
+      tag: append_log_negotiation_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.negotiation_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.negotiation_ip != null
+  - append:
+      field: related.ip
+      tag: append_log_new_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.new_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.new_ip != null
+  - append:
+      field: related.ip
+      tag: append_log_static_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.static_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.static_ip != null
+  - append:
+      field: related.hosts
+      tag: append_log_proxy_host_into_related_hosts
+      value: '{{{watchguard_firebox.log.proxy_host}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.proxy_host != null
+  - append:
+      field: related.hash
+      tag: append_log_md5_into_related_hash
+      value: '{{{watchguard_firebox.log.md5}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.md5 != null
+  - date:
+      field: watchguard_firebox.log.package_release_time
+      target_field: watchguard_firebox.log.package_release_time
+      tag: date_set_package_release_time
+      if: ctx.watchguard_firebox?.log?.package_release_time != null && ctx.watchguard_firebox.log.package_release_time != ''
+      formats:
+        - EEE MMM dd HH:mm:ss yyyy
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.package_release_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: watchguard_firebox.log.feature_expiration_date
+      target_field: watchguard_firebox.log.feature_expiration_date
+      tag: date_set_feature_expiration_date
+      if: ctx.watchguard_firebox?.log?.feature_expiration_date != null && ctx.watchguard_firebox.log.feature_expiration_date != ''
+      formats:
+        - EEE MMM dd HH:mm:ss yyyy
+        - EEE., MMM d, HH:mm:ss z yyyy
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.feature_expiration_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: watchguard_firebox.log.user_response_time
+      target_field: watchguard_firebox.log.user_response_time
+      tag: 'date_set_user_response_time'
+      if: ctx.watchguard_firebox?.log?.user_response_time != null && ctx.watchguard_firebox.log.user_response_time != ''
+      formats:
+        - yyyy-MM-dd HH:mm:ss Z
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.user_response_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: watchguard_firebox.log.bootup_time
+      target_field: watchguard_firebox.log.bootup_time
+      tag: date_set_bootup_time
+      if: ctx.watchguard_firebox?.log?.bootup_time != null && ctx.watchguard_firebox.log.bootup_time != ''
+      formats:
+        - yyyy-MM-dd HH:mm:ss Z
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.bootup_time
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - _tmp_msg
+        - _tmp_user
+      ignore_missing: true
+  - remove:
+      field:
+        - watchguard_firebox.log.action
+        - watchguard_firebox.log.authentication_server
+        - watchguard_firebox.log.certificate_subject
+        - watchguard_firebox.log.client_name
+        - watchguard_firebox.log.current_ca_certificate_version
+        - watchguard_firebox.log.destination_ip
+        - watchguard_firebox.log.destination_port
+        - watchguard_firebox.log.dev_name
+        - watchguard_firebox.log.device_id
+        - watchguard_firebox.log.domain
+        - watchguard_firebox.log.interface_id
+        - watchguard_firebox.log.interface_name
+        - watchguard_firebox.log.ip_address
+        - watchguard_firebox.log.mac_address
+        - watchguard_firebox.log.md5
+        - watchguard_firebox.log.message
+        - watchguard_firebox.log.new_ca_certificate_version
+        - watchguard_firebox.log.operation
+        - watchguard_firebox.log.path
+        - watchguard_firebox.log.peer_address
+        - watchguard_firebox.log.policy_name
+        - watchguard_firebox.log.port
+        - watchguard_firebox.log.reason
+        - watchguard_firebox.log.source_ip
+        - watchguard_firebox.log.source_port
+        - watchguard_firebox.log.update
+        - watchguard_firebox.log.user_domain
+        - watchguard_firebox.log.user_name
+        - watchguard_firebox.log.virtual_ip_address
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
