@@ -44,50 +44,21 @@ An example event for `rds` looks as following:
 ```json
 {
     "@timestamp": "2022-06-03T15:28:00.000Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "90bfb41e-b925-420f-973e-9c1115297278",
-        "type": "metricbeat",
         "ephemeral_id": "c4161c81-1e2e-4e8b-a0be-15940cc13226",
+        "id": "90bfb41e-b925-420f-973e-9c1115297278",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
         "version": "8.2.0"
     },
-    "elastic_agent": {
-        "id": "90bfb41e-b925-420f-973e-9c1115297278",
-        "version": "8.2.0",
-        "snapshot": false
-    },
-    "cloud": {
-        "provider": "aws",
-        "region": "eu-west-1",
-        "account": {
-            "name": "elastic-beats",
-            "id": "123456789"
-        }
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "aws.rds"
-    },
-    "service": {
-        "type": "aws"
-    },
-    "metricset": {
-        "period": 60000,
-        "name": "cloudwatch"
-    },
     "aws": {
+        "cloudwatch": {
+            "namespace": "AWS/RDS"
+        },
+        "dimensions": {
+            "DatabaseClass": "db.r5.large"
+        },
         "rds": {
-            "cache_hit_ratio": {
-                "buffer": 100,
-                "result_set": 0
-            },
-            "aurora_volume_left_total": {
-                "bytes": 70007366615040
-            },
             "aurora_bin_log_replica_lag": 0,
             "aurora_replica": {
                 "lag": {
@@ -100,131 +71,164 @@ An example event for `rds` looks as following:
                     "ms": 19.469999313354492
                 }
             },
-            "latency": {
-                "dml": 0.09705000000000001,
-                "read": 0,
-                "select": 0.2412933510638298,
-                "commit": 3.536983333333333,
-                "insert": 0.09705000000000001,
-                "update": 0,
-                "ddl": 0,
-                "write": 0.0006218917818574514,
-                "delete": 0
+            "aurora_volume_left_total": {
+                "bytes": 70007366615040
             },
-            "swap_usage": {
-                "bytes": 0
+            "cache_hit_ratio": {
+                "buffer": 100,
+                "result_set": 0
             },
-            "transactions": {
-                "blocked": 0,
-                "active": 0
-            },
-            "queries": 7.737700770575286,
             "database_connections": 0,
-            "free_local_storage": {
-                "bytes": 28622428160
-            },
-            "login_failures": 0,
+            "deadlocks": 0,
             "engine_uptime": {
                 "sec": 53016926.5
             },
+            "free_local_storage": {
+                "bytes": 28622428160
+            },
+            "freeable_memory": {
+                "bytes": 4705378304
+            },
+            "latency": {
+                "commit": 3.536983333333333,
+                "ddl": 0,
+                "delete": 0,
+                "dml": 0.09705000000000001,
+                "insert": 0.09705000000000001,
+                "read": 0,
+                "select": 0.2412933510638298,
+                "update": 0,
+                "write": 0.0006218917818574514
+            },
+            "login_failures": 0,
             "metrics": {
-                "Aurora_pq_request_not_chosen_below_min_rows": {
-                    "avg": 0
-                },
-                "RowLockTime": {
-                    "avg": 0
-                },
-                "RollbackSegmentHistoryListLength": {
-                    "avg": 53
-                },
-                "SumBinaryLogSize": {
-                    "avg": 0
-                },
-                "Aurora_pq_request_not_chosen_pq_high_buffer_pool_pct": {
-                    "avg": 0
-                },
-                "StorageNetworkThroughput": {
-                    "avg": 22950.537520958267
-                },
-                "Aurora_pq_request_not_chosen_few_pages_outside_buffer_pool": {
-                    "avg": 0
-                },
-                "Aurora_pq_request_not_chosen_small_table": {
-                    "avg": 0
-                },
-                "StorageNetworkReceiveThroughput": {
-                    "avg": 7104.272100353031
-                },
                 "AbortedClients": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_attempted": {
                     "avg": 0
                 },
                 "Aurora_pq_request_executed": {
                     "avg": 0
                 },
-                "Aurora_pq_request_not_chosen_unsupported_access": {
-                    "avg": 0
-                },
-                "Aurora_pq_request_not_chosen_long_trx": {
-                    "avg": 0
-                },
-                "ConnectionAttempts": {
-                    "avg": 0
-                },
                 "Aurora_pq_request_failed": {
-                    "avg": 0
-                },
-                "NumBinaryLogFiles": {
-                    "avg": 0
-                },
-                "Aurora_pq_request_not_chosen": {
                     "avg": 0
                 },
                 "Aurora_pq_request_in_progress": {
                     "avg": 0
                 },
+                "Aurora_pq_request_not_chosen": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_not_chosen_below_min_rows": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_not_chosen_few_pages_outside_buffer_pool": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_not_chosen_long_trx": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_not_chosen_pq_high_buffer_pool_pct": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_not_chosen_small_table": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_not_chosen_unsupported_access": {
+                    "avg": 0
+                },
                 "Aurora_pq_request_throttled": {
                     "avg": 0
+                },
+                "ConnectionAttempts": {
+                    "avg": 0
+                },
+                "NumBinaryLogFiles": {
+                    "avg": 0
+                },
+                "RollbackSegmentHistoryListLength": {
+                    "avg": 53
+                },
+                "RowLockTime": {
+                    "avg": 0
+                },
+                "StorageNetworkReceiveThroughput": {
+                    "avg": 7104.272100353031
+                },
+                "StorageNetworkThroughput": {
+                    "avg": 22950.537520958267
                 },
                 "StorageNetworkTransmitThroughput": {
                     "avg": 15846.26542060524
                 },
-                "Aurora_pq_request_attempted": {
+                "SumBinaryLogSize": {
                     "avg": 0
                 }
             },
-            "throughput": {
-                "dml": 0.2500125006250313,
-                "select": 2.9051419389878808,
-                "network_transmit": 0.7020888516985455,
-                "network_receive": 0.7020888516985455,
-                "commit": 0.2500125006250313,
-                "insert": 0.2500125006250313,
-                "update": 0,
-                "delete": 0,
-                "ddl": 0,
-                "network": 1.404177703397091
+            "queries": 7.737700770575286,
+            "swap_usage": {
+                "bytes": 0
             },
-            "deadlocks": 0,
-            "freeable_memory": {
-                "bytes": 4705378304
+            "throughput": {
+                "commit": 0.2500125006250313,
+                "ddl": 0,
+                "delete": 0,
+                "dml": 0.2500125006250313,
+                "insert": 0.2500125006250313,
+                "network": 1.404177703397091,
+                "network_receive": 0.7020888516985455,
+                "network_transmit": 0.7020888516985455,
+                "select": 2.9051419389878808,
+                "update": 0
+            },
+            "transactions": {
+                "active": 0,
+                "blocked": 0
             }
-        },
-        "cloudwatch": {
-            "namespace": "AWS/RDS"
-        },
-        "dimensions": {
-            "DatabaseClass": "db.r5.large"
         }
     },
+    "cloud": {
+        "account": {
+            "id": "123456789",
+            "name": "elastic-beats"
+        },
+        "provider": "aws",
+        "region": "eu-west-1"
+    },
+    "data_stream": {
+        "dataset": "aws.rds",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "90bfb41e-b925-420f-973e-9c1115297278",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
     "event": {
-        "duration": 12570787900,
         "agent_id_status": "verified",
+        "dataset": "aws.rds",
+        "duration": 12570787900,
         "ingested": "2022-06-03T15:28:44Z",
-        "module": "aws",
-        "dataset": "aws.rds"
+        "module": "aws"
+    },
+    "metricset": {
+        "name": "cloudwatch",
+        "period": 60000
+    },
+    "service": {
+        "type": "aws"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -315,44 +319,13 @@ An example event for `rds` looks as following:
 | aws.rds.volume_used.bytes | The amount of storage used by your Aurora DB instance, in bytes. | long | gauge |
 | aws.rds.write_io.ops_per_sec | The average number of disk write I/O operations per second. | float | gauge |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |  |
-| container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
-| error.message | Error message. | match_only_text |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |

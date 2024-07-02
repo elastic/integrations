@@ -67,62 +67,13 @@ An example event for `apigateway` looks as following:
 
 ```json
 {
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "fe8366bc-f3f8-4901-acce-b2c6788cf21f",
-        "type": "metricbeat",
-        "ephemeral_id": "dfa418e2-1fe7-4039-9e44-bec39fa60341",
-        "version": "8.6.2"
-    },
     "@timestamp": "2023-05-08T16:30:00.000Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "aws.apigateway_metrics"
-    },
-    "service": {
-        "type": "aws"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.15.90.1-microsoft-standard-WSL2",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "family": "debian",
-            "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "containerized": false,
-        "ip": [
-            "172.18.0.7"
-        ],
+    "agent": {
+        "ephemeral_id": "dfa418e2-1fe7-4039-9e44-bec39fa60341",
+        "id": "fe8366bc-f3f8-4901-acce-b2c6788cf21f",
         "name": "docker-fleet-agent",
-        "id": "f91b175388d423fca58155815dfc2279",
-        "mac": [
-            "02-42-AC-12-00-07"
-        ],
-        "architecture": "x86_64"
-    },
-    "elastic_agent": {
-        "id": "fe8336bc-f3f1-4901-ac0a-b266788cf21f",
-        "version": "8.6.2",
-        "snapshot": false
-    },
-    "metricset": {
-        "period": 300000,
-        "name": "cloudwatch"
-    },
-    "event": {
-        "duration": 10830411419,
-        "agent_id_status": "verified",
-        "ingested": "2023-05-08T16:39:47Z",
-        "module": "aws",
-        "dataset": "aws.apigateway_metrics"
+        "type": "metricbeat",
+        "version": "8.6.2"
     },
     "aws": {
         "apigateway": {
@@ -133,11 +84,11 @@ An example event for `apigateway` looks as following:
                 "5xx": {
                     "sum": 0
                 },
-                "DataProcessed": {
-                    "avg": 48460
-                },
                 "Count": {
                     "sum": 2
+                },
+                "DataProcessed": {
+                    "avg": 48460
                 },
                 "IntegrationLatency": {
                     "avg": 85.5
@@ -153,9 +104,62 @@ An example event for `apigateway` looks as following:
         "dimensions": {
             "ApiId": "6am7mj7jqx"
         }
+    },
+    "data_stream": {
+        "dataset": "aws.apigateway_metrics",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "fe8336bc-f3f1-4901-ac0a-b266788cf21f",
+        "snapshot": false,
+        "version": "8.6.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws.apigateway_metrics",
+        "duration": 10830411419,
+        "ingested": "2023-05-08T16:39:47Z",
+        "module": "aws"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "f91b175388d423fca58155815dfc2279",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.90.1-microsoft-standard-WSL2",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "cloudwatch",
+        "period": 300000
+    },
+    "service": {
+        "type": "aws"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -186,47 +190,16 @@ An example event for `apigateway` looks as following:
 | aws.dimensions.Route | Routes define the path and HTTP methods that clients can use to access different functionalities of the API. | keyword |  |  |
 | aws.dimensions.Stage | It represents a specific version of the API that is accessible to clients. A stage allows you to manage different environments or versions of your API, such as development, testing, and production. | keyword |  |  |
 | aws.tags | Tag key-value pairs from AWS resources. | flattened |  |  |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
-| container.id | Unique container id. | keyword |  |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |  |
-| container.labels | Image labels. | object |  |  |
-| container.name | Container name. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |  |
-| error.message | Error message. | match_only_text |  |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
-| host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
-| host.os.name | Operating system name, without the version. | keyword |  |  |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ## Logs reference
@@ -274,7 +247,7 @@ An example event for `apigateway` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
@@ -304,6 +277,10 @@ An example event for `apigateway` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -329,45 +306,13 @@ An example event for `apigateway` looks as following:
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.s3.metadata | AWS S3 object metadata values. | flattened |
 | aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| tags | List of keywords used to tag each event. | keyword |

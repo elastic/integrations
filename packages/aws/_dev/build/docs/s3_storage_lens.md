@@ -40,4 +40,8 @@ For step-by-step instructions on how to set up an integration, see the {{ url "g
 
 {{event "s3_storage_lens"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "s3_storage_lens"}}
