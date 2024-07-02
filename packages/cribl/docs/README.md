@@ -28,6 +28,10 @@ The Cribl integration offers users a way to ingest logs from either of Cribl's E
 
     2. Configure the Cribl integration in Kibana
 
+        Map each `_dataId` configured in the step above to the pre-installed Fleet integration's datastream. 
+
+        ![Configure Elastic Cribl Integration](../img/elastic-cribl-config.png)
+
         Note: The Cribl integration does not require Elastic Agent, but a policy must be configured when setting up the Cribl integration.
 
 4. Configure an Elastic destination in Cribl
