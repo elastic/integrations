@@ -390,17 +390,18 @@ processors:
         USERNAME: "[a-zA-Z0-9._'-]+"
         CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?(?:, *%{NUMBER})?))
         IPORNONE: (%{IP:source.address}|None)
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '113008'"
       tag: parse_113008
       field: message
       description: "113008"
-      pattern: 'AAA transaction status ACCEPT: user = %{source.user.name}'
+      patterns:
+      - "AAA transaction status ACCEPT(%{SPACE})?: user = %{GREEDYDATA:source.user.name}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113009'"
       tag: parse_113009
       field: message
-      description: "113008"
+      description: "113009"
       pattern: 'AAA retrieved default group policy %{_temp_.cisco.group_policy} for user %{source.user.name}'
   - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
@@ -2222,6 +2223,7 @@ processors:
       tag: parse_tls_version
       patterns:
         - "%{PROTO:tls.version_protocol}v%{NUMBER:tls.version}"
+        - "%{PROTO:tls.version_protocol}"
       pattern_definitions:
         PROTO: "[A-Z]+"
   - lowercase:
