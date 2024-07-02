@@ -29,11 +29,18 @@ This module has been tested against `Trend Micro Vision One API version 3.0`.
 ### To collect data from Trend Micro Vision One APIs, the user must have API Token. To create an API token follow the below steps:
 
 1. Log on to the Trend Micro Vision One console.
-2. Go to **Administration -> User Accounts**.
-![Trend Micro Vision One console](../img/trend-micro-vision-one-console.png)
-3. Click on the account name having appropriate API access permission to generate an API token.
-![Trend Micro Vision One generate API token ](../img/trend-micro-vision-one-api-token-generate.png)
+2. On the Trend Vision One console, go to **Administration -> API Keys**.
+3. Generate a new authentication token. Click **Add API key**. Specify the settings of the new API key.
+    - **Name**: A meaningful name that can help you identify the API key.
+    - **Role**: The user role assigned to the key. API keys can use either predefined or custom user roles. The role must have appropriate API access permission to fetch relevant data. Refer to [Account Role Permissions](https://automation.trendmicro.com/xdr/Guides/Authentication) for details on required account role permissions.
+    - **Expiration time**: The time the API key remains valid. By default, authentication tokens expire one year after creation. However, a master administrator can delete and re-generate tokens at any time.
+    - **Status**: Whether the API key is enabled.
+    - **Details**: Extra information about the API key.
+
+    Click **Add**.
 4. Copy the Authentication token.
+
+Refer to [Obtain authentication tokens](https://automation.trendmicro.com/xdr/Guides/First-steps-toward-using-the-APIs#Obtain-authentication-tokens) for more details on setting up API Token.
 
 ## Logs Reference
 
