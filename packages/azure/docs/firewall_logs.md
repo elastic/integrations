@@ -9,6 +9,11 @@ Supported log categories:
 | AzureFirewallApplicationRule | These logs capture information about the traffic that is allowed or denied by application rules configured in Azure Firewall.        |
 | AzureFirewallNetworkRule     | These logs capture information about the traffic that is allowed or denied by network rules configured in Azure Firewall.            |
 | AzureFirewallDnsProxy        | These logs capture information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.                    |
+| AZFWApplicationRule          | These logs capture resource specific information about the traffic that is allowed or denied by application rules configured in Azure Firewall.                  |
+| AZFWNetworkRule              | These logs capture resource specific information about the traffic that is allowed or denied by network rules configured in Azure Firewall.                  |
+| AZFWNatRule                  | These logs capture resource specific information about all DNAT (Destination Network Address Translation) events log data.                  |
+| AZFWDnsQuery                 | These logs capture resource specific information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.                  |
+
 
 ## Requirements and setup
 
@@ -167,17 +172,43 @@ An example event for `firewall` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation_id | Correlation ID | keyword |
-| azure.firewall.action | Firewall action taken | keyword |
+| azure.firewall.action | Action taken by the firewall following the match with the network rule. | keyword |
+| azure.firewall.action_reason | Reason for the action performed by the firewall. | keyword |
 | azure.firewall.category | Category | keyword |
-| azure.firewall.dnssec_bool_flag | True if DNS request is using DNSSEC | boolean |
-| azure.firewall.dnssec_buffer_size | Size of the DNSSEC buffer | long |
-| azure.firewall.duration | Duration of the firewall request | keyword |
-| azure.firewall.event_original_uid | UID assigned to the logged event | keyword |
-| azure.firewall.icmp.request.code | ICMP request code | keyword |
-| azure.firewall.identity_name | identity name | keyword |
-| azure.firewall.operation_name | Operation name | keyword |
-| azure.firewall.policy | Name of firewall policy containing the matched rule | keyword |
-| azure.firewall.rule_collection_group | Name of rule collection group containing the matched rule  - name: icmp | keyword |
+| azure.firewall.dnssec_bool_flag | True if DNS request is using DNSSEC. | boolean |
+| azure.firewall.dnssec_buffer_size | Size of the DNSSEC buffer. | long |
+| azure.firewall.dnssec_ok_bit | A flag indicating that the resolver supports DNSSEC records. | boolean |
+| azure.firewall.duration | Duration of the firewall request. | keyword |
+| azure.firewall.edns0_buffer_size | Client's EDNS0 buffer size. Specifies the maximum packet size allowed in responses in bytes. | long |
+| azure.firewall.error_message | Description of the error returned to the client. Empty if request is successful. | keyword |
+| azure.firewall.error_number | Error number matching the returned response code. | long |
+| azure.firewall.event_original_uid | UID assigned to the logged event. | keyword |
+| azure.firewall.fqdn | Request target address in FQDN (Fully qualified Domain Name). | keyword |
+| azure.firewall.icmp.request.code | ICMP request code. | keyword |
+| azure.firewall.identity_name | Identity name. | keyword |
+| azure.firewall.is_explicit_proxy_request | True if the request is received on an explicit proxy port. | boolean |
+| azure.firewall.is_tls_inspected | True if the connection is TLS inspected. | boolean |
+| azure.firewall.operation_name | Operation name. | keyword |
+| azure.firewall.policy | Name of the policy in which the triggered rule resides. | keyword |
+| azure.firewall.protocol | Packet's network protocol. For example: UDP, TCP. | keyword |
+| azure.firewall.query_class | DNS query's query class. | keyword |
+| azure.firewall.query_id | DNS query's query ID. | long |
+| azure.firewall.query_name | DNS query's name to resolve. | keyword |
+| azure.firewall.query_type | DNS query's query type | keyword |
+| azure.firewall.request_duration_secs | Duration of the DNS request from the time it arrived to the firewall and until a response was sent to the client. | double |
+| azure.firewall.request_size | The size of the DNS request in bytes. | long |
+| azure.firewall.response_code | DNS reponse code. | keyword |
+| azure.firewall.response_flags | DNS reponse flags, comma separated. | keyword |
+| azure.firewall.response_size | DNS reponse size in bytes. | long |
+| azure.firewall.rule | Name of the triggered rule. | keyword |
+| azure.firewall.rule_collection | Name of the rule collection in which the triggered rule resides. | keyword |
+| azure.firewall.rule_collection_group | Name of the rule collection group in which the triggered rule resides. | keyword |
+| azure.firewall.source_ip | Packet's source IP address. | ip |
+| azure.firewall.source_port | Packet's source port. | long |
+| azure.firewall.target_url | Request's target address URL. | keyword |
+| azure.firewall.translated_ip | Original Destination IP address of the packet. | ip |
+| azure.firewall.translated_port | Original Destination port of the packet. | long |
+| azure.firewall.web_category | Web Category identified for the requested FQDN (Azure Firewall Standard) or URL (Azure Firewall Premium). | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
@@ -210,11 +241,14 @@ An example event for `firewall` looks as following:
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.port | Port of the destination. | long |
 | dns.header_flags | Array of 2 letter DNS header flags. Expected values are: AA, TC, RD, RA, AD, CD, DO. | keyword |
+| dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.response_code |  |  |
+| dns.type | The type of DNS event captured, query or answer. If your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`. If your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.id | Unique identifier for the error. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
@@ -265,6 +299,11 @@ An example event for `firewall` looks as following:
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 
