@@ -5,9 +5,18 @@
 package testsreporter
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
 	"strings"
+	"text/template"
 )
+
+//go:embed _static/summary.tmpl
+var summaryTmpl string
+
+//go:embed _static/description.tmpl
+var descriptionTmpl string
 
 const defaultMaxLengthMessages = 1000
 
@@ -26,91 +35,35 @@ func (r ResultsFormatter) Owners() []string {
 }
 
 func (r ResultsFormatter) Summary() string {
-	var sb strings.Builder
-	if r.result.StackVersion != "" {
-		sb.WriteString("- Stack version: `")
-		sb.WriteString(r.result.StackVersion)
-		sb.WriteString("`\n")
-	}
-	if r.result.Serverless {
-		sb.WriteString("- Serverless run\n")
-	}
-	sb.WriteString("- Package: `")
-	sb.WriteString(r.result.PackageName)
-	sb.WriteString("`\n")
-	sb.WriteString("- Failing test: `")
-	sb.WriteString(r.result.Name)
-	sb.WriteString("`\n")
+	var rendered bytes.Buffer
+	templ := template.Must(template.New("summary").Parse(summaryTmpl))
+	templ.Execute(&rendered, map[string]interface{}{
+		"stackVersion":      r.result.StackVersion,
+		"serverless":        r.result.Serverless,
+		"serverlessProject": r.result.ServerlessProject,
+		"packageName":       r.result.PackageName,
+		"testName":          r.result.Name,
+		"dataStream":        r.result.DataStream,
+		"owners":            r.Owners(),
+	})
 
-	if r.result.DataStream != "" {
-		sb.WriteString("- DataStream: `")
-		sb.WriteString(r.result.DataStream)
-		sb.WriteString("`\n")
-	}
-	if len(r.Owners()) > 0 {
-		sb.WriteString("\n")
-		sb.WriteString("Owners:\n")
-		for _, owner := range r.Owners() {
-			sb.WriteString("- ")
-			sb.WriteString(owner)
-			sb.WriteString("\n")
-		}
-	}
-
-	return sb.String()
+	return rendered.String()
 }
 
 func (r ResultsFormatter) Description() string {
-	var sb strings.Builder
-	sb.WriteString(r.Summary())
-	sb.WriteString("\n")
+	var rendered bytes.Buffer
+	templ := template.Must(template.New("description").Parse(descriptionTmpl))
+	templ.Execute(&rendered, map[string]interface{}{
+		"summary":          r.Summary(),
+		"failure":          truncateText(r.result.Failure, defaultMaxLengthMessages),
+		"error":            truncateText(r.result.Error, defaultMaxLengthMessages),
+		"firstBuild":       r.result.BuildURL,
+		"closedIssueURL":   r.result.ClosedIssueURL,
+		"previousBuilds":   r.result.PreviousBuilds,
+		"maxPreviousLinks": r.maxPreviousLinks,
+	})
 
-	if r.result.Failure != "" {
-		sb.WriteString("Failure:\n")
-		sb.WriteString("```\n")
-		sb.WriteString(truncateText(r.result.Failure, defaultMaxLengthMessages))
-		sb.WriteString("\n")
-		sb.WriteString("```\n")
-		sb.WriteString("\n")
-	}
-	if r.result.Error != "" {
-		sb.WriteString("Error:\n")
-		sb.WriteString("```\n")
-		sb.WriteString(truncateText(r.result.Error, defaultMaxLengthMessages))
-		sb.WriteString("\n")
-		sb.WriteString("```\n")
-		sb.WriteString("\n")
-	}
-	sb.WriteString("\n")
-	sb.WriteString("First build failed: ")
-	sb.WriteString(r.result.BuildURL)
-	sb.WriteString("\n")
-	sb.WriteString("\n")
-
-	if r.result.ClosedIssueURL != "" {
-		sb.WriteString("\n")
-		sb.WriteString("Latest issue closed for the same test: ")
-		sb.WriteString(r.result.ClosedIssueURL)
-		sb.WriteString("\n")
-		sb.WriteString("\n")
-	}
-
-	if len(r.result.PreviousBuilds) > 0 {
-		message := "Latest failed builds:"
-		if len(r.result.PreviousBuilds) == r.maxPreviousLinks {
-			message = fmt.Sprintf("Latest %d failed builds:", r.maxPreviousLinks)
-		}
-
-		sb.WriteString(message)
-		sb.WriteString("\n")
-		for _, link := range r.result.PreviousBuilds {
-			sb.WriteString("- ")
-			sb.WriteString(link)
-			sb.WriteString("\n")
-		}
-	}
-
-	return sb.String()
+	return rendered.String()
 }
 
 func truncateText(message string, maxLength int) string {
