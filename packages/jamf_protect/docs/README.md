@@ -457,8 +457,11 @@ An example event for `telemetry` looks as following:
 | jamf_protect.telemetry.account_type | Defines if it's a user or group | keyword |
 | jamf_protect.telemetry.attribute_name | The name of the attribute that got set | keyword |
 | jamf_protect.telemetry.attribute_value | The value of the attribute that got set | keyword |
+| jamf_protect.telemetry.authentication_auto_unlock_type | Defines if Apple Watch is used to unlock the machine or approve an authorization prompt | keyword |
 | jamf_protect.telemetry.authentication_method | Method used to authenticate | keyword |
 | jamf_protect.telemetry.authentication_result_type | Defines the source address type | keyword |
+| jamf_protect.telemetry.authentication_token_kerberos_principal | The associated kerberos principal username with the authentication event | keyword |
+| jamf_protect.telemetry.authentication_touchid_mode | Defines if TouchID is used for verifying the user on the Lock Screen or Application or used for identification to peform a privileged action | keyword |
 | jamf_protect.telemetry.authentication_type | Type of authentication used to authenticate the user | keyword |
 | jamf_protect.telemetry.authorization_judgement_results | Results of the authorization judgement | object |
 | jamf_protect.telemetry.authorization_petition_flags | Flags associated with the authorization petition | integer |
@@ -494,6 +497,7 @@ An example event for `telemetry` looks as following:
 | jamf_protect.telemetry.profile_scope | Scope of the profile | keyword |
 | jamf_protect.telemetry.profile_uuid | UUID of the profile | keyword |
 | jamf_protect.telemetry.record_name | Name of the record | keyword |
+| jamf_protect.telemetry.record_type | Type of the record | keyword |
 | jamf_protect.telemetry.session_username | Username of the loginwindow session | keyword |
 | jamf_protect.telemetry.shell | Shell associated with the user or process | keyword |
 | jamf_protect.telemetry.source_address_type | Defines the source address type | keyword |
