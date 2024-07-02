@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -56,15 +57,16 @@ func validatePackages(codeowners *githubOwners, packagesDir string) error {
 
 	for _, packageDirEntry := range packageDirEntries {
 		packageName := packageDirEntry.Name()
-		packagePath := filepath.Join(packagesDir, packageName)
 
-		packageManifestPath := filepath.Join(packagePath, "manifest.yml")
+		packagePath := path.Join(packagesDir, packageName)
+
+		packageManifestPath := path.Join(packagePath, "manifest.yml")
 		err = codeowners.checkManifest(packageManifestPath)
 		if err != nil {
 			return err
 		}
 
-		packageDataStreamsPath := filepath.Join(packagePath, "data_stream")
+		packageDataStreamsPath := path.Join(packagePath, "data_stream")
 		if _, err := os.Stat(packageDataStreamsPath); os.IsNotExist(err) {
 			// package doesn't have data_streams
 			continue
@@ -84,7 +86,7 @@ func validatePackages(codeowners *githubOwners, packagesDir string) error {
 		var dataStreamsWithoutOwner []string
 		for _, dataStreamDirEntry := range dataStreamDirEntries {
 			dataStreamName := dataStreamDirEntry.Name()
-			dataStreamDir := filepath.Join(packageDataStreamsPath, dataStreamName)
+			dataStreamDir := path.Join(packageDataStreamsPath, dataStreamName)
 			dataStreamOwners, found := codeowners.owners["/"+dataStreamDir]
 			if !found {
 				dataStreamsWithoutOwner = append(dataStreamsWithoutOwner, dataStreamDir)
