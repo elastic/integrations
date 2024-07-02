@@ -89,6 +89,7 @@ func (r reporter) updateIssueLatestBuildLinks(ctx context.Context, issue *Github
 	}
 
 	packageError.PreviousBuilds = updatePreviousLinks(previousLinks, currentBuild, r.maxPreviousLinks)
+	// Keep the same build link from the original description
 	packageError.BuildURL = firstBuild
 	formatter := ResultsFormatter{
 		result:           packageError,
