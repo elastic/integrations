@@ -1,0 +1,33 @@
+---
+description: Pipeline for AWS Health metrics
+processors:
+
+- script:
+    if: "ctx.aws != null && ctx.aws.awshealth != null && ctx.aws.awshealth.end_time == '0001-01-01T00:00:00.000Z'"
+    "lang": "painless"
+    "source": "ctx.aws.awshealth.end_time = null"
+
+- script:
+    if: "ctx.aws != null && ctx.aws.awshealth != null"
+    lang: painless
+    source: |
+        if (ctx.aws.awshealth.end_time == null) {
+            ctx.drop_end_time = true;
+        } else {
+            ctx.drop_end_time = false;
+        }
+
+- remove:
+    if: "ctx.drop_end_time == true"
+    ignore_missing: true
+    field: aws.awshealth.end_time
+
+- remove:
+    ignore_missing: true
+    field: drop_end_time
+
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
+
