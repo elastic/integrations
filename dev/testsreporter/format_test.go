@@ -17,7 +17,7 @@ func TestSummary(t *testing.T) {
 		expected     string
 	}{
 		{
-			title: "summary stack version and data stream",
+			title: "summary stack version with data stream",
 			packageError: PackageError{
 				StackVersion: "8.14",
 				PackageName:  "foo",
@@ -33,7 +33,25 @@ func TestSummary(t *testing.T) {
 `,
 		},
 		{
-			title: "summary stack version, data stream and owners",
+			title: "summary stack version with owners wihtout data stream",
+			packageError: PackageError{
+				StackVersion: "8.14",
+				PackageName:  "foo",
+				testCase: testCase{
+					Name: "mytest",
+				},
+				Teams: []string{"team1", "team2"},
+			},
+			expected: `- Stack version: 8.14
+- Package: foo
+- Failing test: mytest
+- Owners:
+    - team1
+    - team2
+`,
+		},
+		{
+			title: "summary stack version with data stream and owners",
 			packageError: PackageError{
 				StackVersion: "8.14",
 				PackageName:  "foo",
@@ -47,13 +65,13 @@ func TestSummary(t *testing.T) {
 - Package: foo
 - Failing test: mytest
 - DataStream: data
-Owners:
-- team1
-- team2
+- Owners:
+    - team1
+    - team2
 `,
 		},
 		{
-			title: "summary serverless, data stream and owners",
+			title: "summary serverless with data stream and owners",
 			packageError: PackageError{
 				Serverless:        true,
 				ServerlessProject: "observability",
@@ -68,13 +86,13 @@ Owners:
 - Package: foo
 - Failing test: mytest
 - DataStream: data
-Owners:
-- team1
-- team2
+- Owners:
+    - team1
+    - team2
 `,
 		},
 		{
-			title: "summary serverless data stream, data stream and owners",
+			title: "summary serverless with owners without data stream",
 			packageError: PackageError{
 				Serverless:        true,
 				ServerlessProject: "observability",
@@ -87,9 +105,9 @@ Owners:
 			expected: `- Serverless: observability
 - Package: foo
 - Failing test: mytest
-Owners:
-- team1
-- team2
+- Owners:
+    - team1
+    - team2
 `,
 		},
 	}
