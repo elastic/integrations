@@ -16,9 +16,14 @@ type reporter struct {
 }
 
 func (r reporter) Report(ctx context.Context, issue *GithubIssue, packageError PackageError) error {
-	found, issue, err := r.ghCli.Exists(ctx, issue, true)
+	found, prevIssue, err := r.ghCli.Exists(ctx, issue, true)
 	if err != nil {
 		return fmt.Errorf("failed to check if issue already exists: %w", err)
+	}
+
+	if found {
+		fmt.Println("Found existing open issue", prevIssue.URL())
+		issue = prevIssue
 	}
 
 	// is there any closed issue
@@ -26,8 +31,8 @@ func (r reporter) Report(ctx context.Context, issue *GithubIssue, packageError P
 	if err != nil {
 		return fmt.Errorf("failed to check if there is a closed issue: %w", err)
 	}
-
 	if closedIssueURL != "" {
+		fmt.Println("Found previous closed issue:", closedIssueURL)
 		packageError.SetClosedURL(closedIssueURL)
 	}
 
@@ -36,9 +41,9 @@ func (r reporter) Report(ctx context.Context, issue *GithubIssue, packageError P
 		if err := r.ghCli.Create(ctx, issue); err != nil {
 			return fmt.Errorf("failed to create issue (title: %s): %w", issue.title, err)
 		}
+		return nil
 	}
 
-	fmt.Printf("Issue found: %t (%d)\n", found, issue.Number())
 	fmt.Println("Updating issue...")
 	if err := r.updateIssueLatestBuildLinks(ctx, issue, packageError); err != nil {
 		return fmt.Errorf("failed to update previous links in issue (title: %s): %w", issue.title, err)
@@ -56,13 +61,6 @@ func (r reporter) closedIssueURL(ctx context.Context, issue *GithubIssue) (strin
 		return closedIssue.URL(), nil
 	}
 	return "", nil
-}
-
-func (r reporter) createNewIssueForError(ctx context.Context, issue *GithubIssue, packageError PackageError) error {
-	if err := r.ghCli.Create(ctx, issue); err != nil {
-		return fmt.Errorf("failed to create issue (title: %s): %w", issue.title, err)
-	}
-	return nil
 }
 
 func updateDescriptionClosedIssueURL(issue *GithubIssue, packageError PackageError, maxPreviousLinks int) *GithubIssue {
