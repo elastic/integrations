@@ -209,7 +209,7 @@ An example event for `access` looks as following:
 | nginx_ingress_controller.access.http.request.id | The randomly generated ID of the request | text |
 | nginx_ingress_controller.access.http.request.length | The request length (including request line, header, and request body) | long |
 | nginx_ingress_controller.access.http.request.time | Time elapsed since the first bytes were read from the client | double |
-| nginx_ingress_controller.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
+| nginx_ingress_controller.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | ip |
 | nginx_ingress_controller.access.upstream.alternative_name | The name of the alternative upstream. | text |
 | nginx_ingress_controller.access.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
 | nginx_ingress_controller.access.upstream.name | The name of the upstream. | keyword |
