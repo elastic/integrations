@@ -467,10 +467,10 @@ An example event for `replica_status` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-02T06:55:25.261Z",
+    "@timestamp": "2024-07-03T06:03:47.292Z",
     "agent": {
-        "ephemeral_id": "b77a09cc-307e-44e2-b160-46f99f4cb4a0",
-        "id": "28f4cba6-6329-4d26-a9cc-489d23e88ac5",
+        "ephemeral_id": "daab005a-79e0-47eb-ab0d-6f71dd32371f",
+        "id": "723c0307-38cd-4795-b22c-581e34384fe9",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.12.0"
@@ -484,7 +484,7 @@ An example event for `replica_status` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "28f4cba6-6329-4d26-a9cc-489d23e88ac5",
+        "id": "723c0307-38cd-4795-b22c-581e34384fe9",
         "snapshot": false,
         "version": "8.12.0"
     },
@@ -494,8 +494,8 @@ An example event for `replica_status` looks as following:
             "database"
         ],
         "dataset": "mysql.replica_status",
-        "duration": 2201778,
-        "ingested": "2024-07-02T06:55:37Z",
+        "duration": 3115341,
+        "ingested": "2024-07-03T06:03:59Z",
         "kind": "event",
         "module": "mysql",
         "type": [
@@ -508,10 +508,10 @@ An example event for `replica_status` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "829324aac17946dcace17006fa82a2d2",
         "ip": [
-            "192.168.240.7"
+            "192.168.247.7"
         ],
         "mac": [
-            "02-42-C0-A8-F0-07"
+            "02-42-C0-A8-F7-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -540,7 +540,7 @@ An example event for `replica_status` looks as following:
             },
             "gtid": {
                 "executed": {
-                    "set": "ff38050c-383f-11ef-a4e5-0242c0a8f604:1-10"
+                    "set": "f44aadbc-3901-11ef-a5b6-0242c0a8f104:1-10"
                 }
             },
             "is_auto_position": false,
@@ -556,7 +556,7 @@ An example event for `replica_status` looks as following:
                 }
             },
             "relay": {
-                "log_file": "64cab54eb43a-relay-bin.000002",
+                "log_file": "43c158a8a7e1-relay-bin.000002",
                 "log_position": 326,
                 "log_space": 543
             },
@@ -586,7 +586,7 @@ An example event for `replica_status` looks as following:
                 "retry_count": 86400,
                 "server": {
                     "id": 1,
-                    "uuid": "ff0470fd-383f-11ef-a484-0242c0a8f602"
+                    "uuid": "f41b942f-3901-11ef-a5eb-0242c0a8f102"
                 },
                 "ssl": {
                     "allowed": "No",
@@ -613,6 +613,9 @@ An example event for `replica_status` looks as following:
     "source": {
         "port": 3306
     },
+    "tags": [
+        "mysql-replica_status"
+    ],
     "user": {
         "name": "mydb_replica_user"
     }
@@ -662,8 +665,8 @@ An example event for `replica_status` looks as following:
 | mysql.replica_status.replicate.ignore.wild_table | Tables specified with replicate-wild-ignore-table option. | keyword |  |
 | mysql.replica_status.replicate.rewrite_db | This field displays any replication filtering rules that were specified. | keyword |  |
 | mysql.replica_status.replicate.wild_do_table | Tables specified for replicating with the replicate_wild_do_table option. | keyword |  |
-| mysql.replica_status.replicate_do_domain_ids | The do_domain_id option vlaue for change master.(The DO_DOMAIN_IDS option for CHANGE MASTER can be used to configure a replica to only apply binary log events if the transaction's GTID is in a specific gtid_domain_id value.) | keyword |  |
-| mysql.replica_status.replicate_ignore_domain_ids | The ignore_domain_id option vlaue for change master.(The IGNORE_DOMAIN_IDS option for CHANGE MASTER can be used to configure a replica to ignore binary log events if the transaction's GTID is in a specific gtid_domain_id value) | keyword |  |
+| mysql.replica_status.replicate_do_domain_ids | The do_domain_id option value for change master.(The DO_DOMAIN_IDS option for CHANGE MASTER can be used to configure a replica to only apply binary log events if the transaction's GTID is in a specific gtid_domain_id value.) | keyword |  |
+| mysql.replica_status.replicate_ignore_domain_ids | The ignore_domain_id option value for change master.(The IGNORE_DOMAIN_IDS option for CHANGE MASTER can be used to configure a replica to ignore binary log events if the transaction's GTID is in a specific gtid_domain_id value) | keyword |  |
 | mysql.replica_status.seconds_behind_source | This field is an indication of how 'late' the replica is: : When the replica is actively processing updates, this field shows the difference between the current timestamp on the replica and the original timestamp logged on the source for the event currently being processed on the replica and when no event is currently being processed on the replica, this value is 0. | long | gauge |
 | mysql.replica_status.slave.ddl_groups | This status variable counts the occurrence of DDL statements. This is a replica-side counter for optimistic parallel replication. | long | counter |
 | mysql.replica_status.slave.non_transactional_groups | This status variable counts the occurrence of non-transactional event groups. This is a replica-side counter for optimistic parallel replication. | long | counter |
