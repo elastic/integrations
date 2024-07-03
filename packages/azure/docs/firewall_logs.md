@@ -182,8 +182,6 @@ An example event for `firewall` looks as following:
 | azure.firewall.dnssec_ok_bit | A flag indicating that the resolver supports DNSSEC records. | boolean |
 | azure.firewall.duration | Duration of the firewall request. | keyword |
 | azure.firewall.edns0_buffer_size | Client's EDNS0 buffer size. Specifies the maximum packet size allowed in responses in bytes. | long |
-| azure.firewall.error_message | Description of the error returned to the client. Empty if request is successful. | keyword |
-| azure.firewall.error_number | Error number matching the returned response code. | long |
 | azure.firewall.event_original_uid | UID assigned to the logged event. | keyword |
 | azure.firewall.fqdn | Request target address in FQDN (Fully qualified Domain Name). | keyword |
 | azure.firewall.icmp.request.code | ICMP request code. | keyword |
@@ -193,10 +191,6 @@ An example event for `firewall` looks as following:
 | azure.firewall.operation_name | Operation name. | keyword |
 | azure.firewall.policy | Name of the policy in which the triggered rule resides. | keyword |
 | azure.firewall.protocol | Packet's network protocol. For example: UDP, TCP. | keyword |
-| azure.firewall.query_class | DNS query's query class. | keyword |
-| azure.firewall.query_id | DNS query's query ID. | long |
-| azure.firewall.query_name | DNS query's name to resolve. | keyword |
-| azure.firewall.query_type | DNS query's query type | keyword |
 | azure.firewall.request_duration_secs | Duration of the DNS request from the time it arrived to the firewall and until a response was sent to the client. | double |
 | azure.firewall.request_size | The size of the DNS request in bytes. | long |
 | azure.firewall.response_code | DNS reponse code. | keyword |
@@ -205,11 +199,7 @@ An example event for `firewall` looks as following:
 | azure.firewall.rule | Name of the triggered rule. | keyword |
 | azure.firewall.rule_collection | Name of the rule collection in which the triggered rule resides. | keyword |
 | azure.firewall.rule_collection_group | Name of the rule collection group in which the triggered rule resides. | keyword |
-| azure.firewall.source_ip | Packet's source IP address. | ip |
-| azure.firewall.source_port | Packet's source port. | long |
 | azure.firewall.target_url | Request's target address URL. | keyword |
-| azure.firewall.translated_ip | Original Destination IP address of the packet. | ip |
-| azure.firewall.translated_port | Original Destination port of the packet. | long |
 | azure.firewall.web_category | Web Category identified for the requested FQDN (Azure Firewall Standard) or URL (Azure Firewall Premium). | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
