@@ -6,7 +6,6 @@ package codeowners
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -93,8 +92,8 @@ func validatePackages(codeowners *githubOwners, packagesDir string) error {
 				continue
 			}
 			if len(dataStreamOwners) > 1 {
-				return errors.New(fmt.Sprintf("data stream \"%s\" of package \"%s\" has more than one owners [%s]", dataStreamDir,
-					packagePath, strings.Join(dataStreamOwners, ", ")))
+				return fmt.Errorf("data stream \"%s\" of package \"%s\" has more than one owners [%s]", dataStreamDir,
+					packagePath, strings.Join(dataStreamOwners, ", "))
 			}
 		}
 
