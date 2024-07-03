@@ -63,7 +63,6 @@ Costs: Metric queries are charged based on the number of standard API calls. Mor
 | dataset.name | Dataset name. | constant_keyword |  |
 | dataset.namespace | Dataset namespace. | constant_keyword |  |
 | dataset.type | Dataset type. | constant_keyword |  |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |

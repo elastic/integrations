@@ -364,8 +364,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | awsfargate.task_stats.task_desired_status | The desired status for the task from Amazon ECS. | keyword |  |
 | awsfargate.task_stats.task_known_status | The known status for the task from Amazon ECS. | keyword |  |
 | awsfargate.task_stats.task_name | ECS task name | keyword |  |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
-| container | Container fields are used for meta information about the specific container that is the source of information. These fields help correlate data based containers from any runtime. | group |  |
 | container.labels.com_amazonaws_ecs_cluster | ECS Cluster name | keyword |  |
 | container.labels.com_amazonaws_ecs_container-name | ECS container name | keyword |  |
 | container.labels.com_amazonaws_ecs_task-arn | ECS task ARN | keyword |  |
@@ -375,7 +373,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
 
 
 An example event for `task_stats` looks as following:
