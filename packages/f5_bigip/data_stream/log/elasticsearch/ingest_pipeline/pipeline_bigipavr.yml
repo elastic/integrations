@@ -1,22 +1,33 @@
 ---
 description: Pipeline for F5 BIG-IP Application Visibility and Reporting logs.
 processors:
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: network
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
   - date:
       field: json.EOCTimestamp
+      tag: date_eoc_timestamp
       target_field: f5_bigip.log.eoc.timestamp
       if: ctx.json?.EOCTimestamp != null && ctx.json.EOCTimestamp != ''
       formats:
         - UNIX
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
+      tag: set_timestamp
       copy_from: f5_bigip.log.eoc.timestamp
       ignore_failure: true
   - convert:
       field: json.ClientIP
+      tag: convert_client_ip_to_ip
       target_field: f5_bigip.log.client.ip
       if: ctx.json?.ClientIP != ''
       type: ip
@@ -24,18 +35,21 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: client.ip
+      tag: set_client_ip
       copy_from: f5_bigip.log.client.ip
       ignore_failure: true
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{client.ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.POOLIP
+      tag: convert_pool_ip_to_ip
       target_field: f5_bigip.log.pool.ip
       if: ctx.json?.POOLIP != ''
       type: ip
@@ -43,18 +57,21 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
+      tag: set_destination_ip
       copy_from: f5_bigip.log.pool.ip
       ignore_failure: true
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{destination.ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.POOLPort
+      tag: convert_pool_port_to_long
       target_field: f5_bigip.log.pool.port
       if: ctx.json?.POOLPort != ''
       type: long
@@ -62,82 +79,101 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.port
+      tag: set_destination_port
       copy_from: f5_bigip.log.pool.port
       ignore_failure: true
   - rename:
       field: json.QueryName
+      tag: rename_query_name
       target_field: f5_bigip.log.query.name
       ignore_missing: true
   - set:
       field: dns.question.name
+      tag: set_dns_question_name
       copy_from: f5_bigip.log.query.name
       ignore_failure: true
   - rename:
       field: json.QueryType
+      tag: rename_query_type
       target_field: f5_bigip.log.query.type
       ignore_missing: true
   - set:
       field: dns.question.type
+      tag: set_dns_question_type
       copy_from: f5_bigip.log.query.type
       ignore_failure: true
   - rename:
       field: json.Action
+      tag: rename_action
       target_field: f5_bigip.log.action
       ignore_missing: true
   - set:
       field: event.action
+      tag: set_action
       copy_from: f5_bigip.log.action
       ignore_failure: true
   - rename:
       field: json.CountryCode
+      tag: rename_country_code
       target_field: f5_bigip.log.country_code
       ignore_missing: true
   - set:
       field: host.geo.country_iso_code
+      tag: set_host_geo_country_iso_code
       copy_from: f5_bigip.log.country_code
       ignore_failure: true
   - rename:
       field: json.GeoCountry
+      tag: rename_geo_country
       target_field: f5_bigip.log.geo.country
       ignore_missing: true
   - set:
       field: host.geo.country_name
+      tag: set_host_geo_country_name
       copy_from: f5_bigip.log.geo.country
       ignore_failure: true
   - rename:
       field: json.DeviceId
+      tag: rename_device_id
       target_field: f5_bigip.log.device.id
       ignore_missing: true
   - set:
       field: host.id
+      tag: set_host_id
       copy_from: f5_bigip.log.device.id
       ignore_failure: true
   - append:
       field: related.hosts
+      tag: append_related_hosts
       value: '{{{host.id}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.OsName
+      tag: rename_os_name
       target_field: f5_bigip.log.osname
       ignore_missing: true
   - set:
       field: host.os.name
+      tag: set_host_os_name
       copy_from: f5_bigip.log.osname
       ignore_failure: true
   - rename:
       field: json.Method
+      tag: rename_method
       target_field: f5_bigip.log.method
       ignore_missing: true
   - set:
       field: http.request.method
+      tag: set_http_request_method
       copy_from: f5_bigip.log.method
       ignore_failure: true
   - convert:
       field: json.ResponseCode
+      tag: convert_response_code_to_long
       target_field: f5_bigip.log.response.code
       if: ctx.json?.ResponseCode != ''
       type: long
@@ -145,35 +181,43 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.status_code
+      tag: set_http_response_status_code
       copy_from: f5_bigip.log.response.code
       ignore_failure: true
   - rename:
       field: json.Severity
+      tag: rename_severity
       target_field: f5_bigip.log.severity.name
       ignore_missing: true
   - set:
       field: log.level
+      tag: set_log_level
       copy_from: f5_bigip.log.severity.name
       ignore_failure: true
   - lowercase:
       field: log.level
-      ignore_failure: true
+      tag: lowercase_log_level
+      ignore_missing: true
   - rename:
       field: json.NetworkProtocol
+      tag: rename_network_protocol
       target_field: f5_bigip.log.network.protocol
       ignore_missing: true
   - set:
       field: network.protocol
+      tag: set_network_protocol
       copy_from: f5_bigip.log.network.protocol
-      ignore_failure: true
+      ignore_empty_value: true
   - lowercase:
       field: network.protocol
-      ignore_failure: true
+      tag: lowercase_network_protocol
+      ignore_missing: true
   - convert:
       field: json.SourceIP
+      tag: convert_source_ip_to_ip
       target_field: f5_bigip.log.source.ip
       if: ctx.json?.SourceIP != ''
       type: ip
@@ -181,22 +225,26 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
+      tag: set_source_ip
       copy_from: f5_bigip.log.source.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.URL
+      tag: rename_url
       target_field: f5_bigip.log.url
       ignore_missing: true
   - uri_parts:
       field: f5_bigip.log.url
+      tag: uri_parts_log_url
       if: ctx.f5_bigip?.log?.url != null
       on_failure:
         - set:
@@ -208,10 +256,12 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.UserAgent
+      tag: rename_user_agent
       target_field: f5_bigip.log.user.agent
       ignore_missing: true
   - user_agent:
       field: f5_bigip.log.user.agent
+      tag: user_agent_log_user_agent
       on_failure:
         - set:
             field: user_agent.original
@@ -219,19 +269,23 @@ processors:
             ignore_failure: true
   - rename:
       field: json.UserName
+      tag: rename_user_name
       target_field: f5_bigip.log.user.name
       ignore_missing: true
   - set:
       field: user.name
+      tag: set_user_name
       copy_from: f5_bigip.log.user.name
       ignore_failure: true
   - append:
       field: related.user
+      tag: append_related_user
       value: '{{{user.name}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.AggrInterval
+      tag: convert_aggr_interval_to_long
       target_field: f5_bigip.log.aggr_interval
       if: ctx.json?.AggrInterval != ''
       type: long
@@ -239,13 +293,15 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ApplicationName
+      tag: rename_application_name
       target_field: f5_bigip.log.application_name
       ignore_missing: true
   - convert:
       field: json.ApplicationResponseTime
+      tag: convert_application_response_time_to_long
       target_field: f5_bigip.log.application.response.time
       if: ctx.json?.ApplicationResponseTime != ''
       type: long
@@ -253,26 +309,31 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.AVRProfileName
+      tag: rename_avr_profile_name
       target_field: f5_bigip.log.profile.name
       ignore_missing: true
   - rename:
       field: json.BrowserName
+      tag: rename_browser_name
       target_field: f5_bigip.log.browser_name
       ignore_missing: true
   - rename:
       field: json.ClientIPRouteDomain
+      tag: rename_client_ip_route_domain
       target_field: f5_bigip.log.client.ip_route_domain
       ignore_missing: true
   - append:
       field: related.hosts
+      tag: append_related_host
       value: '{{{f5_bigip.log.client.ip_route_domain}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.ClientLatencyHitCount
+      tag: convert_client_latency_hit_count_to_long
       target_field: f5_bigip.log.client.latency.hit_count
       if: ctx.json?.ClientLatencyHitCount != ''
       type: long
@@ -280,9 +341,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ClientLatencyMax
+      tag: convert_client_latency_max_to_long
       target_field: f5_bigip.log.client.latency.max
       if: ctx.json?.ClientLatencyMax != ''
       type: long
@@ -290,9 +352,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ClientLatencyTotal
+      tag: convert_client_latency_total_to_long
       target_field: f5_bigip.log.client.latency.total
       if: ctx.json?.ClientLatencyTotal != ''
       type: long
@@ -300,9 +363,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ClientSideNetworkLatency
+      tag: convert_client_side_network_latency_to_long
       target_field: f5_bigip.log.client_side.network.latency
       if: ctx.json?.ClientSideNetworkLatency != ''
       type: long
@@ -310,9 +374,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ClientTtfb
+      tag: convert_client_ttfb_to_long
       target_field: f5_bigip.log.client_ttfb.value
       if: ctx.json?.ClientTtfb != ''
       type: long
@@ -320,9 +385,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ClientTtfbHitcount
+      tag: convert_client_ttfb_hit_count_to_long
       target_field: f5_bigip.log.client_ttfb.hit_count
       if: ctx.json?.ClientTtfbHitcount != ''
       type: long
@@ -330,21 +396,25 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Entity
+      tag: rename_entity
       target_field: f5_bigip.log.entity
       ignore_missing: true
   - rename:
       field: json.errdefs_msgno
+      tag: rename_errdefs_msgno
       target_field: f5_bigip.log.errdefs.msgno
       ignore_missing: true
   - rename:
       field: json.GeoCode
+      tag: rename_geo_code
       target_field: f5_bigip.log.geo.code
       ignore_missing: true
   - convert:
       field: json.HitCount
+      tag: convert_hit_count_to_long
       target_field: f5_bigip.log.hit_count
       if: ctx.json?.HitCount != ''
       type: long
@@ -352,13 +422,15 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.LatencyHistogram
+      tag: rename_latency_histogram
       target_field: f5_bigip.log.latency_histogram
       ignore_missing: true
   - convert:
       field: json.MaxApplicationResponseTime
+      tag: convert_max_application_response_time_to_long
       target_field: f5_bigip.log.application.response.max_time
       if: ctx.json?.MaxApplicationResponseTime != ''
       type: long
@@ -366,9 +438,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MaxClientSideNetworkLatency
+      tag: convert_max_client_side_network_latency_to_long
       target_field: f5_bigip.log.client_side.network.max_latency
       if: ctx.json?.MaxClientSideNetworkLatency != ''
       type: long
@@ -376,9 +449,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MaxClientTtfb
+      tag: convert_max_client_ttfb_to_long
       target_field: f5_bigip.log.client_ttfb.max
       if: ctx.json?.MaxClientTtfb != ''
       type: long
@@ -386,9 +460,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MaxRequestDuration
+      tag: convert_max_request_duration_to_long
       target_field: f5_bigip.log.request.max_duration
       if: ctx.json?.MaxRequestDuration != ''
       type: long
@@ -396,9 +471,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MaxResponseDuration
+      tag: convert_max_response_duration_to_long
       target_field: f5_bigip.log.response.max_duration
       if: ctx.json?.MaxResponseDuration != ''
       type: long
@@ -406,9 +482,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MaxServerSideNetworkLatency
+      tag: convert_max_server_side_network_latency_to_long
       target_field: f5_bigip.log.server_side.network.max_latency
       if: ctx.json?.MaxServerSideNetworkLatency != ''
       type: long
@@ -416,9 +493,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MinApplicationResponseTime
+      tag: convert_min_application_response_time_to_long
       target_field: f5_bigip.log.application.response.min_time
       if: ctx.json?.MinApplicationResponseTime != ''
       type: long
@@ -426,9 +504,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MinClientSideNetworkLatency
+      tag: convert_min_client_side_network_latency_to_long
       target_field: f5_bigip.log.client_side.network.min_latency
       if: ctx.json?.MinClientSideNetworkLatency != ''
       type: long
@@ -436,9 +515,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MinClientTtfb
+      tag: convert_min_client_ttfb_to_long
       target_field: f5_bigip.log.client_ttfb.min
       if: ctx.json?.MinClientTtfb != ''
       type: long
@@ -446,9 +526,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MinRequestDuration
+      tag: convert_min_request_duration_to_long
       target_field: f5_bigip.log.request.min_duration
       if: ctx.json?.MinRequestDuration != ''
       type: long
@@ -456,9 +537,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MinResponseDuration
+      tag: convert_min_response_duration_to_long
       target_field: f5_bigip.log.response.min_duration
       if: ctx.json?.MinResponseDuration != ''
       type: long
@@ -466,9 +548,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MinServerSideNetworkLatency
+      tag: convert_min_server_side_network_latency_to_long
       target_field: f5_bigip.log.server_side.network.min_latency
       if: ctx.json?.MinServerSideNetworkLatency != ''
       type: long
@@ -476,22 +559,26 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Module
+      tag: rename_module
       target_field: f5_bigip.log.module
       ignore_missing: true
   - rename:
       field: json.POOLIPRouteDomain
+      tag: rename_pool_ip_route_domain
       target_field: f5_bigip.log.pool.ip_route_domain
       ignore_missing: true
   - append:
       field: related.hosts
+      tag: append_related_host
       value: '{{{f5_bigip.log.pool.ip_route_domain}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.RequestDuration
+      tag: convert_request_duration_to_long
       target_field: f5_bigip.log.request.duration
       if: ctx.json?.RequestDuration != ''
       type: long
@@ -499,9 +586,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.RequestDurationHitcount
+      tag: convert_request_duration_hitcount_to_long
       target_field: f5_bigip.log.request.duration_hit_count
       if: ctx.json?.RequestDurationHitcount != ''
       type: long
@@ -509,9 +597,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ResponseDuration
+      tag: convert_response_duration_to_long
       target_field: f5_bigip.log.response.duration
       if: ctx.json?.ResponseDuration != ''
       type: long
@@ -519,9 +608,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ResponseDurationHitcount
+      tag: convert_response_duration_hitcount_to_long
       target_field: f5_bigip.log.response.duration_hit_count
       if: ctx.json?.ResponseDurationHitcount != ''
       type: long
@@ -529,9 +619,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ServerHitcount
+      tag: convert_server_hitcount_to_long
       target_field: f5_bigip.log.server.hit_count
       if: ctx.json?.ServerHitcount != ''
       type: long
@@ -539,9 +630,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ServerLatencyMax
+      tag: convert_server_latency_max_to_long
       target_field: f5_bigip.log.server.latency.max
       if: ctx.json?.ServerLatencyMax != ''
       type: long
@@ -549,9 +641,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ServerLatencyMin
+      tag: convert_server_latency_min_to_long
       target_field: f5_bigip.log.server.latency.min
       if: ctx.json?.ServerLatencyMin != ''
       type: long
@@ -559,9 +652,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ServerLatencyTotal
+      tag: convert_server_latency_total_to_long
       target_field: f5_bigip.log.server.latency.total
       if: ctx.json?.ServerLatencyTotal != ''
       type: long
@@ -569,9 +663,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ServerSideNetworkLatency
+      tag: convert_server_side_network_latency_to_long
       target_field: f5_bigip.log.server_side.network.latency
       if: ctx.json?.ServerSideNetworkLatency != ''
       type: long
@@ -579,13 +674,15 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.SlotId
+      tag: rename_slot_id
       target_field: f5_bigip.log.slot.id
       ignore_missing: true
   - convert:
       field: json.SosApplicationResponseTime
+      tag: convert_sos_application_response_time_to_long
       target_field: f5_bigip.log.sos.application_response_time
       if: ctx.json?.SosApplicationResponseTime != ''
       type: long
@@ -593,9 +690,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.SosClientSideNetworkLatency
+      tag: convert_sos_client_side_network_latency_to_long
       target_field: f5_bigip.log.sos.client_side_network_latency
       if: ctx.json?.SosClientSideNetworkLatency != ''
       type: long
@@ -603,9 +701,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.SosClientTtfb
+      tag: convert_sos_client_ttfb_to_long
       target_field: f5_bigip.log.sos.client_ttfb
       if: ctx.json?.SosClientTtfb != ''
       type: long
@@ -613,9 +712,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.SosRequestDuration
+      tag: convert_sos_request_duration_to_long
       target_field: f5_bigip.log.sos.request_duration
       if: ctx.json?.SosRequestDuration != ''
       type: long
@@ -623,9 +723,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.SosResponseDuration
+      tag: convert_sos_response_duration_to_long
       target_field: f5_bigip.log.sos.response_duration
       if: ctx.json?.SosResponseDuration != ''
       type: long
@@ -633,9 +734,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.SosServerSideNetworkLatency
+      tag: convert_sos_server_side_network_latency_to_long
       target_field: f5_bigip.log.sos.server_side_network_latency
       if: ctx.json?.SosServerSideNetworkLatency != ''
       type: long
@@ -643,9 +745,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.SubnetIP
+      tag: convert_subnet_ip_to_ip
       target_field: f5_bigip.log.subnet.ip
       if: ctx.json?.SubnetIP != ''
       type: ip
@@ -653,31 +756,37 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{f5_bigip.log.subnet.ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.SubnetName
+      tag: rename_subnet_name
       target_field: f5_bigip.log.subnet.name
       ignore_missing: true
   - rename:
       field: json.SubnetRouteDomain
+      tag: rename_subnet_route_domain
       target_field: f5_bigip.log.subnet.route_domain
       ignore_missing: true
   - append:
       field: related.hosts
+      tag: append_related_hosts
       value: '{{{f5_bigip.log.subnet.route_domain}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.telemetryEventCategory
+      tag: rename_telemetry_event_category
       target_field: f5_bigip.log.telemetry.event.category
       ignore_missing: true
   - convert:
       field: json.ThroughputReqMaxPerSec
+      tag: convert_throughput_req_max_per_sec_to_long
       target_field: f5_bigip.log.throughput.req_per_sec.max
       if: ctx.json?.ThroughputReqMaxPerSec != ''
       type: long
@@ -685,9 +794,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ThroughputReqTotalPerInterval
+      tag: convert_throughput_req_total_per_interval_to_long
       target_field: f5_bigip.log.throughput.req_per_interval.total
       if: ctx.json?.ThroughputReqTotalPerInterval != ''
       type: long
@@ -695,9 +805,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ThroughputRespMaxPerSec
+      tag: convert_throughput_resp_max_per_sec_to_long
       target_field: f5_bigip.log.throughput.resp_per_sec.max
       if: ctx.json?.ThroughputRespMaxPerSec != ''
       type: long
@@ -705,9 +816,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ThroughputRespTotalPerInterval
+      tag: convert_throughput_resp_total_per_interval_to_long
       target_field: f5_bigip.log.throughput.resp_per_interval.total
       if: ctx.json?.ThroughputRespTotalPerInterval != ''
       type: long
@@ -715,19 +827,21 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.TPSMax
+      tag: convert_tps_max_to_long
       target_field: f5_bigip.log.tps.max
       if: ctx.json?.TPSMax != ''
-      type: long
+      type: double
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.UserSessionsNewTotal
+      tag: convert_user_sessions_new_total_to_long
       target_field: f5_bigip.log.user.sessions.new_total
       if: ctx.json?.UserSessionsNewTotal != ''
       type: long
@@ -735,74 +849,95 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.VSName
+      tag: rename_vs_name
       target_field: f5_bigip.log.vs_name
       ignore_missing: true
   - rename:
       field: json.ObjectTagsList
+      tag: rename_object_tags_list
       target_field: f5_bigip.log.object_tags_list
       ignore_missing: true
   - rename:
       field: json.DosProfileName
+      tag: rename_dos_profile_name
       target_field: f5_bigip.log.dos.profile_name
       ignore_missing: true
   - rename:
       field: json.AttackId
+      tag: rename_attack_id
       target_field: f5_bigip.log.attack.id
       ignore_missing: true
   - rename:
       field: json.SourceIpRouteDomain
+      tag: rename_source_ip_route_domain
       target_field: f5_bigip.log.source.ip_route_domain
       ignore_missing: true
   - append:
       field: related.hosts
+      tag: append_related_host
       value: '{{{f5_bigip.log.source.ip_route_domain}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.TransactionOutcome
+      tag: rename_transaction_outcome
       target_field: f5_bigip.log.transaction_outcome
       ignore_missing: true
   - rename:
       field: json.AttackVectorName
+      tag: rename_attack_vector_name
       target_field: f5_bigip.log.attack.vector_name
       ignore_missing: true
   - rename:
       field: json.AttackTriggerName
+      tag: rename_attack_trigger_name
       target_field: f5_bigip.log.attack.trigger_name
       ignore_missing: true
   - rename:
       field: json.AttackMitigationName
+      tag: rename_attack_mitigation_name
       target_field: f5_bigip.log.attack.mitigation_name
       ignore_missing: true
   - set:
       field: f5_bigip.log.is_internal_activity
+      tag: set_is_internal_activity_to_false
       value: false
       if: ctx.json?.IsInternalActivity == '0'
+      ignore_empty_value: true
   - set:
       field: f5_bigip.log.is_internal_activity
+      tag: set_is_internal_activity_to_true
       value: true
       if: ctx.json?.IsInternalActivity == '1'
+      ignore_empty_value: true
   - set:
       field: f5_bigip.log.is_attacking_ip
+      tag: set_is_attacking_ip_to_false
       value: false
       if: ctx.json?.IsAttackingIp == '0'
+      ignore_empty_value: true
   - set:
       field: f5_bigip.log.is_attacking_ip
+      tag: set_is_attacking_ip_to_true
       value: true
       if: ctx.json?.IsAttackingIp == '1'
+      ignore_empty_value: true
   - rename:
       field: json.globalBigiqConf
+      tag: rename_global_bigiq_conf
       target_field: f5_bigip.log.global_bigiq_conf
       ignore_missing: true
   - rename:
       field: json.Policy
+      tag: rename_policy
       target_field: f5_bigip.log.policy.name
       ignore_missing: true
   - convert:
       field: json.ViolationRating
+      tag: convert_violation_rating_to_long
       target_field: f5_bigip.log.violation.rating
       if: ctx.json?.ViolationRating != ''
       type: long
@@ -810,45 +945,55 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.IPReputation
+      tag: rename_ip_reputation
       target_field: f5_bigip.log.ip_reputation
       ignore_missing: true
   - rename:
       field: json.SessionID
+      tag: rename_session_id
       target_field: f5_bigip.log.session.id
       ignore_missing: true
   - set:
       field: f5_bigip.log.is_mobile_device
+      tag: set_is_mobile_device_to_false
       value: false
       if: ctx.json?.IsMobileDevice == '0'
   - set:
       field: f5_bigip.log.is_mobile_device
+      tag: set_is_mobile_device_to_true
       value: true
       if: ctx.json?.IsMobileDevice == '1'
   - rename:
       field: json.DosMobileAppClientType
+      tag: rename_dos_mobile_app_client_type
       target_field: f5_bigip.log.dos.mobile_app.client_type
       ignore_missing: true
   - rename:
       field: json.DosMobileAppVersion
+      tag: rename_dos_mobile_app_version
       target_field: f5_bigip.log.dos.mobile_app.version
       ignore_missing: true
   - rename:
       field: json.DosMobileAppDisplayName
+      tag: rename_dos_mobile_app_display_name
       target_field: f5_bigip.log.dos.mobile_app.display_name
       ignore_missing: true
   - rename:
       field: json.STAT_SRC
+      tag: rename_stat_src
       target_field: f5_bigip.log.stat_src
       ignore_missing: true
   - rename:
       field: json.AttackType
+      tag: rename_attack_type
       target_field: f5_bigip.log.attack.type
       ignore_missing: true
   - convert:
       field: json.AttackCount
+      tag: convert_attack_count_to_long
       target_field: f5_bigip.log.attack.count
       if: ctx.json?.AttackCount != ''
       type: long
@@ -856,9 +1001,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.TotalEvents
+      tag: convert_total_events_to_long
       target_field: f5_bigip.log.events.total
       if: ctx.json?.TotalEvents != ''
       type: long
@@ -866,9 +1012,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.SoftwareDrops
+      tag: convert_software_drops_to_long
       target_field: f5_bigip.log.software_drops
       if: ctx.json?.SoftwareDrops != ''
       type: long
@@ -876,9 +1023,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.HardwareDrops
+      tag: convert_hardware_drops_to_long
       target_field: f5_bigip.log.hardware_drops
       if: ctx.json?.HardwareDrops != ''
       type: long
@@ -886,9 +1034,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.BadActorEvents
+      tag: convert_bad_actor_events_to_long
       target_field: f5_bigip.log.bad_actor.events
       if: ctx.json?.BadActorEvents != ''
       type: long
@@ -896,9 +1045,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.BadActorDrops
+      tag: convert_bad_actor_drops_to_long
       target_field: f5_bigip.log.bad_actor.drops
       if: ctx.json?.BadActorDrops != ''
       type: long
@@ -906,9 +1056,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.WLEvents
+      tag: convert_wl_events_to_long
       target_field: f5_bigip.log.wl_events
       if: ctx.json?.WLEvents != ''
       type: long
@@ -916,9 +1067,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.AvgDetection
+      tag: convert_avg_detection_to_long
       target_field: f5_bigip.log.detection.avg
       if: ctx.json?.AvgDetection != ''
       type: long
@@ -926,9 +1078,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MinMitigation
+      tag: convert_min_mitigation_to_long
       target_field: f5_bigip.log.mitigation.min
       if: ctx.json?.MinMitigation != ''
       type: long
@@ -936,9 +1089,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MaxMitigation
+      tag: convert_max_mitigation_to_long
       target_field: f5_bigip.log.mitigation.max
       if: ctx.json?.MaxMitigation != ''
       type: long
@@ -946,9 +1100,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.AvgBadActorDetection
+      tag: convert_avg_bad_actor_detection_to_long
       target_field: f5_bigip.log.bad_actor.detection.avg
       if: ctx.json?.AvgBadActorDetection != ''
       type: long
@@ -956,9 +1111,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MinBadActorMitigation
+      tag: convert_min_bad_actor_mitigation_to_long
       target_field: f5_bigip.log.bad_actor.mitigation.min
       if: ctx.json?.MinBadActorMitigation != ''
       type: long
@@ -966,9 +1122,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MaxBadActorMitigation
+      tag: convert_max_bad_actor_mitigation_to_long
       target_field: f5_bigip.log.bad_actor.mitigation.max
       if: ctx.json?.MaxBadActorMitigation != ''
       type: long
@@ -976,9 +1133,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.abandoned_conns
+      tag: convert_abandoned_conns_to_long
       target_field: f5_bigip.log.abandoned_conns
       if: ctx.json?.abandoned_conns != ''
       type: long
@@ -986,9 +1144,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.expired_conns
+      tag: convert_expired_conns_to_long
       target_field: f5_bigip.log.expired_conns
       if: ctx.json?.expired_conns != ''
       type: long
@@ -996,9 +1155,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.failed_conns
+      tag: convert_failed_conns_to_long
       target_field: f5_bigip.log.failed_conns
       if: ctx.json?.failed_conns != ''
       type: long
@@ -1006,9 +1166,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.accept_fails
+      tag: convert_accept_fails_to_long
       target_field: f5_bigip.log.accept_fails
       if: ctx.json?.accept_fails != ''
       type: long
@@ -1016,9 +1177,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.accepts
+      tag: convert_accepts_to_long
       target_field: f5_bigip.log.accepts
       if: ctx.json?.accepts != ''
       type: long
@@ -1026,9 +1188,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.active_conns
+      tag: convert_active_conns_to_double
       target_field: f5_bigip.log.active_conns
       if: ctx.json?.active_conns != ''
       type: double
@@ -1036,9 +1199,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.hw_cookie_valid
+      tag: convert_hw_cookie_valid_to_long
       target_field: f5_bigip.log.hw.cookie_valid
       if: ctx.json?.hw_cookie_valid != ''
       type: long
@@ -1046,9 +1210,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.max_active_conns
+      tag: convert_max_active_conns_to_long
       target_field: f5_bigip.log.max_active_conns
       if: ctx.json?.max_active_conns != ''
       type: long
@@ -1056,9 +1221,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.new_conns
+      tag: convert_new_conns_to_long
       target_field: f5_bigip.log.new_conns
       if: ctx.json?.new_conns != ''
       type: long
@@ -1066,9 +1232,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.rxbad_cookie
+      tag: convert_rxbad_cookie_to_long
       target_field: f5_bigip.log.rxbad_cookie
       if: ctx.json?.rxbad_cookie != ''
       type: long
@@ -1076,9 +1243,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.rxbadseg
+      tag: convert_rxbadseg_to_long
       target_field: f5_bigip.log.rxbadseg
       if: ctx.json?.rxbadseg != ''
       type: long
@@ -1086,9 +1254,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.rxbadsum
+      tag: convert_rxbadsum_to_long
       target_field: f5_bigip.log.rxbadsum
       if: ctx.json?.rxbadsum != ''
       type: long
@@ -1096,9 +1265,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.rxcookie
+      tag: convert_rxcookie_to_long
       target_field: f5_bigip.log.rxcookie
       if: ctx.json?.rxcookie != ''
       type: long
@@ -1106,9 +1276,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.rxooseg
+      tag: convert_rxooseg_to_long
       target_field: f5_bigip.log.rxooseg
       if: ctx.json?.rxooseg != ''
       type: long
@@ -1116,9 +1287,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.rxrst
+      tag: convert_rxrst_to_long
       target_field: f5_bigip.log.rxrst
       if: ctx.json?.rxrst != ''
       type: long
@@ -1126,9 +1298,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.sndpack
+      tag: convert_sndpack_to_long
       target_field: f5_bigip.log.sndpack
       if: ctx.json?.sndpack != ''
       type: long
@@ -1136,9 +1309,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.syncacheover
+      tag: convert_syncacheover_to_long
       target_field: f5_bigip.log.syncacheover
       if: ctx.json?.syncacheover != ''
       type: long
@@ -1146,13 +1320,15 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.tcp_prof
+      tag: rename_tcp_prof
       target_field: f5_bigip.log.tcp_prof
       ignore_missing: true
   - convert:
       field: json.txrexmits
+      tag: convert_txrexmits_to_long
       target_field: f5_bigip.log.txrexmits
       if: ctx.json?.txrexmits != ''
       type: long
@@ -1160,17 +1336,20 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.vip
+      tag: rename_vip
       target_field: f5_bigip.log.vip
       ignore_missing: true
   - rename:
       field: json.tenant
+      tag: rename_tenant
       target_field: f5_bigip.log.tenant
       ignore_missing: true
   - convert:
       field: json.AvgConcurrentConnections
+      tag: convert_avg_concurrent_connections_to_long
       target_field: f5_bigip.log.concurrent.connections.avg
       if: ctx.json?.AvgConcurrentConnections != ''
       type: long
@@ -1178,9 +1357,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.AvgCpu
+      tag: convert_avg_cpu_to_long
       target_field: f5_bigip.log.cpu.avg
       if: ctx.json?.AvgCpu != ''
       type: long
@@ -1188,9 +1368,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.AvgCpuAnalysisPlane
+      tag: convert_avg_cpu_analysis_plane_to_long
       target_field: f5_bigip.log.cpu.analysis_plane.avg
       if: ctx.json?.AvgCpuAnalysisPlane != ''
       type: long
@@ -1198,9 +1379,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.AvgCpuDataPlane
+      tag: convert_avg_cpu_data_plane_to_long
       target_field: f5_bigip.log.cpu.data_plane.avg
       if: ctx.json?.AvgCpuDataPlane != ''
       type: long
@@ -1208,9 +1390,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.AvgMemory
+      tag: convert_avg_memory_to_long
       target_field: f5_bigip.log.memory.avg
       if: ctx.json?.AvgMemory != ''
       type: long
@@ -1218,9 +1401,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.AvgThroughput
+      tag: convert_avg_throughput_to_long
       target_field: f5_bigip.log.throughput.avg
       if: ctx.json?.AvgThroughput != ''
       type: long
@@ -1228,9 +1412,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ConcurrentConnectionsHealth
+      tag: convert_concurrent_connections_health_to_long
       target_field: f5_bigip.log.concurrent.connections.health
       if: ctx.json?.ConcurrentConnectionsHealth != ''
       type: long
@@ -1238,9 +1423,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.CpuHealth
+      tag: convert_cpu_health_to_long
       target_field: f5_bigip.log.cpu.health
       if: ctx.json?.CpuHealth != ''
       type: long
@@ -1248,9 +1434,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MaxConcurrentConnections
+      tag: convert_max_concurrent_connections_to_long
       target_field: f5_bigip.log.concurrent.connections.max
       if: ctx.json?.MaxConcurrentConnections != ''
       type: long
@@ -1258,9 +1445,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.MemoryHealth
+      tag: convert_memory_health_to_long
       target_field: f5_bigip.log.memory.health
       if: ctx.json?.MemoryHealth != ''
       type: long
@@ -1268,9 +1456,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ThroughputHealth
+      tag: convert_throughput_health_to_long
       target_field: f5_bigip.log.throughput.health
       if: ctx.json?.ThroughputHealth != ''
       type: long
@@ -1278,9 +1467,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.TotalBytes
+      tag: convert_total_bytes_to_long
       target_field: f5_bigip.log.bytes.total
       if: ctx.json?.TotalBytes != ''
       type: long
@@ -1288,9 +1478,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.AvgCpuControlPlane
+      tag: convert_avg_cpu_control_plane_to_long
       target_field: f5_bigip.log.cpu.control_plane.avg
       if: ctx.json?.AvgCpuControlPlane != ''
       type: long
@@ -1298,9 +1489,11 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: json
+      tag: remove_json
+      ignore_failure: true
       ignore_missing: true
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
@@ -1328,10 +1521,3 @@ processors:
         - f5_bigip.log.application.name
       ignore_failure: true
       ignore_missing: true
-on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'

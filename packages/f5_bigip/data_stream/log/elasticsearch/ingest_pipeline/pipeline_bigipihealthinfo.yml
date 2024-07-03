@@ -1,0 +1,305 @@
+---
+description: Pipeline for F5 BIG-IP iHealth Information Request logs.
+processors:
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: vulnerability
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - foreach:
+      field: json.diagnostics
+      tag: iterate_diagnostics_to_rename_cveIds
+      if: ctx.json?.diagnostics instanceof List
+      processor:
+        rename:
+          field: _ingest._value.cveIds
+          tag: rename_cveIds_to_cve_ids
+          target_field: _ingest._value.cve_ids
+          ignore_missing: true
+  - foreach:
+      field: json.diagnostics
+      tag: iterate_diagnostics_to_convert_version
+      if: ctx.json?.diagnostics instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.version
+          tag: iterate_version_to_convert_fix_version_into_keyword
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.fix
+              tag: convert_fix_to_keyword
+              type: string
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.diagnostics
+      tag: iterate_diagnostics_to_convert_version
+      if: ctx.json?.diagnostics instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.version
+          tag: iterate_version_to_convert_maintenance_version_into_keyword
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.maintenance
+              tag: convert_maintenance_to_keyword
+              type: string
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.diagnostics
+      tag: iterate_diagnostics_to_convert_version
+      if: ctx.json?.diagnostics instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.version
+          tag: iterate_version_to_convert_major_version_into_keyword
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.major
+              tag: convert_major_to_keyword
+              type: string
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.diagnostics
+      tag: iterate_diagnostics_to_convert_version
+      if: ctx.json?.diagnostics instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.version
+          tag: iterate_version_to_convert_minor_version_into_keyword
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.minor
+              tag: convert_minor_to_keyword
+              type: string
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.diagnostics
+      tag: iterate_diagnostics_to_convert_version
+      if: ctx.json?.diagnostics instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.version
+          tag: iterate_version_to_convert_point_version_into_keyword
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.point
+              tag: convert_point_to_keyword
+              type: string
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json
+      tag: rename_json_to_f5_bigip.log
+      target_field: f5_bigip.log
+      ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.diagnostics
+      tag: iterate_diagnostics_to_append_cve_ids
+      if: ctx.f5_bigip?.log?.diagnostics instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.cve_ids
+          tag: iterate_cve_ids_to_append_cve_ids
+          ignore_missing: true
+          processor:
+            append:
+              field: vulnerability.id
+              tag: append_cve_ids_to_vulnerability_id
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+              ignore_failure: true
+  - foreach:
+      field: f5_bigip.log.diagnostics
+      tag: iterate_diagnostics_to_append_description
+      if: ctx.f5_bigip?.log?.diagnostics instanceof List
+      processor:
+        append:
+          field: vulnerability.description
+          tag: append_description_to_vulnerability_description
+          value: '{{{_ingest._value.header}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: f5_bigip.log.diagnostics
+      tag: iterate_diagnostics_to_append_vulnerability_severity
+      if: ctx.f5_bigip?.log?.diagnostics instanceof List
+      processor:
+        append:
+          field: vulnerability.severity
+          tag: append_diagnostic_importance_to_vulnerability_id
+          value: '{{{_ingest._value.importance}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: f5_bigip.log.diagnostics
+      tag: iterate_diagnostics_to_append_name
+      if: ctx.f5_bigip?.log?.diagnostics instanceof List
+      processor:
+        append:
+          field: rule.name
+          tag: append_name_to_rule_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field:  f5_bigip.log.diagnostics
+      tag: iterate_diagnostics_to_append_solution
+      if: ctx.f5_bigip?.log?.diagnostics instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.solution
+          tag: iterate_solution_to_append_solution_id
+          ignore_missing: true
+          processor:
+            append:
+                field: rule.reference
+                tag: append_solution_id_to_rule_reference
+                value: '{{{_ingest._value.id}}}'
+                allow_duplicates: false
+                ignore_failure: true
+  - foreach:
+      field:  f5_bigip.log.diagnostics
+      tag: iterate_diagnostics_to_append_solution_value
+      if: ctx.f5_bigip?.log?.diagnostics instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.solution
+          tag: iterate_solution_to_append_solution_value
+          ignore_missing: true
+          processor:
+            append:
+              field: threat.enrichments.indicator.reference
+              tag: append_solution_value_to_url_reference
+              value: '{{{_ingest._value.value}}}'
+              allow_duplicates: false
+              ignore_failure: true
+  - foreach:
+      field: f5_bigip.log.diagnostics
+      tag: iterate_diagnostics_to_append_summary
+      if: ctx.f5_bigip?.log?.diagnostics instanceof List
+      processor:
+        append:
+          field: vulnerability.description
+          tag: append_summary_to_vulnerability_description
+          value: '{{{_ingest._value.summary}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - set:
+      field: host.hostname
+      tag: set_hostname_to_host_hostname
+      copy_from: f5_bigip.log.system.hostname
+      ignore_empty_value: true
+  - rename:
+      field: f5_bigip.log.system.ihealthLink
+      tag: rename_system_ihealth_link
+      target_field: f5_bigip.log.system.ihealth_link
+      ignore_missing: true
+  - set:
+      field: url.full
+      tag: set_ihealth_link_to_url_full
+      copy_from: f5_bigip.log.system.ihealth_link
+      ignore_empty_value: true
+  - rename:
+      field: f5_bigip.log.system.qkviewNumber
+      tag: rename_system_qkview_number
+      target_field: f5_bigip.log.system.qkview_number
+      ignore_missing: true
+  - date:
+      field: f5_bigip.log.telemetryServiceInfo.cycleEnd
+      tag: date_cycle_end_conversion
+      target_field: f5_bigip.log.telemetry_service_info.cycle_end
+      if: ctx.f5_bigip.log?.telemetryServiceInfo?.cycleEnd != null && ctx.f5_bigip.log.telemetryServiceInfo.cycleEnd != ''
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss z
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_cycle_end_to_event_end
+      copy_from: f5_bigip.log.telemetry_service_info.cycle_end
+      ignore_empty_value: true
+  - date:
+      field: f5_bigip.log.telemetryServiceInfo.cycleStart
+      tag: date_cycle_start_conversion
+      target_field: f5_bigip.log.telemetry_service_info.cycle_start
+      if: ctx.f5_bigip.log?.telemetryServiceInfo?.cycleStart != null && ctx.f5_bigip.log.telemetryServiceInfo.cycleStart != ''
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss z
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_cycle_start_to_event_start
+      copy_from: f5_bigip.log.telemetry_service_info.cycle_start
+      ignore_empty_value: true
+  - rename:
+      field: f5_bigip.log.telemetryEventCategory
+      tag: rename_telemetry_event_category
+      target_field: f5_bigip.log.telemetry.event.category
+      ignore_missing: true
+  - remove:
+      field:
+        - f5_bigip.log.telemetryServiceInfo.cycleEnd
+        - f5_bigip.log.telemetryServiceInfo.cycleStart
+      tag: remove_mapped_fields
+      ignore_failure: true
+      ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.diagnostics
+      if: ctx.f5_bigip?.log?.diagnostics instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.cve_ids
+            - _ingest._value.header
+            - _ingest._value.importance
+            - _ingest._value.name
+            - _ingest._value.solution
+            - _ingest._value.summary
+          tag: remove_duplicate_custom_fields_from_diagnostics_array
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - f5_bigip.log.system.hostname
+        - f5_bigip.log.system.ihealth_link
+        - f5_bigip.log.telemetry_service_info.cycle_end
+        - f5_bigip.log.telemetry_service_info.cycle_start
+      tag: remove_custom_duplicate_fields
+      ignore_failure: true
+      ignore_missing: true

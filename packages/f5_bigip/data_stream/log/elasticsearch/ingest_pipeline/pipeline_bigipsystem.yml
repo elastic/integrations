@@ -1,0 +1,786 @@
+---
+description: Pipeline for processing system information logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - rename:
+      field: json.system.afmState
+      tag: rename_system_afmState
+      target_field: f5_bigip.log.afm_state
+      ignore_missing: true
+  - rename:
+      field: json.system.apmState
+      tag: rename_system_apmState
+      target_field: f5_bigip.log.apm_state
+      ignore_missing: true
+  - rename:
+      field: json.system.asmAttackSignatures
+      tag: rename_system_asmAttackSignatures
+      target_field: f5_bigip.log.asm_attack_signatures
+      ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.asm_attack_signatures
+      tag: foreach_asm_attack_signatures
+      if: ctx.f5_bigip?.log?.asm_attack_signatures != null
+      processor:
+        date:
+          field: _ingest._value.createDateTime
+          tag: convert_createDateTime
+          target_field: _ingest._value.create_date_time
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value.createDateTime
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: f5_bigip.log.asm_attack_signatures
+      tag: foreach_asm_attack_signatures
+      if: ctx.f5_bigip?.log?.asm_attack_signatures != null
+      processor:
+        remove:
+          field:
+            - _ingest._value.createDateTime
+          tag: remove_createDateTime
+          ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.asm_attack_signatures
+      tag: foreach_asm_attack_signatures
+      if: ctx.f5_bigip?.log?.asm_attack_signatures != null
+      processor:
+        append:
+          field: file.name
+          value: '{{{_ingest._value.filename}}}'
+          tag: append_filename
+          allow_duplicates: false
+  - foreach:
+      field: f5_bigip.log.asm_attack_signatures
+      tag: foreach_asm_attack_signatures
+      if: ctx.f5_bigip?.log?.asm_attack_signatures != null
+      processor:
+        remove:
+          field:
+            - _ingest._value.filename
+          tag: remove_duplicate_custom_fields_from_filename
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - rename:
+      field: json.system.asmState
+      tag: rename_system_asmState
+      target_field: f5_bigip.log.asm_state
+      ignore_missing: true
+  - rename:
+      field: json.system.callBackUrl
+      tag: rename_system_callBackUrl
+      target_field: f5_bigip.log.callback_url
+      ignore_missing: true
+  - rename:
+      field: json.system.chassisId
+      tag: rename_system_chassisId
+      target_field: f5_bigip.log.chassis_id
+      ignore_missing: true
+  - set:
+      field: observer.serial_number
+      tag: set_observer_serial_number_from_log_chassis_id
+      copy_from: f5_bigip.log.chassis_id
+      ignore_empty_value: true
+  - rename:
+      field: json.system.configReady
+      tag: rename_system_configReady
+      target_field: f5_bigip.log.config_ready
+      ignore_missing: true
+  - convert:
+      field: json.system.configSyncSucceeded
+      tag: convert_system_configSyncSucceeded_to_boolean
+      target_field: f5_bigip.log.config_sync_succeeded
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.system.connectionsPerformance
+      tag: rename_system_connectionsPerformance
+      target_field: f5_bigip.log.connections_performance
+      ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.connections_performance
+      tag: foreach_connections_performance
+      if: ctx.f5_bigip?.log?.connections_performance != null
+      processor:
+        convert:
+          field: _ingest._value.average
+          tag: convert_average
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.average
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: f5_bigip.log.connections_performance
+      tag: foreach_connections_performance
+      if: ctx.f5_bigip?.log?.connections_performance != null
+      processor:
+        convert:
+          field: _ingest._value.current
+          tag: convert_current
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.current
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: f5_bigip.log.connections_performance
+      tag: foreach_connections_performance
+      if: ctx.f5_bigip?.log?.connections_performance != null
+      processor:
+        convert:
+          field: _ingest._value.max
+          tag: convert_max
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.max
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.system.cpu
+      tag: convert_system_cpu_to_long
+      target_field: f5_bigip.log.cpu_value
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.system.description
+      tag: rename_system_description
+      target_field: f5_bigip.log.description
+      ignore_missing: true
+  - set:
+      field: host.name
+      tag: set_host_name_from_log_description
+      copy_from: f5_bigip.log.description
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_description_into_related_hosts
+      value: '{{{f5_bigip.log.description}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.description != null
+  - rename:
+      field: json.system.diskStorage
+      tag: rename_system_diskStorage
+      target_field: f5_bigip.log.disk_storage
+      ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.disk_storage
+      tag: foreach_disk_storage
+      if: ctx.f5_bigip?.log?.disk_storage != null
+      processor:
+        convert:
+          field: _ingest._value.Capacity_Float
+          tag: convert_capacity_float
+          target_field: _ingest._value.capacity_float
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.Capacity_Float
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: f5_bigip.log.disk_storage
+      tag: foreach_disk_storage
+      if: ctx.f5_bigip?.log?.disk_storage != null
+      processor:
+        rename:
+          field: _ingest._value.Capacity
+          tag: rename_capacity
+          target_field: _ingest._value.capacity
+          ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.disk_storage
+      tag: foreach_disk_storage
+      if: ctx.f5_bigip?.log?.disk_storage != null
+      processor:
+        convert:
+          field: _ingest._value.1024-blocks
+          tag: convert_1024-blocks
+          target_field: _ingest._value.1024_blocks
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.1024-blocks
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: f5_bigip.log.disk_storage
+      tag: foreach_disk_storage
+      if: ctx.f5_bigip?.log?.disk_storage != null
+      processor:
+        remove:
+          field:
+            - _ingest._value.1024-blocks
+            - _ingest._value.Capacity_Float
+          tag: remove_disk_storage_fields
+          ignore_missing: true
+  - rename:
+      field: json.system.diskLatency
+      tag: rename_system_diskLatency
+      target_field: f5_bigip.log.disk_latency
+      ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.disk_latency
+      tag: foreach_disk_latency
+      if: ctx.f5_bigip?.log?.disk_latency != null
+      processor:
+        convert:
+          field: _ingest._value.%util
+          tag: convert_%util
+          target_field: _ingest._value.per_util
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.%util
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: f5_bigip.log.disk_latency
+      tag: foreach_disk_latency
+      if: ctx.f5_bigip?.log?.disk_latency != null
+      processor:
+        remove:
+          field:
+            - _ingest._value.%util
+          tag: remove_util
+          ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.disk_latency
+      tag: foreach_disk_latency
+      if: ctx.f5_bigip?.log?.disk_latency != null
+      processor:
+        convert:
+          field: _ingest._value.r/s
+          tag: convert_r/s
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.r/s
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: f5_bigip.log.disk_latency
+      tag: foreach_disk_latency
+      if: ctx.f5_bigip?.log?.disk_latency != null
+      processor:
+        convert:
+          field: _ingest._value.w/s
+          tag: convert_w/s
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.w/s
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.system.failoverColor
+      tag: rename_system_failoverColor
+      target_field: f5_bigip.log.failover_color
+      ignore_missing: true
+  - rename:
+      field: json.system.failoverStatus
+      tag: rename_system_failoverStatus
+      target_field: f5_bigip.log.failover_status
+      ignore_missing: true
+  - date:
+      field: json.system.gtmConfigTime
+      tag: date_system_gtmConfigTime
+      target_field: f5_bigip.log.gtm_config_time
+      formats:
+        - ISO8601
+      if: ctx.json?.system?.gtmConfigTime != null && ctx.json.system.gtmConfigTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.system.hostname
+      tag: rename_system_hostname
+      target_field: f5_bigip.log.hostname
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_log_hostname
+      copy_from: f5_bigip.log.hostname
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_host_hostname_into_related_hosts
+      value: '{{{host.hostname}}}'
+      allow_duplicates: false
+      if: ctx.host?.hostname != null
+  - date:
+      field: json.system.lastAfmDeploy
+      tag: date_system_lastAfmDeploy
+      target_field: f5_bigip.log.last_afm_deploy
+      formats:
+        - ISO8601
+      if: ctx.json?.system?.lastAfmDeploy != null && ctx.json.system.lastAfmDeploy != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.system.lastAsmChange
+      tag: date_system_lastAsmChange
+      target_field: f5_bigip.log.last_asm_change
+      formats:
+        - ISO8601
+      if: ctx.json?.system?.lastAsmChange != null && ctx.json.system.lastAsmChange != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.telemetryServiceInfo.cycleEnd
+      tag: date_cycle_end_conversion
+      target_field: f5_bigip.log.telemetry_service_info.cycle_end
+      if: ctx.json?.telemetryServiceInfo?.cycleEnd != null && ctx.json.telemetryServiceInfo.cycleEnd != ''
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss z
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.telemetryServiceInfo.cycleStart
+      tag: date_cycle_start_conversion
+      target_field: f5_bigip.log.telemetry_service_info.cycle_start
+      if: ctx.json?.telemetryServiceInfo?.cycleStart != null && ctx.json.telemetryServiceInfo.cycleStart != ''
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss z
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.telemetryServiceInfo.pollingInterval
+      tag: convert_telemetryservice_polling_interval
+      target_field: f5_bigip.log.telemetry_service_info.polling_interval
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.system.licenseReady
+      tag: rename_system_licenseReady
+      target_field: f5_bigip.log.license_ready
+      ignore_missing: true
+  - rename:
+      field: json.system.location
+      tag: rename_system_location
+      target_field: f5_bigip.log.location
+      ignore_missing: true
+  - set:
+      field: host.geo.name
+      tag: set_host_geo_name_from_log_location
+      copy_from: f5_bigip.log.location
+      ignore_empty_value: true
+  - date:
+      field: json.system.ltmConfigTime
+      tag: date_system_ltmConfigTime
+      target_field: f5_bigip.log.ltm_config_time
+      formats:
+        - ISO8601
+      if: ctx.json?.system?.ltmConfigTime != null && ctx.json.system.ltmConfigTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: json.system.baseMac
+      tag: gsub_system_baseMac
+      target_field: f5_bigip.log.base_mac
+      pattern: '[:.]'
+      replacement: '-'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.mac
+      tag: append_f5_bigip_log_base_mac_into_host_mac
+      value: '{{{f5_bigip.log.base_mac}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.base_mac != null
+  - append:
+      field: related.hosts
+      tag: append_host_mac_into_related_hosts
+      value: '{{{f5_bigip.log.base_mac}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.base_mac != null
+  - rename:
+      field: json.system.machineId
+      tag: rename_system_machineId
+      target_field: f5_bigip.log.machine_id
+      ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_log_machine_id
+      copy_from: f5_bigip.log.machine_id
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_host_id_into_related_hosts
+      value: '{{{host.id}}}'
+      allow_duplicates: false
+      if: ctx.host?.id != null
+  - rename:
+      field: json.system.marketingName
+      tag: rename_system_marketingName
+      target_field: f5_bigip.log.marketing_name
+      ignore_missing: true
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor_from_log_marketing_name
+      copy_from: f5_bigip.log.marketing_name
+      ignore_empty_value: true
+  - convert:
+      field: json.system.memory
+      tag: convert_system_memory_value_to_long
+      target_field: f5_bigip.log.memory_value
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.system.networkInterfaces
+      tag: rename_system_networkInterfaces
+      target_field: f5_bigip.log.network_interfaces
+      ignore_missing: true
+  - rename:
+      field: json.system.platformId
+      tag: rename_system_platformId
+      target_field: f5_bigip.log.platform_id
+      ignore_missing: true
+  - rename:
+      field: json.system.provisionReady
+      tag: rename_system_provisionReady
+      target_field: f5_bigip.log.provision_ready
+      ignore_missing: true
+  - rename:
+      field: json.system.provisioning
+      tag: rename_system_provisioning
+      target_field: f5_bigip.log.provisioning
+      ignore_missing: true
+  - convert:
+      field: json.system.swap
+      tag: convert_system_swap_to_long
+      target_field: f5_bigip.log.swap
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.system.syncColor
+      tag: rename_system_syncColor
+      target_field: f5_bigip.log.sync_color
+      ignore_missing: true
+  - rename:
+      field: json.system.syncMode
+      tag: rename_system_syncMode
+      target_field: f5_bigip.log.sync_mode
+      ignore_missing: true
+  - rename:
+      field: json.system.syncStatus
+      tag: rename_system_syncStatus
+      target_field: f5_bigip.log.sync_status
+      ignore_missing: true
+  - rename:
+      field: json.system.syncSummary
+      tag: rename_system_syncSummary
+      target_field: f5_bigip.log.sync_summary
+      ignore_missing: true
+  - date:
+      field: json.system.systemTimestamp
+      tag: date_system_systemTimestamp
+      target_field: f5_bigip.log.system_timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.system?.systemTimestamp != null && ctx.json.system.systemTimestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_log_system_timestamp
+      copy_from: f5_bigip.log.system_timestamp
+      ignore_empty_value: true
+  - rename:
+      field: json.telemetryEventCategory
+      tag: rename_telemetryEventCategory
+      target_field: f5_bigip.log.telemetry.event.category
+      ignore_missing: true
+  - rename:
+      field: json.system.throughputPerformance
+      tag: rename_system_throughputPerformance
+      target_field: f5_bigip.log.throughput_performance
+      ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.throughput_performance
+      tag: foreach_throughput_performance
+      if: ctx.f5_bigip?.log?.throughput_performance != null
+      processor:
+        convert:
+          field: _ingest._value.average
+          tag: convert_average
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.average
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: f5_bigip.log.throughput_performance
+      tag: foreach_throughput_performance
+      if: ctx.f5_bigip?.log?.throughput_performance != null
+      processor:
+        convert:
+          field: _ingest._value.current
+          tag: convert_current
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.current
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: f5_bigip.log.throughput_performance
+      tag: foreach_throughput_performance
+      if: ctx.f5_bigip?.log?.throughput_performance != null
+      processor:
+        convert:
+          field: _ingest._value.max
+          tag: convert_max
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.max
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.system.tmmCpu
+      tag: convert_system_tmmCpu_to_long
+      target_field: f5_bigip.log.tmm_cpu
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.system.tmmMemory
+      tag: convert_system_tmmMemory_to_long
+      target_field: f5_bigip.log.tmm_memory
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: Script_to_rename_tmmTraffic_clientSideTraffic_bitsIn
+      description: Script to rename tmmTraffic ClientSideTraffic bitsIn
+      if: ctx.json?.system?.tmmTraffic != null && ctx.json?.system?.tmmTraffic['clientSideTraffic.bitsIn'] != null
+      source: >-
+        def client_side_traffic = new HashMap();
+        def obj = ctx.json.system.tmmTraffic.remove('clientSideTraffic.bitsIn');
+        client_side_traffic.put('bits_in', obj);
+        if (ctx.f5_bigip?.log?.tmm_traffic == null) {
+          ctx.f5_bigip.log.tmm_traffic = new HashMap();
+          ctx.f5_bigip.log.tmm_traffic.put('client_side_traffic', client_side_traffic);
+        }
+        else{
+          ctx.f5_bigip.log.tmm_traffic.client_side_traffic.put('bits_in', obj);
+        }
+  - script:
+      lang: painless
+      tag: Script_to_rename_tmmTraffic_clientSideTraffic_bitsOut
+      description: Script to rename tmmTraffic ClientSideTraffic bitsOut
+      if: ctx.json?.system?.tmmTraffic != null && ctx.json?.system?.tmmTraffic['clientSideTraffic.bitsOut'] != null
+      source: >-
+        def client_side_traffic = new HashMap();
+        def obj = ctx.json.system.tmmTraffic.remove('clientSideTraffic.bitsOut');
+        client_side_traffic.put('bits_out', obj);
+        if (ctx.f5_bigip?.log?.tmm_traffic == null) {
+          ctx.f5_bigip.log.tmm_traffic = new HashMap();
+          ctx.f5_bigip.log.tmm_traffic.put('client_side_traffic', client_side_traffic);
+        }
+        else{
+          ctx.f5_bigip.log.tmm_traffic.client_side_traffic.put('bits_out', obj);
+        }
+  - script:
+      lang: painless
+      tag: Script_to_rename_tmmTraffic_serverSideTraffic_bitsIn
+      description: Script to rename tmmTraffic serverSideTraffic bitsIn
+      if: ctx.json?.system?.tmmTraffic != null && ctx.json?.system?.tmmTraffic['serverSideTraffic.bitsIn'] != null
+      source: >-
+        def server_side_traffic = new HashMap();
+        def obj = ctx.json.system.tmmTraffic.remove('serverSideTraffic.bitsIn');
+        server_side_traffic.put('bits_in', obj);
+        if (ctx.f5_bigip?.log?.tmm_traffic == null) {
+          ctx.f5_bigip.log.tmm_traffic = new HashMap();
+          ctx.f5_bigip.log.tmm_traffic.put('server_side_traffic', server_side_traffic);
+        }
+        else{
+            if (ctx.f5_bigip?.log?.tmm_traffic?.server_side_traffic == null) {
+                ctx.f5_bigip.log.tmm_traffic.server_side_traffic = new HashMap();
+            }
+            ctx.f5_bigip.log.tmm_traffic.server_side_traffic.put('bits_in', obj);
+        }
+  - script:
+      lang: painless
+      tag: Script_to_rename_tmmTraffic_serverSideTraffic_bitsOut
+      description: Script to rename tmmTraffic serverSideTraffic bitsOut
+      if: ctx.json?.system?.tmmTraffic != null && ctx.json?.system?.tmmTraffic['serverSideTraffic.bitsOut'] != null
+      source: >-
+        def server_side_traffic = new HashMap();
+        def obj = ctx.json.system.tmmTraffic.remove('serverSideTraffic.bitsOut');
+        server_side_traffic.put('bits_out', obj);
+        if (ctx.f5_bigip?.log?.tmm_traffic == null) {
+          ctx.f5_bigip.log.tmm_traffic = new HashMap();
+          ctx.f5_bigip.log.tmm_traffic.put('server_side_traffic', server_side_traffic);
+        }
+        else{
+            if (ctx.f5_bigip?.log?.tmm_traffic?.server_side_traffic == null) {
+                ctx.f5_bigip.log.tmm_traffic.server_side_traffic = new HashMap();
+            }
+            ctx.f5_bigip.log.tmm_traffic.server_side_traffic.put('bits_out', obj);
+        }
+  - convert:
+      field: f5_bigip.log.tmm_traffic.client_side_traffic.bits_in
+      tag: convert_system_tmm_traffic_client_side_traffic_bits_in_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: f5_bigip.log.tmm_traffic.client_side_traffic.bits_out
+      tag: convert_system_tmm_traffic_client_side_traffic_bits_out_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: f5_bigip.log.tmm_traffic.server_side_traffic.bits_in
+      tag: convert_system_tmm_traffic_server_side_traffic_bits_in_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: f5_bigip.log.tmm_traffic.server_side_traffic.bits_out
+      tag: convert_system_tmm_traffic_server_side_traffic_bits_out_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.system.version
+      tag: rename_system_version
+      target_field: f5_bigip.log.version
+      ignore_missing: true
+  - set:
+      field: host.os.version
+      tag: set_host_os_version_from_log_version
+      copy_from: f5_bigip.log.version
+      ignore_empty_value: true
+  - rename:
+      field: json.system.versionBuild
+      tag: rename_system_versionBuild
+      target_field: f5_bigip.log.version_build
+      ignore_missing: true
+  - remove:
+      field:
+        - f5_bigip.log.chassis_id
+        - f5_bigip.log.description
+        - f5_bigip.log.hostname
+        - f5_bigip.log.location
+        - f5_bigip.log.base_mac
+        - f5_bigip.log.machine_id
+        - f5_bigip.log.marketing_name
+        - f5_bigip.log.system_timestamp
+        - f5_bigip.log.version
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
