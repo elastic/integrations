@@ -5,6 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: '8.11.0'
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process
   - rename:
       field: message
       tag: rename_message
@@ -401,7 +405,7 @@ processors:
           return false;
         }
         drop(ctx);
-  - set:
+  - append:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
