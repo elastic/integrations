@@ -434,108 +434,109 @@ An example event for `elb` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| aws.applicationelb.metrics.ActiveConnectionCount.sum | The total number of concurrent TCP connections active from clients to the load balancer and from the load balancer to targets. | long | gauge |
-| aws.applicationelb.metrics.ClientTLSNegotiationErrorCount.sum | The number of TLS connections initiated by the client that did not establish a session with the load balancer due to a TLS error. | long | gauge |
-| aws.applicationelb.metrics.ConsumedLCUs.avg | The number of load balancer capacity units (LCU) used by your load balancer. | double | gauge |
-| aws.applicationelb.metrics.HTTPCode_ELB_3XX_Count.sum | The number of HTTP 3XX redirection codes that originate from the load balancer. | long | gauge |
-| aws.applicationelb.metrics.HTTPCode_ELB_4XX_Count.sum | The number of HTTP 4XX client error codes that originate from the load balancer. | long | gauge |
-| aws.applicationelb.metrics.HTTPCode_ELB_500_Count.sum | The number of HTTP 500 error codes that originate from the load balancer. | long | gauge |
-| aws.applicationelb.metrics.HTTPCode_ELB_502_Count.sum | The number of HTTP 502 error codes that originate from the load balancer. | long | gauge |
-| aws.applicationelb.metrics.HTTPCode_ELB_503_Count.sum | The number of HTTP 503 error codes that originate from the load balancer. | long | gauge |
-| aws.applicationelb.metrics.HTTPCode_ELB_504_Count.sum | The number of HTTP 504 error codes that originate from the load balancer. | long | gauge |
-| aws.applicationelb.metrics.HTTPCode_ELB_5XX_Count.sum | The number of HTTP 5XX server error codes that originate from the load balancer. | long | gauge |
-| aws.applicationelb.metrics.HTTP_Fixed_Response_Count.sum | The number of fixed-response actions that were successful. | long | gauge |
-| aws.applicationelb.metrics.HTTP_Redirect_Count.sum | The number of redirect actions that were successful. | long | gauge |
-| aws.applicationelb.metrics.HTTP_Redirect_Url_Limit_Exceeded_Count.sum | The number of redirect actions that couldn't be completed because the URL in the response location header is larger than 8K. | long | gauge |
-| aws.applicationelb.metrics.IPv6ProcessedBytes.sum | The total number of bytes processed by the load balancer over IPv6. | long | gauge |
-| aws.applicationelb.metrics.IPv6RequestCount.sum | The number of IPv6 requests received by the load balancer. | long | gauge |
-| aws.applicationelb.metrics.NewConnectionCount.sum | The total number of new TCP connections established from clients to the load balancer and from the load balancer to targets. | long | gauge |
-| aws.applicationelb.metrics.ProcessedBytes.sum | The total number of bytes processed by the load balancer over IPv4 and IPv6. | long | gauge |
-| aws.applicationelb.metrics.RejectedConnectionCount.sum | The number of connections that were rejected because the load balancer had reached its maximum number of connections. | long | gauge |
-| aws.applicationelb.metrics.RequestCount.sum | The number of requests processed over IPv4 and IPv6. | long | gauge |
-| aws.applicationelb.metrics.RuleEvaluations.sum | The number of rules processed by the load balancer given a request rate averaged over an hour. | long | gauge |
-| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
-| aws.dimensions.AvailabilityZone | Filters the metric data by the specified Availability Zone. | keyword |  |
-| aws.dimensions.LoadBalancer | Filters the metric data by load balancer. | keyword |  |
-| aws.dimensions.LoadBalancerName | Filters the metric data by the specified load balancer. | keyword |  |
-| aws.dimensions.TargetGroup | Filters the metric data by target group. | keyword |  |
-| aws.elb.metrics.BackendConnectionErrors.sum | The number of connections that were not successfully established between the load balancer and the registered instances. | long | gauge |
-| aws.elb.metrics.EstimatedALBActiveConnectionCount.avg | The estimated number of concurrent TCP connections active from clients to the load balancer and from the load balancer to targets. | double | gauge |
-| aws.elb.metrics.EstimatedALBConsumedLCUs.avg | The estimated number of load balancer capacity units (LCU) used by an Application Load Balancer. | double | gauge |
-| aws.elb.metrics.EstimatedALBNewConnectionCount.avg | The estimated number of new TCP connections established from clients to the load balancer and from the load balancer to targets. | double | gauge |
-| aws.elb.metrics.EstimatedProcessedBytes.avg | The estimated number of bytes processed by an Application Load Balancer. | double | gauge |
-| aws.elb.metrics.HTTPCode_Backend_2XX.sum | The number of HTTP 2XX response code generated by registered instances. | long | gauge |
-| aws.elb.metrics.HTTPCode_Backend_3XX.sum | The number of HTTP 3XX response code generated by registered instances. | long | gauge |
-| aws.elb.metrics.HTTPCode_Backend_4XX.sum | The number of HTTP 4XX response code generated by registered instances. | long | gauge |
-| aws.elb.metrics.HTTPCode_Backend_5XX.sum | The number of HTTP 5XX response code generated by registered instances. | long | gauge |
-| aws.elb.metrics.HTTPCode_ELB_4XX.sum | The number of HTTP 4XX client error codes generated by the load balancer. | long | gauge |
-| aws.elb.metrics.HTTPCode_ELB_5XX.sum | The number of HTTP 5XX server error codes generated by the load balancer. | long | gauge |
-| aws.elb.metrics.HealthyHostCount.max | The number of healthy instances registered with your load balancer. | long | gauge |
-| aws.elb.metrics.Latency.avg | The total time elapsed, in seconds, from the time the load balancer sent the request to a registered instance until the instance started to send the response headers. | double | gauge |
-| aws.elb.metrics.RequestCount.sum | The number of requests completed or connections made during the specified interval. | long | gauge |
-| aws.elb.metrics.SpilloverCount.sum | The total number of requests that were rejected because the surge queue is full. | long | gauge |
-| aws.elb.metrics.SurgeQueueLength.max | The total number of requests (HTTP listener) or connections (TCP listener) that are pending routing to a healthy instance. | long | gauge |
-| aws.elb.metrics.UnHealthyHostCount.max | The number of unhealthy instances registered with your load balancer. | long | gauge |
-| aws.networkelb.metrics.ActiveFlowCount.avg | The total number of concurrent flows (or connections) from clients to targets. | double | gauge |
-| aws.networkelb.metrics.ActiveFlowCount_TCP.avg | The total number of concurrent TCP flows (or connections) from clients to targets. | double | gauge |
-| aws.networkelb.metrics.ActiveFlowCount_TLS.avg | The total number of concurrent TLS flows (or connections) from clients to targets. | double | gauge |
-| aws.networkelb.metrics.ActiveFlowCount_UDP.avg | The total number of concurrent UDP flows (or connections) from clients to targets. | double | gauge |
-| aws.networkelb.metrics.ClientTLSNegotiationErrorCount.sum | The total number of TLS handshakes that failed during negotiation between a client and a TLS listener. | long | gauge |
-| aws.networkelb.metrics.ConsumedLCUs.avg | The number of load balancer capacity units (LCU) used by your load balancer. | double | gauge |
-| aws.networkelb.metrics.HealthyHostCount.max | The number of targets that are considered healthy. | long | gauge |
-| aws.networkelb.metrics.NewFlowCount.sum | The total number of new flows (or connections) established from clients to targets in the time period. | long | gauge |
-| aws.networkelb.metrics.NewFlowCount_TLS.sum | The total number of new TLS flows (or connections) established from clients to targets in the time period. | long | gauge |
-| aws.networkelb.metrics.ProcessedBytes.sum | The total number of bytes processed by the load balancer, including TCP/IP headers. | long | gauge |
-| aws.networkelb.metrics.ProcessedBytes_TLS.sum | The total number of bytes processed by TLS listeners. | long | gauge |
-| aws.networkelb.metrics.TCP_Client_Reset_Count.sum | The total number of reset (RST) packets sent from a client to a target. | long | gauge |
-| aws.networkelb.metrics.TCP_ELB_Reset_Count.sum | The total number of reset (RST) packets generated by the load balancer. | long | gauge |
-| aws.networkelb.metrics.TCP_Target_Reset_Count.sum | The total number of reset (RST) packets sent from a target to a client. | long | gauge |
-| aws.networkelb.metrics.TargetTLSNegotiationErrorCount.sum | The total number of TLS handshakes that failed during negotiation between a TLS listener and a target. | long | gauge |
-| aws.networkelb.metrics.UnHealthyHostCount.max | The number of targets that are considered unhealthy. | long | gauge |
-| aws.tags | Tag key value pairs from aws resources. | flattened |  |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
-| container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
-| error.message | Error message. | match_only_text |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
-| event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| aws.applicationelb.metrics.ActiveConnectionCount.sum | The total number of concurrent TCP connections active from clients to the load balancer and from the load balancer to targets. | long |  | gauge |
+| aws.applicationelb.metrics.ClientTLSNegotiationErrorCount.sum | The number of TLS connections initiated by the client that did not establish a session with the load balancer due to a TLS error. | long |  | gauge |
+| aws.applicationelb.metrics.ConsumedLCUs.avg | The number of load balancer capacity units (LCU) used by your load balancer. | double |  | gauge |
+| aws.applicationelb.metrics.HTTPCode_ELB_3XX_Count.sum | The number of HTTP 3XX redirection codes that originate from the load balancer. | long |  | gauge |
+| aws.applicationelb.metrics.HTTPCode_ELB_4XX_Count.sum | The number of HTTP 4XX client error codes that originate from the load balancer. | long |  | gauge |
+| aws.applicationelb.metrics.HTTPCode_ELB_500_Count.sum | The number of HTTP 500 error codes that originate from the load balancer. | long |  | gauge |
+| aws.applicationelb.metrics.HTTPCode_ELB_502_Count.sum | The number of HTTP 502 error codes that originate from the load balancer. | long |  | gauge |
+| aws.applicationelb.metrics.HTTPCode_ELB_503_Count.sum | The number of HTTP 503 error codes that originate from the load balancer. | long |  | gauge |
+| aws.applicationelb.metrics.HTTPCode_ELB_504_Count.sum | The number of HTTP 504 error codes that originate from the load balancer. | long |  | gauge |
+| aws.applicationelb.metrics.HTTPCode_ELB_5XX_Count.sum | The number of HTTP 5XX server error codes that originate from the load balancer. | long |  | gauge |
+| aws.applicationelb.metrics.HTTP_Fixed_Response_Count.sum | The number of fixed-response actions that were successful. | long |  | gauge |
+| aws.applicationelb.metrics.HTTP_Redirect_Count.sum | The number of redirect actions that were successful. | long |  | gauge |
+| aws.applicationelb.metrics.HTTP_Redirect_Url_Limit_Exceeded_Count.sum | The number of redirect actions that couldn't be completed because the URL in the response location header is larger than 8K. | long |  | gauge |
+| aws.applicationelb.metrics.IPv6ProcessedBytes.sum | The total number of bytes processed by the load balancer over IPv6. | long |  | gauge |
+| aws.applicationelb.metrics.IPv6RequestCount.sum | The number of IPv6 requests received by the load balancer. | long |  | gauge |
+| aws.applicationelb.metrics.NewConnectionCount.sum | The total number of new TCP connections established from clients to the load balancer and from the load balancer to targets. | long |  | gauge |
+| aws.applicationelb.metrics.ProcessedBytes.sum | The total number of bytes processed by the load balancer over IPv4 and IPv6. | long |  | gauge |
+| aws.applicationelb.metrics.RejectedConnectionCount.sum | The number of connections that were rejected because the load balancer had reached its maximum number of connections. | long |  | gauge |
+| aws.applicationelb.metrics.RequestCount.sum | The number of requests processed over IPv4 and IPv6. | long |  | gauge |
+| aws.applicationelb.metrics.RuleEvaluations.sum | The number of rules processed by the load balancer given a request rate averaged over an hour. | long |  | gauge |
+| aws.applicationelb.metrics.TargetResponseTime.avg | The time elapsed after the request leaves the load balancer until the target starts to send the response headers. | long | s | gauge |
+| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
+| aws.dimensions.AvailabilityZone | Filters the metric data by the specified Availability Zone. | keyword |  |  |
+| aws.dimensions.LoadBalancer | Filters the metric data by load balancer. | keyword |  |  |
+| aws.dimensions.LoadBalancerName | Filters the metric data by the specified load balancer. | keyword |  |  |
+| aws.dimensions.TargetGroup | Filters the metric data by target group. | keyword |  |  |
+| aws.elb.metrics.BackendConnectionErrors.sum | The number of connections that were not successfully established between the load balancer and the registered instances. | long |  | gauge |
+| aws.elb.metrics.EstimatedALBActiveConnectionCount.avg | The estimated number of concurrent TCP connections active from clients to the load balancer and from the load balancer to targets. | double |  | gauge |
+| aws.elb.metrics.EstimatedALBConsumedLCUs.avg | The estimated number of load balancer capacity units (LCU) used by an Application Load Balancer. | double |  | gauge |
+| aws.elb.metrics.EstimatedALBNewConnectionCount.avg | The estimated number of new TCP connections established from clients to the load balancer and from the load balancer to targets. | double |  | gauge |
+| aws.elb.metrics.EstimatedProcessedBytes.avg | The estimated number of bytes processed by an Application Load Balancer. | double |  | gauge |
+| aws.elb.metrics.HTTPCode_Backend_2XX.sum | The number of HTTP 2XX response code generated by registered instances. | long |  | gauge |
+| aws.elb.metrics.HTTPCode_Backend_3XX.sum | The number of HTTP 3XX response code generated by registered instances. | long |  | gauge |
+| aws.elb.metrics.HTTPCode_Backend_4XX.sum | The number of HTTP 4XX response code generated by registered instances. | long |  | gauge |
+| aws.elb.metrics.HTTPCode_Backend_5XX.sum | The number of HTTP 5XX response code generated by registered instances. | long |  | gauge |
+| aws.elb.metrics.HTTPCode_ELB_4XX.sum | The number of HTTP 4XX client error codes generated by the load balancer. | long |  | gauge |
+| aws.elb.metrics.HTTPCode_ELB_5XX.sum | The number of HTTP 5XX server error codes generated by the load balancer. | long |  | gauge |
+| aws.elb.metrics.HealthyHostCount.max | The number of healthy instances registered with your load balancer. | long |  | gauge |
+| aws.elb.metrics.Latency.avg | The total time elapsed, in seconds, from the time the load balancer sent the request to a registered instance until the instance started to send the response headers. | double |  | gauge |
+| aws.elb.metrics.RequestCount.sum | The number of requests completed or connections made during the specified interval. | long |  | gauge |
+| aws.elb.metrics.SpilloverCount.sum | The total number of requests that were rejected because the surge queue is full. | long |  | gauge |
+| aws.elb.metrics.SurgeQueueLength.max | The total number of requests (HTTP listener) or connections (TCP listener) that are pending routing to a healthy instance. | long |  | gauge |
+| aws.elb.metrics.UnHealthyHostCount.max | The number of unhealthy instances registered with your load balancer. | long |  | gauge |
+| aws.networkelb.metrics.ActiveFlowCount.avg | The total number of concurrent flows (or connections) from clients to targets. | double |  | gauge |
+| aws.networkelb.metrics.ActiveFlowCount_TCP.avg | The total number of concurrent TCP flows (or connections) from clients to targets. | double |  | gauge |
+| aws.networkelb.metrics.ActiveFlowCount_TLS.avg | The total number of concurrent TLS flows (or connections) from clients to targets. | double |  | gauge |
+| aws.networkelb.metrics.ActiveFlowCount_UDP.avg | The total number of concurrent UDP flows (or connections) from clients to targets. | double |  | gauge |
+| aws.networkelb.metrics.ClientTLSNegotiationErrorCount.sum | The total number of TLS handshakes that failed during negotiation between a client and a TLS listener. | long |  | gauge |
+| aws.networkelb.metrics.ConsumedLCUs.avg | The number of load balancer capacity units (LCU) used by your load balancer. | double |  | gauge |
+| aws.networkelb.metrics.HealthyHostCount.max | The number of targets that are considered healthy. | long |  | gauge |
+| aws.networkelb.metrics.NewFlowCount.sum | The total number of new flows (or connections) established from clients to targets in the time period. | long |  | gauge |
+| aws.networkelb.metrics.NewFlowCount_TLS.sum | The total number of new TLS flows (or connections) established from clients to targets in the time period. | long |  | gauge |
+| aws.networkelb.metrics.ProcessedBytes.sum | The total number of bytes processed by the load balancer, including TCP/IP headers. | long |  | gauge |
+| aws.networkelb.metrics.ProcessedBytes_TLS.sum | The total number of bytes processed by TLS listeners. | long |  | gauge |
+| aws.networkelb.metrics.TCP_Client_Reset_Count.sum | The total number of reset (RST) packets sent from a client to a target. | long |  | gauge |
+| aws.networkelb.metrics.TCP_ELB_Reset_Count.sum | The total number of reset (RST) packets generated by the load balancer. | long |  | gauge |
+| aws.networkelb.metrics.TCP_Target_Reset_Count.sum | The total number of reset (RST) packets sent from a target to a client. | long |  | gauge |
+| aws.networkelb.metrics.TargetTLSNegotiationErrorCount.sum | The total number of TLS handshakes that failed during negotiation between a TLS listener and a target. | long |  | gauge |
+| aws.networkelb.metrics.UnHealthyHostCount.max | The number of targets that are considered unhealthy. | long |  | gauge |
+| aws.tags | Tag key value pairs from aws resources. | flattened |  |  |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.labels | Image labels. | object |  |  |
+| container.name | Container name. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
