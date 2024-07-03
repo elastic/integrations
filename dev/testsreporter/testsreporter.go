@@ -89,7 +89,6 @@ func errorsFromTests(options checkOptions) ([]PackageError, error) {
 		if info.IsDir() {
 			return nil
 		}
-		fmt.Println("Reading file:", path)
 		cases, err := testFailures(path)
 		if err != nil {
 			return err
