@@ -745,7 +745,7 @@ An example event for `logout` looks as following:
 | salesforce.logout.user.roles | The roles of the user who's using Salesforce services through the UI or the API. | keyword |
 | salesforce.logout.user_id | The 15-character ID of the user who's using Salesforce services through the UI or the API. | keyword |
 | salesforce.logout.user_id_derived | The 18-character case-safe ID of the user who's using Salesforce services through the UI or the API. | keyword |
-| salesforce.logout.user_initiated_logout | The value is 1 if the user intentionally logged out of the organization by clicking the Logout button. If the user's session timed out due to inactivity or another implicit logout action, the value is 0. | keyword |
+| salesforce.logout.user_initiated_logout | The value is true if the user intentionally logged out of the organization by clicking the Logout button. If the user's session timed out due to inactivity or another implicit logout action, the value is false. | boolean |
 
 
 ### SetupAuditTrail
