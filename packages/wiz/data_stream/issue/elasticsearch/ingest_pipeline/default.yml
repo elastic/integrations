@@ -405,13 +405,13 @@ processors:
           return false;
         }
         drop(ctx);
-  - append:
+  - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
