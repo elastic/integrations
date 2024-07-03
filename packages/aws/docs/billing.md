@@ -49,8 +49,6 @@ The `billing` data stream collects billing metrics from AWS.
 
 An example event for `billing` looks as following:
 
-An example event for `billing` looks as following:
-
 ```json
 {
     "@timestamp": "2020-05-28T17:17:06.212Z",
