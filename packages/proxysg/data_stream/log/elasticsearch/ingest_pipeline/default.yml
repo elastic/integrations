@@ -1,0 +1,72 @@
+---
+description: Pipeline for processing ProxySG logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: observer.vendor
+      value: Broadcom
+  - set:
+      field: observer.product
+      value: ProxySG
+# Parse message
+  - drop:
+      description: "Drop commented lines"
+      tag: "drop_commented"
+      ignore_failure: true
+      if: "ctx.message.startsWith('#')"
+  - set:
+      field: event.original
+      copy_from: message
+      if: ctx.event?.original == null
+  - rename:
+      field: message
+      target_field: _temp_.message
+  - csv:
+      tag: "parse_fields"
+      field: _temp_.message
+      ignore_missing: false
+      separator: " "
+      target_fields:
+        - _temp_.date
+        - _temp_.time
+        - proxysg.time-taken
+        - proxysg.c-ip
+        - proxysg.sc-status
+        - proxysg.s-action
+        - proxysg.sc-bytes
+        - proxysg.cs-bytes
+        - proxysg.cs-method
+        - proxysg.cs-uri-scheme
+        - proxysg.cs-host
+        - proxysg.cs-uri-port
+        - proxysg.cs-uri-path
+        - proxysg.cs-uri-query
+        - proxysg.cs-username
+        - proxysg.cs-auth-group
+        - proxysg.s-hierarchy
+        - proxysg.s-supplier-name
+        - proxysg.rs-Content-Type
+        - proxysg.cs-Referer
+        - proxysg.sc-filter-result
+        - proxysg.cs-categories
+        - proxysg.x-virus-id
+        - proxysg.s-ip
+        - proxysg.r-ip
+        - proxysg.cs-User-Agent
+        - proxysg.x-rs-certificate-signature-algorithm
+  - set:
+      # TODO: confirm timestamp is UTC
+      field: "@timestamp"
+      value: "{{{_temp_.date}}}T{{{_temp_.time}}}Z"
+  - remove:
+      field: "_temp_"
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+          Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
