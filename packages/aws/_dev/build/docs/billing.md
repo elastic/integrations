@@ -47,8 +47,6 @@ For step-by-step instructions on how to set up an integration, see the
 
 The `billing` data stream collects billing metrics from AWS.
 
-An example event for `billing` looks as following:
-
 {{event "billing"}}
 
 {{fields "billing"}}
