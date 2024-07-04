@@ -95,7 +95,6 @@ func (r reporter) updateIssueLatestBuildLinks(ctx context.Context, issue *Github
 	if err != nil {
 		return fmt.Errorf("failed to read closed issue from issue (title: %s): %w", issue.title, err)
 	}
-	fmt.Printf("Closed issue found: %s\n", firstBuild)
 
 	previousLinks, err := previousBuildLinksFromDescription(issue)
 	if err != nil {
@@ -107,7 +106,10 @@ func (r reporter) updateIssueLatestBuildLinks(ctx context.Context, issue *Github
 	packageError.SetPreviousLinks(previousLinks)
 	// Keep the same links as when the issue was created
 	packageError.SetFirstBuild(firstBuild)
-	packageError.SetClosedIssue(closedIssueURL)
+	if closedIssueURL != "" {
+		fmt.Printf("Closed issue found: %s\n", closedIssueURL)
+		packageError.SetClosedIssue(closedIssueURL)
+	}
 
 	formatter := ResultsFormatter{
 		result:           packageError,
@@ -115,7 +117,6 @@ func (r reporter) updateIssueLatestBuildLinks(ctx context.Context, issue *Github
 	}
 	issue.SetDescription(formatter.Description())
 
-	fmt.Printf("AFTER ISSUE DESCRIPTION: \n%s\n", issue.description)
 	if err := r.ghCli.Update(ctx, issue); err != nil {
 		return fmt.Errorf("failed to update issue (title: %s): %w", issue.title, err)
 	}
@@ -169,8 +170,11 @@ func closedIssueFromDescription(issue *GithubIssue) (string, error) {
 			links = append(links, matches[i])
 		}
 	}
-	if len(links) != 1 {
+	if len(links) > 1 {
 		return "", fmt.Errorf("incorrect number of issues found for the previous closed issue: %d", len(links))
+	}
+	if len(links) == 0 {
+		return "", nil
 	}
 	return links[0], nil
 }
