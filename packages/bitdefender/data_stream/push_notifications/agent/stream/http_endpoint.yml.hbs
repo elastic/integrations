@@ -25,19 +25,37 @@ ssl: {{ssl}}
 {{/if}}
 
 {{#if jsonrpc_format}}
-program: | 
-    has(message.jsonrpc) ?
-      {
-        "events": message.params.events.map(e, {
-          "message": e.encode_json(),
-        }),
-      }
-    :
-      {
-        "error": "Not jsonrpc formatted message",
-        "events": []
-      }
-{{#if jsonrpc_format}}
+program: |
+  has(obj.jsonrpc) ?
+    obj.params.events.map(e, {
+      "message": e
+    })
+  : 
+    [{"message": "Not jsonrpc formatted message root1"}]
+  
+  {{!-- debug("HAS_OBJECT-JSONRPC", has(obj.jsonrpc)) ?
+    [{"message": debug("OBJECT-ID", obj.id)}] --}}
+
+  {{!-- has(obj.jsonrpc) ?
+    has(obj.params) ?
+      has(obj.params.events) ?
+        obj.params.events.map(e, {
+          "message": e
+        })
+      :
+        [{"message": "Not jsonrpc formatted message root3"}]
+    : 
+      [{"message": "Not jsonrpc formatted message root2"}]
+  : 
+    [{"message": "Not jsonrpc formatted message root1"}] --}}
+{{!-- program: |
+  {
+    "events": [
+      "message": "{\"aph_type\":\"phishing\"}"
+    ],
+    "error": "Not jsonrpc formatted message",
+  } --}}
+{{/if}}
 
 {{#if preserve_original_event}}
 preserve_original_event: true
