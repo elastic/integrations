@@ -24,6 +24,21 @@ secret.value: "{{authorization_value}}"
 ssl: {{ssl}}
 {{/if}}
 
+{{#if jsonrpc_format}}
+program: | 
+    has(message.jsonrpc) ?
+      {
+        "events": message.params.events.map(e, {
+          "message": e.encode_json(),
+        }),
+      }
+    :
+      {
+        "error": "Not jsonrpc formatted message",
+        "events": []
+      }
+{{#if jsonrpc_format}}
+
 {{#if preserve_original_event}}
 preserve_original_event: true
 {{/if}}

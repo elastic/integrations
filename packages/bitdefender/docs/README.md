@@ -444,13 +444,13 @@ An example event for `push_configuration` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-27T07:26:02.619Z",
+    "@timestamp": "2024-07-03T11:35:09.791Z",
     "agent": {
-        "ephemeral_id": "7e1d4d9d-44a4-4ac8-ab34-72e2763c9bf6",
-        "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
+        "ephemeral_id": "72c66a59-5a0a-46bc-a719-c8bf015eac18",
+        "id": "a4d9e952-40c8-4e6e-89f0-3914c5a45b07",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.5.1"
+        "version": "8.14.0"
     },
     "bitdefender": {
         "id": "1",
@@ -504,15 +504,15 @@ An example event for `push_configuration` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f0239f6f-245e-4d57-bada-68e5f564b259",
+        "id": "a4d9e952-40c8-4e6e-89f0-3914c5a45b07",
         "snapshot": false,
-        "version": "8.5.1"
+        "version": "8.14.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-01-27T07:26:02.619Z",
+        "created": "2024-07-03T11:35:09.791Z",
         "dataset": "bitdefender.push_configuration",
-        "ingested": "2023-01-27T07:26:03Z",
+        "ingested": "2024-07-03T11:35:21Z",
         "original": "{\"id\":\"1\",\"jsonrpc\":\"2.0\",\"result\":{\"serviceSettings\":{\"requireValidSslCertificate\":true,\"url\":\"https://your.elastic.agent/bitdefender/push/notification\"},\"serviceType\":\"qradar\",\"status\":1,\"subscribeToEventTypes\":{\"adcloud\":true,\"antiexploit\":true,\"aph\":true,\"av\":true,\"avc\":true,\"dp\":true,\"endpoint-moved-in\":true,\"endpoint-moved-out\":true,\"exchange-malware\":true,\"exchange-user-credentials\":true,\"fw\":true,\"hd\":true,\"hwid-change\":true,\"install\":true,\"modules\":true,\"network-monitor\":true,\"network-sandboxing\":true,\"new-incident\":true,\"ransomware-mitigation\":true,\"registration\":true,\"security-container-update-available\":true,\"supa-update-status\":true,\"sva\":true,\"sva-load\":true,\"task-status\":true,\"troubleshooting-activity\":true,\"uc\":true,\"uninstall\":true}}}"
     },
     "input": {
@@ -523,7 +523,6 @@ An example event for `push_configuration` looks as following:
         "forwarded"
     ]
 }
-
 ```
 
 ### Log Stream Push Notification Statistics
