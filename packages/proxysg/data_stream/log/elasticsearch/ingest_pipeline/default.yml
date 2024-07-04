@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing ProxySG logs
+description: Pipeline for processing onprem ProxySG logs
 processors:
   - set:
       field: ecs.version
@@ -23,45 +23,27 @@ processors:
   - rename:
       field: message
       target_field: _temp_.message
-  - csv:
-      tag: "parse_fields"
-      field: _temp_.message
-      ignore_missing: false
-      separator: " "
-      target_fields:
-        - _temp_.date
-        - _temp_.time
-        - proxysg.time-taken
-        - proxysg.c-ip
-        - proxysg.sc-status
-        - proxysg.s-action
-        - proxysg.sc-bytes
-        - proxysg.cs-bytes
-        - proxysg.cs-method
-        - proxysg.cs-uri-scheme
-        - proxysg.cs-host
-        - proxysg.cs-uri-port
-        - proxysg.cs-uri-path
-        - proxysg.cs-uri-query
-        - proxysg.cs-username
-        - proxysg.cs-auth-group
-        - proxysg.s-hierarchy
-        - proxysg.s-supplier-name
-        - proxysg.rs-Content-Type
-        - proxysg.cs-Referer
-        - proxysg.sc-filter-result
-        - proxysg.cs-categories
-        - proxysg.x-virus-id
-        - proxysg.s-ip
-        - proxysg.r-ip
-        - proxysg.cs-User-Agent
-        - proxysg.x-rs-certificate-signature-algorithm
+  - pipeline:
+      name: '{{ IngestPipeline "onprem" }}'
+      if: ctx._conf == 'onprem'
+      tag: onprem_pipeline
+  - pipeline:
+      name: '{{ IngestPipeline "cloud" }}'
+      if: ctx._conf == 'cloud'
+      tag: cloud_pipeline
+
+
   - set:
-      # TODO: confirm timestamp is UTC
       field: "@timestamp"
       value: "{{{_temp_.date}}}T{{{_temp_.time}}}Z"
   - remove:
       field: "_temp_"
+      ignore_failure: true
+  - remove:
+      field: "_conf"
+      ignore_failure: true
+     
+
 on_failure:
   - append:
       field: error.message
