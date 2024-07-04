@@ -175,12 +175,14 @@ processors:
       target_field: salesforce.logout.api.version
       ignore_missing: true
       ignore_failure: true
-  - script:
-      lang: painless
-      source: >
-        if (ctx.json?.USER_INITIATED_LOGOUT != null) {
-          ctx.salesforce.logout.user_initiated_logout = ctx.json.USER_INITIATED_LOGOUT == '1';
-        }
+  - set:
+      field: salesforce.logout.user_initiated_logout
+      value: false
+      ignore_failure: true
+  - set:
+      field: salesforce.logout.user_initiated_logout
+      value: true
+      if: ctx.json?.USER_INITIATED_LOGOUT != null && ctx.json.USER_INITIATED_LOGOUT == '1'
       ignore_failure: true
   - rename:
       field: json.LOGIN_KEY
