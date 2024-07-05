@@ -97,16 +97,18 @@ program: |
     }
   }).do_request().as(resp, resp.StatusCode != 200 ?
     {
-      "events": [{
+      "events": {
         "error": {
           "code": string(resp.StatusCode),
           "id": string(resp.Status),
-          "message": size(resp.Body) != 0 ? 
-            string(resp.Body)
-          :
-            string(resp.Status) + ' (' + string(resp.StatusCode) + ')',
-        }
-      }],
+          "message": "GET:"+(
+            size(resp.Body) != 0 ?
+              string(resp.Body)
+            :
+              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+          ),
+        },
+      },
       "want_more": false,
     }
   :
