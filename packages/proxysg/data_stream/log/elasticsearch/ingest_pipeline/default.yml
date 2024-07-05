@@ -10,7 +10,7 @@ processors:
   - set:
       field: observer.product
       value: ProxySG
-# Parse message
+
   - drop:
       description: "Drop commented lines"
       tag: "drop_commented"
@@ -25,13 +25,12 @@ processors:
       target_field: _temp_.message
   - pipeline:
       name: '{{ IngestPipeline "onprem" }}'
-      if: ctx._conf == 'onprem'
       tag: onprem_pipeline
+      if: ctx._temp_._conf == 'onprem'
   - pipeline:
       name: '{{ IngestPipeline "cloud" }}'
-      if: ctx._conf == 'cloud'
+      if: ctx._temp_._conf == 'cloud'
       tag: cloud_pipeline
-
 
   - set:
       field: "@timestamp"
@@ -39,10 +38,6 @@ processors:
   - remove:
       field: "_temp_"
       ignore_failure: true
-  - remove:
-      field: "_conf"
-      ignore_failure: true
-     
 
 on_failure:
   - append:
