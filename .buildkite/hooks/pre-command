@@ -74,8 +74,10 @@ if [ -n "${ELASTIC_PACKAGE_LINKS_FILE_PATH+x}" ]; then
     export ELASTIC_PACKAGE_LINKS_FILE_PATH=${BASE_DIR}/${ELASTIC_PACKAGE_LINKS_FILE_PATH}
 fi
 
-if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" &&  "${BUILDKITE_STEP_KEY}" == "check" ]]; then
-    # Get the commit from target branch in the first step (check) that it does not run with any other step in parallel, to ensure that there is just one value for this variable
+if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" &&  "${BUILDKITE_STEP_KEY}" == "reference-target-branch" ]]; then
+    # Get the commit from target branch in the first step (reference-target-branch).
+    # This step should not be the first one and not run in parallel with any other step to ensure
+    # that there is just one value for this variable
     if is_pr ; then
         git fetch -v origin ${BUILDKITE_PULL_REQUEST_BASE_BRANCH}
         commit_main=$(git rev-parse --verify FETCH_HEAD)

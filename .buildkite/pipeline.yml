@@ -23,12 +23,21 @@ env:
 
 steps:
   - label: ":white_check_mark: Check go sources"
+    key: "reference-target-branch"
+    command: "echo 'Get reference from main'"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+
+  - label: ":white_check_mark: Check go sources"
     key: "check"
     command: ".buildkite/scripts/check_sources.sh"
     agents:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "4G"
+    depends_on:
+      - step: "reference-target-branch"
+        allow_failure: false
 
   - label: "Trigger integrations"
     key: "test-integrations"
