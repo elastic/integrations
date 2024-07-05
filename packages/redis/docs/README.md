@@ -283,10 +283,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| os | The OS fields contain information about the operating system. | group |  |
 | os.full | Operating system name, including the version or code name. | keyword |  |
 | os.full.text | Multi-field of `os.full`. | match_only_text |  |
-| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |  |
 | redis.info.clients.biggest_input_buf | Biggest input buffer among current client connections (replaced by max_input_buffer). | long | gauge |
 | redis.info.clients.blocked | Number of clients pending on a blocking call (BLPOP, BRPOP, BRPOPLPUSH). | long | gauge |
 | redis.info.clients.connected | Number of client connections (excluding connections from slaves). | long | gauge |
