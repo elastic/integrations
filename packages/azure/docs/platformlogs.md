@@ -121,7 +121,7 @@ An example event for `platformlogs` looks as following:
         "dataset": "azure.platformlogs",
         "ingested": "2020-11-01T12:02:34.237205200Z",
         "kind": "event",
-        "outcome": "succeeded"
+        "outcome": "success"
     },
     "host": {
         "name": "DESKTOP-RFOOE09"

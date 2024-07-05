@@ -114,7 +114,7 @@ An example event for `eventhub` looks as following:
             "172.27.0.7"
         ],
         "mac": [
-            "02:42:ac:1b:00:07"
+            "02-42-AC-14-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
