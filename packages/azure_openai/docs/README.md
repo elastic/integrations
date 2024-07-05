@@ -17,7 +17,8 @@ Supported Azure log categories:
 |    logs     | ApiManagementGatewayLogs |
 
 
-> Note: The logs data stream fetches the default cognitive services log listed [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Metric-,Default%20Azure%20OpenAI%20logging,-This%20solution). This data stream also collect the API Management Gateway logs for the enterprise customer of the Azure OpenAI services API mentioned [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Azure%20OpenAI%20logging-,This%20solution,-Request%20count). This records the inputs and outputs of the service, like prompts, tokens, and model usage.
+#### Note: 
+> The logs data stream fetches the default cognitive services log listed [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Metric-,Default%20Azure%20OpenAI%20logging,-This%20solution). This data stream also collect the API Management Gateway logs for the enterprise customer of the Azure OpenAI services API mentioned [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Azure%20OpenAI%20logging-,This%20solution,-Request%20count). This records the inputs and outputs of the request, like prompts, tokens, and model usage.
 
 #### Requirements and setup
 
