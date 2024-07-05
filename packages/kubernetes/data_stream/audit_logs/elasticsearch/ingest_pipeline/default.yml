@@ -1,0 +1,67 @@
+---
+description: Pipeline for processing Kubernetes audit logs.
+processors:
+  - remove:
+      if: "ctx.kubernetes?.audit?.responseObject != null"
+      field: ["kubernetes.audit.responseObject.metadata"]
+      ignore_missing: true
+  - remove:
+      if: "ctx.kubernetes?.audit?.requestObject != null"
+      field: ["kubernetes.audit.requestObject.metadata"]
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.kubernetes?.audit?.annotations != null
+      source: >-
+        Map annotations = ctx['kubernetes']['audit']['annotations'];
+        Map updatedAnnotation = new HashMap();
+        for (String key: annotations.keySet()) {
+            updatedAnnotation[key.replace('.', '_')] = annotations[key];
+            if (key == 'authorization.k8s.io/decision') {
+                if (annotations['authorization.k8s.io/decision'] == 'allow') {
+                    ctx.event.outcome = 'success';
+                } else if (annotations['authorization.k8s.io/decision'] == 'forbid') {
+                    ctx.event.outcome = 'failure';
+                }
+            }
+        }
+        ctx['kubernetes']['audit']['annotations'] = updatedAnnotation
+  - set:
+      if: ctx.kubernetes?.audit?.user?.username != null
+      field: user.name
+      copy_from: kubernetes.audit.user.username
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.user?.uid != null
+      field: user.id
+      copy_from: kubernetes.audit.user.uid
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.user?.userAgent != null
+      field: user_agent.original
+      copy_from: kubernetes.audit.userAgent
+      ignore_empty_value: true
+  - convert:
+      if: ctx.kubernetes?.audit?.sourceIPs != null
+      field: kubernetes.audit.sourceIPs
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      if: ctx.source?.ip != null
+      field: client.ip
+      copy_from: source.ip
+      ignore_empty_value: true
+  - set:
+      if: ctx.kubernetes?.audit?.verb != null
+      field: event.action
+      copy_from: kubernetes.audit.verb
+      ignore_empty_value: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

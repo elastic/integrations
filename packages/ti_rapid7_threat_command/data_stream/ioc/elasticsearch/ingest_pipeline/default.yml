@@ -264,6 +264,42 @@ processors:
       ignore_empty_value: true
       if: ctx.threat?.indicator?.geo?.country_iso_code == null
       ignore_failure: true
+  - set:
+      field: threat.indicator.name
+      copy_from: threat.indicator.url.original
+      ignore_empty_value: true
+      if: ctx.threat?.indicator?.url?.original != null && ctx.threat.indicator.type == 'url'
+  - set:
+      field: threat.indicator.name
+      copy_from: threat.indicator.url.domain
+      ignore_empty_value: true
+      if: ctx.threat?.indicator?.url?.domain != null && ctx.threat.indicator.type == 'domain-name'
+  - set:
+      field: threat.indicator.name
+      copy_from: threat.indicator.ip
+      ignore_empty_value: true
+      if: >-
+        ctx.threat?.indicator?.ip != null && (
+          ctx.threat.indicator.type == 'ipv4-addr' ||
+          ctx.threat.indicator.type == 'ipv6-addr'
+        )
+  - set:
+      field: threat.indicator.name
+      copy_from: threat.indicator.email.address
+      ignore_empty_value: true
+      if: ctx.threat?.indicator?.email?.address == 'email-addr'
+  - set:
+      field: threat.indicator.name
+      copy_from: threat.indicator.file.hash.md5
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      copy_from: threat.indicator.file.hash.sha1
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      copy_from: threat.indicator.file.hash.sha256
+      ignore_empty_value: true
   - foreach:
       field: json.reported_feeds
       processor:
@@ -311,6 +347,65 @@ processors:
           return;
         }
       ignore_failure: true
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: ctx.rapid7?.tc?.ioc?.deleted_at == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
+      description: Indicator Expiration is done after `_conf.ioc_expiration_duration` (default 90d) since its creation time. This script adds a default `rapid7.tc.ioc.deleted_at` field to allow indicator expiration.
+      source: >
+        ZonedDateTime _tmp_deleted_at;
+        ZonedDateTime _tmp_last_seen;
+        if (ctx.rapid7.tc.ioc.status instanceof String && ctx.rapid7.tc.ioc.status.toLowerCase().contains('retire')) {
+          _tmp_deleted_at = ZonedDateTime.parse(ctx['@timestamp']);
+        }
+        else {
+            def dur = ctx._conf.ioc_expiration_duration;
+            if (ctx.threat?.indicator?.modified_at != null) {
+                _tmp_last_seen = ZonedDateTime.parse(ctx.threat.indicator.modified_at);
+            }
+            else if (ctx.threat?.indicator?.last_seen != null) {
+                _tmp_last_seen = ZonedDateTime.parse(ctx.threat.indicator.last_seen);
+            }
+            else {
+                _tmp_last_seen = ZonedDateTime.parse(ctx.threat.indicator.first_seen);
+            }
+            if (dur instanceof String){
+                String time_unit = dur.substring(dur.length() -  1);
+                String time_value = dur.substring(0, dur.length() - 1);
+                if (time_unit == 'd') {
+                    _tmp_deleted_at = _tmp_last_seen.plusDays(Long.parseLong(time_value));
+                } else if (time_unit == 'h') {
+                    _tmp_deleted_at = _tmp_last_seen.plusHours(Long.parseLong(time_value));
+                } else if (time_unit == 'm') {
+                    _tmp_deleted_at = _tmp_last_seen.plusMinutes(Long.parseLong(time_value));
+                }
+            }
+            // Add default IOC expiration of `90 days` from last_seen if '_conf.ioc_expiration_duration' is an invalid value.
+            if (_tmp_deleted_at == null) {
+                _tmp_deleted_at = _tmp_last_seen.plusDays(90L);
+            }
+        }
+        ctx.rapid7.tc.ioc.deleted_at = _tmp_deleted_at;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: rapid7.tc.ioc.deleted_at
+      tag: date_deleted_at
+      target_field: rapid7.tc.ioc.deleted_at
+      formats:
+        - ISO8601
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: rapid7.tc.ioc.expiration_duration
+      ignore_missing: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
