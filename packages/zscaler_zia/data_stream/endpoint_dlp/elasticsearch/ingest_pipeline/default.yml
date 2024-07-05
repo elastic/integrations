@@ -46,15 +46,28 @@ processors:
       tag: append_intrusion_detection_into_event_category
       value: intrusion_detection
       allow_duplicates: false
-  - append:
-      field: event.type
-      tag: append_info_into_event_type
-      value: info
-      allow_duplicates: false
   - set:
       field: event.kind
       tag: set_alert_to_event_kind
       value: alert
+  - script:
+        description: Drops null/empty/na values recursively.
+        tag: script_to_remove_na_values
+        lang: painless
+        source: |-
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == '' || object == 'NA' || object == 'None') {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
   - rename:
       field: json.actiontaken
       tag: rename_actiontaken
@@ -80,6 +93,24 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      if: ctx.event?.action != null && ctx.event.action != 'allow' && ctx.event.action != 'block'
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_action_into_event_type
+      value: 'allowed'
+      allow_duplicates: false
+      if: ctx.event?.action != null && ctx.event.action == 'allow'
+  - append:
+      field: event.type
+      tag: append_event_action_into_event_type
+      value: 'denied'
+      allow_duplicates: false
+      if: ctx.event?.action != null && ctx.event.action == 'block'
   - rename:
       field: json.activitytype
       tag: rename_activitytype
@@ -105,23 +136,26 @@ processors:
       tag: rename_confirmjustification
       target_field: zscaler_zia.endpoint_dlp.confirm_just
       ignore_missing: true
-  - foreach:
-      field: json.dlpdictcount
-      if: ctx.json?.dlpdictcount instanceof List
-      ignore_failure: true
-      processor:
-        convert:
-          field: _ingest._value
-          tag: convert_dlpdictcount_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Extract values from dlpdictcount
+      tag: extract_values_from_dlpdictcount
+      lang: painless
+      if: ctx.json?.dlpdictcount != null && ctx.json.dlpdictcount != ''
+      source: |-
+        def dlpdictcount = ctx.json.dlpdictcount;
+        String[] parts = dlpdictcount.splitOnToken('|');
+        ArrayList numbersList = new ArrayList();
+        for (String part : parts) {
+            try {
+            numbersList.add(Integer.parseInt(part));
+            } catch (NumberFormatException e) {
+            }
+        }
+        ctx.json.dlpdictcount = numbersList;
+      on_failure:
+        - append:
+           field: error.message
+           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.dlpdictcount
       tag: rename_dlpdictcount
@@ -224,11 +258,6 @@ processors:
       tag: rename_deviceostype
       target_field: zscaler_zia.endpoint_dlp.device.os.type
       ignore_missing: true
-  - set:
-      field: host.os.family
-      tag: set_host_os_family_from_endpoint_dlp_device_os_type
-      copy_from: zscaler_zia.endpoint_dlp.device.os.type
-      ignore_empty_value: true
   - rename:
       field: json.deviceosversion
       tag: rename_deviceosversion
@@ -244,6 +273,12 @@ processors:
       tag: rename_deviceowner
       target_field: zscaler_zia.endpoint_dlp.device.owner
       ignore_missing: true
+  - append:
+      field: related.user
+      tag: set_related_user_from_device_owner
+      value: '{{{zscaler_zia.endpoint_dlp.device.owner}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.endpoint_dlp?.device?.owner != null
   - rename:
       field: json.deviceplatform
       tag: rename_deviceplatform
@@ -275,6 +310,27 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Extract values from dlpdictnames
+      tag: extract_values_from_dlpdictnames
+      lang: painless
+      if: ctx.json?.dlpdictnames != null && ctx.json.dlpdictnames != ''
+      source: |-
+        def dlpdictnames = ctx.json.dlpdictnames;
+        String[] parts = dlpdictnames.splitOnToken('|');
+        ArrayList numbersList = new ArrayList();
+        for (String part : parts) {
+            try {
+            String[] subParts = part.splitOnToken(':');
+            numbersList.add(subParts[0]);
+            } catch (NumberFormatException e) {
+            }
+        }
+        ctx.json.dlpdictnames = numbersList;
+      on_failure:
+        - append:
+           field: error.message
+           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.dlpdictnames
       tag: rename_dlpdictnames
@@ -291,6 +347,26 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Extract values from dlpenginenames
+      tag: extract_values_from_dlpenginenames
+      lang: painless
+      if: ctx.json?.dlpenginenames != null && ctx.json.dlpenginenames != ''
+      source: |-
+        def dlpenginenames = ctx.json.dlpenginenames;
+        String[] parts = dlpenginenames.splitOnToken('|');
+        ArrayList numbersList = new ArrayList();
+        for (String part : parts) {
+            try {
+            numbersList.add(part);
+            } catch (NumberFormatException e) {
+            }
+        }
+        ctx.json.dlpenginenames = numbersList;
+      on_failure:
+        - append:
+           field: error.message
+           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.dlpenginenames
       tag: rename_dlpenginenames
@@ -352,8 +428,8 @@ processors:
       target_field: zscaler_zia.endpoint_dlp.file.destination_path
       ignore_missing: true
   - set:
-      field: file.target_path
-      tag: set_file_target_path_from_endpoint_dlp_file_destination_path
+      field: file.path
+      tag: set_file_path_from_endpoint_dlp_file_destination_path
       copy_from: zscaler_zia.endpoint_dlp.file.destination_path
       ignore_empty_value: true
   - rename:
@@ -702,7 +778,6 @@ processors:
         - zscaler_zia.endpoint_dlp.device.hostname
         - zscaler_zia.endpoint_dlp.device.model
         - zscaler_zia.endpoint_dlp.device.name
-        - zscaler_zia.endpoint_dlp.device.os.type
         - zscaler_zia.endpoint_dlp.device.os.version
         - zscaler_zia.endpoint_dlp.device.platform
         - zscaler_zia.endpoint_dlp.device.type
@@ -716,7 +791,7 @@ processors:
         - zscaler_zia.endpoint_dlp.user
       tag: remove_custom_duplicate_fields
       ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
       tag: remove_json
@@ -725,7 +800,7 @@ processors:
       field: event.original
       tag: remove_event_original
       ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
   - script:
       lang: painless
       description: Drops null/empty values recursively.

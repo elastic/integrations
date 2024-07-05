@@ -1,7 +1,7 @@
 # Zscaler ZIA
 
 This integration is for Zscaler Internet Access logs [ZIA](https://help.zscaler.com/zia/documentation-knowledgebase/authentication-administration). It can be used
-to receive logs sent by NSS log server on respective TCP ports and Sandbox Report using API.
+to receive logs sent by NSS log server on respective TCP ports, and Sandbox Report using API.
 
 The log message is expected to be in JSON format. The data is mapped to ECS fields where applicable and the remaining fields are written under `zscaler_zia.<data-stream-name>.*`.
 
@@ -27,7 +27,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **Kibana version** required is **8.13.0**.
 This module has been tested against the **Zscaler Internet Access version 6.1** and API version **v1**.
 
 
@@ -117,12 +116,12 @@ See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/adding-cloud-ns
 
 Zscaler response format (v1):
 ```
-\{ "sourcetype" : "zscalernss-audit", "event" :\{"time":"%s{time}","recordid":"%d{recordid}","action":"%s{action}","category":"%s{category}","subcategory":"%s{subcategory}","resource":"%s{resource}","interface":"%s{interface}","adminid":"%s{adminid}","clientip":"%s{clientip}","result":"%s{result}","errorcode":"%s{errorcode}","auditlogtype":"%s{auditlogtype}","preaction":%s{preaction},"postaction":%s{postaction}\}\}
+\{"sourcetype":"zscalernss-audit","event":\{"time":"%s{time}","recordid":"%d{recordid}","action":"%s{action}","category":"%s{category}","subcategory":"%s{subcategory}","resource":"%s{resource}","interface":"%s{interface}","adminid":"%s{adminid}","clientip":"%s{clientip}","result":"%s{result}","errorcode":"%s{errorcode}","auditlogtype":"%s{auditlogtype}","preaction":%s{preaction},"postaction":%s{postaction}\}\}
 ```
 
 Sample Response:
 ```json
-{ "sourcetype": "zscalernss-audit", "event": { "time": "Mon Oct 16 22:55:48 2023", "recordid": "1234", "action": "Activate", "category": "DATA_LOSS_PREVENTION_RESOURCE", "subcategory": "DLP_DICTIONARY", "resource": "SSL Rule Name", "interface": "API", "adminid": "example@zscaler.com", "clientip": "89.160.20.112", "result": "SUCCESS", "errorcode": "AUTHENTICATION_FAILED", "auditlogtype": "ZIA Portal Audit Log", "preaction": {}, "postaction": {}}}
+{"sourcetype":"zscalernss-audit","event":{"time":"Mon Oct 16 22:55:48 2023","recordid":"1234","action":"Activate","category":"DATA_LOSS_PREVENTION_RESOURCE","subcategory":"DLP_DICTIONARY","resource":"SSL Rule Name","interface":"API","adminid":"example@zscaler.com","clientip":"89.160.20.112","result":"SUCCESS","errorcode":"AUTHENTICATION_FAILED","auditlogtype":"ZIA Portal Audit Log","timezone":"UTC","preaction":{},"postaction":{}}}
 ```
 
 ### DNS Log
@@ -139,7 +138,7 @@ Zscaler response format (v1):
 
 Sample Response:
 ```json
-{ "sourcetype" : "zscalernss-dns", "event" :{"datetime":"Fri Dec 17 07:27:54 2021","user":"some_user@example.com","department":"Unknown","location":"TestLoc%20DB","reqaction":"REQ_ALLOW","resaction":"Some Response Action","reqrulelabel":"Access%20Blocked","resrulelabel":"None","dns_reqtype":"Some type","dns_req":"example.com","dns_resp":"Some response string","srv_dport":"8080","durationms":"123456","clt_sip":"81.2.69.193","srv_dip":"81.2.69.144","category":"Professional Services","deviceowner":"Owner77","devicehostname":"Machine9000"}}
+{"sourcetype":"zscalernss-dns","event":{"cloudname":"zscaler.net","datetime":"Mon Oct 16 22:55:48 2023","devicemodel":"VMware7,1","restype":"IPv4","dns_req":"mail.safemarch.com","dns_reqtype":"A record","error":"EMPTY_RESP","durationms":"1000","recordid":"45648954","tz":"GMT","devicename":"admin","devicehostname":"THINKPADSMITH","deviceostype":"Windows OS","deviceosversion":"Microsoft Windows 10 Enterprise;64 bit","devicetype":"Zscaler Client Connector","http_code":"100","dnsapp":"Google DNS","dns_gateway_server_protocol":"TCP","protocol":"TCP","company":"Zscaler","reqrulelabel":"RULE_1","resrulelabel":"RULE_RES","clt_sip":"81.2.69.192","srv_dip":"175.16.199.0","srv_dport":"1025","user":"jdoe1@safemarch.com","datacentercity":"Sa","datacentercountry":"US","datacenter":"CA Client Node DC","day":"Mon","day_of_month":"16","department":"EDept","dept":"Sales","deviceappversion":"4.3.0.18","deviceowner":"jsmith","dnsappcat":"Network Service","dns_gateway_rule":"DNS GATEWAY Rule 1","dns_gateway_status":"PRIMARY_SERVER_RESPONSE_PASS","category":"Professional Services","ecs_prefix":"192.168.0.0","ecs_slot":"ECS Slot #17","eedone":"Yes","epochtime":"1578128400","hour":"22","istcp":"1","loc":"Headquarters","location":"ELocation","login":"jdoe@safemarch.com","minutes":"55","month":"Oct","month_of_year":"10","oclientsourceip":"9960223283","odevicename":"2175092224","odeviceowner":"10831489","odomcat":"4951704103","odevicehostname":"2168890624","reqaction":"REQ_ALLOW","dns_resp":"www.example.com","respipcategory":"Adult Themes","resaction":"RES_Action","respipcat":"Adult Themes","second":"48","year":"2023"}}
 ```
 
 ### Endpoint DLP Log
@@ -151,12 +150,12 @@ See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output
 
 Zscaler response format (v1):
 ```
-\{ "sourcetype": "zscalernss-edlp", "event": \{ "actiontaken": "%s{actiontaken}", "activitytype": "%s{activitytype}", "additionalinfo": "%s{addinfo}", "channel": "%s{channel}", "confirmaction": "%s{confirmaction}", "confirmjustification": "%s{confirmjust}", "datacenter": "%s{datacenter}", "datacentercity": "%s{datacentercity}", "datacentercountry": "%s{datacentercountry}", "day": "%s{day}", "dd": "%02d{dd}", "department": "%s{department}", "deviceappversion": "%s{deviceappversion}", "devicehostname": "%s{devicehostname}", "devicemodel": "%s{devicemodel}", "devicename": "%s{devicename}", "deviceostype": "%s{deviceostype}", "deviceosversion": "%s{deviceosversion}", "deviceowner": "%s{deviceowner}", "deviceplatform": "%s{deviceplatform}", "devicetype": "%s{devicetype}", "dlpdictcount": "%s{dlpcounts}", "dlpdictnames": "%s{dlpdictnames}", "dlpenginenames": "%s{dlpengnames}", "dlpidentifier": "%llu{dlpidentifier}", "dsttype": "%s{dsttype}", "eventtime": "%s{eventtime}", "expectedaction": "%s{expectedaction}", "filedoctype": "%s{filedoctype}", "filedstpath": "%s{filedstpath}", "filemd5": "%s{filemd5}", "filesha": "%s{filesha}", "filesrcpath": "%s{filesrcpath}", "filetypecategory": "%s{filetypecategory}", "filetypename": "%s{filetypename}", "hh": "%02d{hh}", "itemdstname": "%s{itemdstname}", "itemname": "%s{itemname}", "itemsrcname": "%s{itemsrcname}", "itemtype": "%s{itemtype}", "logtype": "%s{logtype}", "mm": "%02d{mm}", "mon": "%s{mon}", "mth": "%02d{mth}", "numdlpdictids": "%u{numdlpdictids}", "numdlpengineids": "%u{numdlpengids}", "odepartment": "%s{odepartment}", "odevicehostname": "%s{odevicehostname}", "odevicename": "%s{odevicename}", "odeviceowner": "%s{odeviceowner}", "odlpdictnames": "%s{odlpdictnames}", "odlpenginenames": "%s{odlpengnames}", "ofiledstpath": "%s{ofiledstpath}", "ofilesrcpath": "%s{ofilesrcpath}", "oitemdstname": "%s{oitemdstname}", "oitemname": "%s{oitemname}", "oitemsrcname": "%s{oitemsrcname}", "ootherrulelabels": "%s{ootherrulelabels}", "otherrulelabels": "%s{otherrulelabels}", "orulename": "%s{otriggeredrulelabel}", "ouser": "%s{ouser}", "recordid": "%llu{recordid}", "feedtime": "%s{rtime}", "scannedbytes": "%llu{scanned_bytes}", "scantime": "%llu{scantime}", "severity": "%s{severity}", "srctype": "%s{srctype}", "ss": "%02d{ss}", "datetime": "%s{time}", "rulename": "%s{triggeredrulelabel}", "timezone": "%s{tz}", "user": "%s{user}", "yyyy": "%04d{yyyy}", "zdpmode": "%s{zdpmode}"\ }\ }
+\{"sourcetype":"zscalernss-edlp","event":\{"actiontaken":"%s{actiontaken}","activitytype":"%s{activitytype}","additionalinfo":"%s{addinfo}","channel":"%s{channel}","confirmaction":"%s{confirmaction}","confirmjustification":"%s{confirmjust}","datacenter":"%s{datacenter}","datacentercity":"%s{datacentercity}","datacentercountry":"%s{datacentercountry}","day":"%s{day}","dd":"%02d{dd}","department":"%s{department}","deviceappversion":"%s{deviceappversion}","devicehostname":"%s{devicehostname}","devicemodel":"%s{devicemodel}","devicename":"%s{devicename}","deviceostype":"%s{deviceostype}","deviceosversion":"%s{deviceosversion}","deviceowner":"%s{deviceowner}","deviceplatform":"%s{deviceplatform}","devicetype":"%s{devicetype}","dlpdictcount":"%s{dlpcounts}","dlpdictnames":"%s{dlpdictnames}","dlpenginenames":"%s{dlpengnames}","dlpidentifier":"%llu{dlpidentifier}","dsttype":"%s{dsttype}","eventtime":"%s{eventtime}","expectedaction":"%s{expectedaction}","filedoctype":"%s{filedoctype}","filedstpath":"%s{filedstpath}","filemd5":"%s{filemd5}","filesha":"%s{filesha}","filesrcpath":"%s{filesrcpath}","filetypecategory":"%s{filetypecategory}","filetypename":"%s{filetypename}","hh":"%02d{hh}","itemdstname":"%s{itemdstname}","itemname":"%s{itemname}","itemsrcname":"%s{itemsrcname}","itemtype":"%s{itemtype}","logtype":"%s{logtype}","mm":"%02d{mm}","mon":"%s{mon}","mth":"%02d{mth}","numdlpdictids":"%u{numdlpdictids}","numdlpengineids":"%u{numdlpengids}","odepartment":"%s{odepartment}","odevicehostname":"%s{odevicehostname}","odevicename":"%s{odevicename}","odeviceowner":"%s{odeviceowner}","odlpdictnames":"%s{odlpdictnames}","odlpenginenames":"%s{odlpengnames}","ofiledstpath":"%s{ofiledstpath}","ofilesrcpath":"%s{ofilesrcpath}","oitemdstname":"%s{oitemdstname}","oitemname":"%s{oitemname}","oitemsrcname":"%s{oitemsrcname}","ootherrulelabels":"%s{ootherrulelabels}","otherrulelabels":"%s{otherrulelabels}","orulename":"%s{otriggeredrulelabel}","ouser":"%s{ouser}","recordid":"%llu{recordid}","feedtime":"%s{rtime}","scannedbytes":"%llu{scanned_bytes}","scantime":"%llu{scantime}","severity":"%s{severity}","srctype":"%s{srctype}","ss":"%02d{ss}","datetime":"%s{time}","rulename":"%s{triggeredrulelabel}","timezone":"%s{tz}","user":"%s{user}","yyyy":"%04d{yyyy}","zdpmode":"%s{zdpmode}"\}\}
 ```
 
 Sample Response:
 ```json
-{ "sourcetype": "zscalernss-edlp", "event": { "actiontaken" : "allow", "activitytype" : "email_sent", "additionalinfo" : "File already open by another application", "channel" : "Network Drive Transfer", "confirmaction" : "confirm", "confirmjustification" : "My manager approved it", "datacenter" : "Georgia", "datacentercity" : "Atlanta", "datacentercountry" : "US", "day" : "Mon", "dd" : "16", "department" : "TempDept", "deviceappversion" : "Ver-2199", "devicehostname" : "Host", "devicemodel" : "Model-2022", "devicename" : "Dev 1", "deviceostype" : "Windows", "deviceosversion" : "Win-11", "deviceowner" : "Administrator", "deviceplatform" : "Windows", "devicetype" : "WinUser", "dlpdictcount" : "[12,13]", "dlpdictnames" : "[dlp]", "dlpenginenames" : "dlpengine", "dlpidentifier" : "12", "dsttype" : "personal_cloud_storage", "eventtime" : "Mon Oct 16 22:55:48 2023", "expectedaction" : "block", "filedoctype" : "Medical", "filedstpath" : "dest_path", "filemd5" : "938c2cc0dcc05f2b68c4287040cfcf71", "filesha" : "076085239f3a10b8f387c4e5d4261abf8d109aa641be35a8d4ed2d775eb09612", "filesrcpath" : "source_path", "filetypecategory" : "PLS File (pls)", "filetypename" : "exe64", "hh" : "22", "itemdstname" : "nanolog", "itemname" : "endpoint_dlp", "itemsrcname" : "endpoint", "itemtype" : "email_attachment", "logtype" : "dlp_incident", "mm" : "55", "mon" : "Oct", "mth" : "10", "numdlpdictids" : "8", "numdlpengineids" : "12", "recordid" : "2", "feedtime" : "Mon Oct 16 22:55:48 2023", "scannedbytes" : "290812", "scantime" : "1210", "severity" : "High Severity", "srctype" : "network_share", "ss" : "48", "datetime" : "Mon Oct 16 22:55:48 2023", "rulename" : "configured_rule", "timezone" : "GMT", "user" : "TempUser", "yyyy" : "2023", "zdpmode" : "block mode" } }
+{ "sourcetype": "zscalernss-edlp", "event": { "actiontaken": "allow", "activitytype": "email_sent", "additionalinfo": "File already open by another application", "channel": "Network Drive Transfer", "confirmaction": "confirm", "confirmjustification": "My manager approved it", "datacenter": "Georgia", "datacentercity": "Atlanta", "datacentercountry": "US", "day": "Mon", "dd": "16", "department": "TempDept", "deviceappversion": "Ver-2199", "devicehostname": "Host", "devicemodel": "Model-2022", "devicename": "Dev 1", "deviceostype": "Windows", "deviceosversion": "Win-11", "deviceowner": "Administrator", "deviceplatform": "Windows", "devicetype": "WinUser", "dlpdictcount": "12|13", "dlpdictnames": "dlp: dlp discription|dlp1: dlp discription1|dlp2: dlp discription2", "dlpenginenames": "dlpengine", "dlpidentifier": "12", "dsttype": "personal_cloud_storage", "eventtime": "Mon Oct 16 22:55:48 2023", "expectedaction": "block", "filedoctype": "Medical", "filedstpath": "dest_path", "filemd5": "938c2cc0dcc05f2b68c4287040cfcf71", "filesha": "076085239f3a10b8f387c4e5d4261abf8d109aa641be35a8d4ed2d775eb09612", "filesrcpath": "source_path", "filetypecategory": "PLS File (pls)", "filetypename": "exe64", "hh": "22", "itemdstname": "nanolog", "itemname": "endpoint_dlp", "itemsrcname": "endpoint", "itemtype": "email_attachment", "logtype": "dlp_incident", "mm": "55", "mon": "Oct", "mth": "10", "numdlpdictids": "8", "numdlpengineids": "12", "recordid": "2", "feedtime": "Mon Oct 16 22:55:48 2023", "scannedbytes": "290812", "scantime": "1210", "severity": "High Severity", "srctype": "network_share", "ss": "48", "datetime": "Mon Oct 16 22:55:48 2023", "rulename": "configured_rule", "timezone": "GMT", "user": "TempUser", "yyyy": "2023", "zdpmode": "block mode", "odepartment": "4094304256", "odevicehostname": "4094304255", "odevicename": "4094304251", "odeviceowner": "4094304226", "odlpdictnames": "4094304456", "odlpenginenames": "4094364256", "ofiledstpath": "4094304296", "ofilesrcpath": "4094304206", "oitemdstname": "409430476", "oitemname": "40943042567", "oitemsrcname": "4094305256", "ootherrulelabels": "4036304256", "orulename": "40943049956", "ouser": "40943042569", "otherrulelabels": "9094304256" } }
 ```
 
 ### Firewall Log
@@ -173,7 +172,7 @@ Zscaler response format (v1):
 
 Sample Response:
 ```json
-{ "sourcetype" : "zscalernss-fw", "event" :{"datetime":"Fri Dec 17 07:27:54 2021","user":"some_user@example.com","department":"Unknown","locationname":"TestLoc%20DB","cdport":443,"csport":55018,"sdport":443,"ssport":0,"csip":"0.0.0.0","cdip":"0.0.0.0","ssip":"0.0.0.0","sdip":"0.0.0.0","tsip":"0.0.0.0","tunsport":0,"tuntype":"ZscalerClientConnector","action":"Drop","dnat":"No","stateful":"Yes","aggregate":"No","nwsvc":"HTTPS","nwapp":"http","proto":"TCP","ipcat":"Test Name","destcountry":"Ireland","avgduration":486,"rulelabel":"Access%20Blocked","inbytes":19052,"outbytes":1734,"duration":0,"durationms":486,"numsessions":1,"ipsrulelabel":"None","threatcat":"None","threatname":"None","deviceowner":"admin77","devicehostname":"Machine9000"}}
+{"sourcetype":"zscalernss-fw","event":{"datetime":"Mon Oct 16 22:55:48 2023","cltdomain":"www.example.com","cdip":"2a02:cf40::","outbytes":"10000","cdport":"22","destcountry":"USA","devicemodel":"20L8S7WC08","sdip":"67.43.156.0","duration":"600","sdport":"443","tz":"GMT","action":"Blocked","devicehostname":"THINKPADSMITH","recordid":"123456","deviceosversion":"Version 10.14.2 (Build 18C54)","devicename":"admin","nwsvc":"HTTP","deviceostype":"iOS","ipsrulelabel":"Default IPS Rule","nwapp":"Skype","rdr_rulename":"FWD_Rule_1","proto":"TCP","rulelabel":"rule1","dnatrulelabel":"DNAT_Rule_1","srcipcountry":"United States","rule":"Default_Firewall_Filtering_Rule","ssip":"1.128.0.0","inbytes":"10000","ssport":"22","csip":"0.0.0.0","aggregate":"Yes","csport":"25","bypass_time":"Mon Oct 16 22:55:48 2023","user":"jdoe%40safemarch.com","datacentercountry":"US","bypassed_session":"1","day":"Mon","datacentercity":"Sa","department":"sales","datacenter":"CA Client Node DC","deviceappversion":"2.0.0.120","day_of_month":"16","avgduration":"600","dept":"Sales","eedone":"Yes","deviceowner":"jsmith","external_deviceid":"1234","durationms":"600","forward_gateway_name":"FWD_1","epochtime":"1578128400","ipcat":"Finance","flow_type":"Direct","location":"Headquarters","hour":"22","login":"jdo%40safemarch.com","ips_custom_signature":"0","month":"Oct","locationname":"Headquarters","dnat":"Yes","minute":"55","odevicename":"2175092224","month_of_year":"10","ofwd_gw_name":"8794487099","ocsip":"9960223283","oipcat":"5300295980","odeviceowner":"10831489","odnatlabel":"7956407282","odevicehostname":"2168890624","orulelabel":"624054738","oipsrulelabel":"6200694987","second":"48","ordr_rulename":"3399565100","stateful":"Yes","ozpa_app_seg_name":"7648246731","threatcat":"Botnet Callback","numsessions":"5","tsip":"89.160.20.128","threat_name":"Linux.Backdoor.Tsunami","year":"2023","threatname":"Linux.Backdoor","zpa_app_seg_name":"ZPA_test_app_segment","tuntype":"L2 tunnel","ztunnelversion":"ZTUNNEL_1_0"}}
 ```
 
 ### Tunnel Log
@@ -203,7 +202,7 @@ Zscaler response format (v1):
 
 Sample Response:
 ```json
-{ "sourcetype" : "zscalernss-tunnel", "event" : {"datetime":"Thu Dec 30 11:40:27 2021","Recordtype":"IPSec Phase1","tunneltype":"IPSEC IKEV 2","user":"81.2.69.145","location":"some-location","sourceip":"81.2.69.145","destinationip":"81.2.69.143","sourceport":"500","destinationport":"500","lifetime":"0","ikeversion":"2","spi_in":"00000000000000000000","spi_out":"11111111111111111111","algo":"AES-CBS","authentication":"HMAC-SHA1-96","authtype":"PSK","recordid":"1111111111111111111"}}
+{"sourcetype":"zscalernss-tunnel","event":{"datetime":"Mon Oct 16 22:55:48 2023","destinationip":"67.43.156.1","destinationport":"500","recordid":"111234","timezone":"GMT","sourceip":"67.43.156.0","sourceport":"500","user":"jdoe@safemarch.com","authentication":"HMAC_MD5","authtype":"PSKEY","day":"Mon","dd":"16","algo":"DES_CBC","hh":"22","ikeversion":"IKE_VERSION_2","lifetime":"86400","locationname":"Headquarters","mm":"55","mon":"Oct","mth":"10","olocationname":"2168890624","ovpncredentialname":"4094304256","ss":"48","spi_in":"None","spi_out":"None","Recordtype":"None","vendorname":"CISCO","yyyy":"2023"}}
 ```
 
 ### Web Log
@@ -222,7 +221,7 @@ Zscaler response format (v2):
 
 Sample Response:
 ```json
-{"sourcetype":"zscalernss-web","event":{"time":"Mon Oct 16 22:55:48 2023","cloudname":"zscaler.net","host":"mail.google.com","serverip":"1.128.0.0","external_devid":"1234","devicemodel":"20L8S7WC08","action":"Allowed","recordid":123456789,"reason":"File Attachment Cautioned","threatseverity":"Critical (90–100)","tz":"GMT","filesubtype":"rar","upload_filesubtype":"rar","sha256":"81ec78bc8298568bb5ea66d3c2972b670d0f7459b6cdbbcaacce90ab417ab15c","bamd5":"196a3d797bfee07fe4596b69f4ce1141","filename":"nssfeed.txt","upload_filename":"nssfeed.exe","filetype":"RAR Files","devicename":"PC11NLPA:5F08D97BBF43257A8FB4BBF4061A38AE324EF734","devicehostname":"THINKPADSMITH","deviceostype":"iOS","deviceosversion":"Version 10.14.2 (Build 18C54)","devicetype":"Zscaler Client Connector","reqsize":1300,"reqmethod":"invalid","refererurl":"www.example.com","respsize":10500,"respcode":"100","reqversion":"1.1","respversion":"1","proto":"HTTP","company":"Zscaler","dlpmd5":"154f149b1443fbfa8c121d13e5c019a1","apprulelabel":"File_Sharing_1","dlprulename":"DLP_Rule_1","rulelabel":"URL_Filtering_1","urlfilterrulelabel":"URL_Filtering_1","cltip":"192.168.2.200","cltintip":"1.128.0.0","cltsourceport":12345,"threatname":"EICAR Test File","cltsslcipher":"SSL3_CK_RSA_NULL_MD5","clttlsversion":"SSL2","url":"www.trythisencodeurl.com/index","useragent":"Mozilla/5.0","login":"jdoe@safemarch.com","applayerprotocol":"FTP","appclass":"Administration","appname":"Adobe Connect","appriskscore":"None","bandwidthclassname":"Entertainment","bandwidthrulename":"Office 365","bwthrottle":"Yes","bypassedtime":"Mon Oct 16 22:55:48 2023","bypassedtraffic":"1","cltsslsessreuse":"Unknown","cltpubip":"1.128.0.0","cltsslfailcount":100,"cltsslfailreason":"Bad Record Mac","contenttype":"application/vnd_apple_keynote","datacentercity":"Sa","datacentercountry":"US","datacenter":"CA Client Node DC","day":"Mon","day_of_month":16,"dept":"Sales","deviceappversion":"1.128.0.0","deviceowner":"jsmith","df_hosthead":"df_hosthead","df_hostname":"df_hostname","dlpdicthitcount":"4","dlpdict":"Credit Cards","dlpeng":"HIPAA","dlpidentifier":6646484838839026000,"eedone":"Yes","epochtime":1578128400,"fileclass":"Active Web Contents","flow_type":"Direct","forward_gateway_ip":"10.1.1.1","forward_gateway_name":"FWD_1","forward_type":"Direct","hour":22,"is_sslexpiredca":"Yes","is_sslselfsigned":"Yes","is_ssluntrustedca":"Pass","keyprotectiontype":"HSM Protection","location":"Headquarters","malwarecategory":"Adware","malwareclass":"Sandbox","minute":55,"mobappcategory":"Communication","mobappname":"Amazon","mobdevtype":"Google Android","module":"Administration","month":"Oct","month_of_year":10,"nssserviceip":"192.168.2.200","oapprulelabel":"5300295980","obwclassname":"10831489","ocip":6200694987,"ocpubip":624054738,"odevicehostname":"2168890624","odevicename":"2175092224","odeviceowner":"10831489","odlpdict":"10831489","odlpeng":"4094304256","odlprulename":"6857275752","ofwd_gw_name":"8794487099","ologin":"4094304256","ordr_rulename":"3399565100","ourlcat":"7956407282","ourlfilterrulelabel":"4951704103","ozpa_app_seg_name":"7648246731","externalsslpolicyreason":"Blocked","productversion":"5.0.902.95524_04","rdr_rulename":"FWD_Rule_1","refererhost":"www.example.com for http://www.example.com/index.html","reqheadersize":300,"reqdatasize":1000,"respheadersize":500,"respdatasize":10000,"riskscore":10,"ruletype":"File Type Control","second":48,"srvcertchainvalpass":"Unknown","srvcertvalidationtype":"EV (Extended Validation)","srvcertvalidityperiod":"Short","srvsslcipher":"SSL3_CK_RSA_NULL_MD5","serversslsessreuse":"Unknown","srvocspresult":"Good","srvtlsversion":"SSL2","srvwildcardcert":"Unknown","ssldecrypted":"Yes","throttlereqsize":5,"throttlerespsize":7,"totalsize":11800,"trafficredirectmethod":"DNAT (Destination Translation)","unscannabletype":"Encrypted File","upload_doctypename":"Corporate Finance","upload_fileclass":"upload_fileclass","upload_filetype":"RAR Files","urlcatmethod":"Database A","urlsubcat":"Entertainment","urlsupercat":"Travel","urlclass":"Bandwidth Loss","useragentclass":"Firefox","useragenttoken":"Google Chrome (0.x)","userlocationname":"userlocationname","year":2023,"ztunnelversion":"ZTUNNEL_1_0","zpa_app_seg_name":"ZPA_test_app_segment"}}
+{"sourcetype":"zscalernss-web","event":{"time":"Mon Oct 16 22:55:48 2023","cloudname":"zscaler.net","host":"mail.google.com","serverip":"1.128.0.0","external_devid":"1234","devicemodel":"20L8S7WC08","action":"Allowed","recordid":123456789,"reason":"File Attachment Cautioned","threatseverity":"Critical (90–100)","tz":"GMT","filesubtype":"exe","upload_filesubtype":"rar","sha256":"81ec78bc8298568bb5ea66d3c2972b670d0f7459b6cdbbcaacce90ab417ab15c","bamd5":"196a3d797bfee07fe4596b69f4ce1141","filename":"nssfeed.txt","upload_filename":"nssfeed.exe","filetype":"RAR Files","devicename":"PC11NLPA:5F08D97BBF43257A8FB4BBF4061A38AE324EF734","devicehostname":"THINKPADSMITH","deviceostype":"iOS","deviceosversion":"Version 10.14.2 (Build 18C54)","devicetype":"Zscaler Client Connector","reqsize":1300,"reqmethod":"invalid","refererurl":"www.example.com","respsize":10500,"respcode":"100","reqversion":"1.1","respversion":"1","proto":"HTTP","company":"Zscaler","dlpmd5":"154f149b1443fbfa8c121d13e5c019a1","apprulelabel":"File_Sharing_1","dlprulename":"DLP_Rule_1","rulelabel":"URL_Filtering_1","urlfilterrulelabel":"URL_Filtering_2","cltip":"81.2.69.144","cltintip":"89.160.20.128","cltsourceport":12345,"threatname":"EICAR Test File","cltsslcipher":"SSL3_CK_RSA_NULL_MD5","clttlsversion":"SSL2","url":"www.trythisencodeurl.com/index","useragent":"Mozilla/5.0","login":"jdoe@safemarch.com","applayerprotocol":"FTP","appclass":"Administration","appname":"Adobe Connect","appriskscore":"1","bandwidthclassname":"Entertainment","bandwidthrulename":"Office 365","bwthrottle":"Yes","bypassedtime":"Mon Oct 16 22:55:48 2023","bypassedtraffic":"1","cltsslsessreuse":"Unknown","cltpubip":"175.16.199.0","cltsslfailcount":100,"cltsslfailreason":"Bad Record Mac","contenttype":"application/vnd_apple_keynote","datacentercity":"Sa","datacentercountry":"US","datacenter":"CA Client Node DC","day":"Mon","day_of_month":16,"dept":"Sales","deviceappversion":"1.128.0.0","deviceowner":"jsmith","df_hosthead":"df_hosthead","df_hostname":"df_hostname","dlpdicthitcount":"4","dlpdict":"Credit Cards","dlpeng":"HIPAA","dlpidentifier":6646484838839026000,"eedone":"Yes","epochtime":1578128400,"fileclass":"Active Web Contents","flow_type":"Direct","forward_gateway_ip":"10.1.1.1","forward_gateway_name":"FWD_1","forward_type":"Direct","hour":22,"is_sslexpiredca":"Yes","is_sslselfsigned":"Yes","is_ssluntrustedca":"Pass","keyprotectiontype":"HSM Protection","location":"Headquarters","malwarecategory":"Adware","malwareclass":"Sandbox","minute":55,"mobappcategory":"Communication","mobappname":"Amazon","mobdevtype":"Google Android","module":"Administration","month":"Oct","month_of_year":10,"nssserviceip":"192.168.2.200","oapprulelabel":"5300295980","obwclassname":"10831489","ocip":6200694987,"ocpubip":624054738,"odevicehostname":"2168890624","odevicename":"2175092224","odeviceowner":"10831489","odlpdict":"10831489","odlpeng":"4094304256","odlprulename":"6857275752","ofwd_gw_name":"8794487099","ologin":"4094304256","ordr_rulename":"3399565100","ourlcat":"7956407282","ourlfilterrulelabel":"4951704103","ozpa_app_seg_name":"7648246731","externalsslpolicyreason":"Blocked","productversion":"5.0.902.95524_04","rdr_rulename":"FWD_Rule_1","refererhost":"www.example.com for http://www.example.com/index.html","reqheadersize":300,"reqdatasize":1000,"respheadersize":500,"respdatasize":10000,"riskscore":10,"ruletype":"File Type Control","second":48,"srvcertchainvalpass":"Unknown","srvcertvalidationtype":"EV (Extended Validation)","srvcertvalidityperiod":"Short","srvsslcipher":"SSL3_CK_RSA_NULL_MD5","serversslsessreuse":"Unknown","srvocspresult":"Good","srvtlsversion":"SSL2","srvwildcardcert":"Unknown","ssldecrypted":"Yes","throttlereqsize":5,"throttlerespsize":7,"totalsize":11800,"trafficredirectmethod":"DNAT (Destination Translation)","unscannabletype":"Encrypted File","upload_doctypename":"Corporate Finance","upload_fileclass":"upload_fileclass","upload_filetype":"RAR Files","urlcatmethod":"Database A","urlsubcat":"Entertainment","urlsupercat":"Travel","urlclass":"Bandwidth Loss","useragentclass":"Firefox","useragenttoken":"Google Chrome (0.x)","userlocationname":"userlocationname","year":2023,"ztunnelversion":"ZTUNNEL_1_0","zpa_app_seg_name":"ZPA_test_app_segment"}}
 ```
 ### Enabling the integration in Elastic:
 
@@ -251,8 +250,8 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2024-12-10T13:40:32.000Z",
     "agent": {
-        "ephemeral_id": "6e7b1b11-b42e-4ae4-82bf-e2b99e8d09e1",
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "ephemeral_id": "9c123331-181f-42a0-af82-70e49ce7aaa1",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -271,21 +270,21 @@ An example event for `alerts` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "zscaler_zia.alerts",
-        "ingested": "2024-06-25T07:21:35Z"
+        "ingested": "2024-07-04T11:58:59Z"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.255.4:53386"
+            "address": "192.168.243.6:40328"
         },
         "syslog": {
             "priority": 114
@@ -345,8 +344,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2023-10-16T22:55:48.000Z",
     "agent": {
-        "ephemeral_id": "30871372-8c9a-4c2e-80f3-adfafb99395a",
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "ephemeral_id": "8fbed883-d7e9-41ab-99d8-6fef7131d443",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -360,9 +359,12 @@ An example event for `audit` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "snapshot": false,
         "version": "8.13.0"
+    },
+    "error": {
+        "code": "AUTHENTICATION_FAILED"
     },
     "event": {
         "action": "activate",
@@ -372,7 +374,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "zscaler_zia.audit",
         "id": "1234",
-        "ingested": "2024-06-25T07:23:38Z",
+        "ingested": "2024-07-04T12:01:12Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "UTC",
@@ -391,6 +393,11 @@ An example event for `audit` looks as following:
             "example",
             "example@zscaler.com"
         ]
+    },
+    "rule": {
+        "category": "DLP_DICTIONARY",
+        "name": "SSL Rule Name",
+        "ruleset": "DATA_LOSS_PREVENTION_RESOURCE"
     },
     "source": {
         "geo": {
@@ -419,12 +426,8 @@ An example event for `audit` looks as following:
     "zscaler_zia": {
         "audit": {
             "audit_log_type": "ZIA Portal Audit Log",
-            "category": "DATA_LOSS_PREVENTION_RESOURCE",
-            "error_code": "AUTHENTICATION_FAILED",
             "interface": "API",
-            "resource": "SSL Rule Name",
-            "result": "SUCCESS",
-            "sub_category": "DLP_DICTIONARY"
+            "result": "SUCCESS"
         }
     }
 }
@@ -472,8 +475,8 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "10f16cd4-719a-4116-b5ca-e573e0d7882d",
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "ephemeral_id": "6dac0cbb-768a-4dc4-a476-6bf881ed6755",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -499,9 +502,11 @@ An example event for `dns` looks as following:
         "ip": "89.160.20.156"
     },
     "dns": {
-        "answers": {
-            "name": "Some response string"
-        },
+        "answers": [
+            {
+                "data": "Some response string"
+            }
+        ],
         "question": {
             "name": "example.com",
             "type": "Some type"
@@ -511,7 +516,7 @@ An example event for `dns` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -522,7 +527,7 @@ An example event for `dns` looks as following:
         ],
         "dataset": "zscaler_zia.dns",
         "duration": 123456000000,
-        "ingested": "2024-06-25T07:25:40Z",
+        "ingested": "2024-07-04T12:03:18Z",
         "kind": "event",
         "timezone": "UTC",
         "type": [
@@ -537,7 +542,7 @@ An example event for `dns` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.255.4:51550"
+            "address": "192.168.243.6:52614"
         }
     },
     "network": {
@@ -552,14 +557,14 @@ An example event for `dns` looks as following:
             "89.160.20.156"
         ],
         "user": [
+            "Owner77",
             "some_user",
             "some_user@example.com"
         ]
     },
     "rule": {
         "name": [
-            "Access Blocked",
-            "None"
+            "Access Blocked"
         ]
     },
     "source": {
@@ -673,7 +678,8 @@ An example event for `dns` looks as following:
 | zscaler_zia.dns.request.type | The DNS request type. | keyword |
 | zscaler_zia.dns.response.action | The name of the action that was applied to the DNS response. | keyword |
 | zscaler_zia.dns.response.category | The URL Category of the FQDN in the DNS response. | keyword |
-| zscaler_zia.dns.response.name | The resolved IP or NAME in the DNS response. | keyword |
+| zscaler_zia.dns.response.ip | The resolved IP in the DNS response. | ip |
+| zscaler_zia.dns.response.name | The NAME in the DNS response. | keyword |
 | zscaler_zia.dns.response.rule.label | The name of the rule that was applied to the DNS response. | keyword |
 | zscaler_zia.dns.response.type | The DNS response type. | keyword |
 | zscaler_zia.dns.second | Seconds. | long |
@@ -697,8 +703,8 @@ An example event for `endpoint_dlp` looks as following:
 {
     "@timestamp": "2023-10-16T22:55:48.000Z",
     "agent": {
-        "ephemeral_id": "be6921c1-d021-461b-bba6-d45bd0bca788",
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "ephemeral_id": "8455a4fe-aa90-48fd-9136-5bbf8e89473d",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -717,7 +723,7 @@ An example event for `endpoint_dlp` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -729,11 +735,11 @@ An example event for `endpoint_dlp` looks as following:
         ],
         "dataset": "zscaler_zia.endpoint_dlp",
         "id": "2",
-        "ingested": "2024-06-25T07:27:44Z",
+        "ingested": "2024-07-04T12:05:26Z",
         "kind": "alert",
         "timezone": "GMT",
         "type": [
-            "info"
+            "allowed"
         ]
     },
     "file": {
@@ -741,14 +747,13 @@ An example event for `endpoint_dlp` looks as following:
             "md5": "938c2cc0dcc05f2b68c4287040cfcf71",
             "sha256": "076085239f3a10b8f387c4e5d4261abf8d109aa641be35a8d4ed2d775eb09612"
         },
-        "target_path": "dest_path",
+        "path": "dest_path",
         "type": "file"
     },
     "host": {
         "hostname": "Dev 1",
         "name": "host",
         "os": {
-            "family": "Windows",
             "platform": "Windows",
             "version": "Win-11"
         },
@@ -767,6 +772,7 @@ An example event for `endpoint_dlp` looks as following:
             "Dev 1"
         ],
         "user": [
+            "Administrator",
             "TempUser"
         ]
     },
@@ -789,7 +795,6 @@ An example event for `endpoint_dlp` looks as following:
             "channel": "Network Drive Transfer",
             "confirm_action": "confirm",
             "confirm_just": "My manager approved it",
-            "counts": "[12,13]",
             "datacenter": {
                 "city": "Atlanta",
                 "country": "US",
@@ -801,16 +806,23 @@ An example event for `endpoint_dlp` looks as following:
             "destination_type": "personal_cloud_storage",
             "device": {
                 "appversion": "Ver-2199",
+                "os": {
+                    "type": "Windows"
+                },
                 "owner": "Administrator"
             },
             "dictionary": {
                 "id": 8
             },
-            "dictionary_names": "[dlp]",
+            "dictionary_names": [
+                "[dlp]"
+            ],
             "engine": {
                 "id": 12
             },
-            "engine_names": "dlpengine",
+            "engine_names": [
+                "dlpengine"
+            ],
             "event_time": "2023-10-16T22:55:48.000Z",
             "expected_action": "block",
             "feed_time": "2023-10-16T22:55:48.000Z",
@@ -866,7 +878,7 @@ An example event for `endpoint_dlp` looks as following:
 | zscaler_zia.endpoint_dlp.channel | The channel. | keyword |
 | zscaler_zia.endpoint_dlp.confirm_action | The confirmation action by the user. | keyword |
 | zscaler_zia.endpoint_dlp.confirm_just | The confirmation action justification by the user. | keyword |
-| zscaler_zia.endpoint_dlp.counts | The number of hits for each of the DLP dictionaries. | keyword |
+| zscaler_zia.endpoint_dlp.counts | The number of hits for each of the DLP dictionaries. | long |
 | zscaler_zia.endpoint_dlp.datacenter.city | The city where the data center is located. | keyword |
 | zscaler_zia.endpoint_dlp.datacenter.country | The country where the data center is located. | keyword |
 | zscaler_zia.endpoint_dlp.datacenter.name | The name of the data center. | keyword |
@@ -915,7 +927,7 @@ An example event for `endpoint_dlp` looks as following:
 | zscaler_zia.endpoint_dlp.obfuscated.dlp.engine_names | The obfuscated version of the DLP engine names. | keyword |
 | zscaler_zia.endpoint_dlp.obfuscated.file.destination_path | The obfuscated version of the file destination path. | keyword |
 | zscaler_zia.endpoint_dlp.obfuscated.file.source_path | The obfuscated version of the file source path. | keyword |
-| zscaler_zia.endpoint_dlp.obfuscated.item.dictionary_names | The obfuscated version of the item destination name. | keyword |
+| zscaler_zia.endpoint_dlp.obfuscated.item.destination_names | The obfuscated version of the item destination name. | keyword |
 | zscaler_zia.endpoint_dlp.obfuscated.item.name | The obfuscated version of the item name. | keyword |
 | zscaler_zia.endpoint_dlp.obfuscated.item.source_names | The obfuscated version of the item source name. | keyword |
 | zscaler_zia.endpoint_dlp.obfuscated.other_rule_labels | The obfuscated version of the other rule labels. | keyword |
@@ -948,8 +960,8 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "7a997310-0cf2-4cce-b16c-5ceeb3da0e42",
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "ephemeral_id": "4bb89723-7b9f-4ceb-9f00-cf2c4b142e7d",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -975,7 +987,7 @@ An example event for `firewall` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -987,7 +999,7 @@ An example event for `firewall` looks as following:
         ],
         "dataset": "zscaler_zia.firewall",
         "duration": 486000000,
-        "ingested": "2024-06-25T07:29:47Z",
+        "ingested": "2024-07-04T12:07:31Z",
         "kind": "event",
         "timezone": "UTC",
         "type": [
@@ -1002,7 +1014,7 @@ An example event for `firewall` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.255.4:53540"
+            "address": "192.168.243.6:42432"
         }
     },
     "network": {
@@ -1024,13 +1036,13 @@ An example event for `firewall` looks as following:
             "0.0.0.0"
         ],
         "user": [
+            "admin77",
             "some_user",
             "some_user@example.com"
         ]
     },
     "rule": {
         "name": [
-            "None",
             "Access Blocked"
         ]
     },
@@ -1087,10 +1099,6 @@ An example event for `firewall` looks as following:
                 "count": 1
             },
             "stateful": "Yes",
-            "threat": {
-                "category": "None",
-                "name": "None"
-            },
             "tunnel": {
                 "ip": "0.0.0.0",
                 "type": "ZscalerClientConnector"
@@ -1208,10 +1216,10 @@ An example event for `sandbox_report` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-06-25T07:30:37.408Z",
+    "@timestamp": "2024-07-04T12:08:18.143Z",
     "agent": {
-        "ephemeral_id": "ef69b69a-c3e5-4c8a-9631-025539306919",
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "ephemeral_id": "d12fe3a6-bd2e-4729-9303-bdbbc18f187e",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -1225,20 +1233,21 @@ An example event for `sandbox_report` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
+        "action": "completed",
         "agent_id_status": "verified",
         "category": [
             "malware"
         ],
         "dataset": "zscaler_zia.sandbox_report",
         "duration": 454557000000,
-        "ingested": "2024-06-25T07:30:49Z",
+        "ingested": "2024-07-04T12:08:30Z",
         "kind": "alert",
-        "original": "{\"Full Details\":{\"Classification\":{\"Category\":\"MALWARE_BOTNET\",\"DetectedMalware\":\"\",\"Max Score\":100,\"Score\":86,\"Type\":\"MALICIOUS\"},\"FileProperties\":{\"DigitalCerificate\":\"\",\"FileSize\":9810,\"FileType\":\"CMD\",\"Issuer\":\"\",\"MD5\":\"8350ded6d39df158e51d6cfbe36fb012\",\"RootCA\":\"\",\"SHA1\":\"f4dd1d176975c70ba8963ebc654a78a6e345cfb6\",\"SSDeep\":\"192:+cgNT7Zj4tvl2Drc+gEakjqBT1W431lXXH1TR8J:InZjevl2Drc+gEakmBT44rXVR8J\",\"Sha256\":\"aff2d40828597fbf482753bec73cc9fc2714484262258875cc23c7d5a7372cee\"},\"Networking\":[{\"Risk\":\"MODERATE\",\"Signature\":\"Uses ipconfig to modify the Windows network settings\",\"SignatureSources\":[\"\",\"C:\\\\Windows\\\\SysWOW64\\\\ipconfig.exe \"]},{\"Risk\":\"HIGH\",\"Signature\":\"Uses netsh to modify the Windows network and firewall settings\",\"SignatureSources\":[\"\",\"C:\\\\Windows\\\\SysWOW64\\\\netsh.exe \"]}],\"Persistence\":[{\"Risk\":\"MODERATE\",\"Signature\":\"Creates or modifies Windows services\",\"SignatureSources\":[\"\",\"HKEY_LOCAL_MACHINE\\\\SYSTEM\\\\ControlSet001\\\\services\\\\IKEEXT\\\\Parameters\"]},{\"Risk\":\"HIGH\",\"Signature\":\"Modifies security policies related information\",\"SignatureSources\":[\"\",\"HKEY_LOCAL_MACHINE\\\\SYSTEM\\\\ControlSet001\\\\Control\\\\Lsa\\\\Kerberos\\\\Parameters KerbDebugLevel\"]},{\"Risk\":\"HIGH\",\"Signature\":\"Uses sc.exe to modify the status of services\",\"SignatureSources\":[\"\",\"C:\\\\Windows\\\\SysWOW64\\\\sc.exe \"]}],\"SecurityBypass\":[{\"Risk\":\"LOW\",\"Signature\":\"Checks for kernel debuggers\",\"SignatureSources\":[\"\",\"KernelDebuggerInformation\"]},{\"Risk\":\"LOW\",\"Signature\":\"Executes massive amount of sleeps in a loop\",\"SignatureSources\":[\"\",\"-60000ms \\u003e= -60000ms\",\"-60000ms \\u003e= -60000ms\",\"-60000ms \\u003e= -60000ms\",\"-60000ms \\u003e= -60000ms\",\"-60000ms \\u003e= -60000ms\"]},{\"Risk\":\"MODERATE\",\"Signature\":\"Enables debug privileges\",\"SignatureSources\":[\"\",\"Debug\"]},{\"Risk\":\"MODERATE\",\"Signature\":\"Sample sleeps for a long time (installer files shows these property).\",\"SignatureSources\":[\"\"]}],\"Stealth\":[{\"Risk\":\"LOW\",\"Signature\":\"Disables application error messages\",\"SignatureSources\":[\"\",\"NOOPENFILEERRORBOX\",\"NOOPENFILEERRORBOX\",\"NOOPENFILEERRORBOX\",\"NOOPENFILEERRORBOX\"]},{\"Risk\":\"MODERATE\",\"Signature\":\"Very long cmdline option found\",\"SignatureSources\":[\"\",\"C:\\\\Windows\\\\SysWOW64\\\\logman.exe logman  create trace autosession\\\\IntelNetwfw02 -p  0xffffffff 255 -f bincirc -max 250 -o C:\\\\Users\\\\win_7_64bit\\\\Desktop\\\\WlanTraces\\\\WIN_7_64BIT-PC-11-01-2017_0825\\\\IntelNetwfw02_WIN_7_64BIT-PC_11-01-2017_0825.etl\",\"C:\\\\Windows\\\\SysWOW64\\\\logman.exe logman  create trace autosession\\\\bcrmwlan -p {CEA4623F-AA31-4286-B3A5-797EF8A75C17} 0xffffffff 255 -f bincirc -max 250 -o C:\\\\Users\\\\win_7_64bit\\\\Desktop\\\\WlanTraces\\\\WIN_7_64BIT-PC-11-01-2017_0825\\\\BCRMwlan_WIN_7_64BIT-PC_11-01-2\",\"C:\\\\Windows\\\\SysWOW64\\\\logman.exe logman  create trace autosession\\\\mwls97w8arm -p {BFA91C93-9E18-497C-971B-490D06089E97} 0x1 255 -f bincirc -max 250 -o C:\\\\Users\\\\win_7_64bit\\\\Desktop\\\\WlanTraces\\\\WIN_7_64BIT-PC-11-01-2017_0825\\\\Marvell_WIN_7_64BIT-PC_11-01-2017_0\",\"C:\\\\Windows\\\\SysWOW64\\\\logman.exe logman  create trace autosession\\\\qcwlan -p {BB6F5B93-635C-47BE-816F-E895E77064A8} 0xffff 18 -f bincirc -max 250 -o C:\\\\Users\\\\win_7_64bit\\\\Desktop\\\\WlanTraces\\\\WIN_7_64BIT-PC-11-01-2017_0825\\\\QCwlan_WIN_7_64BIT-PC_11-01-2017_0825.\",\"C:\\\\Windows\\\\SysWOW64\\\\logman.exe logman  start bcrmwlan -p {CEA4623F-AA31-4286-B3A5-797EF8A75C17} 0xffffffff 255 -f bincirc -max 150 -o C:\\\\Users\\\\win_7_64bit\\\\Desktop\\\\WlanTraces\\\\WIN_7_64BIT-PC-11-01-2017_0825\\\\BCRMwlan_WIN_7_64BIT-PC_11-01-2017_0825.etl -ets\",\"C:\\\\Windows\\\\SysWOW64\\\\logman.exe logman  start mwls97w8arm -p {BFA91C93-9E18-497C-971B-490D06089E97} 0x1 255 -f bincirc -max 150 -o C:\\\\Users\\\\win_7_64bit\\\\Desktop\\\\WlanTraces\\\\WIN_7_64BIT-PC-11-01-2017_0825\\\\Marvell_WIN_7_64BIT-PC_11-01-2017_0825.etl -ets\",\"C:\\\\Windows\\\\SysWOW64\\\\logman.exe logman  start qcwlan -p {BB6F5B93-635C-47BE-816F-E895E77064A8} 0xffff 18 -f bincirc -max 150 -o C:\\\\Users\\\\win_7_64bit\\\\Desktop\\\\WlanTraces\\\\WIN_7_64BIT-PC-11-01-2017_0825\\\\QCwlan_WIN_7_64BIT-PC_11-01-2017_0825.etl -ets\",\"C:\\\\Windows\\\\SysWOW64\\\\netsh.exe netsh  trace sta wireless_dbg provider={21ba7b61-05f8-41f1-9048-c09493dcfe38} 0xff globallevel=0xff persistent=yes trace=C:\\\\Users\\\\win_7_64bit\\\\Desktop\\\\WlanTraces\\\\WIN_7_64BIT-PC-11-01-2017_0825\\\\wlan_WIN_7_64BIT-PC_11-01-2017_08\"]}],\"Summary\":{\"Analysis\":\"0\",\"Category\":\"SCRIPT\",\"Duration\":454557,\"FileType\":\"CMD\",\"StartTime\":1509567511,\"Status\":\"COMPLETED\",\"TimeUnit\":\"ms\",\"Url\":\"\"},\"SystemSummary\":[{\"Risk\":\"LOW\",\"Signature\":\"Allocates memory within range which is reserved for system DLLs\",\"SignatureSources\":[\"\",\"76E70000 page execute and read and write\",\"76E70000 page execute and read and write\",\"76E70000 page execute and read and write\",\"76E70000 page execute and read and write\",\"76F90000 page execute and read and write\",\"76F90000 page execute and read and write\",\"76F90000 page execute and read and write\",\"76F90000 page execute and read and write\"]},{\"Risk\":\"LOW\",\"Signature\":\"Classification label\",\"SignatureSources\":[\"\",\"mal68.winCMD@53/26@0/0\"]},{\"Risk\":\"LOW\",\"Signature\":\"Creates files inside the user directory\",\"SignatureSources\":[\"\",\"C:\\\\Users\\\\win_7_64bit\\\\Desktop\\\\WlanTraces\"]},{\"Risk\":\"LOW\",\"Signature\":\"Found command line output\",\"SignatureSources\":[\"\"]},{\"Risk\":\"LOW\",\"Signature\":\"Queries the cryptographic machine GUID\",\"SignatureSources\":[\"\",\"HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\Microsoft\\\\Cryptography MachineGuid\"]},{\"Risk\":\"LOW\",\"Signature\":\"Reads software policies\",\"SignatureSources\":[\"\",\"HKEY_USERS\\\\Software\\\\Policies\\\\Microsoft\\\\Windows\\\\Safer\\\\CodeIdentifiers\"]},{\"Risk\":\"LOW\",\"Signature\":\"Sample sleeps for a long time\",\"SignatureSources\":[\"\"]},{\"Risk\":\"LOW\",\"Signature\":\"Spawns processes\",\"SignatureSources\":[\"\",\"C:\\\\Windows\\\\SysWOW64\\\\cmd.exe \",\"C:\\\\Windows\\\\SysWOW64\\\\cmd.exe \",\"C:\\\\Windows\\\\SysWOW64\\\\cmd.exe \",\"C:\\\\Windows\\\\SysWOW64\\\\find.exe \",\"C:\\\\Windows\\\\SysWOW64\\\\find.exe \",\"C:\\\\Windows\\\\SysWOW64\\\\logman.exe \",\"C:\\\\Windows\\\\SysWOW64\\\\netsh.exe \",\"C:\\\\Windows\\\\SysWOW64\\\\whoami.exe \"]},{\"Risk\":\"LOW\",\"Signature\":\"Uses an in-process (OLE) Automation server\",\"SignatureSources\":[\"\",\"HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\Classes\\\\Wow6432Node\\\\CLSID\\\\{03837525-098B-11D8-9414-505054503030}\\\\InprocServer32\"]}]}}",
+        "original": "{\"Classification\":{\"Category\":\"MALWARE_BOTNET\",\"DetectedMalware\":\"\",\"Max Score\":100,\"Score\":86,\"Type\":\"MALICIOUS\"},\"FileProperties\":{\"DigitalCerificate\":\"\",\"FileSize\":9810,\"FileType\":\"CMD\",\"Issuer\":\"\",\"MD5\":\"8350ded6d39df158e51d6cfbe36fb012\",\"RootCA\":\"\",\"SHA1\":\"f4dd1d176975c70ba8963ebc654a78a6e345cfb6\",\"SSDeep\":\"192:+cgNT7Zj4tvl2Drc+gEakjqBT1W431lXXH1TR8J:InZjevl2Drc+gEakmBT44rXVR8J\",\"Sha256\":\"aff2d40828597fbf482753bec73cc9fc2714484262258875cc23c7d5a7372cee\"},\"Summary\":{\"Analysis\":\"0\",\"Category\":\"SCRIPT\",\"Duration\":454557,\"FileType\":\"CMD\",\"StartTime\":1509567511,\"Status\":\"COMPLETED\",\"TimeUnit\":\"ms\",\"Url\":\"\"},\"SystemSummary\":{\"Risk\":\"LOW\",\"Signature\":\"Allocates memory within range which is reserved for system DLLs\",\"SignatureSources\":[\"\",\"76F90000 page execute and read and write\"]}}",
         "risk_score": 86,
         "start": "2017-11-01T20:18:31.000Z",
         "type": [
@@ -1249,7 +1258,8 @@ An example event for `sandbox_report` looks as following:
         "hash": {
             "md5": "8350ded6d39df158e51d6cfbe36fb012",
             "sha1": "f4dd1d176975c70ba8963ebc654a78a6e345cfb6",
-            "sha256": "aff2d40828597fbf482753bec73cc9fc2714484262258875cc23c7d5a7372cee"
+            "sha256": "aff2d40828597fbf482753bec73cc9fc2714484262258875cc23c7d5a7372cee",
+            "ssdeep": "192:+cgNT7Zj4tvl2Drc+gEakjqBT1W431lXXH1TR8J:InZjevl2Drc+gEakmBT44rXVR8J"
         },
         "size": 9810
     },
@@ -1260,7 +1270,8 @@ An example event for `sandbox_report` looks as following:
         "hash": [
             "8350ded6d39df158e51d6cfbe36fb012",
             "f4dd1d176975c70ba8963ebc654a78a6e345cfb6",
-            "aff2d40828597fbf482753bec73cc9fc2714484262258875cc23c7d5a7372cee"
+            "aff2d40828597fbf482753bec73cc9fc2714484262258875cc23c7d5a7372cee",
+            "192:+cgNT7Zj4tvl2Drc+gEakjqBT1W431lXXH1TR8J:InZjevl2Drc+gEakmBT44rXVR8J"
         ]
     },
     "tags": [
@@ -1290,102 +1301,6 @@ An example event for `sandbox_report` looks as following:
                 "sha256": "aff2d40828597fbf482753bec73cc9fc2714484262258875cc23c7d5a7372cee",
                 "ssdeep": "192:+cgNT7Zj4tvl2Drc+gEakjqBT1W431lXXH1TR8J:InZjevl2Drc+gEakmBT44rXVR8J"
             },
-            "networking": [
-                {
-                    "risk": "MODERATE",
-                    "signature": "Uses ipconfig to modify the Windows network settings",
-                    "signature_sources": [
-                        "C:\\Windows\\SysWOW64\\ipconfig.exe "
-                    ]
-                },
-                {
-                    "risk": "HIGH",
-                    "signature": "Uses netsh to modify the Windows network and firewall settings",
-                    "signature_sources": [
-                        "C:\\Windows\\SysWOW64\\netsh.exe "
-                    ]
-                }
-            ],
-            "persistence": [
-                {
-                    "risk": "MODERATE",
-                    "signature": "Creates or modifies Windows services",
-                    "signature_sources": [
-                        "HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\services\\IKEEXT\\Parameters"
-                    ]
-                },
-                {
-                    "risk": "HIGH",
-                    "signature": "Modifies security policies related information",
-                    "signature_sources": [
-                        "HKEY_LOCAL_MACHINE\\SYSTEM\\ControlSet001\\Control\\Lsa\\Kerberos\\Parameters KerbDebugLevel"
-                    ]
-                },
-                {
-                    "risk": "HIGH",
-                    "signature": "Uses sc.exe to modify the status of services",
-                    "signature_sources": [
-                        "C:\\Windows\\SysWOW64\\sc.exe "
-                    ]
-                }
-            ],
-            "security_bypass": [
-                {
-                    "risk": "LOW",
-                    "signature": "Checks for kernel debuggers",
-                    "signature_sources": [
-                        "KernelDebuggerInformation"
-                    ]
-                },
-                {
-                    "risk": "LOW",
-                    "signature": "Executes massive amount of sleeps in a loop",
-                    "signature_sources": [
-                        "-60000ms >= -60000ms",
-                        "-60000ms >= -60000ms",
-                        "-60000ms >= -60000ms",
-                        "-60000ms >= -60000ms",
-                        "-60000ms >= -60000ms"
-                    ]
-                },
-                {
-                    "risk": "MODERATE",
-                    "signature": "Enables debug privileges",
-                    "signature_sources": [
-                        "Debug"
-                    ]
-                },
-                {
-                    "risk": "MODERATE",
-                    "signature": "Sample sleeps for a long time (installer files shows these property)."
-                }
-            ],
-            "stealth": [
-                {
-                    "risk": "LOW",
-                    "signature": "Disables application error messages",
-                    "signature_sources": [
-                        "NOOPENFILEERRORBOX",
-                        "NOOPENFILEERRORBOX",
-                        "NOOPENFILEERRORBOX",
-                        "NOOPENFILEERRORBOX"
-                    ]
-                },
-                {
-                    "risk": "MODERATE",
-                    "signature": "Very long cmdline option found",
-                    "signature_sources": [
-                        "C:\\Windows\\SysWOW64\\logman.exe logman  create trace autosession\\IntelNetwfw02 -p  0xffffffff 255 -f bincirc -max 250 -o C:\\Users\\win_7_64bit\\Desktop\\WlanTraces\\WIN_7_64BIT-PC-11-01-2017_0825\\IntelNetwfw02_WIN_7_64BIT-PC_11-01-2017_0825.etl",
-                        "C:\\Windows\\SysWOW64\\logman.exe logman  create trace autosession\\bcrmwlan -p {CEA4623F-AA31-4286-B3A5-797EF8A75C17} 0xffffffff 255 -f bincirc -max 250 -o C:\\Users\\win_7_64bit\\Desktop\\WlanTraces\\WIN_7_64BIT-PC-11-01-2017_0825\\BCRMwlan_WIN_7_64BIT-PC_11-01-2",
-                        "C:\\Windows\\SysWOW64\\logman.exe logman  create trace autosession\\mwls97w8arm -p {BFA91C93-9E18-497C-971B-490D06089E97} 0x1 255 -f bincirc -max 250 -o C:\\Users\\win_7_64bit\\Desktop\\WlanTraces\\WIN_7_64BIT-PC-11-01-2017_0825\\Marvell_WIN_7_64BIT-PC_11-01-2017_0",
-                        "C:\\Windows\\SysWOW64\\logman.exe logman  create trace autosession\\qcwlan -p {BB6F5B93-635C-47BE-816F-E895E77064A8} 0xffff 18 -f bincirc -max 250 -o C:\\Users\\win_7_64bit\\Desktop\\WlanTraces\\WIN_7_64BIT-PC-11-01-2017_0825\\QCwlan_WIN_7_64BIT-PC_11-01-2017_0825.",
-                        "C:\\Windows\\SysWOW64\\logman.exe logman  start bcrmwlan -p {CEA4623F-AA31-4286-B3A5-797EF8A75C17} 0xffffffff 255 -f bincirc -max 150 -o C:\\Users\\win_7_64bit\\Desktop\\WlanTraces\\WIN_7_64BIT-PC-11-01-2017_0825\\BCRMwlan_WIN_7_64BIT-PC_11-01-2017_0825.etl -ets",
-                        "C:\\Windows\\SysWOW64\\logman.exe logman  start mwls97w8arm -p {BFA91C93-9E18-497C-971B-490D06089E97} 0x1 255 -f bincirc -max 150 -o C:\\Users\\win_7_64bit\\Desktop\\WlanTraces\\WIN_7_64BIT-PC-11-01-2017_0825\\Marvell_WIN_7_64BIT-PC_11-01-2017_0825.etl -ets",
-                        "C:\\Windows\\SysWOW64\\logman.exe logman  start qcwlan -p {BB6F5B93-635C-47BE-816F-E895E77064A8} 0xffff 18 -f bincirc -max 150 -o C:\\Users\\win_7_64bit\\Desktop\\WlanTraces\\WIN_7_64BIT-PC-11-01-2017_0825\\QCwlan_WIN_7_64BIT-PC_11-01-2017_0825.etl -ets",
-                        "C:\\Windows\\SysWOW64\\netsh.exe netsh  trace sta wireless_dbg provider={21ba7b61-05f8-41f1-9048-c09493dcfe38} 0xff globallevel=0xff persistent=yes trace=C:\\Users\\win_7_64bit\\Desktop\\WlanTraces\\WIN_7_64BIT-PC-11-01-2017_0825\\wlan_WIN_7_64BIT-PC_11-01-2017_08"
-                    ]
-                }
-            ],
             "summary": {
                 "analysis": "0",
                 "category": "SCRIPT",
@@ -1397,79 +1312,13 @@ An example event for `sandbox_report` looks as following:
                 "status": "COMPLETED",
                 "time_unit": "ms"
             },
-            "system_summary": [
-                {
-                    "risk": "LOW",
-                    "signature": "Allocates memory within range which is reserved for system DLLs",
-                    "signature_sources": [
-                        "76E70000 page execute and read and write",
-                        "76E70000 page execute and read and write",
-                        "76E70000 page execute and read and write",
-                        "76E70000 page execute and read and write",
-                        "76F90000 page execute and read and write",
-                        "76F90000 page execute and read and write",
-                        "76F90000 page execute and read and write",
-                        "76F90000 page execute and read and write"
-                    ]
-                },
-                {
-                    "risk": "LOW",
-                    "signature": "Classification label",
-                    "signature_sources": [
-                        "mal68.winCMD@53/26@0/0"
-                    ]
-                },
-                {
-                    "risk": "LOW",
-                    "signature": "Creates files inside the user directory",
-                    "signature_sources": [
-                        "C:\\Users\\win_7_64bit\\Desktop\\WlanTraces"
-                    ]
-                },
-                {
-                    "risk": "LOW",
-                    "signature": "Found command line output"
-                },
-                {
-                    "risk": "LOW",
-                    "signature": "Queries the cryptographic machine GUID",
-                    "signature_sources": [
-                        "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography MachineGuid"
-                    ]
-                },
-                {
-                    "risk": "LOW",
-                    "signature": "Reads software policies",
-                    "signature_sources": [
-                        "HKEY_USERS\\Software\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers"
-                    ]
-                },
-                {
-                    "risk": "LOW",
-                    "signature": "Sample sleeps for a long time"
-                },
-                {
-                    "risk": "LOW",
-                    "signature": "Spawns processes",
-                    "signature_sources": [
-                        "C:\\Windows\\SysWOW64\\cmd.exe ",
-                        "C:\\Windows\\SysWOW64\\cmd.exe ",
-                        "C:\\Windows\\SysWOW64\\cmd.exe ",
-                        "C:\\Windows\\SysWOW64\\find.exe ",
-                        "C:\\Windows\\SysWOW64\\find.exe ",
-                        "C:\\Windows\\SysWOW64\\logman.exe ",
-                        "C:\\Windows\\SysWOW64\\netsh.exe ",
-                        "C:\\Windows\\SysWOW64\\whoami.exe "
-                    ]
-                },
-                {
-                    "risk": "LOW",
-                    "signature": "Uses an in-process (OLE) Automation server",
-                    "signature_sources": [
-                        "HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Wow6432Node\\CLSID\\{03837525-098B-11D8-9414-505054503030}\\InprocServer32"
-                    ]
-                }
-            ]
+            "system_summary": {
+                "risk": "LOW",
+                "signature": "Allocates memory within range which is reserved for system DLLs",
+                "signature_sources": [
+                    "76F90000 page execute and read and write"
+                ]
+            }
         }
     }
 }
@@ -1545,8 +1394,8 @@ An example event for `tunnel` looks as following:
 {
     "@timestamp": "2021-12-30T11:20:12.000Z",
     "agent": {
-        "ephemeral_id": "45f333cc-2d1f-4060-ad13-ad6ab8d0df70",
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "ephemeral_id": "85f8a4ec-94a7-4111-9cab-36896851bb15",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -1563,7 +1412,7 @@ An example event for `tunnel` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -1574,7 +1423,7 @@ An example event for `tunnel` looks as following:
         ],
         "dataset": "zscaler_zia.tunnel",
         "id": "1111111111111111111",
-        "ingested": "2024-06-25T07:32:49Z",
+        "ingested": "2024-07-04T12:10:30Z",
         "kind": "event",
         "timezone": "UTC",
         "type": [
@@ -1586,7 +1435,7 @@ An example event for `tunnel` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.255.4:49218"
+            "address": "192.168.243.6:36470"
         }
     },
     "related": {
@@ -1609,8 +1458,7 @@ An example event for `tunnel` looks as following:
                 "type": "IPSec Phase2"
             },
             "authentication": {
-                "algorithm": "HMAC-SHA-1",
-                "type": "None"
+                "algorithm": "HMAC-SHA-1"
             },
             "destination": {
                 "end": {
@@ -1724,8 +1572,8 @@ An example event for `web` looks as following:
 {
     "@timestamp": "2021-12-17T07:04:57.000Z",
     "agent": {
-        "ephemeral_id": "0b2b4469-3e9e-49d3-82de-b722f4eb5520",
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "ephemeral_id": "de646ee7-84ac-491d-a5cb-05f4a8bb0003",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
@@ -1739,7 +1587,7 @@ An example event for `web` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "289a0a9d-7fec-4c1b-b3ab-c758d01d2443",
+        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -1750,7 +1598,7 @@ An example event for `web` looks as following:
             "web"
         ],
         "dataset": "zscaler_zia.web",
-        "ingested": "2024-06-25T07:34:41Z",
+        "ingested": "2024-07-04T12:12:29Z",
         "kind": "event",
         "timezone": "UTC",
         "type": [
@@ -1777,7 +1625,7 @@ An example event for `web` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.255.4:37940"
+            "address": "192.168.243.6:58884"
         }
     },
     "network": {
@@ -1788,6 +1636,7 @@ An example event for `web` looks as following:
             "testmachine35"
         ],
         "user": [
+            "administrator1",
             "test",
             "test@example.com"
         ]
@@ -1817,12 +1666,6 @@ An example event for `web` looks as following:
             "device": {
                 "owner": "administrator1"
             },
-            "dlp": {
-                "dictionaries": {
-                    "name": "None"
-                },
-                "engine": "None"
-            },
             "location": "Test DB",
             "response": {
                 "code": "200"
@@ -1832,12 +1675,6 @@ An example event for `web` looks as following:
             },
             "rule": {
                 "type": "FwFilter"
-            },
-            "threat": {
-                "name": "None"
-            },
-            "unscannable": {
-                "type": "None"
             },
             "url": {
                 "category": {

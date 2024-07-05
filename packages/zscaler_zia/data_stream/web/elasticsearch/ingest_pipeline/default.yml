@@ -53,6 +53,24 @@ processors:
       field: event.type
       tag: append_event_type
       value: info
+  - script:
+      description: Drops null/empty/na values recursively.
+      tag: script_to_remove_na_values
+      lang: painless
+      source: |-
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == 'NA' || object == 'None' || object == 'NotFound') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
   - rename:
       field: json.action
       tag: rename_action
@@ -359,11 +377,40 @@ processors:
       tag: rename_deviceostype
       target_field: zscaler_zia.web.device.os.type
       ignore_missing: true
-  - set:
-      field: host.os.family
-      tag: set_host_os_family_from_web_device_os_type
-      copy_from: zscaler_zia.web.device.os.type
-      ignore_empty_value: true
+  - script:
+      description: Extract values from device os type
+      tag: script_extract_device_os_type
+      lang: painless
+      if: ctx.zscaler_zia?.web?.device?.os?.type != null && ctx.zscaler_zia.web.device.os.type != ''
+      source: |-
+        String osType = ctx.zscaler_zia.web.device.os.type;
+        if (ctx.host == null) {
+            Map map = new HashMap();
+            ctx.put('host', map);
+        }
+        if (ctx.host?.os == null) {
+            Map map = new HashMap();
+            ctx.host.put('os', map);
+        }
+        if (osType == 'iOS') {
+           ctx.host.os.put('type', 'ios');
+        }
+        else if (osType == 'Android OS') {
+           ctx.host.os.put('type', 'android');
+        }
+        else if (osType == 'Windows OS') {
+           ctx.host.os.put('type', 'windows');
+        }
+        else if (osType == 'MAC OS') {
+           ctx.host.os.put('type', 'macos');
+        }
+        else if (osType == 'Other OS') {
+           ctx.host.os.put('type', 'other');
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.deviceosversion
       tag: rename_deviceosversion
@@ -379,6 +426,12 @@ processors:
       tag: rename_deviceowner
       target_field: zscaler_zia.web.device.owner
       ignore_missing: true
+  - append:
+      field: related.user
+      tag: set_related_user_from_device_owner
+      value: '{{{zscaler_zia.web.device.owner}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.web?.device?.owner != null
   - rename:
       field: json.devicetype
       tag: rename_devicetype
@@ -1054,13 +1107,13 @@ processors:
       field: related.ip
       value: '{{{source.ip}}}'
       tag: append_related_ip_from_source_ip
-      if: 'ctx?.source?.ip != null'
+      if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
       field: related.ip
       value: '{{{destination.ip}}}'
       tag: append_related_ip_from_destination_ip
-      if: 'ctx?.destination?.ip != null'
+      if: ctx.destination?.ip != null
       allow_duplicates: false
   - rename:
       field: json.srvocspresult
@@ -1357,7 +1410,6 @@ processors:
         - zscaler_zia.web.device.hostname
         - zscaler_zia.web.device.model
         - zscaler_zia.web.device.name
-        - zscaler_zia.web.device.os.type
         - zscaler_zia.web.device.os.version
         - zscaler_zia.web.device.type
         - zscaler_zia.web.dlp.rule.name
@@ -1387,7 +1439,7 @@ processors:
         - zscaler_zia.web.user_agent.name
       tag: remove_custom_duplicate_fields
       ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
       tag: remove_json
@@ -1396,7 +1448,7 @@ processors:
       field: event.original
       tag: remove_event_original
       ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
   - script:
       tag: script_to_drop_null_values
       lang: painless

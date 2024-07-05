@@ -26,7 +26,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - remove:
       field: json
       tag: remove_json_if_input_type_http_endpoint
@@ -57,6 +57,24 @@ processors:
       field: event.type
       tag: append_event_type
       value: info
+  - script:
+      description: Drops null/empty/na values recursively.
+      tag: script_to_remove_na_values
+      lang: painless
+      source: |-
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == 'NA' || object == 'None') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
   - convert:
       field: json.clt_sip
       tag: convert_clt_sip_to_ip
@@ -67,7 +85,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: source.ip
       tag: set_source_ip_from_dns_client_ip
@@ -128,7 +146,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.dept
       tag: rename_dept
@@ -153,11 +171,11 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - append:
       field: related.hosts
       tag: set_related_hosts_from_host_name
-      value: '{{{host.name}}}'
+      value: "{{{host.name}}}"
       allow_duplicates: false
       if: ctx.host?.name != null
   - rename:
@@ -183,7 +201,7 @@ processors:
   - append:
       field: related.hosts
       tag: set_related_hosts_from_host_hostname
-      value: '{{{host.hostname}}}'
+      value: "{{{host.hostname}}}"
       allow_duplicates: false
       if: ctx.host?.hostname != null
   - rename:
@@ -191,11 +209,6 @@ processors:
       tag: rename_deviceostype
       target_field: zscaler_zia.dns.device.os.type
       ignore_missing: true
-  - set:
-      field: host.os.family
-      tag: set_host_os_family_from_dns_device_os_type
-      copy_from: zscaler_zia.dns.device.os.type
-      ignore_empty_value: true
   - rename:
       field: json.deviceosversion
       tag: rename_deviceosversion
@@ -211,6 +224,12 @@ processors:
       tag: rename_deviceowner
       target_field: zscaler_zia.dns.device.owner
       ignore_missing: true
+  - append:
+      field: related.user
+      tag: set_related_user_from_device_owner
+      value: "{{{zscaler_zia.dns.device.owner}}}"
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.device?.owner != null
   - rename:
       field: json.devicetype
       tag: rename_devicetype
@@ -239,7 +258,7 @@ processors:
   - append:
       field: network.transport
       tag: append_network_transport_from_dns_dns_gateway_server_protocol
-      value: '{{{zscaler_zia.dns.dns.gateway.server_protocol}}}'
+      value: "{{{zscaler_zia.dns.dns.gateway.server_protocol}}}"
       allow_duplicates: false
       if: ctx.zscaler_zia?.dns?.dns?.gateway?.server_protocol != null
   - rename:
@@ -261,7 +280,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.category
       tag: rename_category
@@ -277,7 +296,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - script:
       description: Convert duration from milliseconds to nanoseconds.
       tag: script_duration_ms_to_ns
@@ -291,7 +310,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.ecs_prefix
       tag: rename_ecs_prefix
@@ -317,15 +336,15 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.error
       tag: rename_error
       target_field: zscaler_zia.dns.error
       ignore_missing: true
   - set:
-      field: error.code
-      tag: set_error_code_from_dns_error
+      field: dns.response_code
+      tag: set_dns_response_code_from_dns_error
       copy_from: zscaler_zia.dns.error
       ignore_empty_value: true
   - convert:
@@ -338,7 +357,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.http_code
       tag: rename_http_code
@@ -373,23 +392,23 @@ processors:
   - dissect:
       field: user.email
       tag: create_user_name_and_user_domain
-      pattern: '%{user.name}@%{user.domain}'
+      pattern: "%{user.name}@%{user.domain}"
       ignore_missing: true
       if: ctx.user?.email != null
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - append:
       field: related.user
       tag: set_related_user_from_user_name
-      value: '{{{user.name}}}'
+      value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
       tag: set_related_user_from_user_email
-      value: '{{{user.email}}}'
+      value: "{{{user.email}}}"
       allow_duplicates: false
       if: ctx.user?.email != null
   - convert:
@@ -402,7 +421,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.month
       tag: rename_month
@@ -418,7 +437,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - rename:
       field: json.oclientsourceip
       tag: rename_oclientsourceip
@@ -452,7 +471,7 @@ processors:
   - append:
       field: network.transport
       tag: append_zscaler_zia_dns_protocol_into_network_transport
-      value: '{{{zscaler_zia.dns.protocol}}}'
+      value: "{{{zscaler_zia.dns.protocol}}}"
       allow_duplicates: false
       if: ctx.zscaler_zia?.dns?.protocol != null
   - foreach:
@@ -499,7 +518,7 @@ processors:
   - append:
       field: rule.name
       tag: append_zscaler_zia_dns_request_rule_label_into_rule_name
-      value: '{{{zscaler_zia.dns.request.rule.label}}}'
+      value: "{{{zscaler_zia.dns.request.rule.label}}}"
       allow_duplicates: false
       if: ctx.zscaler_zia?.dns?.request?.rule?.label != null
   - rename:
@@ -522,16 +541,53 @@ processors:
       tag: rename_respipcategory
       target_field: zscaler_zia.dns.response.category
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.dns_resp
-      tag: rename_dns_resp
-      target_field: zscaler_zia.dns.response.name
+      tag: convert_dns_resp_to_ip
+      type: ip
+      target_field: zscaler_zia.dns.response.ip
       ignore_missing: true
-  - set:
-      field: dns.answers.name
-      tag: set_dns_answer_data_from_dns_response_name
-      copy_from: zscaler_zia.dns.response.name
-      ignore_empty_value: true
+      if: ctx.json?.dns_resp != null && ctx.json.dns_resp != ''
+      on_failure:
+        - rename:
+            field: json.dns_resp
+            tag: rename_dns_resp
+            target_field: zscaler_zia.dns.response.name
+            ignore_missing: true
+  - append:
+      field: dns.answers
+      tag: append_zscaler_zia_dns_response_ip_into_dns_answers
+      value: "{{{zscaler_zia.dns.response.ip}}}"
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.response?.ip != null
+  - append:
+      field: dns.answers
+      tag: append_zscaler_zia_dns_response_name_into_dns_answers
+      value: "{{{zscaler_zia.dns.response.name}}}"
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.response?.name != null
+  - foreach:
+      field: dns.answers
+      tag: foreach_dns_answers
+      if: ctx.dns?.answers instanceof List
+      processor:
+        rename:
+          field: _ingest._value
+          tag: rename_dns_resp
+          target_field: _ingest._value.data
+          ignore_missing: true
+  - append:
+      field: dns.resolved_ip
+      tag: append_zscaler_zia_dns_response_ip_into_dns_resolved_ip
+      value: "{{{zscaler_zia.dns.response.ip}}}"
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.dns?.response?.ip != null
+  - append:
+      field: related.ip
+      value: "{{{zscaler_zia.dns.response.ip}}}"
+      tag: append_related_ip_from_source_ip
+      if: ctx.zscaler_zia?.dns?.response?.ip != null
+      allow_duplicates: false
   - urldecode:
       field: json.resrulelabel
       target_field: zscaler_zia.dns.response.rule.label
@@ -541,7 +597,7 @@ processors:
   - append:
       field: rule.name
       tag: append_zscaler_zia_dns_response_rule_label_into_rule_name
-      value: '{{{zscaler_zia.dns.response.rule.label}}}'
+      value: "{{{zscaler_zia.dns.response.rule.label}}}"
       allow_duplicates: false
       if: ctx.zscaler_zia?.dns?.response?.rule?.label != null
   - rename:
@@ -549,11 +605,16 @@ processors:
       tag: rename_restype
       target_field: zscaler_zia.dns.response.type
       ignore_missing: true
-  - set:
-      field: dns.answers.type
-      tag: set_dns_answer_type_from_dns_response_type
-      copy_from: zscaler_zia.dns.response.type
-      ignore_empty_value: true
+  - foreach:
+      field: dns.answers
+      tag: foreach_dns_answers
+      if: ctx.dns?.answers instanceof List
+      processor:
+        set:
+          field: _ingest._value.type
+          tag: set_dns_response_type
+          copy_from: zscaler_zia.dns.response.type
+          ignore_empty_value: true
   - convert:
       field: json.second
       tag: convert_second_to_long
@@ -564,7 +625,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - convert:
       field: json.srv_dip
       tag: convert_srv_dip_to_ip
@@ -575,7 +636,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: destination.ip
       tag: set_destination_ip_from_dns_server_ip
@@ -588,15 +649,15 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{source.ip}}}'
+      value: "{{{source.ip}}}"
       tag: append_related_ip_from_source_ip
-      if: 'ctx?.source?.ip != null'
+      if: ctx.source?.ip != null
       allow_duplicates: false
   - append:
       field: related.ip
-      value: '{{{destination.ip}}}'
+      value: "{{{destination.ip}}}"
       tag: append_related_ip_from_destination_ip
-      if: 'ctx?.destination?.ip != null'
+      if: ctx.destination?.ip != null
       allow_duplicates: false
   - convert:
       field: json.srv_dport
@@ -608,7 +669,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: source.port
       tag: set_source_port_from_dns_server_port
@@ -638,14 +699,14 @@ processors:
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
         - yyyy-mm-dd HH:mm:ss
-      timezone: '{{{event.timezone}}}'
+      timezone: "{{{event.timezone}}}"
       if: ctx.json?.datetime != null && ctx.json.datetime != ''
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
-      field: '@timestamp'
+      field: "@timestamp"
       tag: set_@timestamp_from_dns_time
       copy_from: zscaler_zia.dns.time
       ignore_empty_value: true
@@ -659,7 +720,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - urldecode:
       field: json.login
       tag: urldecode_login
@@ -691,7 +752,6 @@ processors:
         - zscaler_zia.dns.device.hostname
         - zscaler_zia.dns.device.model
         - zscaler_zia.dns.device.name
-        - zscaler_zia.dns.device.os.type
         - zscaler_zia.dns.device.os.version
         - zscaler_zia.dns.device.type
         - zscaler_zia.dns.dns.gateway.server_protocol
@@ -700,6 +760,7 @@ processors:
         - zscaler_zia.dns.user
         - zscaler_zia.dns.protocol
         - zscaler_zia.dns.response.name
+        - zscaler_zia.dns.response.ip
         - zscaler_zia.dns.response.type
         - zscaler_zia.dns.record.id
         - zscaler_zia.dns.request.name
@@ -712,7 +773,7 @@ processors:
         - zscaler_zia.dns.time
       tag: remove_custom_duplicate_fields
       ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
       tag: remove_json
@@ -721,7 +782,7 @@ processors:
       field: event.original
       tag: remove_event_original
       ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
   - script:
       tag: script_to_drop_null_values
       lang: painless
@@ -748,7 +809,7 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind

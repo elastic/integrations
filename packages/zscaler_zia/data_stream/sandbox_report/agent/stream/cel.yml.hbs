@@ -24,20 +24,44 @@ state.md5List:
   - {{md5}}
 {{/each}}
 state.details: {{details}}
+redact:
+  fields: ~
 program: |
-  {
-    "events": state.md5List.map(md5, request(
-        "GET",
-        state.url + "/api/v1/sandbox/report/" + md5 + "?" + {
-          "details": [state.details]
-        }.format_query()
-      ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
-        "message": body.encode_json(),
-      }))
-    ),
-    "md5List": state.md5List,
-    "details": state.details
-  }
+    state.with({
+      "events": state.md5List.map(md5, request(
+          "GET",
+          state.url + "/api/v1/sandbox/report/" + md5 + "?" + {
+            "details": [state.details]
+          }.format_query()
+        ).do_request().as(resp, resp.StatusCode == 200 ?
+             bytes(resp.Body).decode_json().as(body,
+               has(body.Summary)
+             ?
+               [{
+                 "message": body.Summary.encode_json()
+               }]
+             :
+               ["SystemSummary","Persistence","Networking","Exploit","Stealth","SecurityBypass"].map(k, k in body["Full Details"], body["Full Details"][k].map(e, {
+                 "message": {
+                   ?"Summary": body[?"Full Details"].Summary,
+                   ?"Classification": body[?"Full Details"].Classification,
+                   ?"FileProperties": body[?"Full Details"].FileProperties,
+                   ?"Origin": body[?"Full Details"].Origin,
+                   k: e
+                 }.encode_json()
+               })).flatten()
+             )
+          :
+            [{
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET:"+string(resp.Body)
+            },
+            }]
+          )
+      ).flatten()
+    })
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
