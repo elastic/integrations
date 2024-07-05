@@ -329,10 +329,21 @@ processors:
       field:
         - azure.firewall.proto
       ignore_missing: true
+  - lowercase:
+      field: azure.firewall.protocol
+      ignore_failure: true
   - set:
       field: network.transport
       value: "{{azure.firewall.protocol}}"
-      if: ctx?.json?.category == 'AZFWDnsQuery'
+      if: "ctx?.azure?.firewall?.protocol != null && ['udp', 'tcp', 'icmp'].contains(ctx.azure.firewall.protocol) && ['AZFWDnsQuery', 'AZFWApplicationRule', 'AZFWNetworkRule', 'AZFWNatRule'].contains(ctx.json.category)"
+  - set:
+      field: network.protocol
+      value: "{{azure.firewall.protocol}}"
+      if: "ctx?.network?.transport == null && ['AZFWDnsQuery', 'AZFWApplicationRule', 'AZFWNetworkRule', 'AZFWNatRule'].contains(ctx.json.category)"
+  - remove:
+      field:
+        - azure.firewall.protocol
+      ignore_missing: true
   - script:
       lang: painless
       ignore_failure: true
