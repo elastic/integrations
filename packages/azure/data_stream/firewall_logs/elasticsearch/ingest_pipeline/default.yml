@@ -90,11 +90,11 @@ processors:
       if: ctx?.azure?.firewall?.properties?.DestinationPort == null
   - rename:
       field: json.properties.Action
-      target_field: azure.firewall.action
+      target_field: event.action
       ignore_missing: true
   - rename:
       field: json.properties.ActionReason
-      target_field: azure.firewall.action_reason
+      target_field: event.reason
       ignore_missing: true
   - rename:
       field: json.properties.Fqdn
@@ -158,7 +158,7 @@ processors:
       ignore_missing: true    
   - rename:
       field: json.properties.QueryType
-      target_field: dns.type
+      target_field: dns.question.type
       ignore_missing: true  
   - rename:
       field: json.properties.RequestDurationSecs
@@ -314,7 +314,6 @@ processors:
       value: "{{dns.question.name}}"
       allow_duplicates: false
       ignore_failure: true
-
   - lowercase:
       field: azure.firewall.proto
       ignore_failure: true
@@ -330,7 +329,6 @@ processors:
       field:
         - azure.firewall.proto
       ignore_missing: true
-
   - script:
       lang: painless
       ignore_failure: true
@@ -342,7 +340,6 @@ processors:
         } else if (transport == 'tcp') {
             ctx.network.iana_number = '6';
         }
-
   - uppercase:
       field: dns.header_flags
       ignore_missing: true
@@ -350,7 +347,6 @@ processors:
       field: dns.header_flags
       separator: ","
       ignore_missing: true
-
   - rename:
       field: json.category
       target_field: azure.firewall.category
