@@ -33,33 +33,33 @@ An example event for `activity` looks as following:
 {
     "@timestamp": "2022-04-05T16:01:56.995Z",
     "agent": {
-        "ephemeral_id": "d7cb61c6-f67e-41a2-ad96-fbcb9390b1ba",
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "ephemeral_id": "630c4de2-59ec-4613-ab7d-261434a79313",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "sentinel_one.activity",
-        "namespace": "ep",
+        "namespace": "83396",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
-        "created": "2023-10-19T11:39:59.555Z",
+        "created": "2024-06-12T03:21:55.005Z",
         "dataset": "sentinel_one.activity",
-        "ingested": "2023-10-19T11:40:00Z",
+        "ingested": "2024-06-12T03:22:05Z",
         "kind": "event",
         "original": "{\"accountId\":\"1234567890123456789\",\"accountName\":\"Default\",\"activityType\":1234,\"agentId\":null,\"agentUpdatedVersion\":null,\"comments\":null,\"createdAt\":\"2022-04-05T16:01:56.995120Z\",\"data\":{\"accountId\":1234567890123456800,\"accountName\":\"Default\",\"fullScopeDetails\":\"Account Default\",\"fullScopeDetailsPath\":\"test/path\",\"groupName\":null,\"scopeLevel\":\"Account\",\"scopeName\":\"Default\",\"siteName\":null,\"username\":\"test user\"},\"description\":null,\"groupId\":null,\"groupName\":null,\"hash\":null,\"id\":\"1234567890123456789\",\"osFamily\":null,\"primaryDescription\":\"created Default account.\",\"secondaryDescription\":null,\"siteId\":null,\"siteName\":null,\"threatId\":null,\"updatedAt\":\"2022-04-05T16:01:56.992136Z\",\"userId\":\"1234567890123456789\"}",
         "type": [
@@ -112,7 +112,6 @@ An example event for `activity` looks as following:
         "id": "1234567890123456789"
     }
 }
-
 ```
 
 **Exported fields**
@@ -120,69 +119,18 @@ An example event for `activity` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| file.hash.sha1 | SHA1 hash. | keyword |
-| file.name | Name of the file including the extension, without the directory. | keyword |
-| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| file.path.text | Multi-field of `file.path`. | match_only_text |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.geo.city_name | City name. | keyword |
-| host.geo.continent_name | Name of the continent. | keyword |
-| host.geo.country_iso_code | Country ISO code. | keyword |
-| host.geo.country_name | Country name. | keyword |
-| host.geo.location | Longitude and latitude. | geo_point |
-| host.geo.region_iso_code | Region ISO code. | keyword |
-| host.geo.region_name | Region name. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| observer.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| observer.version | Observer version. | keyword |
-| process.hash.sha1 | SHA1 hash. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | sentinel_one.activity.account.id | Related account ID (if applicable). | keyword |
 | sentinel_one.activity.account.name | Related account name (if applicable). | keyword |
 | sentinel_one.activity.agent.id | Related agent (if applicable). | keyword |
@@ -233,13 +181,6 @@ An example event for `activity` looks as following:
 | sentinel_one.activity.threat.id | Related threat ID (if applicable). | keyword |
 | sentinel_one.activity.type | Activity type. | long |
 | sentinel_one.activity.updated_at | Activity last updated time (UTC). | date |
-| tags | List of keywords used to tag each event. | keyword |
-| user.email | User email address. | keyword |
-| user.full_name | User's full name, if available. | keyword |
-| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
-| user.group.id | Unique identifier for the group on the system/platform. | keyword |
-| user.group.name | Name of the group. | keyword |
-| user.id | Unique identifier of the user. | keyword |
 
 
 ### agent
@@ -252,33 +193,33 @@ An example event for `agent` looks as following:
 {
     "@timestamp": "2022-04-07T08:31:47.481Z",
     "agent": {
-        "ephemeral_id": "b79cbfcd-f5db-4c13-949e-773ecdb03861",
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "ephemeral_id": "bc127c14-939d-445f-ba71-65c2a9cd997e",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "sentinel_one.agent",
-        "namespace": "ep",
+        "namespace": "27680",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "host"
         ],
-        "created": "2023-10-19T11:40:47.027Z",
+        "created": "2024-06-12T03:22:47.058Z",
         "dataset": "sentinel_one.agent",
-        "ingested": "2023-10-19T11:40:50Z",
+        "ingested": "2024-06-12T03:22:59Z",
         "kind": "event",
         "original": "{\"accountId\":\"12345123451234512345\",\"accountName\":\"Account Name\",\"activeDirectory\":{\"computerDistinguishedName\":null,\"computerMemberOf\":[],\"lastUserDistinguishedName\":null,\"lastUserMemberOf\":[]},\"activeThreats\":7,\"agentVersion\":\"12.x.x.x\",\"allowRemoteShell\":true,\"appsVulnerabilityStatus\":\"not_applicable\",\"cloudProviders\":{},\"computerName\":\"user-test\",\"consoleMigrationStatus\":\"N/A\",\"coreCount\":2,\"cpuCount\":2,\"cpuId\":\"CPU Name\",\"createdAt\":\"2022-03-18T09:12:00.519500Z\",\"detectionState\":null,\"domain\":\"WORKGROUP\",\"encryptedApplications\":false,\"externalId\":\"\",\"externalIp\":\"81.2.69.143\",\"firewallEnabled\":true,\"firstFullModeTime\":null,\"groupId\":\"1234567890123456789\",\"groupIp\":\"81.2.69.144\",\"groupName\":\"Default Group\",\"id\":\"13491234512345\",\"inRemoteShellSession\":false,\"infected\":true,\"installerType\":\".msi\",\"isActive\":true,\"isDecommissioned\":false,\"isPendingUninstall\":false,\"isUninstalled\":false,\"isUpToDate\":true,\"lastActiveDate\":\"2022-03-17T09:51:28.506000Z\",\"lastIpToMgmt\":\"81.2.69.145\",\"lastLoggedInUserName\":\"\",\"licenseKey\":\"\",\"locationEnabled\":true,\"locationType\":\"not_applicable\",\"locations\":null,\"machineType\":\"server\",\"missingPermissions\":[\"user-action-needed-bluetooth-per\",\"user_action_needed_fda\"],\"mitigationMode\":\"detect\",\"mitigationModeSuspicious\":\"detect\",\"modelName\":\"Compute Engine\",\"networkInterfaces\":[{\"gatewayIp\":\"81.2.69.145\",\"gatewayMacAddress\":\"00-00-5E-00-53-00\",\"id\":\"1234567890123456789\",\"inet\":[\"81.2.69.144\"],\"inet6\":[\"2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6\"],\"name\":\"Ethernet\",\"physical\":\"00-00-5E-00-53-00\"}],\"networkQuarantineEnabled\":false,\"networkStatus\":\"connected\",\"operationalState\":\"na\",\"operationalStateExpiration\":null,\"osArch\":\"64 bit\",\"osName\":\"Linux Server\",\"osRevision\":\"1234\",\"osStartTime\":\"2022-04-06T08:27:14Z\",\"osType\":\"linux\",\"osUsername\":null,\"rangerStatus\":\"Enabled\",\"rangerVersion\":\"21.x.x.x\",\"registeredAt\":\"2022-04-06T08:26:45.515278Z\",\"remoteProfilingState\":\"disabled\",\"remoteProfilingStateExpiration\":null,\"scanAbortedAt\":null,\"scanFinishedAt\":\"2022-04-06T09:18:21.090855Z\",\"scanStartedAt\":\"2022-04-06T08:26:52.838047Z\",\"scanStatus\":\"finished\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\",\"storageName\":null,\"storageType\":null,\"tags\":{\"sentinelone\":[{\"assignedAt\":\"2018-02-27T04:49:26.257525Z\",\"assignedBy\":\"test-user\",\"assignedById\":\"123456789012345678\",\"id\":\"123456789012345678\",\"key\":\"key123\",\"value\":\"value123\"}]},\"threatRebootRequired\":false,\"totalMemory\":1234,\"updatedAt\":\"2022-04-07T08:31:47.481227Z\",\"userActionsNeeded\":[\"reboot_needed\"],\"uuid\":\"XXX35XXX8Xfb4aX0X1X8X12X343X8X30\"}",
         "type": [
@@ -304,7 +245,9 @@ An example event for `agent` looks as following:
             "region_name": "England"
         },
         "id": "13491234512345",
-        "ip": "81.2.69.143",
+        "ip": [
+            "81.2.69.143"
+        ],
         "mac": [
             "00-00-5E-00-53-00"
         ],
@@ -340,6 +283,9 @@ An example event for `agent` looks as following:
                 "name": "Account Name"
             },
             "active_threats_count": 7,
+            "agent": {
+                "id": "13491234512345"
+            },
             "allow_remote_shell": true,
             "apps_vulnerability_status": "not_applicable",
             "console_migration_status": "N/A",
@@ -442,7 +388,6 @@ An example event for `agent` looks as following:
         "sentinel_one-agent"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -450,63 +395,17 @@ An example event for `agent` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.geo.city_name | City name. | keyword |
-| host.geo.continent_name | Name of the continent. | keyword |
-| host.geo.country_iso_code | Country ISO code. | keyword |
-| host.geo.country_name | Country name. | keyword |
-| host.geo.location | Longitude and latitude. | geo_point |
-| host.geo.region_iso_code | Region ISO code. | keyword |
-| host.geo.region_name | Region name. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| observer.version | Observer version. | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | sentinel_one.agent.account.id | A reference to the containing account. | keyword |
 | sentinel_one.agent.account.name | Name of the containing account. | keyword |
 | sentinel_one.agent.active_directory.computer.member_of | Computer member of. | keyword |
@@ -590,9 +489,6 @@ An example event for `agent` looks as following:
 | sentinel_one.agent.total_memory | Memory size (MB). | long |
 | sentinel_one.agent.user_action_needed | A list of pending user actions. | keyword |
 | sentinel_one.agent.uuid | Agent's universally unique identifier. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ### alert
@@ -605,11 +501,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2018-02-27T04:49:26.257Z",
     "agent": {
-        "ephemeral_id": "c0eb8175-0afb-4233-970c-cf3233254110",
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "ephemeral_id": "5076489f-5b52-4bc8-a887-13206a7b5ebd",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "container": {
         "id": "string",
@@ -620,7 +516,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "sentinel_one.alert",
-        "namespace": "ep",
+        "namespace": "68976",
         "type": "logs"
     },
     "destination": {
@@ -642,19 +538,19 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "malware"
         ],
-        "created": "2023-10-19T11:41:38.188Z",
+        "created": "2024-06-12T03:23:40.343Z",
         "dataset": "sentinel_one.alert",
         "id": "123456789123456789",
-        "ingested": "2023-10-19T11:41:42Z",
+        "ingested": "2024-06-12T03:23:52Z",
         "kind": "event",
         "original": "{\"agentDetectionInfo\":{\"machineType\":\"string\",\"name\":\"string\",\"osFamily\":\"string\",\"osName\":\"string\",\"osRevision\":\"string\",\"siteId\":\"123456789123456789\",\"uuid\":\"string\",\"version\":\"3.x.x.x\"},\"alertInfo\":{\"alertId\":\"123456789123456789\",\"analystVerdict\":\"string\",\"createdAt\":\"2018-02-27T04:49:26.257525Z\",\"dnsRequest\":\"string\",\"dnsResponse\":\"string\",\"dstIp\":\"81.2.69.144\",\"dstPort\":\"1234\",\"dvEventId\":\"string\",\"eventType\":\"info\",\"hitType\":\"Events\",\"incidentStatus\":\"string\",\"indicatorCategory\":\"string\",\"indicatorDescription\":\"string\",\"indicatorName\":\"string\",\"loginAccountDomain\":\"string\",\"loginAccountSid\":\"string\",\"loginIsAdministratorEquivalent\":\"string\",\"loginIsSuccessful\":\"string\",\"loginType\":\"string\",\"loginsUserName\":\"string\",\"modulePath\":\"string\",\"moduleSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"netEventDirection\":\"string\",\"registryKeyPath\":\"string\",\"registryOldValue\":\"string\",\"registryOldValueType\":\"string\",\"registryPath\":\"string\",\"registryValue\":\"string\",\"reportedAt\":\"2018-02-27T04:49:26.257525Z\",\"source\":\"string\",\"srcIp\":\"81.2.69.142\",\"srcMachineIp\":\"81.2.69.142\",\"srcPort\":\"1234\",\"tiIndicatorComparisonMethod\":\"string\",\"tiIndicatorSource\":\"string\",\"tiIndicatorType\":\"string\",\"tiIndicatorValue\":\"string\",\"updatedAt\":\"2018-02-27T04:49:26.257525Z\"},\"containerInfo\":{\"id\":\"string\",\"image\":\"string\",\"labels\":\"string\",\"name\":\"string\"},\"kubernetesInfo\":{\"cluster\":\"string\",\"controllerKind\":\"string\",\"controllerLabels\":\"string\",\"controllerName\":\"string\",\"namespace\":\"string\",\"namespaceLabels\":\"string\",\"node\":\"string\",\"pod\":\"string\",\"podLabels\":\"string\"},\"ruleInfo\":{\"description\":\"string\",\"id\":\"string\",\"name\":\"string\",\"scopeLevel\":\"string\",\"severity\":\"Low\",\"treatAsThreat\":\"UNDEFINED\"},\"sourceParentProcessInfo\":{\"commandline\":\"string\",\"fileHashMd5\":\"5d41402abc4b2a76b9719d911017c592\",\"fileHashSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"fileHashSha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\",\"filePath\":\"string\",\"fileSignerIdentity\":\"string\",\"integrityLevel\":\"unknown\",\"name\":\"string\",\"pid\":\"12345\",\"pidStarttime\":\"2018-02-27T04:49:26.257525Z\",\"storyline\":\"string\",\"subsystem\":\"unknown\",\"uniqueId\":\"string\",\"user\":\"string\"},\"sourceProcessInfo\":{\"commandline\":\"string\",\"fileHashMd5\":\"5d41402abc4b2a76b9719d911017c592\",\"fileHashSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"fileHashSha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\",\"filePath\":\"string\",\"fileSignerIdentity\":\"string\",\"integrityLevel\":\"unknown\",\"name\":\"string\",\"pid\":\"12345\",\"pidStarttime\":\"2018-02-27T04:49:26.257525Z\",\"storyline\":\"string\",\"subsystem\":\"unknown\",\"uniqueId\":\"string\",\"user\":\"string\"},\"targetProcessInfo\":{\"tgtFileCreatedAt\":\"2018-02-27T04:49:26.257525Z\",\"tgtFileHashSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"tgtFileHashSha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\",\"tgtFileId\":\"string\",\"tgtFileIsSigned\":\"string\",\"tgtFileModifiedAt\":\"2018-02-27T04:49:26.257525Z\",\"tgtFileOldPath\":\"string\",\"tgtFilePath\":\"string\",\"tgtProcCmdLine\":\"string\",\"tgtProcImagePath\":\"string\",\"tgtProcIntegrityLevel\":\"unknown\",\"tgtProcName\":\"string\",\"tgtProcPid\":\"12345\",\"tgtProcSignedStatus\":\"string\",\"tgtProcStorylineId\":\"string\",\"tgtProcUid\":\"string\",\"tgtProcessStartTime\":\"2018-02-27T04:49:26.257525Z\"}}",
         "type": [
@@ -666,7 +562,9 @@ An example event for `alert` looks as following:
         "mtime": "2018-02-27T04:49:26.257Z"
     },
     "host": {
-        "ip": "81.2.69.142",
+        "ip": [
+            "81.2.69.142"
+        ],
         "name": "string",
         "os": {
             "family": "string",
@@ -874,7 +772,6 @@ An example event for `alert` looks as following:
         "name": "string"
     }
 }
-
 ```
 
 **Exported fields**
@@ -882,106 +779,25 @@ An example event for `alert` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
-| destination.port | Port of the destination. | long |
-| dll.hash.sha1 | SHA1 hash. | keyword |
-| dll.path | Full file path of the library. | keyword |
-| dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| file.created | File creation time. Note that not all filesystems store the creation time. | date |
-| file.mtime | Last time the file content was modified. | date |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
-| observer.os.name | Operating system name, without the version. | keyword |
-| observer.os.name.text | Multi-field of `observer.os.name`. | match_only_text |
-| observer.serial_number | Observer serial number. | keyword |
-| observer.version | Observer version. | keyword |
-| orchestrator.cluster.name | Name of the cluster. | keyword |
-| orchestrator.namespace | Namespace in which the action is taking place. | keyword |
-| process.code_signature.signing_id | The identifier used to sign the process. This is used to identify the application manufactured by a software vendor. The field is relevant to Apple \*OS only. | keyword |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
-| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
-| process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
-| process.executable | Absolute path to the process executable. | keyword |
-| process.executable.text | Multi-field of `process.executable`. | match_only_text |
-| process.hash.md5 | MD5 hash. | keyword |
-| process.hash.sha1 | SHA1 hash. | keyword |
-| process.hash.sha256 | SHA256 hash. | keyword |
-| process.name | Process name. Sometimes called program name or similar. | keyword |
-| process.name.text | Multi-field of `process.name`. | match_only_text |
-| process.parent.code_signature.signing_id | The identifier used to sign the process. This is used to identify the application manufactured by a software vendor. The field is relevant to Apple \*OS only. | keyword |
-| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
-| process.parent.command_line.text | Multi-field of `process.parent.command_line`. | match_only_text |
-| process.parent.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
-| process.parent.executable | Absolute path to the process executable. | keyword |
-| process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |
-| process.parent.hash.md5 | MD5 hash. | keyword |
-| process.parent.hash.sha1 | SHA1 hash. | keyword |
-| process.parent.hash.sha256 | SHA256 hash. | keyword |
-| process.parent.name | Process name. Sometimes called program name or similar. | keyword |
-| process.parent.name.text | Multi-field of `process.parent.name`. | match_only_text |
-| process.parent.pid | Process id. | long |
-| process.parent.start | The time the process started. | date |
-| process.parent.user.name | Short name or login of the user. | keyword |
-| process.parent.user.name.text | Multi-field of `process.parent.user.name`. | match_only_text |
-| process.pid | Process id. | long |
-| process.start | The time the process started. | date |
-| process.user.name | Short name or login of the user. | keyword |
-| process.user.name.text | Multi-field of `process.user.name`. | match_only_text |
-| registry.key | Hive-relative path of keys. | keyword |
-| registry.path | Full path, including hive, key and value | keyword |
-| registry.value | Name of the value written. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
-| rule.description | The description of the rule generating the event. | keyword |
-| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
-| rule.name | The name of the rule or signature generating the event. | keyword |
+| sentinel_one.alert.agent.computer_name | Computer distinguished name. | keyword |
+| sentinel_one.alert.agent.id | Agent ID. | keyword |
+| sentinel_one.alert.agent.infected | Agent infected. | boolean |
+| sentinel_one.alert.agent.is_active | Is active. | boolean |
+| sentinel_one.alert.agent.is_decommissioned | Is decommissioned. | boolean |
+| sentinel_one.alert.agent.machine_type | Machine type. | keyword |
+| sentinel_one.alert.agent.os.type | OS type. | keyword |
 | sentinel_one.alert.agent.site_id | Site id. | keyword |
 | sentinel_one.alert.analyst_verdict | Analyst verdict. | keyword |
 | sentinel_one.alert.container.info.labels | Container info labels. | keyword |
@@ -1037,12 +853,6 @@ An example event for `alert` looks as following:
 | sentinel_one.alert.target.process.proc.storyline_id | Target Process StoryLine ID. | keyword |
 | sentinel_one.alert.target.process.proc.uid | Target Process Unique ID. | keyword |
 | sentinel_one.alert.target.process.start_time | Target Process Start Time. | date |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.port | Port of the source. | long |
-| tags | List of keywords used to tag each event. | keyword |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ### group
@@ -1055,33 +865,33 @@ An example event for `group` looks as following:
 {
     "@timestamp": "2022-04-05T16:01:57.564Z",
     "agent": {
-        "ephemeral_id": "83bb6b62-84e1-449b-a652-b206238f20f8",
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "ephemeral_id": "99777f03-5c73-4831-b833-2489562ef8fb",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "sentinel_one.group",
-        "namespace": "ep",
+        "namespace": "81222",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "iam"
         ],
-        "created": "2023-10-19T11:42:26.967Z",
+        "created": "2024-06-12T03:24:33.387Z",
         "dataset": "sentinel_one.group",
-        "ingested": "2023-10-19T11:42:30Z",
+        "ingested": "2024-06-12T03:24:45Z",
         "kind": "event",
         "original": "{\"createdAt\":\"2022-04-05T16:01:56.928383Z\",\"creator\":\"Test User\",\"creatorId\":\"1234567890123456789\",\"filterId\":null,\"filterName\":null,\"id\":\"1234567890123456789\",\"inherits\":true,\"isDefault\":true,\"name\":\"Default Group\",\"rank\":null,\"registrationToken\":\"eyxxxxxxxxxxxxxxxxxxxxkixZxx1xxxxx8xxx2xODA0ZxxxxTIwNjhxxxxxxxxxxxxxxiMWYxx1Ixxnxxxx0=\",\"siteId\":\"1234567890123456789\",\"totalAgents\":1,\"type\":\"static\",\"updatedAt\":\"2022-04-05T16:01:57.564266Z\"}",
         "type": [
@@ -1127,7 +937,6 @@ An example event for `group` looks as following:
         "full_name": "Test User"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1135,53 +944,18 @@ An example event for `group` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | sentinel_one.group.agent.count |  | long |
 | sentinel_one.group.created_at |  | date |
 | sentinel_one.group.creator.id |  | keyword |
@@ -1193,10 +967,6 @@ An example event for `group` looks as following:
 | sentinel_one.group.registration_token |  | keyword |
 | sentinel_one.group.site.id |  | keyword |
 | sentinel_one.group.type |  | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| user.full_name | User's full name, if available. | keyword |
-| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
-| user.id | Unique identifier of the user. | keyword |
 
 
 ### threat
@@ -1209,24 +979,24 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2022-04-06T08:54:17.194Z",
     "agent": {
-        "ephemeral_id": "8e74b49b-8a2e-4955-9a51-41e94056e2fa",
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "ephemeral_id": "a2264e16-9431-4dd9-9e8a-6209c36c3c1e",
+        "id": "59bbe264-6d1c-48b7-9f6a-f2172d817ded",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "sentinel_one.threat",
-        "namespace": "ep",
+        "namespace": "80468",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0dc831b8-c128-48db-a3c7-379a3da30bb1",
+        "id": "59bbe264-6d1c-48b7-9f6a-f2172d817ded",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "action": "SentinelOne Cloud",
@@ -1234,12 +1004,12 @@ An example event for `threat` looks as following:
         "category": [
             "malware"
         ],
-        "created": "2023-10-19T11:43:14.860Z",
+        "created": "2024-06-18T21:22:32.743Z",
         "dataset": "sentinel_one.threat",
         "id": "1234567890123456789",
-        "ingested": "2023-10-19T11:43:18Z",
+        "ingested": "2024-06-18T21:22:44Z",
         "kind": "alert",
-        "original": "{\"agentDetectionInfo\":{\"accountId\":\"1234567890123456789\",\"accountName\":\"Default\",\"agentDetectionState\":null,\"agentDomain\":\"WORKGROUP\",\"agentIpV4\":\"10.0.0.1\",\"agentIpV6\":\"2a02:cf40::\",\"agentLastLoggedInUpn\":null,\"agentLastLoggedInUserMail\":null,\"agentLastLoggedInUserName\":\"\",\"agentMitigationMode\":\"protect\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentRegisteredAt\":\"2022-04-06T08:26:45.515278Z\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x\",\"cloudProviders\":{},\"externalIp\":\"81.2.69.143\",\"groupId\":\"1234567890123456789\",\"groupName\":\"Default Group\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\"},\"agentRealtimeInfo\":{\"accountId\":\"1234567890123456789\",\"accountName\":\"Default\",\"activeThreats\":7,\"agentComputerName\":\"test-LINUX\",\"agentDecommissionedAt\":null,\"agentDomain\":\"WORKGROUP\",\"agentId\":\"1234567890123456789\",\"agentInfected\":true,\"agentIsActive\":true,\"agentIsDecommissioned\":false,\"agentMachineType\":\"server\",\"agentMitigationMode\":\"detect\",\"agentNetworkStatus\":\"connected\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentOsType\":\"linux\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x.1234\",\"groupId\":\"1234567890123456789\",\"groupName\":\"Default Group\",\"networkInterfaces\":[{\"id\":\"1234567890123456789\",\"inet\":[\"10.0.0.1\"],\"inet6\":[\"2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6\"],\"name\":\"Ethernet\",\"physical\":\"X2:0X:0X:X6:00:XX\"}],\"operationalState\":\"na\",\"rebootRequired\":false,\"scanAbortedAt\":null,\"scanFinishedAt\":\"2022-04-06T09:18:21.090855Z\",\"scanStartedAt\":\"2022-04-06T08:26:52.838047Z\",\"scanStatus\":\"finished\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\",\"storageName\":null,\"storageType\":null,\"userActionsNeeded\":[]},\"containerInfo\":{\"id\":null,\"image\":null,\"labels\":null,\"name\":null},\"id\":\"1234567890123456789\",\"indicators\":[],\"kubernetesInfo\":{\"cluster\":null,\"controllerKind\":null,\"controllerLabels\":null,\"controllerName\":null,\"namespace\":null,\"namespaceLabels\":null,\"node\":null,\"pod\":null,\"podLabels\":null},\"mitigationStatus\":[{\"action\":\"unquarantine\",\"actionsCounters\":{\"failed\":0,\"notFound\":0,\"pendingReboot\":0,\"success\":1,\"total\":1},\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:54:17.198002Z\",\"latestReport\":\"/threats/mitigation-report\",\"mitigationEndedAt\":\"2022-04-06T08:54:17.101000Z\",\"mitigationStartedAt\":\"2022-04-06T08:54:17.101000Z\",\"status\":\"success\"},{\"action\":\"kill\",\"actionsCounters\":null,\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:45:55.303355Z\",\"latestReport\":null,\"mitigationEndedAt\":\"2022-04-06T08:45:55.297364Z\",\"mitigationStartedAt\":\"2022-04-06T08:45:55.297363Z\",\"status\":\"success\"}],\"threatInfo\":{\"analystVerdict\":\"undefined\",\"analystVerdictDescription\":\"Undefined\",\"automaticallyResolved\":false,\"browserType\":null,\"certificateId\":\"\",\"classification\":\"Trojan\",\"classificationSource\":\"Cloud\",\"cloudFilesHashVerdict\":\"black\",\"collectionId\":\"1234567890123456789\",\"confidenceLevel\":\"malicious\",\"createdAt\":\"2022-04-06T08:45:54.519988Z\",\"detectionEngines\":[{\"key\":\"sentinelone_cloud\",\"title\":\"SentinelOne Cloud\"}],\"detectionType\":\"static\",\"engines\":[\"SentinelOne Cloud\"],\"externalTicketExists\":false,\"externalTicketId\":null,\"failedActions\":false,\"fileExtension\":\"EXE\",\"fileExtensionType\":\"Executable\",\"filePath\":\"default.exe\",\"fileSize\":1234,\"fileVerificationType\":\"NotSigned\",\"identifiedAt\":\"2022-04-06T08:45:53.968000Z\",\"incidentStatus\":\"unresolved\",\"incidentStatusDescription\":\"Unresolved\",\"initiatedBy\":\"agent_policy\",\"initiatedByDescription\":\"Agent Policy\",\"initiatingUserId\":null,\"initiatingUsername\":null,\"isFileless\":false,\"isValidCertificate\":false,\"maliciousProcessArguments\":null,\"md5\":null,\"mitigatedPreemptively\":false,\"mitigationStatus\":\"not_mitigated\",\"mitigationStatusDescription\":\"Not mitigated\",\"originatorProcess\":\"default.exe\",\"pendingActions\":false,\"processUser\":\"test user\",\"publisherName\":\"\",\"reachedEventsLimit\":false,\"rebootRequired\":false,\"sha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"sha256\":null,\"storyline\":\"D0XXXXXXXXXXAF4D\",\"threatId\":\"1234567890123456789\",\"threatName\":\"default.exe\",\"updatedAt\":\"2022-04-06T08:54:17.194122Z\"},\"whiteningOptions\":[\"hash\"]}",
+        "original": "{\"agentDetectionInfo\":{\"accountId\":\"1234567890123456789\",\"accountName\":\"Default\",\"agentDetectionState\":null,\"agentDomain\":\"WORKGROUP\",\"agentIpV4\":\"10.0.0.1\",\"agentIpV6\":\"2a02:cf40::\",\"agentLastLoggedInUpn\":null,\"agentLastLoggedInUserMail\":null,\"agentLastLoggedInUserName\":\"\",\"agentMitigationMode\":\"protect\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentRegisteredAt\":\"2022-04-06T08:26:45.515278Z\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x\",\"cloudProviders\":{},\"externalIp\":\"81.2.69.143\",\"groupId\":\"1234567890123456789\",\"groupName\":\"Default Group\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\"},\"agentRealtimeInfo\":{\"accountId\":\"1234567890123456789\",\"accountName\":\"Default\",\"activeThreats\":7,\"agentComputerName\":\"test-LINUX\",\"agentDecommissionedAt\":null,\"agentDomain\":\"WORKGROUP\",\"agentId\":\"1234567890123456789\",\"agentInfected\":true,\"agentIsActive\":true,\"agentIsDecommissioned\":false,\"agentMachineType\":\"server\",\"agentMitigationMode\":\"detect\",\"agentNetworkStatus\":\"connected\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentOsType\":\"linux\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x.1234\",\"groupId\":\"1234567890123456789\",\"groupName\":\"Default Group\",\"networkInterfaces\":[{\"id\":\"1234567890123456789\",\"inet\":[\"10.0.0.1\"],\"inet6\":[\"2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6\"],\"name\":\"Ethernet\",\"physical\":\"DE:AD:00:00:BE:EF\"}],\"operationalState\":\"na\",\"rebootRequired\":false,\"scanAbortedAt\":null,\"scanFinishedAt\":\"2022-04-06T09:18:21.090855Z\",\"scanStartedAt\":\"2022-04-06T08:26:52.838047Z\",\"scanStatus\":\"finished\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\",\"storageName\":null,\"storageType\":null,\"userActionsNeeded\":[]},\"containerInfo\":{\"id\":null,\"image\":null,\"labels\":null,\"name\":null},\"id\":\"1234567890123456789\",\"indicators\":[],\"kubernetesInfo\":{\"cluster\":null,\"controllerKind\":null,\"controllerLabels\":null,\"controllerName\":null,\"namespace\":null,\"namespaceLabels\":null,\"node\":null,\"pod\":null,\"podLabels\":null},\"mitigationStatus\":[{\"action\":\"unquarantine\",\"actionsCounters\":{\"failed\":0,\"notFound\":0,\"pendingReboot\":0,\"success\":1,\"total\":1},\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:54:17.198002Z\",\"latestReport\":\"/threats/mitigation-report\",\"mitigationEndedAt\":\"2022-04-06T08:54:17.101000Z\",\"mitigationStartedAt\":\"2022-04-06T08:54:17.101000Z\",\"status\":\"success\"},{\"action\":\"kill\",\"actionsCounters\":null,\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:45:55.303355Z\",\"latestReport\":null,\"mitigationEndedAt\":\"2022-04-06T08:45:55.297364Z\",\"mitigationStartedAt\":\"2022-04-06T08:45:55.297363Z\",\"status\":\"success\"}],\"threatInfo\":{\"analystVerdict\":\"undefined\",\"analystVerdictDescription\":\"Undefined\",\"automaticallyResolved\":false,\"browserType\":null,\"certificateId\":\"\",\"classification\":\"Trojan\",\"classificationSource\":\"Cloud\",\"cloudFilesHashVerdict\":\"black\",\"collectionId\":\"1234567890123456789\",\"confidenceLevel\":\"malicious\",\"createdAt\":\"2022-04-06T08:45:54.519988Z\",\"detectionEngines\":[{\"key\":\"sentinelone_cloud\",\"title\":\"SentinelOne Cloud\"}],\"detectionType\":\"static\",\"engines\":[\"SentinelOne Cloud\"],\"externalTicketExists\":false,\"externalTicketId\":null,\"failedActions\":false,\"fileExtension\":\"EXE\",\"fileExtensionType\":\"Executable\",\"filePath\":\"default.exe\",\"fileSize\":1234,\"fileVerificationType\":\"NotSigned\",\"identifiedAt\":\"2022-04-06T08:45:53.968000Z\",\"incidentStatus\":\"unresolved\",\"incidentStatusDescription\":\"Unresolved\",\"initiatedBy\":\"agent_policy\",\"initiatedByDescription\":\"Agent Policy\",\"initiatingUserId\":null,\"initiatingUsername\":null,\"isFileless\":false,\"isValidCertificate\":false,\"maliciousProcessArguments\":null,\"md5\":null,\"mitigatedPreemptively\":false,\"mitigationStatus\":\"not_mitigated\",\"mitigationStatusDescription\":\"Not mitigated\",\"originatorProcess\":\"default.exe\",\"pendingActions\":false,\"processUser\":\"test user\",\"publisherName\":\"\",\"reachedEventsLimit\":false,\"rebootRequired\":false,\"sha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"sha256\":null,\"storyline\":\"D0XXXXXXXXXXAF4D\",\"threatId\":\"1234567890123456789\",\"threatName\":\"default.exe\",\"updatedAt\":\"2022-04-06T08:54:17.194122Z\"},\"whiteningOptions\":[\"hash\"]}",
         "type": [
             "info"
         ]
@@ -1259,9 +1029,11 @@ An example event for `threat` looks as following:
             "region_name": "England"
         },
         "id": "1234567890123456789",
-        "ip": "81.2.69.143",
+        "ip": [
+            "81.2.69.143"
+        ],
         "mac": [
-            "X2-0X-0X-X6-00-XX"
+            "DE-AD-00-00-BE-EF"
         ],
         "name": "test-LINUX",
         "os": {
@@ -1307,6 +1079,7 @@ An example event for `threat` looks as following:
                     "id": "1234567890123456789",
                     "name": "Default Group"
                 },
+                "id": "1234567890123456789",
                 "infected": true,
                 "is_active": true,
                 "is_decommissioned": false,
@@ -1477,7 +1250,6 @@ An example event for `threat` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -1485,66 +1257,17 @@ An example event for `threat` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
-| event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.geo.city_name | City name. | keyword |
-| host.geo.continent_name | Name of the continent. | keyword |
-| host.geo.country_iso_code | Country ISO code. | keyword |
-| host.geo.country_name | Country name. | keyword |
-| host.geo.location | Longitude and latitude. | geo_point |
-| host.geo.region_iso_code | Region ISO code. | keyword |
-| host.geo.region_name | Region name. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| observer.version | Observer version. | keyword |
-| process.name | Process name. Sometimes called program name or similar. | keyword |
-| process.name.text | Multi-field of `process.name`. | match_only_text |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | sentinel_one.threat.agent.account.id | Account id. | keyword |
 | sentinel_one.threat.agent.account.name | Account name. | keyword |
 | sentinel_one.threat.agent.active_threats | Active threats. | long |
@@ -1663,19 +1386,3 @@ An example event for `threat` looks as following:
 | sentinel_one.threat.storyline | Storyline identifier from agent. | keyword |
 | sentinel_one.threat.threat_id | Threat id. | keyword |
 | sentinel_one.threat.whitening_option | Whitening options. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
-| threat.indicator.file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| threat.indicator.file.hash.md5 | MD5 hash. | keyword |
-| threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
-| threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
-| threat.indicator.file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| threat.indicator.file.path.text | Multi-field of `threat.indicator.file.path`. | match_only_text |
-| threat.indicator.file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
-| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
-| threat.tactic.name | Name of the type of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/) | keyword |
-| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
-| threat.technique.reference | The reference url of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
-| user.email | User email address. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
