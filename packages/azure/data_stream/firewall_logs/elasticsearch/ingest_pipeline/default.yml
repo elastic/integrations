@@ -110,7 +110,8 @@ processors:
       ignore_missing: true
   - uri_parts:
       field: json.properties.TargetUrl
-      if: ctx.azure?.firewall?.properties?.TargetUrl != null
+      if: ctx.json?.properties?.TargetUrl != null
+      tag: uri_parts_targeturl
       keep_original: true
       on_failure:
         - append:
@@ -141,7 +142,7 @@ processors:
       target_field: error.id
       type: string
       ignore_missing: true
-      if: ctx.azure?.firewall?.properties?.ErrorNumber != ""
+      if: ctx.json?.properties?.ErrorNumber != ""
   - rename:
       field: json.properties.QueryClass
       target_field: dns.question.class
@@ -151,7 +152,7 @@ processors:
       target_field: dns.id
       type: string
       ignore_missing: true
-      if: ctx.azure?.firewall?.properties?.QueryId != ""  
+      if: ctx.json?.properties?.QueryId != ""  
   - rename:
       field: json.properties.QueryName
       target_field: dns.question.name
