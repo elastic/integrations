@@ -652,6 +652,7 @@ An example event for `event` looks as following:
 | sentinel_one_cloud_funnel.event.registry.value.is_complete | Is the registry value full size or is it truncated. | boolean |
 | sentinel_one_cloud_funnel.event.registry.value.type | Type of registry value. | keyword |
 | sentinel_one_cloud_funnel.event.repetition_count | Count of Concurrent Identical Events. | long |
+| sentinel_one_cloud_funnel.event.rerouted | The event was rerouted from the event data stream. | boolean |
 | sentinel_one_cloud_funnel.event.sca.atlantis_ingest_time |  | date |
 | sentinel_one_cloud_funnel.event.sca.ingest_time |  | date |
 | sentinel_one_cloud_funnel.event.site.id | SentinelOne Site ID. | keyword |
