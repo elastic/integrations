@@ -10,15 +10,14 @@ The Azure OpenAI logs data stream captures the audit events and the request-resp
 
 Supported Azure log categories:
 
-| Data Stream |  Log Category   |
-|:-----------:|:---------------:|
-|    logs     |      audit      |
-|    logs     | requestresponse |
+| Data Stream |       Log Category       |
+|:-----------:|:------------------------:|
+|    logs     |          Audit           |
+|    logs     |     RequestResponse      |
+|    logs     | ApiManagementGatewayLogs |
 
 
-**Note**:
-
-The logs data stream fetches the default cognitive services log listed [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Metric-,Default%20Azure%20OpenAI%20logging,-This%20solution). This doesn't record the inputs and outputs of the service, like prompts, tokens, and models.
+> Note: The logs data stream fetches the default cognitive services log listed [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Metric-,Default%20Azure%20OpenAI%20logging,-This%20solution). This data stream also collect the API Management Gateway logs for the enterprise customer of the Azure OpenAI services API mentioned [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Azure%20OpenAI%20logging-,This%20solution,-Request%20count). This records the inputs and outputs of the service, like prompts, tokens, and model usage.
 
 #### Requirements and setup
 

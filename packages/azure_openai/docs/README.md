@@ -10,15 +10,14 @@ The Azure OpenAI logs data stream captures the audit events and the request-resp
 
 Supported Azure log categories:
 
-| Data Stream |  Log Category   |
-|:-----------:|:---------------:|
-|    logs     |      audit      |
-|    logs     | requestresponse |
+| Data Stream |       Log Category       |
+|:-----------:|:------------------------:|
+|    logs     |          Audit           |
+|    logs     |     RequestResponse      |
+|    logs     | ApiManagementGatewayLogs |
 
 
-**Note**:
-
-The logs data stream fetches the default cognitive services log listed [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Metric-,Default%20Azure%20OpenAI%20logging,-This%20solution). This doesn't record the inputs and outputs of the service, like prompts, tokens, and models.
+> Note: The logs data stream fetches the default cognitive services log listed [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Metric-,Default%20Azure%20OpenAI%20logging,-This%20solution). This data stream also collect the API Management Gateway logs for the enterprise customer of the Azure OpenAI services API mentioned [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Azure%20OpenAI%20logging-,This%20solution,-Request%20count). This records the inputs and outputs of the service, like prompts, tokens, and model usage.
 
 #### Requirements and setup
 
@@ -37,7 +36,7 @@ An example event for `logs` looks as following:
     "@timestamp": "2024-04-08T12:23:02.435Z",
     "azure": {
         "open_ai": {
-            "caller_ip_address": "81.2.69.144",
+            "caller_ip_address": "81.2.69.***",
             "category": "RequestResponse",
             "correlation_id": "9d3a6e98-fc11-48d0-82cf-4de065c1a1f8",
             "event": "ShoeboxCallResult",
@@ -66,7 +65,7 @@ An example event for `logs` looks as following:
     },
     "event": {
         "duration": 102000000,
-        "original": "{\"Tenant\":\"eastus\",\"callerIpAddress\":\"81.2.69.144\",\"category\":\"RequestResponse\",\"correlationId\":\"9d3a6e98-fc11-48d0-82cf-4de065c1a1f8\",\"durationMs\":102,\"event\":\"ShoeboxCallResult\",\"location\":\"eastus\",\"operationName\":\"Create_Thread\",\"properties\":\"{\\\"apiName\\\":\\\"Azure OpenAI API version 2024-02-15-preview\\\",\\\"requestTime\\\":638481757794854611,\\\"requestLength\\\":2,\\\"responseTime\\\":638481757795877942,\\\"responseLength\\\":113,\\\"objectId\\\":\\\"\\\"}\",\"resourceId\":\"/SUBSCRIPTIONS/12CABCB4-86E8-404F-A3D2-1DC9982F45CA/RESOURCEGROUPS/OBS-OPENAI-SERVICE-RS/PROVIDERS/MICROSOFT.COGNITIVESERVICES/ACCOUNTS/OBS-OPENAI-TEST-01\",\"resultSignature\":\"200\",\"time\":\"2024-04-08T12:23:02.4350000Z\"}"
+        "original": "{\"Tenant\":\"eastus\",\"callerIpAddress\":\"81.2.69.***\",\"category\":\"RequestResponse\",\"correlationId\":\"9d3a6e98-fc11-48d0-82cf-4de065c1a1f8\",\"durationMs\":102,\"event\":\"ShoeboxCallResult\",\"location\":\"eastus\",\"operationName\":\"Create_Thread\",\"properties\":\"{\\\"apiName\\\":\\\"Azure OpenAI API version 2024-02-15-preview\\\",\\\"requestTime\\\":638481757794854611,\\\"requestLength\\\":2,\\\"responseTime\\\":638481757795877942,\\\"responseLength\\\":113,\\\"objectId\\\":\\\"\\\"}\",\"resourceId\":\"/SUBSCRIPTIONS/12CABCB4-86E8-404F-A3D2-1DC9982F45CA/RESOURCEGROUPS/OBS-OPENAI-SERVICE-RS/PROVIDERS/MICROSOFT.COGNITIVESERVICES/ACCOUNTS/OBS-OPENAI-TEST-01\",\"resultSignature\":\"200\",\"time\":\"2024-04-08T12:23:02.4350000Z\"}"
     },
     "tags": [
         "preserve_original_event"
@@ -83,21 +82,61 @@ An example event for `logs` looks as following:
 | azure.open_ai.caller_ip_address | The client IP address. (x - last octet masked). | keyword |
 | azure.open_ai.category | The log category name. | keyword |
 | azure.open_ai.correlation_id | The correlation id as key. | keyword |
+| azure.open_ai.deployment_version | The deployment version. | keyword |
 | azure.open_ai.event | The event type of the service request. | keyword |
+| azure.open_ai.is_request_success | True if the request is success else return false. | boolean |
 | azure.open_ai.location | The location. | keyword |
 | azure.open_ai.operation_name | The log action performed. | keyword |
+| azure.open_ai.properties.api_id | The request API Id. | keyword |
 | azure.open_ai.properties.api_name | The API name of the request. | keyword |
+| azure.open_ai.properties.api_revision | The request API revision. | keyword |
+| azure.open_ai.properties.backend_method | The backend request method. | keyword |
+| azure.open_ai.properties.backend_protocol | The backend protocol. | keyword |
+| azure.open_ai.properties.backend_request_body.messages.content | The prompt input. | keyword |
+| azure.open_ai.properties.backend_request_body.messages.role | The API access role. | keyword |
+| azure.open_ai.properties.backend_request_body.model | The model name. | keyword |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results | Content filtered by custom content filter. | flattened |
+| azure.open_ai.properties.backend_response_body.choices.finish_reason | A string indicating the reason why the response was generated (e.g., "max_tokens"). | keyword |
+| azure.open_ai.properties.backend_response_body.choices.index | The index of the response in the array. | long |
+| azure.open_ai.properties.backend_response_body.choices.logprobs | An object containing information about the probability distribution over possible responses. | flattened |
+| azure.open_ai.properties.backend_response_body.choices.message.content | The response text content. | keyword |
+| azure.open_ai.properties.backend_response_body.choices.message.role | The API access role. | keyword |
+| azure.open_ai.properties.backend_response_body.created | The timestamp when the request was created. | long |
+| azure.open_ai.properties.backend_response_body.error.code | The error code. | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.code | The error code. | keyword |
+| azure.open_ai.properties.backend_response_body.error.innererror.content_filter_result | Content filtered by custom content filter. | flattened |
+| azure.open_ai.properties.backend_response_body.error.message | The error message. | text |
+| azure.open_ai.properties.backend_response_body.error.param | Parameter passed to the API. | keyword |
+| azure.open_ai.properties.backend_response_body.error.status | The response status code. | long |
+| azure.open_ai.properties.backend_response_body.id | A unique identifier for the request. | keyword |
+| azure.open_ai.properties.backend_response_body.model | The ID of the OpenAI model used to generate the response. | keyword |
+| azure.open_ai.properties.backend_response_body.object | The operation type. | keyword |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.content_filter_results | Content filtered by custom content filter. | flattened |
+| azure.open_ai.properties.backend_response_body.prompt_filter_results.prompt_index | Index of the prompt used to generate response. | long |
+| azure.open_ai.properties.backend_response_body.system_fingerprint | The fingerprint is generated by Azure API Management and is used to track the performance and usage of the backend service. | keyword |
+| azure.open_ai.properties.backend_response_body.usage.input_tokens | the total input tokens. | long |
+| azure.open_ai.properties.backend_response_body.usage.output_tokens | The total output tokens. | long |
+| azure.open_ai.properties.backend_response_body.usage.total_tokens | The sum of input and output tokens. | long |
+| azure.open_ai.properties.backend_response_code | The backend HTTP response code. | long |
+| azure.open_ai.properties.backend_time | The backend response time. | long |
+| azure.open_ai.properties.backend_url | The backend URL connects to the Azure OpenAI model. | keyword |
+| azure.open_ai.properties.cache | The request cache. | keyword |
+| azure.open_ai.properties.client_protocol | The client HTTP protocol. | keyword |
+| azure.open_ai.properties.client_tls_version | The client TLS version. | keyword |
 | azure.open_ai.properties.model_deployment_name | The deployed model name. | keyword |
 | azure.open_ai.properties.model_name | The OpenAI model. | keyword |
 | azure.open_ai.properties.model_version | The OpenAI model version. | keyword |
 | azure.open_ai.properties.object_id | The object id of the request. | keyword |
+| azure.open_ai.properties.operation_id | The operation performed. | keyword |
 | azure.open_ai.properties.request_length | Length of the request. | double |
 | azure.open_ai.properties.request_time | Request time taken. | long |
 | azure.open_ai.properties.response_length | Length of the response. | double |
 | azure.open_ai.properties.response_time | Response time taken. | long |
 | azure.open_ai.properties.stream_type | The stream type of the request. | keyword |
 | azure.open_ai.result_signature | The response status. | keyword |
+| azure.open_ai.sku | Stock Keeping Unit that is associated with a particular API Management instance. | keyword |
 | azure.open_ai.tenant | The tenant location. | keyword |
+| azure.open_ai.truncated | Condition where the response message is too large to fit in a single packet, so it is truncated or cut off. | long |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
