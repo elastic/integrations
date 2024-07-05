@@ -218,10 +218,6 @@ processors:
       field: json.event.alert.action
       value: allowed
       if: ctx.azure?.firewall?.action == 'Allow'
-  - set:
-      field: dns.type
-      value: "query"
-      if: ctx?.json?.category == 'AZFWDnsQuery'
   - append:
       field: event.type
       value: "{{json.event.alert.action}}"
@@ -333,6 +329,10 @@ processors:
       field:
         - azure.firewall.proto
       ignore_missing: true
+  - set:
+      field: network.transport
+      value: "{{azure.firewall.protocol}}"
+      if: ctx?.json?.category == 'AZFWDnsQuery'
   - script:
       lang: painless
       ignore_failure: true
@@ -351,6 +351,10 @@ processors:
       field: dns.header_flags
       separator: ","
       ignore_missing: true
+  - set:
+      field: dns.type
+      value: "query"
+      if: ctx?.json?.category == 'AZFWDnsQuery'
   - rename:
       field: json.category
       target_field: azure.firewall.category
