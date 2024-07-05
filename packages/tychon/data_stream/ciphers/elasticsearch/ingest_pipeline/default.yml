@@ -1,22 +1,6 @@
 ---
 description: Pipeline for TYCHON Features Datasets
 processors:
-  - set:
-      field: event.module
-      value: tychon
-  - set:
-      tag: set_orginal
-      copy_from: message
-      field: event.original
-  - json:
-      field: message
-      add_to_root: true
-      add_to_root_conflict_strategy: replace
-      tag: convert_json
-  - dot_expander:
-      tag: expand_dots
-      field: '*'
-      override: true
   - remove:
       field: error.message
       if: ctx.error.message == ""
@@ -178,17 +162,6 @@ processors:
       ignore_missing: true
       tag: tls_supportedciphers_split
       ignore_failure: true
-  - set:
-      field: '@timestamp'
-      value: '{{_ingest.timestamp}}'
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - date:
-      tag: date_timestamp
-      field: '@timestamp'
-      formats:
-        - ISO8601
   - set:
       field: ecs.version
       value: 8.11.0
