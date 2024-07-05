@@ -144,7 +144,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rabbitmq.connection.type | Type of the connection. | keyword |  |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |  |
 
 
 ### Exchange Metrics
@@ -223,7 +222,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rabbitmq.exchange.name | The name of the queue with non-ASCII characters escaped as in C. | keyword |  |
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |  |
 
 
 ### Node Metrics
