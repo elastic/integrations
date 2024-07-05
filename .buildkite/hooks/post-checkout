@@ -13,8 +13,14 @@ checkout_merge() {
     fi
 
     git fetch -v origin "${target_branch}"
-    git checkout FETCH_HEAD
-    echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
+    if [[ ${REPOSITORY_TARGET_BRANCH_COMMIT:-""} == "" ]]; then
+        git checkout FETCH_HEAD
+        echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
+    else
+        echo "Retrieved commit from env. variable: ${REPOSITORY_TARGET_BRANCH_COMMIT}"
+        git checkout "${REPOSITORY_TARGET_BRANCH_COMMIT}"
+        echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
+    fi
 
     # create temporal branch to merge the PR with the target branch
     git checkout -b ${merge_branch}
