@@ -335,7 +335,7 @@ processors:
   - set:
       field: network.transport
       value: "{{azure.firewall.protocol}}"
-      if: "ctx?.azure?.firewall?.protocol != null && ['udp', 'tcp', 'icmp'].contains(ctx.azure.firewall.protocol) && ['AZFWDnsQuery', 'AZFWApplicationRule', 'AZFWNetworkRule', 'AZFWNatRule'].contains(ctx.json.category)"
+      if: "ctx.azure?.firewall?.protocol != null && ['udp', 'tcp', 'icmp'].contains(ctx.azure.firewall.protocol) && ctx.json?.category != null && ['AZFWDnsQuery', 'AZFWApplicationRule', 'AZFWNetworkRule', 'AZFWNatRule'].contains(ctx.json.category)"
   - set:
       field: network.protocol
       value: "{{azure.firewall.protocol}}"
