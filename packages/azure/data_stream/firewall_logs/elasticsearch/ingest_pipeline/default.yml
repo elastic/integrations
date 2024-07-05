@@ -218,11 +218,14 @@ processors:
       field: json.event.alert.action
       value: allowed
       if: ctx.azure?.firewall?.action == 'Allow'
+  - set:
+      field: dns.type
+      value: "query"
+      if: ctx?.json?.category == 'AZFWDnsQuery'
   - append:
       field: event.type
       value: "{{json.event.alert.action}}"
       if: ctx.json?.event?.alert?.action != null
-
   - grok:
       field: source.address
       patterns:
