@@ -1,31 +1,24 @@
 ---
 description: Pipeline for TYCHON COAMS Operational Attributes
 processors:
-  - set:
-      field: ecs.version
-      value: 8.10.0
-  - set:
-      field: event.kind
-      value: state
-  - set:
-      field: event.category
-      value: [host]
-  - set:
-      field: event.type
-      value: [info]
-  - remove:
-      field: message
-      ignore_missing: true
-  - remove:
-      tag: remove_preserve_original_event
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
+
+  - pipeline:
+      name: '{{ IngestPipeline "common_init" }}'
+  - pipeline:
+      name: '{{ IngestPipeline "rest" }}'
+
+###################
+# Failure handler #
+###################
+
 on_failure:
+  - append:
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

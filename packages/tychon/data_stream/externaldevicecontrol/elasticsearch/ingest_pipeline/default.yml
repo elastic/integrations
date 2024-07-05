@@ -1,190 +1,24 @@
 ---
 description: Pipeline for TYCHON External Device Protection Tables
 processors:
-  - set:
-      field: event.module
-      value: tychon
-  - set:
-      field: event.category
-      value: [configuration]
-  - set:
-      field: event.type
-      value: [info]
-  - set:
-      tag: set_orginal
-      copy_from: message
-      field: event.original
-  - json:
-      field: message
-      add_to_root: true
-      add_to_root_conflict_strategy: replace
-      tag: convert_json
-  - dot_expander:
-      tag: expand_dots
-      field: '*'
-      override: true
-  - rename:
-      field: "log.user_data.device_id"
-      target_field: tychon.log.user_data.device_id
-      ignore_missing: true
-      tag: log_deviceid_rename
-  - rename:
-      field: "log.user_data.code_name"
-      target_field: tychon.log.user_data.code_name
-      ignore_missing: true
-      tag: log_code_name_rename
-  - rename:
-      field: "log.time_created"
-      target_field: tychon.log.time_created
-      ignore_missing: true
-      tag: log_timecreated_rename
-  - rename:
-      field: "log.record_id"
-      target_field: tychon.log.record_id
-      ignore_missing: true
-      tag: log_record_id_rename
-  - rename:
-      field: "log.event_id"
-      target_field: tychon.log.event_id
-      ignore_missing: true
-      tag: log_eventid_rename
-  - rename:
-      field: "type"
-      target_field: tychon.type
-      ignore_missing: true
-      tag: tychon_type_rename
-  - rename:
-      field: "log.status_changed"
-      target_field: tychon.log.status_changed
-      ignore_missing: true
-      tag: log_statuschanged_rename
-  - rename:
-      field: "log.name"
-      target_field: tychon.log.name
-      ignore_missing: true
-      tag: log_name_rename
-  - rename:
-      field: "log.status"
-      target_field: tychon.log.status
-      ignore_missing: true
-      tag: log_status_rename
-  - rename:
-      field: "policy.execution.changed"
-      target_field: tychon.policy.execution.changed
-      ignore_missing: true
-      tag: policy_exechange_rename
-  - rename:
-      field: "policy.execution.action"
-      target_field: tychon.policy.execution.action
-      ignore_missing: true
-      tag: policy_exeaction_rename
-  - rename:
-      field: "policy.attach.changed"
-      target_field: tychon.policy.attach.changed
-      ignore_missing: true
-      tag: policy_attchchange_rename
-  - rename:
-      field: "policy.attach.action"
-      target_field: tychon.policy.attach.action
-      ignore_missing: true
-      tag: policy_attchaction_rename
-  - rename:
-      field: "policy.whitelist.changed"
-      target_field: tychon.policy.whitelist.changed
-      ignore_missing: true
-      tag: policy_whitelistchanged_rename
-  - rename:
-      field: "policy.whitelist.action"
-      target_field: tychon.policy.whitelist.action
-      ignore_missing: true
-      tag: policy_whtact_rename
-  - rename:
-      field: "policy.whitelist.current_value"
-      target_field: tychon.policy.whitelist.current_value
-      ignore_missing: true
-      tag: policy_whtcurval_rename
-  - rename:
-      field: "policy.whitelist.previous_value"
-      target_field: tychon.policy.whitelist.previous_value
-      ignore_missing: true
-      tag: policy_whtpreval_rename
-  - rename:
-      field: "log.event_data.device_description"
-      target_field: tychon.log.event_data.device_description
-      ignore_missing: true
-      tag: log_ed_devdesc_rename
-  - rename:
-      field: "log.event_data.device_id"
-      target_field: tychon.log.user_data.device_id
-      ignore_missing: true
-      tag: log_ed_devid_rename
-  - rename:
-      field: "log.event_data.device_location"
-      target_field: tychon.log.event_data.device_location
-      ignore_missing: true
-      tag: log_ed_devloc_rename
-  - rename:
-      field: "log.event_summary"
-      target_field: tychon.log.event_summary
-      ignore_missing: true
-      tag: log_evtsum_rename
-  - set:
-      field: '@timestamp'
-      value: '{{_ingest.timestamp}}'
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - date:
-      tag: date_timestamp
-      field: 'tychon.winlog.time_created'
-      ignore_failure: true
-      formats:
-        - epoch_second
-  - set:
-      field: ecs.version
-      value: 8.12.0
-  - set:
-      field: tychon.log.event_data.device_description
-      value: "Unknown"
-      if: "ctx.tychon.log?.event_data?.device_description == null"
-      ignore_failure: true
-      tag: log_event_data_blank
-  - set:
-      field: event.kind
-      value: state
-  - split:
-      field: tychon.policy.whitelist.previous_value
-      separator: ','
-      ignore_missing: true
-      tag: previousvalue_split
-  - split:
-      field: tychon.policy.whitelist.current_value
-      separator: ','
-      ignore_missing: true
-      tag: previousvalue_split
-  - convert:
-      field: tychon.log.event_id
-      type: long
-      ignore_missing: true
-      tag: event_id_convert
-  - convert:
-      field: tychon.log.record_id
-      type: long
-      ignore_missing: true
-      tag: record_id_convert
-  - remove:
-      field: message
-      ignore_missing: true
-  - remove:
-      tag: remove_preserve_original_event
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
+
+  - pipeline:
+      name: '{{ IngestPipeline "common_init" }}'
+  - pipeline:
+      name: '{{ IngestPipeline "rest" }}'
+
+###################
+# Failure handler #
+###################
+
 on_failure:
+  - append:
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

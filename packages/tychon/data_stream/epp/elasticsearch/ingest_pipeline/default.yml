@@ -1,68 +1,24 @@
 ---
 description: Pipeline for TYCHON Endpoint Protection Datasets
 processors:
-  - remove:
-      if: ctx.windows_defender.service.nis.signature_last_update == ''
-      field: windows_defender.service.nis.signature_last_update
-      tag: remove_nis_lupdate
-      ignore_failure: true
-  - remove:
-      if: ctx.windows_defender.service.antivirus.signature_last_update == ''
-      field: windows_defender.service.antivirus.signature_last_update
-      tag: remove_av_lupdate
-      ignore_failure: true
-  - remove:
-      if: ctx.windows_defender.service.antispyware.signature_last_update == ''
-      field: windows_defender.service.antispyware.signature_last_update
-      tag: remove_av_lupdate
-      ignore_failure: true
-  - remove:
-      if: ctx.windows_defender.service.antivirus.signature_last_updated == ''
-      field: windows_defender.service.antivirus.signature_last_updated
-      tag: remove_av_lupdate
-      ignore_failure: true
-  - remove:
-      if: ctx.windows_defender.service.antispyware.signature_last_updated == ''
-      field: windows_defender.service.antispyware.signature_last_updated
-      tag: remove_av_lupdate
-      ignore_failure: true
-  - convert:
-      field: windows_defender.service.nis.signature_age
-      type: long
-      ignore_missing: true
-  - convert:
-      field: windows_defender.service.antivirus.signature_age
-      type: long
-      ignore_missing: true
-  - convert:
-      field: windows_defender.service.antispyware.signature_age
-      type: long
-      ignore_missing: true
-  - set:
-      field: ecs.version
-      value: 8.10.0
-  - set:
-      field: event.kind
-      value: state
-  - set:
-      field: event.category
-      value: [configuration]
-  - set:
-      field: event.type
-      value: [info]
-  - remove:
-      field: message
-      ignore_missing: true
-  - remove:
-      tag: remove_preserve_original_event
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
+
+  - pipeline:
+      name: '{{ IngestPipeline "common_init" }}'
+  - pipeline:
+      name: '{{ IngestPipeline "rest" }}'
+
+###################
+# Failure handler #
+###################
+
 on_failure:
+  - append:
+      field: error.message
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

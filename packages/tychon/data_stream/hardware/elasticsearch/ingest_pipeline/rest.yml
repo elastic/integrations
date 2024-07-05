@@ -1,0 +1,34 @@
+---
+description: Pipeline for Hardware
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+  - set:
+      field: event.kind
+      value: state
+  - lowercase:
+      field: device.present
+      ignore_missing: true
+  - set:
+      field: event.category
+      value: [configuration]
+  - set:
+      field: event.type
+      value: [info]
+  - remove:
+      field: message
+      ignore_missing: true
+  - remove:
+      tag: remove_preserve_original_event
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

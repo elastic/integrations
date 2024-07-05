@@ -1,20 +1,20 @@
+---
+description: Pipeline for common initial processing
+processors:
+
   - set:
-      field: event.module
-      value: tychon
-  - set:
-      tag: set_orginal
       copy_from: message
       field: event.original
   - json:
       field: message
-      add_to_root: true
-      add_to_root_conflict_strategy: replace
-      tag: convert_json
+      target_field: tychon
   - dot_expander:
-      tag: expand_dots
       field: '*'
-      override: true
+      path: tychon
 
+  - set:
+      field: event.module
+      value: tychon
 
   - set:
       field: '@timestamp'
