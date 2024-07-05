@@ -1,0 +1,1853 @@
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event read/sent.
+- name: prisma_access
+  type: group
+  fields:
+    - name: event
+      type: group
+      fields:
+        - name: access_point_name
+          type: keyword
+          description: Indicates the access point name, which is a reference to a Packet Data Network Data Gateway (PGW)/ Gateway GPRS Support Node in a mobile network.
+        - name: agent
+          type: group
+          fields:
+            - name: content_version
+              type: keyword
+              description: Version of the agent content that is installed on the endpoint.
+            - name: data_collection_status
+              type: keyword
+              description: Indicates whether data related to another product (for example, EDR) is being collected by the agent.
+            - name: id
+              type: keyword
+              description: Unique identifier for the agent at the endpoint.
+            - name: isolation_status
+              type: keyword
+              description: Indicates whether the agent is isolated. Usually, agents are isolated if they have been compromised.
+            - name: status
+              type: keyword
+              description: The protection status set for the endpoint.
+            - name: timezone_offset
+              type: keyword
+              description: Effective endpoint time zone offset from UTC, in minutes.
+            - name: version
+              type: keyword
+              description: Version of the agent at the endpoint.
+        - name: app_tampered
+          type: boolean
+          description: Indicates whether application files on the endpoint were tampered with or modified.
+        - name: appliance_or_cloud
+          type: keyword
+          description: FQDN of either the appliance (private) or the cloud (public) from where the file was uploaded for analysis.
+        - name: application
+          type: group
+          fields:
+            - name: category
+              type: keyword
+              description: Identifies the high-level family of the application.
+            - name: characteristics
+              type: keyword
+              description: Identifies the behaviorial characteristic of the application associated with the network traffic.
+            - name: container
+              type: keyword
+              description: Identifies the managing application or parent of the application associated with this network traffic.
+            - name: protocol
+              type: keyword
+              description: Application associated with the network traffic.
+            - name: risk
+              type: keyword
+              description: Indicates how risky the application is from a network security perspective.
+            - name: subcategory
+              type: keyword
+              description: Identifies the application's subcategory. The subcategory is related to the application's category, which is identified in category_of_app.
+            - name: technology
+              type: keyword
+              description: The networking technology used by the identified application.
+        - name: assocation_end_reason
+          type: keyword
+          description: The reason the session terminated. If the termination had multiple reasons, only the highest priority reason is identified here.
+        - name: attempted_gateways
+          type: keyword
+          description: String of all gateways that were available and attempted for the client location. Contains gateway name, ssl response time, and priority, separated by a semicolon.
+        - name: auth
+          type: group
+          fields:
+            - name: cache_service_region
+              type: keyword
+              description: Region where the service is deployed.
+            - name: factor_no
+              type: long
+              description: Indicates the use of primary authentication (1) or additional factors (2, 3).
+            - name: method
+              type: keyword
+              description: Authentication method used for the GlobalProtect connection.
+            - name: server_profile
+              type: keyword
+              description: Authentication server used for authentication.
+        - name: authenticated
+          type: group
+          fields:
+            - name: user
+              type: group
+              fields:
+                - name: domain
+                  type: keyword
+                  description: Domain to which the user who is being authenticated belongs.
+                - name: name
+                  type: keyword
+                  description: Name of the user who is being authenticated.
+                - name: uuid
+                  type: keyword
+                  description: Unique identifier assigned to the user who is being authenticated.
+        - name: authentication
+          type: group
+          fields:
+            - name: description
+              type: keyword
+              description: Additional authentication information.
+            - name: policy
+              type: keyword
+              description: Policy invoked for authentication before allowing access to a protected resource.
+            - name: protocol
+              type: keyword
+              description: Indicates the authentication protocol used by the server.
+        - name: base_event_count
+          type: long
+          description: Number of sessions with same Source IP, Destination IP, Application, and Content/Threat Type seen for the summary interval.
+        - name: bytes
+          type: group
+          fields:
+            - name: total
+              type: long
+              description: Number of total bytes (transmit and receive).
+            - name: in
+              type: long
+              description: Number of bytes in the server-to-client network traffic.
+            - name: out
+              type: long
+              description: Number of bytes in the client-to-server network traffic.
+        - name: cached_configuration
+          type: boolean
+          description: Indicates whether the client is using a cached configuration to connect to the GlobalProtect portal.
+        - name: captive_portal
+          type: boolean
+          description: Indicates if user information for the session was captured through Captive Portal.
+        - name: cef
+          type: group
+          fields:
+            - name: device
+              type: group
+              fields:
+                - name: product
+                  type: keyword
+                - name: vendor
+                  type: keyword
+                - name: version
+                  type: keyword
+            - name: name
+              type: keyword
+            - name: severity
+              type: long
+            - name: version
+              type: keyword
+        - name: certificate
+          type: group
+          fields:
+            - name: flags
+              type: keyword
+              description: Internal use only bit field containing raw decryption information as generated at the firewall. The information in this bit field is reflected in other decryption log fields.
+            - name: serial
+              type: keyword
+              description: The certificate's serial number.
+            - name: size
+              type: long
+              description: The size of the certificate.
+            - name: version
+              type: keyword
+              description: The certificate's version number.
+        - name: chain_status
+          type: keyword
+          description: The certificate chain verification status.
+        - name: chunks
+          type: group
+          fields:
+            - name: received
+              type: long
+              description: The total number of SCTP data chunks in the server-to-client network traffic.
+            - name: sent
+              type: long
+              description: The total number of SCTP data chunks in the client-to-server network traffic.
+            - name: total
+              type: long
+              description: The total number of SCTP data chunks in the network traffic.
+        - name: class_id
+          type: keyword
+          description: Device Class ID.
+        - name: client
+          type: group
+          fields:
+            - name: to_firewall
+              type: boolean
+              description: The direction of the SSL/TLS connection is from the client to the firewall.
+            - name: type
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: Type of client used to complete authentication (such as authentication portal).
+                - name: name
+                  type: keyword
+                  description: Type of client used to complete authentication.
+        - name: cloud
+          type: group
+          fields:
+            - name: hostname
+              type: keyword
+              description: The hostname in which the VM-series firewall is running.
+            - name: report_id
+              type: keyword
+              description: Unique 32 character ID for a file scanned by the DLP cloud service sent by a firewall running PAN-OS 10.2.0.
+        - name: common
+          type: group
+          fields:
+            - name: name
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: The common name found on the certificate's domain name.
+                - name: length
+                  type: long
+                  description: The length of the common name found on the certificate's domain name before truncation (if any).
+        - name: config_version
+          type: keyword
+          description: Version number of the firewall operating system that wrote this log record.
+        - name: configuration_refresh
+          type: boolean
+          description: Indicates whether the GlobalProtect portal configuration has been refreshed.
+        - name: connection
+          type: group
+          fields:
+            - name: error
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: Error information for unsuccessful connection.
+                - name: id
+                  type: keyword
+                  description: Enumeration integer assigned to the connection_error field value.
+            - name: method
+              type: keyword
+              description: Identifies how the GlobalProtect app connected to the the Gateway.
+        - name: container
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Unknown field. No information is available at this time.
+            - name: name
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: Container name.
+                - name: space
+                  type: keyword
+                  description: Container namespace.
+        - name: content_version
+          type: keyword
+          description: Version of the content on the firewall.
+        - name: cortex_data_lake_tenant_id
+          type: keyword
+          description: The ID that uniquely identifies the Cortex Data Lake instance which received this log record.
+        - name: count_of_repeats
+          type: long
+          description: Number of sessions with same Source IP, Destination IP, Application, and Content/Threat Type seen for the summary interval.
+        - name: cpadding
+          type: keyword
+          description: For internal use only.
+        - name: cpu_usage
+          type: double
+          description: The percentage of overall CPU usage on the endpoint.
+        - name: crash_history
+          type: keyword
+          description: A record of any GlobalProtect application crashes.
+        - name: d_user_0
+          type: keyword
+        - name: data
+          type: group
+          fields:
+            - name: code
+              type: keyword
+              description: The SCTP event notification code set for this message.
+            - name: description
+              type: keyword
+              description: Description of the system event. If the source is a firewall, this is opaque. If the source is TMS, this is the msgTextEn field.
+            - name: details
+              type: keyword
+              description: Identifies the firewall's configuration prior to and immediately after the configuration change.
+            - name: id
+              type: keyword
+              description: Identifies the event.
+            - name: outcome
+              type: keyword
+              description: The status (success or failure) of the event.
+            - name: result
+              type: keyword
+              description: Result of the configuration action.
+            - name: time
+              type: date
+              description: Time when the log was generated on the firewall's data plane. This string contains a timestamp value that is the number of microseconds since the Unix epoch.
+        - name: debug_log_file
+          type: keyword
+          description: The name of a file containing debug logs.
+        - name: description
+          type: keyword
+          description: Additional information regarding the event.
+        - name: destination
+          type: group
+          fields:
+            - name: address
+              type: group
+              fields:
+                - name: value
+                  type: ip
+                  description: Original destination IP address.
+                - name: v6
+                  type: ip
+                  description: Original destination IP address.
+            - name: device
+              type: group
+              fields:
+                - name: category
+                  type: keyword
+                  description: Category of the device to which the session was directed.
+                - name: class
+                  type: keyword
+                  description: Destination device class.
+                - name: host
+                  type: keyword
+                  description: Hostname of the device to which the session was directed.
+                - name: mac
+                  type: keyword
+                  description: MAC Address of the device to which the session was directed.
+                - name: model
+                  type: keyword
+                  description: Model of the device to which the session was directed.
+                - name: os
+                  type: group
+                  fields:
+                    - name: type
+                      type: keyword
+                      description: Destination device OS type.
+                    - name: family
+                      type: keyword
+                      description: OS family of the device to which the session was directed.
+                    - name: version
+                      type: keyword
+                      description: OS version of the device to which the session was directed.
+                - name: profile
+                  type: keyword
+                  description: Profile of the device to which the session was directed.
+                - name: vendor
+                  type: keyword
+                  description: Vendor of the device to which the session was directed.
+            - name: dynamic_address_group
+              type: keyword
+              description: The dynamic address group that Device-ID identifies as the destination for the traffic.
+            - name: edl
+              type: keyword
+              description: The name of the external dynamic list that contains the destination IP address of the traffic.
+            - name: host_name
+              type: keyword
+              description: Name of the user’s machine.
+            - name: location
+              type: keyword
+              description: Destination country or internal region for private addresses.
+            - name: nt_domain
+              type: keyword
+              description: Domain to which the Destination User belongs.
+            - name: port
+              type: long
+              description: Network traffic's destination port. If this value is 0, then the app is using its standard port.
+            - name: service_name
+              type: keyword
+              description: Client used by the administrator who is performing the configuration.
+            - name: translated
+              type: group
+              fields:
+                - name: address
+                  type: ip
+                  description: If destination NAT performed, the post-NAT destination IP address.
+                - name: port
+                  type: long
+                  description: Post-NAT destination port.
+            - name: user
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: The username to which the network traffic was destined.
+                - name: domain
+                  type: keyword
+                  description: Domain to which the Destination User belongs.
+                - name: id
+                  type: keyword
+                  description: Unique identifier assigned to the Destination User.
+                - name: name
+                  type: keyword
+                  description: The username to which the network traffic was destined.
+                - name: uuid
+                  type: keyword
+                  description: Unique identifier assigned to the Destination User.
+            - name: uuid
+              type: keyword
+              description: Identifies the destination universal unique identifier for a guest virtual machine in the VMware NSX environment.
+        - name: device
+          type: group
+          fields:
+            - name: action
+              type: keyword
+              description: Identifies the action that the firewall took for the network traffic.
+            - name: event
+              type: group
+              fields:
+                - name: category
+                  type: keyword
+                  description: The device event category.
+                - name: class_id
+                  type: keyword
+                  description: Identifies the log type.
+            - name: external_id
+              type: keyword
+              description: ID that uniquely identifies the source of the log. If the source is a firewall, this is its serial number.
+            - name: group
+              type: keyword
+              description: The ID and the name of the device group the firewall is in.
+            - name: host_name
+              type: keyword
+              description: Name of the source of the log. That is, the hostname of the firewall that logged the network traffic.
+            - name: inbound_interface
+              type: keyword
+              description: Interface from which the network traffic was sourced.
+            - name: ipv6_address
+              type: ip
+              description: Source from which mapping information is collected.
+            - name: name
+              type: keyword
+              description: Name of the source of the log. That is, the hostname of the firewall that logged the network traffic.
+            - name: outbound_interface
+              type: keyword
+              description: Interface to which the network traffic was destined.
+            - name: receipt_time
+              type: date
+              description: Time the log was received in Cortex Data Lake. This is populated by the platform.
+            - name: sn
+              type: keyword
+              description: ID that uniquely identifies the source of the log. That is, the serial number of the firewall that generated the log.
+            - name: time_zone
+              type: keyword
+              description: The difference between the time zone of the endpoint and GMT.
+            - name: vendor
+              type: keyword
+              description: Identifies the vendor that produced the data.
+        - name: dg_hierarchy
+          type: group
+          fields:
+            - name: level1
+              type: long
+              description: A sequence of identification numbers that indicate the device group’s location within a device group hierarchy.
+            - name: level2
+              type: long
+              description: A sequence of identification numbers that indicate the device group’s location within a device group hierarchy.
+            - name: level3
+              type: long
+              description: A sequence of identification numbers that indicate the device group’s location within a device group hierarchy.
+            - name: level4
+              type: long
+              description: A sequence of identification numbers that indicate the device group’s location within a device group hierarchy.
+        - name: diam
+          type: group
+          fields:
+            - name: app_id
+              type: keyword
+              description: The IANA ID assigned to the Diameter application associated with this network traffic.
+            - name: avp_code
+              type: keyword
+              description: The AVP code used by the Diameter application associated with this network traffic.
+        - name: diameter_command_code
+          type: keyword
+          description: The Diameter command code used by this network traffic.
+        - name: direction_of_attack
+          type: keyword
+          description: Indicates the direction of the attack.
+        - name: disable_history
+          type: keyword
+          description: A record of the times that GlobalProtect was disabled.
+        - name: disk_available
+          type: double
+          description: The disk space remaining on the endpoint.
+        - name: dlp_version_flag
+          type: keyword
+          description: Indicates whether these are old or new data filtering logs.
+        - name: dlsa_status
+          type: boolean
+          description: Indicates whether local subnet access is enabled.
+        - name: dns
+          type: group
+          fields:
+            - name: category
+              type: keyword
+              description: The DNS category verdict for the requested domain, represented by an integer. The integer represents different categories depending on the value of the protocol field.
+            - name: reachable
+              type: boolean
+              description: Indicates whether the endpoint can reach internet DNS servers.
+            - name: resolver_ip
+              type: ip
+              description: The IP address of the DNS resolver.
+            - name: response
+              type: group
+              fields:
+                - name: value
+                  type: ip
+                  description: The IP address that the domain in the DNS query got resolved to.
+                - name: code
+                  type: keyword
+                  description: The IP address that the domain in the DNS query got resolved to.
+            - name: secuity_version
+              type: keyword
+              description: A number indicating the PAN-OS version of the firewall that generated the log.
+        - name: domain
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: The subject common name; that is, the name of the server that the certificate protects.
+            - name: edl
+              type: keyword
+              description: Domain External Dynamic List. That is, the name of the external dynamic list that contains the destination domain of the traffic.
+        - name: dst_zone
+          type: keyword
+          description: The networking zone the session was destined to.
+        - name: dual_stack_tunnel_interface
+          type: boolean
+          description: Indicates whether the GlobalProtect interface is both IPv4 and IPv6 compatible.
+        - name: dynamic_user_group
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: Dynamic user group of the user who initiated the network connection.
+            - name: name
+              type: keyword
+              description: Dynamic user group of the user who initiated the network connection.
+        - name: elliptic_curve
+          type: keyword
+          description: The elliptic cryptography curve that the client and server negotiate and use for connections that use ECDHE cipher suites.
+        - name: email_subject
+          type: keyword
+          description: Identifies the subject of an email that the sandbox determined to be malicious when it was analyzing an email link forwarded by the firewall.
+        - name: end_time
+          type: date
+          description: Time when the authentication was completed. This string contains a timestamp value that is the number of microseconds since the Unix epoch.
+        - name: endpoint
+          type: group
+          fields:
+            - name: association_id
+              type: keyword
+              description: The ID assigned to the endpoint association used for the SCTP network traffic.
+            - name: cpu_architecture
+              type: keyword
+              description: The architecture of the OS type that the endpoint is running.
+            - name: device
+              type: group
+              fields:
+                - name: domain
+                  type: keyword
+                  description: Domain to which the endpoint belongs.
+                - name: name
+                  type: keyword
+                  description: Hostname of the endpoint on which the event was logged.
+            - name: ip_address
+              type: ip
+              description: IP address of the source of the event.
+            - name: os
+              type: group
+              fields:
+                - name: type
+                  type: keyword
+                  description: The operating system installed on the user’s machine or device (or on the client system).
+                - name: version
+                  type: keyword
+                  description: The version of the operating system running on the endpoint.
+            - name: serial_number
+              type: keyword
+              description: Serial number of the host on which GlobalProtect is installed.
+            - name: sn
+              type: keyword
+              description: ID that uniquely identifies the endpoint on which the GlobalProtect client is deployed.
+            - name: user
+              type: group
+              fields:
+                - name: domain
+                  type: keyword
+                  description: Domain of the user who was logged into the endpoint at the time of the system event.
+                - name: name
+                  type: keyword
+                  description: The name of the user logged into the endpoint at the time of the system event.
+                - name: uuid
+                  type: keyword
+                  description: The endpoint user's unique ID.
+        - name: enforcer_status
+          type: boolean
+          description: Indicated whether GlobalProtect is enforced for network access.
+        - name: error
+          type: group
+          fields:
+            - name: details
+              type: keyword
+              description: Details that help troubleshoot an error.
+            - name: index
+              type: keyword
+              description: The elliptic cryptography curve that the client and server negotiate and use for connections that use ECDHE cipher suites.
+            - name: message
+              type: keyword
+              description: The error message content.
+            - name: stage
+              type: keyword
+              description: The stage when an error occurred.
+        - name: external_id
+          type: keyword
+          description: The log entry identifier, which is incremented sequentially. Each log type has a unique number space.
+        - name: fallback_to_ssl_reason
+          type: keyword
+          description: The reason why the GlobalProtect client fell back to SSL to connect to the gateway.
+        - name: file
+          type: group
+          fields:
+            - name: hash
+              type: keyword
+              description: The binary hash (SHA256) of the file.
+            - name: id
+              type: keyword
+              description: Packet capture ID. Used to correlate threat pcap files with extended pcaps taken as a part of the session flow.
+            - name: name
+              type: keyword
+              description: The name of the file that is blocked.
+            - name: type
+              type: keyword
+              description: The type of the file.
+            - name: url
+              type: keyword
+              description: File URL.
+        - name: filename
+          type: keyword
+          description: Name of the object associated with the system event.
+        - name: fingerprint
+          type: keyword
+          description: A hash of the certificate in x509 binary format.
+        - name: firewall_to_client
+          type: boolean
+          description: The direction of the SSL/TLS connection is from the firewall to the client.
+        - name: flow_type
+          type: keyword
+          description: Define the traffic type, whether it is for explicit proxy, transparent proxy or no proxy traffic.
+        - name: from_zone
+          type: keyword
+          description: The networking zone from which the traffic originated.
+        - name: gateway
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: Selected Gateway for the connection.
+            - name: address
+              type: ip
+              description: The IP address of the GlobalProtect gateway.
+            - name: authentication
+              type: keyword
+              description: An array of the authentication methods used to connect to the GlobalProtect gateway.
+            - name: configuration_name
+              type: keyword
+              description: The name of the GlobalProtect gateway client settings configuration.
+            - name: logout_time
+              type: date
+              description: The UTC time in milliseconds when the GlobalProtect client logged out from the gateway.
+            - name: priority
+              type: keyword
+              description: Priority of gateway, retrieved from portal configuration.
+            - name: reachable
+              type: boolean
+              description: Indicates whether the gateway is reachable.
+            - name: selection_type
+              type: keyword
+              description: Gateway Selection Method i.e automatic, preferred or manual.
+            - name: ssl_certificate_valid
+              type: boolean
+              description: Indicates whether the gateway server certificate is valid.
+            - name: status
+              type: keyword
+              description: The status of the GlobalProtect gateway.
+        - name: global_protect
+          type: group
+          fields:
+            - name: client_version
+              type: keyword
+              description: GlobalProtect client version number.
+            - name: cpu_usage
+              type: double
+              description: The percentage of the endpoint's CPU resources used by GlobalProtect.
+            - name: gateway_location
+              type: keyword
+              description: Location of the Global Protect Gateway.
+            - name: memory_usage
+              type: keyword
+              description: The memory resources used by GlobalProtect on the endpoint.
+            - name: mtu
+              type: long
+              description: The maximum transmission unit of GlobalProtect.
+            - name: version
+              type: keyword
+              description: The GlobalProtect application version.
+        - name: gp_host_id
+          type: keyword
+          description: A unique ID that GlobalProtect assigns to identify the host.
+        - name: ha_session_owner
+          type: keyword
+          description: Name of cluster member in which session failed over from.
+        - name: hip_match_type
+          type: keyword
+          description: Identifies whether the hip field represents a HIP object or a HIP profile.
+        - name: host_id
+          type: keyword
+          description: A unique ID that GlobalProtect assigns to identify the host.
+        - name: http2_connection
+          type: keyword
+          description: Parent session ID for an HTTP/2 connection. If the traffic is not using HTTP/2, this field is set to 0.
+        - name: http
+          type: group
+          fields:
+            - name: headers
+              type: keyword
+              description: The HTTP headers used in the web request.
+            - name: method
+              type: keyword
+              description: Describes the HTTP Method used in the web request.
+            - name: referer
+              type: group
+              fields:
+                - name: fqdn
+                  type: keyword
+                  description: The fully qualified domain name used in the HTTP REFERER header field.
+                - name: port
+                  type: long
+                  description: The port used in the HTTP REFERER header field.
+                - name: protocol
+                  type: keyword
+                  description: The protocol used in the HTTP REFERER header field.
+                - name: url_path
+                  type: keyword
+                  description: The URL path used in the HTTP REFERER header field.
+        - name: imei
+          type: keyword
+          description: A string used to group similar traffic together for logging and reporting. This value is globally defined on the firewall by the administrator.
+        - name: imsi
+          type: keyword
+          description: ID of the tunnel being inspected or the International Mobile Subscriber Identity (IMSI) ID of the mobile user.
+        - name: inbound_interface
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: Interface from which the network traffic was sourced.
+            - name: details
+              type: group
+              fields:
+                - name: port
+                  type: long
+                  description: Hardware port or socket from which the network traffic was sourced.
+                - name: slot
+                  type: long
+                  description: Interface slot from which the network traffic was sourced.
+                - name: type
+                  type: keyword
+                  description: The type of interface from which the network traffic was sourced.
+                - name: unit
+                  type: long
+                  description: Internal use.
+        - name: inline_ml_verdict
+          type: keyword
+          description: A verdict that identifies the nature of the threat based on the Inline ML model used to analyze the webpage.
+        - name: install_history
+          type: boolean
+          description: Indicates whether GlobalProtect is newly installed, upgraded, or downgraded.
+        - name: internal
+          type: group
+          fields:
+            - name: network
+              type: boolean
+              description: Indicates whether the endpoint is in an internal network.
+        - name: internet
+          type: group
+          fields:
+            - name: access
+              type: boolean
+              description: Indicates whether the endpoint has internet access.
+        - name: ip_subnet_range
+          type: keyword
+          description: IP subnet range.
+        - name: ipsec
+          type: group
+          fields:
+            - name: enabled
+              type: boolean
+              description: Indicates whether IPsec tunnel mode s enabled.
+            - name: failure_reason
+              type: keyword
+              description: The reason why the IPsec tunnel connection failed.
+        - name: is_cert
+          type: group
+          fields:
+            - name: cn_truncated
+              type: boolean
+              description: Indicates whether the common name found on the certificate has been truncated due to buffer limits.
+            - name: ecdsa
+              type: boolean
+              description: The certificate key exchange algorithm used for the session is ECDSA.
+            - name: rsa
+              type: boolean
+              description: The certificate key exchange algorithm used for the session is RSA.
+        - name: is_client_to_server
+          type: boolean
+          description: Indicates if direction of traffic is from client to server.
+        - name: is_container
+          type: boolean
+          description: Indicates if the session is a container page access (Container Page).
+        - name: is_decrypt_mirror
+          type: boolean
+          description: Indicates whether decrypted traffic was sent out in clear text through a mirror port.
+        - name: is_decrypted
+          type: group
+          fields:
+            - name: value
+              type: boolean
+              description: Flag that indicates that the session is decrypted.
+            - name: log
+              type: boolean
+              description: Unknown field. No information is available at this time.
+            - name: payload_forward
+              type: boolean
+              description: Unknown field. No information is available at this time.
+        - name: is_duplicate
+          type: group
+          fields:
+            - name: log
+              type: boolean
+              description: Indicates whether this log data is available in multiple locations, such as from Cortex Data Lake as well as from an on-premise log collector.
+            - name: user
+              type: boolean
+              description: Indicates whether duplicate users were found in a user group.
+        - name: is_encrypted
+          type: boolean
+          description: Flag that indicates that the session is encrypted.
+        - name: is_forwarded
+          type: boolean
+          description: Internal-use field that indicates if the log is being forwarded.
+        - name: is_inspection_before_session
+          type: boolean
+          description: Unknown field. No information is available at this time.
+        - name: is_ipv6
+          type: boolean
+          description: Indicates whether IPV6 was used for the session.
+        - name: is_issuer_cn_truncated
+          type: boolean
+          description: Indicates whether the common name used by the certificate's issuer has been truncated due to buffer limits.
+        - name: is_mptcp_on
+          type: boolean
+          description: Indicates whether the option is enabled on the next-generation firewall that allows a client to use multiple paths to connect to a destination host.
+        - name: is_nat
+          type: boolean
+          description: Indicates if the firewall is performing network address translation (NAT) for the logged traffic.
+        - name: is_non_standard_destination_port
+          type: boolean
+          description: Indicates if the destination port is non-standard.
+        - name: is_offloaded
+          type: boolean
+          description: Indicates whether the traffic flow is offloaded to hardware before the packets enter Linux kernel on VM/CN series.
+        - name: is_packet_capture
+          type: boolean
+          description: Indicates whether the session has a packet capture (PCAP).
+        - name: is_phishing
+          type: boolean
+          description: Indicates whether enterprise credentials were submitted by an end user.
+        - name: is_prisma
+          type: group
+          fields:
+            - name: network
+              type: boolean
+              description: Internal-use field. If set to 1, the log was generated on a cloud-based firewall. If 0, the firewall was running on-premise.
+            - name: users
+              type: boolean
+              description: Internal use field. If set to 1, the log record was generated using a cloud-based GlobalProtect instance. If 0, GlobalProtect was hosted on-premise.
+        - name: is_proxy
+          type: boolean
+          description: Indicates whether the SSL session is decrypted (SSL Proxy).
+        - name: is_recon_excluded
+          type: boolean
+          description: Indicates whether source for the flow is on the firewall allow list and not subject to recon protection.
+        - name: is_resume_session
+          type: boolean
+          description: Indicates that the decryption session was previously interrupted and is now resuming.
+        - name: is_root_cn_truncated
+          type: boolean
+          description: Indicates whether the common name used for the root CA has been truncated due to buffer limits.
+        - name: is_saas_application
+          type: boolean
+          description: Internal use field. Indicates whether the application associated with this network traffic is a SAAS application.
+        - name: is_server_to_client
+          type: boolean
+          description: Indicates if direction of traffic is from server to client.
+        - name: is_sni_truncated
+          type: boolean
+          description: Indicates whether the server name indication (SNI), which is the hostname of the server that the client is trying to reach, has been truncated due to buffer limits.
+        - name: is_source_x_forwarded
+          type: boolean
+          description: Indicates whether the X-Forwarded-For value from a proxy is in the source user field.
+        - name: is_system_return
+          type: boolean
+          description: Indicates whether symmetric return was used to forward traffic for this session.
+        - name: is_transaction
+          type: boolean
+          description: Indicates whether the log corresponds to a transaction within an HTTP proxy session (Proxy Transaction).
+        - name: is_tunnel_inspected
+          type: boolean
+          description: Indicates whether the payload for the outer tunnel was inspected.
+        - name: is_url_denied
+          type: boolean
+          description: Indicates whether the session was denied due to a URL filtering rule.
+        - name: issuer
+          type: group
+          fields:
+            - name: common_name
+              type: keyword
+              description: The name of the organization that verified the certificate’s contents.
+            - name: name_length
+              type: long
+              description: The length of the issuer's common name before truncation (if any).
+        - name: jail_broken_status
+          type: boolean
+          description: Indicates whether the mobile device is jailbroken.
+        - name: jitter
+          type: long
+          description: The gateway jitter in milliseconds.
+        - name: justification
+          type: keyword
+          description: Justification string.
+        - name: label
+          type: group
+          fields:
+            - name: c6a1
+              type: keyword
+            - name: c6a2
+              type: keyword
+            - name: c6a3
+              type: keyword
+            - name: cs1
+              type: keyword
+            - name: cs2
+              type: keyword
+            - name: cs3
+              type: keyword
+            - name: cs4
+              type: keyword
+            - name: cs5
+              type: keyword
+            - name: cs6
+              type: keyword
+            - name: flex_string
+              type: keyword
+        - name: last
+          type: group
+          fields:
+            - name: hip_report_time
+              type: date
+              description: The last time GlobalProtect sent a Host Information Profile (HIP) report.
+            - name: logout_time
+              type: date
+              description: The last time a user logged out of GlobalProtect in millisecond UTC.
+        - name: latency
+          type: long
+          description: The gateway latency in milliseconds.
+        - name: link
+          type: group
+          fields:
+            - name: change_count
+              type: long
+              description: Number of times the app flapped in that session.
+            - name: switches
+              type: keyword
+              description: Details of the links switches (up-to 4).
+        - name: locale
+          type: keyword
+          description: The language locale name.
+        - name: location
+          type: keyword
+          description: The geographic region/location.
+        - name: log
+          type: group
+          fields:
+            - name: exported
+              type: boolean
+              description: Indicates if this log was exported from the firewall using the firewall's log export function.
+            - name: forwarded
+              type: boolean
+              description: Internal-use field that indicates if the log is being forwarded.
+            - name: setting
+              type: keyword
+              description: Log forwarding profile name that was applied to the session. This name was defined by the firewall's administrator.
+            - name: source
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: Identifies the origin of the data. That is, the system that produced the data.
+                - name: group_id
+                  type: keyword
+                  description: ID that uniquely identifies the logSourceGroupId of the log. That is, the log_source_id of the group.
+                - name: timezone_offset
+                  type: keyword
+                  description: Time Zone offset from GMT of the source of the log.
+            - name: subtype
+              type: keyword
+              description: Identifies the log subtype.
+        - name: logging_service_id
+          type: keyword
+          description: The ID that uniquely identifies the Cortex Data Lake instance which received this log record.
+        - name: login_duration
+          type: long
+          description: Duration for which the connected user was logged on.
+        - name: map_app_code
+          type: keyword
+          description: Mobile Application Part (MAP) operation code used for this network traffic.
+        - name: mapping
+          type: group
+          fields:
+            - name: data_source
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: Source from which mapping information is collected.
+                - name: name
+                  type: keyword
+                  description: User-ID source that sends the IP (Port)-User Mapping.
+                - name: subtype
+                  type: keyword
+                  description: Mechanism used to identify the IP/User mappings within a data source.
+                - name: type
+                  type: keyword
+                  description: Mechanism used to identify the IP/User mappings within a data source.
+            - name: timeout
+              type: long
+              description: Timeout interval after the mappings are cleared.
+        - name: memory_usage
+          type: long
+          description: The total memory usage on the endpoint.
+        - name: message
+          type: keyword
+          description: Description of this log record.
+        - name: mfa
+          type: group
+          fields:
+            - name: authentication_id
+              type: keyword
+              description: Unique ID given across primary authentication and additional (multi-factor) authentication.
+            - name: factor_type
+              type: keyword
+              description: The vendor used to authenticate a user when multi-factor authentication is present.
+            - name: vendor
+              type: keyword
+              description: Vendor providing additional factor authentication.
+        - name: mobile
+          type: group
+          fields:
+            - name: area_code
+              type: keyword
+              description: Area within a Public Land Mobile Network (PLMN).
+            - name: base_station_code
+              type: keyword
+              description: Base station within an area code.
+            - name: country_code
+              type: keyword
+              description: Mobile country code of serving core network operator.
+            - name: ip
+              type: ip
+              description: IP address of a mobile subscriber allocated by a PGW/GGSN.
+            - name: network_code
+              type: keyword
+              description: Mobile network code of serving core network operator.
+            - name: subscriber_isdn
+              type: keyword
+              description: Service identity associated with the mobile subscriber.
+        - name: name
+          type: keyword
+          description: Identifies the log subtype.
+        - name: nat
+          type: group
+          fields:
+            - name: value
+              type: boolean
+              description: Indicates if the firewall is performing network address translation (NAT) for the logged traffic.
+            - name: destination
+              type: group
+              fields:
+                - name: value
+                  type: ip
+                  description: If destination NAT performed, the post-NAT destination IP address.
+                - name: port
+                  type: long
+                  description: Post-NAT destination port.
+            - name: source
+              type: group
+              fields:
+                - name: value
+                  type: ip
+                  description: If source NAT was performed, the post-NAT source IP address.
+                - name: port
+                  type: long
+                  description: Post-NAT source port.
+        - name: network_access
+          type: boolean
+          description: Indicates whether the endpoint has network access.
+        - name: non_standard_destination_port
+          type: long
+          description: Identifies the non-standard or unexpected port used by the application associated with this session.
+        - name: normalize_user
+          type: keyword
+          description: Normalized version of the username being authenticated (such as appending a domain name to the username).
+        - name: nssai_network_slice
+          type: group
+          fields:
+            - name: differentiator
+              type: keyword
+              description: Network Slice Differentiator (SD part of SNSSAI).
+            - name: type
+              type: keyword
+              description: Network Slice Type (SST part of SNSSAI).
+        - name: operating_system
+          type: keyword
+          description: The operating system of the device from which a user is reporting an issue.
+        - name: outbound_interface_details
+          type: group
+          fields:
+            - name: port
+              type: long
+              description: Hardware port or socket to which the network traffic was sent.
+            - name: slot
+              type: long
+              description: Interface slot to which the network traffic was sent.
+            - name: type
+              type: keyword
+              description: The type of interface to which the network traffic was sent.
+            - name: unit
+              type: long
+              description: Internal use.
+        - name: packet
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: Packet that triggered the firewall to generate this log record.
+            - name: capture
+              type: boolean
+              description: Indicates whether the session has a packet capture (PCAP).
+            - name: loss
+              type: double
+              description: The percentage of packets lost from gateway traffic.
+        - name: packets
+          type: group
+          fields:
+            - name: dropped
+              type: group
+              fields:
+                - name: max
+                  type: long
+                  description: Number of packets the firewall dropped because the packet exceeded the maximum number of encapsulation levels configured.
+                - name: protocol
+                  type: double
+                  description: Number of packets the firewall dropped because the packet contains an unknown protocol.
+                - name: strict
+                  type: double
+                  description: Number of packets the firewall dropped because the tunnel protocol header in the packet failed to comply with the RFC for the tunnel protocol.
+                - name: tunnel
+                  type: long
+                  description: Number of packets the firewall dropped because of fragmentation errors.
+            - name: received
+              type: long
+              description: Number of server-to-client packets for the session.
+            - name: sent
+              type: long
+              description: Number of client-to-server packets for the session.
+            - name: total
+              type: long
+              description: Number of total packets (transmit and receive) seen for the session.
+        - name: padding
+          type: keyword
+          description: For internal use only.
+        - name: padding3
+          type: keyword
+          description: For internal use only.
+        - name: panorama_sn
+          type: keyword
+          description: Panorama Serial associated with CDL.
+        - name: parent
+          type: group
+          fields:
+            - name: session_id
+              type: keyword
+              description: ID of the session in which this network traffic was tunneled.
+            - name: start_time
+              type: date
+              description: Time that the parent session began. This string contains a timestamp value that is the number of microseconds since the Unix epoch.
+        - name: partial_hash
+          type: keyword
+          description: Machine learning partial hash.
+        - name: payload_protocol_id
+          type: keyword
+          description: The associated Payload Protocol Identifier.
+        - name: platform_type
+          type: keyword
+          description: The platform type (Valid types are VM, PA, NGFW, CNGFW).
+        - name: policy_name
+          type: keyword
+          description: The name of the Decryption policy associated with the session.
+        - name: portal
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: Global Protect Portal or Gateway that the user connected to.
+            - name: address
+              type: ip
+              description: The IP address of the last connected GlobalProtect portal.
+            - name: authentication
+              type: keyword
+              description: The authentication methods used to connect to the GlobalProtect portal.
+            - name: configuration_name
+              type: keyword
+              description: The name of the GlobalProtect portal configuration if the client is connected to a portal.
+            - name: gateway_latency
+              type: long
+              description: The network latency in milliseconds.
+            - name: last_connect_time
+              type: date
+              description: The last time the client connected to a GlobalProtect portal.
+            - name: reachable
+              type: boolean
+              description: Indicates whether the GlobalProtect portal is reachable and accepts a TCP connection.
+            - name: ssl_certificate_valid
+              type: boolean
+              description: Indicates whether the portal has a valid server certificate.
+            - name: status
+              type: keyword
+              description: The status of the portal before the user reported an issue.
+        - name: private
+          type: group
+          fields:
+            - name: ipv4
+              type: ip
+              description: Private IP address (v4) of the user that connected.
+            - name: ipv6
+              type: ip
+              description: Private IP address (v6) of the user that connected.
+        - name: privileges
+          type: boolean
+          description: Indicates whether GlobalProtect has the necessary permissions on the endpoint to function.
+        - name: profile
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Data filtering profile name.
+            - name: token
+              type: keyword
+              description: Profile token.
+        - name: project_name
+          type: keyword
+          description: Reserved for future use.
+        - name: protocol_data_unitsession_id
+          type: keyword
+          description: Protocol Data Unit session ID.
+        - name: proxy
+          type: group
+          fields:
+            - name: server
+              type: boolean
+              description: Indicates whether the endpoint is behind a proxy server.
+            - name: type
+              type: keyword
+              description: The Decryption proxy type, such as Forward for Forward Proxy, Inbound for Inbound Inspection, No Decrypt for undecrypted traffic, Decryption Broker, GlobalProtect, and so forth.
+        - name: public
+          type: group
+          fields:
+            - name: ipv4
+              type: ip
+              description: Public IP address (v4) of the user that connected.
+            - name: ipv6
+              type: ip
+              description: Public IP address (v6) of the user that connected.
+        - name: quarantine_reason
+          type: keyword
+          description: Quarantine reason.
+        - name: radio_access_technology
+          type: keyword
+          description: Identifies the type of technology used for radio access.
+        - name: reason
+          type: keyword
+          description: Reason.
+        - name: reason_for_data_filtering_action
+          type: keyword
+          description: Reason for data filtering action.
+        - name: recipient_email
+          type: keyword
+          description: Identifies the recipient of an email that sandbox determined to be malicious when it was analyzing an email link forwarded by the firewall.
+        - name: record_type
+          type: keyword
+          description: The DNS record type.
+        - name: referer
+          type: keyword
+          description: The web page URL identified in the HTTP REFERER header field.
+        - name: report_id
+          type: keyword
+          description: Identifies the analysis requested from the sandbox (cloud or appliance).
+        - name: request
+          type: group
+          fields:
+            - name: client_application
+              type: keyword
+              description: The User Agent field specifies the web browser that the user used to access the URL.
+            - name: context
+              type: keyword
+              description: Content type of the HTTP response data.
+            - name: method
+              type: keyword
+              description: The HTTP Method used in the web request.
+            - name: url
+              type: keyword
+              description: Request URL.
+        - name: root
+          type: group
+          fields:
+            - name: cn_length
+              type: long
+              description: The length of the root CA's common name before truncation (if any).
+            - name: common_name
+              type: keyword
+              description: The name of the root certificate authority.
+            - name: status
+              type: keyword
+              description: The status of the root certificate, for example, trusted, untrusted, or uninspected.
+        - name: rule
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: Name of the security policy rule that the network traffic matched.
+            - name: matched
+              type: keyword
+              description: Name of the security policy rule that the network traffic matched.
+            - name: matched_uuid
+              type: keyword
+              description: Unique identifier for the security policy rule that the network traffic matched.
+            - name: uuid
+              type: keyword
+              description: Unique identifier for the security policy rule that the network traffic matched.
+        - name: s_user_0
+          type: keyword
+        - name: sanctioned_state_of_app
+          type: boolean
+          description: Indicates whether the application has been flagged as sanctioned by the firewall administrator.
+        - name: sccp_calling
+          type: group
+          fields:
+            - name: gt
+              type: keyword
+              description: The Global Title (GT) specified in the called party address used for this SCCP protocol message.
+            - name: ssn
+              type: long
+              description: The subsystem number (SSN) specified in the called party address used for this SCCP protocol message.
+        - name: sctp
+          type: group
+          fields:
+            - name: cause_code
+              type: keyword
+              description: The error cause code found in the SCTP message.
+            - name: chunk_type
+              type: keyword
+              description: Type of information contained in the SCTP data chunk.
+            - name: event_type
+              type: keyword
+              description: The SCTP event notification type set for this message.
+            - name: filter
+              type: keyword
+              description: The SCTP filter that the firewall applied to this network traffic.
+        - name: sdwan
+          type: group
+          fields:
+            - name: cluster
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Name of the SD-WAN cluster.
+                - name: type
+                  type: keyword
+                  description: Type of SD-WAN cluster. Either mesh or hub-spoke.
+            - name: device_type
+              type: keyword
+              description: Type of SD-WAN device. Either hub or branch.
+            - name: fec_ratio
+              type: double
+              description: SDWAN forward error correction (FEC) ratio.
+            - name: policy_name
+              type: keyword
+              description: Name of the SD-WAN policy.
+            - name: site
+              type: keyword
+              description: Name of the SD-WAN site.
+        - name: sender_email
+          type: keyword
+          description: Identifies the sender of an email that sandbox determined to be malicious when it was analyzing an email link forwarded by the firewall.
+        - name: sequence_no
+          type: keyword
+          description: The log entry identifier, which is incremented sequentially. Each log type has a unique number space.
+        - name: server
+          type: group
+          fields:
+            - name: name_indication
+              type: keyword
+              description: The hostname of the server that the client is trying to contact.
+            - name: perfomance
+              type: keyword
+              description: The network latency of various destination URLs configured by an administrator on Panorama.
+        - name: session
+          type: group
+          fields:
+            - name: duration
+              type: long
+              description: Total time taken for the network session to complete.
+            - name: end_reason
+              type: keyword
+              description: The reason a session terminated.
+            - name: id
+              type: keyword
+              description: Identifies the firewall's internal identifier for a specific network session.
+            - name: owner_midx
+              type: boolean
+              description: Unknown field. No information is available at this time.
+            - name: start_time
+              type: date
+              description: Time when the session was established. This string contains a timestamp value that is the number of microseconds since the Unix epoch.
+            - name: tracker
+              type: keyword
+              description: Unknown field. No information is available at this time.
+        - name: severity
+          type: keyword
+          description: Severity as defined by the platform.
+        - name: sig_flags
+          type: keyword
+          description: Internal use only.
+        - name: sni_length
+          type: long
+          description: The length of the server name indication (SNI), which is the hostname of the server that the client is trying to reach. This is the full length of the SNI before any truncation might have occurred.
+        - name: source
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: Source.
+            - name: address
+              type: group
+              fields:
+                - name: value
+                  type: ip
+                  description: Source IP Address of the Request.
+                - name: v6
+                  type: ip
+                  description: Original source IP address.
+            - name: device
+              type: group
+              fields:
+                - name: category
+                  type: keyword
+                  description: Category of the device from which the session originated.
+                - name: class
+                  type: keyword
+                  description: Source device class.
+                - name: host
+                  type: keyword
+                  description: Hostname of the device from which the session originated.
+                - name: mac
+                  type: keyword
+                  description: MAC Address of the device from which the session originated.
+                - name: model
+                  type: keyword
+                  description: Model of the device from which the session originated.
+                - name: os
+                  type: group
+                  fields:
+                    - name: type
+                      type: keyword
+                      description: Source device OS type.
+                    - name: family
+                      type: keyword
+                      description: OS family of the device from which the session originated.
+                    - name: version
+                      type: keyword
+                      description: OS version of the device from which the session originated.
+                - name: profile
+                  type: keyword
+                  description: Profile of the device from which the session originated.
+                - name: vendor
+                  type: keyword
+                  description: Vendor of the device from which the session originated.
+            - name: dynamic_address_group
+              type: keyword
+              description: The dynamic address group that Device-ID identifies as the source of the traffic.
+            - name: edl
+              type: keyword
+              description: The name of the external dynamic list that contains the source IP address of the traffic.
+            - name: host_name
+              type: keyword
+              description: Name of the device that the user used for the connection.
+            - name: location
+              type: keyword
+              description: Source country or internal region for private addresses.
+            - name: nt_domain
+              type: keyword
+              description: Domain to which the Source User belongs.
+            - name: port
+              type: long
+              description: Source port utilized by the session.
+            - name: region
+              type: keyword
+              description: Region of the Gateway (or User) that connected.
+            - name: service_name
+              type: keyword
+              description: Identifies the origin of the data. That is, the system that produced the data.
+            - name: translated
+              type: group
+              fields:
+                - name: address
+                  type: ip
+                  description: If source NAT was performed, the post-NAT source IP address.
+                - name: port
+                  type: long
+                  description: Post-NAT source port.
+            - name: user
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: The username that initiated the network traffic.
+                - name: domain
+                  type: keyword
+                  description: Domain to which the Source User belongs.
+                - name: id
+                  type: keyword
+                  description: Unique identifier assigned to the Source User.
+                - name: name
+                  type: keyword
+                  description: The username that initiated the network traffic.
+                - name: uuid
+                  type: keyword
+                  description: Unique identifier assigned to the Source User.
+            - name: uuid
+              type: keyword
+              description: Identifies the source universal unique identifier for a guest virtual machine in the VMware NSX environment.
+        - name: split_tunnel_configuration
+          type: boolean
+          description: Indicates the status of a split tunnel configured on GlobalProtect.
+        - name: ssl
+          type: group
+          fields:
+            - name: failure_reason
+              type: keyword
+              description: The reason why the SSL tunnel connection failed.
+            - name: response_time
+              type: long
+              description: SSL Response Time in milliseconds.
+        - name: stage
+          type: keyword
+          description: Name of the stage in the GlobalProtect connection workflow.
+        - name: standard_ports_of_app
+          type: long
+          description: Standard Ports of App.
+        - name: start_time
+          type: date
+          description: Time when the log was generated on the firewall's data plane. This string contains a timestamp value that is the number of microseconds since the Unix epoch.
+        - name: stream_id
+          type: keyword
+          description: Identifies the firewall's internal identifier for the SCTP stream.
+        - name: tag
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: The tag mapped to the user.
+            - name: name
+              type: keyword
+              description: The tag mapped to the source IP address.
+        - name: template
+          type: keyword
+          description: The ID and name of the template/template stack to which the firewall belonged where the log was generated.
+        - name: tenant_id
+          type: keyword
+          description: The ID that uniquely identifies the Cortex Data Lake instance which received this log record.
+        - name: threat
+          type: group
+          fields:
+            - name: category
+              type: keyword
+              description: Threat category of the detected threat.
+            - name: id
+              type: keyword
+              description: The Global Threat ID of the requested domain. If there is a threat signature associated with the DNS request, this is a Palo Alto Networks threat ID.
+            - name: name_firewall
+              type: keyword
+              description: Threat Name written by the firewall.
+        - name: time
+          type: group
+          fields:
+            - name: generated_high_resolution
+              type: date
+              description: Time the log was generated in data plane with millisec granularity in format YYYY-MM-DDTHH:MM:SS[.DDDDDD]Z.
+            - name: not_after
+              type: date
+              description: Timestamp date after which the certificate is no longer valid.
+            - name: not_before
+              type: date
+              description: Timestamp date before which the certificate is not yet valid.
+            - name: received_management_plane
+              type: date
+              description: Time the log was received in the management plane in format YYYY-MM-DDTHH:MM:SS[.DDDDDD]Z.
+        - name: timestamp_device_identification
+          type: date
+          description: Time the device was identified in format YYYY-MM-DDTHH:MM:SS[.DDDDDD]Z.
+        - name: tls
+          type: group
+          fields:
+            - name: auth
+              type: keyword
+              description: TLS hash algorithm.
+            - name: encryption_algorithm
+              type: keyword
+              description: The algorithm used to encrypt the session data, such as AES-128-CBC, AES-256-GCM, and so forth.
+            - name: key_exchange
+              type: keyword
+              description: Algorithm used to perform the key exchange.
+            - name: version
+              type: keyword
+              description: Version of TLS used for the encrypted session represented as major.minor.patch.build.
+        - name: to_zone
+          type: keyword
+          description: Networking zone to which the traffic was sent.
+        - name: total
+          type: group
+          fields:
+            - name: disk_space
+              type: double
+              description: The total disk space on the endpoint.
+            - name: memory
+              type: long
+              description: The total memory on the endpoint.
+            - name: time_elapsed
+              type: long
+              description: The total duration of the network session.
+        - name: tpadding
+          type: keyword
+          description: For internal use only.
+        - name: transport_protocol
+          type: keyword
+          description: IP protocol associated with the session.
+        - name: tunnel
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: Type of tunnel.
+            - name: cause_code
+              type: keyword
+              description: GTP cause value in log responses.
+            - name: endpoint
+              type: group
+              fields:
+                - name: id1
+                  type: keyword
+                  description: Identifies the GTP tunnel in the network node. TEID1 is the first TEID in the GTP messages.
+                - name: id2
+                  type: keyword
+                  description: Identifies the GTP tunnel in the network node. TEID2 is the second TEID in the GTP messages.
+            - name: event
+              type: group
+              fields:
+                - name: code
+                  type: keyword
+                  description: Event code describing the GTP event.
+                - name: type
+                  type: keyword
+                  description: Identifies the GTP event type for the traffic.
+            - name: inspection_rule
+              type: keyword
+              description: Name of the security policy rule in effect for the session.
+            - name: interface
+              type: keyword
+              description: 3GPP interface from which a GTP message is received.
+            - name: message_type
+              type: keyword
+              description: Identifies the GTP message type.
+            - name: remote
+              type: group
+              fields:
+                - name: imsi_id
+                  type: keyword
+                  description: International Mobile Subscriber Identity (IMSI) of a remote user at the end of an S11-U tunnel.
+                - name: user_ip
+                  type: ip
+                  description: IP address of a remote user at the end of an S11-U tunnel.
+            - name: rename
+              type: boolean
+              description: Indicates whether the pre-logon tunnel was renamed to a user tunnel.
+            - name: sessions
+              type: group
+              fields:
+                - name: closed
+                  type: double
+                  description: Number of completed/closed sessions created.
+                - name: created
+                  type: double
+                  description: Number of inner sessions created.
+            - name: type
+              type: keyword
+              description: Tunnel Type.
+        - name: tunneled_application
+          type: keyword
+          description: For internal use only.
+        - name: type
+          type: keyword
+          description: The network type that the endpoint is accessing, such as WiFi, Ethernet, or LTE.
+        - name: ug_flags
+          type: keyword
+          description: Bit field used to indicate the status of user and group information when the next-generation firewall is performing an IP-to-username mapping.
+        - name: url
+          type: group
+          fields:
+            - name: value
+              type: keyword
+              description: The name of the internet domain that was visited in this session.
+            - name: category
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: URL category associated with the session.
+                - name: list
+                  type: keyword
+                  description: The list of associated URL categories.
+            - name: counter
+              type: long
+              description: The column that correlates the traffic, url and sandbox logs.
+            - name: domain
+              type: keyword
+              description: The name of the internet domain that was visited in this session.
+        - name: user
+          type: group
+          fields:
+            - name: agent_string
+              type: keyword
+              description: The User Agent field specifies the web browser that the user used to access the URL.
+            - name: comment
+              type: keyword
+              description: Comments that the user submitted with their issue report.
+            - name: group_found
+              type: keyword
+              description: Indicates whether the user could be mapped to a group.
+            - name: identified_by_source
+              type: keyword
+              description: The user name as sent by the data source.
+        - name: username
+          type: keyword
+          description: The name of the user who reported an issue.
+        - name: users
+          type: group
+          fields:
+            - name: ip
+              type: ip
+              description: Source IP
+            - name: name
+              type: keyword
+              description: Source/Destination user.
+        - name: uuid
+          type: keyword
+          description: UUID.
+        - name: vdi_endpoint
+          type: keyword
+          description: Indicates whether the endpoint is a virtual desktop infrastructure (VDI). 0—The endpoint is not a VDI, 1—The endpoint is a VDI.
+        - name: vendor_severity
+          type: keyword
+          description: Severity associated with the event.
+        - name: verdict
+          type: keyword
+          description: The verdict on the file sent for virus analysis.
+        - name: verification
+          type: group
+          fields:
+            - name: tag1
+              type: keyword
+              description: The verification tag set for the SCTP packet.
+            - name: tag2
+              type: keyword
+              description: The verification tag set for the SCTP packet.
+        - name: virtual
+          type: group
+          fields:
+            - name: location
+              type: keyword
+              description: String representation of the unique identifier for a virtual system on a Palo Alto Networks firewall.
+            - name: system
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: String representation of the unique identifier for a virtual system on a Palo Alto Networks firewall.
+                - name: id
+                  type: keyword
+                  description: A unique identifier for a virtual system on a Palo Alto Networks firewall.
+                - name: name
+                  type: keyword
+                  description: The name of the virtual system associated with the network traffic.
+        - name: v
+          type: group
+          fields:
+            - name: padding
+              type: keyword
+              description: For internal use only.
+            - name: sys_name
+              type: keyword
+              description: The name of the virtual system associated with the network traffic.
+        - name: x_forwarded_for
+          type: group
+          fields:
+            - name: value
+              type: ip
+              description: The IP address of the user who requested the web page.
+            - name: ip
+              type: ip
+              description: X-Forwarded-For IP.
+- name: url
+  type: group
+  fields:
+    - name: user_info
+      type: keyword
