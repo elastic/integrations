@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# ******************************* WARNING ******************************************
+# This post-checkout hook is not the same as in the rest of repositories e.g. beats
+# because some steps in this pipeline (in PR context) take a very long time and we
+# want to make sure that THE SAME COMMIT FROM TARGET BRANCH gets merged in every
+# pipeline step. Otherwise, HEAD (target branch) may have changed in the meantime
+# and therefore, some steps (e.g. sonarqube) may end up testing a different commit.
+#
+# Running builds from branches or tags (out of PR context) maintains the same behavior
+# as in the rest of the repositories.
+#
+# Reference: https://github.com/elastic/integrations/pull/10397
+# **********************************************************************************
+
 set -euo pipefail
 
 checkout_merge() {
@@ -17,6 +30,7 @@ checkout_merge() {
         git checkout FETCH_HEAD
         echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
     else
+        # Use the same commit from target branch as in the other steps.
         echo "Retrieved commit from meta-data: ${REPOSITORY_TARGET_BRANCH_COMMIT}"
         git checkout "${REPOSITORY_TARGET_BRANCH_COMMIT}"
         echo "Current branch: $(git rev-parse --abbrev-ref HEAD)"
@@ -50,6 +64,7 @@ PR_COMMIT="${BUILDKITE_COMMIT}"
 PR_ID=${BUILDKITE_PULL_REQUEST}
 MERGE_BRANCH="pr_merge_${PR_ID}"
 
+# This meta-data field is populated in the pre-command hook
 REPOSITORY_TARGET_BRANCH_COMMIT=$(buildkite-agent meta-data get "REPOSITORY_TARGET_BRANCH_COMMIT" --default "")
 
 checkout_merge "${TARGET_BRANCH}" "${PR_COMMIT}" "${MERGE_BRANCH}"
