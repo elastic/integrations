@@ -28,10 +28,12 @@ ssl: {{ssl}}
 program: |
   has(obj.jsonrpc) ?
     obj.params.events.map(e, {
-      "message": e
+      "message": {"count": int(e.count), "companyId": e.companyId}
     })
   : 
-    [{"message": "Not jsonrpc formatted message root1"}]
+    [{
+      "message": {"error": "Not jsonrpc formatted message root1"}
+    }]
   
   {{!-- debug("HAS_OBJECT-JSONRPC", has(obj.jsonrpc)) ?
     [{"message": debug("OBJECT-ID", obj.id)}] --}}
