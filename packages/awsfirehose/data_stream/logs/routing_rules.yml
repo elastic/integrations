@@ -13,57 +13,40 @@
     - target_dataset: aws.route53_public_logs
       if: >-
         if (ctx['aws.cloudwatch.log_stream'] == null) {
-
-
-
-
-
-
-
             return false;
-        } def split_log_stream_name=ctx['aws.cloudwatch.log_stream'].splitOnToken('/'); if (split_log_stream_name.length!=2) {
-
-
-
-
-
-
-
+        }
+        def split_log_stream_name=ctx['aws.cloudwatch.log_stream'].splitOnToken('/');
+        if (split_log_stream_name.length!=2) {
           return false;
-        } def hosted_zone_id=split_log_stream_name[0]; def edge_location_id=split_log_stream_name[1]; if (ctx.message != null && ctx.message.contains(hosted_zone_id) && ctx.message.contains(edge_location_id)){
-
-
-
-
-
-
-
+        }
+        def hosted_zone_id=split_log_stream_name[0];
+        def edge_location_id=split_log_stream_name[1];
+        if (ctx.message != null && ctx.message.contains(hosted_zone_id) && ctx.message.contains(edge_location_id)){
             return true;
-        } return false;
+        }
+        return false;
       namespace:
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.route53_resolver_logs
       if: >-
-        ctx.message != null && ctx.message.contains('version') && ctx.message.contains('account_id') && ctx.message.contains('region') &&  ctx.message.contains('vpc_id') && ctx.message.contains('query_timestamp') && ctx.message.contains('query_name')  && ctx.message.contains('query_type') && ctx.message.contains('query_class') && ctx.message.contains('rcode') && ctx.message.contains('answers') && ctx.message.contains('srcaddr') && ctx.message.contains('srcport') && ctx.message.contains('transport') && ctx.message.contains('srcids')
+        ctx.message != null && ctx.message.contains('version') && ctx.message.contains('account_id') && ctx.message.contains('region') && 
+        ctx.message.contains('vpc_id') && ctx.message.contains('query_timestamp') && ctx.message.contains('query_name') 
+        && ctx.message.contains('query_type') && ctx.message.contains('query_class') && ctx.message.contains('rcode')
+        && ctx.message.contains('answers') && ctx.message.contains('srcaddr') && ctx.message.contains('srcport')
+        && ctx.message.contains('transport') && ctx.message.contains('srcids')
       namespace:
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.vpcflow
       if: >-
         if (ctx.message!= null) {
-
-
-
-
-
-
-
           def message_token_count=ctx.message.splitOnToken(" ").length;
           if (message_token_count==14) {
               return true;
           }
-        } return false;
+        }
+        return false;
       namespace:
         - "{{data_stream.namespace}}"
         - default
@@ -75,7 +58,11 @@
       # terminatingRuleMatchDetails httpSourceName httpSourceId ruleGroupList rateBasedRuleList
       # nonTerminatingMatchingRules httpRequest labels
       if: >-
-        (ctx['aws.kinesis.name'] != null && ctx['aws.kinesis.name'].contains('aws-waf-logs-'))  || (ctx['aws.cloudwatch.log_group'] != null && ctx['aws.cloudwatch.log_group'].contains('aws-waf-logs-')) || (ctx.message != null && ctx.message.contains('webaclld') && ctx.message.contains('terminatingRule') && ctx.message.contains('httpSource') && ctx.message.contains('ruleGroupList') && ctx.message.contains('rateBasedRuleList') && ctx.message.contains('nonTerminatingMatchingRules') && ctx.message.contains('httpRequest') && ctx.message.contains('labels'))
+        (ctx['aws.kinesis.name'] != null && ctx['aws.kinesis.name'].contains('aws-waf-logs-')) 
+        || (ctx['aws.cloudwatch.log_group'] != null && ctx['aws.cloudwatch.log_group'].contains('aws-waf-logs-'))
+        || (ctx.message != null && ctx.message.contains('webaclld') && ctx.message.contains('terminatingRule')
+        && ctx.message.contains('httpSource') && ctx.message.contains('ruleGroupList') && ctx.message.contains('rateBasedRuleList')
+        && ctx.message.contains('nonTerminatingMatchingRules') && ctx.message.contains('httpRequest') && ctx.message.contains('labels'))
       namespace:
         - "{{data_stream.namespace}}"
         - default
@@ -85,7 +72,16 @@
       # REST: requestId ip caller user requestTime httpMethod resourcePath status protocol responseLength
       # WebSockets: requestId ip caller user requestTime eventType routeKey status connectionId
       if: >-
-        (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip') && ctx.message.contains('requestTime') && ctx.message.contains('httpMethod') && ctx.message.contains('routeKey') && ctx.message.contains('status') && ctx.message.contains('protocol') && ctx.message.contains('responseLength')) || (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip') && ctx.message.contains('caller') && ctx.message.contains('user') && ctx.message.contains('requestTime') && ctx.message.contains('httpMethod') && ctx.message.contains('resourcePath') && ctx.message.contains('status') && ctx.message.contains('protocol') && ctx.message.contains('responseLength'))  || (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip') && ctx.message.contains('caller') && ctx.message.contains('user') && ctx.message.contains('requestTime') && ctx.message.contains('eventType') && ctx.message.contains('routeKey') && ctx.message.contains('status') && ctx.message.contains('connectionId'))
+        (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip')
+        && ctx.message.contains('requestTime') && ctx.message.contains('httpMethod') && ctx.message.contains('routeKey')
+        && ctx.message.contains('status') && ctx.message.contains('protocol') && ctx.message.contains('responseLength'))
+        || (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip') && ctx.message.contains('caller')
+        && ctx.message.contains('user') && ctx.message.contains('requestTime') && ctx.message.contains('httpMethod')
+        && ctx.message.contains('resourcePath') && ctx.message.contains('status') && ctx.message.contains('protocol')
+        && ctx.message.contains('responseLength')) 
+        || (ctx.message != null && ctx.message.contains('requestId') && ctx.message.contains('ip') && ctx.message.contains('caller')
+        && ctx.message.contains('user') && ctx.message.contains('requestTime') && ctx.message.contains('eventType')
+        && ctx.message.contains('routeKey') && ctx.message.contains('status') && ctx.message.contains('connectionId'))
       namespace:
         - "{{data_stream.namespace}}"
         - default
@@ -94,13 +90,6 @@
       # CloudFront log starts with 2019-12-04 21:02:31 LAX1 392 89.160.20.112 ...
       if: >-
         if (ctx.message!= null) {
-
-
-
-
-
-
-
           int tokenCount = 1;
           boolean insideQuotes = false;
           for (int i = 0; i < ctx.message.length(); i++) {
@@ -114,7 +103,8 @@
           if (tokenCount==33 && ctx.message =~ /^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\s[a-zA-Z0-9-]+\s\d+\s(\d+\.\d+\.\d+\.\d+|[a-fA-F0-9:]+)/) {
               return true;
           }
-        } return false;
+        }
+        return false;
       namespace:
         - "{{data_stream.namespace}}"
         - default
@@ -125,13 +115,6 @@
       # common part: "client:port destination:port"
       if: >-
         if (ctx.message!= null) {
-
-
-
-
-
-
-
           int tokenCount = 1;
           boolean insideQuotes = false;
           for (int i = 0; i < ctx.message.length(); i++) {
@@ -145,14 +128,38 @@
           if ((tokenCount==15 || tokenCount==29 || tokenCount==22) && (ctx.message =~ /.*\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5})|([0-9a-fA-F:.]+:\d{1,5})\s(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5})|([0-9a-fA-F:.]+:\d{1,5})\s-?\d+(\.\d+)?\s/)) {
               return true;
           }
-        } return false;
+        }
+        return false;
       namespace:
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.s3access
       # S3 access log always has 25 fields total
       # S3 access log host header field (#24 field) should have `s3` and `amazonaws.com` keywords
-      if: "if (ctx.message!= null) {\n  int tokenCount = 1;\n  StringBuilder currentToken = new StringBuilder();\n  String hostHeader = \"-\";\n  boolean insideQuotes = false;\n  for (int i = 0; i < ctx.message.length(); i++) {\n    String c = String.valueOf(ctx.message.charAt(i));\n    if (c.equals(\" \") && !insideQuotes) {\n      tokenCount++;\n      if (tokenCount==24) {\n        hostHeader = currentToken.toString();\n      }\n    } else if (c.equals(\"\\\"\")) {\n      insideQuotes = !insideQuotes;\n    }\n  }\n  if (hostHeader != \"-\" && hostHeader.contains('s3') && hostHeader.contains('amazonaws.com')) {\n    return true;      \n  } else if (tokenCount==25) {\n    return true;\n  }\n} return false;"
+      if: >-
+        if (ctx.message!= null) {
+          int tokenCount = 1;
+          StringBuilder currentToken = new StringBuilder();
+          String hostHeader = "-";
+          boolean insideQuotes = false;
+          for (int i = 0; i < ctx.message.length(); i++) {
+            String c = String.valueOf(ctx.message.charAt(i));
+            if (c.equals(" ") && !insideQuotes) {
+              tokenCount++;
+              if (tokenCount==24) {
+                hostHeader = currentToken.toString();
+              }
+            } else if (c.equals("\"")) {
+              insideQuotes = !insideQuotes;
+            }
+          }
+          if (hostHeader != "-" && hostHeader.contains('s3') && hostHeader.contains('amazonaws.com')) {
+            return true;      
+          } else if (tokenCount==25) {
+            return true;
+          }
+        }
+        return false;
       namespace:
         - "{{data_stream.namespace}}"
         - default
