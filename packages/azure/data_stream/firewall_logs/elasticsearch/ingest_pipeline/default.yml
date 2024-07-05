@@ -339,7 +339,7 @@ processors:
   - set:
       field: network.protocol
       value: "{{azure.firewall.protocol}}"
-      if: "ctx?.network?.transport == null && ['AZFWDnsQuery', 'AZFWApplicationRule', 'AZFWNetworkRule', 'AZFWNatRule'].contains(ctx.json.category)"
+      if: "ctx.network?.transport == null && ctx.json?.category != null && ['AZFWDnsQuery', 'AZFWApplicationRule', 'AZFWNetworkRule', 'AZFWNatRule'].contains(ctx.json.category)"
   - remove:
       field:
         - azure.firewall.protocol
