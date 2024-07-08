@@ -1,62 +1,19 @@
 title: "ProxySG logs"
 type: logs
 streams:
-  - input: udp
-    title: ProxySG logs (via UDP)
-    description: Collect ProxySG logs (via UDP)
-    template_path: udp.yml.hbs
+  - input: filestream
+    title: ProxySG access logs
+    description: Collect ProxySG access logs
+    template_path: filestream.yml.hbs
     vars:
-      - name: tags
+      - name: paths
         type: text
-        title: Tags
+        title: Paths
         multi: true
         required: true
-        show_user: false
+        show_user: true
         default:
-          - forwarded
-      - name: udp_host
-        type: text
-        title: Listen Address
-        description: The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces.
-        multi: false
-        required: true
-        show_user: true
-        default: localhost
-      - name: udp_port
-        type: integer
-        title: Listen Port
-        description: The UDP port number to listen on.
-        multi: false
-        required: true
-        show_user: true
-        default: 514
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`.
-        type: bool
-        multi: false
-        default: false
-      - name: udp_options
-        type: yaml
-        title: Custom UDP Options
-        multi: false
-        required: false
-        show_user: false
-        default: |
-          #read_buffer: 100MiB
-          #max_message_size: 50KiB
-          #timeout: 300s
-        description: Specify custom configuration options for the UDP input.
-      - name: processors
-        type: yaml
-        title: Processors
-        multi: false
-        required: false
-        show_user: false
-        description: >
-          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+          - /var/log/proxysg/*.log
       - name: config
         type: select
         options:
@@ -68,35 +25,6 @@ streams:
         description: Log configuration type for input.
         required: true
         show_user: true
-  - input: tcp
-    title: ProxySG logs (via TCP)
-    description: Collect ProxySG logs (via TCP)
-    template_path: tcp.yml.hbs
-    vars:
-      - name: tags
-        type: text
-        title: Tags
-        multi: true
-        required: true
-        show_user: false
-        default:
-          - forwarded
-      - name: tcp_host
-        type: text
-        title: Listen Address
-        description: The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces.
-        multi: false
-        required: true
-        show_user: true
-        default: localhost
-      - name: tcp_port
-        type: integer
-        title: Listen Port
-        description: The TCP port number to listen on.
-        multi: false
-        required: true
-        show_user: true
-        default: 601
       - name: preserve_original_event
         required: true
         show_user: true
@@ -105,25 +33,6 @@ streams:
         type: bool
         multi: false
         default: false
-      - name: tcp_options
-        type: yaml
-        title: Custom TCP Options
-        multi: false
-        required: false
-        show_user: false
-        default: |
-          framing: rfc6587
-        description: Specify custom configuration options for the TCP input.
-      - name: ssl
-        type: yaml
-        title: SSL Configuration
-        description: i.e. certificate, keys, supported_protocols, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-server-config) for details.
-        multi: false
-        required: false
-        show_user: false
-        default: |
-          #certificate: "/etc/server/cert.pem"
-          #key: "/etc/server/key.pem"
       - name: processors
         type: yaml
         title: Processors
@@ -132,17 +41,3 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-      - name: config
-        type: select
-        options:
-          - text: onprem
-            value: onprem
-          - text: cloud
-            value: cloud
-        default: onprem
-        description: >
-          Log configuration type for input. For a description of the log formats see [here](https://techdocs.broadcom.com/us/en/symantec-security-software/web-and-network-security/edge-swg/7-3/getting-started/page-help-administration/page-help-logging/log-formats/default-formats.html).
-
-          "onprem" and "cloud" are both custom log formats.
-        required: true
-        show_user: true
