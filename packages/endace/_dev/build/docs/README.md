@@ -1,38 +1,24 @@
-# Network Packet Capture Integration
+# Endace
 
-This integration sniffs network packets on a host and dissects
-known protocols.
+Endace is a company known for its network recording, traffic capture, and analysis technology. Endace's solutions are often used for network security, performance monitoring, and troubleshooting.
+This integration allows users to ingest Network flow data from either Endace Flow via syslog input or use Elastic Agent to generate and ship Network Flow data to an Elastic deployment. Both of these methods add the `event.reference` field to each event when ingested into Elasticsearch which is a URL used to pivot to Endace.   
 
-Monitoring your network traffic is critical to gaining observability and
-securing your environment — ensuring high levels of performance and security.
-The Network Packet Capture integration captures the network traffic between
-your application servers, decodes common application layer protocols and
-records the interesting fields for each transaction.
 
-## Supported Protocols
+## Integration Variables
+#### `endace_url`
+The base URL for Endace UI. Example: https://myvprobe.com
 
-Currently, Network Packet Capture supports the following protocols:
+#### `endace_datasources`
+The datasource within Endace to pivot to. Example: tag:rotation-file
 
--   ICMP (v4 and v6)
--   DHCP (v4)
--   DNS
--   HTTP
--   AMQP 0.9.1
--   Cassandra
--   Mysql
--   PostgreSQL
--   Redis
--   Thrift-RPC
--   MongoDB
--   Memcache
--   NFS
--   TLS
--   SIP/SDP (beta)
+#### `endace_tools`
+The tools to use within the Endace Pivot. Example: trafficOverTime_by_app,conversations_by_ipaddress
 
-### Common protocol options
 
-The following options are available for all protocols:
+#### `endace_lookback`
+The lookback time in Minutes of how long to look back over ontop of the event start and finish time.
 
+## Endace Flow
 #### `map_to_ecs`
 
 Remap any non-ECS Packetbeat fields in root to their correct ECS fields.
