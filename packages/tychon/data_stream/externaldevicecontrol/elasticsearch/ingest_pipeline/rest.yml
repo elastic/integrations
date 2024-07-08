@@ -2,27 +2,11 @@
 description: Pipeline for TYCHON External Device Protection Tables
 processors:
   - set:
-      field: event.module
-      value: tychon
-  - set:
       field: event.category
       value: [configuration]
   - set:
       field: event.type
       value: [info]
-  - set:
-      tag: set_orginal
-      copy_from: message
-      field: event.original
-  - json:
-      field: message
-      add_to_root: true
-      add_to_root_conflict_strategy: replace
-      tag: convert_json
-  - dot_expander:
-      tag: expand_dots
-      field: '*'
-      override: true
   - rename:
       field: "log.user_data.device_id"
       target_field: tychon.log.user_data.device_id
@@ -128,12 +112,6 @@ processors:
       target_field: tychon.log.event_summary
       ignore_missing: true
       tag: log_evtsum_rename
-  - set:
-      field: '@timestamp'
-      value: '{{_ingest.timestamp}}'
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - date:
       tag: date_timestamp
       field: 'tychon.winlog.time_created'
@@ -172,19 +150,3 @@ processors:
       type: long
       ignore_missing: true
       tag: record_id_convert
-  - remove:
-      field: message
-      ignore_missing: true
-  - remove:
-      tag: remove_preserve_original_event
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
-on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
-  - append:
-      field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
