@@ -579,11 +579,11 @@ An example event for `project` looks as following:
 {
     "@timestamp": "2024-02-21T10:00:29.000Z",
     "agent": {
-        "ephemeral_id": "17d7fa94-ffd7-4b95-b352-8237022440da",
-        "id": "1e10d0dd-2ef8-4d56-a363-418cebf8b88d",
+        "ephemeral_id": "71a12b64-a637-4933-b64e-676b42558591",
+        "id": "c8e31bbe-eb0d-443a-a1e1-bcdbe26acdb4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "client": {
         "ip": "0.0.0.0"
@@ -597,9 +597,9 @@ An example event for `project` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1e10d0dd-2ef8-4d56-a363-418cebf8b88d",
+        "id": "c8e31bbe-eb0d-443a-a1e1-bcdbe26acdb4",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -609,12 +609,11 @@ An example event for `project` looks as following:
         ],
         "dataset": "mongodb_atlas.project",
         "id": "65d5c9bd2c86e3377aa5e5e4",
-        "ingested": "2024-06-26T12:17:36Z",
+        "ingested": "2024-07-08T11:21:04Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
             "info",
-            "access",
             "change"
         ]
     },
@@ -625,12 +624,12 @@ An example event for `project` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "829324aac17946dcace17006fa82a2d2",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.245.7"
+            "172.20.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-F5-07"
+            "02-42-AC-14-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -811,13 +810,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mongodb_atlas.project.invoice.id | Unique identifier of the invoice associated with this event. | keyword |
 | mongodb_atlas.project.is_global_admin | Flag indicating whether the user who triggered this event is a MongoDB employee. | boolean |
 | mongodb_atlas.project.metric.name | Name of the measurement whose value went outside the threshold. | keyword |
-| mongodb_atlas.project.metric.unit | Relevant units for value. | keyword |
+| mongodb_atlas.project.metric.unit | Unit for the value. | keyword |
 | mongodb_atlas.project.metric.value | Value of the metric. | float |
 | mongodb_atlas.project.operation.type | Type of operation that generated the event. | keyword |
 | mongodb_atlas.project.payment.id | Unique identifier of the invoice payment associated with this event. | keyword |
 | mongodb_atlas.project.processor.error_msg | Error message linked to the stream processor associated with the event. | keyword |
 | mongodb_atlas.project.processor.instance.name | Name of the stream processing instance associated with the event. | keyword |
-| mongodb_atlas.project.processor.name | Error message linked to the stream processor associated with the event. | keyword |
+| mongodb_atlas.project.processor.name | Name of the stream processor associated with the event. | keyword |
 | mongodb_atlas.project.processor.state | State of the stream processor associated with the event. | keyword |
 | mongodb_atlas.project.provider_endpoint.id | Unique identification string that the cloud provider uses to identify the private endpoint. | keyword |
 | mongodb_atlas.project.public_key | Public key associated with the API Key that triggered this event. If this field is present in the response, Cloud Manager does not return the username field. | keyword |

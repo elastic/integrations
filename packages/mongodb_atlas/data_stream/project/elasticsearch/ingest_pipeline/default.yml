@@ -23,7 +23,17 @@ processors:
       value: ["configuration", "database"]
   - set:
       field: event.type
-      value: ["info", "access", "change"]
+      value: ["info"]
+  - append:
+      field: event.type
+      value: access
+      allow_duplicates: false
+      if: ctx.response?.opType != null && ctx.response?.opType == 'read'
+  - append:
+      field: event.type
+      value: change
+      allow_duplicates: false
+      if: ctx.response?.opType != null && ['create', 'update', 'delete', 'insert'].contains(ctx.response.opType)
   - set:
       copy_from: response
       field: event.original
@@ -327,4 +337,8 @@ on_failure:
   - append:
       field: event.kind
       value: pipeline_error
-      allow_duplicates: false      
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: error
+      if: ctx.error?.message != null   
