@@ -145,11 +145,10 @@ processors:
         def dlpdictcount = ctx.json.dlpdictcount;
         String[] parts = dlpdictcount.splitOnToken('|');
         ArrayList numbersList = new ArrayList();
-        for (String part : parts) {
-            try {
+        for (String part: parts) {
+          try {
             numbersList.add(Integer.parseInt(part));
-            } catch (NumberFormatException e) {
-            }
+          } catch (NumberFormatException e) {}
         }
         ctx.json.dlpdictcount = numbersList;
       on_failure:
@@ -319,12 +318,11 @@ processors:
         def dlpdictnames = ctx.json.dlpdictnames;
         String[] parts = dlpdictnames.splitOnToken('|');
         ArrayList numbersList = new ArrayList();
-        for (String part : parts) {
-            try {
+        for (String part: parts) {
+          try {
             String[] subParts = part.splitOnToken(':');
             numbersList.add(subParts[0]);
-            } catch (NumberFormatException e) {
-            }
+          } catch (NumberFormatException e) {}
         }
         ctx.json.dlpdictnames = numbersList;
       on_failure:
@@ -356,11 +354,10 @@ processors:
         def dlpenginenames = ctx.json.dlpenginenames;
         String[] parts = dlpenginenames.splitOnToken('|');
         ArrayList numbersList = new ArrayList();
-        for (String part : parts) {
-            try {
+        for (String part: parts) {
+          try {
             numbersList.add(part);
-            } catch (NumberFormatException e) {
-            }
+          } catch (NumberFormatException e) {}
         }
         ctx.json.dlpenginenames = numbersList;
       on_failure:
@@ -735,7 +732,7 @@ processors:
   - dissect:
       field: user.email
       tag: create_user_name_and_user_domain
-      pattern: "%{user.name}@%{user.domain}"
+      pattern: '%{user.name}@%{user.domain}'
       ignore_missing: true
       if: ctx.user?.email != null
       on_failure:

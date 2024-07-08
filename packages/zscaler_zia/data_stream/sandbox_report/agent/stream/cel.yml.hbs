@@ -41,7 +41,14 @@ program: |
                  "message": body.Summary.encode_json()
                }]
              :
-               ["SystemSummary","Persistence","Networking","Exploit","Stealth","SecurityBypass"].map(k, k in body["Full Details"], body["Full Details"][k].map(e, {
+              [
+                 "SystemSummary",
+                 "Persistence",
+                 "Networking",
+                 "Exploit",
+                 "Stealth",
+                 "SecurityBypass",
+               ].map(k, k in body["Full Details"], body["Full Details"][k].map(e, {
                  "message": {
                    ?"Summary": body[?"Full Details"].Summary,
                    ?"Classification": body[?"Full Details"].Classification,
@@ -53,11 +60,16 @@ program: |
              )
           :
             [{
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "GET:"+string(resp.Body)
-            },
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET:"+(
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
             }]
           )
       ).flatten()
