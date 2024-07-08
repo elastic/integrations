@@ -1,88 +1,79 @@
+---
+description: Pipeline for common host fields processing
+processors:
+
   - gsub:
-      field: host.mac
+      field: tychon.host.mac
       pattern: ':'
       replacement: '-'
       ignore_missing: true
-      tag: hostmacreformat
   - split:
-      field: host.mac
+      field: tychon.host.mac
       separator: ','
-      if: ctx.host?.mac instanceof String && ctx.host.mac != ""
+      if: ctx.tychon?.host?.mac instanceof String && ctx.tychon.host.mac != ""
       ignore_missing: true
-      tag: hostmacsplit
   - split:
-      field: host.ip
+      field: tychon.host.ip
       separator: ','
-      if: ctx.host?.ip instanceof String && ctx.host.ip != ""
+      if: ctx.tychon?.host?.ip instanceof String && ctx.tychon.host.ip != ""
       ignore_missing: true
-      tag: hostipsplit
   - split:
-      field: host.ipv4
+      field: tychon.host.ipv4
       separator: ','
-      if: ctx.host?.ipv4 instanceof String && ctx.host.ipv4 != ""
+      if: ctx.tychon?.host?.ipv4 instanceof String && ctx.tychon.host.ipv4 != ""
       ignore_missing: true
-      tag: hostipv4split
   - split:
-      field: host.ipv6
+      field: tychon.host.ipv6
       separator: ','
-      if: ctx.host?.ipv6 instanceof String && ctx.host.ipv6 != ""
+      if: ctx.tychon?.host?.ipv6 instanceof String && ctx.tychon.host.ipv6 != ""
       ignore_missing: true
-      tag: hostipv6split
+
+  # TODO: can this be simplified (does convert to long do truncation of fractional part)
   - convert:
-      field: host.uptime
+      field: tychon.host.uptime
       type: string
       ignore_missing: true
   - set:
-      field: host.uptime
+      field: tychon.host.uptime
       value: '0'
-      ignore_failure: true
-      if: ctx.host.uptime == ''
+      if: ctx.tychon?.host?.uptime == ''
   - split:
-      field: host.uptime
+      field: tychon.host.uptime
       separator: '\.+'
-      target_field: tempuptime
+      target_field: _tmp_uptime
       ignore_failure: true
   - set:
-      field: host.uptime
-      value: '{{{tempuptime.0}}}'
+      field: tychon.host.uptime
+      value: '{{{ctx._tmp_uptime.0}}}'
       ignore_failure: true
   - remove:
-      field: tempuptime
-      ignore_failure: true
+      field: _tmp_uptime
       ignore_missing: true
-
-  - set:
-      field: host.uptime
-      value: '0'
-      ignore_failure: true
-      if: ctx.host.uptime == ''
-
   - convert:
-      tag: convert_host_uptime
-      field: host.uptime
+      field: tychon.host.uptime
       type: long
       ignore_missing: true
 
+ # TODO: probably just leave the unset rather than setting empty strings
   - set:
-      field: host.domain
+      field: tychon.host.domain
       value: ""
-      if: ctx.host.domain == null
+      if: ctx.tychon?.host?.domain == null
   - set:
-      field: host.oem.model
+      field: tychon.host.oem.model
       value: ""
-      if: ctx.host.oem.model == null
+      if: ctx.tychon?.host?.oem?.model == null
   - set:
-      field: host.oem.manufacturer
+      field: tychon.host.oem.manufacturer
       value: ""
-      if: ctx.host.oem.manufacturer == null
+      if: ctx.tychon?.host?.oem?.manufacturer == null
 
   - remove: 
-      field: host.os.extended_support_license_expiration
-      if: ctx.host.os.extended_support_license_expiration == ''
-      tag: remove_support_license_expiration
+      field: tychon.host.os.extended_support_license_expiration
+      if: ctx.tychon?.host?.os?.extended_support_license_expiration == ''
       ignore_missing: true
+
   - remove:
-      field: host.cloud
-      if: ctx.host.cloud.hosted == 'false'
-      tag: remove_host_cloud
+      field: tychon.host.cloud
+      if: ctx.tychon?.host?.cloud?.hosted == 'false'
       ignore_missing: true
