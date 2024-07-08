@@ -14,6 +14,8 @@ all versions >= 2.2.31 and >= 2.4.16 (independent from operating system).
 
 Access logs collects the Apache access logs.
 
+{{event "access"}}
+
 {{fields "access"}}
 
 Supported format for the access logs are:
@@ -59,6 +61,8 @@ Supported format for the access logs are:
 ### Error Logs
 
 Error logs collects the Apache error logs.
+
+{{event "error"}}
 
 {{fields "error"}}
 
