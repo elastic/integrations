@@ -52,6 +52,8 @@ state:
          }
        }
      }
+redact:
+  fields: ~
 program: |
   state.with(
     post_request(
@@ -73,44 +75,56 @@ program: |
         }
       }.encode_json()
     ).do_request().as(resp, resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body, {
-          "events": body.data.auditLogEntries.nodes.map(e, {
-            "message": e.encode_json(),
-          }),
-          "cursor": {
-            ?"last_timestamp": has(body.data.auditLogEntries.nodes) && body.data.auditLogEntries.nodes.size() > 0 ?
-                optional.of(body.data.auditLogEntries.nodes.map(e, timestamp(e.timestamp)).max().as(last,
-                  has(state.?cursor.last_timestamp) && last < timestamp(state.cursor.last_timestamp) ?
-                    state.cursor.last_timestamp
-                  :
-                    string(last)
-                ))
-              :
-                state.?cursor.last_timestamp,
-            ?"first_timestamp": !has(body.data) || state.?cursor.first_timestamp.orValue(null) == null ?
-                optional.of(string(now() - duration(state.initial_interval)))
-              : body.data.auditLogEntries.pageInfo.hasNextPage ?
-                state.?cursor.first_timestamp
-              :
-                state.?cursor.last_timestamp,
-          },
-          "end_cursor": {
-            ?"value": body.?data.auditLogEntries.pageInfo.hasNextPage.orValue(false) ?
-                body.?data.auditLogEntries.pageInfo.endCursor
-              :
-                optional.none()
-          },
-          "want_more": body.?data.auditLogEntries.pageInfo.hasNextPage.orValue(false),
-        })
+        bytes(resp.Body).decode_json().as(body, has(body.?data.auditLogEntries.nodes) ?
+          {
+            "events": body.data.auditLogEntries.nodes.map(e, {
+              "message": e.encode_json(),
+            }),
+            "cursor": {
+              ?"last_timestamp": body.data.auditLogEntries.nodes.size() > 0 ?
+                  optional.of(body.data.auditLogEntries.nodes.map(e, timestamp(e.timestamp)).max().as(last,
+                    has(state.?cursor.last_timestamp) && last < timestamp(state.cursor.last_timestamp) ?
+                      state.cursor.last_timestamp
+                    :
+                      string(last)
+                  ))
+                :
+                  state.?cursor.last_timestamp,
+              ?"first_timestamp": !has(body.data) || state.?cursor.first_timestamp.orValue(null) == null ?
+                  optional.of(string(now() - duration(state.initial_interval)))
+                : body.?data.auditLogEntries.pageInfo.hasNextPage.orValue(false) ?
+                  state.?cursor.first_timestamp
+                :
+                  state.?cursor.last_timestamp,
+            },
+            "end_cursor": {
+              ?"value": body.?data.auditLogEntries.pageInfo.hasNextPage.orValue(false) ?
+                  body.?data.auditLogEntries.pageInfo.endCursor
+                :
+                  optional.none()
+            },
+            "want_more": body.?data.auditLogEntries.pageInfo.hasNextPage.orValue(false),
+          }
+        :
+          {
+            "events": [],
+            "want_more": false,
+          }
+        )
       :
         {
-          "events": [{
+          "events": {
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "POST:"+string(resp.Body)
+              "message": "POST:"+(
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
             },
-          }],
+          },
           "want_more": false,
         }
     )
