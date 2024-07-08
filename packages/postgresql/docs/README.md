@@ -109,6 +109,7 @@ persistent connections, so enable with care.
 | postgresql.log.query_name | Name given to a query when using extended query protocol. If it is `"\<unnamed\>"`, or not present, this field is ignored. | keyword |
 | postgresql.log.query_pos | Character count of the error position (if any). | long |
 | postgresql.log.query_step | Statement step when using extended query protocol (one of statement, parse, bind or execute). | keyword |
+| postgresql.log.sequence_number | Sequence number circumvents that last message was repeated N times. | long |
 | postgresql.log.session_id | PostgreSQL session. | keyword |
 | postgresql.log.session_line_number | Line number inside a session. (%l in `log_line_prefix`). | long |
 | postgresql.log.session_start_time | Time when this session started. | date |

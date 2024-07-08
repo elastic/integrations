@@ -5,7 +5,7 @@ processors:
       field: raw_message
       ignore_missing: true
       patterns:
-      - '^(\[%{NUMBER:process.pid:long}(-%{BASE16FLOAT:postgresql.log.session_line_number:long})?\] ((\[%{USERNAME:user.name}\]@\[%{POSTGRESQL_DB_NAME:postgresql.log.database}\]|%{USERNAME:user.name}@%{POSTGRESQL_DB_NAME:postgresql.log.database}) )?)?%{WORD:log.level}:  (?:%{POSTGRESQL_ERROR:postgresql.log.sql_state_code}|%{SPACE})(duration: %{NUMBER:temp.duration:float} ms  %{POSTGRESQL_QUERY_STEP}: %{GREEDYDATA:postgresql.log.query}|: %{GREEDYDATA:message}|%{GREEDYDATA:message})'
+      - '^(\[%{NUMBER:process.pid:long}(-%{BASE16FLOAT:postgresql.log.session_line_number:long})?\]:? ?)?(\[%{NUMBER:postgresql.log.session_line_number:long}(-%{BASE16FLOAT:postgresql.log.sequence_number:long})?\] )?((\[%{USERNAME:user.name}\]@\[%{POSTGRESQL_DB_NAME:postgresql.log.database}\]|%{USERNAME:user.name}@%{POSTGRESQL_DB_NAME:postgresql.log.database} )?)?((db=((\[%{DATA:postgresql.log.database}\])|%{DATA:postgresql.log.database})?,user=((\[%{DATA:user.name}\])|%{DATA:user.name})?,app=((\[%{DATA:postgresql.log.application_name}\])|%{DATA:postgresql.log.application_name})?,client=((\[%{DATA:postgresql.log.client_addr}\])|%{DATA:postgresql.log.client_addr})?)? ?)?%{WORD:log.level}:  (?:%{POSTGRESQL_ERROR:postgresql.log.sql_state_code}|%{SPACE})(duration: %{NUMBER:temp.duration:float} ms  %{POSTGRESQL_QUERY_STEP}: %{GREEDYDATA:postgresql.log.query}|: %{GREEDYDATA:message}|%{GREEDYDATA:message})'
       pattern_definitions:
         GREEDYDATA: |-
           (.|
