@@ -41,7 +41,10 @@ Access logs collects the Apache access logs.
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |  |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |  |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |  |
+| destination.port | Port of the destination. | long |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error.message | Error message. | match_only_text |  |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
@@ -95,6 +98,7 @@ Access logs collects the Apache access logs.
 | source.geo.region_iso_code | Region ISO code. | keyword |  |
 | source.geo.region_name | Region name. | keyword |  |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |  |
+| source.port | Port of the source. | long |  |
 | tags | List of keywords used to tag each event. | keyword |  |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |  |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |  |

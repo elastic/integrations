@@ -23,7 +23,7 @@ processors:
   - grok:
       field: event.original
       patterns:
-      - '(%{IPORHOST:destination.domain} )?%{IPORHOST:source.address} %{DATA:apache.access.identity} %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
+      - '(%{IPORHOST:destination.address}(\:%{POSINT:destination.port:long})? )?%{IPORHOST:source.address}(\:%{POSINT:source.port:long})? %{DATA:apache.access.identity} %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
         "(?:%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}|-)?"
         %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)( %{NUMBER:apache.access.response_time})?(
         "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?( X-Forwarded-For="%{ADDRESS_LIST:apache.access.remote_addresses}")?'
@@ -93,6 +93,11 @@ processors:
       field:
         - _tmp
       ignore_missing: true
+  - grok:
+      field: destination.address
+      ignore_missing: true
+      patterns:
+      - ^(%{IP:destination.ip}|%{HOSTNAME:destination.domain})$
   - set:
       field: url.domain
       value: "{{destination.domain}}"
