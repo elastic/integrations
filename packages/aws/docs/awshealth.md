@@ -45,7 +45,6 @@ For step-by-step instructions on how to set up an integration, see the
 
 The `awshealth` data stream collects AWS Health metrics from AWS.
 
-An example event for `awshealth` looks as following:
 
 An example event for `awshealth` looks as following:
 
@@ -262,3 +261,4 @@ An example event for `awshealth` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+

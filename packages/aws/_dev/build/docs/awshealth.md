@@ -45,7 +45,6 @@ For step-by-step instructions on how to set up an integration, see the
 
 The `awshealth` data stream collects AWS Health metrics from AWS.
 
-An example event for `awshealth` looks as following:
 
 {{event "awshealth"}}
 
