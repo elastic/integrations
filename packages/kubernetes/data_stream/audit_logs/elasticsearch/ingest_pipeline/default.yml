@@ -9,6 +9,14 @@ processors:
       if: "ctx.kubernetes?.audit?.requestObject != null"
       field: ["kubernetes.audit.requestObject.metadata"]
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      if: ctx.kubernetes?.audit?.verb != null
+      field: event.action
+      copy_from: kubernetes.audit.verb
+      ignore_empty_value: true
   - script:
       lang: painless
       if: ctx.kubernetes?.audit?.annotations != null
@@ -52,11 +60,6 @@ processors:
       if: ctx.source?.ip != null
       field: client.ip
       copy_from: source.ip
-      ignore_empty_value: true
-  - set:
-      if: ctx.kubernetes?.audit?.verb != null
-      field: event.action
-      copy_from: kubernetes.audit.verb
       ignore_empty_value: true
 on_failure:
   - set:
