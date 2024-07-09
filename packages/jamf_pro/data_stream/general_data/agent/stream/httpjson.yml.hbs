@@ -2,9 +2,12 @@ config_version: "2"
 interval: {{interval}}
 request.method: "GET"
 request.url: "{{api_host}}/api/preview/computers"
-client.id: {{client_token}}
-client.secret: {{client_secret}}
-token_url: {{api_host}}/api/oauth/token
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{api_host}}/api/oauth/token
+  endpoint_params:
+    grant_type: client_credentials
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
@@ -23,29 +26,6 @@ request.transforms:
   - set:
       target: url.params.page
       value: '0'
-  - set:
-      target: header.XTimestamp
-      value: '[[ formatDate (now) "20060102T15:04:05-0700" ]]'
-  - set:
-      target: header.XSignatureBase
-      value: '[[ sprintf "EG1-HMAC-SHA256 client_token=%s;access_token=%s;timestamp=%s;nonce=%s;" "{{client_token}}" "{{access_token}}" (.header.Get "XTimestamp") uuid ]]'
-  - set:
-      target: header.XSignatureKey
-      value: '[[ hmacBase64 "sha256" "{{client_secret}}" (.header.Get "XTimestamp") ]]'
-  - set:
-      target: header.XSignature
-      value: '[[ hmacBase64 "sha256" (.header.Get "XSignatureKey") "GET\t" .url.Scheme "\t" .url.Host "\t" .url.Path "?" .url.RawQuery "\t\t\t" (.header.Get "XSignatureBase") ]]'
-  - set:
-      target: header.Authorization
-      value: '[[ sprintf "%ssignature=%s" (.header.Get "XSignatureBase") (.header.Get "XSignature") ]]'
-  - delete:
-      target: header.XSignature
-  - delete:
-      target: header.XSignatureKey
-  - delete:
-      target: header.XSignatureBase
-  - delete:
-      target: header.XTimestamp
 
 response.decode_as: application/x-ndjson
 
