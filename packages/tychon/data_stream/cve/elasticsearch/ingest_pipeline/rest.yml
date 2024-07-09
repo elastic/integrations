@@ -15,15 +15,6 @@ processors:
         - epoch_millis
         - date
         - 'MM/dd/yyyy'
-  - script:
-      source: |
-        if (ctx.tychon.vulnerability?.result == 'fail') {
-          ctx.tychon.event.outcome = "failure"
-        } else if (ctx.tychon.vulnerability?.result == 'pass') {
-          ctx.tychon.event.outcome = "success"
-        } else {
-          ctx.tychon.event.outcome = "unknown"
-        }
   - set:
       field: tychon.vulnerability.score.base
       value: "0.0"
@@ -50,3 +41,12 @@ processors:
   - set:
       field: event.category
       value: [vulnerability]
+  - script:
+      source: |
+        if (ctx.tychon.vulnerability?.result == "fail") {
+          ctx.event.outcome = "failure"
+        } else if (ctx.tychon.vulnerability?.result == "pass") {
+          ctx.event.outcome = "success"
+        } else {
+          ctx.event.outcome = "unknown"
+        }
