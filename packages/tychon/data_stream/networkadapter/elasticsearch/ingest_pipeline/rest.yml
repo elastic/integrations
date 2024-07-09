@@ -1,6 +1,53 @@
 ---
 description: Pipeline for parsing TYCHON Network Adapters
 processors:
+
+  - remove:
+      field: tychon.host.adapter.ip
+      if: ctx.tychon.host.adapter.ip == ''
+  - remove:
+      field: tychon.host.adapter.gateway
+      if: ctx.tychon.host.adapter.gateway == ''
+  - remove:
+      field: tychon.host.adapter.dhcp.server
+      if: ctx.tychon.host.adapter.dhcp.server == ''
+  - remove:
+      field: tychon.host.adapter.dhcp.lease_obtained
+      if: ctx.tychon.host.adapter.dhcp.lease_obtained == ''
+  - remove:
+      field: tychon.host.adapter.dhcp.lease_expires
+      if: ctx.tychon.host.adapter.dhcp.lease_expires == ''
+  - remove:
+      field: tychon.host.adapter.driver.date
+      if: ctx.tychon.host.adapter.driver.date == ''
+  - remove:
+      field: tychon.host.adapter.wins_server
+      if: ctx.tychon.host.adapter.wins_server == ''
+
+  - script:
+      source: |
+        if (ctx.tychon?.host?.adapter?.link_speed?.contains(' ') == true) {
+          String[] parts = ctx.tychon.host.adapter.link_speed.splitOnToken(' ');
+          ctx.tychon.host.adapter.link_speed = Long.parseLong(parts[0]);
+          if (parts[1] == 'Kbps') {
+            ctx.tychon.host.adapter.link_speed *= 1024
+          } else if (parts[1] == 'Mbps') {
+            ctx.tychon.host.adapter.link_speed *= 1024*1024
+          } else if (parts[1] == 'Gbps') {
+            ctx.tychon.host.adapter.link_speed *= 1024*1024*1024
+          }
+        } else {
+          if (ctx.tychon.host == null) {
+            ctx.tychon.host = [:];
+          }
+          if (ctx.tychon.host.adapter == null) {
+            ctx.tychon.host.adapter = [:];
+          }
+          ctx.tychon.host.adapter.link_speed = 0L;
+        }
+
+  # ECS fields
+
   - set:
       field: event.kind
       value: state
@@ -10,50 +57,3 @@ processors:
   - set:
       field: event.type
       value: [info]
-  - remove:
-      field: host.adapter.ip
-      if: ctx.host.adapter.ip == ''
-  - remove:
-      field: host.adapter.gateway
-      if: ctx.host.adapter.gateway == ''
-  - remove:
-      field: host.adapter.dhcp.server
-      if: ctx.host.adapter.dhcp.server == ''
-  - remove:
-      field: host.adapter.dhcp.lease_obtained
-      if: ctx.host.adapter.dhcp.lease_obtained == ''
-  - remove:
-      field: host.adapter.dhcp.lease_expires
-      if: ctx.host.adapter.dhcp.lease_expires == ''
-  - remove:
-      field: host.adapter.driver.date
-      if: ctx.host.adapter.driver.date == ''
-  - remove:
-      field: host.adapter.wins_server
-      if: ctx.host.adapter.wins_server == ''
-  - set:
-      field: link_speed
-      value: '{{host.adapter.link_speed}}'
-  - set:
-      field: host.adapter.link_speed
-      value: 0
-  - script:
-      source:
-            |
-            if(ctx['link_speed'].contains(' ')){
-                String[] linkSpeed=ctx['link_speed'].splitOnToken(' ');
-                ctx.remove('link_speed');
-                ctx['host.adapter.link_speed']=Long.parseLong(linkSpeed[0]);
-                if(linkSpeed[1]=='Kbps'){
-                    ctx['host.adapter.link_speed']*=1024
-                }
-                if(linkSpeed[1]=='Mbps'){
-                    ctx['host.adapter.link_speed']*=1048576
-                }
-                if(linkSpeed[1]=='Gbps'){
-                    ctx['host.adapter.link_speed']*=1073741824
-                }
-            } else {
-                ctx.remove('link_speed');
-            }
-      ignore_failure: true

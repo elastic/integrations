@@ -1,38 +1,42 @@
 ---
 description: Pipeline for TYCHON Endpoint Protection Datasets
 processors:
+
   - remove:
-      if: ctx.windows_defender.service.nis.signature_last_update == ''
-      field: windows_defender.service.nis.signature_last_update
+      if: ctx.tychon.windows_defender.service.nis.signature_last_update == ''
+      field: tychon.windows_defender.service.nis.signature_last_update
       ignore_failure: true
   - remove:
-      if: ctx.windows_defender.service.antivirus.signature_last_update == ''
-      field: windows_defender.service.antivirus.signature_last_update
+      if: ctx.tychon.windows_defender.service.antivirus.signature_last_update == ''
+      field: tychon.windows_defender.service.antivirus.signature_last_update
       ignore_failure: true
   - remove:
-      if: ctx.windows_defender.service.antispyware.signature_last_update == ''
-      field: windows_defender.service.antispyware.signature_last_update
+      if: ctx.tychon.windows_defender.service.antispyware.signature_last_update == ''
+      field: tychon.windows_defender.service.antispyware.signature_last_update
       ignore_failure: true
   - remove:
-      if: ctx.windows_defender.service.antivirus.signature_last_updated == ''
-      field: windows_defender.service.antivirus.signature_last_updated
+      if: ctx.tychon.windows_defender.service.antivirus.signature_last_updated == ''
+      field: tychon.windows_defender.service.antivirus.signature_last_updated
       ignore_failure: true
   - remove:
-      if: ctx.windows_defender.service.antispyware.signature_last_updated == ''
-      field: windows_defender.service.antispyware.signature_last_updated
+      if: ctx.tychon.windows_defender.service.antispyware.signature_last_updated == ''
+      field: tychon.windows_defender.service.antispyware.signature_last_updated
       ignore_failure: true
   - convert:
-      field: windows_defender.service.nis.signature_age
+      field: tychon.windows_defender.service.nis.signature_age
       type: long
       ignore_missing: true
   - convert:
-      field: windows_defender.service.antivirus.signature_age
+      field: tychon.windows_defender.service.antivirus.signature_age
       type: long
       ignore_missing: true
   - convert:
-      field: windows_defender.service.antispyware.signature_age
+      field: tychon.windows_defender.service.antispyware.signature_age
       type: long
       ignore_missing: true
+
+  # ECS fields
+
   - set:
       field: event.kind
       value: state

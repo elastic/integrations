@@ -1,16 +1,69 @@
 ---
 description: Pipeline for Software Inventory
 processors:
-  - rename: 
-      field: edition
-      target_field: package.edition
+
+  - rename:
+      field: tychon.edition
+      target_field: tychon.package.edition
       ignore_failure: true
       ignore_missing: true
-  - rename: 
-      field: comment
-      target_field: package.description
+  - rename:
+      field: tychon.comment
+      target_field: tychon.package.description
       ignore_failure: true
       ignore_missing: true
+  - set:
+      field: tychon.package.installed
+      value: '1970-01-01T00:00:01Z'
+      if: ctx.tychon.package.installed == 'installed'
+  - set:
+      field: tychon.package.installed
+      value: '1970-01-01T00:00:01Z'
+      if: ctx.tychon.package.installed == ''
+  - gsub:
+      field: tychon.package.size
+      pattern: '[^0-9]'
+      replacement: ''
+  - set:
+      field: tychon.package.size
+      value: 0
+      ignore_failure: true
+      if: ctx.tychon.package.size == ''
+  - convert:
+      field: tychon.package.size
+      type: long
+      ignore_missing: true
+  - gsub:
+      field: tychon.package.version_build
+      pattern: '[^0-9]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: tychon.package.version_major
+      pattern: '[^0-9]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: tychon.package.version_minor
+      pattern: '[^0-9]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      field: tychon.package.version_release
+      pattern: '[^0-9]'
+      replacement: ''
+      ignore_missing: true
+  - set:
+      field: tychon.package.type
+      value: rpm
+      if: ctx.package.type == ''
+  - script:
+      source: ctx.tychon.package.cpe = "cpe:/a:" + ctx.tychon.package.name + ":" + ctx.tychon.package.version
+      if: ctx.tychon.package.cpe == ''
+      ignore_failure: true
+
+  # ECS fields
+
   - set:
       field: event.kind
       value: state
@@ -20,55 +73,3 @@ processors:
   - set:
       field: event.type
       value: [info]
-  - set:
-      field: package.installed
-      value: '1970-01-01T00:00:01Z'
-      if: ctx.package.installed == 'installed'
-  - set:
-      field: package.installed
-      value: '1970-01-01T00:00:01Z'
-      if: ctx.package.installed == ''
-  - gsub:
-      field: package.size
-      pattern: '[^0-9]'
-      replacement: ''
-  - set:
-      field: package.size
-      value: 0
-      ignore_failure: true
-      if: ctx.package.size == ''
-  - convert:
-      field: package.size
-      type: long
-      ignore_missing: true
-  - gsub:
-      field: package.version_build
-      pattern: '[^0-9]'
-      replacement: ''
-      ignore_missing: true
-  - gsub:
-      field: package.version_major
-      pattern: '[^0-9]'
-      replacement: ''
-      ignore_missing: true
-  - gsub:
-      field: package.version_minor
-      pattern: '[^0-9]'
-      replacement: ''
-      ignore_missing: true
-  - gsub:
-      field: package.version_release
-      pattern: '[^0-9]'
-      replacement: ''
-      ignore_missing: true
-  - set:
-      field: event.kind
-      value: state
-  - set:
-      field: package.type
-      value: rpm
-      if: ctx.package.type == ''
-  - script:
-      source: ctx.package.cpe = "cpe:/a:" + ctx.package.name + ":" + ctx.package.version
-      if: ctx.package.cpe == ''
-      ignore_failure: true

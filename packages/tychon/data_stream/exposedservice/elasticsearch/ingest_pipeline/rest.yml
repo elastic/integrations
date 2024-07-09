@@ -1,6 +1,26 @@
 ---
 description: Pipeline for Exposed Services
 processors:
+
+  - convert:
+      field: tychon.process.pid
+      type: long
+      ignore_missing: true
+  - convert:
+      field: tychon.source.port
+      type: long
+      ignore_missing: true
+  - set:
+      field: tychon.source.ip
+      value: '0.0.0.0'
+      if: ctx.tychon.source?.ip == ''
+  - set:
+      field: tychon.service.name
+      value: '{{tychon.process.name}}'
+      if: "ctx.tychon.service?.name == null"
+
+  # ECS fields
+
   - set:
       field: event.kind
       value: state
@@ -10,20 +30,3 @@ processors:
   - set:
       field: event.type
       value: [info]
-  - convert:      
-      field: process.pid
-      type: long
-      ignore_missing: true
-  - convert:      
-      field: source.port
-      type: long
-      ignore_missing: true
-  - set:
-      field: source.ip
-      value: '0.0.0.0'
-      if: ctx.source.ip == ''
-      ignore_failure: true
-  - set:
-      field: service.name
-      value: '{{process.name}}'
-      if: "ctx.service?.name == null"

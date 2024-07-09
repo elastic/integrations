@@ -1,216 +1,85 @@
 ---
 description: Pipeline for TYCHON Features Datasets
 processors:
+
   - remove:
-      field: file.created
-      if: ctx.file.created == ''
+      field: tychon.file.created
+      if: ctx.tychon.file.created == ''
       ignore_failure: true
       ignore_missing: true
   - remove:
-      field: file.accessed
-      if: ctx.file.accessed == ''
+      field: tychon.file.accessed
+      if: ctx.tychon.file.accessed == ''
       ignore_failure: true
       ignore_missing: true
   - remove:
-      field: file.mtime
-      if: ctx.file.mtime == ''
+      field: tychon.file.mtime
+      if: ctx.tychon.file.mtime == ''
       ignore_failure: true
       ignore_missing: true
   - script:
       lang: painless
       description: Remove non-strings from file.attributes
-      if: ctx.file?.attributes instanceof List
+      if: ctx.tychon?.file?.attributes instanceof List
       source: |
         def result = [];
-        for (def v : ctx.file.attributes) {
+        for (def v : ctx.tychon.file.attributes) {
           if (v instanceof String) {
             result.add(v);
           }
         }
-        ctx.file.attributes = result;
+        ctx.tychon.file.attributes = result;
   - convert:
-      field: file.size
+      field: tychon.file.size
       type: long
       ignore_missing: true
   - rename:
-      field: "event.windows_certificate_store_path"
+      field: tychon.event.windows_certificate_store_path
       target_field: tychon.windows_certificate_store_path
       ignore_missing: true
-  - rename:
-      field: "x509.hash"
-      target_field: tychon.x509.hash
-      ignore_missing: true
-  - rename:
-      field: "x509.hash_algorithm"
-      target_field: tychon.x509.hash_algorithm
-      ignore_missing: true
-  - rename:
-      field: "x509.public_signature_algorithm"
-      target_field: tychon.x509.public_signature_algorithm
-      ignore_missing: true
-  - rename:
-      field: "x509.private_signature_algorithm"
-      target_field: tychon.x509.private_signature_algorithm
-      ignore_missing: true
   - convert:
-      field: x509.public_key_size
+      field: tychon.x509.public_key_size
       type: long
       ignore_missing: true
-  - rename:
-      field: "x509.private_key_size"
-      target_field: tychon.x509.private_key_size
-      ignore_missing: true
-  - rename:
-      field: "x509.public_key_thumbprint"
-      target_field: tychon.x509.public_key_thumbprint
-      ignore_missing: true
-  - rename:
-      field: "x509.public_key_type"
-      target_field: tychon.x509.public_key_type
-      ignore_missing: true
-  - rename:
-      field: "x509.enhanced_key_usage"
-      target_field: tychon.x509.enhanced_key_usage
-      ignore_missing: true
   - split:
-      field: "tychon.x509.enhanced_key_usage"
+      field: tychon.x509.enhanced_key_usage
+      separator: ","
+      ignore_missing: true
+      ignore_failure: true
+  - split:
+      field: tychon.x509.key_usage
       separator: ","
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: "x509.extended_validation"
-      target_field: tychon.x509.extended_validation
-      ignore_missing: true
-  - rename:
-      field: "x509.hash"
-      target_field: tychon.x509.hash
-      ignore_missing: true
-  - rename:
-      field: "x509.hash_algorithm"
-      target_field: tychon.x509.hash_algorithm
-      ignore_missing: true
-  - rename:
-      field: "x509.is_root"
-      target_field: tychon.x509.is_root
-      ignore_missing: true
-  - rename:
-      field: "x509.is_self_signed"
-      target_field: tychon.x509.is_self_signed
-      ignore_missing: true
-  - rename:
-      field: "x509.is_valid"
-      target_field: tychon.x509.is_valid
-      ignore_missing: true
-  - rename:
-      field: "x509.key_usage"
-      target_field: tychon.x509.key_usage
-      ignore_missing: true
-  - split:
-      field: "tychon.x509.key_usage"
-      separator: ","
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: "x509.friendly_name"
-      target_field: tychon.x509.friendly_name
-      ignore_missing: true
-  - rename:
-      field: "x509.subject_key_identifier"
-      target_field: tychon.x509.subject_key_identifier
-      ignore_missing: true
-  - rename:
-      field: "x509.certificate_template"
-      target_field: tychon.x509.certificate_template
-      ignore_missing: true
-  - rename:
-      field: "x509.extended_error_information"
-      target_field: tychon.x509.extended_error_information
-      ignore_missing: true
-  - rename:
-      field: "certificate.is_weak"
-      target_field: tychon.certificate.is_weak
-      ignore_missing: true
-  - rename:
-      field: "certificate.is_expired"
-      target_field: tychon.certificate.is_expired
-      ignore_missing: true
-  - rename:
-      field: "certificate.is_file"
-      target_field: tychon.certificate.is_file
-      ignore_missing: true
-  - rename:
-      field: "certificate.is_expiring_soon"
-      target_field: tychon.certificate.is_expiring_soon
-      ignore_missing: true
-  - rename:
-      field: "certificate.is_long_lived"
-      target_field: tychon.certificate.is_long_lived
-      ignore_missing: true
-  - rename:
-      field: "certificate.location.trust_category"
-      target_field: tychon.certificate.location.trust_category
-      ignore_missing: true
-  - rename:
-      field: "process.information_source"
-      target_field: tychon.process.information_source
-      ignore_missing: true
-  - rename:
-      field: "process.description"
-      target_field: tychon.process.description
-      ignore_missing: true
-  - rename:
-      field: "process.owner"
+      field: tychon.process.owner
       target_field: process.user.name
       ignore_missing: true
   - rename:
-      field: "process.ppid"
-      target_field: process.parent.pid
+      field: tychon.process.ppid
+      target_field: tychon.process.parent.pid
       ignore_missing: true
   - convert:
-      field: process.pid
+      field: tychon.process.pid
       type: long
       ignore_missing: true
   - convert:
-      field: process.parent.pid
+      field: tychon.process.parent.pid
       type: long
       ignore_missing: true
   - convert:
-      field: server.port
+      field: tychon.server.port
       type: long
       ignore_missing: true
   - rename:
-      field: "service.description"
-      target_field: tychon.service.description
-      ignore_missing: true
-  - rename:
-      field: "service.display_name"
-      target_field: tychon.service.display_name
-      ignore_missing: true
-  - rename:
-      field: "file.code_signature.issuer"
-      target_field: file.x509.issuer.distinguished_name
-      ignore_missing: true
-  - rename:
-      field: "file.code_signature.issuer_name"
-      target_field: tychon.file.code_signature.issuer_name
-      ignore_missing: true
-  - rename:
-      field: "file.code_signature.thumbprint"
-      target_field: tychon.file.code_signature.thumbprint
-      ignore_missing: true
-  - rename:
-      field: "file.code_signature.subject_name"
-      target_field: tychon.file.code_signature.subject_name
-      ignore_missing: true
-  - rename:
-      field: "file.version"
-      target_field: tychon.file.version
+      field: tychon.file.code_signature.issuer
+      target_field: tychon.file.x509.issuer.distinguished_name
       ignore_missing: true
   - script:
       lang: painless
-      description: Normalize x509 array fields
+      description: Normalize tychon.x509 array fields
       source: |
-        def fieldset = ctx.x509;
+        def fieldset = ctx.tychon.x509;
         if (fieldset != null) {
           for (String partyName : ["issuer", "subject"]) {
             def party = fieldset[partyName];
@@ -234,6 +103,9 @@ processors:
             }
           }
         }
+
+  # ECS fields
+
   - set:
       field: event.kind
       value: state

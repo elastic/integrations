@@ -1,6 +1,21 @@
 ---
 description: Pipeline for TYCHON STIG Response Data
 processors:
+
+  - set:
+      if: "ctx.tychon?.rule?.test_result != null"
+      field: tychon.rule.result
+      value: '{{tychon.rule.test_result}}'
+  - remove:
+      field: tychon.rule.test_result
+      ignore_missing: true
+  - convert:
+      field: tychon.rule.weight
+      type: float
+      ignore_missing: true
+
+  # ECS fields
+
   - set:
       field: event.kind
       value: state
@@ -10,14 +25,3 @@ processors:
   - set:
       field: event.type
       value: [info]
-  - set:
-      if: "ctx.containsKey('rule') && ctx.rule.containsKey('test_result')"
-      field: rule.result
-      value: '{{rule.test_result}}'
-  - remove:
-      if: "ctx.containsKey('rule') && ctx.rule.containsKey('test_result')"
-      field: rule.test_result
-  - convert:
-      field: rule.weight
-      type: float
-      ignore_missing: true

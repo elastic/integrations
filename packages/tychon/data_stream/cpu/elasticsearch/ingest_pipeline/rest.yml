@@ -1,6 +1,26 @@
 ---
 description: Pipeline for TYCHON CPU Information
 processors:
+
+  - gsub:
+      field: tychon.host.cpu.speed
+      pattern: '[^0-9]'
+      replacement: ''
+  - convert:
+      field: tychon.host.cpu.speed
+      type: long
+      ignore_missing: true
+  - gsub:
+      field: tychon.host.cpu.clockspeed
+      pattern: '[^0-9]'
+      replacement: ''
+  - convert:
+      field: tychon.host.cpu.clockspeed
+      type: long
+      ignore_missing: true
+
+  # ECS fields
+
   - set:
       field: event.kind
       value: state
@@ -10,19 +30,3 @@ processors:
   - set:
       field: event.type
       value: [info]
-  - gsub:
-      field: host.cpu.speed
-      pattern: '[^0-9]'
-      replacement: ''
-  - convert:
-      field: host.cpu.speed
-      type: long
-      ignore_missing: true
-  - gsub:
-      field: host.cpu.clockspeed
-      pattern: '[^0-9]'
-      replacement: ''
-  - convert:
-      field: host.cpu.clockspeed
-      type: long
-      ignore_missing: true

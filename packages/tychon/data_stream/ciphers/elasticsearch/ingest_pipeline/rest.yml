@@ -1,138 +1,82 @@
 ---
 description: Pipeline for TYCHON Features Datasets
 processors:
+
   - remove:
-      field: error.message
-      if: ctx.error.message == ""
+      field: tychon.error.message
+      if: ctx.tychon.error.message == ""
       ignore_missing: true
   - remove:
-      field: file.created
-      if: ctx.file.created == ''
+      field: tychon.file.created
+      if: ctx.tychon.file.created == ''
       ignore_failure: true
       ignore_missing: true
   - remove:
-      field: file.accessed
-      if: ctx.file.accessed == ''
+      field: tychon.file.accessed
+      if: ctx.tychon.file.accessed == ''
       ignore_failure: true
       ignore_missing: true
   - remove:
-      field: file.mtime
-      if: ctx.file.mtime == ''
+      field: tychon.file.mtime
+      if: ctx.tychon.file.mtime == ''
       ignore_failure: true
       ignore_missing: true
   - script:
       lang: painless
       description: Remove non-strings from file.attributes
-      if: ctx.file?.attributes instanceof List
+      if: ctx.tychon?.file?.attributes instanceof List
       source: |
         def result = [];
-        for (def v : ctx.file.attributes) {
+        for (def v : ctx.tychon.file.attributes) {
           if (v instanceof String) {
             result.add(v);
           }
         }
-        ctx.file.attributes = result;
+        ctx.tychon.file.attributes = result;
   - convert:
-      field: file.size
+      field: tychon.file.size
+      type: long
+      ignore_missing: true
+  - convert:
+      field: tychon.server.port
       type: long
       ignore_missing: true
   - rename:
-      field: "server.ip"
-      target_field: tychon.server.ip
+      field: tychon.process.owner
+      target_field: tychon.process.user.name
       ignore_missing: true
   - convert:
-      field: server.port
+      field: tychon.process.pid
       type: long
       ignore_missing: true
   - rename:
-      field: "process.information_source"
-      target_field: tychon.process.information_source
-      ignore_missing: true
-  - rename:
-      field: "process.description"
-      target_field: tychon.process.description
-      ignore_missing: true
-  - rename:
-      field: "process.owner"
-      target_field: process.user.name
+      field: tychon.process.ppid
+      target_field: tychon.process.parent.pid
       ignore_missing: true
   - convert:
-      field: process.pid
+      field: tychon.process.parent.pid
       type: long
       ignore_missing: true
   - rename:
-      field: "process.ppid"
-      target_field: process.parent.pid
-      ignore_missing: true
-  - convert:
-      field: process.parent.pid
-      type: long
+      field: tychon.file.code_signature.issuer
+      target_field: tychon.file.x509.issuer.distinguished_name
       ignore_missing: true
   - rename:
-      field: "service.description"
-      target_field: tychon.service.description
+      field: tychon.tls.server.supported_cipher.name
+      target_field: tychon.tls.server.supported_ciphers
       ignore_missing: true
   - rename:
-      field: "service.display_name"
-      target_field: tychon.service.display_name
-      ignore_missing: true
-  - rename:
-      field: "file.code_signature.issuer"
-      target_field: file.x509.issuer.distinguished_name
-      ignore_missing: true
-  - rename:
-      field: "file.code_signature.issuer_name"
-      target_field: tychon.file.code_signature.issuer_name
-      ignore_missing: true
-  - rename:
-      field: "file.code_signature.thumbprint"
-      target_field: tychon.file.code_signature.thumbprint
-      ignore_missing: true
-  - rename:
-      field: "file.code_signature.subject_name"
-      target_field: tychon.file.code_signature.subject_name
-      ignore_missing: true
-  - rename:
-      field: "file.code_signature.friendly_name"
-      target_field: tychon.file.code_signature.friendly_name
-      ignore_missing: true
-  - rename:
-      field: "file.version"
-      target_field: tychon.file.version
-      ignore_missing: true
-  - rename:
-      field: "tls.server.supported_cipher.name"
-      target_field: tls.server.supported_ciphers
-      ignore_missing: true
-  - rename:
-      field: "tls.server.supported_cipher.mac"
+      field: tychon.tls.server.supported_cipher.mac
       target_field: tychon.tls.server.supported_cipher_mac
       ignore_missing: true
-  - rename:
-      field: "tls.server.cipher.weight"
-      target_field: tychon.tls.server.cipher.weight
-      ignore_missing: true
-  - rename:
-      field: "tls.server.protocol.weight"
-      target_field: tychon.tls.server.protocol.weight
-      ignore_missing: true
-  - rename:
-      field: "tls.server.cipher.is_nist_approved"
-      target_field: tychon.tls.server.cipher.is_nist_approved
-      ignore_missing: true
-  - rename:
-      field: "tls.server.signature_hash.weight"
-      target_field: tychon.tls.server.signature_hash.weight
-      ignore_missing: true
-  - rename:
-      field: "connection.state"
-      target_field: tychon.connection.state
-      ignore_missing: true
   - split:
-      field: "tls.client.supported_ciphers"
+      field: tychon.tls.client.supported_ciphers
       separator: ","
       ignore_missing: true
       ignore_failure: true
+
+  # ECS fields
+
   - set:
       field: event.kind
       value: state

@@ -1,67 +1,21 @@
 ---
 description: Pipeline for TYCHON Browser Tables
 processors:
+
+    - remove:
+        field: tychon.package.size
+        if: ctx.tychon.package.size == ""
+        ignore_missing: true
+    - convert:
+        field: tychon.package.size
+        type: long
+        ignore_missing: true
+
+    # ECS fields
+
     - set:
         field: event.kind
         value: state
-    - rename:
-        field: tychon.package.architecture
-        target_field: package.architecture
-        ignore_missing: true
-        ignore_failure: true
-    - rename:
-        field: tychon.package.path
-        target_field: package.path
-        ignore_missing: true
-        ignore_failure: true
-    - rename:
-        field: tychon.host.type
-        target_field: host.type
-        ignore_missing: true
-        ignore_failure: true
-    - rename:
-        field: tychon.package.installed
-        target_field: package.installed
-        ignore_missing: true
-        ignore_failure: true
-    - rename:
-        field: tychon.tls.version_protocol
-        target_field: tls.version_protocol
-        ignore_missing: true
-        ignore_failure: true
-    - rename:
-        field: tychon.host.os.family
-        target_field: host.os.family
-        ignore_missing: true
-        ignore_failure: true
-    - rename:
-        field: tychon.package.name
-        target_field: package.name
-        ignore_missing: true
-        ignore_failure: true
-    - rename:
-        field: tychon.package.size
-        target_field: package.size
-        ignore_missing: true
-        ignore_failure: true
-    - remove:
-        field: package.size
-        if: ctx.package.size == ""
-        ignore_missing: true
-    - convert:
-        field: package.size
-        type: long
-        ignore_missing: true
-    - rename:
-        field: tychon.package.version
-        target_field: package.version
-        ignore_missing: true
-        ignore_failure: true
-    - rename:
-        field: tychon.package.type
-        target_field: package.type
-        ignore_missing: true
-        ignore_failure: true
     - set:
         field: event.category
         value: [network]

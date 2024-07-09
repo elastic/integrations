@@ -1,6 +1,42 @@
 ---
 description: Pipeline for TYCHON Volumes
 processors:
+
+  - set:
+      field: tychon.volume.block_size
+      value: 0
+      if: ctx.tychon.volume.block_size == ''
+  - set:
+      field: tychon.volume.freespace
+      value: 0
+      if: ctx.tychon.volume.freespace == ''
+  - set:
+      field: tychon.volume.percent_full
+      value: 100
+      if: ctx.tychon.volume.percent_full == '' || ctx.tychon.volume.percent_full == 'NaN'
+  - set:
+      field: tychon.volume.size
+      value: 0
+      if: ctx.tychon.volume.size == ''
+  - convert:
+      field: tychon.volume.block_size
+      type: long
+      ignore_missing: true
+  - convert:
+      field: tychon.volume.freespace
+      type: long
+      ignore_missing: true
+  - convert:
+      field: tychon.volume.percent_full
+      type: float
+      ignore_missing: true
+  - convert:
+      field: tychon.volume.size
+      type: long
+      ignore_missing: true
+
+  # ECS fields
+
   - set:
       field: event.kind
       value: state
@@ -10,35 +46,3 @@ processors:
   - set:
       field: event.type
       value: [info]
-  - set:
-      field: volume.block_size
-      value: 0
-      if: ctx.volume.block_size == ''
-  - set:
-      field: volume.freespace
-      value: 0
-      if: ctx.volume.freespace == ''
-  - set:
-      field: volume.percent_full
-      value: 100
-      if: ctx.volume.percent_full == '' || ctx.volume.percent_full == 'NaN'
-  - set:
-      field: volume.size
-      value: 0
-      if: ctx.volume.size == ''
-  - convert:
-      field: volume.block_size
-      type: long
-      ignore_missing: true
-  - convert:
-      field: volume.freespace
-      type: long
-      ignore_missing: true
-  - convert:
-      field: volume.percent_full
-      type: float
-      ignore_missing: true
-  - convert:
-      field: volume.size
-      type: long
-      ignore_missing: true
