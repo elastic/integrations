@@ -5,7 +5,7 @@ env:
   DOCKER_COMPOSE_VERSION: "v2.24.1"
   DOCKER_VERSION: "26.1.2"
   KIND_VERSION: 'v0.20.0'
-  K8S_VERSION: 'v1.29.0'
+  K8S_VERSION: 'v1.30.0'
   YQ_VERSION: 'v4.35.2'
   JQ_VERSION: '1.7'
   GH_CLI_VERSION: "2.29.0"
@@ -54,10 +54,13 @@ steps:
 
   - label: ":sonarqube: Continuous Code Inspection"
     soft_fail: true # FIXME: Coverage is failing, remove this after solving the issue
+    timeout_in_minutes: 120
     env:
       VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
     agents:
       image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
+      cpu: "8"
+      memory: "4G"
     command: ".buildkite/scripts/run_sonar_scanner.sh"
     artifact_paths:
       - build/test-coverage/coverage_merged.xml
