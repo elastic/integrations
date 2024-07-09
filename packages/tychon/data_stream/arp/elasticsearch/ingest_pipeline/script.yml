@@ -1,22 +1,14 @@
-  - convert:
-      field: script.current_duration
-      type: string
-      ignore_missing: true
-  - split:
-      field: script.current_duration
-      separator: '\.+'
-      target_field: tempduration
-      ignore_failure: true
-  - set:
-      field: script.current_duration
-      value: '{{{tempduration.0}}}'
-      ignore_failure: true
-  - remove:
-      field: tempduration
-      ignore_failure: true
-      ignore_missing: true
-  - convert:
-      tag: convert_script_current_duration
-      field: script.current_duration
-      type: long
-      ignore_missing: true
+---
+description: Pipeline for common script fields processing
+processors:
+
+  - script:
+      description: Convert to long, truncating fractional part
+      lang: painless
+      source: |
+        if (ctx.tychon?.script?.current_duration != null &&
+            ctx.tychon.script.current_duration != "")
+        {
+          ctx.tychon.script.current_duration =
+            (long) Double.parseDouble(ctx.tychon.script.current_duration.toString());
+        }
