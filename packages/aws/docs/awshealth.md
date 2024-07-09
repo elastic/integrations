@@ -69,24 +69,21 @@ An example event for `awshealth` looks as following:
                     "entity_arn": "arn:aws:health:us-west-2:00000000000:entity/g1boW0WfWEdh7qa18fGj5UZaAEFeA_2Ol3YtjyQ1IWcI4=1g",
                     "entity_url": "",
                     "entity_value": "arn:aws:ecs:us-west-2:00000000000:cluster/EC2BasedCluster",
-                    "last_updated_time": "2024-06-07T01:53:31.728Z",
-                    "status_code": ""
+                    "last_updated_time": "2024-06-07T01:53:31.728Z"
                 },
                 {
                     "aws_account_id": "00000000000",
                     "entity_arn": "arn:aws:health:us-west-2:00000000000:entity/g1ct5TryWpLSufg8DM-B5Wp_lAicG_0BlW9Zuh1m2YZrg=1g",
                     "entity_url": "",
                     "entity_value": "arn:aws:ecs:us-west-2:00000000000:cluster/DEMOGO-ECS",
-                    "last_updated_time": "2024-06-07T01:53:31.728Z",
-                    "status_code": ""
+                    "last_updated_time": "2024-06-07T01:53:31.728Z"
                 },
                 {
                     "aws_account_id": "00000000000",
                     "entity_arn": "arn:aws:health:us-west-2:00000000000:entity/g1mkYYnoO_cHYLqqY-p5H5owH5HTnTTu3ZmqnieDfbf_o=1g",
                     "entity_url": "",
                     "entity_value": "arn:aws:ecs:us-west-2:00000000000:cluster/elasticAgentCluster",
-                    "last_updated_time": "2024-06-07T01:53:31.728Z",
-                    "status_code": ""
+                    "last_updated_time": "2024-06-07T01:53:31.728Z"
                 }
             ],
             "affected_entities_others": 0,
@@ -238,26 +235,27 @@ An example event for `awshealth` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| aws.awshealth.affected_entities.affected_entities.last_updated_time | The last updated time of entities. | date |  |
+| aws.awshealth.affected_entities | Details of the affected entities related to the event. | object |  |
 | aws.awshealth.affected_entities.aws_account_id | The Amazon Web Services account number that contains the affected entity. | keyword |  |
-| aws.awshealth.affected_entities.entity_arn | The unique identifier for the affected entities. The entity ARN has the format: arn:aws:health:entity-region:aws-account:entity/entity-id. | keyword |  |
+| aws.awshealth.affected_entities.entity_arn | The unique identifier for the affected entities. The entity ARN has the format: `arn:aws:health:\<entity-region\>:\<aws-account\>:entity/\<entity-id\>`. For example, `arn:aws:health:us-east-1:111222333444:entity/AVh5GGT7ul1arKr1sE1K`. | keyword |  |
 | aws.awshealth.affected_entities.entity_url | The URL of the affected entity. | keyword |  |
-| aws.awshealth.affected_entities.entity_value | The IDs of the affected entities. | keyword |  |
-| aws.awshealth.affected_entities.status_code | The most recent status of affected entities. Possible values are open, closed, and upcoming. | keyword |  |
+| aws.awshealth.affected_entities.entity_value | The ID of the affected entity. | keyword |  |
+| aws.awshealth.affected_entities.last_updated_time | The last updated time of entity. | date |  |
+| aws.awshealth.affected_entities.status_code | The most recent status of the entity affected by the event. The possible values include `IMPAIRED`, `UNIMPAIRED`, `UNKNOWN`, `PENDING`, `RESOLVED`. | keyword |  |
 | aws.awshealth.affected_entities_others | The number of affected resources related to the event whose status cannot be verified. | float | gauge |
 | aws.awshealth.affected_entities_pending | The number of affected resources that may require action. | float | gauge |
 | aws.awshealth.affected_entities_resolved | The number of affected resources that do not require any action. | float | gauge |
 | aws.awshealth.end_time | The date and time when the event ended. Some events may not have an end date. | date |  |
-| aws.awshealth.event_arn | The unique identifier for the event. The event ARN has the format arn:aws:health:event-region::event/SERVICE/EVENT_TYPE_CODE/EVENT_TYPE_PLUS_ID. | keyword |  |
+| aws.awshealth.event_arn | The unique identifier for the event. The event ARN has the format `arn:aws:health:\<event-region\>::event/\<SERVICE\>/\<EVENT_TYPE_CODE\>/\<EVENT_TYPE_PLUS_ID\>`. For example, `arn:aws:health:us-east-1::event/EC2/EC2_INSTANCE_RETIREMENT_SCHEDULED/EC2_INSTANCE_RETIREMENT_SCHEDULED_ABC123-DEF456` | keyword |  |
 | aws.awshealth.event_description | The detailed description of the event. | text |  |
-| aws.awshealth.event_scope_code | This parameter specifies whether the Health event is a public Amazon Web Service event or an account-specific event. Allowed values are PUBLIC, ACCOUNT_SPECIFIC, or NONE. | keyword |  |
-| aws.awshealth.event_type_category | The event type category code. Possible values are issue, accountNotification, or scheduledChange. | keyword |  |
-| aws.awshealth.event_type_code | The unique identifier for the event type. The format is AWS_SERVICE_DESCRIPTION. | keyword |  |
+| aws.awshealth.event_scope_code | This parameter specifies whether the Health event is a public Amazon Web Service event or an account-specific event. Allowed values are `PUBLIC`, `ACCOUNT_SPECIFIC`, or `NONE`." | keyword |  |
+| aws.awshealth.event_type_category | The event type category code. Possible values are `issue`, `accountNotification`, `investigation` or `scheduledChange`. | keyword |  |
+| aws.awshealth.event_type_code | The unique identifier for the event type. The format is `AWS_\<SERVICE_DESCRIPTION\>`. For example, `AWS_EC2_SYSTEM_MAINTENANCE_EVENT`. | keyword |  |
 | aws.awshealth.last_updated_time | The most recent date and time when the event was updated. | date |  |
 | aws.awshealth.region | The Amazon Web Services Region name of the event. | keyword |  |
 | aws.awshealth.service | The Amazon Web Service affected by the event. For example, EC2 or RDS. | keyword |  |
 | aws.awshealth.start_time | The date and time when the event began. | date |  |
-| aws.awshealth.status_code | The most recent status of the event. Possible values are open, closed, and upcoming. | keyword |  |
+| aws.awshealth.status_code | The most recent status of the event. Possible values are `open`, `closed`, and `upcoming`. | keyword |  |
 | aws.linked_account.id | ID used to identify linked account. | keyword |  |
 | aws.linked_account.name | Name or alias used to identify linked account. | keyword |  |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |
@@ -266,5 +264,3 @@ An example event for `awshealth` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
