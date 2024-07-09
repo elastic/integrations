@@ -1,7 +1,8 @@
 paths:
 {{#each paths as |path i|}}
- - {{path}}
+  - {{path}}
 {{/each}}
+exclude_files: ['\.gz$']
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
@@ -9,6 +10,11 @@ tags:
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+fields_under_root: true
+fields:
+    observer:
+        vendor: "Broadcom"
+        product: "ProxySG"
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
@@ -17,4 +23,6 @@ processors:
     target: _temp_
     fields:
       _conf: "{{config}}"
+{{#if processors}}
 {{processors}}
+{{/if}}

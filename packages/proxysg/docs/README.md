@@ -14,45 +14,88 @@ An example event for `log` looks as following:
 ```json
 {
     "@timestamp": "2024-03-22T16:16:01Z",
+    "agent": {
+        "ephemeral_id": "068f1594-2629-49ad-b68f-01e2a49ad3ae",
+        "id": "687889c6-baf0-42ac-b932-2e5abb784519",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.14.1"
+    },
+    "data_stream": {
+        "dataset": "proxysg.log",
+        "namespace": "55691",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "687889c6-baf0-42ac-b932-2e5abb784519",
+        "snapshot": false,
+        "version": "8.14.1"
+    },
     "event": {
-        "original": "2024-03-22 16:16:01 48 10.82.255.36 302 TCP_NC_MISS 1242 969 GET https pixel.tapad.com 443 /idsync/ex/push ?partner_id=2499&partner_device_id=aeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553&partner_url=https%3A%2F%2Fa.vidoomy.com%2Fapi%2Frtbserver%2Fpbscookie%3Fuid%3Daeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553%26vid%3D280fa751e99651c4193ef92f6dab0f92%26dspid%3DCEN aeinstein - - pixel.tapad.com - https://vid.vidoomy.com/ OBSERVED \"FastwebRes_CallCntr;Web Ads/Analytics\" - 142.182.19.21 34.111.113.62 \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36\" sha256WithRSAEncryption"
+        "agent_id_status": "verified",
+        "dataset": "proxysg.log",
+        "ingested": "2024-07-09T21:58:12Z"
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/proxysg.log"
+        },
+        "offset": 487
     },
     "observer": {
         "product": "ProxySG",
         "vendor": "Broadcom"
     },
     "proxysg": {
-        "c-ip": "10.82.255.36",
-        "cs-Referer": "https://vid.vidoomy.com/",
-        "cs-User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "cs-auth-group": "-",
-        "cs-bytes": "969",
-        "cs-categories": "FastwebRes_CallCntr;Web Ads/Analytics",
-        "cs-host": "pixel.tapad.com",
-        "cs-method": "GET",
-        "cs-uri-path": "/idsync/ex/push",
-        "cs-uri-port": "443",
-        "cs-uri-query": "?partner_id=2499&partner_device_id=aeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553&partner_url=https%3A%2F%2Fa.vidoomy.com%2Fapi%2Frtbserver%2Fpbscookie%3Fuid%3Daeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553%26vid%3D280fa751e99651c4193ef92f6dab0f92%26dspid%3DCEN",
-        "cs-uri-scheme": "https",
-        "cs-username": "aeinstein",
-        "r-ip": "34.111.113.62",
-        "rs-Content-Type": "-",
-        "s-action": "TCP_NC_MISS",
-        "s-hierarchy": "-",
-        "s-ip": "142.182.19.21",
-        "s-supplier-name": "pixel.tapad.com",
-        "sc-bytes": "1242",
-        "sc-filter-result": "OBSERVED",
-        "sc-status": "302",
-        "time-taken": "48",
-        "x-rs-certificate-signature-algorithm": "sha256WithRSAEncryption",
-        "x-virus-id": "-"
-    }
+        "client": {
+            "ip": "10.82.255.36"
+        },
+        "client_to_server": {
+            "auth_group": "-",
+            "bytes": "969",
+            "categories": "FastwebRes_CallCntr;Web Ads/Analytics",
+            "host": "pixel.tapad.com",
+            "method": "GET",
+            "referer": "https://vid.vidoomy.com/",
+            "uri_path": "/idsync/ex/push",
+            "uri_port": "443",
+            "uri_query": "?partner_id=2499&partner_device_id=aeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553&partner_url=https%3A%2F%2Fa.vidoomy.com%2Fapi%2Frtbserver%2Fpbscookie%3Fuid%3Daeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553%26vid%3D280fa751e99651c4193ef92f6dab0f92%26dspid%3DCEN",
+            "uri_scheme": "https",
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "username": "aeinstein"
+        },
+        "remote": {
+            "ip": "34.111.113.62"
+        },
+        "remote_to_server": {
+            "content_type": "-"
+        },
+        "server": {
+            "action": "TCP_NC_MISS",
+            "hierarchy": "-",
+            "ip": "142.182.19.21",
+            "supplier_name": "pixel.tapad.com"
+        },
+        "server_to_client": {
+            "bytes": "1242",
+            "filter_result": "OBSERVED",
+            "status": "302"
+        },
+        "time_taken": "48",
+        "x_rs_certificate_signature_algorithm": "sha256WithRSAEncryption",
+        "x_virus_id": "-"
+    },
+    "tags": [
+        "proxysg-access-log",
+        "forwarded"
+    ]
 }
-
 ```
 
 **Exported fields**
@@ -66,16 +109,12 @@ An example event for `log` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
 | input.type | Type of input. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset | Log offset. | long |
 | log.source.address | Source address for the log. | keyword |
-| log.syslog.appname | The device or application that originated the Syslog message, if available. | keyword |
-| log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
-| log.syslog.facility.name | The Syslog text-based facility of the log event, if available. | keyword |
-| log.syslog.hostname | The hostname, FQDN, or IP of the machine that originally sent the Syslog message. This is sourced from the hostname field of the syslog header. Depending on the environment, this value may be different from the host that handled the event, especially if the host handling the events is acting as a collector. | keyword |
-| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
-| log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
-| log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
-| log.syslog.version | The version of the Syslog protocol specification. Only applicable for RFC 5424 messages. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | observer.product | The product name of the observer. | keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | proxysg.client.ip |  | keyword |
 | proxysg.client_to_server.auth_group |  | keyword |
