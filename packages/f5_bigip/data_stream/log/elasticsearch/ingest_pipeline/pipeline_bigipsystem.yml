@@ -2,9 +2,9 @@
 description: Pipeline for processing system information logs.
 processors:
   - set:
-      field: ecs.version
-      tag: set_ecs_version
-      value: 8.11.0
+      field: observer.product
+      tag: set_observer_product
+      value: System Information
   - rename:
       field: json.system.afmState
       tag: rename_system_afmState
@@ -46,7 +46,8 @@ processors:
         remove:
           field:
             - _ingest._value.createDateTime
-          tag: remove_createDateTime
+            - _ingest._value.name
+          tag: remove_asm_attack_signatures_fields
           ignore_missing: true
   - foreach:
       field: f5_bigip.log.asm_attack_signatures
@@ -160,6 +161,16 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: f5_bigip.log.connections_performance
+      tag: foreach_connections_performance
+      if: ctx.f5_bigip?.log?.connections_performance != null
+      processor:
+        remove:
+          field:
+            - _ingest._value.name
+          tag: remove_connections_performance_name
+          ignore_missing: true
   - convert:
       field: json.system.cpu
       tag: convert_system_cpu_to_long
@@ -214,16 +225,6 @@ processors:
       tag: foreach_disk_storage
       if: ctx.f5_bigip?.log?.disk_storage != null
       processor:
-        rename:
-          field: _ingest._value.Capacity
-          tag: rename_capacity
-          target_field: _ingest._value.capacity
-          ignore_missing: true
-  - foreach:
-      field: f5_bigip.log.disk_storage
-      tag: foreach_disk_storage
-      if: ctx.f5_bigip?.log?.disk_storage != null
-      processor:
         convert:
           field: _ingest._value.1024-blocks
           tag: convert_1024-blocks
@@ -246,6 +247,8 @@ processors:
           field:
             - _ingest._value.1024-blocks
             - _ingest._value.Capacity_Float
+            - _ingest._value.Capacity
+            - _ingest._value.name
           tag: remove_disk_storage_fields
           ignore_missing: true
   - rename:
@@ -279,7 +282,8 @@ processors:
         remove:
           field:
             - _ingest._value.%util
-          tag: remove_util
+            - _ingest._value.name
+          tag: remove_disk_latency_fields
           ignore_missing: true
   - foreach:
       field: f5_bigip.log.disk_latency
@@ -445,18 +449,26 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      field: f5_bigip.log.base_mac
+      tag: uppercase_base_mac
+      ignore_missing: true
   - append:
       field: host.mac
       tag: append_f5_bigip_log_base_mac_into_host_mac
       value: '{{{f5_bigip.log.base_mac}}}'
       allow_duplicates: false
       if: ctx.f5_bigip?.log?.base_mac != null
-  - append:
-      field: related.hosts
-      tag: append_host_mac_into_related_hosts
-      value: '{{{f5_bigip.log.base_mac}}}'
-      allow_duplicates: false
-      if: ctx.f5_bigip?.log?.base_mac != null
+  - foreach:
+      field: host.mac
+      tag: foreach_host_mac
+      if: ctx.host?.mac != null
+      processor:
+        append:
+          field: related.hosts
+          tag: append_host_mac_into_related_hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - rename:
       field: json.system.machineId
       tag: rename_system_machineId
@@ -498,6 +510,16 @@ processors:
       tag: rename_system_networkInterfaces
       target_field: f5_bigip.log.network_interfaces
       ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.network_interfaces
+      tag: foreach_network_interfaces
+      if: ctx.f5_bigip?.log?.network_interfaces != null
+      processor:
+        remove:
+          field:
+            - _ingest._value.name
+          tag: remove_network_interfaces_fields
+          ignore_missing: true
   - rename:
       field: json.system.platformId
       tag: rename_system_platformId
@@ -513,6 +535,16 @@ processors:
       tag: rename_system_provisioning
       target_field: f5_bigip.log.provisioning
       ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.provisioning
+      tag: foreach_provisioning
+      if: ctx.f5_bigip?.log?.provisioning != null
+      processor:
+        remove:
+          field:
+            - _ingest._value.name
+          tag: remove_provisioning_fields
+          ignore_missing: true
   - convert:
       field: json.system.swap
       tag: convert_system_swap_to_long
@@ -620,6 +652,16 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: f5_bigip.log.throughput_performance
+      tag: foreach_throughput_performance
+      if: ctx.f5_bigip?.log?.throughput_performance != null
+      processor:
+        remove:
+          field:
+            - _ingest._value.name
+          tag: remove_throughput_performance_fields
+          ignore_missing: true
   - convert:
       field: json.system.tmmCpu
       tag: convert_system_tmmCpu_to_long

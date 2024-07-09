@@ -16,7 +16,7 @@ processors:
       field_split: ';'
       value_split: =
       target_field: kv
-      if: ctx.event?.original != null && ctx.event.original.contains('device_product=ASM')
+      if: ctx.event.original.contains('device_product=ASM')
       on_failure:
         - append:
             field: error.message
@@ -247,6 +247,11 @@ processors:
       tag: set_source_ip_from_log_client_ip
       copy_from: f5_bigip.log.client.ip
       ignore_empty_value: true
+  - set:
+      field: client.ip
+      tag: set_client_ip
+      copy_from: source.ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append_source_ip_into_related_ip
@@ -268,6 +273,11 @@ processors:
       field: source.port
       tag: set_source_port_from_log_client_port
       copy_from: f5_bigip.log.client.port
+      ignore_empty_value: true
+  - set:
+      field: client.port
+      tag: set_client_port
+      copy_from: source.port
       ignore_empty_value: true
   - rename:
       field: kv.client_request_uri
@@ -354,6 +364,11 @@ processors:
       tag: set_destination_ip_from_log_destination_ip
       copy_from: f5_bigip.log.destination.ip
       ignore_empty_value: true
+  - set:
+      field: server.ip
+      tag: set_server_ip
+      copy_from: destination.ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append_destination_ip_into_related_ip
@@ -375,6 +390,11 @@ processors:
       field: destination.port
       tag: set_destination_port_from_log_destination_port
       copy_from: f5_bigip.log.destination.port
+      ignore_empty_value: true
+  - set:
+      field: server.port
+      tag: set_server_port
+      copy_from: destination.port
       ignore_empty_value: true
   - rename:
       field: kv.device_blade
@@ -598,6 +618,17 @@ processors:
       field: network.protocol
       tag: lowercase_network_protocol
       ignore_missing: true
+  - script:
+      description: Script to extract http_request
+      tag: script_to_extract_http_request
+      lang: painless
+      source:
+          String message = ctx.event.original;
+          int startIndex = message.indexOf('http_request="') + 'http_request="'.length();
+          int endIndex = message.indexOf('"', startIndex);
+          if (startIndex >= 0 && endIndex >= 0) {
+            ctx.kv.http_request = message.substring(startIndex, endIndex);
+            }
   - rename:
       field: kv.http_request
       tag: rename_http_request
@@ -605,15 +636,23 @@ processors:
       ignore_missing: true
   - dissect:
       field: f5_bigip.log.http.request
-      pattern: "%{f5_bigip.log.extra.method} %{f5_bigip.log.extra.path} %{f5_bigip.log.extra.http_version}\\r\\nHost: %{f5_bigip.log.extra.host}\\r\\n%{f5_bigip.log.extra.other_headers}\\r\\n"
+      pattern: "%{f5_bigip.log.http.method} %{f5_bigip.log.http.path} %{f5_bigip.log.http.version}\\r\\nHost: %{f5_bigip.log.http.host}\\r\\nConnection: %{f5_bigip.log.http.connection}\\r\\nPragma: %{f5_bigip.log.http.pragma}\\r\\nCache-Control: %{f5_bigip.log.http.cache_control}\\r\\nUser-Agent: %{f5_bigip.log.http.user_agent}\\r\\n%{f5_bigip.log.http.other_headers}\\r\\n"
+      ignore_failure: true
+  - user_agent:
+      field: f5_bigip.log.http.user_agent
+      ignore_missing: true
+  - dissect:
+      field: f5_bigip.log.http.version
+      description: Pattern to extract network protocol and http version.
+      pattern: "HTTP/%{http.version}"
       ignore_failure: true
   - convert:
-      field: f5_bigip.log.extra.host
-      tag: convert_f5_bigip_log_extra_host_to_ip
+      field: f5_bigip.log.http.host
+      tag: convert_f5_bigip_log_http_host_to_ip
       target_field: f5_bigip.log.http.request_host
       type: ip
       ignore_missing: true
-      if: ctx.f5_bigip?.log?.extra?.host != 'null' && ctx.f5_bigip.log?.extra?.host != ''
+      if: ctx.f5_bigip?.log?.http?.host != 'null' && ctx.f5_bigip.log?.http?.host != ''
       on_failure:
         - append:
             field: error.message
@@ -624,9 +663,6 @@ processors:
       value: '{{{f5_bigip.log.http.request_host}}}'
       allow_duplicates: false
       if: ctx.f5_bigip?.log?.http?.request_host != null && ctx.f5_bigip.log.http.request_host != 'null'
-  - remove:
-      field: f5_bigip.log.extra
-      ignore_missing: true
   - rename:
       field: kv.human_behaviour
       tag: rename_human_behaviour

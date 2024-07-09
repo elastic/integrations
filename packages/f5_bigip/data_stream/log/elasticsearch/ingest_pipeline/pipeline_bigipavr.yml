@@ -9,6 +9,10 @@ processors:
       field: event.type
       tag: append_event_type
       value: info
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Application Visibility and Reporting
   - date:
       field: json.EOCTimestamp
       tag: date_eoc_timestamp
@@ -63,6 +67,11 @@ processors:
       tag: set_destination_ip
       copy_from: f5_bigip.log.pool.ip
       ignore_failure: true
+  - set:
+      field: server.ip
+      tag: set_server_ip
+      copy_from: destination.ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append_related_ip
@@ -85,6 +94,11 @@ processors:
       tag: set_destination_port
       copy_from: f5_bigip.log.pool.port
       ignore_failure: true
+  - set:
+      field: server.port
+      tag: set_server_port
+      copy_from: destination.port
+      ignore_empty_value: true
   - rename:
       field: json.QueryName
       tag: rename_query_name

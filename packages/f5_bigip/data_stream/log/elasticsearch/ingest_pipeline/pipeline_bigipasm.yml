@@ -9,6 +9,14 @@ processors:
       field: event.type
       tag: append_event_type
       value: info
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Application Security Module
   - date:
       field: json.date_time
       tag: date_time_conversion
@@ -64,6 +72,11 @@ processors:
       tag: set_destination_ip
       copy_from: f5_bigip.log.dest.ip
       ignore_empty_value: true
+  - set:
+      field: server.ip
+      tag: set_server_ip
+      copy_from: destination.ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append_related_ip
@@ -85,6 +98,11 @@ processors:
       field: destination.port
       tag: set_destination_port
       copy_from: f5_bigip.log.dest.port
+      ignore_empty_value: true
+  - set:
+      field: server.port
+      tag: set_server_port
+      copy_from: destination.port
       ignore_empty_value: true
   - rename:
       field: json.geo_location
@@ -165,6 +183,11 @@ processors:
       field: source.port
       tag: set_source_port
       copy_from: f5_bigip.log.src.port
+      ignore_empty_value: true
+  - set:
+      field: client.port
+      tag: set_client_port
+      copy_from: source.port
       ignore_empty_value: true
   - rename:
       field: json.username
@@ -291,6 +314,12 @@ processors:
         field: f5_bigip.log.sam_account_name
         target_field: f5_bigip.log.query.sam_account_name
         ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_related_user
+      value: '{{{f5_bigip.log.query.sam_account_name}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.query?.sam_account_name != null
   - rename:
         field: f5_bigip.log.user_principle_name
         target_field: f5_bigip.log.query.user_principle_name
@@ -304,12 +333,15 @@ processors:
       tag: rename_request
       target_field: f5_bigip.log.request.detail
       ignore_missing: true
+  # Two dissect patterns are used to handle both single and multiple escape characters.
   - dissect:
       field: f5_bigip.log.request.detail
+      description: Pattern to handle multiple escape character.
       pattern: "%{f5_bigip.log.request.method} %{f5_bigip.log.request.path} %{f5_bigip.log.request.protocol}\\r\\nHost: %{f5_bigip.log.request.host}\\r\\nConnection: %{f5_bigip.log.request.connection}\\r\\nCache-Control: %{f5_bigip.log.request.cache_control}"
       ignore_failure: true
   - dissect:
       field: f5_bigip.log.request.detail
+      description: Pattern to handle single escape character.
       pattern: "%{f5_bigip.log.request.method} %{f5_bigip.log.request.path} %{f5_bigip.log.request.protocol}\r\nHost: %{f5_bigip.log.request.host}\r\nUser-Agent: %{f5_bigip.log.request.user_agent}\r\nAccept: %{f5_bigip.log.request.accept}\r\nX-Forwarded-For: %{f5_bigip.log.request.x_forwarded_for}\r\n\r\n"
       ignore_failure: true
   - append:
@@ -322,6 +354,14 @@ processors:
       field: related.hosts
       tag: lowercase_related_hosts
       ignore_missing: true
+  - user_agent:
+      field: f5_bigip.log.request.user_agent
+      ignore_missing: true
+  - dissect:
+      field: f5_bigip.log.request.protocol
+      description: Pattern to extract network protocol and http version.
+      pattern: "%{network.protocol}/%{http.version}"
+      ignore_failure: true
   - convert:
       field: f5_bigip.log.request.x_forwarded_for
       tag: convert_x_forwarded_for_to_ip
@@ -360,12 +400,6 @@ processors:
       tag: rename_route_domain
       target_field: f5_bigip.log.route_domain
       ignore_missing: true
-  - append:
-      field: related.hosts
-      tag: append_related_hosts
-      value: '{{{f5_bigip.log.route_domain}}}'
-      allow_duplicates: false
-      ignore_failure: true
   - rename:
       field: json.session_id
       tag: rename_session_id

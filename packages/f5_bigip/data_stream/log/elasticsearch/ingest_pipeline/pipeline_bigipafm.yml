@@ -9,6 +9,10 @@ processors:
       field: event.type
       tag: append_event_type
       value: info
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Advanced Firewall Module
   - date:
       field: json.date_time
       tag: date_time_conversion
@@ -42,6 +46,11 @@ processors:
       tag: set_destination_ip
       copy_from: f5_bigip.log.dest.ip
       ignore_failure: true
+  - set:
+      field: server.ip
+      tag: set_server_ip
+      copy_from: destination.ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append_related_ip
@@ -64,6 +73,11 @@ processors:
       tag: set_destination_port
       copy_from: f5_bigip.log.dest.port
       ignore_failure: true
+  - set:
+      field: server.port
+      tag: set_server_port
+      copy_from: destination.port
+      ignore_empty_value: true
   - rename:
       field: json.action
       tag: rename_action
@@ -120,6 +134,11 @@ processors:
       tag: set_source_ip
       copy_from: f5_bigip.log.source.ip
       ignore_empty_value: true
+  - set:
+      field: client.ip
+      tag: set_client_ip
+      copy_from: source.ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append_related_ip
@@ -141,6 +160,11 @@ processors:
       field: source.port
       tag: set_source_port
       copy_from: f5_bigip.log.source.port
+      ignore_empty_value: true
+  - set:
+      field: client.port
+      tag: set_client_port
+      copy_from: source.port
       ignore_empty_value: true
   - rename:
       field: json.source_user_group

@@ -9,6 +9,10 @@ processors:
       field: event.type
       tag: append_event_type
       value: info
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: iHealth Information
   - foreach:
       field: json.diagnostics
       tag: iterate_diagnostics_to_rename_cveIds
@@ -292,9 +296,9 @@ processors:
             - _ingest._value.summary
           tag: remove_duplicate_custom_fields_from_diagnostics_array
           ignore_missing: true
-          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       field:
         - f5_bigip.log.system.hostname
         - f5_bigip.log.system.ihealth_link

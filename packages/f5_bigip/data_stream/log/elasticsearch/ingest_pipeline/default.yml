@@ -20,19 +20,19 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: json
-      if: ctx.event?.original != null && !ctx.event.original.contains('device_product="Application Security Module"') && !ctx.event.original.contains('device_product=ASM')
+      if: >-
+        ctx.event?.original != null && !(
+          ctx.event.original.contains('device_product="Application Security Module"') ||
+          ctx.event.original.contains('device_product=ASM')
+        )
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: observer.product
-      tag: set_observer_product
-      value: bigip
-  - set:
       field: observer.vendor
       tag: set_observer_vendor
-      value: f5
+      value: F5
   - script:
       description: Drops NA and 'NA' values recursively.
       tag: script_to_remove_NA_values
@@ -112,7 +112,11 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_bigip_bot_and_dos" }}'
       tag: pipeline_bigip_bot_and_dos
-      if: ctx.event?.original != null && ctx.event.original.contains('device_product="Application Security Module"') || ctx.event.original.contains('device_product=ASM')
+      if: >-
+        ctx.event?.original != null && (
+          ctx.event.original.contains('device_product="Application Security Module"') ||
+          ctx.event.original.contains('device_product=ASM')
+        )
   - remove:
       field: event.original
       tag: remove_event_original
