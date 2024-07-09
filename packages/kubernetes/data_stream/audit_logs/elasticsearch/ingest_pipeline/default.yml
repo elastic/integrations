@@ -45,7 +45,7 @@ processors:
       copy_from: kubernetes.audit.user.uid
       ignore_empty_value: true
   - set:
-      if: ctx.kubernetes?.audit?.user?.userAgent != null
+      if: ctx.kubernetes?.audit?.userAgent != null
       field: user_agent.original
       copy_from: kubernetes.audit.userAgent
       ignore_empty_value: true
@@ -60,6 +60,10 @@ processors:
       if: ctx.source?.ip != null
       field: client.ip
       copy_from: source.ip
+      ignore_empty_value: true
+  - set:
+      field: container.image.name
+      copy_from: kubernetes.audit.requestObject.spec.containers.image
       ignore_empty_value: true
 on_failure:
   - set:
