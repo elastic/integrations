@@ -26,7 +26,7 @@ This integration targets the eight types of events as mentioned below:
 - **AFM** is designed to reduce the hardware and extra hops required when ADC's are paired with traditional firewalls and helps to protect traffic destined for the user's data center. For more information, refer to the link [here](https://www.f5.com/products/security/advanced-firewall-manager).
 - **APM** provides federation, SSO, application access policies, and secure web tunneling and allows granular access to users' various applications, virtualized desktop environments, or just go full VPN tunnel. For more information, refer to the link [here](https://www.f5.com/products/security/access-policy-manager).
 - **ASM** is F5's web application firewall (WAF) solution. It allows users to tailor acceptable and expected application behavior on a per-application basis. For more information, refer to the link [here](https://www.f5.com/pdf/products/big-ip-application-security-manager-overview.pdf).
-  - **BOT and DOS** provides details about the bot events and distributed DOS attacks events related to F5 BIG-IP ASM. For more information on BOT, refer to the knowledge base article [here](https://my.f5.com/manage/s/article/K17680287). For more information on DOS, refer to the article [here](https://my.f5.com/manage/s/article/K75699030).
+  - **BOT and DOS** provides details about the BOT events and distributed DOS attacks events related to F5 BIG-IP ASM. For more information on BOT, refer to the knowledge base article [here](https://my.f5.com/manage/s/article/K17680287). For more information on DOS, refer to the article [here](https://my.f5.com/manage/s/article/K75699030).
 - **AVR** provides detailed charts and graphs to give users more insight into the performance of web applications, with detailed views on HTTP and TCP stats, as well as system performance (CPU, memory, etc.). For more information, refer to the link [here](https://clouddocs.f5.com/training/community/analytics/html/class1/class1.html).
 - **System Information** provides the system information that F5 BIG-IP Telemetry Streaming collects. For more information, refer to the documentation [here](https://clouddocs.f5.com/products/extensions/f5-telemetry-streaming/latest/output-example.html#system-information).
 - **iHealth Information** highlights vulnerability and importance, potentially leading to memory exhaustion if exploited. It also directs to a solution article for further details and specifies unaffected F5 products. For more information, refer to the documentation [here](https://clouddocs.f5.com/products/extensions/f5-telemetry-streaming/latest/output-example.html#ihealth-information-request).
@@ -43,7 +43,7 @@ This module has been tested against `F5 BIG-IP version 16.1.0`, `Telemetry Strea
 
 ## Setup
 
-### To collect LTM, AFM, APM, ASM, AVR, System Information and ihealth Information data from F5 BIG-IP, the user has to configure modules in F5 BIG-IP as per the requirements.
+### To collect LTM, AFM, APM, ASM, AVR, System Information and iHealth Information data from F5 BIG-IP, the user has to configure modules in F5 BIG-IP as per the requirements.
 
 To set up the F5 BIG-IP environment, users can use the BIG-IP system browser-based Configuration Utility or the command line tools that are provided. For more information related to the configuration of F5 BIG-IP servers, refer to F5 support website [here](https://support.f5.com/csp/knowledge-center/software).
 
