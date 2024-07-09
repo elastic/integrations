@@ -59,8 +59,8 @@ An example event for `deep_security` looks as following:
 {
     "@timestamp": "2020-09-21T07:21:11.000Z",
     "agent": {
-        "ephemeral_id": "28288d1c-681d-44d2-814c-bbd501a8aedb",
-        "id": "2e2f0b52-c190-4fb3-b530-9ea2bb568091",
+        "ephemeral_id": "2ea89e49-a391-4415-a8c4-c0ad743e691b",
+        "id": "e87ecfdf-7336-4275-96c5-a4ab24a8facc",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -74,7 +74,7 @@ An example event for `deep_security` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2e2f0b52-c190-4fb3-b530-9ea2bb568091",
+        "id": "e87ecfdf-7336-4275-96c5-a4ab24a8facc",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -85,7 +85,7 @@ An example event for `deep_security` looks as following:
         ],
         "code": "5000000",
         "dataset": "trendmicro.deep_security",
-        "ingested": "2024-02-21T05:54:09Z",
+        "ingested": "2024-03-20T09:48:02Z",
         "kind": "event",
         "original": "194 <86>2020-09-21T13:51:11+06:30 DeepSec Logs CEF:0|Trend Micro|Deep Security Agent|10.2.229|5000000|WebReputation|5|cn1=1 cn1Label=Host ID dvchost=hostname request=example.com msg=Blocked By Admin",
         "severity": 5,
@@ -102,7 +102,7 @@ An example event for `deep_security` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.32.7:58355"
+            "address": "192.168.224.7:54066"
         },
         "syslog": {
             "priority": 86
@@ -163,7 +163,6 @@ An example event for `deep_security` looks as following:
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | source.process.name | Source process name. | keyword |
-| tags | User defined tags. | keyword |
 | trendmicro.deep_security.action | The action detected by the integrity rule. | keyword |
 | trendmicro.deep_security.aggregation_type | An integer that indicates how the event is aggregated:. | keyword |
 | trendmicro.deep_security.base_event_count | Base event count. | long |

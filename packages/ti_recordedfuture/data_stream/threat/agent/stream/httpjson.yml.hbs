@@ -24,11 +24,15 @@ request.transforms:
     value: {{ api_token }}
 {{/if}}
 response.decode_as: text/csv
+fields_under_root: true
+fields:
+  _conf:
+    list: '{{list}}'
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#each tags as |tag i|}}
+{{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{#contains "forwarded" tags}}

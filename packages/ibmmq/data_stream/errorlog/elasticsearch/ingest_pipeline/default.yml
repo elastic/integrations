@@ -7,7 +7,7 @@ processors:
     ignore_failure: true
 - set:
     field: ecs.version
-    value: 8.5.1
+    value: 8.11.0
     ignore_empty_value: true
     ignore_failure: true
 - set:
@@ -22,7 +22,7 @@ processors:
     ignore_failure: true
 - set:
     field: event.type
-    value: error
+    value: [error]
     ignore_empty_value: true
     ignore_failure: true
 - gsub:
@@ -39,6 +39,9 @@ processors:
     replacement: " "
 - trim:
     field: message
+- drop:
+    if: ctx.message == null || ctx.message == ""
+    tag: drop_empty_event
 - set:
     copy_from: "@timestamp"
     field: event.created

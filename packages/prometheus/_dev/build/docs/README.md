@@ -1,9 +1,9 @@
 # Prometheus Integration
 
 This integration can collect metrics from:
-- [Prometheus Exporters (Collectors)](#prometheus-exporters-collectors)
-- [Prometheus Server Remote-Write](#prometheus-server-remote-write)
-- [Prometheus Queries (PromQL)](#prometheus-queries-promql)
+  - [Prometheus Exporters (Collectors)](#prometheus-exporters-collectors)
+  - [Prometheus Server Remote-Write](#prometheus-server-remote-write)
+  - [Prometheus Queries (PromQL)](#prometheus-queries-promql)
 
 ## Metrics
 
@@ -131,6 +131,10 @@ Metrics Filters Include: ["^node_network_net_dev_group$", "^node_network_up$"]
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "collector"}}
 
 
@@ -230,6 +234,10 @@ remote_write:
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "remote_write"}}
 
 #### Histograms and types
@@ -240,6 +248,10 @@ types, including {{ url "elasticsearch-histograms" "histograms" }}.
 `rate_counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `use_types`.
+
+`period` parameter (default: 60s) configures the timeout of internal cache, which stores counter values in order to calculate rates between consecutive fetches. The parameter will be validated and all values lower than 60sec will be reset to the default value.
+
+Note that by default prometheus pushes data with the interval of 60s (in remote write). In case that prometheus push rate is changed, the `period` parameter needs to be configured accordingly.
 
 When `use_types` and `rate_counters` are enabled, metrics are stored like this:
 
@@ -354,9 +366,13 @@ queries:
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "query"}}
 
 ## Dashboard
 
 Prometheus integration is shipped including default overview dashboard.
-Default dashboard works only for `remote_write` datastream and `collector` darastream, if metrics are scraped from the Prometheus server metrics endpoint.
+Default dashboard works only for `remote_write` datastream and `collector` datastream, if metrics are scraped from the Prometheus server metrics endpoint.

@@ -1,0 +1,208 @@
+---
+description: Pipeline for processing User logs.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: ['iam']
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: ['user','info']
+  - set:
+      field: asset.category
+      tag: set_asset_category
+      value: entity
+  - set:
+      field: asset.type
+      tag: set_asset_type
+      value: activedirectory_user
+
+  - script:
+      lang: painless
+      description: This script processor rename the fields under the activedirectory objects.
+      params:
+        "accountExpires": "account_expires"
+        "adminCount": "admin_count"
+        "badPasswordTime": "bad_password_time"
+        "badPwdCount": "bad_pwd_count"
+        "cn": "cn"
+        "codePage": "code_page"
+        "countryCode": "country_code"
+        "description": "description"
+        "distinguishedName": "distinguished_name"
+        "dSCorePropagationData": "ds_core_propagation_data"
+        "groups": "groups"
+        "groupType": "group_type"
+        "instanceType": "instance_type"
+        "isCriticalSystemObject": "is_critical_system_object"
+        "lastLogoff": "last_logoff"
+        "lastLogon": "last_logon"
+        "lastLogonTimestamp": "last_logon_timestamp"
+        "logonCount": "logon_count"
+        "member": "member"
+        "memberOf": "member_of"
+        "msDS-SupportedEncryptionTypes": "msds-supported_encryption_types"
+        "name": "name"
+        "object_category": "object_category"
+        "objectCategory": "object_category"
+        "objectClass": "object_class"
+        "objectGUID": "object_guid"
+        "objectSid": "object_sid"
+        "primaryGroupID": "primary_group_id"
+        "pwdLastSet": "pwd_last_set"
+        "sAMAccountName": "sam_account_name"
+        "sAMAccountType": "sam_account_type"
+        "servicePrincipalName": "service_principal_name"
+        "showInAdvancedViewOnly": "show_in_advanced_view_only"
+        "userAccountControl": "user_account_control"
+        "uSNChanged": "usn_changed"
+        "uSNCreated": "usn_created"
+        "whenChanged": "when_changed"
+        "whenCreated": "when_created"
+      tag: painless_to_rename_fields_under_activedirectory_groups
+      source: |
+        def renameKeys(Map src, Map keyMap) {
+          def dst = new HashMap();
+          for (def entry: src.entrySet()) {
+            def key = entry.getKey();
+            def value = entry.getValue();
+            if (value instanceof Map) {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = renameKeys(value, keyMap);
+              } else {
+                dst[key] = renameKeys(value, keyMap);
+              }
+            } else if (value instanceof List) {
+              def updatedList = [];
+              for (def item: value) {
+                if (item instanceof Map) {
+                  updatedList.add(renameKeys(item, keyMap));
+                } else {
+                  updatedList.add(item);
+                }
+              }
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = updatedList;
+              } else {
+                dst[key] = value;
+              }
+            } else {
+              if (keyMap.containsKey(key)) {
+                dst[keyMap[key]] = value;
+              } else {
+                dst[key] = value;
+              }
+            }
+          }
+          return dst;
+        }
+
+        ctx.activedirectory = renameKeys(ctx.activedirectory, params)
+
+  - date:
+      field: activedirectory.user.when_created
+      target_field: asset.create_date
+      tag: date_user_created
+      formats:
+        - ISO8601
+      if: ctx.activedirectory?.user?.when_created != null && ctx.activedirectory.user.when_created != ''
+      on_failure:
+        - remove:
+            field: activedirectory.user.when_created
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: activedirectory.user.when_changed
+      target_field: asset.last_updated
+      tag: date_user_changed
+      formats:
+        - ISO8601
+      if: ctx.activedirectory?.user?.when_changed != null && ctx.activedirectory.user.when_changed != ''
+      on_failure:
+        - remove:
+            field: activedirectory.user.when_changed
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: activedirectory.user.pwd_last_set
+      target_field: user.account.password_change_date
+      tag: date_user_password_changed
+      formats:
+        - ISO8601
+      if: ctx.activedirectory?.user?.pwd_last_set != null && ctx.activedirectory.user.pwd_last_set != ''
+      on_failure:
+        - remove:
+            field: activedirectory.user.pwd_last_set
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'       
+
+  - set:
+      field: asset.name
+      copy_from: activedirectory.user.name
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: activedirectory.user.name
+      ignore_empty_value: true
+  - gsub:
+      tag: gsub_user_dn
+      field: activedirectory.user.distinguished_name
+      pattern: '^.*?DC='
+      replacement: ''
+      target_field: user.domain
+      if: ctx.activedirectory?.user?.distinguished_name != null
+  - gsub:
+      tag: gsub_user_domain
+      field: user.domain
+      pattern: ',DC='
+      replacement: '.'
+      if: ctx.user?.domain != null
+  - set:
+      field: asset.id
+      copy_from: activedirectory.id
+      ignore_empty_value: true
+
+  - append:
+      field: related.user
+      value: "{{{activedirectory.user.name}}}"
+      tag: append_name_into_related_user
+      allow_duplicates: false
+      if: ctx.activedirectory?.user?.name != null
+  - append:
+      field: related.user
+      value: "{{{activedirectory.id}}}"
+      tag: append_id_into_related_user
+      allow_duplicates: false
+      if: ctx.activedirectory?.id != null
+  - append:
+      field: related.user
+      value: "{{{activedirectory.user.object_guid}}}"
+      tag: append_object_guid_into_related_user
+      allow_duplicates: false
+      if: ctx.activedirectory?.user?.object_guid != null
+  - append:
+      field: related.user
+      value: "{{{activedirectory.user.object_sid}}}"
+      tag: append_object_sid_into_related_user
+      allow_duplicates: false
+      if: ctx.activedirectory?.user?.object_sid != null
+
+  - rename:
+      field: activedirectory
+      target_field: entityanalytics_ad
+
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

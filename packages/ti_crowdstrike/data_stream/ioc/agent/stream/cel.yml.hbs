@@ -55,7 +55,7 @@ program: |
         }),
         "want_more": has(body.meta.pagination) && (int(state.offset) + body.resources.size()) < body.meta.pagination.total,
         "offset": has(body.meta.pagination) && ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
-          int(state.offset) + int(body.resources.size()) 
+          int(state.offset) + int(body.resources.size())
         :
           0,
         "url": state.url,
@@ -81,7 +81,7 @@ program: |
           "first_timestamp": (
             has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
               (
-                state.want_more ? 
+                state.want_more ?
                   state.cursor.first_timestamp
                 :
                   state.cursor.last_timestamp
@@ -97,10 +97,16 @@ program: |
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": string(resp.Body)
+            "message": "GET:"+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
           },
         },
         "want_more": false,
+        "offset": 0,
         "url": state.url,
         "batch_size": state.batch_size,
         "initial_interval": state.initial_interval,

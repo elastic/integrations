@@ -21,6 +21,14 @@ Additional supported URI examples include:
 
 When using the `directConnection=true` parameter in the connection URI, all operations are executed on the specified host. It's important to explicitly include `directConnection=true` in the URI as it won't be automatically added.
 
+- Authentication: `mongodb://username:password@host:port/authSource=$external?authMechanism=PLAIN`
+
+When specifying `authMechanism` as PLAIN, it indicates the use of the PLAIN authentication mechanism, which is commonly associated with LDAP.
+
+`authSource` can be used to specify the name of the database that has the collection with the user credentials.
+
+In MongoDB, `authSource=$external` is a special authentication database used for authenticating users externally, such as via LDAP.
+
 The username and password can either be included in the URI or set using the respective configuration options. If included in the URI, these credentials take precedence over any configured username and password configuration options.
 
 ## Compatibility
@@ -48,6 +56,10 @@ db.createUser(
         roles: ["clusterMonitor"]
     }
 )
+```
+You can use the following command in Mongo shell to authenticate a user against a specific database with the provided username and password (make sure you are using the `admin` db by using `db` command in Mongo shell).
+```
+db.auth(user, pass)
 ```
 
 You can use the following command in Mongo shell to grant the role to an 
@@ -82,7 +94,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "4729bacd-4e52-4243-ae58-793424154f42",
@@ -154,71 +166,31 @@ An example event for `log` looks as following:
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | This field contains the flags of the event. | keyword |
-| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | mongodb.log.attr | Attributes related to the log message. | flattened |
 | mongodb.log.component | Functional categorization of message | keyword |
 | mongodb.log.context | Context of message | keyword |
 | mongodb.log.id | Integer representing the unique identifier of the log statement | long |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.port | Port of the source. | long |
-| tags | List of keywords used to tag each event. | keyword |
-| user.effective.name | Short name or login of the user. | keyword |
-| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ## Metrics
@@ -253,7 +225,7 @@ An example event for `collstats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
@@ -276,7 +248,7 @@ An example event for `collstats` looks as following:
             "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -365,48 +337,32 @@ An example event for `collstats` looks as following:
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | mongodb.collstats.collection | Collection name. | keyword |  |
 | mongodb.collstats.commands.count | Number of database commands executed. | long | counter |
 | mongodb.collstats.commands.time.us | Time executing database commands in microseconds. | long | counter |
@@ -429,7 +385,6 @@ The fields reported are:
 | mongodb.collstats.update.count | Number of document update events. | long | counter |
 | mongodb.collstats.update.time.us | Time updating documents in microseconds. | long | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### dbstats
@@ -463,7 +418,7 @@ An example event for `dbstats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
@@ -486,7 +441,7 @@ An example event for `dbstats` looks as following:
             "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -535,48 +490,32 @@ An example event for `dbstats` looks as following:
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | mongodb.dbstats.avg_obj_size.bytes |  | long | gauge |
 | mongodb.dbstats.collections |  | integer | gauge |
 | mongodb.dbstats.data_file_version.major |  | long |  |
@@ -593,7 +532,6 @@ The fields reported are:
 | mongodb.dbstats.objects |  | long | gauge |
 | mongodb.dbstats.storage_size.bytes |  | long | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### metrics
@@ -622,7 +560,7 @@ An example event for `metrics` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
@@ -645,7 +583,7 @@ An example event for `metrics` looks as following:
             "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -926,48 +864,32 @@ An example event for `metrics` looks as following:
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | mongodb.metrics.commands.aggregate.failed |  | long | counter |
 | mongodb.metrics.commands.aggregate.total |  | long | counter |
 | mongodb.metrics.commands.build_info.failed |  | long | counter |
@@ -1088,7 +1010,6 @@ The fields reported are:
 | mongodb.metrics.ttl.deleted_documents.count | The total number of documents deleted from collections with a ttl index. | long | counter |
 | mongodb.metrics.ttl.passes.count | The number of times the background process removes documents from collections with a ttl index. | long | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### replstatus
@@ -1104,9 +1025,24 @@ An example event for `replstatus` looks as following:
 ```json
 {
     "@timestamp": "2020-06-29T21:20:51.457Z",
-    "service": {
-        "address": "localhost:27017",
-        "type": "mongodb"
+    "agent": {
+        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+        "name": "KaiyanMacBookPro",
+        "type": "metricbeat",
+        "version": "8.0.0"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "dataset": "mongodb.replstatus",
+        "duration": 1962467,
+        "module": "mongodb"
+    },
+    "metricset": {
+        "name": "replstatus",
+        "period": 10000
     },
     "mongodb": {
         "replstatus": {
@@ -1162,29 +1098,18 @@ An example event for `replstatus` looks as following:
             "set_name": "beats"
         }
     },
-    "ecs": {
-        "version": "8.5.1"
-    },
-    "event": {
-        "dataset": "mongodb.replstatus",
-        "module": "mongodb",
-        "duration": 1962467
-    },
-    "metricset": {
-        "name": "replstatus",
-        "period": 10000
-    },
-    "agent": {
-        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-        "name": "KaiyanMacBookPro",
-        "type": "metricbeat",
-        "version": "8.0.0"
+    "service": {
+        "address": "localhost:27017",
+        "type": "mongodb"
     }
 }
 ```
 
 The fields reported are:
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -1192,42 +1117,22 @@ The fields reported are:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | mongodb.replstatus.headroom.max | Difference between primary's oplog window and the replication lag of the fastest secondary | long | gauge |
 | mongodb.replstatus.headroom.min | Difference between primary's oplog window and the replication lag of the slowest secondary | long | gauge |
 | mongodb.replstatus.lag.max | Difference between optime of primary and slowest secondary | long | gauge |
@@ -1262,7 +1167,6 @@ The fields reported are:
 | mongodb.replstatus.server_date | Reflects the current time according to the server that processed the replSetGetStatus command. | date |  |
 | mongodb.replstatus.set_name | The name of the replica set. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### status
@@ -1293,7 +1197,7 @@ An example event for `status` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
@@ -1316,7 +1220,7 @@ An example event for `status` looks as following:
             "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1541,48 +1445,32 @@ An example event for `status` looks as following:
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Metric Type |
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | mongodb.status.asserts.msg | Number of msg assertions produced by the server. | long | counter |
 | mongodb.status.asserts.regular | Number of regular assertions produced by the server. | long | counter |
 | mongodb.status.asserts.rollovers | Number of rollovers assertions produced by the server. | long | counter |
@@ -1747,9 +1635,5 @@ The fields reported are:
 | mongodb.status.wired_tiger.log.write.bytes | Number of bytes written into the log. | long | counter |
 | mongodb.status.wired_tiger.log.writes | Number of write operations. | long | counter |
 | mongodb.status.write_backs_queued | True when there are operations from a mongos instance queued for retrying. | boolean |  |
-| process.name | Process name. Sometimes called program name or similar. | keyword |  |
-| process.name.text | Multi-field of `process.name`. | match_only_text |  |
 | service.address | Address of the machine where the service is running. | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |  |
 

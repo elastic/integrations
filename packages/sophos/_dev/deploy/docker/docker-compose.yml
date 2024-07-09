@@ -7,32 +7,27 @@ services:
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
   sophos-utm-udp:
-    image: docker.elastic.co/observability/stream:v0.7.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9549 -p=udp /sample_logs/sophos-utm*.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9549 -p=udp /sample_logs/sophos-utm*.log
   sophos-utm-tcp:
-    image: docker.elastic.co/observability/stream:v0.7.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9549 -p=tcp /sample_logs/sophos-utm*.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9549 -p=tcp /sample_logs/sophos-utm*.log
   sophos-xg-udp:
-    image: docker.elastic.co/observability/stream:v0.7.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9549 -p=udp /sample_logs/sophos-xg*.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9549 -p=udp /sample_logs/sophos-xg*.log
   sophos-xg-tcp:
-    image: docker.elastic.co/observability/stream:v0.7.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9549 -p=tcp /sample_logs/sophos-xg*.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9549 -p=tcp /sample_logs/sophos-xg*.log
   sophos-xg-tls:
-    image: docker.elastic.co/observability/stream:v0.7.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9550 -p=tls --insecure /sample_logs/sophos-xg*.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9550 -p=tls --insecure /sample_logs/sophos-xg*.log

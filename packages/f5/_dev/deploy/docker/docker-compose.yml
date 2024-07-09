@@ -7,17 +7,15 @@ services:
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
   f5-bigipapm-udp:
-    image: akroh/stream:v0.2.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9526 -p=udp /sample_logs/f5-bigipapm-*.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9526 -p=udp /sample_logs/f5-bigipapm-*.log
   f5-bigipapm-tcp:
-    image: akroh/stream:v0.2.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9526 -p=tcp /sample_logs/f5-bigipapm-*.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9526 -p=tcp /sample_logs/f5-bigipapm-*.log
   f5-bigipafm-logfile:
     image: alpine
     volumes:
@@ -25,14 +23,12 @@ services:
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
   f5-bigipafm-udp:
-    image: akroh/stream:v0.2.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9544 -p=udp /sample_logs/f5-bigipafm-*.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9544 -p=udp /sample_logs/f5-bigipafm-*.log
   f5-bigipafm-tcp:
-    image: akroh/stream:v0.2.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9544 -p=tcp /sample_logs/f5-bigipafm-*.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9544 -p=tcp /sample_logs/f5-bigipafm-*.log

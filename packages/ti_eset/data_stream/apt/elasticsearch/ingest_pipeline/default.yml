@@ -1,0 +1,166 @@
+---
+description: Initial pipeline for parsing ETI TAXII2 feed
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.kind
+      value: enrichment
+  - append:
+      field: event.category
+      value: threat
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: indicator
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.provider
+      value: eset
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: eti
+  - drop:
+      if: ctx.eti?.type != 'indicator'
+  - set:
+      field: threat.feed.name
+      value: "ESET APT stix 2.1"
+  - date:
+      field: eti.created
+      target_field: "@timestamp"
+      formats:
+        - "ISO8601"
+      if: "ctx.eti?.created != null"
+  - date:
+      field: eti.modified
+      target_field: threat.indicator.last_seen
+      formats:
+        - "ISO8601"
+      if: "ctx.eti?.modified != null"
+  - set:
+      field: threat.indicator.modified_at
+      copy_from: threat.indicator.last_seen
+      if: "ctx.threat?.indicator?.last_seen != null"
+  - script:
+      lang: painless
+      source: >-
+        if (ctx.eset == null) {
+          ctx.eset = new HashMap();
+        }
+        
+        ctx.eset.valid_until =  ZonedDateTime.parse(ctx['@timestamp']).plusDays(365);
+      if: "ctx['@timestamp'] != null"
+
+  - rename:
+      field: eti.id
+      target_field: eset.id
+      ignore_missing: true
+
+  - foreach:
+      field: eti.labels
+      if: ctx.eti?.labels != null
+      processor:
+        grok:
+            field: _ingest._value
+            patterns:
+                - "^misp:name=\"%{DATA:eset.name}\""
+                - "^misp:type=\"%{DATA:eset.type}\""
+                - "^misp:category=\"%{DATA:eset.category}\""
+                - "^misp:meta-category=\"%{DATA:eset.meta_category}\""
+            ignore_failure: true
+
+  - set:
+      field: threat.indicator.type
+      value: x509-certificate
+      if: "ctx.eset?.name == 'x509'"
+  - set:
+      field: threat.indicator.type
+      value: domain-name
+      if: ctx.eset?.name != null && ctx.eset?.name.startsWith('domain')
+  - set:
+      field: threat.indicator.type
+      value: file
+      if: |
+        ctx.eset?.name == 'file' ||
+        ctx.eset?.meta_category == 'file'
+  - set:
+      field: threat.indicator.type
+      value: url
+      if: ctx.eset?.name == 'url'
+  - set:
+      field: threat.indicator.type
+      value: email-addr
+      if: |
+        ctx.eset?.name == 'email' ||
+        (ctx.eset?.type != null && ctx.eset?.type?.startsWith('email'))
+
+  - split:
+      field: eti.pattern
+      target_field: eti._patterns
+      separator: ' AND '
+      if: ctx.eti?.pattern != null
+
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-file" }}'
+      if: ctx.threat?.indicator?.type == 'file'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-email" }}'
+      if: ctx.threat?.indicator?.type == 'email-addr'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-url" }}'
+      if: ctx.threat?.indicator?.type == 'url'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-domain-ip" }}'
+      if: ctx.threat?.indicator?.type == 'domain-name'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-cert" }}'
+      if: ctx.threat?.indicator?.type == 'x509-certificate'
+  - set:
+      field: threat.indicator.confidence
+      value: High
+  - remove:
+      field:
+        - eti
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

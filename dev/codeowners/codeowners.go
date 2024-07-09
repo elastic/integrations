@@ -8,13 +8,11 @@ import (
 	"bufio"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -43,6 +41,33 @@ func Check() error {
 	})
 }
 
+func PackageOwners(packageName, dataStream string) ([]string, error) {
+	return PackageOwnersCustomCodeowners(packageName, dataStream, codeownersPath)
+}
+
+func PackageOwnersCustomCodeowners(packageName, dataStream, codeownersPath string) ([]string, error) {
+	owners, err := readGithubOwners(codeownersPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read CODEOWNERS file: %w", err)
+	}
+	packagePath := fmt.Sprintf("/packages/%s", packageName)
+	packageTeams, found := owners.owners[packagePath]
+	if !found {
+		return nil, fmt.Errorf("no owner found for package %s", packageName)
+	}
+
+	if dataStream == "" {
+		return packageTeams, nil
+	}
+
+	dataStreamPath := fmt.Sprintf("/packages/%s/data_stream/%s", packageName, dataStream)
+	dataStreamTeams, found := owners.owners[dataStreamPath]
+	if !found {
+		return packageTeams, nil
+	}
+	return dataStreamTeams, nil
+}
+
 type githubOwners struct {
 	owners map[string][]string
 	path   string
@@ -51,7 +76,7 @@ type githubOwners struct {
 func readGithubOwners(codeownersPath string) (*githubOwners, error) {
 	f, err := os.Open(codeownersPath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to open %q", codeownersPath)
+		return nil, fmt.Errorf("failed to open %q: %w", codeownersPath, err)
 	}
 	defer f.Close()
 
@@ -82,7 +107,7 @@ func readGithubOwners(codeownersPath string) (*githubOwners, error) {
 		codeowners.owners[path] = owners
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, errors.Wrapf(err, "scanner error")
+		return nil, fmt.Errorf("scanner error: %w", err)
 	}
 
 	return &codeowners, nil
@@ -128,7 +153,7 @@ func (codeowners *githubOwners) checkManifest(path string) error {
 		return fmt.Errorf("there is no owner for %q in %q", pkgDir, codeowners.path)
 	}
 
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}

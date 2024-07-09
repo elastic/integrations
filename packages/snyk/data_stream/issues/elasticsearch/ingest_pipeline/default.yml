@@ -1,0 +1,124 @@
+---
+description: Pipeline for Snyk issues logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: snyk.issues
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.kind
+      value: [alert]
+  - date:
+      field: snyk.issues.attributes.created_at
+      target_field: "@timestamp"
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SS'Z'"
+  - fingerprint:
+      fields:
+        - snyk.issues.id
+      target_field: _id
+  - set:
+      field: vulnerability.scanner.vendor
+      value: Snyk
+  - set:
+      field: organization.id
+      copy_from: snyk.issues.relationships.organization.data.id
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.severity
+      copy_from: snyk.issues.attributes.effective_severity_level
+      ignore_empty_value: true
+  - foreach:
+      field: snyk.issues.attributes.classes
+      processor:
+        append:
+          field: vulnerability.enumeration
+          value: '{{{ _ingest._value.source }}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.snyk?.issues?.attributes?.classes != null
+  - foreach:
+      field: snyk.issues.attributes.problems
+      processor:
+        append:
+          field: vulnerability.id
+          value: '{{{ _ingest._value.id }}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.snyk?.issues?.attributes?.problems != null
+  - foreach:
+      field: snyk.issues.attributes.problems
+      processor:
+        append:
+          field: vulnerability.enumeration
+          value: '{{{ _ingest._value.source }}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.snyk?.issues?.attributes?.problems != null
+  - foreach:
+      field: snyk.issues.attributes.problems
+      processor:
+        append:
+          field: vulnerability.reference
+          value: '{{{ _ingest._value.url }}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.snyk?.issues?.attributes?.problems != null
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - message
+        - snyk.issues.cvssScore
+        - snyk.issues.type
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

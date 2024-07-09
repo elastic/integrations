@@ -1,7 +1,7 @@
 version: '2.3'
 services:
   limo-http:
-    image: docker.elastic.co/observability/stream:v0.6.1
+    image: docker.elastic.co/observability/stream:v0.15.0
     ports:
       - 8080
     volumes:
@@ -13,7 +13,7 @@ services:
       - --addr=:8080
       - --config=/files/config.yml
   threatstream-webhook-http:
-    image: docker.elastic.co/observability/stream:v0.6.1
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
@@ -21,7 +21,7 @@ services:
       - STREAM_ADDR=http://elastic-agent:9080/
     command: log --webhook-content-type application/x-ndjson --start-signal=SIGHUP --delay=5s /sample_logs/test-threatstream-ndjson.log
   threatstream-webhook-https:
-    image: docker.elastic.co/observability/stream:v0.6.1
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:

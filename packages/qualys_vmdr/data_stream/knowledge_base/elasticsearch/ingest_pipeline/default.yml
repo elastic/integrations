@@ -22,6 +22,11 @@ processors:
       tag: rename_error
       target_field: qualys_vmdr.knowledge_base.error
       ignore_missing: true
+  - rename:
+      field: xml
+      target_field: event.original
+      ignore_missing: true
+      ignore_failure: true
   - json:
       field: message
       tag: json_message
@@ -35,6 +40,7 @@ processors:
       fields:
         - json.QID
         - json.LAST_SERVICE_MODIFICATION_DATETIME
+        - json.CVE_LIST
       target_field: _id
       ignore_missing: true
   - rename:
@@ -149,9 +155,9 @@ processors:
       target_field: qualys_vmdr.knowledge_base.vuln_type
       ignore_missing: true
   - rename:
-      field: json.CVE_LIST.CVE.ID
-      tag: rename_CVE_LIST_CVE_ID
-      target_field: qualys_vmdr.knowledge_base.cve_list.id
+      field: json.CVE_LIST
+      tag: rename_CVE_LIST
+      target_field: qualys_vmdr.knowledge_base.cve_list
       ignore_missing: true
   - rename:
       field: json.CVSS.BASE
@@ -303,17 +309,7 @@ processors:
   - set:
       field: vulnerability.id
       tag: set_vulnerability_id
-      copy_from: qualys_vmdr.knowledge_base.cve_list.id
-      ignore_empty_value: true
-  - rename:
-      field: json.CVE_LIST.CVE.URL
-      tag: rename_CVE_LIST_CVE_URL
-      target_field: qualys_vmdr.knowledge_base.cve_list.url
-      ignore_missing: true
-  - set:
-      field: vulnerability.reference
-      tag: set_vulnerability_reference
-      copy_from: qualys_vmdr.knowledge_base.cve_list.url
+      copy_from: qualys_vmdr.knowledge_base.cve_list
       ignore_empty_value: true
   - uri_parts:
       field: vulnerability.reference
@@ -669,8 +665,7 @@ processors:
         - qualys_vmdr.knowledge_base.last.service_modification_datetime
         - qualys_vmdr.knowledge_base.qid
         - qualys_vmdr.knowledge_base.category
-        - qualys_vmdr.knowledge_base.cve_list.id
-        - qualys_vmdr.knowledge_base.cve_list.url
+        - qualys_vmdr.knowledge_base.cve_list
         - qualys_vmdr.knowledge_base.correlation.exploits.explt_src.list.explt.desc
         - qualys_vmdr.knowledge_base.severity_level
       tag: remove_preserve_duplicate_custom_fields

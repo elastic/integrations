@@ -1,0 +1,22 @@
+---
+description: Pipeline for parsing specific fields related to chroot events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: Software has changed its apparent root directory in which it's actively operating out of
+    - rename:
+        field: jamf_protect.telemetry.event.chroot.target.path
+        target_field: file.path
+        ignore_missing: true
+##########################
+## ECS Process ##
+##########################
+    - append:
+        field: event.type
+        value: change
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_object_process" }}'

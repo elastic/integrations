@@ -1,5 +1,5 @@
-# Amazon Kinesis Data Firehose
-Amazon Kinesis Data Firehose integration offers users a way to stream logs from Firehose to Elastic Cloud.
+# Amazon Data Firehose
+Amazon Data Firehose integration offers users a way to stream logs from Firehose to Elastic Cloud.
 This integration includes predefined rules that automatically route AWS service logs to the respective integrations, which
 include field mappings, ingest pipelines, predefined dashboards and ect. Here is a list of log types that are supported
 by this integration:
@@ -34,12 +34,12 @@ This is a current limitation in Firehose, which we are working with AWS to resol
     
     ![Install AWS assets](../img/install-assets.png)
 
-2. Create a delivery stream in Amazon Kinesis Data Firehose
+2. Create a delivery stream in Amazon Data Firehose
 
-    Sign into the AWS console and navigate to Amazon Kinesis. Click **Create delivery stream**.
+    Sign into the AWS console and navigate to Amazon Data Firehose. Click **Create Firehose stream**.
     Configure the delivery stream using the following settings:
     
-    ![Amazon Kinesis Data Firehose](../img/aws-firehose.png)
+    ![Amazon Data Firehose](../img/aws-firehose.png)
     
     **Choose source and destination**
     

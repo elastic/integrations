@@ -1,0 +1,416 @@
+---
+description: Pipeline for Citrix Native messages.
+processors:
+  - set:
+      field: citrix.cef_format
+      tag: set_cef_format
+      value: false
+  - grok:
+      description: Extract native header and message.
+      tag: grok_detail
+      field: citrix.detail
+      patterns:
+        - '^%{SPACE}%{HEADER} : %{DATA:_tmp.details} : +"%{GREEDYDATA:citrix.extended.message}"'
+        - '^%{SPACE}%{HEADER} : %{DATA:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}'
+      pattern_definitions:
+        HEADER: '(?:<%{NUMBER}>%{SPACE})?%{NATIVE_TIMESTAMP:_tmp.timestamp_native} %{WORD:event.timezone} (?:%{SYSLOGHOST:citrix.host} )?%{INT}-PPE-%{INT}'
+        NATIVE_TIMESTAMP: '(?:%{MONTHNUM}/%{MONTHDAY}/%{YEAR}|%{YEAR}/%{MONTHNUM}/%{MONTHDAY}):%{HOUR}:%{MINUTE}:%{SECOND}'
+  - grok:
+      description: Parse out details.
+      tag: grok_tmp_details
+      field: _tmp.details
+      patterns:
+        - '^%{DEFAULT:_tmp.default}?%{WORD:citrix.device_event_class_id} %{GREEDYDATA:citrix.name} %{INT:event.id} %{INT:event.severity}$'
+      pattern_definitions:
+        DEFAULT: 'default '
+  - set:
+      field: event.category
+      tag: set_event_category_network
+      if: ctx.citrix?.device_event_class_id != null && !['UI','CLI','GUI','API','CONSOLE','AAA','SSLVPN'].contains(ctx.citrix.device_event_class_id.toUpperCase())
+      value: [network]
+  - set:
+      field: event.category
+      tag: set_event_category_authentication
+      if: ctx.citrix?.device_event_class_id != null && ['AAA','SSLVPN'].contains(ctx.citrix.device_event_class_id.toUpperCase())
+      value: [authentication]
+  - set:
+      field: event.type
+      tag: set_event_type_info
+      if: ctx.citrix?.device_event_class_id != null && !['TCP','UI','CLI','GUI','API','CONSOLE'].contains(ctx.citrix.device_event_class_id.toUpperCase())
+      value: [info]
+  - set:
+      field: event.type
+      tag: set_event_category
+      if: ctx.citrix?.device_event_class_id != null && ['TCP'].contains(ctx.citrix.device_event_class_id.toUpperCase())
+      value: [end,connection]
+  - set:
+      field: event.category
+      tag: set_event_category_process
+      if: ctx.citrix?.device_event_class_id != null && ['UI','CLI','GUI','API','CONSOLE'].contains(ctx.citrix.device_event_class_id.toUpperCase())
+      value: [process]
+  - set:
+      field: event.type
+      tag: set_event_type_start
+      if: ctx.citrix?.device_event_class_id != null && ['UI','CLI','GUI','API','CONSOLE'].contains(ctx.citrix.device_event_class_id.toUpperCase())
+      value: [start]
+  - grok:
+      description: Extract fields from message of SUBSCRIBER, URLFILT, UI, CLI, GUI, API, CONSOLE and AAA feature.
+      tag: grok_subscriber_urlfilt_ui_cli_gui_api_console_aaa_feature
+      field: citrix.extended.message
+      patterns:
+        - '^Source %{IP:citrix_adc.log.source.ip} - Destination %{IP:citrix_adc.log.destination.ip} URL %{DATA:citrix_adc.log.url} - Category %{DATA:citrix_adc.log.category} - Category%{SPACE}group %{DATA:citrix_adc.log.category_group} - Reputation %{INT:citrix_adc.log.reputation} - Policy%{SPACE}action %{WORD:citrix_adc.log.policy_action}$'
+        - '^User %{USER:citrix_adc.log.user} -( ADM_User %{DATA:citrix_adc.log.adm_user} -)? Remote_ip %{IP:citrix_adc.log.remote_ip} - Command \"%{DATA:citrix_adc.log.command}\" - Status \"%{DATA:citrix_adc.log.status}\"$'
+        - '^Session %{GREEDYDATA:citrix_adc.log.session}$'
+        - '^User%{SPACE}Name%{SPACE}:%{SPACE}%{GREEDYDATA:citrix_adc.log.username}$'
+        - '^Failure%{SPACE}Reason%{SPACE}:%{SPACE}%{GREEDYDATA:citrix_adc.log.failure_reason}$'
+        - '^User %{USER:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Failure_reason \"%{DATA:citrix_adc.log.failure_reason}\" - Browser %{DATA:citrix_adc.log.browser}$'
+        - '^Extracted_groups \"%{GREEDYDATA:citrix_adc.log.groups}\"$'
+        - '%{GREEDYDATA:citrix_adc.log.message}'
+      ignore_failure: true
+  - set:
+      field: citrix.default_class
+      tag: set_default_class
+      value: true
+      if: ctx._tmp?.default == 'default ' # The trailing space is intended.
+  - pipeline:
+      name: '{{ IngestPipeline "tcp_and_acl_feature" }}'
+      tag: pipeline_tcp_and_acl_feature
+      if: ctx.citrix?.device_event_class_id != null && (ctx.citrix.device_event_class_id == "TCP" || ctx.citrix.device_event_class_id == "ACL")
+  - pipeline:
+      name: '{{ IngestPipeline "alg_feature" }}'
+      tag: pipeline_alg_feature
+      if: ctx.citrix?.device_event_class_id != null && ctx.citrix.device_event_class_id == "ALG"
+  - pipeline:
+      name: '{{ IngestPipeline "sslvpn_and_aaatm_feature" }}'
+      tag: pipeline_sslvpn_and_aaatm_feature
+      if: ctx.citrix?.device_event_class_id != null && (ctx.citrix.device_event_class_id == "SSLVPN" || ctx.citrix.device_event_class_id == "AAATM")
+  - pipeline:
+      name: '{{ IngestPipeline "ci_feature" }}'
+      tag: pipeline_ci_feature
+      if: ctx.citrix?.device_event_class_id != null && ctx.citrix.device_event_class_id == "CI"
+  - pipeline:
+      name: '{{ IngestPipeline "ssllog_feature" }}'
+      tag: pipeline_ssllog_feature
+      if: ctx.citrix?.device_event_class_id != null && ctx.citrix.device_event_class_id == "SSLLOG"
+  - pipeline:
+      name: '{{ IngestPipeline "transform_feature" }}'
+      tag: pipeline_transform_feature
+      if: ctx.citrix?.device_event_class_id != null && ctx.citrix.device_event_class_id == "TRANSFORM"
+  - pipeline:
+      name: '{{ IngestPipeline "ica_feature" }}'
+      tag: pipeline_ica_feature
+      if: ctx.citrix?.device_event_class_id != null && ctx.citrix.device_event_class_id == "ICA"
+  - pipeline:
+      name: '{{ IngestPipeline "appfw_feature" }}'
+      tag: pipeline_appfw_feature
+      if: ctx.citrix?.device_event_class_id != null && ctx.citrix.device_event_class_id == "APPFW"
+  - pipeline:
+      name: '{{ IngestPipeline "cvpn_feature" }}'
+      tag: pipeline_cvpn_feature
+      if: ctx.citrix?.device_event_class_id != null && ctx.citrix.device_event_class_id == "CVPN"
+  - pipeline:
+      name: '{{ IngestPipeline "bot_feature" }}'
+      tag: pipeline_bot_feature
+      if: ctx.citrix?.device_event_class_id != null && ctx.citrix.device_event_class_id == "BOT"
+  - pipeline:
+      name: '{{ IngestPipeline "pitboss_feature" }}'
+      tag: pipeline_pitboss_feature
+      if: ctx.citrix?.device_event_class_id != null && ctx.citrix.device_event_class_id == "PITBOSS"
+  - pipeline:
+      name: '{{ IngestPipeline "dns_and_ssli_feature" }}'
+      tag: pipeline_dns_and_ssli_feature
+      if: ctx.citrix?.device_event_class_id != null && (ctx.citrix.device_event_class_id == "DNS" || ctx.citrix.device_event_class_id == "SSLI")
+  - convert:
+      field: citrix_adc.log.client_ip
+      tag: convert_client_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.client_ip != null && ctx.citrix_adc?.log.client_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.citrix_adc?.log?.status != null && ctx.citrix_adc.log.status.toLowerCase() == 'success'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.citrix_adc?.log?.status != null && ctx.citrix_adc.log.status.toLowerCase() == 'failure'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.citrix?.name != null && ctx.citrix.name == "LOGIN_FAILED"
+  - set:
+      field: client.ip
+      tag: set_client_ip_from_client_ip
+      copy_from: citrix_adc.log.client_ip
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.destination.ip
+      tag: convert_destination_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.destination?.ip != null && ctx.citrix_adc.log.destination.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_destination_ip
+      copy_from: citrix_adc.log.destination.ip
+      ignore_empty_value: true
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_failure_reason
+      copy_from: citrix_adc.log.failure_reason
+      ignore_empty_value: true
+  - set:
+      field: group.name
+      tag: set_group_name_from_groups
+      copy_from: citrix_adc.log.groups
+      ignore_empty_value: true
+  - set:
+      field: process.command_line
+      tag: set_process_command_line_from_command
+      copy_from: citrix_adc.log.command
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.remote_ip
+      tag: convert_remote_ip_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.remote_ip != null && ctx.citrix_adc?.log.remote_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_remote_ip
+      copy_from: citrix_adc.log.remote_ip
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.source.ip
+      tag: convert_source_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.source?.ip != null && ctx.citrix_adc.log.source.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_source_ip
+      copy_from: citrix_adc.log.source.ip
+      ignore_empty_value: true
+  - set:
+      field: url.original
+      tag: set_url_original_from_url
+      copy_from: citrix_adc.log.url
+      ignore_empty_value: true
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original_from_browser
+      copy_from: citrix_adc.log.browser
+      ignore_empty_value: true
+  - user_agent:
+      field: user_agent.original
+      if: ctx.user_agent?.original != null && ctx.user_agent.original != ''
+      tag: 'user_agent_processor'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.name
+      tag: set_user_name_from_user
+      copy_from: citrix_adc.log.user
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_username
+      copy_from: citrix_adc.log.username
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.reputation
+      tag: convert_reputation_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_source_ip_into_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      tag: append_destination_ip_into_related_ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.ip
+      tag: append_destination_nat_ip_into_related_ip
+      value: '{{{destination.nat.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.nat?.ip != null
+  - append:
+      field: related.ip
+      tag: append_source_nat_ip_into_related_ip
+      value: '{{{source.nat.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.nat?.ip != null
+  - append:
+      field: related.ip
+      tag: append_server_ip_into_related_ip
+      value: '{{{server.ip}}}'
+      allow_duplicates: false
+      if: ctx.server?.ip != null
+  - append:
+      field: related.ip
+      tag: append_client_ip_into_related_ip
+      value: '{{{client.ip}}}'
+      allow_duplicates: false
+      if: ctx.client?.ip != null
+  - append:
+      field: related.ip
+      tag: append_ip_address_into_related_ip
+      value: '{{{citrix_adc.log.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.citrix_adc?.log?.ip_address != null
+  - append:
+      field: related.ip
+      tag: append_original_destination_ip_into_related_ip
+      value: '{{{citrix_adc.log.original_destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.citrix_adc?.log?.original_destination?.ip != null
+  - append:
+      field: related.ip
+      tag: append_ssl_relay_address_into_related_ip
+      value: '{{{citrix_adc.log.ssl_relay.address}}}'
+      allow_duplicates: false
+      if: ctx.citrix_adc?.log?.ssl_relay?.address != null
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{source.user.name}}}'
+      allow_duplicates: false
+      if: ctx.source?.user?.name != null
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{destination.user.name}}}'
+      allow_duplicates: false
+      if: ctx.destination?.user?.name != null
+  - remove:
+      field:
+        - citrix_adc.log.action
+        - citrix_adc.log.browser
+        - citrix_adc.log.bytes.received
+        - citrix_adc.log.bytes.sent
+        - citrix_adc.log.callee.domain_name
+        - citrix_adc.log.callee.user_name
+        - citrix_adc.log.caller.domain_name
+        - citrix_adc.log.caller.user_name
+        - citrix_adc.log.cipher_suite
+        - citrix_adc.log.client_ip
+        - citrix_adc.log.client_port
+        - citrix_adc.log.clientside.rxbytes
+        - citrix_adc.log.clientside.txbytes
+        - citrix_adc.log.closure_reason
+        - citrix_adc.log.code
+        - citrix_adc.log.command
+        - citrix_adc.log.delink_time
+        - citrix_adc.log.destination.ip
+        - citrix_adc.log.destination.port
+        - citrix_adc.log.domain
+        - citrix_adc.log.domain_name
+        - citrix_adc.log.end_time
+        - citrix_adc.log.errmsg
+        - citrix_adc.log.error_code
+        - citrix_adc.log.failure_reason
+        - citrix_adc.log.group
+        - citrix_adc.log.groups
+        - citrix_adc.log.hostname
+        - citrix_adc.log.html_url
+        - citrix_adc.log.icap_server.ip
+        - citrix_adc.log.icap_server.port
+        - citrix_adc.log.infomsg
+        - citrix_adc.log.issuer_name
+        - citrix_adc.log.matched_url
+        - citrix_adc.log.method
+        - citrix_adc.log.nat.ip
+        - citrix_adc.log.nat.port
+        - citrix_adc.log.natted.ip
+        - citrix_adc.log.natted.port
+        - citrix_adc.log.nsica_session.client.ip
+        - citrix_adc.log.nsica_session.client.port
+        - citrix_adc.log.nsica_session.server.ip
+        - citrix_adc.log.nsica_session.server.port
+        - citrix_adc.log.origin_server.ip
+        - citrix_adc.log.origin_server.port
+        - citrix_adc.log.process.id
+        - citrix_adc.log.process.name
+        - citrix_adc.log.protocol
+        - citrix_adc.log.reason
+        - citrix_adc.log.referer_header
+        - citrix_adc.log.remote_ip
+        - citrix_adc.log.request.path
+        - citrix_adc.log.response.code
+        - citrix_adc.log.rewritten_url
+        - citrix_adc.log.rule_id
+        - citrix_adc.log.server.ip
+        - citrix_adc.log.source.ip
+        - citrix_adc.log.source.port
+        - citrix_adc.log.start_time
+        - citrix_adc.log.subject_name
+        - citrix_adc.log.total_bytes_received
+        - citrix_adc.log.total_bytes_send
+        - citrix_adc.log.translated_destination.ip
+        - citrix_adc.log.translated_destination.port
+        - citrix_adc.log.transport
+        - citrix_adc.log.url
+        - citrix_adc.log.user
+        - citrix_adc.log.username
+        - citrix_adc.log.vserver.ip
+        - citrix_adc.log.vserver.port
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

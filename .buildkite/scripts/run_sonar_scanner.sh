@@ -1,12 +1,27 @@
 #!/bin/bash
+
+source .buildkite/scripts/common.sh
+
 set -euo pipefail
 
+add_bin_path
+with_mage
+
 run_sonar_scanner() {
+    local message=""
     echo "--- Download coverage reports and merge them"
-    buildkite-agent artifact download build/test-coverage/coverage-*.xml .
+    if ! buildkite-agent artifact download build/test-coverage/coverage-*.xml . ; then
+        message="Could not download XML artifacts. Skip coverage."
+        echo "--- :boom: ${message}"
+        buildkite-agent annotate \
+            "[Code inspection] ${message}" \
+            --context "ctx-sonarqube-no-files" \
+            --style "warning"
+        exit 0
+    fi
 
     echo "Merge all coverage reports"
-    .buildkite/scripts/merge_xml.sh
+    mage mergeCoverage
 
     echo "--- Execute sonar scanner CLI"
     /scan-source-code.sh

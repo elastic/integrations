@@ -31,6 +31,7 @@ processors:
       field: _temp_.message
       patterns:
         - "^%{DATA},%{TIMESTAMP:event.created},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD:_temp_.config_version},%{TIMESTAMP:_temp_.generated_time},%{GREEDYDATA:message}$"
+        - "^%{SYSLOGTIMESTAMP:_temp_.syslog_time} %{IPORHOST:observer.hostname} %{NOTSPACE:observer.serial_number},%{PANW_DATE:_temp_.generated_time},%{FIELD:panw.panos.type},%{GREEDYDATA:message}$"
       pattern_definitions:
         TIMESTAMP: "%{PANW_DATE}|%{TIMESTAMP_ISO8601}"
         PANW_DATE: "%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}"
@@ -92,6 +93,10 @@ processors:
   - pipeline:
       if: ctx.panw?.panos?.type == 'START' || ctx.panw.panos.type == 'END'
       name: '{{ IngestPipeline "tunnel_inspection" }}'
+## AUDIT
+  - pipeline:
+      if: ctx.panw?.panos?.type == 'AUDIT' || ctx.panw?.panos?.type == 'audit'
+      name: '{{ IngestPipeline "audit" }}'
 
   - set:
       field: panw.panos.observer.serial_number
@@ -104,24 +109,26 @@ processors:
       field: _temp_.srcuser
       ignore_missing: true
       patterns:
-        - '^%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
-        - '^%{HOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
-        - '^%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}$'
+        - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
+        - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
+        - '^%{USERNAME:source.user.name}@%{PATRUNKATEDHOSTNAME:source.user.domain}$'
         - '^%{USERNAME:source.user.name}$'
       pattern_definitions:
-        USERNAME: '[ a-zA-Z0-9._-]+[$]?'
+        USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
+        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
       if: ctx._temp_?.srcuser != null
 
   - grok:
       field: _temp_.dstuser
       ignore_missing: true
       patterns:
-        - '^%{HOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
-        - '^%{HOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
-        - '^%{USERNAME:destination.user.name}@%{HOSTNAME:destination.user.domain}$'
+        - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
+        - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
+        - '^%{USERNAME:destination.user.name}@%{PATRUNKATEDHOSTNAME:destination.user.domain}$'
         - '^%{USERNAME:destination.user.name}$'
       pattern_definitions:
-        USERNAME: '[ a-zA-Z0-9._-]+[$]?'
+        USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
+        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
       if: ctx._temp_?.dstuser != null
 
   - set:
@@ -334,6 +341,18 @@ processors:
       if: ctx.panw?.panos?.parent_session?.start_time != null
       field: session.start_time
       value: '{{{panw.panos.parent_session.start_time}}}'
+
+# Remove NAT fields when translation was not done.
+  - remove:
+      field:
+        - source.nat.ip
+        - source.nat.port
+      if: ctx.source?.nat?.ip == '0.0.0.0' && ctx.source.nat.port == '0'
+  - remove:
+      field:
+        - destination.nat.ip
+        - destination.nat.port
+      if: ctx.destination?.nat?.ip == '0.0.0.0' && ctx.destination.nat.port == '0'
 
 # convert IP fields as the output of the CSV processor is always a string.
   - convert:
@@ -1156,6 +1175,7 @@ processors:
       if: ctx.panw?.panos?.sub_type == 'drop'
   - append:
       field: event.type
+      allow_duplicates: false
       value:
         - denied
         - connection
@@ -1166,6 +1186,7 @@ processors:
       if: ctx.panw?.panos?.sub_type == 'deny'
   - append:
       field: event.type
+      allow_duplicates: false
       value:
         - denied
         - connection
@@ -1218,6 +1239,9 @@ processors:
       if: ctx.panw?.panos?.sub_type == 'wildfire-virus'
 
 # Set numeric log.level from event.severity.
+  - lowercase:
+      field: log.level
+      ignore_missing: true
   - set:
       field: event.severity
       if: ctx.log?.level == 'critical'
@@ -1499,6 +1523,11 @@ processors:
       value: '{{{destination.user.name}}}'
       if: ctx.destination?.user?.name != null
   - append:
+      field: related.user
+      allow_duplicates: false
+      value: '{{{panw.panos.admin}}}'
+      if: ctx.panw?.panos?.admin != null
+  - append:
       field: related.hash
       allow_duplicates: false
       value: '{{{panw.panos.file.hash}}}'
@@ -1550,17 +1579,6 @@ processors:
         - _temp_
         - _conf
       ignore_missing: true
-# Remove NAT fields when translation was not done.
-  - remove:
-      field:
-        - source.nat.ip
-        - source.nat.port
-      if: ctx.source?.nat?.ip == '0.0.0.0' && ctx.source.nat.port == 0
-  - remove:
-      field:
-        - destination.nat.ip
-        - destination.nat.port
-      if: ctx.destination?.nat?.ip == '0.0.0.0' && ctx.destination.nat.port == 0
 
 # Remove panw.panos fields that are copied into an ECS field.
   - remove:

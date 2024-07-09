@@ -1,7 +1,7 @@
 version: "2.3"
 services:
   jamf-compliance-reporter-log-http-endpoint:
-    image: docker.elastic.co/observability/stream:v0.8.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
@@ -9,8 +9,7 @@ services:
       - STREAM_ADDR=http://elastic-agent:9551/
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/log.log
   jamf-compliance-reporter-log-tcp:
-    image: docker.elastic.co/observability/stream:v0.8.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9552 -p=tcp /sample_logs/log.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9552 -p=tcp /sample_logs/log.log

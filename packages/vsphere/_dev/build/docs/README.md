@@ -17,6 +17,10 @@ To access the metrices, the url https://host:port(8989)/sdk needs to be passed t
 
 {{event "virtualmachine"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "virtualmachine"}}
 
 ### Host Metrics
@@ -25,18 +29,30 @@ To access the metrices, the url https://host:port(8989)/sdk needs to be passed t
 
 {{event "host"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "host"}}
 
 ### Datastore Metrics
 Datastores are logical containers, analogous to file systems, that hide specifics of physical storage and provide a uniform model for storing virtual machine files. 
 {{event "datastore"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "datastore"}}
 
 ## Logs
 
-To access the logs, from the Kibana UI, you have to specify the network-accessible IP address of the host where the Elastic Agent will be deployed. 
+To collect logs, a syslog daemon is used. First, you must configure the listening host/IP address (default: localhost) and host port (default: 9525) in the integration. Then, configure vSphere to send logs to a remote syslog host and provide the configured hostname/IP and port of the Elastic Agent host.
 
 ### vSphere Logs
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "log"}}

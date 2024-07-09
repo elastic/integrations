@@ -1,187 +1,164 @@
 config_version: 2
+# Set interval in between polling.
 interval: {{interval}}
+
+# Set the filename and max backups if need be.
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 request.tracer.maxbackups: 5
 {{/if}}
+
+# Set proxy url.
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
+
+# Set expiration duration.
 {{#if ioc_expiration_duration}}
 fields_under_root: true
 fields:
   _conf:
     ioc_expiration_duration: "{{ioc_expiration_duration}}"
 {{/if}}
+
+# This specifies SSL/TLS configuration. If the ssl section is missing, the host’s CAs are used for HTTPS connections.
+# If set to a boolean, this controls if SSL verification is enabled or not.
 {{#if ssl}}
 resource.ssl: {{ssl}}
 {{/if}}
+
+# Timeout for contacting TC.
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
+
+# Set the base url.
 resource.url: {{url}}
+
 state:
-  access_id: "{{access_id}}"
-  secret_key: {{secret_key}}
+  access_id: {{escape_string access_id}}
+  secret_key: {{escape_string secret_key}}
   counter: 0
   want_more: false
   batch: {{batch_size}}
   initial_interval: {{initial_interval}}
   event_list:
+{{#if include_group_assoc}}
     - associatedGroups
+{{/if}}
+{{#if include_indicator_assoc}}
     - associatedIndicators
+{{/if}}
+{{#if include_attributes}}
     - attributes
+{{/if}}
     - securityLabels
     - sightings
     - tags
     - threatAssess
   tql_filter: {{tql}}
+
+# Hide the secret_key.
 redact:
   fields:
     - secret_key
+
+# The program section is where the logic of the stream processor is defined.
 program: |
-  request("GET", (
-    !state.want_more ?
-        state.url + "/api/v3/indicators?" + {
-            "fields": state.event_list,
-            "resultStart": ["0"],
-            "resultLimit": [string(state.batch)],
-            "sorting": ["lastModified asc"],
-            "tql": ['lastModified GEQ "'+(
-                !state.want_more ?
-                    (has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-                        string(state.cursor.last_timestamp)
-                    :
-                        string((now - duration(state.initial_interval)).format(time_layout.RFC3339)).split("+")[0]
-                    )
-                :
-                    (has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-                        state.cursor.first_timestamp
-                    :
-                        ""
-                    )
-                )+'"'+(
-                    has(state.tql_filter) && state.tql_filter != null && state.tql_filter != "" ?
-                        " AND "+state.tql_filter.trim(" ")
-                    :
-                        ""
-                )
-            ],
-        }.format_query()
+  ['lastModified GEQ "'+(
+      !state.want_more ?
+          state.?cursor.last_timestamp.orValue(string(now - duration(state.initial_interval)))
       :
-        state.next_url
-      )
-    )
-    .with({
-      "Header": {
-        "Authorization": ["TC "+ string(state.access_id) + ":" +
-          base64(
-            bytes(
-            (
-              has(state.next_url) && state.next_url.contains_substr("/api") ?
-                "/api" + state.next_url.split("/api")[1]
-              :
-                "/api/v3/indicators?" +
-                  {
-                    "fields": state.event_list,
-                    "resultStart": ["0"],
-                    "resultLimit": [string(state.batch)],
-                    "sorting": ["lastModified asc"],
-                    "tql": ['lastModified GEQ "'+(
-                        !state.want_more ?
-                            (has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-                                string(state.cursor.last_timestamp)
-                            :
-                                string((now - duration(state.initial_interval)).format(time_layout.RFC3339)).split("+")[0]
-                            )
-                        :
-                            (has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-                                state.cursor.first_timestamp
-                            :
-                                ""
-                            )
-                        )+'"'+(
-                            has(state.tql_filter) && state.tql_filter != null && state.tql_filter != "" ?
-                                " AND "+state.tql_filter.trim(" ")
-                            :
-                                ""
-                        )
-                    ],
-                }.format_query()
-              ) +
-              ":GET:" + string(int(now))
-              ).hmac("sha256", bytes(state.secret_key)))
-            ],
-          "Timestamp": [string(int(now))]
-        }
-      })
-      .do_request()
-      .as(resp, bytes(resp.Body).decode_json().as(body, {
-        "events": body.data.map(e, {
-        "message": e.encode_json(),
-       }),
-      "url": state.url,
-      "counter": has(body.next) && body.next != null && body.next != "" ? int(state.counter) + int(state.batch) : 0,
-      "access_id": state.access_id,
-      "secret_key": state.secret_key,
-      "want_more": has(body.next) && body.next != null && body.next != "",
-      "batch": state.batch,
-      "initial_interval": state.initial_interval,
-      "event_list": has(state.event_list) && state.event_list != null && state.event_list != "" ? state.event_list : null,
-      "tql_filter": has(state.tql_filter) && state.tql_filter != null && state.tql_filter != "" ? state.tql_filter : null,
-      "next_url": (
-        has(body.next) && body.next != null && body.next != "" ?
-          state.url + "/api/v3/indicators?" + 
-            {
-              "fields": state.event_list,
-              "resultStart": [string(int(state.counter) + body.data.size())],
-              "resultLimit": [string(state.batch)],
-              "sorting": ["lastModified asc"],
-              "tql": ['lastModified GEQ "'+(
-                  !state.want_more ?
-                      (has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-                          string(state.cursor.last_timestamp)
-                      :
-                          string((now - duration(state.initial_interval)).format(time_layout.RFC3339)).split("+")[0]
-                      )
-                  :
-                      (has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-                          state.cursor.first_timestamp
-                      :
-                          ""
-                      )
-                  )+'"'+(
-                      has(state.tql_filter) && state.tql_filter != null && state.tql_filter != "" ?
-                          " AND "+state.tql_filter.trim(" ")
-                      :
-                          ""
-                  )
-              ],
-            }.format_query()
-        :
-          state.url
-      ),
-      "cursor": {
-        "last_timestamp": (
-          has(body.data) && body.data.size() > 0 ?
-            string((body.data.map(e, e.lastModified).max()).parse_time(time_layout.RFC3339) + duration("1s")).split("+")[0]
+          state.?cursor.first_timestamp.orValue("")
+      )+'"'+(
+          state.?tql_filter.orValue("") != "" ?
+              " AND "+state.tql_filter.trim(" ")
           :
-            has(state.cursor) && has(state.cursor.last_timestamp) ?
-              state.cursor.last_timestamp
-            :
-              null
-          ),
-        "first_timestamp": (
-            has(state.cursor) && has(state.cursor.first_timestamp) && has(body.data) && state.cursor.first_timestamp != null ?
-              (has(body.next) && body.next != null && body.next != "" ?
-                state.cursor.first_timestamp
-              :
-                state.cursor.last_timestamp)
-            :
-              string((now - duration(state.initial_interval)).format(time_layout.RFC3339)).split("+")[0]
-          )
-        }
-    }))
+              ""
+      )
+  ].as(tql,
+      request("GET",
+          state.want_more ?
+              state.next_url
+          :
+              state.url.trim_right("/") + "/api/v3/indicators?" + {
+                  "fields": state.event_list,
+                  "resultStart": ["0"],
+                  "resultLimit": [string(state.batch)],
+                  "sorting": ["lastModified asc"],
+                  "tql": tql,
+              }.format_query()
+      ).as(req, req.URL.parse_url().as(url, req.with({
+          "Header": {
+              "Authorization": ["TC "+ string(state.access_id) + ":" +
+                  bytes(url.Path + (url.RawQuery == "" ? "" : "?") + url.RawQuery + ":" + req.Method + ":" + string(int(now))).hmac("sha256", bytes(state.secret_key)).base64()
+              ],
+              "Timestamp": [string(int(now))],
+          }
+      }))).do_request().as(resp, resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body, {
+              "events": body.data.map(e, {
+                  "message": e.encode_json(),
+              }),
+              "url": state.url.trim_right("/"),
+              "counter": has(body.next) && body.next != null && body.next != "" ? int(state.counter) + int(state.batch) : 0,
+              "access_id": state.access_id,
+              "secret_key": state.secret_key,
+              "want_more": has(body.next) && body.next != null && body.next != "",
+              "batch": state.batch,
+              "initial_interval": state.initial_interval,
+              "event_list": state.event_list,
+              ?"tql_filter": state.?tql_filter,
+              "next_url": (
+                  has(body.next) && body.next != null && body.next != "" ?
+                      state.url.trim_right("/") + "/api/v3/indicators?" + {
+                          "fields": state.event_list,
+                          "resultStart": [string(int(state.counter) + body.data.size())],
+                          "resultLimit": [string(state.batch)],
+                          "sorting": ["lastModified asc"],
+                          "tql": tql,
+                      }.format_query()
+                  :
+                      state.url.trim_right("/")
+              ),
+              "cursor": {
+                  ?"last_timestamp": (
+                      has(body.data) && body.data.size() > 0 ?
+                          optional.of(body.data.map(e, timestamp(e.lastModified)).max() + duration("1s"))
+                      :
+                          state.?cursor.last_timestamp
+                  ),
+                  "first_timestamp": (
+                      has(body.data) && state.?cursor.first_timestamp.orValue(null) != null ?
+                          (
+                              has(body.next) && body.next != null && body.next != "" ?
+                                  state.cursor.first_timestamp
+                              :
+                                  state.cursor.last_timestamp
+                          )
+                      :
+                          string(now - duration(state.initial_interval))
+                  ),
+              }
+          })
+      :
+          state.with({
+              "events": {
+                  "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "GET:"+(
+                          size(resp.Body) != 0 ?
+                              string(resp.Body)
+                          :
+                              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                      ),
+                  },
+              },
+              "want_more": false,
+          })
+      )
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

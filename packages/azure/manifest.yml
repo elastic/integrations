@@ -1,6 +1,6 @@
 name: azure
 title: Azure Logs
-version: 1.9.2
+version: 1.12.0
 description: This Elastic integration collects logs from Azure
 type: integration
 icons:
@@ -14,7 +14,7 @@ categories:
   - observability
 conditions:
   kibana:
-    version: "^8.12.0"
+    version: "^8.13.0"
   elastic:
     subscription: basic
 screenshots:
@@ -25,12 +25,12 @@ screenshots:
 vars:
   - name: eventhub
     type: text
-    title: Event Hub
+    title: Event Hub Name
     multi: false
     required: true
     show_user: true
     description: >-
-      Elastic recommends using one event hub for each integration. Visit [Create an event hub](https://docs.elastic.co/integrations/azure#create-an-event-hub) to learn more. Use event hub names up to 30 characters long to avoid compatibility issues.
+      The event hub name that contains the logs to ingest. Do not use the event hub namespace here. Elastic recommends using one event hub for each integration. Visit [Create an event hub](https://docs.elastic.co/integrations/azure#create-an-event-hub) to learn more. Use event hub names up to 30 characters long to avoid compatibility issues.
   - name: consumer_group
     type: text
     title: Consumer Group
@@ -94,8 +94,8 @@ policy_templates:
         size: 5002x2666
         type: image/png
   - name: adlogs
-    title: Azure Active Directory
-    description: Azure Directory logs integration
+    title: Microsoft Entra ID
+    description: Collect logs from Microsoft Entra ID (formerly Azure Active Directory) with Elastic Agent.
     data_streams:
       - auditlogs
       - signinlogs
@@ -105,12 +105,12 @@ policy_templates:
       - security
     inputs:
       - type: "azure-eventhub"
-        title: "Collect Azure Active Directory logs from Event Hub"
-        description: "Collecting Active Directory logs as audit logs and signin logs from Azure instances (input: azure-eventhub)"
+        title: "Collect Microsoft Entra ID logs from Event Hub"
+        description: "Collecting Microsoft Entra ID logs as audit logs and signin logs from Azure instances (input: azure-eventhub)"
         input_group: logs
     icons:
-      - src: /img/active_directory_logo.png
-        title: logo azure
+      - src: /img/microsoft-entra-id-logo.svg
+        title: Microsoft Entra ID logo
         size: 32x32
         type: image/svg+xml
     screenshots:
@@ -156,6 +156,28 @@ policy_templates:
     screenshots:
       - src: /img/filebeat-azure-overview.png
         title: filebeat azure overview
+        size: 5002x2666
+        type: image/png
+  - name: graphactivitylogs
+    title: Microsoft Graph Activity Logs
+    description: Microsoft Graph Activity Logs integration
+    data_streams:
+      - graphactivitylogs
+    categories:
+      - security
+    inputs:
+      - type: "azure-eventhub"
+        title: "Collect Microsoft Graph Activity Logs from Event Hub"
+        description: "Collecting graph activity logs from Azure instances (input: azure-eventhub)"
+        input_group: logs
+    icons:
+      - src: /img/graph_activity.png
+        title: logo graphactivity
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/graph_activity_logs.png
+        title: microsoft graph activity overview
         size: 5002x2666
         type: image/png
   - name: springcloudlogs

@@ -24,8 +24,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
-        - json.GUID
-        - json.messageTime
+        - event.original
       target_field: _id
       ignore_missing: true
   - append:
@@ -438,6 +437,15 @@ processors:
       field: proofpoint_tap.message_blocked.threat_info_map
       processor:
         rename:
+          field: _ingest._value.threatId
+          target_field: _ingest._value.threat.id
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
+  - foreach:
+      field: proofpoint_tap.message_blocked.threat_info_map
+      processor:
+        rename:
           field: _ingest._value.threatStatus
           target_field: _ingest._value.threat.status
           ignore_missing: true
@@ -480,6 +488,19 @@ processors:
           ignore_missing: true
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
+  - script:
+      lang: painless
+      description: Set the @timestamp to the maximum of messageTime and threatTime.
+      tag: timestamp-is-maximum
+      if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
+      ignore_failure: true
+      source: |
+        def ts = Instant.parse(ctx['@timestamp']);
+        for (item in ctx.proofpoint_tap.message_blocked.threat_info_map) {
+          if (item?.threat?.time instanceof String && Instant.parse(item.threat.time).isAfter(ts)) {
+            ctx['@timestamp'] = item.threat.time;
+          }
+        }
   - remove:
       field: event.original
       if: ctx.tags?.contains('preserve_original_event') != true

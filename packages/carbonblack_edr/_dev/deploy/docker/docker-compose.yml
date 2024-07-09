@@ -7,7 +7,7 @@ services:
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
   carbonblack_edr-http:
-    image: akroh/stream:v0.2.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
@@ -15,7 +15,7 @@ services:
       - STREAM_ADDR=http://elastic-agent:9080/
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/cb_edr.ndjson.log
   carbonblack_edr-tcp:
-    image: akroh/stream:v0.2.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
@@ -23,7 +23,7 @@ services:
       - STREAM_ADDR=elastic-agent:9081
     command: log --start-signal=SIGHUP --delay=5s /sample_logs/cb_edr.ndjson.log
   carbonblack_edr-udp:
-    image: akroh/stream:v0.2.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:

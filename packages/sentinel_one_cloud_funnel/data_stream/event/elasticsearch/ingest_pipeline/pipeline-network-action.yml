@@ -6,7 +6,18 @@ processors:
       value: [network]
   - set:
       field: event.type
-      value: [info]
+      value: [start, connection]
+      if: (ctx.sentinel_one_cloud_funnel?.event?.type == 'IPConnect' || ctx.sentinel_one_cloud_funnel?.event?.type == 'IP Connect')
+  - set:
+      field: event.action
+      value: [connection_attempted]
+      if: (ctx.sentinel_one_cloud_funnel?.event?.type == 'IPConnect' || ctx.sentinel_one_cloud_funnel?.event?.type == 'IP Connect') &&
+          ctx.sentinel_one_cloud_funnel?.event?.network?.direction == "OUTGOING"
+  - set:
+      field: event.action
+      value: [connection_accepted]
+      if: (ctx.sentinel_one_cloud_funnel?.event?.type == 'IPConnect' || ctx.sentinel_one_cloud_funnel?.event?.type == 'IP Connect') &&
+          ctx.sentinel_one_cloud_funnel?.event?.network?.direction == "INCOMING"
   - rename:
       field: json.k8sCluster.containerId
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.id
@@ -71,6 +82,10 @@ processors:
       if: ctx.sentinel_one_cloud_funnel?.event?.dst?.ip_address != null
   - set:
       field: destination.ip
+      copy_from: sentinel_one_cloud_funnel.event.dst.ip_address
+      ignore_empty_value: true
+  - set:
+      field: destination.address
       copy_from: sentinel_one_cloud_funnel.event.dst.ip_address
       ignore_empty_value: true
   - convert:
@@ -203,6 +218,17 @@ processors:
       field: json.k8sCluster.podName
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.pod.name
       ignore_missing: true
+  - append:
+      field: event.type
+      value: connection
+      allow_duplicates: false
+      if: >-
+        (ctx.source?.ip != null || ctx.source?.address != null) && ctx.source?.port != null &&
+        (ctx.destination?.ip != null || ctx.destination?.address != null) && ctx.destination?.port != null
+  - set:
+      field: event.type
+      value: [info]
+      override: false
 on_failure:
   - append:
       field: error.message

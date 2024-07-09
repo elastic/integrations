@@ -4,17 +4,16 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-  - rename:
+  - set:
+      field: event.original
+      copy_from: message
+  - remove:
       field: message
-      target_field: event.original
-      ignore_missing: true
-      if: ctx.event?.original == null
   - grok:
       field: event.original
       ecs_compatibility: v1
       patterns:
-        - "%{SYSLOG5424PRI}%{GREEDYDATA:syslog5424_sd}$"
-        - "%{GREEDYDATA:syslog5424_sd}$"
+        - "^(?:%{SYSLOG5424PRI} *)?%{GREEDYDATA:syslog5424_sd}$"
   - script:
       lang: painless
       source: |
@@ -28,7 +27,7 @@ processors:
         }
   - gsub:
       field: syslog5424_sd
-      pattern: "\u0000"
+      pattern: "[\u0000-\u001F\u007F]"
       replacement: ""
   - script:
       lang: painless
@@ -80,7 +79,9 @@ processors:
       source: |
         def fw = ctx.fortinet?.firewall;
         if (fw != null) {
-            fw.entrySet().removeIf(entry -> entry.getValue() == "N/A");
+            // We will remove any keys that are non-words to avoid polluting documents
+            def pat = /\W+/; 
+            fw.entrySet().removeIf(entry -> entry.getValue() == "N/A" || pat.matcher(entry.getKey()).find());
         }
   - set:
       field: observer.vendor
@@ -623,6 +624,24 @@ processors:
             }
           }
         }
+  - script:
+      description: Drops null/empty values recursively
+      tag: drop_empty_fields
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))

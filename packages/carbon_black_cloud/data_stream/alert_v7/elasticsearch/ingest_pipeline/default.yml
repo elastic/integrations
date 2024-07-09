@@ -1,0 +1,912 @@
+---
+description: Pipeline for parsing Carbon Black Cloud alerts.
+processors:
+  # ecs fields
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - fingerprint:
+      fields:
+        - json.id
+        - json.detection_timestamp
+        - json.backend_timestamp
+        - json.backend_update_timestamp
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+  - rename:
+      field: json.id
+      target_field: event.id
+      ignore_missing: true
+  - date:
+      field: json.detection_timestamp
+      if: ctx.json?.detection_timestamp != null && ctx.json.detection_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: json.detection_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.first_event_timestamp
+      target_field: event.start
+      if: ctx.json?.first_event_timestamp != null && ctx.json.first_event_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: json.first_event_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.last_event_timestamp
+      target_field: event.end
+      if: ctx.json?.last_event_timestamp != null && ctx.json.last_event_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: json.last_event_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.severity
+      target_field: event.severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.severity
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.reason
+      target_field: event.reason
+      ignore_missing: true
+  - convert:
+      field: json.device_id
+      target_field: host.id
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: host.os.type
+      value: windows
+      if: ctx.json?.device_os == 'WINDOWS'
+  - set:
+      field: host.os.type
+      value: linux
+      if: ctx.json?.device_os == 'LINUX'
+  - set:
+      field: host.os.type
+      value: macos
+      if: ctx.json?.device_os == 'MAC'
+  - rename:
+      field: json.device_os_version
+      target_field: host.os.version
+      ignore_missing: true
+  - rename:
+      field: json.device_name
+      target_field: host.hostname
+      ignore_missing: true
+  - grok:
+      field: host.hostname
+      patterns:
+        - '^(%{DATA:user.domain})\\(%{GREEDYDATA:host.hostname})$'
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: host.name
+      value: '{{{host.hostname}}}'
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.device_username
+      target_field: user.name
+      ignore_missing: true
+  - grok:
+      field: user.name
+      patterns:
+        - '^(%{DATA:user.domain})\\(%{GREEDYDATA:user.name})$'
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{user.domain}}}'
+      if: ctx.user?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  # carbon_black_cloud fields
+  - date:
+      field: json.backend_timestamp
+      target_field: carbon_black_cloud.alert.backend_timestamp
+      if: ctx.json?.backend_timestamp != null && ctx.json.backend_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: json.backend_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.backend_update_timestamp
+      target_field: carbon_black_cloud.alert.backend_update_timestamp
+      if: ctx.json?.backend_update_timestamp != null && ctx.json.backend_update_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: json.backend_update_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.user_update_timestamp
+      target_field: carbon_black_cloud.alert.user_update_timestamp
+      if: ctx.json?.user_update_timestamp != null && ctx.json.user_update_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: json.user_update_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.ttps
+      if: ctx.json?.ttps instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: carbon_black_cloud.alert.ttps
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.threat_category
+      if: ctx.json?.threat_category instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: carbon_black_cloud.alert.threat_category
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.ml_classification_anomalies
+      if: ctx.json?.ml_classification_anomalies instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: carbon_black_cloud.alert.ml_classification_anomalies
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: json.alert_notes_present
+      target_field: carbon_black_cloud.alert.alert_notes_present
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.alert_notes_present
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.threat_notes_present
+      target_field: carbon_black_cloud.alert.threat_notes_present
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threat_notes_present
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.additional_events_present
+      target_field: carbon_black_cloud.alert.additional_events_present
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.additional_events_present
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.alert_url
+      target_field: carbon_black_cloud.alert.url
+      ignore_missing: true
+  - rename:
+      field: json.primary_event_id
+      target_field: carbon_black_cloud.alert.primary_event_id
+      ignore_missing: true
+  - rename:
+      field: json.org_key
+      target_field: carbon_black_cloud.alert.organization_key
+      ignore_missing: true
+  - rename:
+      field: json.vendor_name
+      target_field: carbon_black_cloud.alert.vendor_name
+      ignore_missing: true
+  - rename:
+      field: json.product_name
+      target_field: carbon_black_cloud.alert.product_name
+      ignore_missing: true
+  - rename:
+      field: json.serial_number
+      target_field: carbon_black_cloud.alert.serial_number
+      ignore_missing: true
+  - rename:
+      field: json.threat_id
+      target_field: carbon_black_cloud.alert.threat_id
+      ignore_missing: true
+  - rename:
+      field: json.policy_applied
+      target_field: carbon_black_cloud.alert.policy_applied
+      ignore_missing: true
+  # carbon_black_cloud parent process fields & ecs parent process fields
+  - rename:
+      field: json.parent_name
+      target_field: process.parent.name
+      ignore_missing: true
+  - set:
+      field: process.parent.executable
+      copy_from: process.parent.name
+      ignore_empty_value: true
+  - set:
+      field: carbon_black_cloud.alert.parent.name
+      copy_from: process.parent.name
+      ignore_empty_value: true
+  - rename:
+      field: json.parent_cmdline
+      target_field: process.parent.command_line
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.parent.cmdline
+      copy_from: process.parent.command_line
+      ignore_empty_value: true
+  - rename:
+      field: json.parent_guid
+      target_field: process.parent.entity_id
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.parent.guid
+      copy_from: process.parent.entity_id
+      ignore_empty_value: true
+  - rename:
+      field: json.parent_pid
+      target_field: process.parent.pid
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.parent.pid
+      copy_from: process.parent.pid
+      ignore_empty_value: true
+  - rename:
+      field: json.parent_sha256
+      target_field: process.parent.hash.sha256
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.parent.hash.sha256
+      copy_from: process.parent.hash.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.parent.hash.sha256}}}'
+      if: ctx.carbon_black_cloud?.alert?.parent?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.parent_md5
+      target_field: process.parent.hash.md5
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.parent.hash.md5
+      copy_from: process.parent.hash.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.parent.hash.md5}}}'
+      if: ctx.carbon_black_cloud?.alert?.parent?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.parent_username
+      target_field: carbon_black_cloud.alert.parent.username
+      ignore_missing: true
+  - rename:
+      field: json.parent_reputation
+      target_field: carbon_black_cloud.alert.parent.reputation
+      ignore_missing: true
+  - rename:
+      field: json.parent_effective_reputation
+      target_field: carbon_black_cloud.alert.parent.effective_reputation
+      ignore_missing: true
+  - script:
+      description: Removes complete path from ecs field parent.process.name
+      lang: painless
+      if: ctx?.process?.parent?.name != null
+      source: |
+        ctx.process.parent.name = ctx.process.parent.name.substring(ctx.process.parent.name.lastIndexOf('\\') + 1);
+# carbon_black_cloud process fields & ecs process fields
+  - foreach:
+      field: json.process_issuer
+      if: ctx.json?.process_issuer instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: carbon_black_cloud.alert.process.issuer
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.process_publisher
+      if: ctx.json?.process_publisher instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: carbon_black_cloud.alert.process.publisher
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.process_name
+      target_field: process.name
+      ignore_missing: true
+  - set:
+      field: process.executable
+      copy_from: process.name
+      ignore_empty_value: true
+  - set:
+      field: carbon_black_cloud.alert.process.name
+      copy_from: process.name
+      ignore_empty_value: true
+  - rename:
+      field: json.process_username
+      target_field: carbon_black_cloud.alert.process.username
+      ignore_missing: true
+  - rename:
+      field: json.process_cmdline
+      target_field: process.command_line
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.process.cmdline
+      copy_from: process.command_line
+      ignore_empty_value: true
+  - rename:
+      field: json.process_guid
+      target_field: process.entity_id
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.process.guid
+      copy_from: process.entity_id
+      ignore_empty_value: true
+  - rename:
+      field: json.process_pid
+      target_field: process.pid
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.process.pid
+      copy_from: process.pid
+      ignore_empty_value: true
+  - rename:
+      field: json.process_sha256
+      target_field: process.hash.sha256
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.process.hash.sha256
+      copy_from: process.hash.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.process.hash.sha256}}}'
+      if: ctx.carbon_black_cloud?.alert?.process?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.process_md5
+      target_field: process.hash.md5
+      ignore_missing: true
+  - set:
+      field: carbon_black_cloud.alert.process.hash.md5
+      copy_from: process.hash.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.process.hash.md5}}}'
+      if: ctx.carbon_black_cloud?.alert?.process?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.process_reputation
+      target_field: carbon_black_cloud.alert.process.reputation
+      ignore_missing: true
+  - rename:
+      field: json.process_effective_reputation
+      target_field: carbon_black_cloud.alert.process.effective_reputation
+      ignore_missing: true
+  - script:
+      description: Removes complete path from ecs field process.name
+      lang: painless
+      if: ctx?.process?.name != null
+      source: |
+        ctx.process.name = ctx.process.name.substring(ctx.process.name.lastIndexOf('\\') + 1);
+  # child process fields
+  - rename:
+      field: json.childproc_name
+      target_field: carbon_black_cloud.alert.childproc.name
+      ignore_missing: true
+  - rename:
+      field: json.childproc_username
+      target_field: carbon_black_cloud.alert.childproc.username
+      ignore_missing: true
+  - rename:
+      field: json.childproc_cmdline
+      target_field: carbon_black_cloud.alert.childproc.cmdline
+      ignore_missing: true
+  - rename:
+      field: json.childproc_guid
+      target_field: carbon_black_cloud.alert.childproc.guid
+      ignore_missing: true
+  - rename:
+      field: json.childproc_sha256
+      target_field: carbon_black_cloud.alert.childproc.hash.sha256
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.childproc.hash.sha256}}}'
+      if: ctx.carbon_black_cloud?.alert?.childproc?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.childproc_md5
+      target_field: carbon_black_cloud.alert.childproc.hash.md5
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.childproc.hash.md5}}}'
+      if: ctx.carbon_black_cloud?.alert?.childproc?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.childproc_effective_reputation
+      target_field: carbon_black_cloud.alert.childproc.effective_reputation
+      ignore_missing: true
+  # blocked process fields
+  - rename:
+      field: json.blocked_name
+      target_field: carbon_black_cloud.alert.blocked_process.name
+      ignore_missing: true
+  - rename:
+      field: json.blocked_sha256
+      target_field: carbon_black_cloud.alert.blocked_process.hash.sha256
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.blocked_process.hash.sha256}}}'
+      if: ctx.carbon_black_cloud?.alert?.blocked_process?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.blocked_md5
+      target_field: carbon_black_cloud.alert.blocked_process.hash.md5
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.blocked_process.hash.md5}}}'
+      if: ctx.carbon_black_cloud?.alert?.blocked_process?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.blocked_effective_reputation
+      target_field: carbon_black_cloud.alert.blocked_process.effective_reputation
+      ignore_missing: true
+  # ioc fields
+  - rename:
+      field: json.ioc_field
+      target_field: carbon_black_cloud.alert.ioc.field
+      ignore_missing: true
+  - rename:
+      field: json.ioc_hit
+      target_field: carbon_black_cloud.alert.ioc.hit
+      ignore_missing: true
+  - rename:
+      field: json.ioc_id
+      target_field: carbon_black_cloud.alert.ioc.id
+      ignore_missing: true
+  # report fields
+  - foreach:
+      field: json.report_tags
+      if: ctx.json?.report_tags instanceof List
+      ignore_missing: true
+      processor:
+        append:
+          field: carbon_black_cloud.alert.report.tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.report_id
+      target_field: carbon_black_cloud.alert.report.id
+      ignore_missing: true
+  - rename:
+      field: json.report_name
+      target_field: carbon_black_cloud.alert.report.name
+      ignore_missing: true
+  - rename:
+      field: json.report_description
+      target_field: carbon_black_cloud.alert.report.description
+      ignore_missing: true
+  - rename:
+      field: json.report_link
+      target_field: carbon_black_cloud.alert.report.link
+      ignore_missing: true
+  # device fields 
+  - rename:
+      field: json.device_location
+      target_field: carbon_black_cloud.alert.device.location
+      ignore_missing: true
+  - rename:
+      field: json.device_os
+      target_field: carbon_black_cloud.alert.device.os
+      ignore_missing: true
+  - rename:
+      field: json.device_policy_id
+      target_field: carbon_black_cloud.alert.device.policy_id
+      ignore_missing: true
+  - rename:
+      field: json.device_policy
+      target_field: carbon_black_cloud.alert.device.policy
+      ignore_missing: true
+  - rename:
+      field: json.device_target_value
+      target_field: carbon_black_cloud.alert.device.target_value
+      ignore_missing: true
+  - rename:
+      field: json.device_external_ip
+      target_field: carbon_black_cloud.alert.device.external_ip
+      ignore_missing: true
+  - rename:
+      field: json.device_internal_ip
+      target_field: carbon_black_cloud.alert.device.internal_ip
+      ignore_missing: true
+  - rename:
+      field: json.device_uem_id
+      target_field: carbon_black_cloud.alert.device.uem_id
+      ignore_missing: true
+  # workflow fields
+  - rename:
+      field: json.workflow
+      target_field: carbon_black_cloud.alert.workflow
+      ignore_missing: true
+  - date:
+      field: carbon_black_cloud.alert.workflow.change_timestamp
+      target_field: carbon_black_cloud.alert.workflow.change_timestamp
+      if: ctx.carbon_black_cloud?.alert?.workflow?.change_timestamp != null && ctx.carbon_black_cloud.alert.workflow.change_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: carbon_black_cloud.alert.workflow.change_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # determination fields
+  - rename:
+      field: json.determination
+      target_field: carbon_black_cloud.alert.determination
+      ignore_missing: true
+  - date:
+      field: carbon_black_cloud.alert.determination.change_timestamp
+      target_field: carbon_black_cloud.alert.determination.change_timestamp
+      if: ctx.carbon_black_cloud?.alert?.determination?.change_timestamp != null && ctx.carbon_black_cloud.alert.determination.change_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: carbon_black_cloud.alert.determination.change_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # mdr fields
+  - convert:
+      field: json.mdr_alert
+      target_field: carbon_black_cloud.alert.mdr.alert
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.mdr_alert
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.mdr_alert_notes_present
+      target_field: carbon_black_cloud.alert.mdr.alert_notes_present
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.mdr_alert_notes_present
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.mdr_threat_notes_present
+      target_field: carbon_black_cloud.alert.mdr.threat_notes_present
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.mdr_threat_notes_present
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mdr_determination
+      target_field: carbon_black_cloud.alert.mdr.determination
+      ignore_missing: true
+  - date:
+      field: carbon_black_cloud.alert.mdr.determination.change_timestamp
+      target_field: carbon_black_cloud.alert.mdr.determination.change_timestamp
+      if: ctx.carbon_black_cloud?.alert?.mdr?.determination?.change_timestamp != null && ctx.carbon_black_cloud.alert.mdr.determination.change_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: carbon_black_cloud.alert.mdr.determination.change_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mdr_workflow
+      target_field: carbon_black_cloud.alert.mdr.workflow
+      ignore_missing: true
+  - date:
+      field: carbon_black_cloud.alert.mdr.workflow.change_timestamp
+      target_field: carbon_black_cloud.alert.mdr.workflow.change_timestamp
+      if: ctx.carbon_black_cloud?.alert?.mdr?.workflow?.change_timestamp != null && ctx.carbon_black_cloud.alert.mdr.workflow.change_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: carbon_black_cloud.alert.mdr.workflow.change_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mdr_classification
+      target_field: carbon_black_cloud.alert.mdr.classification
+      ignore_missing: true
+  - date:
+      field: carbon_black_cloud.alert.mdr.classification.change_timestamp
+      target_field: carbon_black_cloud.alert.mdr.classification.change_timestamp
+      if: ctx.carbon_black_cloud?.alert?.mdr?.classification?.change_timestamp != null && ctx.carbon_black_cloud.alert.mdr.classification.change_timestamp != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            field: carbon_black_cloud.alert.mdr.classification.change_timestamp
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # netconn fields
+  - convert:
+      field: json.netconn_remote_port
+      target_field: carbon_black_cloud.alert.netconn.remote_port
+      type: integer
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.netconn_remote_port
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.netconn_local_port
+      target_field: carbon_black_cloud.alert.netconn.local_port
+      type: integer
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.netconn_local_port
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.netconn_remote_ip
+      target_field: carbon_black_cloud.alert.netconn.remote_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.netconn_remote_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.netconn_local_ip
+      target_field: carbon_black_cloud.alert.netconn.local_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.netconn_local_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.netconn_remote_ipv4
+      target_field: carbon_black_cloud.alert.netconn.remote_ipv4
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.netconn_remote_ipv4
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.netconn_local_ipv4
+      target_field: carbon_black_cloud.alert.netconn.local_ipv4
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.netconn_local_ipv4
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.netconn_remote_ipv6
+      target_field: carbon_black_cloud.alert.netconn.remote_ipv6
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.netconn_remote_ipv6
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.netconn_local_ipv6
+      target_field: carbon_black_cloud.alert.netconn.local_ipv6
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.netconn_local_ipv6
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.netconn_protocol
+      target_field: carbon_black_cloud.alert.netconn.protocol
+      ignore_missing: true
+  - rename:
+      field: json.netconn_remote_domain
+      target_field: carbon_black_cloud.alert.netconn.remote_domain
+      ignore_missing: true
+  # misc fields
+  - convert:
+      field: json.ip_reputation
+      target_field: carbon_black_cloud.alert.ip_reputation
+      type: integer
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.ip_reputation
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.remote_is_private
+      target_field: carbon_black_cloud.alert.remote_is_private
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.remote_is_private
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: carbon_black_cloud.alert.category
+      value: 'THREAT'     
+  # cleanup & final additions
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - json.severity
+        - json.detection_timestamp
+        - json.backend_timestamp
+        - json.backend_update_timestamp
+        - json.user_update_timestamp
+        - json.first_event_timestamp
+        - json.last_event_timestamp
+        - json.device_id
+        - json.alert_notes_present
+        - json.threat_notes_present
+        - json.additional_events_present
+        - json.netconn_remote_port
+        - json.netconn_local_port
+        - json.netconn_remote_ip
+        - json.netconn_local_ip
+        - json.netconn_remote_ipv4
+        - json.netconn_local_ipv4
+        - json.netconn_remote_ipv6
+        - json.netconn_local_ipv6
+        - json.mdr_classification?.determination
+        - json.ml_classification_anomalies
+        - json.ip_reputation
+        - json.remote_is_private
+        - json.mdr_alert
+        - json.mdr_alert_notes_present
+        - json.mdr_threat_notes_present
+        - json.process_issuer
+        - json.process_publisher
+        - json.report_tags
+      ignore_missing: true
+  - script:
+      description: Adds all the remaining fields in fields under carbon_black_cloud.alert.
+      lang: painless
+      if: ctx.json != null
+      source: |
+        for (Map.Entry m : ctx.json.entrySet()) {
+          ctx.carbon_black_cloud.alert[m.getKey()] = m.getValue();
+        }
+  - remove:
+      field: json
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

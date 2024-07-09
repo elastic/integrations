@@ -13,7 +13,18 @@ processors:
     field: orchestrator.cluster.id
     copy_from: cluster_id
     description: 'Backward compatibility cloudbeat version < 8.8'
+    ignore_empty_value: true
     if: ctx.orchestrator?.cluster?.id == null
+- remove:
+    field: cloud.account.id
+    ignore_missing: true
+    description: 'Removes cloud.account.id when it is empty'
+    if: ctx.cloud?.account?.id == ''
+- remove:
+    field: cloud.account.name
+    ignore_missing: true
+    description: 'Removes cloud.account.name when it is empty'
+    if: ctx.cloud?.account?.name == ''
 on_failure:
   - set:
       field: event.kind

@@ -1,0 +1,81 @@
+---
+description: Pipeline for processing Exchange Server Messagetracking logs
+processors:
+- drop:
+    if: "ctx.message =~ /^[^0-9]/ || ctx.message =~ /^#/"
+- set:
+    field: event.original
+    value: "{{{message}}}"
+- csv:
+    field: event.original
+    ignore_failure: true
+    ignore_missing: true
+    target_fields:
+    - "@timestamp" 
+    - client.ip
+    - client.domain
+    - server.ip
+    - server.domain
+    - microsoft.exchange.sourcecontext
+    - microsoft.exchange.connectorid
+    - microsoft.exchange.source
+    - microsoft.exchange.eventid
+    - email.local_id
+    - email.message_id
+    - microsoft.exchange.networkmessageid
+    - email.to.address
+    - microsoft.exchange.recipientstatus
+    - network.bytes
+    - microsoft.exchange.recipientcount
+    - microsoft.exchange.relatedrecipientaddress
+    - microsoft.exchange.reference
+    - email.subject
+    - microsoft.exchange.senderaddress 
+    - microsoft.exchange.returnpath
+    - microsoft.exchange.messageinfo
+    - email.direction
+    - microsoft.exchange.tenantid
+    - microsoft.exchange.originalclientip
+    - microsoft.exchange.originalserverip
+    - microsoft.exchange.customdata
+    - microsoft.exchange.transporttraffictype
+    - microsoft.exchange.logid
+    - microsoft.exchange.schemaversion
+    if: ctx.message =~ /^\d/
+- split:
+    field: email.to.address
+    separator: ";"
+    preserve_trailing: true
+    ignore_missing: true
+    ignore_failure: true
+- append:
+    field: email.sender.address
+    value: "{{{microsoft.exchange.senderaddress}}}"
+    ignore_failure: true
+- append:
+    field: email.from.address
+    value: "{{{microsoft.exchange.senderaddress}}}"
+    ignore_failure: true
+- remove:
+    field: microsoft.exchange.senderaddress
+- convert:
+    field: "microsoft.exchange.recipientcount"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- convert:
+    field: "network.bytes"
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+- set:
+    field: event.ingested 
+    value: "{{{_ingest.timestamp}}}"
+    ignore_failure: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

@@ -29,6 +29,11 @@ request.transforms:
       target: header.X-Auth-Key
       value: {{escape_string auth_key}}
 {{/if}}
+{{#if per_page}}
+  - set:
+      target: url.params.count
+      value: '{{per_page}}'
+{{/if}}
   - set:
       target: url.params.start
       value: '[[formatDate (parseTimestamp (max (toInt .cursor.last_execution_datetime) ((now).Add (parseDuration "-168h")).Unix ))]]'
