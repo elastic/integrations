@@ -25,43 +25,50 @@ redact:
   fields:
     - password
 program: |
-  request(
-    "GET",
-    state.url.trim_right("/") + "/api/2.0/fo/activity_log/?" + {
-      "action": ["list"],
-      "since_datetime": [string(state.?cursor.latest_ts.orValue(now - duration(state.initial_interval)).format("2006-01-02 15:04:05"))],
-      ?"truncation_limit": has(state.batch_size) ? optional.of([string(state.batch_size)]) : optional.none(),
-    }.format_query()
-  ).with({
-    "Header":{
-      "Authorization": ["Basic " + (state.user + ":" + state.password).base64()],
-      "X-Requested-With": ["curl"],
-    }
-  }).do_request().as(resp, (
-    resp.StatusCode == 200
-    ?
-      bytes(resp.Body).mime("text/csv; header=present").as(events, state.with({
-          "events": events.map(e, {"message": e.encode_json()}),
-          "want_more": has(state.batch_size) && size(events) >= state.batch_size,
-          "cursor": {
-              ?"latest_ts": size(events) > 0 ?
-                optional.of(events.map(e, e.Date.parse_time(time_layout.RFC3339)).max())
-              :
-                state.?cursor.latest_ts,
+  state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/api/2.0/fo/activity_log/?" + {
+        "action": ["list"],
+        "since_datetime": [string(state.?cursor.latest_ts.orValue(now - duration(state.initial_interval)).format(time_layout.RFC3339))],
+        ?"truncation_limit": has(state.batch_size) ? optional.of([string(state.batch_size)]) : optional.none(),
+      }.format_query()
+    ).with({
+      "Header":{
+        "Authorization": ["Basic " + (state.user + ":" + state.password).base64()],
+        "X-Requested-With": ["curl"],
+      }
+    }).do_request().as(resp,
+      resp.StatusCode == 200
+      ?
+        bytes(resp.Body).mime("text/csv; header=present").as(events, {
+            "events": events.map(e, {"message": e.encode_json()}),
+            "want_more": has(state.batch_size) && size(events) >= state.batch_size,
+            "cursor": {
+                ?"latest_ts": size(events) > 0 ?
+                  optional.of(events.map(e, e.Date.parse_time(time_layout.RFC3339)).max())
+                :
+                  state.?cursor.latest_ts,
+            },
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET:"+(
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
           },
-      }))
-    :
-      state.with({
-        "events": {
-          "error": {
-            "code": string(resp.StatusCode),
-            "id": string(resp.Status),
-            "message": string(resp.Body),
-          },
-        },
-        "want_more": false,
-      })
-  ))
+          "want_more": false,
+        }
+    )
+  )
 tags:
 {{#if preserve_duplicate_custom_fields}}
   - preserve_duplicate_custom_fields

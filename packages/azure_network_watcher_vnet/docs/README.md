@@ -30,8 +30,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#_minimum_requirements).
 
-The minimum **Kibana version** required is **8.12.0**.
-
 ## Setup
 
 ### To collect data from Azure Network Watcher VNet follow the below steps:
@@ -804,5 +802,4 @@ An example event for `log` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
