@@ -37,7 +37,7 @@ processors:
       description: Drops NA and 'NA' values recursively.
       tag: script_to_remove_NA_values
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == 'N/A' || object == 'NA') {
             return true;
@@ -117,16 +117,10 @@ processors:
           ctx.event.original.contains('device_product="Application Security Module"') ||
           ctx.event.original.contains('device_product=ASM')
         )
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '' || object == 'null') {
             return true;

@@ -25,7 +25,7 @@ processors:
       description: Drops NA and 'NA' values recursively.
       tag: script_to_remove_NA_values
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == 'N/A' || object == 'NA') {
             return true;
@@ -622,13 +622,13 @@ processors:
       description: Script to extract http_request
       tag: script_to_extract_http_request
       lang: painless
-      source:
+      source: |
           String message = ctx.event.original;
           int startIndex = message.indexOf('http_request="') + 'http_request="'.length();
           int endIndex = message.indexOf('"', startIndex);
           if (startIndex >= 0 && endIndex >= 0) {
             ctx.kv.http_request = message.substring(startIndex, endIndex);
-            }
+          }
   - rename:
       field: kv.http_request
       tag: rename_http_request
@@ -947,8 +947,3 @@ processors:
       tag: rename_kv
       target_field: f5_bigip.log.extra_fields
       ignore_missing: true
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
