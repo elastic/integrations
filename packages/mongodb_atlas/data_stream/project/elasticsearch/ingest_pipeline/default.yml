@@ -28,12 +28,12 @@ processors:
       field: event.type
       value: access
       allow_duplicates: false
-      if: ctx.response?.opType != null && ctx.response?.opType == 'read'
+      if: ctx.response?.opType != null && ctx.response?.opType.toLowerCase() == 'read'
   - append:
       field: event.type
       value: change
       allow_duplicates: false
-      if: ctx.response?.opType != null && ['create', 'update', 'delete', 'insert'].contains(ctx.response.opType)
+      if: ctx.response?.opType != null && ['create', 'update', 'delete', 'insert'].contains(ctx.response?.opType.toLowerCase())
   - set:
       copy_from: response
       field: event.original
