@@ -72,4 +72,8 @@ The `firewall_logs` data stream of the Azure Logs package will collect any firew
 
 {{event "firewall_logs"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "firewall_logs"}}

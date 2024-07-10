@@ -34,6 +34,10 @@ Refer to the [settings](https://docs.elastic.co/integrations/azure#:~:text=*.clo
 
 {{event "logs"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "logs"}}
 
 ### Metrics
@@ -66,5 +70,9 @@ The primary aggregation value will be retrieved for all the metrics contained in
 #### Metrics Reference
 
 {{event "metrics"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "metrics"}}

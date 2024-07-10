@@ -100,7 +100,9 @@ An example event for `admin` looks as following:
 | @timestamp | Event timestamp. | date |
 | cisco_duo.admin.action | The type of change that was performed | keyword |
 | cisco_duo.admin.action_performed_on | The object that was acted on. | keyword |
+| cisco_duo.admin.errors | The set of error reported for the event. | match_only_text |
 | cisco_duo.admin.flattened | ES flattened datatype for objects where the subfields aren't known in advance. | flattened |
+| cisco_duo.admin.status | The status of the event. | keyword |
 | cisco_duo.admin.user.name | The full name of the administrator who performed the action in the Duo Admin Panel. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
