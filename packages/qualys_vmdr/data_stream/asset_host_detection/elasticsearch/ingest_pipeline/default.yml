@@ -17,6 +17,11 @@ processors:
       field: event.type
       tag: set_event_type
       value: [info]
+  - rename:
+      field: xml
+      target_field: event.original
+      ignore_missing: true
+      ignore_failure: true
   - json:
       field: message
       tag: json_message
@@ -33,7 +38,7 @@ processors:
   - rename:
       field: json.DNS
       tag: rename_DNS
-      target_field: qualys_vmdr.asset_host_detection.dns.value
+      target_field: qualys_vmdr.asset_host_detection.dns
       ignore_missing: true
   - rename:
       field: json.DNS_DATA.DOMAIN
@@ -113,58 +118,58 @@ processors:
   - rename:
       field: json.CLOUD_RESOURCE_ID
       tag: rename_CLOUD_RESOURCE_ID
-      target_field: qualys_vmdr.asset_host_detection.cloud.resource_id
+      target_field: qualys_vmdr.asset_host_detection.cloud_resource_id
       ignore_missing: true
   - set:
       field: cloud.instance.id
       tag: set_cloud_instance_id
-      copy_from: qualys_vmdr.asset_host_detection.cloud.resource_id
+      copy_from: qualys_vmdr.asset_host_detection.cloud_resource_id
       ignore_empty_value: true
   - rename:
       field: json.CLOUD_SERVICE
       tag: rename_CLOUD_SERVICE
-      target_field: qualys_vmdr.asset_host_detection.cloud.service
+      target_field: qualys_vmdr.asset_host_detection.cloud_service
       ignore_missing: true
   - set:
       field: cloud.service.name
       tag: set_cloud_service_name
-      copy_from: qualys_vmdr.asset_host_detection.cloud.service
+      copy_from: qualys_vmdr.asset_host_detection.cloud_service
       ignore_empty_value: true
   - rename:
       field: json.CLOUD_PROVIDER
       tag: rename_CLOUD_PROVIDER
-      target_field: qualys_vmdr.asset_host_detection.cloud.provider.name
+      target_field: qualys_vmdr.asset_host_detection.cloud_provider
       ignore_missing: true
   - set:
       field: cloud.provider
       tag: set_cloud_provider
-      copy_from: qualys_vmdr.asset_host_detection.cloud.provider.name
+      copy_from: qualys_vmdr.asset_host_detection.cloud_provider
       ignore_empty_value: true
   - rename:
       field: json.QG_HOSTID
       tag: rename_QG_HOSTID
-      target_field: qualys_vmdr.asset_host_detection.qg_host_id
+      target_field: qualys_vmdr.asset_host_detection.qg_hostid
       ignore_missing: true
   - append:
       field: related.hosts
       tag: append_qg_host_id_into_related_hosts
-      value: '{{{qualys_vmdr.asset_host_detection.qg_host_id}}}'
+      value: '{{{qualys_vmdr.asset_host_detection.qg_hostid}}}'
       allow_duplicates: false
-      if: ctx.qualys_vmdr?.asset_host_detection?.qg_host_id != null
+      if: ctx.qualys_vmdr?.asset_host_detection?.qg_hostid != null
   - rename:
       field: json.OS_CPE
       tag: rename_OS_CPE
-      target_field: qualys_vmdr.asset_host_detection.os.cpe
+      target_field: qualys_vmdr.asset_host_detection.os_cpe
       ignore_missing: true
   - rename:
       field: json.OS
       tag: rename_OS
-      target_field: qualys_vmdr.asset_host_detection.os.value
+      target_field: qualys_vmdr.asset_host_detection.os
       ignore_missing: true
   - set:
       field: host.os.full
       tag: set_host_os_full
-      copy_from: qualys_vmdr.asset_host_detection.os.value
+      copy_from: qualys_vmdr.asset_host_detection.os
       ignore_empty_value: true
   - rename:
       field: json.TRACKING_METHOD
@@ -214,7 +219,7 @@ processors:
   - date:
       field: json.LAST_PC_SCANNED_DATE
       tag: date_LAST_PC_SCANNED_DATE
-      target_field: qualys_vmdr.asset_host_detection.last.pc_scanned_date
+      target_field: qualys_vmdr.asset_host_detection.last_pc_scanned_date
       formats:
         - ISO8601
       if: ctx.json?.LAST_PC_SCANNED_DATE != null && ctx.json.LAST_PC_SCANNED_DATE != ''
@@ -225,7 +230,7 @@ processors:
   - date:
       field: json.LAST_SCAN_DATETIME
       tag: date_LAST_SCAN_DATETIME
-      target_field: qualys_vmdr.asset_host_detection.last.scan_datetime
+      target_field: qualys_vmdr.asset_host_detection.last_scan_datetime
       formats:
         - ISO8601
       if: ctx.json?.LAST_SCAN_DATETIME != null && ctx.json.LAST_SCAN_DATETIME != ''
@@ -236,7 +241,7 @@ processors:
   - date:
       field: json.LAST_VM_AUTH_SCANNED_DATE
       tag: date_LAST_VM_AUTH_SCANNED_DATE
-      target_field: qualys_vmdr.asset_host_detection.last.vm.auth.scanned_date
+      target_field: qualys_vmdr.asset_host_detection.last_vm_auth_scanned_date
       formats:
         - ISO8601
       if: ctx.json?.LAST_VM_AUTH_SCANNED_DATE != null && ctx.json.LAST_VM_AUTH_SCANNED_DATE != ''
@@ -247,7 +252,7 @@ processors:
   - date:
       field: json.LAST_VM_SCANNED_DATE
       tag: date_LAST_VM_SCANNED_DATE
-      target_field: qualys_vmdr.asset_host_detection.last.vm.scanned_date
+      target_field: qualys_vmdr.asset_host_detection.last_vm_scanned_date
       formats:
         - ISO8601
       if: ctx.json?.LAST_VM_SCANNED_DATE != null && ctx.json.LAST_VM_SCANNED_DATE != ''
@@ -258,7 +263,7 @@ processors:
   - convert:
       field: json.LAST_VM_AUTH_SCANNED_DURATION
       tag: convert_LAST_VM_AUTH_SCANNED_DURATION_to_long
-      target_field: qualys_vmdr.asset_host_detection.last.vm.auth.scanned_duration
+      target_field: qualys_vmdr.asset_host_detection.last_vm_auth_scanned_duration
       type: long
       ignore_missing: true
       if: ctx.json?.LAST_VM_AUTH_SCANNED_DURATION != ''
@@ -269,7 +274,7 @@ processors:
   - convert:
       field: json.LAST_VM_SCANNED_DURATION
       tag: convert_LAST_VM_SCANNED_DURATION_to_long
-      target_field: qualys_vmdr.asset_host_detection.last.vm.scanned_duration
+      target_field: qualys_vmdr.asset_host_detection.last_vm_scanned_duration
       type: long
       ignore_missing: true
       if: ctx.json?.LAST_VM_SCANNED_DURATION != ''
@@ -711,11 +716,11 @@ processors:
   - rename:
       field: json.CLOUD_PROVIDER_TAGS.CLOUD_TAG
       tag: rename_CLOUD_PROVIDER_TAGS_CLOUD_TAG
-      target_field: qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag
+      target_field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag
       ignore_missing: true
   - foreach:
-      field: qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag
-      if: ctx.qualys_vmdr?.asset_host_detection?.cloud?.provider?.tags?.cloud_tag instanceof List
+      field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag
+      if: ctx.qualys_vmdr?.asset_host_detection?.cloud_provider_tags?.cloud_tag instanceof List
       tag: foreach_rename_cloud_provider_tags_NAME
       processor:
         rename:
@@ -724,13 +729,13 @@ processors:
           target_field: _ingest._value.name
           ignore_missing: true
   - rename:
-      field: qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag.NAME
+      field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.NAME
       tag: rename_qualys_vmdr_asset_host_detection_cloud_provider_tags_cloud_tag_NAME_2
-      target_field: qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag.name
+      target_field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.name
       ignore_missing: true
   - foreach:
-      field: qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag
-      if: ctx.qualys_vmdr?.asset_host_detection?.cloud?.provider?.tags?.cloud_tag instanceof List
+      field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag
+      if: ctx.qualys_vmdr?.asset_host_detection?.cloud_provider_tags?.cloud_tag instanceof List
       tag: foreach_rename_cloud_provider_tags_VALUE
       processor:
         rename:
@@ -739,13 +744,13 @@ processors:
           target_field: _ingest._value.value
           ignore_missing: true
   - rename:
-      field: qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag.VALUE
+      field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.VALUE
       tag: rename_qualys_vmdr_asset_host_detection_cloud_provider_tags_cloud_tag_VALUE_2
-      target_field: qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag.value
+      target_field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.value
       ignore_missing: true
   - foreach:
-      field: qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag
-      if: ctx.qualys_vmdr?.asset_host_detection?.cloud?.provider?.tags?.cloud_tag instanceof List
+      field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag
+      if: ctx.qualys_vmdr?.asset_host_detection?.cloud_provider_tags?.cloud_tag instanceof List
       tag: foreach_date_cloud_provider_tags_LAST_SUCCESS_DATE
       processor:
         date:
@@ -756,10 +761,10 @@ processors:
             - ISO8601
           ignore_failure: true
   - date:
-      field: qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag.LAST_SUCCESS_DATE
+      field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.LAST_SUCCESS_DATE
       tag: date_qualys_vmdr_asset_host_detection_cloud_provider_tags_cloud_tag_LAST_SUCCESS_DATE_2
-      if: (!(ctx.qualys_vmdr?.asset_host_detection?.cloud?.provider?.tags?.cloud_tag instanceof List)) && ctx.qualys_vmdr?.asset_host_detection?.cloud?.provider?.tags?.cloud_tag?.LAST_SUCCESS_DATE != null && ctx.qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag.LAST_SUCCESS_DATE != ''
-      target_field: qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag.last_success_date
+      if: (!(ctx.qualys_vmdr?.asset_host_detection?.cloud_provider_tags?.cloud_tag instanceof List)) && ctx.qualys_vmdr?.asset_host_detection?.cloud_provider_tags?.cloud_tag?.LAST_SUCCESS_DATE != null && ctx.qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.LAST_SUCCESS_DATE != ''
+      target_field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.last_success_date
       formats:
         - ISO8601
       on_failure:
@@ -767,8 +772,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
-      field: qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag
-      if: ctx.qualys_vmdr?.asset_host_detection?.cloud?.provider?.tags?.cloud_tag instanceof List
+      field: qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag
+      if: ctx.qualys_vmdr?.asset_host_detection?.cloud_provider_tags?.cloud_tag instanceof List
       tag: foreach_remove_cloud_provider_tags_fields
       processor:
         remove:
@@ -1392,7 +1397,7 @@ processors:
         - qualys_vmdr.asset_host_detection.vulnerability.TIMES_FOUND
         - qualys_vmdr.asset_host_detection.vulnerability.TIMES_REOPENED
         - qualys_vmdr.asset_host_detection.vulnerability.IS_IGNORED
-        - qualys_vmdr.asset_host_detection.cloud.provider.tags.cloud_tag.LAST_SUCCESS_DATE
+        - qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.LAST_SUCCESS_DATE
         - qualys_vmdr.asset_host_detection.metadata.ec2.attribute.LAST_ERROR_DATE
         - qualys_vmdr.asset_host_detection.metadata.ec2.attribute.LAST_SUCCESS_DATE
         - qualys_vmdr.asset_host_detection.metadata.google.attribute.LAST_ERROR_DATE
@@ -1405,7 +1410,7 @@ processors:
         - qualys_vmdr.asset_host_detection.netbios
         - qualys_vmdr.asset_host_detection.ip
         - qualys_vmdr.asset_host_detection.id
-        - qualys_vmdr.asset_host_detection.os.value
+        - qualys_vmdr.asset_host_detection.os
       tag: remove_preserve_duplicate_custom_fields
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
