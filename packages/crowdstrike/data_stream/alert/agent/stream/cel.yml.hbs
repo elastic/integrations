@@ -50,7 +50,7 @@ program: |
         )
     ).do_request().as(get_resp, get_resp.StatusCode == 200 ?
       bytes(get_resp.Body).decode_json().as(body, {
-        "resources": has(body.resources) && body.resources.size() > 0 ? body.resources : "",
+        ?"resources": has(body.resources) && body.resources.size() > 0 ? optional.of(body.resources) : optional.none(),
         "want_more": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total),
         "offset": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
           int(state.offset) + body.resources.size()
@@ -63,14 +63,19 @@ program: |
           "error": {
             "code": string(get_resp.StatusCode),
             "id": string(get_resp.Status),
-            "message": string(get_resp.Body)
+            "message": "GET:"+(
+              size(get_resp.Body) != 0 ?
+                string(get_resp.Body)
+              :
+                string(get_resp.Status) + ' (' + string(get_resp.StatusCode) + ')'
+            ),
           },
         },
         "want_more": false,
       }
     )
   ).as(state, state.with(
-    !has(state.resources) ? state : // Exit early due to GET failure.
+    !has(state.resources) ? state : // Exit early due to GET failure or no resources to collect.
       post_request(
         state.url.trim_right("/") + "/alerts/entities/alerts/v2",
         "application/json",
@@ -101,7 +106,12 @@ program: |
             "error": {
               "code": string(post_resp.StatusCode),
               "id": string(post_resp.Status),
-              "message": string(post_resp.Body)
+              "message": "POST:"+(
+                size(post_resp.Body) != 0 ?
+                  string(post_resp.Body)
+                :
+                  string(post_resp.Status) + ' (' + string(post_resp.StatusCode) + ')'
+              ),
             },
           },
           "want_more": false,

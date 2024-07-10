@@ -70,7 +70,7 @@ The BitDefender documentation for how to do this is [here](https://www.bitdefend
 
 You should use the "qradar" format option.
 
-**NOTE**: The "jsonrpc" format that BitDefender's documentation presents as the default and best option, should **NOT** be used, due to limitations in the filebeat "http_endpoint" input and available processors at this point.
+**NOTE**: The `jsonrpc` format that BitDefender's documentation presents as the default and best option, should **NOT** be used, due to limitations in the filebeat "http_endpoint" input and available processors at this point. The [`http_endpoint` input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html) can only collect events if the incoming body is either an object or an array of objects at the root. But as `jsonrpc` format sends the array of events bundled inside `params.events` JSON key, the input is currently unable to collect them.
 
 An example using cURL, as the official documentation is unclear at times what to do and how to do it.
 
@@ -306,17 +306,6 @@ All BitDefender GravityZone log events are available in the `bitdefender_gravity
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| destination.as.organization.name | Organization name. | keyword |
-| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
-| destination.geo.city_name | City name. | keyword |
-| destination.geo.continent_name | Name of the continent. | keyword |
-| destination.geo.country_iso_code | Country ISO code. | keyword |
-| destination.geo.country_name | Country name. | keyword |
-| destination.geo.location | Longitude and latitude. | geo_point |
-| destination.geo.region_iso_code | Region ISO code. | keyword |
-| destination.geo.region_name | Region name. | keyword |
-| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.nat.as.number |  | long |
 | destination.nat.as.organization.name |  | keyword |
 | destination.nat.geo.city_name |  | keyword |
@@ -326,115 +315,7 @@ All BitDefender GravityZone log events are available in the `bitdefender_gravity
 | destination.nat.geo.location |  | geo_point |
 | destination.nat.geo.region_iso_code |  | keyword |
 | destination.nat.geo.region_name |  | keyword |
-| destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
-| destination.port | Port of the destination. | long |
-| destination.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| destination.user.id | Unique identifier of the user. | keyword |
-| destination.user.name | Short name or login of the user. | keyword |
-| destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| email.sender.address | Per RFC 5322, specifies the address responsible for the actual transmission of the message. | keyword |
-| email.subject | A brief summary of the topic of the message. | keyword |
-| email.subject.text | Multi-field of `email.subject`. | match_only_text |
-| email.to.address | The email address of recipient | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
-| event.id | Unique ID to describe the event. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
-| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
-| file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| file.hash.md5 | MD5 hash. | keyword |
-| file.hash.sha256 | SHA256 hash. | keyword |
-| file.name | Name of the file including the extension, without the directory. | keyword |
-| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| file.path.text | Multi-field of `file.path`. | match_only_text |
-| file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | input.type |  | keyword |
-| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
-| organization.id | Unique identifier for the organization. | keyword |
-| organization.name | Organization name. | keyword |
-| organization.name.text | Multi-field of `organization.name`. | match_only_text |
-| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
-| process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
-| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
-| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
-| process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
-| process.executable | Absolute path to the process executable. | keyword |
-| process.executable.text | Multi-field of `process.executable`. | match_only_text |
-| process.name | Process name. Sometimes called program name or similar. | keyword |
-| process.name.text | Multi-field of `process.name`. | match_only_text |
-| process.parent.executable | Absolute path to the process executable. | keyword |
-| process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |
-| process.parent.pid | Process id. | long |
-| process.pid | Process id. | long |
-| process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
-| process.title.text | Multi-field of `process.title`. | match_only_text |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
-| source.geo.region_iso_code | Region ISO code. | keyword |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| source.user.id | Unique identifier of the user. | keyword |
-| source.user.name | Short name or login of the user. | keyword |
-| source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
-| tags | List of keywords used to tag each event. | keyword |
-| threat.software.name | The name of the software used by this threat to conduct behavior commonly modeled using MITRE ATT&CK®. While not required, you can use a MITRE ATT&CK® software name. | keyword |
-| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
-| threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
-| threat.technique.name.text | Multi-field of `threat.technique.name`. | match_only_text |
-| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
-| url.original.text | Multi-field of `url.original`. | match_only_text |
-| url.path | Path of the request, such as "/search". | wildcard |
-| url.port | Port of the request, such as 443. | long |
-| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
-| url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
-| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
-| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
-| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
-| user_agent.device.name | Name of the device. | keyword |
-| user_agent.name | Name of the user agent. | keyword |
-| user_agent.original | Unparsed user_agent string. | keyword |
-| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
-| user_agent.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| user_agent.os.full | Operating system name, including the version or code name. | keyword |
-| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |
-| user_agent.os.kernel | Operating system kernel version as a raw string. | keyword |
-| user_agent.os.name | Operating system name, without the version. | keyword |
-| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
-| user_agent.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| user_agent.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
-| user_agent.os.version | Operating system version as a raw string. | keyword |
-| user_agent.version | Version of the user agent. | keyword |
-| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
 
 
 An example event for `push_notifications` looks as following:
@@ -556,9 +437,7 @@ All BitDefender GravityZone push notification configuration states are available
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | input.type |  | keyword |
-| tags | List of keywords used to tag each event. | keyword |
 
 
 An example event for `push_configuration` looks as following:
@@ -676,9 +555,7 @@ All BitDefender GravityZone push notification statistics are available in the `b
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | input.type |  | keyword |
-| tags | List of keywords used to tag each event. | keyword |
 
 
 An example event for `push_statistics` looks as following:

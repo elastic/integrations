@@ -41,7 +41,7 @@ An example event for `jdbc` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a0386d69-0749-44b4-8487-9b92e66852a1",
@@ -66,7 +66,7 @@ An example event for `jdbc` looks as following:
             "172.31.0.5"
         ],
         "mac": [
-            "02:42:ac:1f:00:05"
+            "02-42-C0-A8-FB-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -121,6 +121,10 @@ An example event for `jdbc` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -129,17 +133,11 @@ An example event for `jdbc` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | Event category. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.type | Event type | constant_keyword |
-| host.ip | Host ip addresses. | ip |
-| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
 | websphere_application_server.jdbc.connection.allocated | The total number of connections that were allocated. | long |
 | websphere_application_server.jdbc.connection.closed | The total number of connections that were closed. | long |
 | websphere_application_server.jdbc.connection.created | The total number of connections that were created. | long |
@@ -183,7 +181,7 @@ An example event for `servlet` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "c05318bf-e468-4a7a-bd1d-7c7e4320cbde",
@@ -208,7 +206,7 @@ An example event for `servlet` looks as following:
             "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:07"
+            "02-42-C0-A8-FB-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -246,6 +244,10 @@ An example event for `servlet` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -254,18 +256,11 @@ An example event for `servlet` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | Event category. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.type | Event type | constant_keyword |
-| host.ip | Host ip addresses. | ip |
-| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| url.path | Path of the request, such as "/search". | wildcard |
 | websphere_application_server.servlet.app_name | Application name. | keyword |
 | websphere_application_server.servlet.async_context.response_time_seconds | The total time spent (in seconds) per servlet for the AsyncContext response to complete. | double |
 | websphere_application_server.servlet.async_context.responses.total | The total number of AsyncContext responses for the specified URL. | long |
@@ -306,7 +301,7 @@ An example event for `session_manager` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "9a7dfaf6-d476-47ba-8a87-e7196ca4d0a3",
@@ -331,7 +326,7 @@ An example event for `session_manager` looks as following:
             "192.168.240.6"
         ],
         "mac": [
-            "02:42:c0:a8:f0:06"
+            "02-42-C0-A8-FB-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -396,6 +391,10 @@ An example event for `session_manager` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -404,17 +403,11 @@ An example event for `session_manager` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | Event category. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.type | Event type | constant_keyword |
-| host.ip | Host ip addresses. | ip |
-| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
 | websphere_application_server.session_manager.activated_non_existent_sessions | The number of non-existent sessions that are activated. | long |
 | websphere_application_server.session_manager.affinity_breaks | The number of session affinity breaks. | long |
 | websphere_application_server.session_manager.app_name | Name of the Application. | keyword |
@@ -457,7 +450,7 @@ An example event for `threadpool` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "37bf4307-b56f-4bf5-9f94-5a2ab9cf49f0",
@@ -482,7 +475,7 @@ An example event for `threadpool` looks as following:
             "192.168.144.7"
         ],
         "mac": [
-            "02:42:c0:a8:90:07"
+            "02-42-C0-A8-FB-04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -533,6 +526,10 @@ An example event for `threadpool` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -541,17 +538,11 @@ An example event for `threadpool` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.category | Event category. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.kind | Event kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.type | Event type | constant_keyword |
-| host.ip | Host ip addresses. | ip |
-| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
 | websphere_application_server.threadpool.active_time_seconds | The total time (in seconds) that the threads are in active state. | double |
 | websphere_application_server.threadpool.name | Name of ThreadPool. | keyword |
 | websphere_application_server.threadpool.threads.active | The number of concurrently active threads. | long |

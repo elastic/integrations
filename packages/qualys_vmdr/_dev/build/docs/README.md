@@ -12,10 +12,11 @@ This module has been tested against the latest Qualys VMDR version **v2**.
 
 The Qualys VMDR integration collects data for the following two events:
 
-| Event Type                    |
-|-------------------------------|
-| Asset Host Detection          |
-| Knowledge Base                |
+| Event Type           |
+|----------------------|
+| Asset Host Detection |
+| Knowledge Base       |
+| User Activity Log    |
 
 Reference for [Rest APIs](https://qualysguard.qg2.apps.qualys.com/qwebhelp/fo_portal/api_doc/index.htm) of Qualys VMDR.
 
@@ -74,6 +75,13 @@ The minimum **kibana.version** required is **8.9.0**.
    - interval
    - input parameters
 
+   or if you want to collect User Activity log data via REST API, then you have to put the following details:
+   - username
+   - password
+   - url
+   - initial interval
+   - interval
+
 **NOTE**: By default, the input parameter is set to "action=list".
 
 ## Data reference
@@ -97,3 +105,15 @@ This is the `Knowledge Base` dataset.
 {{event "knowledge_base"}}
 
 {{fields "knowledge_base"}}
+
+### User Activity
+
+This is the `User Activity` dataset. It connects to an [API](
+https://docs.qualys.com/en/vm/api/users/index.htm#t=activity%2Fexport_activity.htm)
+that exports the user activity log. 
+
+#### Example
+
+{{event "user_activity"}}
+
+{{fields "user_activity"}}

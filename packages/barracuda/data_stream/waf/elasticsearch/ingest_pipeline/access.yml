@@ -3,7 +3,20 @@ description: Pipeline for processing access logs
 processors:
   - dissect:
       field: _temp.remMessage
-      pattern: "%{_temp.destIp} %{_temp.destPort} %{_temp.clientIp} %{_temp.clientPort} %{client.user.id} %{client.user.name} %{http.request.method} %{network.protocol} %{host.ip} %{http.version} %{http.response.status_code} %{http.response.bytes} %{http.request.bytes} %{barracuda.waf.cache_hit} %{barracuda.waf.response_timetaken} %{_temp.serverIp} %{_temp.serverPort} %{barracuda.waf.server_time} %{barracuda.waf.sessionid} %{barracuda.waf.response_type} %{barracuda.waf.profile_matched} %{barracuda.waf.protected} %{barracuda.waf.wf_matched} %{url.path} %{url.query} %{http.request.referrer} %{barracuda.waf.request_cookie} %{_temp.remMessage}"
+      pattern: "%{_temp.destIp} %{_temp.destPort} %{_temp.clientIp} %{_temp.clientPort} %{client.user.id} %{client.user.name} %{http.request.method} %{network.protocol} %{_temp.hostIp} %{http.version} %{http.response.status_code} %{http.response.bytes} %{http.request.bytes} %{barracuda.waf.cache_hit} %{barracuda.waf.response_timetaken} %{_temp.serverIp} %{_temp.serverPort} %{barracuda.waf.server_time} %{barracuda.waf.sessionid} %{barracuda.waf.response_type} %{barracuda.waf.profile_matched} %{barracuda.waf.protected} %{barracuda.waf.wf_matched} %{url.path} %{url.query} %{http.request.referrer} %{barracuda.waf.request_cookie} %{_temp.remMessage}"
+  - convert:
+      field: _temp.hostIp
+      if: ctx._temp?.hostIp != null
+      type: ip
+      on_failure:
+        - remove:
+            field: _temp.hostIp
+            ignore_missing: true
+            ignore_failure: true
+  - append:
+      field: host.ip
+      value: '{{{_temp.hostIp}}}'
+      if: ctx._temp?.hostIp != null
   - grok:
       field: _temp.remMessage
       patterns:

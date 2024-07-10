@@ -366,7 +366,7 @@ An example event for `panos` looks as following:
 | panw.panos.action_flags | A bit field indicating if the log was forwarded to Panorama. | keyword |
 | panw.panos.action_source | Specifies whether the action taken to allow or block an application was defined in the application or in policy. The actions can be allow, deny, drop, reset- server, reset-client or reset-both for the session. | keyword |
 | panw.panos.admin | Username of the Administrator performing the configuration. | keyword |
-| panw.panos.after_change_detail | This field is in custom logs only; it is not in the default format.It contains the full xpath after the configuration change. | keyword |
+| panw.panos.after_change_detail | This field is in custom logs only; it is not in the default format.It contains the full xpath after the configuration change. | match_only_text |
 | panw.panos.application.category | The application category specified in the application configuration properties. Values are: business-systems, collaboration, general-internet, media, networking, saas. | keyword |
 | panw.panos.application.characteristics | Comma-separated list of applicable characteristic of the application. | keyword |
 | panw.panos.application.container | The parent application for an application. | keyword |

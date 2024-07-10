@@ -1,0 +1,21 @@
+version: '2.3'
+services:
+  azure-network-watcher-vnet-log:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000
+    ports:
+      - "10000/tcp"
+  azure-blob-storage:
+    image: docker.elastic.co/observability/stream:v0.10.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=azure-network-watcher-vnet-log
+      - -p=azureblobstorage
+      - --azure-blob-storage-port=10000
+      - --azure-blob-storage-container=azure-container1
+      - /sample_logs/testdata.log
+    depends_on:
+      - azure-network-watcher-vnet-log
