@@ -19,8 +19,16 @@ processors:
       if: ctx.microsoft?.online_message_trace?.value instanceof List && ctx.microsoft.online_message_trace.value.length == 0 
   - set:
       field: event.outcome
-      copy_from: microsoft.online_message_trace.Status
-      ignore_empty_value: true
+      value: success
+      if: ctx.microsoft?.online_message_trace?.Status?.equalsIgnoreCase('delivered') == true
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.microsoft?.online_message_trace?.Status?.equalsIgnoreCase('failed') == true
+  - set:
+      field: event.outcome
+      value: unknown
+      if: ctx.event?.outcome == null
   - set:
       field: _temp_.email.from.address
       copy_from: microsoft.online_message_trace.SenderAddress

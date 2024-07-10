@@ -3,12 +3,12 @@ name: cel
 title: Custom API using Common Expression Language
 description: Collect custom events from an API with Elastic agent
 type: input
-version: "1.10.0"
+version: "1.12.0"
 categories:
   - custom
 conditions:
   kibana:
-    version: "^8.12.0"
+    version: "^8.13.0"
   elastic:
     subscription: "basic"
 policy_templates:
@@ -103,6 +103,25 @@ policy_templates:
         required: false
         description: The password to be used with Basic Auth headers
         secret: true
+      - name: digest_username
+        type: text
+        title: Digest Auth Username
+        show_user: true
+        required: false
+        description: The username to be used with Digest Auth headers
+      - name: digest_password
+        type: password
+        title: Digest Auth Password
+        show_user: true
+        required: false
+        description: The password to be used with Digest Auth headers
+        secret: true
+      - name: digest_no_reuse
+        type: bool
+        title: Digest No Challenge Reuse
+        show_user: true
+        required: false
+        description: Selecting no challenge reuse prevents the transport from reusing digest challenges
       - name: oauth_id
         type: text
         title: OAuth2 Client ID
@@ -318,7 +337,6 @@ policy_templates:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-
       - name: tags
         type: text
         title: Tags
@@ -334,7 +352,6 @@ policy_templates:
         show_user: false
         description: >
           The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
-
 owner:
   github: elastic/security-service-integrations
   type: elastic

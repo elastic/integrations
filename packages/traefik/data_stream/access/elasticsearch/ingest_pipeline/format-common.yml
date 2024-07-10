@@ -7,12 +7,17 @@ processors:
     pattern: '%{source.address} %{traefik.access.user_identifier} %{user.name} [%{traefik.access.time}]
       "%{http.request.method} %{url.original} HTTP/%{http.version}" %{http.response.status_code}
       %{traefik.access.message}'
+- remove:
+    description: Remove http.response.status_code it is not available ('-')
+    field:
+      http.response.status_code
+    if: ctx.http?.response?.status_code != null && ctx.http?.response?.status_code == '-'
 - grok:
     field: traefik.access.message
     patterns:
     - (?:%{NUMBER:http.response.body.bytes:long}|-)( (?:"%{DATA:http.request.referrer}"|-)?(
       (?:"%{DATA:user_agent.original}"|-)?)?( (?:%{NUMBER:traefik.access.request_count:long}|-)?)?(
-      (?:"%{DATA:traefik.access.frontend_name}"|-)?)?( "%{DATA:traefik.access.backend_url}")?(
+      (?:"%{DATA:traefik.access.router.name}"|-)?)?( "%{DATA:traefik.access.service.address}")?(
       %{NUMBER:temp.duration:long}ms)?)?
     ignore_missing: true
 - remove:
@@ -25,19 +30,27 @@ processors:
     - dd/MMM/yyyy:H:m:s Z
 - remove:
     field: traefik.access.time
-- convert:
-    field: http.response.status_code
-    type: long
 - grok:
     field: source.address
     patterns:
     - ^(%{IP:source.ip}|%{HOSTNAME:source.domain})$
+- grok:
+    field: traefik.access.service.address
+    patterns:
+    - ^(https?://)?%{DATA:destination.address}$
+    ignore_missing: true
+- grok:
+    field: destination.address
+    patterns:
+    - ^(%{IP:destination.ip}|%{HOSTNAME:destination.domain})(:%{POSINT:destination.port:long})?$
+    ignore_failure: true
 - script:
     lang: painless
     source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
     params:
       scale: 1000000
     if: ctx.temp?.duration != null
+
 on_failure:
 - set:
     field: error.message

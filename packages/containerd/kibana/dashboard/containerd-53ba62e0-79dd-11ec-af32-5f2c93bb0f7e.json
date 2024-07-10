@@ -1,10 +1,51 @@
 {
     "attributes": {
         "description": "",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "containerd.cpu",
+                                "containerd.blkio",
+                                "containerd.memory"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "containerd.cpu"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "containerd.blkio"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "containerd.memory"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -14,6 +55,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -29,7 +72,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "88ac825e-9627-4865-a89b-a85e6f95f0ff": {
                                             "columnOrder": [
@@ -115,7 +158,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "event.dataset:\"containerd.blkio\" or event.dataset:\"containerd.cpu\" or event.dataset:\"containerd.memory\""
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -167,8 +210,7 @@
                 },
                 "panelIndex": "da7ba128-7c9e-4bfb-8fcb-894ec9ba50b2",
                 "title": "Overview of containers",
-                "type": "lens",
-                "version": "8.4.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -181,13 +223,14 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "70eb7874-4710-4146-8d51-63188b49c620",
+                                "name": "66151151-a4ce-4f78-b249-8c75dababbfd",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "d411eb91-ef5a-43b1-ba78-1d65fd1ee24d": {
                                             "columnOrder": [
@@ -265,8 +308,9 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "70eb7874-4710-4146-8d51-63188b49c620",
-                                        "key": "event.dataset",
+                                        "field": "data_stream.dataset",
+                                        "index": "66151151-a4ce-4f78-b249-8c75dababbfd",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
                                             "query": "containerd.cpu"
@@ -275,11 +319,12 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.dataset": "containerd.cpu"
+                                            "data_stream.dataset": "containerd.cpu"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -332,8 +377,7 @@
                 },
                 "panelIndex": "93d49a58-37fd-4252-9be8-9b3b2ba6675a",
                 "title": "Cpu Usage Percentage per container",
-                "type": "lens",
-                "version": "8.4.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -346,13 +390,14 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "78f3a3ef-5fcb-4531-a744-bf5e0cbd1e3b",
+                                "name": "34e5215a-7cbf-4f66-b3db-c3960c27cf15",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "ae7f0afc-904a-43fd-a609-4706d2163288": {
                                             "columnOrder": [
@@ -430,8 +475,9 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "78f3a3ef-5fcb-4531-a744-bf5e0cbd1e3b",
-                                        "key": "event.dataset",
+                                        "field": "data_stream.dataset",
+                                        "index": "34e5215a-7cbf-4f66-b3db-c3960c27cf15",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
                                             "query": "containerd.memory"
@@ -440,11 +486,12 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.dataset": "containerd.memory"
+                                            "data_stream.dataset": "containerd.memory"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -517,8 +564,7 @@
                 },
                 "panelIndex": "cb48dca6-063b-4b27-b3c8-e3a3add2ee5a",
                 "title": "Memory Usage Percentage per container",
-                "type": "lens",
-                "version": "8.4.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -531,13 +577,14 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "b0286079-2391-4c06-b3e5-b8f4d8d7bdd4",
+                                "name": "b6a84b16-0f32-4e30-b457-d73000dc0f34",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "e7fc920a-9a7c-40ce-af02-29f82127eae6": {
                                             "columnOrder": [
@@ -615,8 +662,9 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "b0286079-2391-4c06-b3e5-b8f4d8d7bdd4",
-                                        "key": "event.dataset",
+                                        "field": "data_stream.dataset",
+                                        "index": "b6a84b16-0f32-4e30-b457-d73000dc0f34",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
                                             "query": "containerd.blkio"
@@ -625,11 +673,12 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.dataset": "containerd.blkio"
+                                            "data_stream.dataset": "containerd.blkio"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -682,8 +731,7 @@
                 },
                 "panelIndex": "b0a61528-9f89-4cad-a4f9-21dbca52c956",
                 "title": "Write bytes per container",
-                "type": "lens",
-                "version": "8.4.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -696,13 +744,14 @@
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "48e8c187-b09a-4a09-8170-f9cb63114c75",
+                                "name": "f1b273fd-4bbb-4ca8-ba09-b080dd4b2a57",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "8753fd5e-fda3-4e8e-9fec-74c5b9474b45": {
                                             "columnOrder": [
@@ -780,8 +829,9 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "48e8c187-b09a-4a09-8170-f9cb63114c75",
-                                        "key": "event.dataset",
+                                        "field": "data_stream.dataset",
+                                        "index": "f1b273fd-4bbb-4ca8-ba09-b080dd4b2a57",
+                                        "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
                                             "query": "containerd.blkio"
@@ -790,11 +840,12 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.dataset": "containerd.blkio"
+                                            "data_stream.dataset": "containerd.blkio"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -847,20 +898,23 @@
                 },
                 "panelIndex": "4e76f223-2102-4c36-8cb1-d49aac7a25bd",
                 "title": "Read bytes per container",
-                "type": "lens",
-                "version": "8.4.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Containerd] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.4.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-05-14T05:39:12.240Z",
     "id": "containerd-53ba62e0-79dd-11ec-af32-5f2c93bb0f7e",
-    "migrationVersion": {
-        "dashboard": "8.4.0"
-    },
+    "managed": false,
     "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "metrics-*",
             "name": "da7ba128-7c9e-4bfb-8fcb-894ec9ba50b2:indexpattern-datasource-layer-88ac825e-9627-4865-a89b-a85e6f95f0ff",
@@ -873,7 +927,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "93d49a58-37fd-4252-9be8-9b3b2ba6675a:70eb7874-4710-4146-8d51-63188b49c620",
+            "name": "93d49a58-37fd-4252-9be8-9b3b2ba6675a:66151151-a4ce-4f78-b249-8c75dababbfd",
             "type": "index-pattern"
         },
         {
@@ -883,7 +937,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "cb48dca6-063b-4b27-b3c8-e3a3add2ee5a:78f3a3ef-5fcb-4531-a744-bf5e0cbd1e3b",
+            "name": "cb48dca6-063b-4b27-b3c8-e3a3add2ee5a:34e5215a-7cbf-4f66-b3db-c3960c27cf15",
             "type": "index-pattern"
         },
         {
@@ -893,7 +947,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "b0a61528-9f89-4cad-a4f9-21dbca52c956:b0286079-2391-4c06-b3e5-b8f4d8d7bdd4",
+            "name": "b0a61528-9f89-4cad-a4f9-21dbca52c956:b6a84b16-0f32-4e30-b457-d73000dc0f34",
             "type": "index-pattern"
         },
         {
@@ -903,9 +957,10 @@
         },
         {
             "id": "metrics-*",
-            "name": "4e76f223-2102-4c36-8cb1-d49aac7a25bd:48e8c187-b09a-4a09-8170-f9cb63114c75",
+            "name": "4e76f223-2102-4c36-8cb1-d49aac7a25bd:f1b273fd-4bbb-4ca8-ba09-b080dd4b2a57",
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }
