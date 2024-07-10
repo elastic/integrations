@@ -2,6 +2,8 @@
 
 The Azure OpenAI service provides flexibility to build your own copilot and AI applications. The Azure OpenAI integration collects metrics and logs through [azure-monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-metrics/metrics-index) and Azure [event hub](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/stream-monitoring-data-event-hubs) respectively.
 
+To fully populate the Azure OpenAI dashboard lenses, enabling both logs and metrics data streams and setting up the Azure Billing integration in advance is necessary.
+
 ## Data streams
 
 ### Logs
