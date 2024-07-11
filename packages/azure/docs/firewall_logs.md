@@ -4,11 +4,19 @@ Azure Firewall Logs are records of events such as network and application rules 
 
 Supported log categories:
 
-| Log Category                 | Description                                                                                                                          |
-|:----------------------------:|:------------------------------------------------------------------------------------------------------------------------------------:|
-| AzureFirewallApplicationRule | These logs capture information about the traffic that is allowed or denied by application rules configured in Azure Firewall.        |
-| AzureFirewallNetworkRule     | These logs capture information about the traffic that is allowed or denied by network rules configured in Azure Firewall.            |
-| AzureFirewallDnsProxy        | These logs capture information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.                    |
+| Log Category                 | Description                                                                                                                          | Destination Table  |
+|:----------------------------:|:------------------------------------------------------------------------------------------------------------------------------------:|:------------------:|
+| AzureFirewallApplicationRule | These logs capture information about the traffic that is allowed or denied by application rules configured in Azure Firewall.        | Azure diagnostics  |
+| AzureFirewallNetworkRule     | These logs capture information about the traffic that is allowed or denied by network rules configured in Azure Firewall.            | Azure diagnostics  |
+| AzureFirewallDnsProxy        | These logs capture information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.                    | Azure diagnostics  |
+| AZFWApplicationRule          | These logs capture resource specific information about the traffic that is allowed or denied by application rules configured in Azure Firewall.                  | Resource specific  |
+| AZFWNetworkRule              | These logs capture resource specific information about the traffic that is allowed or denied by network rules configured in Azure Firewall.                  | Resource specific  |
+| AZFWNatRule                  | These logs capture resource specific information about all DNAT (Destination Network Address Translation) events log data.                  | Resource specific  |
+| AZFWDnsQuery                 | These logs capture resource specific information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.                  | Resource specific  |
+
+For detailed information and instructions on how to migrate to Resource-specific mode, please refer to the following Microsoft documentation: [Azure Monitor Resource Logs](https://learn.microsoft.com/en-gb/azure/azure-monitor/essentials/resource-logs#resource-specific).
+
+All Azure services will eventually use the resource-specific mode. As part of this transition, some resources allow you to select a mode in the diagnostic setting. Specify resource-specific mode for any new diagnostic settings because this mode makes the data easier to manage.
 
 ## Requirements and setup
 
@@ -171,17 +179,33 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation_id | Correlation ID | keyword |
-| azure.firewall.action | Firewall action taken | keyword |
+| azure.firewall.action | Action taken by the firewall following the match with the network rule. | keyword |
+| azure.firewall.action_reason | Reason for the action performed by the firewall. | keyword |
 | azure.firewall.category | Category | keyword |
-| azure.firewall.dnssec_bool_flag | True if DNS request is using DNSSEC | boolean |
-| azure.firewall.dnssec_buffer_size | Size of the DNSSEC buffer | long |
-| azure.firewall.duration | Duration of the firewall request | keyword |
-| azure.firewall.event_original_uid | UID assigned to the logged event | keyword |
-| azure.firewall.icmp.request.code | ICMP request code | keyword |
-| azure.firewall.identity_name | identity name | keyword |
-| azure.firewall.operation_name | Operation name | keyword |
-| azure.firewall.policy | Name of firewall policy containing the matched rule | keyword |
-| azure.firewall.rule_collection_group | Name of rule collection group containing the matched rule  - name: icmp | keyword |
+| azure.firewall.dnssec_bool_flag | True if DNS request is using DNSSEC. | boolean |
+| azure.firewall.dnssec_buffer_size | Size of the DNSSEC buffer. | long |
+| azure.firewall.dnssec_ok_bit | A flag indicating that the resolver supports DNSSEC records. | boolean |
+| azure.firewall.duration | Duration of the firewall request. | keyword |
+| azure.firewall.edns0_buffer_size | Client's EDNS0 buffer size. Specifies the maximum packet size allowed in responses in bytes. | long |
+| azure.firewall.event_original_uid | UID assigned to the logged event. | keyword |
+| azure.firewall.fqdn | Request target address in FQDN (Fully qualified Domain Name). | keyword |
+| azure.firewall.icmp.request.code | ICMP request code. | keyword |
+| azure.firewall.identity_name | Identity name. | keyword |
+| azure.firewall.is_explicit_proxy_request | True if the request is received on an explicit proxy port. | boolean |
+| azure.firewall.is_tls_inspected | True if the connection is TLS inspected. | boolean |
+| azure.firewall.operation_name | Operation name. | keyword |
+| azure.firewall.policy | Name of the policy in which the triggered rule resides. | keyword |
+| azure.firewall.protocol | Packet's network protocol. For example: UDP, TCP. | keyword |
+| azure.firewall.request_duration_secs | Duration of the DNS request from the time it arrived to the firewall and until a response was sent to the client. | double |
+| azure.firewall.request_size | The size of the DNS request in bytes. | long |
+| azure.firewall.response_code | DNS reponse code. | keyword |
+| azure.firewall.response_flags | DNS reponse flags, comma separated. | keyword |
+| azure.firewall.response_size | DNS reponse size in bytes. | long |
+| azure.firewall.rule | Name of the triggered rule. | keyword |
+| azure.firewall.rule_collection | Name of the rule collection in which the triggered rule resides. | keyword |
+| azure.firewall.rule_collection_group | Name of the rule collection group in which the triggered rule resides. | keyword |
+| azure.firewall.target_url | Request's target address URL. | keyword |
+| azure.firewall.web_category | Web Category identified for the requested FQDN (Azure Firewall Standard) or URL (Azure Firewall Premium). | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
