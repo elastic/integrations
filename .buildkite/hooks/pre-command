@@ -74,6 +74,17 @@ if [ -n "${ELASTIC_PACKAGE_LINKS_FILE_PATH+x}" ]; then
     export ELASTIC_PACKAGE_LINKS_FILE_PATH=${BASE_DIR}/${ELASTIC_PACKAGE_LINKS_FILE_PATH}
 fi
 
+if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" &&  "${BUILDKITE_STEP_KEY}" == "reference-target-branch" ]]; then
+    # Get the commit from target branch in the first step (reference-target-branch).
+    # This step MUST be the first one and not run in parallel with any other step to ensure
+    # that there is just one value for this variable
+    if is_pr ; then
+        git fetch -v origin ${BUILDKITE_PULL_REQUEST_BASE_BRANCH}
+        commit_main=$(git rev-parse --verify FETCH_HEAD)
+        buildkite-agent meta-data set "REPOSITORY_TARGET_BRANCH_COMMIT" "${commit_main}"
+    fi
+fi
+
 if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-publish" ]]; then
     if [[ "${BUILDKITE_STEP_KEY}" == "trigger-publish" ]]; then
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token ${BUILDKITE_API_TOKEN_PATH})
