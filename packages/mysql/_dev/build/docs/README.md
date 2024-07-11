@@ -71,11 +71,19 @@ For MySQL, MariaDB and Percona the query to check replica status varies dependin
 
 The `error` dataset collects the MySQL error logs.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "error"}}
 
 ### Slow Log
 
 The `slowlog` dataset collects the MySQL slow logs.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "slowlog"}}
 
@@ -86,6 +94,10 @@ The `slowlog` dataset collects the MySQL slow logs.
 The `galera_status` dataset periodically fetches metrics from [Galera](http://galeracluster.com/)-MySQL cluster servers.
 
 {{event "galera_status"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "galera_status"}}
 
@@ -102,5 +114,9 @@ The `replica_status` dataset collects data from MySQL by running a `SHOW REPLICA
 The `status` dataset collects data from MySQL by running a `SHOW GLOBAL STATUS;` SQL query. This query returns a large number of metrics.
 
 {{event "status"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "status"}}
