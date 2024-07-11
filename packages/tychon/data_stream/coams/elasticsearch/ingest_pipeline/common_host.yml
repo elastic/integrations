@@ -1,0 +1,79 @@
+---
+description: Pipeline for common host fields processing
+processors:
+
+  - gsub:
+      field: tychon.host.mac
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+  - split:
+      field: tychon.host.mac
+      separator: ','
+      if: ctx.tychon?.host?.mac instanceof String && ctx.tychon.host.mac != ""
+      ignore_missing: true
+  - split:
+      field: tychon.host.ip
+      separator: ','
+      if: ctx.tychon?.host?.ip instanceof String && ctx.tychon.host.ip != ""
+      ignore_missing: true
+  - split:
+      field: tychon.host.ipv4
+      separator: ','
+      if: ctx.tychon?.host?.ipv4 instanceof String && ctx.tychon.host.ipv4 != ""
+      ignore_missing: true
+  - split:
+      field: tychon.host.ipv6
+      separator: ','
+      if: ctx.tychon?.host?.ipv6 instanceof String && ctx.tychon.host.ipv6 != ""
+      ignore_missing: true
+
+  # TODO: can this be simplified (does convert to long do truncation of fractional part)
+  - convert:
+      field: tychon.host.uptime
+      type: string
+      ignore_missing: true
+  - set:
+      field: tychon.host.uptime
+      value: '0'
+      if: ctx.tychon?.host?.uptime == ''
+  - split:
+      field: tychon.host.uptime
+      separator: '\.+'
+      target_field: _tmp_uptime
+      ignore_failure: true
+  - set:
+      field: tychon.host.uptime
+      value: '{{{_tmp_uptime.0}}}'
+      ignore_failure: true
+  - remove:
+      field: _tmp_uptime
+      ignore_missing: true
+  - convert:
+      field: tychon.host.uptime
+      type: long
+      ignore_missing: true
+
+ # TODO: probably just leave the unset rather than setting empty strings
+  - set:
+      field: tychon.host.domain
+      value: ""
+      if: ctx.tychon?.host?.domain == null
+  - set:
+      field: tychon.host.oem.model
+      value: ""
+      if: ctx.tychon?.host?.oem?.model == null
+  - set:
+      field: tychon.host.oem.manufacturer
+      value: ""
+      if: ctx.tychon?.host?.oem?.manufacturer == null
+
+  - remove: 
+      field: tychon.host.os.extended_support_license_expiration
+      if: ctx.tychon?.host?.os?.extended_support_license_expiration == ''
+      ignore_missing: true
+
+  - remove:
+      field: tychon.host.cloud
+      if: ctx.tychon?.host?.cloud?.hosted != true
+      ignore_missing: true
