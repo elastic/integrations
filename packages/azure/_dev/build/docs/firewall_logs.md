@@ -16,6 +16,7 @@ Supported log categories:
 
 For detailed information and instructions on how to migrate to Resource-specific mode, please refer to the following Microsoft documentation: [Azure Monitor Resource Logs](https://learn.microsoft.com/en-gb/azure/azure-monitor/essentials/resource-logs#resource-specific).
 
+All Azure services will eventually use the resource-specific mode. As part of this transition, some resources allow you to select a mode in the diagnostic setting. Specify resource-specific mode for any new diagnostic settings because this mode makes the data easier to manage.
 
 ## Requirements and setup
 
