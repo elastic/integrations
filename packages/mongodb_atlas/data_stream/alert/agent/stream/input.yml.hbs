@@ -1,0 +1,63 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+auth.digest:
+  user: {{public_key}}
+  password: {{private_key}}
+resource.url: {{url}}
+state:
+  group_id: {{groupId}}
+  want_more: false
+  page_num: 1
+redact:
+  fields: ~
+program: |
+      (
+        request(
+          "GET", 
+          state.url + "/api/atlas/v2/groups/" + state.group_id + "/alerts?" + {
+            "pageNum": [string(state.page_num)],
+            "itemsPerPage": ["100"]
+          }.format_query()).with({
+          "Header": {
+            "Accept": ["application/vnd.atlas." + string(now.getFullYear()) + "-01-01+json"]
+          }
+        }).do_request().as(resp, 
+          resp.StatusCode == 200 ?
+            bytes(resp.Body).decode_json().as(body, {
+              "events": body.results.map(event, { "response": event }),
+              "want_more": body.links.exists_one(l, l.rel == "next"),
+              "page_num": body.links.exists_one(l, l.rel == "next") ? (int(state.page_num)+1) : 1,
+              "group_id": state.group_id
+            })
+            :
+            {
+              "events": [{"response":"The application encountered an error while retrieving the current page"}],
+              "want_more": false,
+              "page_num": 1,
+              "group_id": state.group_id
+            }
+          )
+      )
