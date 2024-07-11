@@ -1,8 +1,22 @@
-version: "2.3"
 services:
   proxysg-log-logfile:
     image: alpine
     volumes:
-      - ./sample_logs:/sample_logs:ro
+      - ./sample_logs/filestream:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  proxysg-log-udp:
+    image: docker.elastic.co/observability/stream:v0.16.0
+    volumes:
+      - ./sample_logs/syslog:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:5144 -p=udp /sample_logs/proxysg.log
+  proxysg-log-tcp:
+    image: docker.elastic.co/observability/stream:v0.16.0
+    volumes:
+      - ./sample_logs/syslog:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:6011 -p=tcp /sample_logs/proxysg.log
+  proxysg-log-tls:
+    image: docker.elastic.co/observability/stream:v0.16.0
+    volumes:
+      - ./sample_logs/syslog:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:6514 -p=tls --insecure /sample_logs/proxysg.log

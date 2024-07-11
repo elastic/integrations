@@ -1,0 +1,30 @@
+host: "{{tcp_host}}:{{tcp_port}}"
+{{#if tcp_options}}
+{{tcp_options}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+fields:
+processors:
+- add_fields:
+    target: _temp_
+    fields:
+      _conf: "{{config}}"
+- add_locale: ~
+- syslog:
+    field: message
+    format: rfc5424
+{{#if processors}}
+{{processors}}
+{{/if}}
