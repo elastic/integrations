@@ -17,6 +17,10 @@ processors:
       field: message
       target_field: _temp_.message
   - pipeline:
+      name: '{{ IngestPipeline "main" }}'
+      tag: main
+      if: ctx._temp_._conf == 'main'
+  - pipeline:
       name: '{{ IngestPipeline "onprem" }}'
       tag: onprem_pipeline
       if: ctx._temp_._conf == 'onprem'
