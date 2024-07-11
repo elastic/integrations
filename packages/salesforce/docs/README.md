@@ -12,7 +12,7 @@ The Salesforce integration enables users to monitor their [Salesforce](https://w
 
 ## Data streams
 
-The Salesforce integration comes with the following data streams:
+The Salesforce integration provides the following data streams:
 
 - `login`: Tracks login activity of users who log in to Salesforce.
 - `logout`: Tracks logout activity of users who log out from Salesforce.
@@ -106,7 +106,7 @@ To configure the Salesforce integration, you will need the following information
 
 The Salesforce Instance URL is the URL of your Salesforce Organization. It can be found in the address bar in Salesforce Classic or Salesforce Lightning.
 
-- **Salesforce Classic**: For an example URL `https://na9.salesforce.com/home/home.jsp`, the Salesforce Instance URL is `https://na9.salesforce.com`.
+- **Salesforce Classic**: Given the example URL `https://na9.salesforce.com/home/home.jsp`, the Salesforce Instance URL is extracted as `https://na9.salesforce.com`.
 
 - **Salesforce Lightning**: The instance URL is available under your user name in the "View Profile" tab.
 
