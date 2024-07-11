@@ -12,7 +12,7 @@ The Salesforce integration enables users to monitor their [Salesforce](https://w
 
 ## Data streams
 
-The Salesforce integration comes with the following data streams:
+The Salesforce integration provides the following data streams:
 
 - `login`: Tracks login activity of users who log in to Salesforce.
 - `logout`: Tracks logout activity of users who log out from Salesforce.
