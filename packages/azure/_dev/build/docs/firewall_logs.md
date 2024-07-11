@@ -4,11 +4,19 @@ Azure Firewall Logs are records of events such as network and application rules 
 
 Supported log categories:
 
-| Log Category                 | Description                                                                                                                          |
-|:----------------------------:|:------------------------------------------------------------------------------------------------------------------------------------:|
-| AzureFirewallApplicationRule | These logs capture information about the traffic that is allowed or denied by application rules configured in Azure Firewall.        |
-| AzureFirewallNetworkRule     | These logs capture information about the traffic that is allowed or denied by network rules configured in Azure Firewall.            |
-| AzureFirewallDnsProxy        | These logs capture information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.                    |
+| Log Category                 | Description                                                                                                                          | Destination Table  |
+|:----------------------------:|:------------------------------------------------------------------------------------------------------------------------------------:|:------------------:|
+| AzureFirewallApplicationRule | These logs capture information about the traffic that is allowed or denied by application rules configured in Azure Firewall.        | Azure diagnostics  |
+| AzureFirewallNetworkRule     | These logs capture information about the traffic that is allowed or denied by network rules configured in Azure Firewall.            | Azure diagnostics  |
+| AzureFirewallDnsProxy        | These logs capture information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.                    | Azure diagnostics  |
+| AZFWApplicationRule          | These logs capture resource specific information about the traffic that is allowed or denied by application rules configured in Azure Firewall.                  | Resource specific  |
+| AZFWNetworkRule              | These logs capture resource specific information about the traffic that is allowed or denied by network rules configured in Azure Firewall.                  | Resource specific  |
+| AZFWNatRule                  | These logs capture resource specific information about all DNAT (Destination Network Address Translation) events log data.                  | Resource specific  |
+| AZFWDnsQuery                 | These logs capture resource specific information about DNS requests and responses that are processed by Azure Firewall's DNS proxy.                  | Resource specific  |
+
+For detailed information and instructions on how to migrate to Resource-specific mode, please refer to the following Microsoft documentation: [Azure Monitor Resource Logs](https://learn.microsoft.com/en-gb/azure/azure-monitor/essentials/resource-logs#resource-specific).
+
+All Azure services will eventually use the resource-specific mode. As part of this transition, some resources allow you to select a mode in the diagnostic setting. Specify resource-specific mode for any new diagnostic settings because this mode makes the data easier to manage.
 
 ## Requirements and setup
 
