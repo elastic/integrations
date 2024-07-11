@@ -69,6 +69,10 @@ The `number_of_workers` setting defines the number of workers assigned to readin
 
 The `elb` dataset collects logs from AWS ELBs.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -105,85 +109,16 @@ The `elb` dataset collects logs from AWS ELBs.
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.bytes | Bytes sent from the destination to the source. | long |
-| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
-| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
-| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.body.bytes | Size in bytes of the request body. | long |
-| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
-| http.request.referrer | Referrer for this HTTP request. | keyword |
-| http.response.body.bytes | Size in bytes of the response body. | long |
-| http.response.status_code | HTTP response status code. | long |
-| http.version | HTTP version. | keyword |
 | input.type | Input type | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
-| source.geo.city_name | City name. | keyword |
-| source.geo.continent_name | Name of the continent. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.geo.region_name | Region name. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.port | Port of the source. | long |
-| tags | List of keywords used to tag each event. | keyword |
-| trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
-| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
-| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
-| url.original.text | Multi-field of `url.original`. | match_only_text |
-| url.path | Path of the request, such as "/search". | wildcard |
-| url.port | Port of the request, such as 443. | long |
-| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
-| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
-| user_agent.device.name | Name of the device. | keyword |
-| user_agent.name | Name of the user agent. | keyword |
-| user_agent.original | Unparsed user_agent string. | keyword |
-| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
-| user_agent.version | Version of the user agent. | keyword |
 
 
 An example event for `elb` looks as following:
@@ -257,7 +192,7 @@ An example event for `elb` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
@@ -340,97 +275,101 @@ An example event for `elb` looks as following:
 {
     "@timestamp": "2022-06-08T18:19:00.000Z",
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "90bfb41e-b925-420f-973e-9c1115297278",
-        "type": "metricbeat",
         "ephemeral_id": "8c94e850-82e2-42ae-bd41-44ce7bbbb50c",
+        "id": "90bfb41e-b925-420f-973e-9c1115297278",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
         "version": "8.2.0"
     },
-    "elastic_agent": {
-        "id": "90bfb41e-b925-420f-973e-9c1115297278",
-        "version": "8.2.0",
-        "snapshot": false
-    },
-    "cloud": {
-        "provider": "aws",
-        "region": "eu-central-1",
-        "account": {
-            "name": "elastic-beats",
-            "id": "123456789"
-        }
-    },
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "aws.elb_metrics"
-    },
-    "service": {
-        "type": "aws"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.47-linuxkit",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "family": "debian",
-            "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "containerized": true,
-        "ip": [
-            "192.168.96.7"
-        ],
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-C0-A8-60-07"
-        ],
-        "architecture": "x86_64"
-    },
-    "metricset": {
-        "period": 60000,
-        "name": "cloudwatch"
-    },
     "aws": {
+        "cloudwatch": {
+            "namespace": "AWS/ELB"
+        },
         "elb": {
             "metrics": {
-                "HealthyHostCount": {
-                    "max": 2
-                },
-                "UnHealthyHostCount": {
-                    "max": 0
+                "HTTPCode_Backend_2XX": {
+                    "sum": 31
                 },
                 "HTTPCode_Backend_4XX": {
                     "sum": 2
                 },
-                "HTTPCode_Backend_2XX": {
-                    "sum": 31
+                "HealthyHostCount": {
+                    "max": 2
+                },
+                "Latency": {
+                    "avg": 0.0010771534659645772
                 },
                 "RequestCount": {
                     "sum": 33
                 },
-                "Latency": {
-                    "avg": 0.0010771534659645772
+                "UnHealthyHostCount": {
+                    "max": 0
                 }
             }
-        },
-        "cloudwatch": {
-            "namespace": "AWS/ELB"
         }
     },
+    "cloud": {
+        "account": {
+            "id": "123456789",
+            "name": "elastic-beats"
+        },
+        "provider": "aws",
+        "region": "eu-central-1"
+    },
+    "data_stream": {
+        "dataset": "aws.elb_metrics",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "90bfb41e-b925-420f-973e-9c1115297278",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
     "event": {
-        "duration": 15866718200,
         "agent_id_status": "verified",
+        "dataset": "aws.elb_metrics",
+        "duration": 15866718200,
         "ingested": "2022-06-08T18:20:24Z",
-        "module": "aws",
-        "dataset": "aws.elb_metrics"
+        "module": "aws"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "192.168.96.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-60-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "cloudwatch",
+        "period": 60000
+    },
+    "service": {
+        "type": "aws"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -498,45 +437,14 @@ An example event for `elb` looks as following:
 | aws.networkelb.metrics.TargetTLSNegotiationErrorCount.sum | The total number of TLS handshakes that failed during negotiation between a TLS listener and a target. | long |  | gauge |
 | aws.networkelb.metrics.UnHealthyHostCount.max | The number of targets that are considered unhealthy. | long |  | gauge |
 | aws.tags | Tag key value pairs from aws resources. | flattened |  |  |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
-| container.id | Unique container id. | keyword |  |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |  |
-| container.labels | Image labels. | object |  |  |
-| container.name | Container name. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |  |
-| error.message | Error message. | match_only_text |  |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
-| host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
-| host.os.name | Operating system name, without the version. | keyword |  |  |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
