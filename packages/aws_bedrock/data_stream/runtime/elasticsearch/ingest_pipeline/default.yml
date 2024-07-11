@@ -1,0 +1,11 @@
+---
+description: Pipeline for AWS Bedrock runtime metrics
+processors:
+  - rename:   
+      field: aws.bedrock.metrics
+      target_field: aws_bedrock.runtime
+      ignore_missing: true
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
