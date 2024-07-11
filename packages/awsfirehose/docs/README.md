@@ -1,7 +1,7 @@
 # Amazon Data Firehose
 Amazon Data Firehose integration offers users a way to stream logs and CloudWatch metrics from Firehose to Elastic Cloud.
 This integration includes predefined rules that automatically route AWS service logs and CloudWatch metrics to the respective integrations, which
-include field mappings, ingest pipelines, predefined dashboards and ect. 
+include field mappings, ingest pipelines, and predefined dashboards. 
 
 Here is a list of log types that are supported by this integration:
 
