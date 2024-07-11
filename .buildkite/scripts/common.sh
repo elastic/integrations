@@ -819,6 +819,9 @@ test_package_in_serverless() {
     if ! ${ELASTIC_PACKAGE_BIN} test pipeline ${TEST_OPTIONS} ; then
         return 1
     fi
+    if ! ${ELASTIC_PACKAGE_BIN} test policy ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
+        return 1
+    fi
     echo ""
     return 0
 }
