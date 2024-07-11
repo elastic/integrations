@@ -4,7 +4,7 @@
 
 The Salesforce integration enables users to monitor their [Salesforce](https://www.salesforce.com/) instance effectively. Salesforce is a comprehensive customer relationship management (CRM) platform that supports businesses in managing marketing, sales, commerce, service, and IT teams from a unified platform accessible from anywhere.
 
-### Key benefits of Salesforce Integration:
+### Key benefits of Salesforce Integration
 
 - **Operational Insights**: Gain valuable insights into login and logout activities and other operational events within your organization.
 - **Data Visualization**: Create detailed visualizations to monitor, measure, and analyze usage trends and key data, helping you derive actionable business insights.
@@ -12,7 +12,7 @@ The Salesforce integration enables users to monitor their [Salesforce](https://w
 
 ## Data streams
 
-The Salesforce integration comes with the following data streams:
+The Salesforce integration provides the following data streams:
 
 - `login`: Tracks login activity of users who log in to Salesforce.
 - `logout`: Tracks logout activity of users who log out from Salesforce.
@@ -106,7 +106,7 @@ To configure the Salesforce integration, you will need the following information
 
 The Salesforce Instance URL is the URL of your Salesforce Organization. It can be found in the address bar in Salesforce Classic or Salesforce Lightning.
 
-- **Salesforce Classic**: For an example URL `https://na9.salesforce.com/home/home.jsp`, the Salesforce Instance URL is `https://na9.salesforce.com`.
+- **Salesforce Classic**: Given the example URL `https://na9.salesforce.com/home/home.jsp`, the Salesforce Instance URL is extracted as `https://na9.salesforce.com`.
 
 - **Salesforce Lightning**: The instance URL is available under your user name in the "View Profile" tab.
 
@@ -170,7 +170,7 @@ With version 0.15.0, we've significantly enhanced the Salesforce integration, in
 ### Key enhancements
 
 1. Unified data collection: The integration now uses a single Filebeat input ([Salesforce input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-salesforce.html)) for data collection from EventLogFile and Real-time Event Monitoring APIs.
-2. JWT authentication: Intoduced JWT authentication mechanism.
+2. JWT authentication: Introduced JWT authentication mechanism.
 3. Expanded configuration options: Added `initial_interval` and other options to fine-tune data collection, including historical data retrieval.
 4. Change in data-collection mechanism: Replaced Streaming API (cometd) with Real-time Event Monitoring APIs.
 5. Performance optimization: Significantly reduced CPU and memory usage during data collection.
@@ -194,7 +194,7 @@ If you experience delays in the response from the Salesforce server in the `apex
 Error while processing http request: failed to execute rf.collectResponse: failed to execute http client.Do: failed to execute http client.Do: failed to read http.response.body
 ```
 
-**Solution:** Consider increasing the `Request timeout` configuration from the `Advanced options` section of the affected data stream.
+**Solution:** Consider increasing the `Request timeout` setting in the `Advanced options` section for the affected data stream.
 
 ### Data ingestion error
 
@@ -202,7 +202,7 @@ If you encounter data ingestion errors, you might see an error message similar t
 
 > oauth2 client: error loading credentials using user and password: oauth2: cannot fetch token: 400 Bad Request
 
-**Solution:** Ensure that the `API Enabled` permission is provided to the `profile` associated with the `username` used for the integration. Refer to the **Prerequisites** section above for more information.
+**Solution:** Ensure that the `API Enabled` permission is granted to the `profile` associated with the `username` used for the integration. Refer to the **Prerequisites** section above for more information.
 
 If the error persists, follow these steps:
 
