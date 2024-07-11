@@ -382,10 +382,10 @@ An example event for `replica_status` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-03T06:03:47.292Z",
+    "@timestamp": "2024-07-09T10:45:42.576Z",
     "agent": {
-        "ephemeral_id": "daab005a-79e0-47eb-ab0d-6f71dd32371f",
-        "id": "723c0307-38cd-4795-b22c-581e34384fe9",
+        "ephemeral_id": "b4e51018-e584-4491-b1aa-699cb65973dd",
+        "id": "989d89f0-e902-423e-92e1-7a66f33d570a",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.12.0"
@@ -399,7 +399,7 @@ An example event for `replica_status` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "723c0307-38cd-4795-b22c-581e34384fe9",
+        "id": "989d89f0-e902-423e-92e1-7a66f33d570a",
         "snapshot": false,
         "version": "8.12.0"
     },
@@ -409,8 +409,8 @@ An example event for `replica_status` looks as following:
             "database"
         ],
         "dataset": "mysql.replica_status",
-        "duration": 3115341,
-        "ingested": "2024-07-03T06:03:59Z",
+        "duration": 1779903,
+        "ingested": "2024-07-09T10:45:54Z",
         "kind": "event",
         "module": "mysql",
         "type": [
@@ -423,10 +423,10 @@ An example event for `replica_status` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "829324aac17946dcace17006fa82a2d2",
         "ip": [
-            "192.168.247.7"
+            "192.168.252.6"
         ],
         "mac": [
-            "02-42-C0-A8-F7-07"
+            "02-42-C0-A8-FC-06"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -455,7 +455,7 @@ An example event for `replica_status` looks as following:
             },
             "gtid": {
                 "executed": {
-                    "set": "f44aadbc-3901-11ef-a5b6-0242c0a8f104:1-10"
+                    "set": "54781015-3de0-11ef-add5-0242c0a8f504:1-10"
                 }
             },
             "is_auto_position": false,
@@ -471,7 +471,7 @@ An example event for `replica_status` looks as following:
                 }
             },
             "relay": {
-                "log_file": "43c158a8a7e1-relay-bin.000002",
+                "log_file": "39e386dfe692-relay-bin.000002",
                 "log_position": 326,
                 "log_space": 543
             },
@@ -501,7 +501,7 @@ An example event for `replica_status` looks as following:
                 "retry_count": 86400,
                 "server": {
                     "id": 1,
-                    "uuid": "f41b942f-3901-11ef-a5eb-0242c0a8f102"
+                    "uuid": "54405d9e-3de0-11ef-ac2e-0242c0a8f502"
                 },
                 "ssl": {
                     "allowed": "No",
@@ -537,6 +537,10 @@ An example event for `replica_status` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Metric Type |
@@ -545,9 +549,7 @@ An example event for `replica_status` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | mysql.replica_status.channel.name | The replication channel which is being displayed. There is always a default replication channel, and more replication channels can be added. | keyword |  |
 | mysql.replica_status.connection.retry.sec | The number of seconds between connect retries. | long | gauge |
 | mysql.replica_status.event_skip.count | Number of events that a replica skips from the master, as recorded in the sql_slave_skip_counter system variable. | long | counter |
@@ -613,9 +615,6 @@ An example event for `replica_status` looks as following:
 | mysql.replica_status.until.condition | The values specified in the UNTIL clause of the START SLAVE statement. | keyword |  |
 | mysql.replica_status.until.log_file | Indicates the log file name that defines the coordinates at which the replication SQL thread stops executing. | keyword |  |
 | mysql.replica_status.until.log_position | Indicates the log file position that defines the coordinates at which the replication SQL thread stops executing. | long | counter |
-| network.name | Name given by operators to sections of their network. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 | source.port | Port of the source. | long |  |
 | user.name | Short name or login of the user. | keyword |  |
 | user.name.text | Multi-field of `user.name`. | match_only_text |  |
@@ -623,7 +622,7 @@ An example event for `replica_status` looks as following:
 
 ### Status
 
-The `status` dataset collects data from MySQL by running a `SHOW GLOBAL STATUS;` SQL query. This query returns a large number of metrics.
+The MySQL `status` dataset collects data from MySQL by running a `SHOW GLOBAL STATUS;` SQL query. This query returns a large number of metrics.
 
 An example event for `status` looks as following:
 
@@ -865,3 +864,4 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mysql.status.threads.created | The number of created threads. | long | gauge |
 | mysql.status.threads.running | The number of running threads. | long | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+

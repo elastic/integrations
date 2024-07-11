@@ -107,11 +107,15 @@ The `replica_status` dataset collects data from MySQL by running a `SHOW REPLICA
 
 {{event "replica_status"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "replica_status"}}
 
 ### Status
 
-The `status` dataset collects data from MySQL by running a `SHOW GLOBAL STATUS;` SQL query. This query returns a large number of metrics.
+The MySQL `status` dataset collects data from MySQL by running a `SHOW GLOBAL STATUS;` SQL query. This query returns a large number of metrics.
 
 {{event "status"}}
 
