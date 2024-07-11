@@ -5,6 +5,14 @@ processors:
       field: observer.product
       tag: set_observer_product
       value: System Information
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: host
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
   - rename:
       field: json.system.afmState
       tag: rename_system_afmState
@@ -69,7 +77,7 @@ processors:
             - _ingest._value.filename
           tag: remove_duplicate_custom_fields_from_filename
           ignore_missing: true
-          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - rename:
       field: json.system.asmState
       tag: rename_system_asmState
@@ -816,7 +824,7 @@ processors:
         - f5_bigip.log.version
       tag: remove_custom_duplicate_fields
       ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
       tag: remove_json
