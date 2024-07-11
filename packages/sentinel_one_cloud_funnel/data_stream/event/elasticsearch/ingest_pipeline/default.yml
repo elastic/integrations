@@ -2948,6 +2948,13 @@ processors:
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
+  - set:
+      field: sentinel_one_cloud_funnel.event.rerouted
+      value: true
+      if: ctx._conf?.reroute?.contains(ctx.sentinel_one_cloud_funnel?.event?.category?.toLowerCase()) == true
+  - remove:
+      field: _conf
+      ignore_missing: true
 on_failure:
   - append:
       field: error.message

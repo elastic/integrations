@@ -9,7 +9,7 @@ processors:
       value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
-      value: '8.5.1'
+      value: '8.11.0'
   - rename:
       field: message
       target_field: event.original
@@ -25,7 +25,7 @@ processors:
       patterns:
       - '(%{IPORHOST:destination.domain} )?%{IPORHOST:source.address} %{DATA:apache.access.identity} %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
         "(?:%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}|-)?"
-        %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)(
+        %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)( %{NUMBER:apache.access.response_time})?(
         "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?( X-Forwarded-For="%{ADDRESS_LIST:apache.access.remote_addresses}")?'
       - '%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
         "-" %{NUMBER:http.response.status_code:long} -'
@@ -197,6 +197,15 @@ processors:
           }
         }
         handleMap(ctx);
+  - convert:
+      field: apache.access.response_time
+      tag: 'convert_response_time_to_long'
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: event.original
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
