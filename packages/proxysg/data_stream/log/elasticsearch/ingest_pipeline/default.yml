@@ -5,36 +5,44 @@ processors:
       field: ecs.version
       value: '8.11.0'
   - drop:
-      description: "Drop commented lines"
       tag: "drop_commented"
-      ignore_failure: true
+      description: "Drop commented lines"
       if: "ctx.message.startsWith('#')"
+      ignore_failure: true
   - set:
+      tag: set_original
       field: event.original
       copy_from: message
       if: ctx.event?.original == null
   - rename:
+      tag: rename_message
       field: message
       target_field: _temp_.message
+
+# Config specific pipelines
   - pipeline:
+      tag: main_pipeline
       name: '{{ IngestPipeline "main" }}'
-      tag: main
       if: ctx._temp_._conf == 'main'
   - pipeline:
-      name: '{{ IngestPipeline "onprem" }}'
       tag: onprem_pipeline
+      name: '{{ IngestPipeline "onprem" }}'
       if: ctx._temp_._conf == 'onprem'
   - pipeline:
+      tag: cloud_pipeline
       name: '{{ IngestPipeline "cloud" }}'
       if: ctx._temp_._conf == 'cloud'
-      tag: cloud_pipeline
 
   - set:
+      tag: set_timestamp
       field: "@timestamp"
       value: "{{{_temp_.date}}}T{{{_temp_.time}}}Z"
   - remove:
       field: "_temp_"
       ignore_failure: true
+
+# ECS mappings
+
 
 on_failure:
   - append:
