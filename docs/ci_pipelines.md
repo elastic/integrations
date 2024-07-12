@@ -1,4 +1,5 @@
 # CI integrations pipelines
+
 This section describes the CI pipelines available in this repository.
 
 Currently, there are five different pipelines:
@@ -38,12 +39,12 @@ More details about this CI pipeline:
 - This CI pipeline tries to test the minimum packages possible::
     - In the Pull Request context, it is checked the files modified/added/deleted in the given PR:
         - Those packages with changes (`packages/*`) will be added to the list of packages to be tested.
-        - If files outside `packages` folder are updated (e.g. `go.mod` , `.buildkite/*`), all packages are going to be tested. There are some exceptions to thism, for instance the `.github/CODEOWNERS` file or `.docs/` folder ([files exluded](https://github.com/elastic/integrations/blob/376fc891a1e6c662b4ef1897b118044faf51e7bf/.buildkite/scripts/common.sh#L695).
+        - If files outside `packages` folder are updated (e.g. `go.mod` , `.buildkite/*`), all packages are going to be tested. There are some exceptions to this, for instance the `.github/CODEOWNERS` file or `.docs/` folder ([files excluded](https://github.com/elastic/integrations/blob/376fc891a1e6c662b4ef1897b118044faf51e7bf/.buildkite/scripts/common.sh#L695)).
     - In branches context (`main` or `backport-*`):
         - The latest Buildkite build that finished successfully in that branch is retrieved, and all the file changes in the working copy between the changeset of that build and the merged commit are obtained.
         - Given all those changes, the packages selected to be tested follow the same rules as in the PR.
 - Container logs, as they could contain sensitive information, are uploaded to a private Google Bucket.
-- Packages are tested running the Elastic stack with the minimum Kibana version supported according to their manifest (`.conditions.kibana.version`). If a package defines a kibana version that is not released yet, `elastic-package` will be using the SNAPSHOT version. This can be overridden if the STACK_VERSION variable is defined in the environment.
+- Packages are tested running the Elastic stack with the minimum Kibana version supported according to their manifest (`.conditions.kibana.version`). If a package defines a Kibana version that is not released yet, `elastic-package` will be using the SNAPSHOT version. This can be overridden if the STACK_VERSION variable is defined in the environment.
   In the following table, there are some examples:
     
   | STACK_VERSION env | Kibana Condition Package | Released | Elastic stack run |
@@ -68,7 +69,9 @@ More details about this CI pipeline:
 
 **Note**: Just available for Employees at Elastic.
 
-For every Pull Request merged onto the `main` branch or any `backport-*` branches, this pipeline is triggered automatically https://buildkite.com/elastic/integrations-publish to publish new versions of the packages if any. These new versions are published and made available in https://epr.elastic.co
+For every Pull Request merged onto the `main` branch or any `backport-*` branches,
+this pipeline is triggered automatically https://buildkite.com/elastic/integrations-publish to publish new versions
+of the packages if any. These new versions are published and made available in https://epr.elastic.co
 
 Environment variables that can be defined in this pipeline:
 - **DRY_RUN**: If `true`, packages will not be published. Default: `false`.
@@ -77,7 +80,8 @@ Environment variables that can be defined in this pipeline:
 These environment variables can be defined:
 - At the [global `env` section](https://github.com/elastic/integrations/blob/d6d99792b90838d18844f6df9343bc5f16130666/.buildkite/pipeline.publish.yml#L3).
 - At the [specific buildkite publish step](https://github.com/elastic/integrations/blob/d6d99792b90838d18844f6df9343bc5f16130666/.buildkite/pipeline.publish.yml#L37).
-- In case of the [step from schedule-daily job](https://github.com/elastic/integrations/blob/d6d99792b90838d18844f6df9343bc5f16130666/.buildkite/pipeline.schedule-daily.yml#L61) (it needs to be added the `env` dictionary).
+- In case of the [step from schedule-daily job](https://github.com/elastic/integrations/blob/d6d99792b90838d18844f6df9343bc5f16130666/.buildkite/pipeline.schedule-daily.yml#L61)
+  (it needs to be added the `env` dictionary).
 
 ## Serverless Pipeline
 
@@ -101,7 +105,7 @@ This pipeline follows these steps:
 1. Deletes the Elastic Serverless project.
 
 Environment variables that can be defined in this pipeline:
-- SERVERLESS_PROJECT: Serverless project to be created to test packages. Default: observability.
+- **SERVERLESS_PROJECT**: Serverless project to be created to test packages. Default: observability.
 
 This environment variable can be defined at:
 - At the [global `env` section](https://github.com/elastic/integrations/blob/d6d99792b90838d18844f6df9343bc5f16130666/.buildkite/pipeline.serverless.yml#L3).
@@ -131,14 +135,20 @@ The scenarios that are tested in this daily job are:
 
 Those tests that have failed in these scenarios will be reported as GitHub issues notifying the owner teams as defined in `.github/CODEOWNERS` file.
 
-As part of this pipeline, it is also ensured that the latest versions of the packages merged into `main` branch have been published by triggering the pipeline https://buildkite.com/elastic/integrations-publish
+As part of this pipeline, it is also ensured that the latest versions of the packages merged into `main` branch
+have been published by triggering the pipeline https://buildkite.com/elastic/integrations-publish.
 
-Each step triggering a new pipeline can be customized through environment variables. Environment variables that can be used in each pipeline are detailed in the corresponding sections of each pipeline.
+Each step triggering a new pipeline can be customized through environment variables. Environment variables that can
+be used in each pipeline are detailed in the corresponding sections of each pipeline.
 
 
 ## Backport branches pipeline
+
 **Note**: Just available for Employees at Elastic.
 
-Releasing hotfixes from older versions of packages requires creating `backport-*` branches from specific commits in the `main` branch. In order to help with this task of creating these branches, there exists a pipeline that just can be triggered from the UI: https://buildkite.com/elastic/integrations-backport/
+Releasing hotfixes from older versions of packages requires creating `backport-*` branches from specific commits in the `main` branch.
+In order to help with this task of creating these branches, there exists a pipeline that just can be triggered
+from the UI: https://buildkite.com/elastic/integrations-backport/
 
-More information about this pipeline and how to create these hotfixes in: https://www.elastic.co/guide/en/integrations-developer/current/developer-workflow-support-old-package.html
+More information about this pipeline and how to create these hotfixes in:
+https://www.elastic.co/guide/en/integrations-developer/current/developer-workflow-support-old-package.html
