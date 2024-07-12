@@ -1,0 +1,111 @@
+---
+description: Pipeline for Microsoft-Windows-Windows Defender/Operational events
+processors:
+  ## ECS and Event fields.
+
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: log.level
+      copy_from: winlog.level
+      ignore_empty_value: true
+      ignore_failure: true
+      if: ctx.winlog?.level != ""
+  - date:
+      field: winlog.time_created
+      tag: "time_created_date"
+      formats:
+        - ISO8601
+      if: ctx.winlog?.time_created != null
+      on_failure:
+        - remove:
+            field: winlog.time_created
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.code
+      value: '{{winlog.event_id}}'
+  - set:
+      field: event.category
+      value: process
+  - set:
+      field: event.type
+      value: start
+  - convert:
+      field: winlog.record_id
+      type: string
+      ignore_failure: true
+      ignore_missing: true
+
+  ## User fields.
+
+  - set:
+      field: user.id
+      copy_from: winlog.user.identifier
+      ignore_failure: true
+      ignore_empty_value: true
+  - split:
+      field: winlog.event_data.User
+      target_field: "_temp.user_parts"
+      separator: '\\'
+      if: ctx.winlog?.event_data?.User != null
+  - set:
+      field: user.domain
+      value: "{{_temp.user_parts.0}}"
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+  - set:
+      field: user.name
+      value: "{{_temp.user_parts.1}}"
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+  - rename:
+      field: winlog.user.name
+      target_field: user.name
+      ignore_failure: true
+      ignore_missing: true
+      if: ctx.user?.name == null
+      
+    ## User data fields.
+  - convert:
+      field: winlog.user_data.TargetProcessId
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: winlog.user_data.TargetProcessId
+            ignore_failure: true
+
+    ## File Fields
+
+  - grok:
+      field: winlog.user_data.FullFilePath
+      ignore_missing: true
+      patterns:
+      - '(?<file.name>([^\\]*$))'
+      if: ctx.winlog?.user_data?.FullFilePath != "-"
+
+  - set:
+      field: file.hash.sha256
+      copy_from: winlog.user_data.FileHash
+      ignore_empty_value: true
+      if: ctx.winlog?.user_data?.FileHash != "-"
+      
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
