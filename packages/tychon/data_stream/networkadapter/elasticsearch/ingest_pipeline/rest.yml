@@ -28,7 +28,7 @@ processors:
       source: |
         if (ctx.tychon?.host?.adapter?.link_speed?.contains(' ') == true) {
           String[] parts = ctx.tychon.host.adapter.link_speed.splitOnToken(' ');
-          ctx.tychon.host.adapter.link_speed = Long.parseLong(parts[0]);
+          ctx.tychon.host.adapter.link_speed = Double.parseDouble(parts[0]);
           if (parts[1] == 'Kbps') {
             ctx.tychon.host.adapter.link_speed *= 1024
           } else if (parts[1] == 'Mbps') {
@@ -43,8 +43,9 @@ processors:
           if (ctx.tychon.host.adapter == null) {
             ctx.tychon.host.adapter = [:];
           }
-          ctx.tychon.host.adapter.link_speed = 0L;
+          ctx.tychon.host.adapter.link_speed = 0.0;
         }
+        ctx.tychon.host.adapter.link_speed = (long) ctx.tychon.host.adapter.link_speed;
 
   # ECS fields
 
