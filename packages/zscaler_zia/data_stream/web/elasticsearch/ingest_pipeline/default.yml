@@ -1,34 +1,65 @@
 ---
-description: Pipeline for Zscaler web logs.
+description: Pipeline for processing Web logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
+      tag: set_ecs_version
+      value: 8.11.0
   - rename:
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
       field: event.original
+      tag: json_event_original
       target_field: resp
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: json
+      tag: remove_json_if_input_type_http_endpoint
       if: ctx.input?.type == 'http_endpoint'
       ignore_missing: true
   - rename:
       field: resp.event
+      tag: rename_resp_event
       target_field: json
       ignore_missing: true
   - remove:
       field: resp
+      tag: remove_resp
       ignore_missing: true
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: web
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
   - script:
-      description: Drops null/empty values recursively.
+      description: Drops null/empty/na values recursively.
+      tag: script_to_remove_na_values
       lang: painless
-      source: |
+      source: |-
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == '' || object == "NA") {
+          if (object == null || object == '' || object == 'NA' || object == 'None' || object == 'NotFound') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -40,478 +71,1407 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
-  - date:
-      field: json.time
-      formats:
-        - E MMM dd HH:mm:ss yyyy
-        - E MMM  d HH:mm:ss yyyy
-        - E MMM d HH:mm:ss yyyy
-        - yyyy-MM-dd HH:mm:ss
-      if: ctx.json?.time != null && ctx.json.time != ''
-      on_failure:
-        - remove:
-            field: json.time
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - date:
-      field: json.datetime
-      formats:
-        - E MMM dd HH:mm:ss yyyy
-        - E MMM  d HH:mm:ss yyyy
-        - E MMM d HH:mm:ss yyyy
-        - yyyy-MM-dd HH:mm:ss
-      if: ctx.json?.datetime != null && ctx.json.datetime != ''
-      on_failure:
-        - remove:
-            field: json.datetime
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: event.category
-      value: web
-  - set:
-      field: event.kind
-      value: event
-  - append:
-      field: event.type
-      value: info
-  - convert:
-      field: json.cintip
-      target_field: source.nat.ip
-      if: ctx.json?.cip != ctx.json?.cintip
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.cintip
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{source.nat.ip}}}'
-      if: ctx.source?.nat?.ip != null
-      allow_duplicates: false
-  - convert:
-      field: json.sip
-      target_field: destination.ip
-      type: ip
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.sip
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{destination.ip}}}'
-      if: ctx.destination?.ip != null
-      allow_duplicates: false
-  - convert:
-      field: json.reqsize
-      target_field: http.request.bytes
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.reqsize
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.reqmethod
-      target_field: http.request.method
-      ignore_missing: true
-  - rename:
-      field: json.contenttype
-      target_field: http.request.mime_type
-      ignore_missing: true
-  - rename:
-      field: json.ereferer
-      target_field: http.request.referrer
-      ignore_missing: true
-  - convert:
-      field: json.respsize
-      target_field: http.response.bytes
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.respsize
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - convert:
-      field: json.respcode
-      target_field: http.response.status_code
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: json.respcode
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.rulelabel
-      target_field: rule.name
-      ignore_missing: true
-  - rename:
-      field: json.ruletype
-      target_field: rule.ruleset
-      ignore_missing: true
-  - rename:
-      field: json.proto
-      target_field: network.protocol
-      ignore_missing: true
-  - lowercase:
-      field: network.protocol
-      ignore_missing: true
-  - script:
-      description: Build URI for parsing.
-      tag: Build URI for parsing
-      lang: painless
-      params:
-        valid_protocols:
-          - http
-          - https
-        default_protocol: https
-      source: |
-        if (ctx.network?.protocol == null || ctx.json?.eurl == null) {
-          return;
-        }
-        // Remap network.protocol to a valid value, if necessary.
-        if (params.valid_protocols.contains(ctx.network.protocol)) {
-          ctx.json['url'] = ctx.network.protocol + '://' + ctx.json.eurl;
-        } else {
-          ctx.json['url'] = params.default_protocol + '://' + ctx.json.eurl;
-        }
-  - uri_parts:
-      field: json.url
-      if: ctx.json?.url != null && ctx.json.url != ''
-      on_failure:
-        - set:
-            field: url.original
-            value: '{{{json.eurl}}}'
-            if: ctx.json?.eurl != null && ctx.json.eurl != ''
-  - set:
-      field: url.full
-      value: '{{{url.original}}}'
-      if: ctx.url?.original != null && ctx.url.original != ''
-  - urldecode:
-      field: url.original
-      ignore_missing: true
-      ignore_failure: true
-      if: ctx.url?.original != null && ctx.url.original != ''
-  - urldecode:
-      field: json.eua
-      ignore_missing: true
-      ignore_failure: true
-      if: ctx.json?.eua != null && ctx.json.eua != ''
-  - user_agent:
-      field: json.eua
-      if: ctx.json?.eua != null && ctx.json.eua != ''
-      on_failure:
-        - set:
-            field: user_agent.original
-            value: '{{{json.eua}}}'
-            if: ctx.json?.eua != null && ctx.json.eua != ''
-  - rename:
-      field: json.login
-      target_field: user.id
-      ignore_missing: true
-  - set:
-      field: user.email
-      copy_from: user.id
-      if: ctx.user?.id != null && ctx.user.id.contains('@')
-  - dissect:
-      if: ctx.user?.email != null && ctx.user.email.contains('@')
-      field: user.email
-      pattern: '%{user.name}@%{user.domain}'
-  - append:
-      field: user.name
-      value: '{{{json.deviceowner}}}'
-      if: ctx.json?.deviceowner != null
-      allow_duplicates: false
-  - foreach:
-      field: user.name
-      if: ctx.user?.name instanceof List
-      processor:
-        append:
-          field: related.user
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-      ignore_missing: true
-  - append:
-      field: related.user
-      value: '{{{user.name}}}'
-      allow_duplicates: false
-      if: ctx.user?.name != null && !(ctx.user.name instanceof List)
-  - append:
-      field: related.user
-      value: '{{{user.id}}}'
-      allow_duplicates: false
-      if: ctx.user?.id != null && ctx.user.id != ''
   - rename:
       field: json.action
-      target_field: event.action
+      tag: rename_action
+      target_field: zscaler_zia.web.action
       ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_web_action
+      copy_from: zscaler_zia.web.action
+      ignore_empty_value: true
   - lowercase:
       field: event.action
+      tag: lowercase_event_action
       ignore_missing: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: ' '
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.appname
-      target_field: zscaler_zia.web.app.name
+      field: json.applayerprotocol
+      tag: rename_applayerprotocol
+      target_field: zscaler_zia.web.alpn_protocol
       ignore_missing: true
   - rename:
       field: json.appclass
+      tag: rename_appclass
       target_field: zscaler_zia.web.app.class
       ignore_missing: true
+  - rename:
+      field: json.appname
+      tag: rename_appname
+      target_field: zscaler_zia.web.app.name
+      ignore_missing: true
+  - rename:
+      field: json.appriskscore
+      tag: rename_appriskscore
+      target_field: zscaler_zia.web.app.risk_score
+      ignore_missing: true
+  - rename:
+      field: json.apprulelabel
+      tag: rename_apprulelabel
+      target_field: zscaler_zia.web.app.rule_label
+      ignore_missing: true
+  - append:
+      field: rule.name
+      tag: append_zscaler_zia_web_app_rule_label_into_rule_name
+      value: '{{{zscaler_zia.web.app.rule_label}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.web?.app?.rule_label != null
+  - rename:
+      field: json.bandwidthclassname
+      tag: rename_bandwidthclassname
+      target_field: zscaler_zia.web.bandwidth_class_name
+      ignore_missing: true
+  - rename:
+      field: json.bandwidthrulename
+      tag: rename_bandwidthrulename
+      target_field: zscaler_zia.web.bandwidth_rule_name
+      ignore_missing: true
+  - rename:
+      field: json.bwthrottle
+      tag: rename_bwthrottle
+      target_field: zscaler_zia.web.bandwidth_throttle
+      ignore_missing: true
+  - rename:
+      field: json.bypassedtraffic
+      tag: rename_bypassedtraffic
+      target_field: zscaler_zia.web.bypassed.traffic
+      ignore_missing: true
+  - rename:
+      field: json.cltsslcipher
+      tag: rename_cltsslcipher
+      target_field: zscaler_zia.web.client.cipher
+      ignore_missing: true
+  - set:
+      field: tls.cipher
+      tag: set_tls_cipher_from_web_client_cipher
+      copy_from: zscaler_zia.web.client.cipher
+      ignore_empty_value: true
+  - rename:
+      field: json.cltsslsessreuse
+      tag: rename_cltsslsessreuse
+      target_field: zscaler_zia.web.client.cipher_reuse
+      ignore_missing: true
   - convert:
-      field: json.stime
-      target_field: zscaler_zia.web.stime
+      field: json.cltintip
+      tag: convert_cltintip_to_ip
+      target_field: zscaler_zia.web.client.internet.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.cltintip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.nat.ip
+      tag: set_source_nat_ip_from_web_client_internet_ip
+      copy_from: zscaler_zia.web.client.internet.ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: '{{{source.nat.ip}}}'
+      tag: append_related_ip_from_source_nat_ip
+      if: ctx.source?.nat?.ip != null
+      allow_duplicates: false
+  - convert:
+      field: json.cltip
+      tag: convert_cltip_to_ip
+      target_field: zscaler_zia.web.client.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.cltip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_web_client_ip
+      copy_from: zscaler_zia.web.client.ip
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      ignore_missing: true
+  - convert:
+      field: json.cltpubip
+      tag: convert_cltpubip_to_ip
+      target_field: zscaler_zia.web.client.public_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.cltpubip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{zscaler_zia.web.client.public_ip}}}'
+      tag: append_related_ip_from_web_client_public_ip
+      if: ctx.zscaler_zia?.web?.client?.public_ip != null
+      allow_duplicates: false
+  - convert:
+      field: json.cltsourceport
+      tag: convert_cltsourceport_to_long
+      target_field: zscaler_zia.web.client.source_port
       type: long
       ignore_missing: true
+      if: ctx.json?.cltsourceport != ''
       on_failure:
-        - remove:
-            field: json.stime
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_web_client_source_port
+      copy_from: zscaler_zia.web.client.source_port
+      ignore_empty_value: true
   - convert:
-      field: json.ctime
-      target_field: zscaler_zia.web.ctime
+      field: json.cltsslfailcount
+      tag: convert_cltsslfailcount_to_long
+      target_field: zscaler_zia.web.client.ssl.fail_count
       type: long
       ignore_missing: true
+      if: ctx.json?.cltsslfailcount != ''
       on_failure:
-        - remove:
-            field: json.ctime
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.urlclass
-      target_field: zscaler_zia.web.url.class
+      field: json.cltsslfailreason
+      tag: rename_cltsslfailreason
+      target_field: zscaler_zia.web.client.ssl.fail_reason
       ignore_missing: true
   - rename:
-      field: json.urlsupercat
-      target_field: zscaler_zia.web.url.category.super
+      field: json.clttlsversion
+      tag: rename_clttlsversion
+      target_field: zscaler_zia.web.client.tls_version
       ignore_missing: true
   - rename:
-      field: json.urlcat
-      target_field: zscaler_zia.web.url.category.sub
+      field: json.cloudname
+      tag: rename_cloudname
+      target_field: zscaler_zia.web.cloud_name
+      ignore_missing: true
+  - set:
+      field: cloud.provider
+      tag: set_cloud_provider_from_web_cloud_name
+      copy_from: zscaler_zia.web.cloud_name
+      ignore_empty_value: true
+  - rename:
+      field: json.company
+      tag: rename_company
+      target_field: zscaler_zia.web.company
+      ignore_missing: true
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_web_company
+      copy_from: zscaler_zia.web.company
+      ignore_empty_value: true
+  - rename:
+      field: json.contenttype
+      tag: rename_contenttype
+      target_field: zscaler_zia.web.content_type
       ignore_missing: true
   - rename:
-      field: json.malwarecat
-      target_field: zscaler_zia.web.malware.category
+      field: json.datacentercity
+      tag: rename_datacentercity
+      target_field: zscaler_zia.web.datacenter.city
       ignore_missing: true
   - rename:
-      field: json.threatname
-      target_field: zscaler_zia.web.threat.name
+      field: json.datacentercountry
+      tag: rename_datacentercountry
+      target_field: zscaler_zia.web.datacenter.country
+      ignore_missing: true
+  - rename:
+      field: json.datacenter
+      tag: rename_datacenter
+      target_field: zscaler_zia.web.datacenter.name
+      ignore_missing: true
+  - rename:
+      field: json.day
+      tag: rename_day
+      target_field: zscaler_zia.web.day
       ignore_missing: true
   - convert:
-      field: json.riskscore
-      target_field: event.risk_score
-      type: double
+      field: json.day_of_month
+      tag: convert_day_of_month_to_long
+      target_field: zscaler_zia.web.day_of_month
+      type: long
       ignore_missing: true
+      if: ctx.json?.day_of_month != ''
       on_failure:
-        - remove:
-            field: json.riskscore
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.dlpeng
-      target_field: zscaler_zia.web.dpl.engine
-      ignore_missing: true
-  - rename:
-      field: json.dlpdict
-      target_field: zscaler_zia.web.dpl.dictionaries
-      ignore_missing: true
-  - rename:
-      field: json.location
-      target_field: zscaler_zia.web.location
-      ignore_missing: true
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.dept
+      tag: rename_dept
       target_field: zscaler_zia.web.department
       ignore_missing: true
   - rename:
-      field: json.unscannabletype
-      target_field: zscaler_zia.web.unscannable.type
+      field: json.deviceappversion
+      tag: rename_deviceappversion
+      target_field: zscaler_zia.web.device.appversion
       ignore_missing: true
   - rename:
       field: json.devicehostname
+      tag: rename_devicehostname
       target_field: zscaler_zia.web.device.hostname
       ignore_missing: true
   - lowercase:
       field: zscaler_zia.web.device.hostname
       target_field: host.name
       ignore_missing: true
+      tag: lowercase_device_hostname
       if: ctx.zscaler_zia?.web?.device?.hostname != ''
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hosts
-      value: '{{{zscaler_zia.web.device.hostname}}}'
-      if: ctx.zscaler_zia?.web?.device?.hostname != null
+      tag: set_related_hosts_from_host_name
+      value: '{{{host.name}}}'
       allow_duplicates: false
+      if: ctx.host?.name != null
   - rename:
-      field: json.bwthrottle
-      target_field: zscaler_zia.web.bandwidth_throttle
+      field: json.devicemodel
+      tag: rename_devicemodel
+      target_field: zscaler_zia.web.device.model
       ignore_missing: true
-  - convert:
-      field: json.cip
-      target_field: source.ip
-      type: ip
+  - set:
+      field: device.model.identifier
+      tag: set_device_model_identifier_from_web_device_model
+      copy_from: zscaler_zia.web.device.model
+      ignore_empty_value: true
+  - rename:
+      field: json.devicename
+      tag: rename_devicename
+      target_field: zscaler_zia.web.device.name
       ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_web_device_name
+      copy_from: zscaler_zia.web.device.name
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: set_related_hosts_from_host_hostname
+      value: '{{{host.hostname}}}'
+      allow_duplicates: false
+      if: ctx.host?.hostname != null
+  - rename:
+      field: json.deviceostype
+      tag: rename_deviceostype
+      target_field: zscaler_zia.web.device.os.type
+      ignore_missing: true
+  - script:
+      description: Extract values from device os type
+      tag: script_extract_device_os_type
+      lang: painless
+      if: ctx.zscaler_zia?.web?.device?.os?.type != null && ctx.zscaler_zia.web.device.os.type != ''
+      source: |-
+        String osType = ctx.zscaler_zia.web.device.os.type;
+        if (ctx.host == null) {
+            Map map = new HashMap();
+            ctx.put('host', map);
+        }
+        if (ctx.host?.os == null) {
+            Map map = new HashMap();
+            ctx.host.put('os', map);
+        }
+        if (osType == 'iOS') {
+           ctx.host.os.put('type', 'ios');
+        }
+        else if (osType == 'Android OS') {
+           ctx.host.os.put('type', 'android');
+        }
+        else if (osType == 'Windows OS') {
+           ctx.host.os.put('type', 'windows');
+        }
+        else if (osType == 'MAC OS') {
+           ctx.host.os.put('type', 'macos');
+        }
+        else if (osType == 'Other OS') {
+           ctx.host.os.put('type', 'other');
+        }
       on_failure:
-        - remove:
-            field: json.cip
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{source.ip}}}'
-      if: ctx.source?.ip != null
-      allow_duplicates: false
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.ehost
-      target_field: zscaler_zia.web.encoded_host
+      field: json.deviceosversion
+      tag: rename_deviceosversion
+      target_field: zscaler_zia.web.device.os.version
       ignore_missing: true
   - set:
-      field: destination.domain
-      value: '{{{zscaler_zia.web.encoded_host}}}'
+      field: host.os.version
+      tag: set_host_os_version_from_web_device_os_version
+      copy_from: zscaler_zia.web.device.os.version
       ignore_empty_value: true
+  - rename:
+      field: json.deviceowner
+      tag: rename_deviceowner
+      target_field: zscaler_zia.web.device.owner
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: set_related_user_from_device_owner
+      value: '{{{zscaler_zia.web.device.owner}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.web?.device?.owner != null
+  - rename:
+      field: json.devicetype
+      tag: rename_devicetype
+      target_field: zscaler_zia.web.device.type
+      ignore_missing: true
   - set:
-      field: file.hash.md5
-      value: '{{{json.bamd5}}}'
+      field: host.type
+      tag: set_host_type_from_web_device_type
+      copy_from: zscaler_zia.web.device.type
       ignore_empty_value: true
+  - rename:
+      field: json.df_hosthead
+      tag: rename_df_hosthead
+      target_field: zscaler_zia.web.df.host.head
+      ignore_missing: true
+  - rename:
+      field: json.df_hostname
+      tag: rename_df_hostname
+      target_field: zscaler_zia.web.df.host.name
+      ignore_missing: true
+  - rename:
+      field: json.dlpdicthitcount
+      tag: rename_dlpdicthitcount
+      target_field: zscaler_zia.web.dlp.dictionaries.hit_count
+      ignore_missing: true
+  - rename:
+      field: json.dlpdict
+      tag: rename_dlpdict
+      target_field: zscaler_zia.web.dlp.dictionaries.name
+      ignore_missing: true
+  - rename:
+      field: json.dlpeng
+      tag: rename_dlpeng
+      target_field: zscaler_zia.web.dlp.engine
+      ignore_missing: true
+  - convert:
+      field: json.dlpidentifier
+      tag: convert_dlpidentifier_to_string
+      target_field: zscaler_zia.web.dlp.identifier
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.dlpmd5
+      tag: rename_dlpmd5
+      target_field: zscaler_zia.web.dlp.md5
+      ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{file.hash.md5}}}'
-      if: ctx.file?.hash?.md5 != null
+      tag: append_zscaler_zia_web_dlp_md5_into_related_hash
+      value: '{{{zscaler_zia.web.dlp.md5}}}'
       allow_duplicates: false
-  - set:
-      field: file.name
-      value: '{{{json.filename}}}'
-      ignore_empty_value: true
-  - set:
-      field: file.extension
-      value: '{{{json.filesubtype}}}'
-      ignore_empty_value: true
-  - convert:
-      field: json.clt_sport
-      target_field: client.port
-      type: long
+      if: ctx.zscaler_zia?.web?.dlp?.md5 != null
+  - rename:
+      field: json.dlprulename
+      tag: rename_dlprulename
+      target_field: zscaler_zia.web.dlp.rule.name
       ignore_missing: true
+  - append:
+      field: rule.name
+      tag: append_zscaler_zia_web_dlp_rule_name_into_rule_name
+      value: '{{{zscaler_zia.web.dlp.rule.name}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.web?.dlp?.rule?.name != null
+  - rename:
+      field: json.eedone
+      tag: rename_eedone
+      target_field: zscaler_zia.web.eedone
+      ignore_missing: true
+  - date:
+      field: json.epochtime
+      tag: date_epochtime
+      target_field: zscaler_zia.web.epochtime
+      formats:
+        - UNIX
+      if: ctx.json?.epochtime != null && ctx.json.epochtime != ''
       on_failure:
-        - remove:
-            field: json.clt_sport
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.hosts
-      value: '{{{destination.domain}}}'
-      if: ctx.destination?.domain != null
-      allow_duplicates: false
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.external_devid
+      tag: rename_external_devid
+      target_field: zscaler_zia.web.external.device.id
+      ignore_missing: true
+  - set:
+      field: device.id
+      tag: set_device_id_from_web_external_device_id
+      copy_from: zscaler_zia.web.external.device.id
+      ignore_empty_value: true
   - rename:
       field: json.fileclass
+      tag: rename_fileclass
       target_field: zscaler_zia.web.file.class
       ignore_missing: true
   - rename:
+      field: json.filename
+      tag: rename_filename
+      target_field: zscaler_zia.web.file.name
+      ignore_missing: true
+  - append:
+      field: file.name
+      tag: append_zscaler_zia_web_file_name_into_file_name
+      value: '{{{zscaler_zia.web.file.name}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.web?.file?.name != null
+  - rename:
+      field: json.filesubtype
+      tag: rename_filesubtype
+      target_field: zscaler_zia.web.file.subtype
+      ignore_missing: true
+  - append:
+      field: file.extension
+      tag: append_zscaler_zia_web_file_subtype_into_file_extension
+      value: '{{{zscaler_zia.web.file.subtype}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.web?.file?.subtype != null
+  - rename:
       field: json.filetype
+      tag: rename_filetype
       target_field: zscaler_zia.web.file.type
       ignore_missing: true
   - set:
       field: file.type
-      value: '{{{zscaler_zia.web.file.type}}}'
+      tag: set_file_type
+      value: file
+  - rename:
+      field: json.flow_type
+      tag: rename_flow_type
+      target_field: zscaler_zia.web.flow_type
+      ignore_missing: true
+  - convert:
+      field: json.forward_gateway_ip
+      tag: convert_forward_gateway_ip_to_ip
+      target_field: zscaler_zia.web.forward_gateway.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.forward_gateway_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{zscaler_zia.web.forward_gateway.ip}}}'
+      tag: append_related_ip_from_web_forward_gateway_ip
+      if: ctx.zscaler_zia?.web?.forward_gateway?.ip != null
+  - rename:
+      field: json.forward_gateway_name
+      tag: rename_forward_gateway_name
+      target_field: zscaler_zia.web.forward_gateway.name
+      ignore_missing: true
+  - rename:
+      field: json.forward_type
+      tag: rename_forward_type
+      target_field: zscaler_zia.web.forward_type
+      ignore_missing: true
+  - rename:
+      field: json.host
+      tag: rename_host
+      target_field: zscaler_zia.web.host
+      ignore_missing: true
+  - set:
+      field: destination.domain
+      tag: set_destination_domain_from_web_host
+      copy_from: zscaler_zia.web.host
       ignore_empty_value: true
+  - convert:
+      field: json.hour
+      tag: convert_hour_to_long
+      target_field: zscaler_zia.web.hour
+      type: long
+      ignore_missing: true
+      if: ctx.json?.hour != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.is_sslexpiredca
+      tag: rename_is_sslexpiredca
+      target_field: zscaler_zia.web.is_ssl_certificate_expired
+      ignore_missing: true
+  - rename:
+      field: json.is_sslselfsigned
+      tag: rename_is_sslselfsigned
+      target_field: zscaler_zia.web.is_ssl_certificate_selfsigned
+      ignore_missing: true
+  - rename:
+      field: json.is_ssluntrustedca
+      tag: rename_is_ssluntrustedca
+      target_field: zscaler_zia.web.is_ssl_certificate_untrusted
+      ignore_missing: true
+  - rename:
+      field: json.keyprotectiontype
+      tag: rename_keyprotectiontype
+      target_field: zscaler_zia.web.key_protection_type
+      ignore_missing: true
+  - rename:
+      field: json.location
+      tag: rename_location
+      target_field: zscaler_zia.web.location
+      ignore_missing: true
+  - rename:
+      field: json.login
+      tag: rename_login
+      target_field: zscaler_zia.web.login
+      ignore_missing: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_web_login
+      copy_from: zscaler_zia.web.login
+      ignore_empty_value: true
+  - dissect:
+      field: user.email
+      tag: create_user_name_and_user_domain
+      pattern: '%{user.name}@%{user.domain}'
+      ignore_missing: true
+      if: ctx.user?.email != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: set_related_user_from_user_name
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: set_related_user_from_user_email
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - rename:
+      field: json.malwarecategory
+      tag: rename_malwarecategory
+      target_field: zscaler_zia.web.malware.category
+      ignore_missing: true
   - rename:
       field: json.malwareclass
+      tag: rename_malwareclass
       target_field: zscaler_zia.web.malware.class
       ignore_missing: true
   - rename:
-      field: json.reason
-      target_field: event.reason
+      field: json.bamd5
+      tag: rename_bamd5
+      target_field: zscaler_zia.web.md5_hash
+      ignore_missing: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_web_md5_hash
+      copy_from: zscaler_zia.web.md5_hash
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_web_md5_hash
+      copy_from: zscaler_zia.web.md5_hash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_related_hash_from_web_md5_hash
+      value: '{{{file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - convert:
+      field: json.minute
+      tag: convert_minute_to_long
+      target_field: zscaler_zia.web.minute
+      type: long
+      ignore_missing: true
+      if: ctx.json?.minute != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.mobappcategory
+      tag: rename_mobappcategory
+      target_field: zscaler_zia.web.mobile.application.category
       ignore_missing: true
   - rename:
-      field: json.recordid
-      target_field: zscaler_zia.web.record.id
+      field: json.mobappname
+      tag: rename_mobappname
+      target_field: zscaler_zia.web.mobile.application.name
       ignore_missing: true
   - rename:
-      field: json.upload_fileclass
-      target_field: zscaler_zia.web.upload.file.class
+      field: json.mobdevtype
+      tag: rename_mobdevtype
+      target_field: zscaler_zia.web.mobile.dev.type
       ignore_missing: true
   - rename:
-      field: json.upload_filetype
-      target_field: zscaler_zia.web.upload.file.type
+      field: json.module
+      tag: rename_module
+      target_field: zscaler_zia.web.module
       ignore_missing: true
   - rename:
-      field: json.upload_filename
-      target_field: zscaler_zia.web.upload.file.name
-      ignore_missing: true
-  - rename:
-      field: json.upload_filesubtype
-      target_field: zscaler_zia.web.upload.file.sub_type
+      field: json.month
+      tag: rename_month
+      target_field: zscaler_zia.web.month
       ignore_missing: true
   - convert:
+      field: json.month_of_year
+      tag: convert_month_of_year_to_long
+      target_field: zscaler_zia.web.month_of_year
+      type: long
+      ignore_missing: true
+      if: ctx.json?.month_of_year != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.nssserviceip
+      tag: convert_nssserviceip_to_ip
+      target_field: zscaler_zia.web.nss.service.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.nssserviceip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{zscaler_zia.web.nss.service.ip}}}'
+      tag: append_related_ip_from_web_nss_service_ip
+      if: ctx.zscaler_zia?.web?.nss?.service?.ip != null
+  - rename:
+      field: json.oapprulelabel
+      tag: rename_oapprulelabel
+      target_field: zscaler_zia.web.obfuscated.app_rule_label
+      ignore_missing: true
+  - rename:
+      field: json.obwclassname
+      tag: rename_obwclassname
+      target_field: zscaler_zia.web.obfuscated.bendwidth.class_name
+      ignore_missing: true
+  - convert:
+      field: json.ocip
+      tag: convert_ocip_to_string
+      target_field: zscaler_zia.web.obfuscated.client.ip
+      type: string
+      ignore_missing: true
+  - convert:
+      field: json.ocpubip
+      tag: convert_ocpubip_to_string
+      target_field: zscaler_zia.web.obfuscated.client.public.ip
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.odevicehostname
+      tag: rename_odevicehostname
+      target_field: zscaler_zia.web.obfuscated.device.host_name
+      ignore_missing: true
+  - rename:
+      field: json.odevicename
+      tag: rename_odevicename
+      target_field: zscaler_zia.web.obfuscated.device.name
+      ignore_missing: true
+  - rename:
+      field: json.odeviceowner
+      tag: rename_odeviceowner
+      target_field: zscaler_zia.web.obfuscated.device.owner
+      ignore_missing: true
+  - rename:
+      field: json.odlpdict
+      tag: rename_odlpdict
+      target_field: zscaler_zia.web.obfuscated.dlp.dictionaries
+      ignore_missing: true
+  - rename:
+      field: json.odlpeng
+      tag: rename_odlpeng
+      target_field: zscaler_zia.web.obfuscated.dlp.engine
+      ignore_missing: true
+  - rename:
+      field: json.odlprulename
+      tag: rename_odlprulename
+      target_field: zscaler_zia.web.obfuscated.dlp.rule.name
+      ignore_missing: true
+  - rename:
+      field: json.ofwd_gw_name
+      tag: rename_ofwd_gw_name
+      target_field: zscaler_zia.web.obfuscated.forward_gateway_name
+      ignore_missing: true
+  - rename:
+      field: json.ologin
+      tag: rename_ologin
+      target_field: zscaler_zia.web.obfuscated.login
+      ignore_missing: true
+  - rename:
+      field: json.ordr_rulename
+      tag: rename_ordr_rulename
+      target_field: zscaler_zia.web.obfuscated.rule.name
+      ignore_missing: true
+  - rename:
+      field: json.ourlcat
+      tag: rename_ourlcat
+      target_field: zscaler_zia.web.obfuscated.url.category
+      ignore_missing: true
+  - rename:
+      field: json.ourlfilterrulelabel
+      tag: rename_ourlfilterrulelabel
+      target_field: zscaler_zia.web.obfuscated.url.filter_rule_label
+      ignore_missing: true
+  - rename:
+      field: json.ozpa_app_seg_name
+      tag: rename_ozpa_app_seg_name
+      target_field: zscaler_zia.web.obfuscated.zpa_app_segment
+      ignore_missing: true
+  - rename:
+      field: json.externalsslpolicyreason
+      tag: rename_externalsslpolicyreason
+      target_field: zscaler_zia.web.policy.reason
+      ignore_missing: true
+  - rename:
+      field: json.productversion
+      tag: rename_productversion
+      target_field: zscaler_zia.web.product_version
+      ignore_missing: true
+  - rename:
+      field: json.proto
+      tag: rename_proto
+      target_field: zscaler_zia.web.prototype
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_web_prototype
+      copy_from: zscaler_zia.web.prototype
+      ignore_empty_value: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - rename:
+      field: json.reason
+      tag: rename_reason
+      target_field: zscaler_zia.web.reason
+      ignore_missing: true
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_web_reason
+      copy_from: zscaler_zia.web.reason
+      ignore_empty_value: true
+  - convert:
+      field: json.recordid
+      tag: convert_recordid_to_string
+      target_field: zscaler_zia.web.record.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_web_record_id
+      copy_from: zscaler_zia.web.record.id
+      ignore_empty_value: true
+  - rename:
+      field: json.rdr_rulename
+      tag: rename_rdr_rulename
+      target_field: zscaler_zia.web.redirect_policy_name
+      ignore_missing: true
+  - rename:
+      field: json.refererhost
+      tag: rename_refererhost
+      target_field: zscaler_zia.web.referer.host
+      ignore_missing: true
+  - rename:
+      field: json.refererurl
+      tag: rename_refererurl
+      target_field: zscaler_zia.web.referer.name
+      ignore_missing: true
+  - set:
+      field: http.request.referrer
+      tag: set_http_request_referrer_from_web_referer_name
+      copy_from: zscaler_zia.web.referer.name
+      ignore_empty_value: true
+  - convert:
+      field: json.reqheadersize
+      tag: convert_reqheadersize_to_long
+      target_field: zscaler_zia.web.request.header_size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.reqheadersize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.reqmethod
+      tag: rename_reqmethod
+      target_field: zscaler_zia.web.request.method
+      ignore_missing: true
+  - set:
+      field: http.request.method
+      tag: set_http_request_method_from_web_request_method
+      copy_from: zscaler_zia.web.request.method
+      ignore_empty_value: true
+  - convert:
+      field: json.reqdatasize
+      tag: convert_reqdatasize_to_long
+      target_field: zscaler_zia.web.request.payload
+      type: long
+      ignore_missing: true
+      if: ctx.json?.reqdatasize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.reqsize
+      tag: convert_reqsize_to_long
+      target_field: zscaler_zia.web.request.size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.reqsize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.request.bytes
+      tag: set_http_request_bytes_from_web_request_size
+      copy_from: zscaler_zia.web.request.size
+      ignore_empty_value: true
+  - rename:
+      field: json.reqversion
+      tag: rename_reqversion
+      target_field: zscaler_zia.web.request.version
+      ignore_missing: true
+  - set:
+      field: http.version
+      tag: set_http_version_from_web_request_version
+      copy_from: zscaler_zia.web.request.version
+      ignore_empty_value: true
+  - rename:
+      field: json.respcode
+      tag: rename_respcode
+      target_field: zscaler_zia.web.response.code
+      ignore_missing: true
+  - convert:
+      field: json.respheadersize
+      tag: convert_respheadersize_to_long
+      target_field: zscaler_zia.web.response.header_size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.respheadersize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.respdatasize
+      tag: convert_respdatasize_to_long
+      target_field: zscaler_zia.web.response.payload
+      type: long
+      ignore_missing: true
+      if: ctx.json?.respdatasize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.respsize
+      tag: convert_respsize_to_long
+      target_field: zscaler_zia.web.response.size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.respsize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.bytes
+      tag: set_http_response_bytes_from_web_response_size
+      copy_from: zscaler_zia.web.response.size
+      ignore_empty_value: true
+  - rename:
+      field: json.respversion
+      tag: rename_respversion
+      target_field: zscaler_zia.web.response.version
+      ignore_missing: true
+  - append:
+      field: http.version
+      tag: append_zscaler_zia_web_response_version_into_http_version
+      value: '{{{zscaler_zia.web.response.version}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.web?.response?.version != null
+  - convert:
+      field: json.riskscore
+      tag: convert_riskscore_to_long
+      target_field: zscaler_zia.web.risk.score
+      type: double
+      ignore_missing: true
+      if: ctx.json?.riskscore != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.rulelabel
+      tag: rename_rulelabel
+      target_field: zscaler_zia.web.rule.name
+      ignore_missing: true
+  - append:
+      field: rule.name
+      tag: append_zscaler_zia_web_rule_name_into_rule_name
+      value: '{{{zscaler_zia.web.rule.name}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.web?.rule?.name != null
+  - rename:
+      field: json.ruletype
+      tag: rename_ruletype
+      target_field: zscaler_zia.web.rule.type
+      ignore_missing: true
+  - convert:
+      field: json.second
+      tag: convert_second_to_long
+      target_field: zscaler_zia.web.second
+      type: long
+      ignore_missing: true
+      if: ctx.json?.second != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.srvcertvalidityperiod
+      tag: rename_srvcertvalidityperiod
+      target_field: zscaler_zia.web.server.certificate.validation.period
+      ignore_missing: true
+  - rename:
+      field: json.srvcertchainvalpass
+      tag: rename_srvcertchainvalpass
+      target_field: zscaler_zia.web.server.certificate_validation_chain
+      ignore_missing: true
+  - rename:
+      field: json.srvcertvalidationtype
+      tag: rename_srvcertvalidationtype
+      target_field: zscaler_zia.web.server.certificate_validation_type
+      ignore_missing: true
+  - rename:
+      field: json.srvsslcipher
+      tag: rename_srvsslcipher
+      target_field: zscaler_zia.web.server.cipher
+      ignore_missing: true
+  - rename:
+      field: json.serversslsessreuse
+      tag: rename_serversslsessreuse
+      target_field: zscaler_zia.web.server.cipher_reuse
+      ignore_missing: true
+  - convert:
+      field: json.serverip
+      tag: convert_serverip_to_ip
+      target_field: zscaler_zia.web.server.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.serverip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_web_server_ip
+      copy_from: zscaler_zia.web.server.ip
+      ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      tag: geoip_destination_ip
+      target_field: destination.geo
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      tag: append_related_ip_from_source_ip
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      tag: append_related_ip_from_destination_ip
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - rename:
+      field: json.srvocspresult
+      tag: rename_srvocspresult
+      target_field: zscaler_zia.web.server.ocsp_result
+      ignore_missing: true
+  - rename:
+      field: json.srvtlsversion
+      tag: rename_srvtlsversion
+      target_field: zscaler_zia.web.server.tls_version
+      ignore_missing: true
+  - rename:
+      field: json.srvwildcardcert
+      tag: rename_srvwildcardcert
+      target_field: zscaler_zia.web.server.wildcard_certificate
+      ignore_missing: true
+  - rename:
+      field: json.sha256
+      tag: rename_sha256
+      target_field: zscaler_zia.web.sha256
+      ignore_missing: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_web_sha256
+      copy_from: zscaler_zia.web.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_zscaler_zia_web_sha256_into_related_hash
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - rename:
+      field: json.ssldecrypted
+      tag: rename_ssldecrypted
+      target_field: zscaler_zia.web.ssl_decrypted
+      ignore_missing: true
+  - rename:
+      field: json.threatname
+      tag: rename_threatname
+      target_field: zscaler_zia.web.threat.name
+      ignore_missing: true
+  - rename:
+      field: json.threatseverity
+      tag: rename_threatseverity
+      target_field: zscaler_zia.web.threat.severity
+      ignore_missing: true
+  - convert:
+      field: json.throttlereqsize
+      tag: convert_throttlereqsize_to_long
+      target_field: zscaler_zia.web.throttle.request_size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.throttlereqsize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.throttlerespsize
+      tag: convert_throttlerespsize_to_long
+      target_field: zscaler_zia.web.throttle.response_size
+      type: long
+      ignore_missing: true
+      if: ctx.json?.throttlerespsize != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.tz
+      tag: rename_tz
+      target_field: zscaler_zia.web.timezone
+      ignore_missing: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_web_timezone
+      copy_from: zscaler_zia.web.timezone
+      ignore_empty_value: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_to_utc
+      value: UTC
+      if: ctx.event?.timezone == null
+  - date:
+      field: json.time
+      tag: date_time
+      target_field: zscaler_zia.web.time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+      timezone: '{{{event.timezone}}}'
+      if: ctx.json?.time != null && ctx.json.time != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_web_time
+      copy_from: zscaler_zia.web.time
+      ignore_empty_value: true
+  - date:
+      field: json.bypassedtime
+      tag: date_bypassedtime
+      target_field: zscaler_zia.web.bypassed.time
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+      timezone: '{{{event.timezone}}}'
+      if: ctx.json?.bypassedtime != null && ctx.json.bypassedtime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.totalsize
+      tag: convert_totalsize_to_long
       target_field: zscaler_zia.web.total.size
       type: long
       ignore_missing: true
+      if: ctx.json?.totalsize != ''
       on_failure:
-        - remove:
-            field: json.totalsize
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.trafficredirectmethod
+      tag: rename_trafficredirectmethod
+      target_field: zscaler_zia.web.traffic_redirect_method
+      ignore_missing: true
+  - rename:
+      field: json.unscannabletype
+      tag: rename_unscannabletype
+      target_field: zscaler_zia.web.unscannable.type
+      ignore_missing: true
+  - rename:
+      field: json.upload_doctypename
+      tag: rename_upload_doctypename
+      target_field: zscaler_zia.web.upload.doc.type_name
+      ignore_missing: true
+  - rename:
+      field: json.upload_fileclass
+      tag: rename_upload_fileclass
+      target_field: zscaler_zia.web.upload.file.class
+      ignore_missing: true
+  - rename:
+      field: json.upload_filename
+      tag: rename_upload_filename
+      target_field: zscaler_zia.web.upload.file.name
+      ignore_missing: true
+  - append:
+      field: file.name
+      tag: append_zscaler_zia_web_upload_file_name_into_file_name
+      value: '{{{zscaler_zia.web.upload.file.name}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.web?.upload?.file?.name != null
+  - rename:
+      field: json.upload_filesubtype
+      tag: rename_upload_filesubtype
+      target_field: zscaler_zia.web.upload.file.subtype
+      ignore_missing: true
+  - append:
+      field: file.extension
+      tag: append_zscaler_zia_web_upload_file_subtype_into_file_extension
+      value: '{{{zscaler_zia.web.upload.file.subtype}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.web?.upload?.file?.subtype != null
+  - rename:
+      field: json.upload_filetype
+      tag: rename_upload_filetype
+      target_field: zscaler_zia.web.upload.file.type
+      ignore_missing: true
+  - rename:
+      field: json.urlsubcat
+      tag: rename_urlsubcat
+      target_field: zscaler_zia.web.url.category.sub
+      ignore_missing: true
+  - rename:
+      field: json.urlsupercat
+      tag: rename_urlsupercat
+      target_field: zscaler_zia.web.url.category.super
+      ignore_missing: true
+  - rename:
+      field: json.urlcatmethod
+      tag: rename_urlcatmethod
+      target_field: zscaler_zia.web.url.category_method
+      ignore_missing: true
+  - rename:
+      field: json.urlclass
+      tag: rename_urlclass
+      target_field: zscaler_zia.web.url.class
+      ignore_missing: true
+  - rename:
+      field: json.urlfilterrulelabel
+      tag: rename_urlfilterrulelabel
+      target_field: zscaler_zia.web.url.filter_rule_label
+      ignore_missing: true
+  - append:
+      field: rule.name
+      tag: append_zscaler_zia_web_url_filter_rule_label_into_rule_name
+      value: '{{{zscaler_zia.web.url.filter_rule_label}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.web?.url?.filter_rule_label != null
+  - urldecode:
+      field: json.url
+      target_field: zscaler_zia.web.url.name
+      tag: urldecode_url
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: url.original
+      tag: set_url_original_from_web_url_name
+      copy_from: zscaler_zia.web.url.name
+      ignore_empty_value: true
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_url_original
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.useragentclass
+      tag: rename_useragentclass
+      target_field: zscaler_zia.web.user_agent.class
+      ignore_missing: true
+  - urldecode:
+      field: json.useragent
+      target_field: zscaler_zia.web.user_agent.name
+      tag: urldecode_useragent
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original_from_web_user_agent_name
+      copy_from: zscaler_zia.web.user_agent.name
+      ignore_empty_value: true
+  - user_agent:
+      field: user_agent.original
+      tag: user_agent_original
+      if: ctx.user_agent?.original != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.useragenttoken
+      tag: rename_useragenttoken
+      target_field: zscaler_zia.web.user_agent.token
+      ignore_missing: true
+  - rename:
+      field: json.userlocationname
+      tag: rename_userlocationname
+      target_field: zscaler_zia.web.user_location_name
+      ignore_missing: true
+  - convert:
+      field: json.year
+      tag: convert_year_to_long
+      target_field: zscaler_zia.web.year
+      type: long
+      ignore_missing: true
+      if: ctx.json?.year != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ztunnelversion
+      tag: rename_ztunnelversion
+      target_field: zscaler_zia.web.z_tunnel_version
+      ignore_missing: true
+  - rename:
+      field: json.zpa_app_seg_name
+      tag: rename_zpa_app_seg_name
+      target_field: zscaler_zia.web.zpa_app_segment
+      ignore_missing: true
   - remove:
       field:
-        - json.time
-        - json.datetime
-        - json.cip
-        - json.sip
-        - json.reqsize
-        - json.respsize
-        - json.respcode
-        - json.eurl
-        - json.url
-        - json.eua
-        - json.stime
-        - json.ctime
-        - json.riskscore
-        - json.cintip
-        - json.totalsize
-        - json.deviceowner
-        - json.clt_sport
+        - zscaler_zia.web.action
+        - zscaler_zia.web.app.rule_label
+        - zscaler_zia.web.client.cipher
+        - zscaler_zia.web.client.internet.ip
+        - zscaler_zia.web.client.ip
+        - zscaler_zia.web.client.source_port
+        - zscaler_zia.web.cloud_name
+        - zscaler_zia.web.company
+        - zscaler_zia.web.device.hostname
+        - zscaler_zia.web.device.model
+        - zscaler_zia.web.device.name
+        - zscaler_zia.web.device.os.version
+        - zscaler_zia.web.device.type
+        - zscaler_zia.web.dlp.rule.name
+        - zscaler_zia.web.external.device.id
+        - zscaler_zia.web.file.name
+        - zscaler_zia.web.file.subtype
+        - zscaler_zia.web.host
+        - zscaler_zia.web.login
+        - zscaler_zia.web.md5_hash
+        - zscaler_zia.web.prototype
+        - zscaler_zia.web.reason
+        - zscaler_zia.web.record.id
+        - zscaler_zia.web.referer.name
+        - zscaler_zia.web.request.method
+        - zscaler_zia.web.request.size
+        - zscaler_zia.web.request.version
+        - zscaler_zia.web.response.size
+        - zscaler_zia.web.response.version
+        - zscaler_zia.web.rule.name
+        - zscaler_zia.web.server.ip
+        - zscaler_zia.web.sha256
+        - zscaler_zia.web.time
+        - zscaler_zia.web.upload.file.name
+        - zscaler_zia.web.upload.file.subtype
+        - zscaler_zia.web.url.filter_rule_label
+        - zscaler_zia.web.url.name
+        - zscaler_zia.web.user_agent.name
+      tag: remove_custom_duplicate_fields
       ignore_missing: true
-  - script:
-      description: Adds all the remaining fields in fields under zscaler_zia.web.
-      lang: painless
-      if: ctx.json != null
-      source: |
-        for (Map.Entry m : ctx.json.entrySet()) {
-          ctx.zscaler_zia.web[m.getKey()] = m.getValue();
-        }
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
+      tag: remove_json
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_missing: true
-on_failure:
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null/empty values recursively.
   - set:
       field: event.kind
       value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

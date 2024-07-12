@@ -2,6 +2,8 @@
 
 The Azure OpenAI service provides flexibility to build your own copilot and AI applications. The Azure OpenAI integration collects metrics and logs through [azure-monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-metrics/metrics-index) and Azure [event hub](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/stream-monitoring-data-event-hubs) respectively.
 
+To fully populate the Azure OpenAI dashboard lenses, enabling both logs and metrics data streams and setting up the Azure Billing integration in advance is necessary.
+
 ## Data streams
 
 ### Logs
@@ -31,6 +33,10 @@ Refer to the [settings](https://docs.elastic.co/integrations/azure#:~:text=*.clo
 #### Logs Reference
 
 {{event "logs"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "logs"}}
 
@@ -64,5 +70,9 @@ The primary aggregation value will be retrieved for all the metrics contained in
 #### Metrics Reference
 
 {{event "metrics"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "metrics"}}
