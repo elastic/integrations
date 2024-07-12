@@ -80,9 +80,9 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      description: Recalculates the event duration based on the difference between request_time and response_time in the Azure OpenAI properties. It also saves the original duration in a separate field for reference.
+      description: Recalculates the event duration based on the difference between request_time and response_time in the Azure OpenAI properties. This is needed due to unexpected values being sometimes fetched from Azure. It also saves the original duration in a separate field for reference.
       source: |
-        if (ctx.azure?.open_ai.properties instanceof Map) {
+        if (ctx.azure?.open_ai?.properties instanceof Map) {
           if (ctx.event.duration != null) {
             if (ctx.azure.open_ai.properties.request_time != null && ctx.azure.open_ai.properties.response_time != null) {
               ctx.event.duration_original = ctx.event.duration;
