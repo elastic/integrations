@@ -114,28 +114,6 @@ An example event for `state_container` looks as following:
         "address": "http://kube-state-metrics:8080/metrics",
         "type": "kubernetes"
     },
-    "host": {
-        "hostname": "kind-control-plane",
-        "os": {
-            "kernel": "5.10.47-linuxkit",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "10.244.0.1"
-        ],
-        "name": "kind-control-plane",
-        "id": "85e35c2b5e1b39ba72393a6baf6ee7cd",
-        "mac": [
-            "fe:ec:82:9f:29:19"
-        ],
-        "architecture": "x86_64"
-    },
     "metricset": {
         "period": 10000,
         "name": "state_container"
@@ -148,6 +126,7 @@ An example event for `state_container` looks as following:
         "dataset": "kubernetes.state_container"
     }
 }
+
 ```
 
 **Exported fields**
@@ -181,7 +160,7 @@ An example event for `state_container` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
@@ -397,7 +376,7 @@ An example event for `state_cronjob` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
@@ -580,7 +559,7 @@ An example event for `state_daemonset` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
@@ -760,7 +739,7 @@ An example event for `state_deployment` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
@@ -969,7 +948,7 @@ An example event for `state_job` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
@@ -1110,7 +1089,7 @@ An example event for `state_namespace` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
@@ -1222,7 +1201,7 @@ An example event for `state_node` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
@@ -1294,27 +1273,6 @@ An example event for `state_persistentvolume` looks as following:
             "type": "local"
         }
     },
-    "host": {
-        "ip": [
-            "172.17.0.11"
-        ],
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ],
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "os": {
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81"
-        },
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "containerized": false
-    },
     "metricset": {
         "period": 10000,
         "name": "state_persistentvolume"
@@ -1324,6 +1282,7 @@ An example event for `state_persistentvolume` looks as following:
         "type": "kubernetes"
     }
 }
+
 ```
 
 **Exported fields**
@@ -1356,7 +1315,7 @@ An example event for `state_persistentvolume` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
@@ -1438,7 +1397,7 @@ An example event for `state_persistentvolumeclaim` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
@@ -1547,28 +1506,6 @@ An example event for `state_pod` looks as following:
         "address": "http://kube-state-metrics:8080/metrics",
         "type": "kubernetes"
     },
-    "host": {
-        "hostname": "kind-control-plane",
-        "os": {
-            "kernel": "5.10.47-linuxkit",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "family": "redhat",
-            "type": "linux",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "10.244.0.1"
-        ],
-        "name": "kind-control-plane",
-        "id": "85e35c2b5e1b39ba72393a6baf6ee7cd",
-        "mac": [
-            "fe:ec:82:9f:29:19"
-        ],
-        "architecture": "x86_64"
-    },
     "metricset": {
         "period": 10000,
         "name": "state_pod"
@@ -1581,6 +1518,7 @@ An example event for `state_pod` looks as following:
         "dataset": "kubernetes.state_pod"
     }
 }
+
 ```
 
 **Exported fields**
@@ -1614,7 +1552,7 @@ An example event for `state_pod` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -1644,6 +1582,8 @@ An example event for `state_pod` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.status.phase | Kubernetes pod phase (Running, Pending...) | keyword |
 | kubernetes.pod.status.ready | Kubernetes pod ready status (true, false or unknown) | keyword |
+| kubernetes.pod.status.ready_time | Readiness achieved time in unix timestamp for a pod | double |
+| kubernetes.pod.status.reason | The reason the pod is in its current state (Evicted, NodeAffinity, NodeLost, Shutdown or UnexpectedAdmissionError) | keyword |
 | kubernetes.pod.status.scheduled | Kubernetes pod scheduled status (true, false, unknown) | keyword |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
@@ -1814,7 +1754,7 @@ An example event for `state_replicaset` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
@@ -1856,27 +1796,6 @@ An example event for `state_resourcequota` looks as following:
         "name": "state_resourcequota",
         "period": 10000
     },
-    "host": {
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "os": {
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81"
-        },
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "ip": [
-            "172.17.0.11"
-        ],
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ]
-    },
     "service": {
         "address": "kube-state-metrics:8080",
         "type": "kubernetes"
@@ -1906,6 +1825,7 @@ An example event for `state_resourcequota` looks as following:
         }
     }
 }
+
 ```
 
 **Exported fields**
@@ -1938,7 +1858,7 @@ An example event for `state_resourcequota` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
@@ -2026,28 +1946,6 @@ An example event for `state_service` looks as following:
         "type": "metrics",
         "dataset": "kubernetes.state_service"
     },
-    "host": {
-        "hostname": "kind-control-plane",
-        "os": {
-            "kernel": "5.10.47-linuxkit",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "10.244.0.1"
-        ],
-        "name": "kind-control-plane",
-        "id": "85e35c2b5e1b39ba72393a6baf6ee7cd",
-        "mac": [
-            "fe:ec:82:9f:29:19"
-        ],
-        "architecture": "x86_64"
-    },
     "metricset": {
         "period": 10000,
         "name": "state_service"
@@ -2060,6 +1958,7 @@ An example event for `state_service` looks as following:
         "dataset": "kubernetes.state_service"
     }
 }
+
 ```
 
 **Exported fields**
@@ -2092,7 +1991,7 @@ An example event for `state_service` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -2288,7 +2187,7 @@ An example event for `state_statefulset` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
@@ -2345,27 +2244,6 @@ An example event for `state_storageclass` looks as following:
             "addonmanager_kubernetes_io_mode": "EnsureExists"
         }
     },
-    "host": {
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "os": {
-            "platform": "centos",
-            "version": "7 (Core)",
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core"
-        },
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "containerized": false,
-        "ip": [
-            "172.17.0.11"
-        ],
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ]
-    },
     "event": {
         "module": "kubernetes",
         "duration": 5713503,
@@ -2383,6 +2261,7 @@ An example event for `state_storageclass` looks as following:
         "version": "1.5.0"
     }
 }
+
 ```
 
 **Exported fields**
@@ -2415,7 +2294,7 @@ An example event for `state_storageclass` looks as following:
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |

@@ -28,4 +28,8 @@ Reference: https://docs.couchdb.org/en/stable/api/server/common.html#node-node-n
 
 {{event "server"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "server"}}
