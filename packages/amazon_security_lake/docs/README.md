@@ -1936,15 +1936,19 @@ This is the `Event` dataset.
 | ocsf.user.groups.privileges | The group privileges. | keyword |
 | ocsf.user.groups.type | The type of the group or account. | keyword |
 | ocsf.user.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
-| ocsf.user.ldap_person.\*_time | path_match for timestamp fields in ldap_person | date |
 | ocsf.user.ldap_person.cost_center | The cost center associated with the user. | keyword |
+| ocsf.user.ldap_person.created_time | The timestamp when the user was created. | date |
+| ocsf.user.ldap_person.deleted_time | The timestamp when the user was deleted. | date |
 | ocsf.user.ldap_person.email_addrs | A list of additional email addresses for the user. | keyword |
 | ocsf.user.ldap_person.employee_uid | The employee identifier assigned to the user by the organization. | keyword |
 | ocsf.user.ldap_person.given_name | The given or first name of the user. | keyword |
+| ocsf.user.ldap_person.hire_time | The timestamp when the user was or will be hired by the organization. | date |
 | ocsf.user.ldap_person.job_title | The user's job title. | keyword |
 | ocsf.user.ldap_person.labels | The labels associated with the user. For example in AD this could be the userType, employeeType. | keyword |
+| ocsf.user.ldap_person.last_login_time | The last time when the user logged in. | date |
 | ocsf.user.ldap_person.ldap_cn | The LDAP and X.500 commonName attribute, typically the full name of the person. For example, John Doe. | keyword |
 | ocsf.user.ldap_person.ldap_dn | The X.500 Distinguished Name (DN) is a structured string that uniquely identifies an entry, such as a user, in an X.500 directory service For example, cn=John Doe,ou=People,dc=example,dc=com. | keyword |
+| ocsf.user.ldap_person.leave_time | The timestamp when the user left or will be leaving the organization. | date |
 | ocsf.user.ldap_person.location.city | The name of the city. | keyword |
 | ocsf.user.ldap_person.location.continent | The name of the continent. | keyword |
 | ocsf.user.ldap_person.location.coordinates | A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON. | geo_point |
@@ -1970,21 +1974,16 @@ This is the `Event` dataset.
 | ocsf.user.ldap_person.manager.groups.type | The type of the group or account. | keyword |
 | ocsf.user.ldap_person.manager.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.user.ldap_person.manager.name | The username. For example, janedoe1. | keyword |
-| ocsf.user.ldap_person.manager.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.user.ldap_person.manager.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.user.ldap_person.manager.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.user.ldap_person.manager.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.user.ldap_person.manager.org.\* |  | object |
 | ocsf.user.ldap_person.manager.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.user.ldap_person.manager.type_id | The account type identifier. | integer |
 | ocsf.user.ldap_person.manager.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.user.ldap_person.manager.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
+| ocsf.user.ldap_person.modified_time | The timestamp when the user entry was last modified. | date |
 | ocsf.user.ldap_person.office_location | The primary office location associated with the user. This could be any string and isn't a specific address. | keyword |
 | ocsf.user.ldap_person.surname | The last or family name for the user. | keyword |
 | ocsf.user.name | The username. For example, janedoe1. | keyword |
-| ocsf.user.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.user.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.user.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.user.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.user.org.\* |  | object |
 | ocsf.user.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.user.type_id | The account type identifier. | integer |
 | ocsf.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
