@@ -139,10 +139,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.accessor.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.accessor.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.actor.process.file.accessor.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.file.accessor.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.file.accessor.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.file.accessor.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.file.accessor.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.file.accessor.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.accessor.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.file.accessor.type_id | The account type identifier. | integer |
 | ocsf.actor.process.file.accessor.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -168,10 +165,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.creator.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.creator.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.actor.process.file.creator.name | The name of the city. | keyword |
-| ocsf.actor.process.file.creator.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.file.creator.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.file.creator.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.file.creator.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.file.creator.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.creator.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.file.creator.type_id | The account type identifier. | integer |
 | ocsf.actor.process.file.creator.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -199,10 +193,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.modifier.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.modifier.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.actor.process.file.modifier.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.file.modifier.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.file.modifier.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.file.modifier.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.file.modifier.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.file.modifier.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.modifier.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.file.modifier.type_id | The account type identifier. | integer |
 | ocsf.actor.process.file.modifier.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -223,10 +214,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.owner.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.actor.process.file.owner.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.file.owner.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.file.owner.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.file.owner.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.file.owner.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.file.owner.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.owner.type | The event occurred on a personal device.The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.file.owner.type_id | The account type identifier. | integer |
 | ocsf.actor.process.file.owner.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -495,10 +483,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.user.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.user.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.actor.process.parent_process.user.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.parent_process.user.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.parent_process.user.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.parent_process.user.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.parent_process.user.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.parent_process.user.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.parent_process.user.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.parent_process.user.type_id | The account type identifier. | integer |
 | ocsf.actor.process.parent_process.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -612,10 +597,7 @@ This is the `Event` dataset.
 | ocsf.actor.user.ldap_person.manager.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.user.ldap_person.manager.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.actor.user.ldap_person.manager.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.user.ldap_person.manager.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.user.ldap_person.manager.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.user.ldap_person.manager.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.user.ldap_person.manager.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.user.ldap_person.manager.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.user.ldap_person.manager.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.user.ldap_person.manager.type_id | The account type identifier. | integer |
 | ocsf.actor.user.ldap_person.manager.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -1974,7 +1956,7 @@ This is the `Event` dataset.
 | ocsf.user.ldap_person.manager.groups.type | The type of the group or account. | keyword |
 | ocsf.user.ldap_person.manager.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.user.ldap_person.manager.name | The username. For example, janedoe1. | keyword |
-| ocsf.user.ldap_person.manager.org.\* |  | object |
+| ocsf.user.ldap_person.manager.org.\* | Organization and org unit related to the user. | object |
 | ocsf.user.ldap_person.manager.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.user.ldap_person.manager.type_id | The account type identifier. | integer |
 | ocsf.user.ldap_person.manager.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -1983,7 +1965,7 @@ This is the `Event` dataset.
 | ocsf.user.ldap_person.office_location | The primary office location associated with the user. This could be any string and isn't a specific address. | keyword |
 | ocsf.user.ldap_person.surname | The last or family name for the user. | keyword |
 | ocsf.user.name | The username. For example, janedoe1. | keyword |
-| ocsf.user.org.\* |  | object |
+| ocsf.user.org.\* | Organization and org unit related to the user. | object |
 | ocsf.user.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.user.type_id | The account type identifier. | integer |
 | ocsf.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
