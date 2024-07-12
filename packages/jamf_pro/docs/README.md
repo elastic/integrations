@@ -9,30 +9,18 @@ For example, if you wanted to {sample use case} you could {action}. Then you can
 
 ## Data streams
 
-<!-- The JAMF Pro integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
-
-<!-- If applicable -->
-<!-- **Logs** help you keep a record of events happening in {service}.
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference). -->
-
-<!-- If applicable -->
-<!-- **Metrics** give you insight into the state of {service}.
-Metric data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Metrics](#metrics-reference). -->
-
-<!-- Optional: Any additional notes on data streams -->
+ * __general_data__ provides basic information on devices - numbers, versions.
 
 ## Requirements
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
-You need JAMF Pro active license and OAuth2 credentials via API App
-<!--
-	Optional: Other requirements including:
-	* System compatibility
-	* Supported versions of third-party products
-	* Permissions needed
-	* Anything else that could block a user from successfully using the integration
--->
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.  
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.  
+You need JAMF Pro active license and OAuth2 credentials via API App  
+JAMF API application permissions required:  
+ * Read Computer Inventory Collection
+ * Read Mobile devices
+ * Read Computers
+ * Read Mobile Device Inventory Collection
 
 ## Setup
 
