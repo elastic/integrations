@@ -15,35 +15,40 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2024-03-22T16:16:01Z",
     "agent": {
-        "ephemeral_id": "068f1594-2629-49ad-b68f-01e2a49ad3ae",
-        "id": "687889c6-baf0-42ac-b932-2e5abb784519",
+        "ephemeral_id": "7b90259c-84c0-43c8-94fd-a5a80b30fc4e",
+        "id": "c821ab07-d348-44fb-873f-3d2641c56f90",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.14.1"
     },
+    "client": {
+        "ip": "10.82.255.36"
+    },
     "data_stream": {
         "dataset": "proxysg.log",
-        "namespace": "55691",
+        "namespace": "35015",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "687889c6-baf0-42ac-b932-2e5abb784519",
+        "id": "c821ab07-d348-44fb-873f-3d2641c56f90",
         "snapshot": false,
         "version": "8.14.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "proxysg.log",
-        "ingested": "2024-07-09T21:58:12Z"
+        "ingested": "2024-07-12T21:35:35Z"
     },
     "input": {
-        "type": "log"
+        "type": "filestream"
     },
     "log": {
         "file": {
+            "device_id": "64768",
+            "inode": "328232925",
             "path": "/tmp/service_logs/proxysg.log"
         },
         "offset": 487
@@ -62,25 +67,21 @@ An example event for `log` looks as following:
             "categories": "FastwebRes_CallCntr;Web Ads/Analytics",
             "host": "pixel.tapad.com",
             "method": "GET",
-            "referer": "https://vid.vidoomy.com/",
+            "referer": "-",
             "uri_path": "/idsync/ex/push",
-            "uri_port": "443",
+            "uri_port": 443,
             "uri_query": "?partner_id=2499&partner_device_id=aeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553&partner_url=https%3A%2F%2Fa.vidoomy.com%2Fapi%2Frtbserver%2Fpbscookie%3Fuid%3Daeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553%26vid%3D280fa751e99651c4193ef92f6dab0f92%26dspid%3DCEN",
             "uri_scheme": "https",
-            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "user_agent": "https://vid.vidoomy.com/",
             "username": "aeinstein"
         },
-        "remote": {
-            "ip": "34.111.113.62"
-        },
         "remote_to_server": {
-            "content_type": "-"
+            "content_type": "pixel.tapad.com"
         },
         "server": {
             "action": "TCP_NC_MISS",
-            "hierarchy": "-",
-            "ip": "142.182.19.21",
-            "supplier_name": "pixel.tapad.com"
+            "ip": "89.2.20.21",
+            "supplier_name": "-"
         },
         "server_to_client": {
             "bytes": "1242",
@@ -88,13 +89,21 @@ An example event for `log` looks as following:
             "status": "302"
         },
         "time_taken": "48",
-        "x_rs_certificate_signature_algorithm": "sha256WithRSAEncryption",
         "x_virus_id": "-"
+    },
+    "server": {
+        "ip": "89.2.20.21"
     },
     "tags": [
         "proxysg-access-log",
         "forwarded"
-    ]
+    ],
+    "url": {
+        "path": "/idsync/ex/push",
+        "port": 443,
+        "query": "?partner_id=2499&partner_device_id=aeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553&partner_url=https%3A%2F%2Fa.vidoomy.com%2Fapi%2Frtbserver%2Fpbscookie%3Fuid%3Daeb66687-eabe-442e-b11e-79494b740d0d-640ba437-5553%26vid%3D280fa751e99651c4193ef92f6dab0f92%26dspid%3DCEN",
+        "scheme": "https"
+    }
 }
 ```
 
@@ -103,6 +112,7 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -139,7 +149,7 @@ An example event for `log` looks as following:
 | proxysg.client_to_server.threat_risk |  | keyword |
 | proxysg.client_to_server.uri_extension |  | keyword |
 | proxysg.client_to_server.uri_path |  | keyword |
-| proxysg.client_to_server.uri_port |  | keyword |
+| proxysg.client_to_server.uri_port |  | long |
 | proxysg.client_to_server.uri_query |  | keyword |
 | proxysg.client_to_server.uri_scheme |  | keyword |
 | proxysg.client_to_server.user_agent |  | keyword |
@@ -205,6 +215,11 @@ An example event for `log` looks as following:
 | proxysg.x_sc_connection_issuer_keyring |  | keyword |
 | proxysg.x_sc_connection_issuer_keyring_alias |  | keyword |
 | proxysg.x_virus_id |  | keyword |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
 

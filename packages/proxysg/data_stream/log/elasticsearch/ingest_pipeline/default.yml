@@ -40,9 +40,38 @@ processors:
   - remove:
       field: "_temp_"
       ignore_failure: true
+# Type conversions
+  - convert:
+      tag: convert_client_to_server_port
+      field: "proxysg.client_to_server.uri_port"
+      type: long
+      ignore_missing: true
 
 # ECS mappings
-
+  - set:
+      field: "client.ip"
+      copy_from: "proxysg.client.ip"
+      ignore_failure: true
+  - set:
+      field: "server.ip"
+      copy_from: "proxysg.server.ip"
+      ignore_failure: true
+  - set:
+      field: "url.scheme"
+      copy_from: "proxysg.client_to_server.uri_scheme"
+      ignore_failure: true
+  - set:
+      field: "url.port"
+      copy_from: "proxysg.client_to_server.uri_port"
+      ignore_failure: true
+  - set:
+      field: "url.path"
+      copy_from: "proxysg.client_to_server.uri_path"
+      ignore_failure: true
+  - set:
+      field: "url.query"
+      copy_from: "proxysg.client_to_server.uri_query"
+      ignore_failure: true
 
 on_failure:
   - append:
