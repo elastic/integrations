@@ -1,0 +1,25 @@
+url: {{url}}/v1/stream?cid={{cluster_id}}&type=message
+auth.bearer_token: {{access_token}}
+program: |
+  bytes(state.response).decode_json().as(body,{
+    "events": {
+      "message":  body.encode_json(),
+    }
+  })
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+{{#if processors}}
+{{processors}}
+{{/if}}

@@ -1,0 +1,67 @@
+format_version: 3.1.4
+name: proofpoint_on_demand
+title: Proofpoint On Demand
+version: 0.1.0
+description: Collect logs from Proofpoint On Demand with Elastic Agent.
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: ^8.13.0
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/proofpoint_on_demand-logo.svg
+    title: Proofpoint On Demand Logo
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/proofpoint_on_demand-audit-dashboard.png
+    title: Proofpoint On Demand Audit Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/proofpoint_on_demand-mail-dashboard.png
+    title: Proofpoint On Demand Mail Dashboard Screenshot
+    size: 600x600
+    type: image/png
+  - src: /img/proofpoint_on_demand-message-dashboard.png
+    title: Proofpoint On Demand Message Dashboard Screenshot
+    size: 600x600
+    type: image/png
+policy_templates:
+  - name: proofpoint_on_demand
+    title: Proofpoint On Demand logs
+    description: Collect Proofpoint On Demand logs.
+    inputs:
+      - type: websocket
+        title: Collect Proofpoint On Demand logs via websocket input
+        description: Collecting logs from Proofpoint On Demand via websocket input.
+        vars:
+          - name: url
+            type: url
+            title: URL
+            description: The PoD Logging Service production endpoint.
+            multi: false
+            required: true
+            show_user: false
+            url_allowed_schemes: ["wss", "ws"]
+            default: wss://logstream.proofpoint.com
+          - name: cluster_id
+            type: text
+            title: Cluster ID
+            description: The Cluster ID must be a legal user group string. This is required for server authentication purposes.
+            multi: false
+            required: true
+            show_user: true
+          - name: access_token
+            type: password
+            title: Access Token
+            description: The token value is uniquely generated and provided by Proofpoint for a customer cluster to authenticate with the service.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
