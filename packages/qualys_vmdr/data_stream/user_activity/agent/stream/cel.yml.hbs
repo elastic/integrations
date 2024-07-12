@@ -26,13 +26,17 @@ redact:
     - password
 program: |
   state.with(
-    request(
-      "GET",
-      state.url.trim_right("/") + "/api/2.0/fo/activity_log/?" + {
-        "action": ["list"],
-        "since_datetime": [string(state.?cursor.latest_ts.orValue(now - duration(state.initial_interval)).format(time_layout.RFC3339))],
-        ?"truncation_limit": has(state.batch_size) ? optional.of([string(state.batch_size)]) : optional.none(),
-      }.format_query()
+    request("GET",
+      state.?want_more.orValue(false) ?
+        state.pagination_url
+      :
+        state.url.trim_right("/") + "/api/2.0/fo/activity_log/?" + {
+          "action": ["list"],
+          "since_datetime": [state.?cursor.latest_ts.orValue(
+            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+          )],
+          ?"truncation_limit": has(state.batch_size) ? optional.of([string(state.batch_size)]) : optional.none(),
+        }.format_query()
     ).with({
       "Header":{
         "Authorization": ["Basic " + (state.user + ":" + state.password).base64()],
@@ -41,12 +45,30 @@ program: |
     }).do_request().as(resp,
       resp.StatusCode == 200
       ?
-        bytes(resp.Body).mime("text/csv; header=present").as(events, {
-            "events": events.map(e, {"message": e.encode_json()}),
-            "want_more": has(state.batch_size) && size(events) >= state.batch_size,
+        string(resp.Body).as(text, {
+          "csv": (
+            text.contains_substr("----BEGIN_RESPONSE_BODY_CSV") ?
+              bytes(text.substring(
+                text.index("----BEGIN_RESPONSE_BODY_CSV")+size("----BEGIN_RESPONSE_BODY_CSV\n"),
+                text.index("----END_RESPONSE_BODY_CSV")
+              ))
+            :
+              resp.Body
+            ).mime("text/csv; header=present"),
+          ?"next": text.contains_substr("----BEGIN_RESPONSE_FOOTER_CSV") ?
+            bytes(text.substring(
+              text.index("----BEGIN_RESPONSE_FOOTER_CSV")+size("----BEGIN_RESPONSE_FOOTER_CSV\n"),
+              text.index("----END_RESPONSE_FOOTER_CSV")
+            ).trim_prefix("WARNING\n")).mime("text/csv; header=present")[?0]
+          :
+            optional.none(),
+        }).as(data, {
+            "events": data.csv.map(e, {"message": e.encode_json()}),
+            "want_more": data.?next.URL.hasValue(),
+            "pagination_url": data.?next.URL.orValue(null),
             "cursor": {
-                ?"latest_ts": size(events) > 0 ?
-                  optional.of(events.map(e, e.Date.parse_time(time_layout.RFC3339)).max())
+                ?"latest_ts": size(data.csv) > 0 ?
+                  optional.of(data.csv.map(e, e.Date.parse_time(time_layout.RFC3339)).max())
                 :
                   state.?cursor.latest_ts,
             },
