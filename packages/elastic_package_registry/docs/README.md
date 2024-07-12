@@ -37,6 +37,7 @@ k8s, docker-compose, etc..
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
+
 ## Metrics reference
 
 ### Metrics
@@ -254,4 +255,5 @@ An example event for `metrics` looks as following:
     }
 }
 ```
+
 
