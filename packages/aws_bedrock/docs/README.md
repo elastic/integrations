@@ -61,9 +61,9 @@ documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 - Elastic Agent must be installed.
 - You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the S3 bucket and ship the data
-  to Elastic, where the events will then be processed via the integration's
-  ingest pipelines.
+- Elastic Agent is required to stream data from the S3 bucket and ship the
+  data to Elastic, where the events will then be processed via the
+  integration's ingest pipelines.
 
 ### Installing and managing an Elastic Agent:
 
@@ -71,10 +71,10 @@ You have a few options for installing and managing an Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
-With this approach, you install Elastic Agent and use Fleet in Kibana to define,
-configure, and manage your agents in a central location. We recommend using
-Fleet management because it makes the management and upgrade of your agents
-considerably easier.
+With this approach, you install Elastic Agent and use Fleet in Kibana to
+define, configure, and manage your agents in a central location. We recommend
+using Fleet management because it makes the management and upgrade of your
+agents considerably easier.
 
 ### Install Elastic Agent in standalone mode (advanced users):
 
@@ -85,34 +85,26 @@ and upgrading the agents. This approach is reserved for advanced users only.
 ### Install Elastic Agent in a containerized environment:
 
 You can run Elastic Agent inside a container, either with Fleet Server or
-standalone. Docker images for all versions of Elastic Agent are available from
-the Elastic Docker registry, and we provide deployment manifests for running on
-Kubernetes.
+standalone. Docker images for all versions of Elastic Agent are available
+from the Elastic Docker registry, and we provide deployment manifests for
+running on Kubernetes.
 
 There are some minimum requirements for running Elastic Agent and for more
-information, refer to the link
-[here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 The minimum **kibana.version** required is **8.12.0**.
 
 
 ### Setup
 
-In order to use the AWS Bedrock model invocation logs, logging model invocation
-logging must be enabled and be sent to a log store destination, either S3 or
-CloudWatch. The full details of this are available from the [AWS Bedrock User
-Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html),
+In order to use the AWS Bedrock model invocation logs, logging model
+invocation logging must be enabled and be sent to a log store destination,
+either S3 or CloudWatch. The full details of this are available from the
+[AWS Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html),
 but outlined here.
 
-1. Set up an [Amazon
-   S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination)
-   or
-   [CloudWatch](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination)
-   Logs destination.
-2. Enable logging. This can be done either through the [AWS Bedrock
-   console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console)
-   or [the AWS Bedrock
-   API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
+1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) Logs destination.
+2. Enable logging. This can be done either through the [AWS Bedrock console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#model-invocation-logging-console) or [the AWS Bedrock API](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#using-apis-logging). 
 
 
 ## Collecting Bedrock model invocation logs from S3 bucket
@@ -121,20 +113,20 @@ When collecting logs from S3 bucket is enabled, users can retrieve logs from S3
 objects that are pointed to by S3 notification events read from an SQS queue or
 directly polling list of S3 objects in an S3 bucket. 
 
-The use of SQS notification is preferred: polling list of S3 objects is
-expensive in terms of performance and costs and should be preferably used only
-when no SQS notification can be attached to the S3 buckets. This input
+The use of SQS notification is preferred: polling list of S3 objects is 
+expensive in terms of performance and costs and should be preferably used only 
+when no SQS notification can be attached to the S3 buckets. This input 
 integration also supports S3 notification from SNS to SQS.
 
-SQS notification method is enabled setting `queue_url` configuration value. S3
+SQS notification method is enabled setting `queue_url` configuration value. S3 
 bucket list polling method is enabled setting `bucket_arn` configuration value
-and `number_of_workers` value. Both `queue_url` and `bucket_arn` cannot be set
+and `number_of_workers` value. Both `queue_url` and `bucket_arn` cannot be set 
 at the same time and at least one of the two value must be set.
 
 ## Collecting Bedrock model invocation logs from CloudWatch
 
-When collecting logs from CloudWatch is enabled, users can retrieve logs from
-all log streams in a specific log group. `filterLogEvents` AWS API is used to
+When collecting logs from CloudWatch is enabled, users can retrieve logs from 
+all log streams in a specific log group. `filterLogEvents` AWS API is used to 
 list log events from the specified log group.
 
 **Exported fields**
@@ -266,13 +258,13 @@ An example event for `runtime` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-11T05:20:00.000Z",
+    "@timestamp": "2024-07-14T13:05:00.000Z",
     "agent": {
-        "ephemeral_id": "1971f86c-3617-4737-954d-94e7a71c7f6f",
-        "id": "f1b56d73-58a5-489c-ac53-c13635992b88",
+        "ephemeral_id": "41c087ce-5e3d-4980-9784-1483b050a343",
+        "id": "0610bf51-dc7c-4f77-9603-002ac32e2427",
         "name": "service-integration-dev-idc-1",
         "type": "metricbeat",
-        "version": "8.13.4"
+        "version": "8.14.0"
     },
     "aws": {
         "cloudwatch": {
@@ -281,23 +273,15 @@ An example event for `runtime` looks as following:
     },
     "aws_bedrock": {
         "runtime": {
-            "InputTokenCount": {
-                "sum": 11
-            },
-            "InvocationLatency": {
-                "avg": 407
-            },
-            "Invocations": {
-                "sum": 1
-            },
-            "OutputTokenCount": {
-                "sum": 11
-            }
+            "input_token_count": 164,
+            "invocation_latency": 1009,
+            "invocations": 3,
+            "output_token_count": 220
         }
     },
     "cloud": {
         "account": {
-            "id": "0000000000000000",
+            "id": "00000000000000",
             "name": "MonitoringAccount"
         },
         "provider": "aws",
@@ -312,15 +296,15 @@ An example event for `runtime` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f1b56d73-58a5-489c-ac53-c13635992b88",
+        "id": "0610bf51-dc7c-4f77-9603-002ac32e2427",
         "snapshot": false,
-        "version": "8.13.4"
+        "version": "8.14.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "aws_bedrock.runtime",
-        "duration": 109941836,
-        "ingested": "2024-07-11T05:22:53Z",
+        "duration": 142236746,
+        "ingested": "2024-07-14T13:11:11Z",
         "module": "aws"
     },
     "host": {
@@ -336,6 +320,7 @@ An example event for `runtime` looks as following:
             "172.20.0.1",
             "172.22.0.1",
             "172.23.0.1",
+            "172.25.0.1",
             "172.26.0.1",
             "172.27.0.1",
             "172.29.0.1",
@@ -345,26 +330,23 @@ An example event for `runtime` looks as following:
             "192.168.32.1",
             "192.168.49.1",
             "192.168.80.1",
-            "192.168.208.1",
             "192.168.224.1",
+            "fe80::42:4dff:fecb:dbb4",
             "fe80::42:a5ff:fe15:d63c",
             "fe80::42:beff:fe39:f457",
-            "fe80::42:dcff:fe3b:4670",
-            "fe80::10c2:95ff:feba:2d4d",
-            "fe80::28cf:e5ff:fe3a:3660",
-            "fe80::2c61:adff:fe66:1b90",
-            "fe80::3cbb:3ff:fe9a:20db",
+            "fe80::83d:34ff:fe3f:ad71",
             "fe80::4001:aff:fea0:4",
-            "fe80::88c2:acff:fe4b:74e9",
-            "fe80::cc52:29ff:fe19:ed74",
-            "fe80::d0f8:82ff:feec:9d36",
-            "fe80::d4d6:36ff:fef2:6468"
+            "fe80::4c39:7bff:fe9b:1bb5",
+            "fe80::68cf:c9ff:fea4:f713",
+            "fe80::9ce6:53ff:fe9c:a5a2",
+            "fe80::f084:8fff:fe07:642d"
         ],
         "mac": [
             "02-42-0D-A6-43-C0",
             "02-42-23-32-CF-25",
             "02-42-27-90-E6-54",
             "02-42-34-10-CA-62",
+            "02-42-4D-CB-DB-B4",
             "02-42-4F-1D-94-1B",
             "02-42-50-2E-CB-58",
             "02-42-5D-42-F3-1D",
@@ -374,19 +356,15 @@ An example event for `runtime` looks as following:
             "02-42-A6-68-F8-E9",
             "02-42-BE-39-F4-57",
             "02-42-CE-31-B7-A3",
-            "02-42-DC-3B-46-70",
             "02-42-E8-F3-CF-7A",
             "02-42-F1-35-B0-41",
             "02-42-F4-2F-0F-22",
-            "12-C2-95-BA-2D-4D",
-            "2A-CF-E5-3A-36-60",
-            "2E-61-AD-66-1B-90",
-            "3E-BB-03-9A-20-DB",
+            "0A-3D-34-3F-AD-71",
             "42-01-0A-A0-00-04",
-            "8A-C2-AC-4B-74-E9",
-            "CE-52-29-19-ED-74",
-            "D2-F8-82-EC-9D-36",
-            "D6-D6-36-F2-64-68"
+            "4E-39-7B-9B-1B-B5",
+            "6A-CF-C9-A4-F7-13",
+            "9E-E6-53-9C-A5-A2",
+            "F2-84-8F-07-64-2D"
         ],
         "name": "service-integration-dev-idc-1",
         "os": {
@@ -401,7 +379,7 @@ An example event for `runtime` looks as following:
     },
     "metricset": {
         "name": "cloudwatch",
-        "period": 120000
+        "period": 300000
     },
     "service": {
         "type": "aws"
@@ -418,15 +396,15 @@ An example event for `runtime` looks as following:
 | aws.dimensions.ImageSize |  | keyword |  |  |
 | aws.dimensions.ModelId |  | keyword |  |  |
 | aws.dimensions.Quality |  | keyword |  |  |
-| aws_bedrock.runtime.InputTokenCount.sum | The number of tokens of text input. | long |  | gauge |
-| aws_bedrock.runtime.InvocationClientErrors.sum | The number of invocations that result in client-side errors. | long |  | gauge |
-| aws_bedrock.runtime.InvocationLatency.avg | The average latency of the invocations. | long | ms | gauge |
-| aws_bedrock.runtime.InvocationServerErrors.sum | The number of invocations that result in AWS server-side errors. | long |  | gauge |
-| aws_bedrock.runtime.InvocationThrottles.sum | The number of invocations that the system throttled. | long |  | gauge |
-| aws_bedrock.runtime.Invocations.sum | The number of requests to the `Converse`, `ConverseStream`, `InvokeModel`, and `InvokeModelWithResponseStream` API operations. | long |  | gauge |
-| aws_bedrock.runtime.LegacyModelInvocations.sum | The number of requests to the legacy models. | long |  | gauge |
-| aws_bedrock.runtime.OutputImageCount.sum | The number of output images. | long |  | gauge |
-| aws_bedrock.runtime.OutputTokenCount.sum | The number of tokens of text output. | long |  | gauge |
+| aws_bedrock.runtime.input_token_count | The number of text input tokens. | long |  | gauge |
+| aws_bedrock.runtime.invocation_client_errors | The number of invocations that result in client-side errors. | long |  | gauge |
+| aws_bedrock.runtime.invocation_latency | The average latency of the invocations. | long | ms | gauge |
+| aws_bedrock.runtime.invocation_server_errors | The number of invocations that result in AWS server-side errors. | long |  | gauge |
+| aws_bedrock.runtime.invocation_throttles | The number of invocations that the system throttled. | long |  | gauge |
+| aws_bedrock.runtime.invocations | The number of requests to the `Converse`, `ConverseStream`, `InvokeModel`, and `InvokeModelWithResponseStream` API operations. | long |  | gauge |
+| aws_bedrock.runtime.legacymodel_invocations | The number of requests to the legacy models. | long |  | gauge |
+| aws_bedrock.runtime.output_image_count | The number of output images. | long |  | gauge |
+| aws_bedrock.runtime.output_token_count | The number of text output tokens. | long |  | gauge |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
