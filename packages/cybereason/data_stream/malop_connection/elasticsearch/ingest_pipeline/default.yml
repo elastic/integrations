@@ -1,0 +1,1220 @@
+---
+description: Pipeline for processing malop_connection logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: ["network"]
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: ["connection"]
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_to_parse_different_message_object
+      description: Script to parse different(suspicionsmap and evidencemap) message objects.
+      if: ctx.json != null
+      source: >-
+        ctx.suspicionsMap = ctx.json[1];
+        ctx.evidenceMap = ctx.json[2];
+        ctx.json = ctx.json[0];
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.guidString
+      target_field: _id
+      ignore_missing: true
+  - foreach:
+      field: json.elementValues.dnsQuery.elementValues
+      if: ctx.json?.elementValues?.dnsQuery?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.elementType
+          tag: rename_elementValues_dnsQuery_elementValues_elementType
+          target_field: _ingest._value.element_type
+          ignore_missing: true
+  - foreach:
+      field: json.elementValues.dnsQuery.elementValues
+      if: ctx.json?.elementValues?.dnsQuery?.elementValues != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.hasMalops
+          tag: convert_elementValues_dnsQuery_elementValues_hasMalops_to_boolean
+          target_field: _ingest._value.has_malops
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.hasMalops
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.elementValues.dnsQuery.elementValues
+      if: ctx.json?.elementValues?.dnsQuery?.elementValues != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.hasSuspicions
+          tag: convert_elementValues_dnsQuery_elementValues_hasSuspicions_to_boolean
+          target_field: _ingest._value.has_suspicions
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.hasSuspicions
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.elementValues.dnsQuery.elementValues
+      if: ctx.json?.elementValues?.dnsQuery?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.elementValues
+          tag: rename_elementValues_dnsQuery_elementValues_elementValues
+          target_field: _ingest._value.object
+          ignore_missing: true
+  - foreach:
+      field: json.elementValues.dnsQuery.elementValues
+      if: ctx.json?.elementValues?.dnsQuery?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.simpleValues
+          tag: rename_elementValues_dnsQuery_elementValues_simpleValues
+          target_field: _ingest._value.simple_values
+          ignore_missing: true
+  - foreach:
+      field: json.elementValues.dnsQuery.elementValues
+      if: ctx.json?.elementValues?.dnsQuery?.elementValues != null
+      ignore_failure: true
+      processor:
+        remove:
+          tag: remove_elementValues_dnsQuery_elementValues_hasMalopsSuspicions
+          field:
+            - _ingest._value.hasMalops
+            - _ingest._value.hasSuspicions
+          ignore_missing: true
+  - rename:
+      field: json.elementValues.dnsQuery.elementValues
+      tag: rename_elementValues_dnsQuery_elementValues
+      target_field: cybereason.malop_connection.element_values.dns_query.element_values
+      ignore_missing: true
+  - convert:
+      field: json.elementValues.dnsQuery.guessedTotal
+      tag: convert_elementValues_dnsQuery_guessedTotal_to_long
+      target_field: cybereason.malop_connection.element_values.dns_query.guessed_total
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.elementValues.dnsQuery.totalMalicious
+      tag: convert_elementValues_dnsQuery_totalMalicious_to_long
+      target_field: cybereason.malop_connection.element_values.dns_query.total_malicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.elementValues.dnsQuery.totalSuspicious
+      tag: convert_elementValues_dnsQuery_totalSuspicious_to_long
+      target_field: cybereason.malop_connection.element_values.dns_query.total_suspicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.elementValues.dnsQuery.totalValues
+      tag: convert_elementValues_dnsQuery_totalValues_to_long
+      target_field: cybereason.malop_connection.element_values.dns_query.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.elementValues.ownerMachine.elementValues
+      if: ctx.json?.elementValues?.ownerMachine?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.elementType
+          tag: rename_elementValues_ownerMachine_elementValues_elementType
+          target_field: _ingest._value.element_type
+          ignore_missing: true
+  - foreach:
+      field: json.elementValues.ownerMachine.elementValues
+      if: ctx.json?.elementValues?.ownerMachine?.elementValues != null
+      ignore_failure: true
+      processor:
+        append:
+          field: process.real_user.id
+          tag: append_elementValues_ownerMachine_elementValues_guid_into_process_real_user_id
+          value: '{{{_ingest._value.guid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.elementValues.ownerMachine.elementValues
+      if: ctx.json?.elementValues?.ownerMachine?.elementValues != null
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_elementValues_ownerMachine_elementValues_guid_into_related_user
+          value: '{{{_ingest._value.guid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.elementValues.ownerMachine.elementValues
+      if: ctx.json?.elementValues?.ownerMachine?.elementValues != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.hasMalops
+          tag: convert_elementValues_ownerMachine_elementValues_hasMalops_to_boolean
+          target_field: _ingest._value.has_malops
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.hasMalops
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.elementValues.ownerMachine.elementValues
+      if: ctx.json?.elementValues?.ownerMachine?.elementValues != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.hasSuspicions
+          tag: convert_elementValues_ownerMachine_elementValues_hasSuspicions_to_boolean
+          target_field: _ingest._value.has_suspicions
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.hasSuspicions
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.elementValues.ownerMachine.elementValues
+      if: ctx.json?.elementValues?.ownerMachine?.elementValues != null
+      ignore_failure: true
+      processor:
+        append:
+          field: process.real_user.name
+          tag: append_elementValues_ownerMachine_elementValues_guid_into_process_real_user_name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.elementValues.ownerMachine.elementValues
+      if: ctx.json?.elementValues?.ownerMachine?.elementValues != null
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          tag: append_elementValues_ownerMachine_elementValues_name_into_related_user
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.elementValues.ownerMachine.elementValues
+      if: ctx.json?.elementValues?.ownerMachine?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.elementValues
+          tag: rename_elementValues_ownerMachine_elementValues_elementValues
+          target_field: _ingest._value.object
+          ignore_missing: true
+  - foreach:
+      field: json.elementValues.ownerMachine.elementValues
+      if: ctx.json?.elementValues?.ownerMachine?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.simpleValues
+          tag: rename_elementValues_ownerMachine_elementValues_simpleValues
+          target_field: _ingest._value.simple_values
+          ignore_missing: true
+  - foreach:
+      field: json.elementValues.ownerMachine.elementValues
+      if: ctx.json?.elementValues?.ownerMachine?.elementValues != null
+      ignore_failure: true
+      processor:
+        remove:
+          tag: remove_elementValues_ownerMachine_elementValues_hasMalopsSuspicions
+          field:
+            - _ingest._value.hasMalops
+            - _ingest._value.hasSuspicions
+          ignore_missing: true
+  - rename:
+      field: json.elementValues.ownerMachine.elementValues
+      tag: rename_elementValues_ownerMachine_elementValues
+      target_field: cybereason.malop_connection.element_values.owner_machine.element_values
+      ignore_missing: true
+  - convert:
+      field: json.elementValues.ownerMachine.guessedTotal
+      tag: convert_elementValues_ownerMachine_guessedTotal_to_long
+      target_field: cybereason.malop_connection.element_values.owner_machine.guessed_total
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.elementValues.ownerMachine.totalMalicious
+      tag: convert_elementValues_ownerMachine_totalMalicious_to_long
+      target_field: cybereason.malop_connection.element_values.owner_machine.total_malicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.elementValues.ownerMachine.totalSuspicious
+      tag: convert_elementValues_ownerMachine_totalSuspicious_to_long
+      target_field: cybereason.malop_connection.element_values.owner_machine.total_suspicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.elementValues.ownerMachine.totalValues
+      tag: convert_elementValues_ownerMachine_totalValues_to_long
+      target_field: cybereason.malop_connection.element_values.owner_machine.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.elementValues.ownerProcess.elementValues
+      if: ctx.json?.elementValues?.ownerProcess?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.elementType
+          tag: rename_elementValues_ownerProcess_elementValues_elementType
+          target_field: _ingest._value.element_type
+          ignore_missing: true
+  - foreach:
+      field: json.elementValues.ownerProcess.elementValues
+      if: ctx.json?.elementValues?.ownerProcess?.elementValues != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.hasMalops
+          tag: convert_elementValues_ownerProcess_elementValues_hasMalops_to_boolean
+          target_field: _ingest._value.has_malops
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.hasMalops
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.elementValues.ownerProcess.elementValues
+      if: ctx.json?.elementValues?.ownerProcess?.elementValues != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.hasSuspicions
+          tag: convert_elementValues_ownerProcess_elementValues_hasSuspicions_to_boolean
+          target_field: _ingest._value.has_suspicions
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.hasSuspicions
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.elementValues.ownerProcess.elementValues
+      if: ctx.json?.elementValues?.ownerProcess?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.elementValues
+          tag: rename_elementValues_ownerProcess_elementValues_elementValues
+          target_field: _ingest._value.object
+          ignore_missing: true
+  - foreach:
+      field: json.elementValues.ownerProcess.elementValues
+      if: ctx.json?.elementValues?.ownerProcess?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.simpleValues
+          tag: rename_elementValues_ownerProcess_elementValues_simpleValues
+          target_field: _ingest._value.simple_values
+          ignore_missing: true
+  - foreach:
+      field: json.elementValues.ownerProcess.elementValues
+      if: ctx.json?.elementValues?.ownerProcess?.elementValues != null
+      ignore_failure: true
+      processor:
+        remove:
+          tag: remove_elementValues_ownerProcess_elementValues_hasMalopsSuspicions
+          field:
+            - _ingest._value.hasMalops
+            - _ingest._value.hasSuspicions
+          ignore_missing: true
+  - rename:
+      field: json.elementValues.ownerProcess.elementValues
+      tag: rename_elementValues_ownerProcess_elementValues
+      target_field: cybereason.malop_connection.element_values.owner_process.element_values
+      ignore_missing: true
+  - convert:
+      field: json.elementValues.ownerProcess.guessedTotal
+      tag: convert_elementValues_ownerProcess_guessedTotal_to_long
+      target_field: cybereason.malop_connection.element_values.owner_process.guessed_total
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.elementValues.ownerProcess.totalMalicious
+      tag: convert_elementValues_ownerProcess_totalMalicious_to_long
+      target_field: cybereason.malop_connection.element_values.owner_process.total_malicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.elementValues.ownerProcess.totalSuspicious
+      tag: convert_elementValues_ownerProcess_totalSuspicious_to_long
+      target_field: cybereason.malop_connection.element_values.owner_process.total_suspicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.elementValues.ownerProcess.totalValues
+      tag: convert_elementValues_ownerProcess_totalValues_to_long
+      target_field: cybereason.malop_connection.element_values.owner_process.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_to_rename_ownerProcess_user
+      description: Script to Rename ownerProcess_user
+      if: ctx.json?.elementValues["ownerProcess.user"] != null
+      source: >-
+        def obj = ctx.json.elementValues.remove("ownerProcess.user");
+        ctx.cybereason.malop_connection.element_values.owner_process_user= obj;
+  - foreach:
+      field: cybereason.malop_connection.element_values.owner_process_user.elementValues
+      if: ctx.cybereason?.malop_connection?.element_values?.owner_process_user?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.elementType
+          tag: rename_elementValues_ownerProcess_user_elementValues_elementType
+          target_field: _ingest._value.element_type
+          ignore_missing: true
+  - foreach:
+      field: cybereason.malop_connection.element_values.owner_process_user.elementValues
+      if: ctx.cybereason?.malop_connection?.element_values?.owner_process_user?.elementValues != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.hasMalops
+          tag: convert_elementValues_ownerProcess_user_elementValues_hasMalops_to_boolean
+          target_field: _ingest._value.has_malops
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.hasMalops
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cybereason.malop_connection.element_values.owner_process_user.elementValues
+      if: ctx.cybereason?.malop_connection?.element_values?.owner_process_user?.elementValues != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.hasSuspicions
+          tag: convert_elementValues_ownerProcess_user_elementValues_hasSuspicions_to_boolean
+          target_field: _ingest._value.has_suspicions
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.hasSuspicions
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cybereason.malop_connection.element_values.owner_process_user.elementValues
+      if: ctx.cybereason?.malop_connection?.element_values?.owner_process_user?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.elementValues
+          tag: rename_elementValues_ownerProcess_user_elementValues_elementValues
+          target_field: _ingest._value.object
+          ignore_missing: true
+  - foreach:
+      field: cybereason.malop_connection.element_values.owner_process_user.elementValues
+      if: ctx.cybereason?.malop_connection?.element_values?.owner_process_user?.elementValues != null
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.simpleValues
+          tag: rename_elementValues_ownerProcess_user_elementValues_simpleValues
+          target_field: _ingest._value.simple_values
+          ignore_missing: true
+  - foreach:
+      field: cybereason.malop_connection.element_values.owner_process_user.elementValues
+      if: ctx.cybereason?.malop_connection?.element_values?.owner_process_user?.elementValues != null
+      ignore_failure: true
+      processor:
+        remove:
+          tag: remove_elementValues_owner_process_user_elementValues_hasMalopsSuspicions
+          field:
+            - _ingest._value.hasMalops
+            - _ingest._value.hasSuspicions
+          ignore_missing: true
+  - rename:
+      field: cybereason.malop_connection.element_values.owner_process_user.elementValues
+      tag: rename_elementValues_ownerProcess_user_elementValues
+      target_field: cybereason.malop_connection.element_values.owner_process_user.element_values
+      ignore_missing: true
+  - convert:
+      field: cybereason.malop_connection.element_values.owner_process_user.guessedTotal
+      tag: convert_elementValues_ownerProcess_user_guessedTotal_to_long
+      target_field: cybereason.malop_connection.element_values.owner_process_user.guessed_total
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cybereason.malop_connection.element_values.owner_process_user.totalMalicious
+      tag: convert_elementValues_ownerProcess_user_totalMalicious_to_long
+      target_field: cybereason.malop_connection.element_values.owner_process_user.total_malicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cybereason.malop_connection.element_values.owner_process_user.totalSuspicious
+      tag: convert_elementValues_ownerProcess_user_totalSuspicious_to_long
+      target_field: cybereason.malop_connection.element_values.owner_process_user.total_suspicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cybereason.malop_connection.element_values.owner_process_user.totalValues
+      tag: convert_elementValues_ownerProcess_user_totalValues_to_long
+      target_field: cybereason.malop_connection.element_values.owner_process_user.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      tag: remove_elementValues_owner_process_user_elementValues_duplicate_fields
+      field:
+        - cybereason.malop_connection.element_values.owner_process_user.guessedTotal
+        - cybereason.malop_connection.element_values.owner_process_user.totalMalicious
+        - cybereason.malop_connection.element_values.owner_process_user.totalSuspicious
+        - cybereason.malop_connection.element_values.owner_process_user.totalValues
+      ignore_missing: true
+  - rename:
+      field: evidenceMap
+      tag: rename_evidenceMap
+      target_field: cybereason.malop_connection.evidence_map
+      ignore_missing: true
+  - rename:
+      field: json.filterData.groupByValue
+      tag: rename_filterData_groupByValue
+      target_field: cybereason.malop_connection.filter_data.group_by_value
+      ignore_missing: true
+  - rename:
+      field: json.filterData.sortInGroupValue
+      tag: rename_filterData_sortInGroupValue
+      target_field: cybereason.malop_connection.filter_data.sort_in_group_value
+      ignore_missing: true
+  - rename:
+      field: json.guidString
+      tag: rename_guidString
+      target_field: cybereason.malop_connection.guid_string
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_guidString_into_event_id
+      copy_from: cybereason.malop_connection.guid_string
+      ignore_empty_value: true
+  - convert:
+      field: json.isMalicious
+      tag: convert_isMalicious_to_boolean
+      target_field: cybereason.malop_connection.is_malicious
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.labelsIds
+      tag: rename_labelsIds
+      target_field: cybereason.malop_connection.labels_ids
+      ignore_missing: true
+  - convert:
+      field: json.malicious
+      tag: convert_malicious_to_boolean
+      target_field: cybereason.malop_connection.malicious
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.malopPriority
+      tag: rename_malopPriority
+      target_field: cybereason.malop_connection.malop_priority
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.accessedByMalwareEvidence.totalValues
+      tag: convert_simpleValues_accessedByMalwareEvidence_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.accessed_by_malware_evidence.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.accessedByMalwareEvidence.values
+      if: ctx.json?.simpleValues?.accessedByMalwareEvidence?.values != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_simpleValues_accessedByMalwareEvidence_values_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.simpleValues.accessedByMalwareEvidence.values
+      tag: rename_simpleValues_accessedByMalwareEvidence_values
+      target_field: cybereason.malop_connection.simple_values.accessed_by_malware_evidence.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.aggregatedReceivedBytesCount.totalValues
+      tag: convert_simpleValues_aggregatedReceivedBytesCount_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.aggregated_received_bytes_count.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.aggregatedReceivedBytesCount.values
+      if: ctx.json?.simpleValues?.aggregatedReceivedBytesCount?.values != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_simpleValues_aggregatedReceivedBytesCount_values_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.simpleValues.aggregatedReceivedBytesCount.values
+      tag: rename_simpleValues_aggregatedReceivedBytesCount_values
+      target_field: cybereason.malop_connection.simple_values.aggregated_received_bytes_count.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.aggregatedTransmittedBytesCount.totalValues
+      tag: convert_simpleValues_aggregatedTransmittedBytesCount_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.aggregated_transmitted_bytes_count.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.aggregatedTransmittedBytesCount.values
+      if: ctx.json?.simpleValues?.aggregatedTransmittedBytesCount?.values != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_simpleValues_aggregatedTransmittedBytesCount_values_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.simpleValues.aggregatedTransmittedBytesCount.values
+      tag: rename_simpleValues_aggregatedTransmittedBytesCount_values
+      target_field: cybereason.malop_connection.simple_values.aggregated_transmitted_bytes_count.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.calculatedCreationTime.totalValues
+      tag: convert_simpleValues_calculatedCreationTime_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.calculated_creation_time.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.calculatedCreationTime.values
+      if: ctx.json?.simpleValues?.calculatedCreationTime?.values != null
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value
+          tag: date_simpleValues_calculatedCreationTime_values
+          target_field: _ingest._value
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+  - foreach:
+      field: json.simpleValues.calculatedCreationTime.values
+      if: ctx.json?.simpleValues?.calculatedCreationTime?.values != null
+      ignore_failure: true
+      processor:
+        set:
+          field: '@timestamp'
+          tag: set_simpleValues_calculatedCreationTime_values_into_@timestamp
+          copy_from: _ingest._value
+          ignore_empty_value: true
+  - rename:
+      field: json.simpleValues.calculatedCreationTime.values
+      tag: rename_simpleValues_calculatedCreationTime_values
+      target_field: cybereason.malop_connection.simple_values.calculated_creation_time.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.direction.totalValues
+      tag: convert_simpleValues_direction_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.direction.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.simpleValues.direction.values
+      tag: rename_simpleValues_direction_values
+      target_field: cybereason.malop_connection.simple_values.direction.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.elementDisplayName.totalValues
+      tag: convert_simpleValues_elementDisplayName_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.element_display_name.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.simpleValues.elementDisplayName.values
+      tag: rename_simpleValues_elementDisplayName_values
+      target_field: cybereason.malop_connection.simple_values.element_display_name.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.endTime.totalValues
+      tag: convert_simpleValues_endTime_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.end_time.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.endTime.values
+      if: ctx.json?.simpleValues?.endTime?.values != null
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value
+          tag: date_simpleValues_endTime_values
+          target_field: _ingest._value
+          formats:
+            - UNIX_MS
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+  - foreach:
+      field: json.simpleValues.endTime.values
+      if: ctx.json?.simpleValues?.endTime?.values != null
+      ignore_failure: true
+      processor:
+        set:
+          field: event.end
+          tag: set_simpleValues_endTime_values_into_event_end
+          copy_from: _ingest._value
+          ignore_empty_value: true
+  - rename:
+      field: json.simpleValues.endTime.values
+      tag: rename_simpleValues_endTime_values
+      target_field: cybereason.malop_connection.simple_values.end_time.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.group.totalValues
+      tag: convert_simpleValues_group_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.group.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.simpleValues.group.values
+      tag: rename_simpleValues_group_values
+      target_field: cybereason.malop_connection.simple_values.group.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.localPort.totalValues
+      tag: convert_simpleValues_localPort_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.local_port.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.localPort.values
+      if: ctx.json?.simpleValues?.localPort?.values != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_simpleValues_localPort_values_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.simpleValues.localPort.values
+      tag: rename_simpleValues_localPort_values
+      target_field: cybereason.malop_connection.simple_values.local_port.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.portType.totalValues
+      tag: convert_simpleValues_portType_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.port_type.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.simpleValues.portType.values
+      tag: rename_simpleValues_portType_values
+      target_field: cybereason.malop_connection.simple_values.port_type.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.remoteAddressCountryName.totalValues
+      tag: convert_simpleValues_remoteAddressCountryName_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.remote_address_country_name.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.simpleValues.remoteAddressCountryName.values
+      tag: rename_simpleValues_remoteAddressCountryName_values
+      target_field: cybereason.malop_connection.simple_values.remote_address_country_name.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.remotePort.totalValues
+      tag: convert_simpleValues_remotePort_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.remote_port.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.remotePort.values
+      if: ctx.json?.simpleValues?.remotePort?.values != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_simpleValues_remotePort_values_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.simpleValues.remotePort.values
+      tag: rename_simpleValues_remotePort_values
+      target_field: cybereason.malop_connection.simple_values.remote_port.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.serverAddress.totalValues
+      tag: convert_simpleValues_serverAddress_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.server_address.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.serverAddress.values
+      if: ctx.json?.simpleValues?.serverAddress?.values != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_simpleValues_serverAddress_values_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.serverAddress.values
+      if: ctx.json?.simpleValues?.serverAddress?.values != null
+      ignore_failure: true
+      processor:
+        append:
+          field: server.address
+          tag: append_simpleValues_serverAddress_values_into_server_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.simpleValues.serverAddress.values
+      if: ctx.json?.simpleValues?.serverAddress?.values != null
+      ignore_failure: true
+      processor:
+        set:
+          field: server.ip
+          tag: set_server_ip
+          copy_from: _ingest._value
+          ignore_empty_value: true
+  - foreach:
+      field: json.simpleValues.serverAddress.values
+      if: ctx.json?.simpleValues?.serverAddress?.values != null
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          tag: append_simpleValues_serverAddress_values_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.simpleValues.serverAddress.values
+      tag: rename_simpleValues_serverAddress_values
+      target_field: cybereason.malop_connection.simple_values.server_address.values
+      ignore_missing: true
+  - foreach:
+      field: cybereason.malop_connection.simple_values.server_address.values
+      if: ctx.cybereason?.malop_connection?.simple_values?.server_address?.values != null
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          tag: append_simpleValues_serverAddress_values_into_server_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: json.simpleValues.serverPort.totalValues
+      tag: convert_simpleValues_serverPort_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.server_port.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.serverPort.values
+      if: ctx.json?.simpleValues?.serverPort?.values != null
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_simpleValues_serverPort_values_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.serverPort.values
+      if: ctx.json?.simpleValues?.serverPort?.values != null
+      ignore_failure: true
+      processor:
+        set:
+          field: server.port
+          tag: set_simpleValues_serverPort_values_into_server_port
+          copy_from: _ingest._value
+          ignore_empty_value: true
+  - rename:
+      field: json.simpleValues.serverPort.values
+      tag: rename_simpleValues_serverPort_values
+      target_field: cybereason.malop_connection.simple_values.server_port.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.state.totalValues
+      tag: convert_simpleValues_state_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.state.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.simpleValues.state.values
+      tag: rename_simpleValues_state_values
+      target_field: cybereason.malop_connection.simple_values.state.values
+      ignore_missing: true
+  - convert:
+      field: json.simpleValues.transportProtocol.totalValues
+      tag: convert_simpleValues_transportProtocol_totalValues_to_long
+      target_field: cybereason.malop_connection.simple_values.transport_protocol.total_values
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.simpleValues.transportProtocol.values
+      if: ctx.json?.simpleValues?.transportProtocol?.values != null
+      ignore_failure: true
+      processor:
+        set:
+          field: network.transport
+          tag: set_simpleValues_transportProtocol_values_into_network_transport
+          copy_from: _ingest._value
+          ignore_empty_value: true
+  - rename:
+      field: json.simpleValues.transportProtocol.values
+      tag: rename_simpleValues_transportProtocol_values
+      target_field: cybereason.malop_connection.simple_values.transport_protocol.values
+      ignore_missing: true
+  - convert:
+      field: json.suspect
+      tag: convert_suspect_to_boolean
+      target_field: cybereason.malop_connection.suspect
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.suspicionCount
+      tag: convert_suspicionCount_to_long
+      target_field: cybereason.malop_connection.suspicion_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.suspicions
+      tag: rename_suspicions
+      target_field: cybereason.malop_connection.suspicions
+      ignore_missing: true
+  - rename:
+      field: suspicionsMap
+      tag: rename_suspicionsMap
+      target_field: cybereason.malop_connection.suspicions_map
+      ignore_missing: true
+  - foreach:
+      field: cybereason.malop_connection.element_values.owner_machine.element_values
+      if: ctx.cybereason?.malop_connection?.element_values?.owner_machine?.element_values != null
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.guid
+            - _ingest._value.name
+          tag: remove_custom_duplicate_fields_from_cybereason_malop_connection_element_values_owner_machine_element_values
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - cybereason.malop_connection.simple_values.server_address.values
+        - cybereason.malop_connection.simple_values.server_port.values
+        - cybereason.malop_connection.simple_values.transport_protocol.values
+        - cybereason.malop_connection.simple_values.calculated_creation_time.values
+        - cybereason.malop_connection.simple_values.end_time.values
+        - cybereason.malop_connection.guid_string
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null/empty values recursively.
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

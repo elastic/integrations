@@ -5,6 +5,10 @@ processors:
 # set event_subtype based on type/format
 ####################################################
 - dissect:
+    field: event.original
+    pattern: "%{} events %{message}"
+    ignore_failure: true
+- dissect:
     description: Determine event type/format
     field: event.original
     pattern: "%{} events %{msgtype} %{}"
@@ -32,9 +36,25 @@ processors:
     field: cisco_meraki.event_subtype
     value: carrier_change
     if: ctx.msgtype.toLowerCase() == "carrier_change"
+- set:
+    field: cisco_meraki.event_subtype
+    value: anyconnect_vpn_connect
+    if: ctx.msgtype.toLowerCase() == "anyconnect_vpn_connect"
+- set:
+    field: cisco_meraki.event_subtype
+    value: anyconnect_vpn_disconnect
+    if: ctx.msgtype.toLowerCase() == "anyconnect_vpn_disconnect"
+- set:
+    field: cisco_meraki.event_subtype
+    value: splash_auth
+    if: ctx.msgtype.toLowerCase() == "splash_auth"
+- set:
+    field: cisco_meraki.event_subtype
+    value: martian_vlan
+    if: ctx.msgtype.toLowerCase() == "martian_vlan"
 ####################################################
 # log event with type=<value> format
-# these are dfs_event, association, disassocation, 
+# these are dfs_event, association, disassociation, 
 # vpn_connectivity_change, wpa_auth, wpa_deauth
 ####################################################
 - dissect:
@@ -269,6 +289,129 @@ processors:
     patterns: 
       - "events client_vpn_connect %{GREEDYDATA:message}$"
     if: ctx?.cisco_meraki?.event_subtype == "client_vpn_connect"
+
+####################################################
+# Handle anyconnect_vpn_session_manager
+####################################################
+- grok:
+    field: message
+    patterns: 
+      - "msg= ?'%{NOTCOLON:_temp.left}: %{DATA:_temp.right}%{REASON}? ?'"
+    pattern_definitions:
+      NOTCOLON: '[^:]*'
+      REASON: ' Reason: %{DATA:cisco_meraki.anyconnect_vpn_session_manager.reason}'
+    if: ctx.cisco_meraki?.event_subtype == "anyconnect_vpn_session_manager"
+    ignore_failure: true
+- grok:
+    field: _temp.left
+    patterns: 
+      - '%{SESSID}'
+    pattern_definitions:
+      SESSID: 'Sess-ID\[%{NOTBRACKET:cisco_meraki.anyconnect_vpn_session_manager.session_id}\]'
+      NOTBRACKET: '[^\]]*'
+    if: ctx._temp?.left != null
+    ignore_failure: true
+- grok:
+    field: _temp.left
+    patterns: 
+      - '%{USER}'
+    pattern_definitions:
+      USER: 'User\[%{NOTBRACKET:cisco_meraki.anyconnect_vpn_session_manager.user_name}\]'
+      NOTBRACKET: '[^\]]*'
+    if: ctx._temp?.left != null
+    ignore_failure: true
+- grok:
+    field: _temp.left
+    patterns: 
+      - 'Peer IP=%{IP:cisco_meraki.anyconnect_vpn_session_manager.peer_ip}'
+    if: ctx._temp?.left != null
+    ignore_failure: true
+- grok:
+    field: _temp.right
+    patterns: 
+      - '^(?:%{ADD}|%{DELETE}|%{APPLY}|%{SESSEND})$'
+    pattern_definitions:
+      ADD: '%{CONNID} %{ADDED:cisco_meraki.anyconnect_vpn_session_manager.action} %{TUNNEL} to DB'
+      ADDED: 'Added'
+      DELETE: '%{DELETED:cisco_meraki.anyconnect_vpn_session_manager.action} %{TUNNEL} from DB\.'
+      DELETED: 'Deleted'
+      APPLY: 'Applied VPN %{FILTER} for assigned IP %{IP:cisco_meraki.anyconnect_vpn_session_manager.ip}'
+      SESSEND: 'Session %{DISCONNECTED:cisco_meraki.anyconnect_vpn_session_manager.action}\. Session Type: %{WORD:cisco_meraki.anyconnect_vpn_session_manager.session_type}, Duration: %{NOTSPACE:cisco_meraki.anyconnect_vpn_session_manager.duration}, Bytes xmt: %{NUMBER:cisco_meraki.anyconnect_vpn_session_manager.bytes_out}, Bytes rcv: %{NUMBER:cisco_meraki.anyconnect_vpn_session_manager.bytes_in},?'
+      DISCONNECTED: 'disconnected'
+      FILTER: 'filter\[%{NOTBRACKET:cisco_meraki.anyconnect_vpn_session_manager.filter}\]'
+      CONNID: 'conn_id\[%{NOTBRACKET:cisco_meraki.anyconnect_vpn_session_manager.conn_id}\]'
+      TUNNEL: '%{WORD:cisco_meraki.anyconnect_vpn_session_manager.tunnel_type} tunnel\[%{NOTBRACKET:cisco_meraki.anyconnect_vpn_session_manager.tunnel_id}\]'
+      NOTBRACKET: '[^\]]*'
+    if: ctx._temp?.right != null
+    ignore_failure: true
+- set:
+    field: cisco_meraki.anyconnect_vpn_session_manager.action
+    value: "added tunnel"
+    if: ctx.cisco_meraki?.anyconnect_vpn_session_manager?.action == 'Added'
+- set:
+    field: cisco_meraki.anyconnect_vpn_session_manager.action
+    value: "deleted tunnel"
+    if: ctx.cisco_meraki?.anyconnect_vpn_session_manager?.action == 'Deleted'
+- set:
+    field: cisco_meraki.anyconnect_vpn_session_manager.action
+    value: "session disconnected"
+    if: ctx.cisco_meraki?.anyconnect_vpn_session_manager?.action == 'disconnected'
+
+####################################################
+# Handle anyconnect_vpn_connect
+####################################################
+- dissect:
+    field: event.original
+    pattern: "%{} events anyconnect_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} reconnected from %{_temp.client_ip}"
+    if: ctx?.cisco_meraki?.event_subtype == "anyconnect_vpn_connect"
+- grok:
+    field: event.original
+    patterns: 
+      - "events anyconnect_vpn_connect %{GREEDYDATA:message}$"
+    if: ctx.cisco_meraki?.event_subtype == "anyconnect_vpn_connect"
+
+####################################################
+# Handle anyconnect_vpn_disconnect
+####################################################
+- dissect:
+    field: event.original
+    pattern: "%{} events anyconnect_vpn_disconnect user id '%{user.name}' local ip %{network.forwarded_ip} connected from %{_temp.client_ip}"
+    if: ctx?.cisco_meraki?.event_subtype == "anyconnect_vpn_disconnect"
+- grok:
+    field: event.original
+    patterns: 
+      - "events anyconnect_vpn_disconnect %{GREEDYDATA:message}$"
+    if: ctx.cisco_meraki?.event_subtype == "anyconnect_vpn_disconnect"
+
+####################################################
+# Handle splash_auth
+####################################################
+- set:
+    field: client.mac
+    copy_from: cisco_meraki.splash_auth.mac
+    if: ctx.cisco_meraki?.event_subtype == "splash_auth" && ctx.cisco_meraki.splash_auth?.mac != null
+
+####################################################
+# Handle martian_vlan
+####################################################
+- dissect:
+    field: message
+    pattern: "%{}martian_vlan %{_temp.martian_vlan}"
+    if: ctx?.cisco_meraki?.event_subtype == "martian_vlan"
+- kv:
+    field: _temp.martian_vlan
+    if: ctx._temp?.martian_vlan != null
+    field_split: "' "
+    value_split: "='"
+    target_field: cisco_meraki.martian_vlan
+- set:
+    field: _temp.client_ip
+    copy_from: cisco_meraki.martian_vlan.Client
+    if: ctx.cisco_meraki?.martian_vlan?.Client != null
+- set:
+    field: client.mac
+    copy_from: cisco_meraki.martian_vlan.MAC
+    if: ctx.cisco_meraki?.martian_vlan?.MAC != null
 
 ####################################################
 # parse dissected IP values and convert to IP type

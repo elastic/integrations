@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
+env:
+  SETUP_GVM_VERSION: "v0.5.2"
+  LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
+  DOCKER_COMPOSE_VERSION: "v2.24.1"
+  DOCKER_VERSION: "false"
+  YQ_VERSION: 'v4.35.2'
+  JQ_VERSION: '1.7'
+  # Elastic package settings
+  # Manage docker output/logs
+  ELASTIC_PACKAGE_COMPOSE_DISABLE_VERBOSE_OUTPUT: "true"
+  # Default license to use by `elastic-package build`
+  ELASTIC_PACKAGE_REPOSITORY_LICENSE: "licenses/Elastic-2.0.txt"
+  # Link definitions path (full path to be set in the corresponding step)
+  ELASTIC_PACKAGE_LINKS_FILE_PATH: "links_table.yml"
+  # Disable comparison of results in pipeline tests to avoid errors related to GeoIP fields
+  ELASTIC_PACKAGE_SERVERLESS_PIPELINE_TEST_DISABLE_COMPARE_RESULTS: "true"
+  NOTIFY_TO: "ecosystem-team@elastic.co"
+
+steps:
+  - label: ":white_check_mark: Check go sources"
+    key: "check"
+    command: ".buildkite/scripts/check_sources.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
+
+  - label: ":package: Build packages"
+    key: "build-packages"
+    command: ".buildkite/scripts/build_packages.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "8G"
+    env:
+      ARTIFACTS_FOLDER: "artifacts-to-sign"
+      # by default it will publish packages
+      DRY_RUN: "${DRY_RUN:-false}"
+    depends_on:
+      - step: "check"
+        allow_failure: false
+    artifact_paths:
+      - artifacts-to-sign/*.zip
+
+notify:
+  - email: "$NOTIFY_TO"
+    if: "build.state == 'failed' && build.env('BUILDKITE_PULL_REQUEST') == 'false'"

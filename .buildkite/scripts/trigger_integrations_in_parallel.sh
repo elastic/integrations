@@ -52,6 +52,7 @@ for package in ${PACKAGE_LIST}; do
       command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
       agents:
         provider: gcp
+        image: ${IMAGE_UBUNTU_X86_64}
       env:
         STACK_VERSION: "${STACK_VERSION}"
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"

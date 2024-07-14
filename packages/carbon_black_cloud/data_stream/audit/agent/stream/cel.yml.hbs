@@ -1,0 +1,60 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+resource.url: {{hostname}}/integrationServices/v3/auditlogs
+state:
+  api_key: '{{custom_api_secret_key}}/{{custom_api_id}}'
+redact:
+  fields:
+    - api_key
+program: |
+  request("GET", state.url).with({
+    "Header": {
+      "Content-Type": ["application/json"],
+      "X-Auth-Token": [state.api_key],
+    },
+  }).do_request().as(resp, resp.StatusCode == 200 ?
+    bytes(resp.Body).decode_json().as(body, {
+      "events": body.notifications.map(e, {
+        "message": e.encode_json(),
+      }),
+    })
+  :
+    {
+      "events": dyn({
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": "GET:"+(
+            size(resp.Body) != 0 ?
+              string(resp.Body)
+            :
+              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+          ),
+        },
+      }),
+    }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

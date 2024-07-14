@@ -290,7 +290,7 @@ processors:
       patterns:
         - ^%{NOTSPACE:event.outcome} ((protocol %{POSINT:network.iana_number})|%{NOTSPACE:network.transport}) src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{POSINT:source.port})?\s*(\(%{CISCO_USER:_temp_.cisco.source_username}\) )?dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{POSINT:destination.port})?%{DATA}by access-group "%{NOTSPACE:_temp_.cisco.list_id}"
       pattern_definitions:
-        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
@@ -392,9 +392,30 @@ processors:
         - "Group <%{NOTSPACE:source.user.group.name}> User <%{CISCO_USER:source.user.name}> IP <%{IP:source.address}>"
         - "Group %{NOTSPACE:source.user.group.name} User %{CISCO_USER:source.user.name} IP %{IP:source.address}"
       pattern_definitions:
-        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '113042'"
+      field: "message"
+      description: "113042"
+      tag: "113042"
+      patterns:
+        - "^Non-HTTP connection from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}/%{NUMBER:destination.port} denied by redirect filter; only HTTP connections are supported for redirection.$"
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '210007'"
+      field: "message"
+      description: "210007"
+      tag: "210007"
+      patterns:
+        - "^LU allocate xlate failed for %{TYPE:_temp_.cisco.translation_type} %{WORD:network.protocol} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} \\(%{IPORHOST:_temp_.cisco.mapped_source_ip}/%{NUMBER:_temp_.cisco.mapped_source_port}\\) to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}/%{NUMBER:destination.port} \\(%{IPORHOST:_temp_.cisco.mapped_destination_ip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\\)$"
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+        TYPE: "%{WORD}-%{WORD}"
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
@@ -402,7 +423,7 @@ processors:
       patterns:
         - Built %{NOTSPACE} (?:Probe )?%{NOTSPACE:network.transport} connection %{NUMBER:_temp_.cisco.connection_id} for %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port} \(%{IPORHOST:_temp_.natsrcip}/%{NUMBER:_temp_.cisco.mapped_source_port}\)(\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{NOTSPACE:destination.address}/%{NUMBER:destination.port} \(%{NOTSPACE:_temp_.natdstip}/%{NUMBER:_temp_.cisco.mapped_destination_port}\)(\(%{CISCO_USER:_temp_.cisco.destination_username}\))?( \(%{CISCO_USER:_temp_.cisco.termination_user}\))?%{GREEDYDATA}
       pattern_definitions:
-        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
@@ -412,6 +433,16 @@ processors:
       description: "303002"
       pattern: "%{network.protocol} connection from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port}, user %{client.user.name} %{} file %{file.path}"
   - grok:
+      if: "ctx._temp_.cisco.message_id == '305006'"
+      field: "message"
+      description: "305006"
+      tag: "305013"
+      patterns:
+        - "^%{NOTSPACE:_temp_.cisco.translation_type} translation creation failed for %{NOTSPACE:network.protocol} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\)$"
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+  - grok:
       if: "ctx._temp_.cisco.message_id == '305012'"
       field: "message"
       description: "305012"
@@ -419,7 +450,7 @@ processors:
         - Teardown %{DATA} %{NOTSPACE:network.transport} translation from %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? to %{NOTCOLON:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port} duration %{DURATION:_temp_.duration_hms}
       pattern_definitions:
         NOTCOLON: "[^:]*"
-        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
         DURATION: "%{INT}:%{MINUTE}:%{SECOND}"
@@ -435,7 +466,7 @@ processors:
       patterns:
         - "Built %{NOTSPACE} %{NOTSPACE:network.protocol} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER:_temp_.cisco.destination_username}\\) )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\\s*(?:\\(%{CISCO_USER:_temp_.cisco.source_username}\\) )?(type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?"
       pattern_definitions:
-        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
         ECSSOURCEIPORHOST: "(?:%{IP:source.address}|%{HOSTNAME:source.domain})"
@@ -474,6 +505,15 @@ processors:
       description: "305011"
       patterns:
         - Built %{NOTSPACE} %{NOTSPACE:network.transport} translation from %{NOTSPACE:_temp_.cisco.source_interface}:%{IPORHOST:source.address}/%{NUMBER:source.port}(\(%{NOTSPACE:source.user.name}\))? to %{NOTSPACE:_temp_.cisco.destination_interface}:%{IP:destination.address}/%{NUMBER:destination.port}
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '305013'"
+      field: "message"
+      description: "305013"
+      tag: "305013"
+      patterns:
+        - "^Asymmetric NAT rules matched for forward and reverse flows; Connection for %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}/%{NUMBER:source.port}(\\(%{NOTSPACE:source.user.name}\\))? dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST}/%{NUMBER:destination.port} denied due to NAT reverse path failure$"
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313001'"
       field: "message"
@@ -484,11 +524,25 @@ processors:
       field: "message"
       description: "313004"
       pattern: "%{event.outcome} %{network.transport} type=%{_temp_.cisco.icmp_type}, from%{}addr %{source.address} on interface %{_temp_.cisco.source_interface} to %{destination.address}: no matching session"
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '313005'"
       field: "message"
       description: "313005"
-      pattern: "No matching connection for %{network.transport} error message: %{} on %{_temp_.cisco.source_interface} interface.%{}riginal IP payload: %{}"
+      patterns:
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: protocol %{NUMBER:_temp_.cisco.original_iana_number} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.group.name}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}\\(%{NOTCOLON:source.user.domain}\\\\%{NOTSPACE:source.user.name}\\) dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
+        - "No matching connection for ICMP error message: %{NOTSPACE:network.transport} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST}(\\(%{CISCO_USER_OR_SGT_SRC}\\))? dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST}(\\(%{CISCO_USER_OR_SGT_DST}\\))? \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\) on %{NOTCOLON} interface.%{SPACE}Original IP payload: %{NOTSPACE:input.type} src %{IPORHOST:source.address}(/%{NUMBER:source.port})? dst %{IPORHOST:destination.address}(/%{NUMBER:destination.port})?[.]?"
+      pattern_definitions:
+        NOTCOLON: "[^:]*"
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z\\-_]{0,62}))*(\\.?|\\b)"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+        USERNAME: "[a-zA-Z0-9._'-]+"
+        CISCO_USER_OR_SGT_SRC: (?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.source_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.source_user_or_sgt})\))
+        CISCO_USER_OR_SGT_DST: (?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt}|\((?:%{CISCO_USER:_temp_.cisco.destination_user_or_sgt}|%{CISCO_SGT:_temp_.cisco.destination_user_or_sgt})\))
+        CISCO_USER: (?:\*\*\*\*\*|(?:(?:LOCAL\\)?(?:%{HOSTNAME}\\)?%{USERNAME}\$?(?:@%{HOSTNAME})?%{CISCO_SGT}?)|[^$]+)
+        CISCO_SGT: (?:, *)?%{NUMBER}(?::%{WORD})?
   - dissect:
       if: "ctx._temp_.cisco.message_id == '313008'"
       field: "message"
@@ -673,6 +727,19 @@ processors:
       description: "338301"
       value: "{{{source.port}}}"
       ignore_empty_value: true
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '401004'"
+      field: "message"
+      description: "401004"
+      tag: "401004"
+      pattern: "Shunned packet: %{source.address} ==> %{destination.address} on interface %{_temp_.cisco.destination_interface}"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '500004'"
+      field: "message"
+      description: "500004"
+      tag: "500004"
+      patterns:
+        - "^Invalid transport field for protocol=%{NOTSPACE:network.transport}, from %{IPORHOST:source.address}/%{NUMBER:source.port} to %{IPORHOST:destination.address}/%{NUMBER:destination.port}$"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '502103'"
       field: "message"
@@ -943,7 +1010,7 @@ processors:
         - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} (?:state-bypass )?connection %{NOTSPACE:_temp_.cisco.connection_id} (?:for|from) %{NOTCOLON:_temp_.cisco.source_interface}:%{DATA:source.address}/%{NUMBER:source.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.source_username}\)? )?to %{NOTCOLON:_temp_.cisco.destination_interface}:%{DATA:destination.address}/%{NUMBER:destination.port:int}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?duration (?:%{DURATION:_temp_.duration_hms} bytes %{NUMBER:network.bytes})
         - ^Teardown (?:Probe )?%{NOTSPACE:network.transport} connection for faddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSDESTIPORHOST}/%{NUMBER}\s*(?:\(?%{CISCO_USER:_temp_.cisco.destination_username}\)? )?gaddr (?:%{NOTCOLON}:)?%{MAPPEDSRC}/%{NUMBER} laddr (?:%{NOTCOLON:_temp_.cisco.source_interface}:)?%{ECSSOURCEIPORHOST}/%{NUMBER}\s*(?:\(%{CISCO_USER:_temp_.cisco.source_username}\))?(\s*type %{NUMBER:_temp_.cisco.icmp_type} code %{NUMBER:_temp_.cisco.icmp_code})?
       pattern_definitions:
-        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-_]{0,62}))*(\\.?|\\b)"
+        HOSTNAME: "\\b(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z_-]{0,62}))*(\\.?|\\b)"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         NOTCOLON: "[^:]*"
         ECSSOURCEIPORHOST: "(?:%{IP:source.address}|%{HOSTNAME:source.domain})"

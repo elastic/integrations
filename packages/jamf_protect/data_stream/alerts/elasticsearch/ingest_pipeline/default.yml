@@ -8,10 +8,10 @@ processors:
         field: message
         target_field: jamf_protect.alerts
         if: ctx.message != null
-    # - rename:
-    #     field: json
-    #     target_field: jamf_protect.alerts
-    #     if: ctx.json != null
+    - rename:
+        field: json
+        target_field: jamf_protect.alerts
+        if: ctx.json != null
 
 ##########################
 ## ECS Observer Mapping ##
@@ -252,7 +252,6 @@ processors:
                     ctx.process.exit_code = process.exitCode;
                 }
                 ctx.process.args = process.args ?: new ArrayList();
-                ctx.process.tty = process.tty;
                 ctx.process.entity_id = process.uuid;
 
                 ctx.process.parent = new HashMap();    
@@ -307,6 +306,7 @@ processors:
                 ctx.process.parent.name = parentProcess.name;
                 ctx.process.parent.pid = parentProcess.pid;
                 ctx.process.parent.executable = parentProcess.path;
+                ctx.process.parent.entity_id = parentProcess.uuid;
 
                 if (parentProcess.containsKey('startTimestamp')) {
                     ctx.process.parent.start = Instant.ofEpochSecond(parentProcess.startTimestamp).toString();
@@ -392,7 +392,7 @@ processors:
         if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].tags.contains("MITREattack")
     - set:
         field: threat.software.platforms
-        value: macOS
+        value: [macOS]
         if: ctx.jamf_protect?.alerts?.input?.match?.facts[0].tags.contains("MITREattack")
 
 ########################
