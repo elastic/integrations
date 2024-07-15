@@ -1583,6 +1583,8 @@ An example event for `state_pod` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.status.phase | Kubernetes pod phase (Running, Pending...) | keyword |
 | kubernetes.pod.status.ready | Kubernetes pod ready status (true, false or unknown) | keyword |
+| kubernetes.pod.status.ready_time | Readiness achieved time in unix timestamp for a pod | double |
+| kubernetes.pod.status.reason | The reason the pod is in its current state (Evicted, NodeAffinity, NodeLost, Shutdown or UnexpectedAdmissionError) | keyword |
 | kubernetes.pod.status.scheduled | Kubernetes pod scheduled status (true, false, unknown) | keyword |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
