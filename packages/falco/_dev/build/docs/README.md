@@ -37,10 +37,10 @@ To use this input you will need to deploy the Elastic Agent *first* and then con
 
 ## Logs Reference
 
-### falco_alerts
+### alerts
 
 Falco alerts can contain a multitude of various fields pertaining to the type of activity on the host machine.
 
-{{ fields "falco_alerts" }}
+{{ fields "alerts" }}
 
-{{ event "falco_alerts" }}
+{{ event "alerts" }}

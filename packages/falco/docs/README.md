@@ -37,7 +37,7 @@ To use this input you will need to deploy the Elastic Agent *first* and then con
 
 ## Logs Reference
 
-### falco_alerts
+### alerts
 
 Falco alerts can contain a multitude of various fields pertaining to the type of activity on the host machine.
 
@@ -412,7 +412,7 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | threat.technique.id | ID based on Mitre tags within Falco. | keyword |  |
 
 
-An example event for `falco_alerts` looks as following:
+An example event for `alerts` looks as following:
 
 ```json
 {
@@ -429,7 +429,7 @@ An example event for `falco_alerts` looks as following:
         "name": "elastic-package-service-falco-event-generator-1"
     },
     "data_stream": {
-        "dataset": "falco.falco_alerts",
+        "dataset": "falco.alerts",
         "namespace": "ep",
         "type": "logs"
     },
@@ -443,7 +443,7 @@ An example event for `falco_alerts` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "dataset": "falco.falco_alerts",
+        "dataset": "falco.alerts",
         "ingested": "2024-07-02T12:43:54Z",
         "kind": "alert",
         "original": "{\"uuid\":\"c91f87d4-95d0-4c15-8483-d7ef8c0c4c5e\",\"output\":\"2024-07-02T12:43:43.121173772+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator2854613718/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=\\u003cNA\\u003e aname[7]=\\u003cNA\\u003e evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls \\u003e /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=14596c383099 container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Notice\",\"rule\":\"Run shell untrusted\",\"time\":\"2024-07-02T12:43:43.121173772Z\",\"output_fields\":{\"container.id\":\"14596c383099\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.arg.flags\":\"EXE_WRITABLE\",\"evt.time.iso8601\":1719924223121173772,\"evt.type\":\"execve\",\"proc.aname[2]\":\"event-generator\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"containerd-shim\",\"proc.aname[5]\":\"init\",\"proc.aname[6]\":null,\"proc.aname[7]\":null,\"proc.cmdline\":\"bash -c ls \\u003e /dev/null\",\"proc.exepath\":\"/bin/bash\",\"proc.name\":\"bash\",\"proc.pcmdline\":\"httpd --loglevel info run ^helper.RunShell$\",\"proc.pexe\":\"/tmp/falco-event-generator2854613718/httpd\",\"proc.pexepath\":\"/bin/event-generator\",\"proc.pname\":\"httpd\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1059.004\",\"container\",\"host\",\"maturity_stable\",\"mitre_execution\",\"process\",\"shell\"],\"hostname\":\"f72c4d559ccc\"}",
