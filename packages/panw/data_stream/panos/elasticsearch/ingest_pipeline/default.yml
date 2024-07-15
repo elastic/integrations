@@ -103,52 +103,6 @@ processors:
       copy_from: observer.serial_number
       ignore_failure: true
 
-# Extract user domain from source and destination user
-
-  - grok:
-      field: _temp_.srcuser
-      tag: process_srcuser
-      ignore_missing: true
-      patterns:
-        - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
-        - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
-        - '^%{USERNAME:source.user.name}@%{PATRUNKATEDHOSTNAME:source.user.domain}$'
-        - '^%{GREEDYDATA:source.user.name}$'
-      pattern_definitions:
-        USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
-        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
-      if: ctx._temp_?.srcuser != null
-
-  - grok:
-      field: _temp_.dstuser
-      tag: process_dstuser
-      ignore_missing: true
-      patterns:
-        - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
-        - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
-        - '^%{USERNAME:destination.user.name}@%{PATRUNKATEDHOSTNAME:destination.user.domain}$'
-        - '^%{GREEDYDATA:destination.user.name}$'
-      pattern_definitions:
-        USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
-        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
-      if: ctx._temp_?.dstuser != null
-
-  - set:
-      field: panw.panos.source.user
-      copy_from: source.user.name
-      if: ctx.source?.user?.name != null
-
-  - set:
-      field: panw.panos.destination.user
-      copy_from: destination.user.name
-      if: ctx.destination?.user?.name != null
-
-# Set user ECS field from source.user
-  - set:
-      field: user
-      copy_from: source.user
-      if: ctx.source?.user != null
-
 # Set @timestamp to the time when the entry was generated at the data plane.
   - date:
       if: ctx.event?.timezone == null
@@ -1139,6 +1093,61 @@ processors:
         if (start != null) {
           ctx.event['end'] = ZonedDateTime.parse(start).plusNanos(nanos);
         }
+
+# Move source user to x-forwarded-for if flag is set.
+
+  - rename:
+      tag: check_x_forwarded_for
+      field: _temp_.srcuser
+      target_field: panw.panos.x_forwarded_for
+      if: ctx._temp_?.srcuser != null && ctx._temp_?.labels != null && (ctx._temp_.labels & 0x00080000) != 0
+
+# Extract user domain from source and destination user
+
+  - grok:
+      field: _temp_.srcuser
+      tag: process_srcuser
+      ignore_missing: true
+      patterns:
+        - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}$'
+        - '^%{PATRUNKATEDHOSTNAME:source.user.domain}\\\\%{USERNAME:source.user.name}$'
+        - '^%{USERNAME:source.user.name}@%{PATRUNKATEDHOSTNAME:source.user.domain}$'
+        - '^%{GREEDYDATA:source.user.name}$'
+      pattern_definitions:
+        USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
+        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
+      if: ctx._temp_?.srcuser != null
+
+  - grok:
+      field: _temp_.dstuser
+      tag: process_dstuser
+      ignore_missing: true
+      patterns:
+        - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\%{USERNAME:destination.user.name}$'
+        - '^%{PATRUNKATEDHOSTNAME:destination.user.domain}\\\\%{USERNAME:destination.user.name}$'
+        - '^%{USERNAME:destination.user.name}@%{PATRUNKATEDHOSTNAME:destination.user.domain}$'
+        - '^%{GREEDYDATA:destination.user.name}$'
+      pattern_definitions:
+        USERNAME: "[ a-zA-Z0-9#.:_'-]+[$]?"
+        PATRUNKATEDHOSTNAME: '(?:\.{0,1}|\b(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62})(?:\.{1,2}(?:[0-9A-Za-z_][0-9A-Za-z_\-]{0,62}))*(\.?|\b))'
+      if: ctx._temp_?.dstuser != null
+
+  - set:
+      field: panw.panos.source.user
+      copy_from: source.user.name
+      if: ctx.source?.user?.name != null
+
+  - set:
+      field: panw.panos.destination.user
+      copy_from: destination.user.name
+      if: ctx.destination?.user?.name != null
+
+# Set user ECS field from source.user
+  - set:
+      field: user
+      copy_from: source.user
+      if: ctx.source?.user != null
+
 
 # Set event.category.
   - append:
