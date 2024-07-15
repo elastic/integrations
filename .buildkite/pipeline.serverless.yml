@@ -4,11 +4,14 @@ env:
   SETUP_GVM_VERSION: "v0.5.2"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
   DOCKER_COMPOSE_VERSION: "v2.24.1"
-  DOCKER_VERSION: "false"
+  DOCKER_VERSION: "false" # not required to set since system tests are not running yet
   KIND_VERSION: 'v0.20.0'
-  K8S_VERSION: 'v1.29.0'
+  K8S_VERSION: 'v1.30.0'
   YQ_VERSION: 'v4.35.2'
   IMAGE_UBUNTU_X86_64: "family/core-ubuntu-2204"
+  GH_CLI_VERSION: "2.29.0"
+  # This pipeline is intended to test packages with Elastic Serverless
+  SERVERLESS: true
 
   # Elastic package settings
   # Manage docker output/logs
@@ -19,6 +22,10 @@ env:
   ELASTIC_PACKAGE_LINKS_FILE_PATH: "links_table.yml"
   # Disable comparison of results in pipeline tests to avoid errors related to GeoIP fields
   ELASTIC_PACKAGE_SERVERLESS_PIPELINE_TEST_DISABLE_COMPARE_RESULTS: "true"
+  # Enable independent Elastic Agents for all packages
+  ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT: "true"
+  # Set maximum number of parallel tests to run if package allows it
+  ELASTIC_PACKAGE_MAXIMUM_NUMBER_PARALLEL_TESTS: "5"
 
 steps:
   - input: "Input values for the variables"
@@ -51,7 +58,6 @@ steps:
     command: ".buildkite/scripts/test_integrations_with_serverless.sh"
     timeout_in_minutes: 240
     env:
-      SERVERLESS: true
       FORCE_CHECK_ALL: true
       UPLOAD_SAFE_LOGS: 1
     agents:
@@ -74,3 +80,16 @@ steps:
           artifacts: "build/test-results/*.xml"
     agents:
       provider: "gcp"  # junit plugin requires docker
+
+  - label: ":github: Report failed tests"
+    key: report-failed-tests
+    command: ".buildkite/scripts/report_issues.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+      cpu: "8"
+      memory: "4G"
+    # not fail build if this step fails
+    soft_fail: true
+    # run this step when if it is triggered by the daily job
+    if: >
+      build.source == "trigger_job" &&  build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == "integrations-schedule-daily"

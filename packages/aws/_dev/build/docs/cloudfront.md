@@ -46,6 +46,10 @@ For step-by-step instructions on how to set up an integration, see the
 The `cloudfront` data stream collects standard logs (also called access logs) from AWS CloudFront.
 CloudFront standard logs provide detailed records about every request that’s made to a distribution.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "cloudfront_logs"}}
 
 {{event "cloudfront_logs"}}

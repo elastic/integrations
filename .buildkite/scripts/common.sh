@@ -692,7 +692,7 @@ is_pr_affected() {
 
     echo "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS|docs/)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS|README.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
@@ -817,6 +817,9 @@ test_package_in_serverless() {
     # FIXME: adding test-coverage for serverless results in errors like this:
     # Error: error running package pipeline tests: could not complete test run: error calculating pipeline coverage: error fetching pipeline stats for code coverage calculations: need exactly one ES node in stats response (got 4)
     if ! ${ELASTIC_PACKAGE_BIN} test pipeline ${TEST_OPTIONS} ; then
+        return 1
+    fi
+    if ! ${ELASTIC_PACKAGE_BIN} test policy ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
         return 1
     fi
     echo ""

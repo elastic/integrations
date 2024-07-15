@@ -15,6 +15,8 @@ While this repository contains _sources_ for Elastic Integrations, _built_ Elast
 Please review the [Contributing Guide](CONTRIBUTING.md) to learn how to build and develop packages, understand the release procedure and
 explore the builder tools.
 
+ More information about the CI pipelines that are available in this repostiory [here](./docs/ci_pipelines.md).
+
 ## External links
 
 ### Package Specification
