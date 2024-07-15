@@ -13,208 +13,120 @@ processors:
       field: observer.product
       tag: set_observer_product
       value: iHealth Information
-  - foreach:
-      field: json.diagnostics
-      tag: iterate_diagnostics_to_rename_cveIds
-      if: ctx.json?.diagnostics instanceof List
-      processor:
-        rename:
-          field: _ingest._value.cveIds
-          tag: rename_cveIds_to_cve_ids
-          target_field: _ingest._value.cve_ids
-          ignore_missing: true
-  - foreach:
-      field: json.diagnostics
-      tag: iterate_diagnostics_to_convert_version
-      if: ctx.json?.diagnostics instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.version
-          tag: iterate_version_to_convert_fix_version_into_keyword
-          ignore_missing: true
-          processor:
-            convert:
-              field: _ingest._value.fix
-              tag: convert_fix_to_keyword
-              type: string
-              ignore_missing: true
-              on_failure:
-                - append:
-                    field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.diagnostics
-      tag: iterate_diagnostics_to_convert_version
-      if: ctx.json?.diagnostics instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.version
-          tag: iterate_version_to_convert_maintenance_version_into_keyword
-          ignore_missing: true
-          processor:
-            convert:
-              field: _ingest._value.maintenance
-              tag: convert_maintenance_to_keyword
-              type: string
-              ignore_missing: true
-              on_failure:
-                - append:
-                    field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.diagnostics
-      tag: iterate_diagnostics_to_convert_version
-      if: ctx.json?.diagnostics instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.version
-          tag: iterate_version_to_convert_major_version_into_keyword
-          ignore_missing: true
-          processor:
-            convert:
-              field: _ingest._value.major
-              tag: convert_major_to_keyword
-              type: string
-              ignore_missing: true
-              on_failure:
-                - append:
-                    field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.diagnostics
-      tag: iterate_diagnostics_to_convert_version
-      if: ctx.json?.diagnostics instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.version
-          tag: iterate_version_to_convert_minor_version_into_keyword
-          ignore_missing: true
-          processor:
-            convert:
-              field: _ingest._value.minor
-              tag: convert_minor_to_keyword
-              type: string
-              ignore_missing: true
-              on_failure:
-                - append:
-                    field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.diagnostics
-      tag: iterate_diagnostics_to_convert_version
-      if: ctx.json?.diagnostics instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.version
-          tag: iterate_version_to_convert_point_version_into_keyword
-          ignore_missing: true
-          processor:
-            convert:
-              field: _ingest._value.point
-              tag: convert_point_to_keyword
-              type: string
-              ignore_missing: true
-              on_failure:
-                - append:
-                    field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_to_convert_diagnostics_objects_into_string
+      description: Script to convert diagnostics objects into string.
+      source: |
+        def convertKeysToString(Map versionMap, String[] keysToConvert) {
+          def convertedMap = [:];
+          versionMap.entrySet().forEach(entry -> {
+            def key = entry.getKey().toString();
+            def value = entry.getValue();
+            if (Arrays.asList(keysToConvert).contains(key)) {
+              convertedMap[key] = value.toString();
+            } else {
+              convertedMap[key] = value;
+            }
+          });
+          return convertedMap;
+        }
+        def diagnosticArray = ctx.json.diagnostics;
+        def keysToConvert = new String[] {
+          'minor',
+          'major',
+          'maintenance',
+          'fix',
+          'point'
+        };
+        if (diagnosticArray instanceof List) {
+          for (int i = 0; i < diagnosticArray.size(); i++) {
+            def versionArray = diagnosticArray[i].version;
+            if (versionArray instanceof List) {
+              for (int j = 0; j < versionArray.size(); j++) {
+                versionArray[j] = convertKeysToString(versionArray[j], keysToConvert);
+              }
+              ctx.json.diagnostics[i].put('version', versionArray);
+            }
+          }
+        }
+  - script:
+      lang: painless
+      tag: script_to_append_diagnostics_objects_into_ecs_fields
+      description: Script to append diagnostics objects into ECS fields.
+      source: |
+        def diagnosticArray = ctx.json.diagnostics;
+        def cveIds = new HashSet();
+        def importance = new HashSet();
+        def header = new HashSet();
+        def summary = new HashSet();
+        def ruleName = new HashSet();
+        def ruleRef = new HashSet();
+        def threatRef = new HashSet();
+        if (ctx.vulnerability == null) {
+          ctx.vulnerability = new HashMap()
+        }
+        if (ctx.rule == null) {
+          ctx.rule = new HashMap()
+        }
+        if (ctx.threat == null) {
+          ctx.threat = new HashMap()
+        }
+        if (ctx.threat.enrichments == null) {
+          ctx.threat.enrichments = new HashMap()
+        }
+        if (ctx.threat.enrichments.indicator == null) {
+          ctx.threat.enrichments.indicator = new HashMap()
+        }
+        if (diagnosticArray instanceof List) {
+          for (int i = 0; i < diagnosticArray.size(); i++) {
+            def cveIdsArray = diagnosticArray[i].cveIds;
+            if (cveIdsArray instanceof List) {
+              for (int j=0; j < cveIdsArray.size(); j++) {
+                cveIds.add(cveIdsArray[j]);
+              }
+              ctx.json.diagnostics[i].remove('cveIds');
+              ctx.json.diagnostics[i].put('cve_ids', cveIdsArray);
+            }
+            def solutionArray = diagnosticArray[i].solution;
+            if (solutionArray instanceof List) {
+              for (int j=0; j < solutionArray.size(); j++) {
+                if (solutionArray[j].id != null) {
+                  ruleRef.add(solutionArray[j].id);
+                }
+                if (solutionArray[j].value != null) {
+                  threatRef.add(solutionArray[j].value);
+                }
+              }
+              ctx.json.diagnostics[i].remove('cveIds');
+              ctx.json.diagnostics[i].put('cve_ids', cveIdsArray);
+            }
+            if (diagnosticArray[i].importance != null){
+              importance.add(diagnosticArray[i].importance);
+            }
+            if (diagnosticArray[i].header != null){
+              header.add(diagnosticArray[i].header);
+            }
+            if (diagnosticArray[i].summary != null){
+              summary.add(diagnosticArray[i].summary);
+            }
+            if (diagnosticArray[i].name != null){
+              ruleName.add(diagnosticArray[i].name);
+            }
+          }
+        }
+        ctx.vulnerability.put('id', cveIds);
+        ctx.vulnerability.put('severity', importance);
+        ctx.vulnerability.put('description', header);
+        ctx.vulnerability.put('description', summary);
+        ctx.rule.put('name', ruleName);
+        ctx.rule.put('reference', ruleRef);
+        ctx.threat.enrichments.indicator.put('reference', threatRef);
   - rename:
       field: json
       tag: rename_json_to_f5_bigip.log
       target_field: f5_bigip.log
       ignore_missing: true
-  - foreach:
-      field: f5_bigip.log.diagnostics
-      tag: iterate_diagnostics_to_append_cve_ids
-      if: ctx.f5_bigip?.log?.diagnostics instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.cve_ids
-          tag: iterate_cve_ids_to_append_cve_ids
-          ignore_missing: true
-          processor:
-            append:
-              field: vulnerability.id
-              tag: append_cve_ids_to_vulnerability_id
-              value: '{{{_ingest._value}}}'
-              allow_duplicates: false
-              ignore_failure: true
-  - foreach:
-      field: f5_bigip.log.diagnostics
-      tag: iterate_diagnostics_to_append_description
-      if: ctx.f5_bigip?.log?.diagnostics instanceof List
-      processor:
-        append:
-          field: vulnerability.description
-          tag: append_description_to_vulnerability_description
-          value: '{{{_ingest._value.header}}}'
-          allow_duplicates: false
-          ignore_failure: true
-  - foreach:
-      field: f5_bigip.log.diagnostics
-      tag: iterate_diagnostics_to_append_vulnerability_severity
-      if: ctx.f5_bigip?.log?.diagnostics instanceof List
-      processor:
-        append:
-          field: vulnerability.severity
-          tag: append_diagnostic_importance_to_vulnerability_id
-          value: '{{{_ingest._value.importance}}}'
-          allow_duplicates: false
-          ignore_failure: true
-  - foreach:
-      field: f5_bigip.log.diagnostics
-      tag: iterate_diagnostics_to_append_name
-      if: ctx.f5_bigip?.log?.diagnostics instanceof List
-      processor:
-        append:
-          field: rule.name
-          tag: append_name_to_rule_name
-          value: '{{{_ingest._value.name}}}'
-          allow_duplicates: false
-          ignore_failure: true
-  - foreach:
-      field:  f5_bigip.log.diagnostics
-      tag: iterate_diagnostics_to_append_solution
-      if: ctx.f5_bigip?.log?.diagnostics instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.solution
-          tag: iterate_solution_to_append_solution_id
-          ignore_missing: true
-          processor:
-            append:
-                field: rule.reference
-                tag: append_solution_id_to_rule_reference
-                value: '{{{_ingest._value.id}}}'
-                allow_duplicates: false
-                ignore_failure: true
-  - foreach:
-      field:  f5_bigip.log.diagnostics
-      tag: iterate_diagnostics_to_append_solution_value
-      if: ctx.f5_bigip?.log?.diagnostics instanceof List
-      processor:
-        foreach:
-          field: _ingest._value.solution
-          tag: iterate_solution_to_append_solution_value
-          ignore_missing: true
-          processor:
-            append:
-              field: threat.enrichments.indicator.reference
-              tag: append_solution_value_to_url_reference
-              value: '{{{_ingest._value.value}}}'
-              allow_duplicates: false
-              ignore_failure: true
-  - foreach:
-      field: f5_bigip.log.diagnostics
-      tag: iterate_diagnostics_to_append_summary
-      if: ctx.f5_bigip?.log?.diagnostics instanceof List
-      processor:
-        append:
-          field: vulnerability.description
-          tag: append_summary_to_vulnerability_description
-          value: '{{{_ingest._value.summary}}}'
-          allow_duplicates: false
-          ignore_failure: true
   - set:
       field: host.hostname
       tag: set_hostname_to_host_hostname

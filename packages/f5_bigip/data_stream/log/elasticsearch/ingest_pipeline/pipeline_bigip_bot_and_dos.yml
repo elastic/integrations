@@ -47,6 +47,10 @@ processors:
       field: event.type
       tag: append_event_type
       value: info
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
   - rename:
       field: kv.action
       tag: rename_action
@@ -242,11 +246,12 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
+  - append:
       field: source.ip
-      tag: set_source_ip_from_log_client_ip
-      copy_from: f5_bigip.log.client.ip
-      ignore_empty_value: true
+      tag: append_client_ip_into_source_ip
+      value: '{{{f5_bigip.log.client.ip}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.client?.ip != null && ctx.f5_bigip.log.client.ip != 'null'
   - set:
       field: client.ip
       tag: set_client_ip

@@ -164,14 +164,15 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-11-19T22:34:40.000Z",
     "agent": {
-        "ephemeral_id": "cdf280c6-fc12-4b84-ae5c-012fc0e151b9",
-        "id": "9b370835-8fe4-49e3-9229-9da661b63ce5",
+        "ephemeral_id": "aefdb8d4-40be-490a-b0e4-a53313e9e7af",
+        "id": "b76bed4f-0dc0-463b-b822-22e730e6cc74",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "client": {
-        "ip": "81.2.69.142"
+        "ip": "81.2.69.142",
+        "port": 49804
     },
     "data_stream": {
         "dataset": "f5_bigip.log",
@@ -186,7 +187,7 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9b370835-8fe4-49e3-9229-9da661b63ce5",
+        "id": "b76bed4f-0dc0-463b-b822-22e730e6cc74",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -196,9 +197,9 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "f5_bigip.log",
-        "ingested": "2024-07-01T10:02:50Z",
-        "kind": "event",
-        "original": "{\"hostname\":\"hostname\",\"management_ip_address\":\"81.2.69.142\",\"management_ip_address_2\":\"81.2.69.144\",\"http_class_name\":\"/Common/abc/test\",\"web_application_name\":\"/Common/abc\",\"policy_name\":\"/Common/abc\",\"policy_apply_date\":\"2018-11-19 22:17:57\",\"violations\":\"Evasion technique detected\",\"support_id\":\"123456789\",\"request_status\":\"blocked\",\"response_code\":\"0\",\"ip_client\":\"81.2.69.142\",\"route_domain\":\"example.com\",\"method\":\"GET\",\"protocol\":\"HTTP\",\"query_string\":\"name=abc\",\"x_forwarded_for_header_value\":\"81.2.69.144\",\"sig_ids\":\"abc12bcd\",\"sig_names\":\"Sig_Name\",\"date_time\":\"2018-11-19 22:34:40\",\"severity\":\"Critical\",\"attack_type\":\"Detection Evasion\",\"geo_location\":\"US\",\"ip_address_intelligence\":\"host1\",\"username\":\"test User\",\"session_id\":\"abc123abcd\",\"src_port\":\"49804\",\"dest_port\":\"80\",\"dest_ip\":\"81.2.69.142\",\"sub_violations\":\"Evasion technique detected:Directory traversals\",\"virus_name\":\"test Virus\",\"violation_rating\":\"3\",\"websocket_direction\":\"test\",\"websocket_message_type\":\"test\",\"device_id\":\"12bdca32\",\"staged_sig_ids\":\"abc23121bc\",\"staged_sig_names\":\"test_name\",\"threat_campaign_names\":\"threat\",\"staged_threat_campaign_names\":\"test\",\"blocking_exception_reason\":\"test\",\"captcha_result\":\"not_received\",\"uri\":\"/directory/file\",\"fragment\":\"test_Fragment\",\"request\":\"GET /admin/.\",\"tenant\":\"Common\",\"application\":\"app.app\",\"telemetryEventCategory\":\"ASM\"}",
+        "ingested": "2024-07-15T08:41:15Z",
+        "kind": "alert",
+        "original": "{\"application\":\"app.app\",\"attack_type\":\"Detection Evasion\",\"blocking_exception_reason\":\"test\",\"captcha_result\":\"not_received\",\"date_time\":\"2018-11-19 22:34:40\",\"dest_ip\":\"81.2.69.142\",\"dest_port\":\"80\",\"device_id\":\"12bdca32\",\"fragment\":\"test_Fragment\",\"geo_location\":\"US\",\"hostname\":\"hostname\",\"http_class_name\":\"/Common/abc/test\",\"ip_address_intelligence\":\"host1\",\"ip_client\":\"81.2.69.142\",\"management_ip_address\":\"81.2.69.142\",\"management_ip_address_2\":\"81.2.69.144\",\"method\":\"GET\",\"policy_apply_date\":\"2018-11-19 22:17:57\",\"policy_name\":\"/Common/abc\",\"protocol\":\"HTTP\",\"query_string\":\"name=abc\",\"request\":\"GET /admin/.\",\"request_status\":\"blocked\",\"response_code\":\"0\",\"route_domain\":\"example.com\",\"session_id\":\"abc123abcd\",\"severity\":\"Critical\",\"sig_ids\":\"abc12bcd\",\"sig_names\":\"Sig_Name\",\"src_port\":\"49804\",\"staged_sig_ids\":\"abc23121bc\",\"staged_sig_names\":\"test_name\",\"staged_threat_campaign_names\":\"test\",\"sub_violations\":\"Evasion technique detected:Directory traversals\",\"support_id\":\"123456789\",\"telemetryEventCategory\":\"ASM\",\"tenant\":\"Common\",\"threat_campaign_names\":\"threat\",\"uri\":\"/directory/file\",\"username\":\"test User\",\"violation_rating\":\"3\",\"violations\":\"Evasion technique detected\",\"virus_name\":\"test Virus\",\"web_application_name\":\"/Common/abc\",\"websocket_direction\":\"test\",\"websocket_message_type\":\"test\",\"x_forwarded_for_header_value\":\"81.2.69.144\"}",
         "type": [
             "info"
         ]
@@ -313,30 +314,23 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "filestream"
+        "type": "http_endpoint"
     },
     "log": {
-        "file": {
-            "device_id": "64768",
-            "inode": "76477889",
-            "path": "/tmp/service_logs/log.log"
-        },
-        "level": "critical",
-        "offset": 1876
+        "level": "critical"
     },
     "network": {
         "application": "app.app",
         "protocol": "http"
     },
     "observer": {
-        "product": "bigip",
-        "vendor": "f5"
+        "product": "Application Security Module",
+        "vendor": "F5"
     },
     "related": {
         "hosts": [
             "hostname",
-            "12bdca32",
-            "example.com"
+            "12bdca32"
         ],
         "ip": [
             "81.2.69.142",
@@ -346,7 +340,12 @@ An example event for `log` looks as following:
             "test User"
         ]
     },
+    "server": {
+        "ip": "81.2.69.142",
+        "port": 80
+    },
     "source": {
+        "ip": "81.2.69.142",
         "port": 49804
     },
     "tags": [

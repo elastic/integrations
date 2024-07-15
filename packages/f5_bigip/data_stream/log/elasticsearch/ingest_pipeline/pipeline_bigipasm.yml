@@ -50,6 +50,11 @@ processors:
       tag: set_client_ip
       copy_from: f5_bigip.log.client.ip
       ignore_empty_value: true
+  - set:
+      field: source.ip
+      tag: set_source_ip
+      copy_from: client.ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append_related_ip
@@ -164,10 +169,6 @@ processors:
       tag: set_network_protocol
       copy_from: f5_bigip.log.protocol
       ignore_empty_value: true
-  - lowercase:
-      field: network.protocol
-      tag: lowercase_network_protocol
-      ignore_missing: true
   - convert:
       field: json.src_port
       tag: convert_src_port_to_long
@@ -363,6 +364,28 @@ processors:
       description: Pattern to extract network protocol and http version.
       pattern: "%{network.protocol}/%{http.version}"
       ignore_failure: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_to_set_url_full
+      if: ctx.network?.protocol != null && ctx.f5_bigip?.log?.request?.host != null && ctx.f5_bigip?.log?.request?.protocol != null
+      description:
+      source: |
+        if (ctx.url == null) {
+            ctx.url = new HashMap();
+        }
+        ctx.url.original = ctx.network.protocol + '://' +ctx.f5_bigip.log.request.host + ctx.f5_bigip.log.request.path
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_url_original
+      if: ctx.url?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: f5_bigip.log.request.x_forwarded_for
       tag: convert_x_forwarded_for_to_ip
