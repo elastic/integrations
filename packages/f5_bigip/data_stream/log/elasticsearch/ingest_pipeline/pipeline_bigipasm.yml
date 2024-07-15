@@ -1,23 +1,42 @@
 ---
 description: Pipeline for F5 BIG-IP Application Security Manager logs.
 processors:
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: network
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Application Security Module
   - date:
       field: json.date_time
+      tag: date_time_conversion
       target_field: f5_bigip.log.date_time
       if: ctx.json?.date_time != null && ctx.json.date_time != ''
       formats:
         - yyyy-MM-dd HH:mm:ss
         - ISO8601
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
+      tag: set_timestamp
       copy_from: f5_bigip.log.date_time
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ip_client
+      tag: convert_client_ip_to_ip
       target_field: f5_bigip.log.client.ip
       if: ctx.json?.ip_client != ''
       type: ip
@@ -25,18 +44,26 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: client.ip
+      tag: set_client_ip
       copy_from: f5_bigip.log.client.ip
-      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      tag: set_source_ip
+      copy_from: client.ip
+      ignore_empty_value: true
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{client.ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.dest_ip
+      tag: convert_dest_ip_to_ip
       target_field: f5_bigip.log.dest.ip
       if: ctx.json?.dest_ip != ''
       type: ip
@@ -44,18 +71,26 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
+      tag: set_destination_ip
       copy_from: f5_bigip.log.dest.ip
-      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: server.ip
+      tag: set_server_ip
+      copy_from: destination.ip
+      ignore_empty_value: true
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{destination.ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.dest_port
+      tag: convert_dest_port_to_long
       target_field: f5_bigip.log.dest.port
       if: ctx.json?.dest_port != ''
       type: long
@@ -63,64 +98,80 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.port
+      tag: set_destination_port
       copy_from: f5_bigip.log.dest.port
-      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: server.port
+      tag: set_server_port
+      copy_from: destination.port
+      ignore_empty_value: true
   - rename:
       field: json.geo_location
+      tag: rename_geo_location
       target_field: f5_bigip.log.geo.location
       ignore_missing: true
   - set:
       field: host.geo.country_iso_code
+      tag: set_host_geo_country_iso_code
       copy_from: f5_bigip.log.geo.location
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.device_id
+      tag: rename_device_id
       target_field: f5_bigip.log.device.id
       ignore_missing: true
   - set:
       field: host.id
+      tag: set_host_id
       copy_from: f5_bigip.log.device.id
-      ignore_failure: true
+      ignore_empty_value: true
   - append:
       field: related.hosts
+      tag: append_related_hosts
       value: '{{{host.id}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.method
+      tag: rename_method
       target_field: f5_bigip.log.method
       ignore_missing: true
   - set:
       field: http.request.method
+      tag: set_http_request_method
       copy_from: f5_bigip.log.method
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.severity
+      tag: rename_severity
       target_field: f5_bigip.log.severity.name
       ignore_missing: true
   - set:
       field: log.level
+      tag: set_log_level
       copy_from: f5_bigip.log.severity.name
       ignore_failure: true
   - lowercase:
       field: log.level
-      ignore_failure: true
+      tag: lowercase_log_level
+      ignore_missing: true
   - rename:
       field: json.protocol
+      tag: rename_protocol
       target_field: f5_bigip.log.protocol
       ignore_missing: true
   - set:
       field: network.protocol
+      tag: set_network_protocol
       copy_from: f5_bigip.log.protocol
-      ignore_failure: true
-  - lowercase:
-      field: network.protocol
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.src_port
+      tag: convert_src_port_to_long
       target_field: f5_bigip.log.src.port
       if: ctx.json?.src_port != ''
       type: long
@@ -128,50 +179,66 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.port
+      tag: set_source_port
       copy_from: f5_bigip.log.src.port
-      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: client.port
+      tag: set_client_port
+      copy_from: source.port
+      ignore_empty_value: true
   - rename:
       field: json.username
+      tag: rename_username
       target_field: f5_bigip.log.username
       ignore_missing: true
   - set:
       field: user.name
+      tag: set_user_name
       copy_from: f5_bigip.log.username
-      ignore_failure: true
+      ignore_empty_value: true
   - append:
       field: related.user
+      tag: append_related_user
       value: '{{{user.name}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.attack_type
+      tag: rename_attack_type
       target_field: f5_bigip.log.attack.type
       ignore_missing: true
   - rename:
       field: json.blocking_exception_reason
+      tag: rename_blocking_exception_reason
       target_field: f5_bigip.log.blocking_exception_reason
       ignore_missing: true
   - rename:
       field: json.captcha_result
+      tag: rename_captcha_result
       target_field: f5_bigip.log.captcha_result
       ignore_missing: true
   - rename:
       field: json.fragment
+      tag: rename_fragment
       target_field: f5_bigip.log.fragment
       ignore_missing: true
   - rename:
       field: json.http_class_name
+      tag: rename_http_class_name
       target_field: f5_bigip.log.http.class_name
       ignore_missing: true
   - rename:
       field: json.ip_address_intelligence
+      tag: rename_ip_address_intelligence
       target_field: f5_bigip.log.ip_address_intelligence
       ignore_missing: true
   - convert:
       field: json.management_ip_address
+      tag: convert_management_ip_address_to_ip
       target_field: f5_bigip.log.management.ip_address
       if: ctx.json?.management_ip_address != ''
       type: ip
@@ -179,14 +246,16 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{f5_bigip.log.management.ip_address}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.management_ip_address_2
+      tag: convert_management_ip_address_2_to_ip
       target_field: f5_bigip.log.management.ip_address_2
       if: ctx.json?.management_ip_address_2 != ''
       type: ip
@@ -194,40 +263,154 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{f5_bigip.log.management.ip_address_2}}}'
       allow_duplicates: false
       ignore_failure: true
   - date:
       field: json.policy_apply_date
+      tag: date_policy_apply_date
       target_field: f5_bigip.log.policy.apply_date
       if: ctx.json?.policy_apply_date != null && ctx.json.policy_apply_date != ''
       formats:
         - yyyy-MM-dd HH:mm:ss
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.policy_name
+      tag: rename_policy_name
       target_field: f5_bigip.log.policy.name
       ignore_missing: true
+  - script:
+      lang: "painless"
+      description: "Extract sAMAccountName, userPrincipleName, userName from log"
+      source: >
+        def log = ctx.event.original;
+
+        def sAMAccountNameMatch = /sAMAccountName=([^\\)]+)/.matcher(log);
+        if (sAMAccountNameMatch.find()) {
+          ctx.f5_bigip.log.sam_account_name = sAMAccountNameMatch.group(1);
+        }
+
+        def userPrincipleNameMatch = /UserPrincipleName=([^\\)]+)/.matcher(log);
+        if (userPrincipleNameMatch.find()) {
+          ctx.f5_bigip.log.user_principle_name = userPrincipleNameMatch.group(1);
+        }
+
+        def userNameMatch = /User_Name=([^\\)]+)/.matcher(log);
+        if (userNameMatch.find()) {
+          ctx.f5_bigip.log.user_name = userNameMatch.group(1);
+        }
   - rename:
       field: json.query_string
+      tag: rename_query_string
       target_field: f5_bigip.log.query.string
       ignore_missing: true
   - rename:
+        field: f5_bigip.log.sam_account_name
+        target_field: f5_bigip.log.query.sam_account_name
+        ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_related_user
+      value: '{{{f5_bigip.log.query.sam_account_name}}}'
+      allow_duplicates: false
+      if: ctx.f5_bigip?.log?.query?.sam_account_name != null
+  - rename:
+        field: f5_bigip.log.user_principle_name
+        target_field: f5_bigip.log.query.user_principle_name
+        ignore_missing: true
+  - rename:
+        field: f5_bigip.log.user_name
+        target_field: f5_bigip.log.query.user_name
+        ignore_missing: true
+  - rename:
       field: json.request
+      tag: rename_request
       target_field: f5_bigip.log.request.detail
       ignore_missing: true
+  # Two dissect patterns are used to handle both single and multiple escape characters.
+  - dissect:
+      # The literal escapes here are intentional. These appear in real-world data.
+      field: f5_bigip.log.request.detail
+      description: Pattern to handle multiple escape character.
+      pattern: '%{f5_bigip.log.request.method} %{f5_bigip.log.request.path} %{f5_bigip.log.request.protocol}\r\nHost: %{f5_bigip.log.request.host}\r\nConnection: %{f5_bigip.log.request.connection}\r\nCache-Control: %{f5_bigip.log.request.cache_control}'
+      ignore_failure: true
+  - dissect:
+      field: f5_bigip.log.request.detail
+      description: Pattern to handle single escape character.
+      pattern: "%{f5_bigip.log.request.method} %{f5_bigip.log.request.path} %{f5_bigip.log.request.protocol}\r\nHost: %{f5_bigip.log.request.host}\r\nUser-Agent: %{f5_bigip.log.request.user_agent}\r\nAccept: %{f5_bigip.log.request.accept}\r\nX-Forwarded-For: %{f5_bigip.log.request.x_forwarded_for}\r\n\r\n"
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      tag: append_f5_bigip_log_request_host_into_related_hosts
+      value: '{{{f5_bigip.log.request.host}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - lowercase:
+      field: related.hosts
+      tag: lowercase_related_hosts
+      ignore_missing: true
+  - user_agent:
+      field: f5_bigip.log.request.user_agent
+      ignore_missing: true
+  - dissect:
+      field: f5_bigip.log.request.protocol
+      description: Pattern to extract network protocol and http version.
+      pattern: "%{network.protocol}/%{http.version}"
+      ignore_failure: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script_to_set_url_full
+      if: ctx.network?.protocol != null && ctx.f5_bigip?.log?.request?.host != null && ctx.f5_bigip?.log?.request?.protocol != null
+      description:
+      source: |
+        if (ctx.url == null) {
+            ctx.url = new HashMap();
+        }
+        ctx.url.original = ctx.network.protocol + '://' +ctx.f5_bigip.log.request.host + ctx.f5_bigip.log.request.path
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_url_original
+      if: ctx.url?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: f5_bigip.log.request.x_forwarded_for
+      tag: convert_x_forwarded_for_to_ip
+      target_field: f5_bigip.log.request.x_forwarded_for
+      if: ctx.f5_bigip?.log?.request?.x_forwarded_for != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - append:
+      field: related.ip
+      tag: append_f5_bigip_log_request_x_forwarded_for_into_related_ip
+      value: '{{{f5_bigip.log.request.x_forwarded_for}}}'
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.request_status
+      tag: rename_request_status
       target_field: f5_bigip.log.request.status
       ignore_missing: true
   - convert:
       field: json.response_code
+      tag: convert_response_code_to_long
       target_field: f5_bigip.log.response.code
       if: ctx.json?.response_code != ''
       type: long
@@ -235,66 +418,75 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.route_domain
+      tag: rename_route_domain
       target_field: f5_bigip.log.route_domain
       ignore_missing: true
-  - append:
-      field: related.hosts
-      value: '{{{f5_bigip.log.route_domain}}}'
-      allow_duplicates: false
-      ignore_failure: true
   - rename:
       field: json.session_id
+      tag: rename_session_id
       target_field: f5_bigip.log.session.id
       ignore_missing: true
   - rename:
       field: json.sig_ids
+      tag: rename_sig_ids
       target_field: f5_bigip.log.sig.ids
       ignore_missing: true
   - rename:
       field: json.sig_names
+      tag: rename_sig_names
       target_field: f5_bigip.log.sig.names
       ignore_missing: true
   - rename:
       field: json.staged_sig_ids
+      tag: rename_staged_sig_ids
       target_field: f5_bigip.log.staged.sig.ids
       ignore_missing: true
   - rename:
       field: json.staged_sig_names
+      tag: rename_staged_sig_names
       target_field: f5_bigip.log.staged.sig.names
       ignore_missing: true
   - rename:
       field: json.staged_threat_campaign_names
+      tag: rename_staged_threat_campaign_names
       target_field: f5_bigip.log.staged.threat_campaign_names
       ignore_missing: true
   - rename:
       field: json.sub_violations
+      tag: rename_sub_violations
       target_field: f5_bigip.log.sub_violations
       ignore_missing: true
   - rename:
       field: json.support_id
+      tag: rename_support_id
       target_field: f5_bigip.log.support.id
       ignore_missing: true
   - rename:
       field: json.telemetryEventCategory
+      tag: rename_telemetry_event_category
       target_field: f5_bigip.log.telemetry.event.category
       ignore_missing: true
   - rename:
       field: json.tenant
+      tag: rename_tenant
       target_field: f5_bigip.log.tenant
       ignore_missing: true
   - rename:
       field: json.threat_campaign_names
+      tag: rename_threat_campaign_names
       target_field: f5_bigip.log.threat_campaign_names
       ignore_missing: true
   - rename:
       field: json.uri
+      tag: rename_uri
       target_field: f5_bigip.log.uri
       ignore_missing: true
   - convert:
       field: json.violation_rating
+      tag: convert_violation_rating_to_long
       target_field: f5_bigip.log.violation.rating
       if: ctx.json?.violation_rating != ''
       type: long
@@ -302,29 +494,35 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.violations
+      tag: rename_violations
       target_field: f5_bigip.log.violations
       ignore_missing: true
   - rename:
       field: json.virus_name
+      tag: rename_virus_name
       target_field: f5_bigip.log.virus_name
       ignore_missing: true
   - rename:
       field: json.web_application_name
+      tag: rename_web_application_name
       target_field: f5_bigip.log.web_application_name
       ignore_missing: true
   - rename:
       field: json.websocket_direction
+      tag: rename_websocket_direction
       target_field: f5_bigip.log.websocket.direction
       ignore_missing: true
   - rename:
       field: json.websocket_message_type
+      tag: rename_websocket_message_type
       target_field: f5_bigip.log.websocket.message_type
       ignore_missing: true
   - convert:
       field: json.x_forwarded_for_header_value
+      tag: convert_x_forwarded_for_header_value_to_ip
       target_field: f5_bigip.log.x_forwarded_for_header_value
       if: ctx.json?.x_forwarded_for_header_value != ''
       type: ip
@@ -332,159 +530,195 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
+      tag: append_related_ip
       value: '{{{f5_bigip.log.x_forwarded_for_header_value}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.geo_info
+      tag: rename_geo_info
       target_field: f5_bigip.log.geo.info
       ignore_missing: true
   - rename:
       field: json.headers
+      tag: rename_headers
       target_field: f5_bigip.log.headers
       ignore_missing: true
   - rename:
       field: json.ip_route_domain
+      tag: rename_ip_route_domain
       target_field: f5_bigip.log.ip_route_domain
       ignore_missing: true
   - append:
       field: related.hosts
+      tag: append_related_hosts
       value: '{{{f5_bigip.log.ip_route_domain}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.is_trunct
+      tag: rename_is_trunct
       target_field: f5_bigip.log.is_trunct
       ignore_missing: true
   - rename:
       field: json.resp
+      tag: rename_resp
       target_field: f5_bigip.log.resp
       ignore_missing: true
   - rename:
       field: json.unit_host
+      tag: rename_unit_host
       target_field: f5_bigip.log.unit_host
       ignore_missing: true
   - append:
       field: related.hosts
+      tag: append_related_hosts
       value: '{{{f5_bigip.log.unit_host}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.violate_details
+      tag: rename_violate_details
       target_field: f5_bigip.log.violate_details
       ignore_missing: true
   - rename:
       field: json.microservice
+      tag: rename_microservice
       target_field: f5_bigip.log.microservice
       ignore_missing: true
   - rename:
       field: json.response
+      tag: rename_response
       target_field: f5_bigip.log.response.value
       ignore_missing: true
   - rename:
       field: json.sig_cves
+      tag: rename_sig_cves
       target_field: f5_bigip.log.sig.cves
       ignore_missing: true
   - rename:
       field: json.staged_sig_cves
+      tag: rename_staged_sig_cves
       target_field: f5_bigip.log.staged.sig.cves
       ignore_missing: true
   - rename:
       field: json.tap_event_id
+      tag: rename_tap_event_id
       target_field: f5_bigip.log.tap.event_id
       ignore_missing: true
   - rename:
       field: json.tap_vid
+      tag: rename_tap_vid
       target_field: f5_bigip.log.tap.vid
       ignore_missing: true
   - rename:
       field: json.vs_name
+      tag: rename_vs_name
       target_field: f5_bigip.log.vs_name
       ignore_missing: true
   - rename:
       field: json.compression_method
+      tag: rename_compression_method
       target_field: f5_bigip.log.compression_method
       ignore_missing: true
   - rename:
       field: json.client_type
+      tag: rename_client_type
       target_field: f5_bigip.log.client.type
       ignore_missing: true
   - rename:
       field: json.conviction_traps
+      tag: rename_conviction_traps
       target_field: f5_bigip.log.conviction_traps
       ignore_missing: true
   - rename:
       field: json.credential_stuffing_lookup_result
+      tag: rename_credential_stuffing_lookup_result
       target_field: f5_bigip.log.credential_stuffing_lookup_result
       ignore_missing: true
   - rename:
       field: json.enforced_by
+      tag: rename_enforced_by
       target_field: f5_bigip.log.enforced_by
       ignore_missing: true
   - rename:
       field: json.enforcement_action
+      tag: rename_enforcement_action
       target_field: f5_bigip.log.enforcement_action
       ignore_missing: true
   - date:
       field: json.epoch_time
+      tag: date_epoch_time
       target_field: f5_bigip.log.epoch_time
       if: ctx.json?.epoch_time != null && ctx.json.epoch_time != ''
       formats:
         - UNIX
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ip_with_route_domain
+      tag: rename_ip_with_route_domain
       target_field: f5_bigip.log.ip_with_route_domain
       ignore_missing: true
   - append:
       field: related.hosts
+      tag: append_related_hosts
       value: '{{{f5_bigip.log.ip_with_route_domain}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.is_truncated
+      tag: rename_is_truncated
       target_field: f5_bigip.log.is_truncated
       ignore_missing: true
   - rename:
       field: json.likely_false_positive_sig_ids
+      tag: rename_likely_false_positive_sig_ids
       target_field: f5_bigip.log.likely_false_positive_sig_ids
       ignore_missing: true
   - rename:
       field: json.login_result
+      tag: rename_login_result
       target_field: f5_bigip.log.login_result
       ignore_missing: true
   - rename:
       field: json.mobile_application_name
+      tag: rename_mobile_application_name
       target_field: f5_bigip.log.mobile_application.name
       ignore_missing: true
   - rename:
       field: json.mobile_application_version
+      tag: rename_mobile_application_version
       target_field: f5_bigip.log.mobile_application.version
       ignore_missing: true
   - rename:
       field: json.operation_id
+      tag: rename_operation_id
       target_field: f5_bigip.log.operation.id
       ignore_missing: true
   - rename:
       field: json.password_hash_prefix
+      tag: rename_password_hash_prefix
       target_field: f5_bigip.log.password_hash_prefix
       ignore_missing: true
   - rename:
       field: json.protocol_info
+      tag: rename_protocol_info
       target_field: f5_bigip.log.protocol_info
       ignore_missing: true
   - rename:
       field: json.sig_set_names
+      tag: rename_sig_set_names
       target_field: f5_bigip.log.sig.set_names
       ignore_missing: true
   - convert:
       field: json.slot_number
+      tag: convert_slot_number
       target_field: f5_bigip.log.slot.number
       if: ctx.json?.slot_number != ''
       type: long
@@ -492,17 +726,20 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.staged_sig_set_names
+      tag: rename_staged_sig_set_names
       target_field: f5_bigip.log.staged.sig.set_names
       ignore_missing: true
   - rename:
       field: json.tap_requested_actions
+      tag: rename_tap_requested_actions
       target_field: f5_bigip.log.tap.requested_actions
       ignore_missing: true
   - convert:
       field: json.tap_sent_token
+      tag: convert_tap_sent_token_to_long
       target_field: f5_bigip.log.tap.sent_token
       if: ctx.json?.tap_sent_token != ''
       type: long
@@ -510,29 +747,35 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.tap_transaction_id
+      tag: rename_tap_transaction_id
       target_field: f5_bigip.log.tap.transaction_id
       ignore_missing: true
   - rename:
       field: json.unit_hostname
+      tag: rename_unit_hostname
       target_field: f5_bigip.log.unit_hostname
       ignore_missing: true
   - append:
       field: related.hosts
+      tag: append_related_hosts
       value: '{{{f5_bigip.log.unit_hostname}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.violation_details
+      tag: rename_violation_details
       target_field: f5_bigip.log.violation.details
       ignore_missing: true
   - remove:
       field: json
+      tag: remove_json
+      ignore_failure: true
       ignore_missing: true
   - remove:
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       field:
         - f5_bigip.log.date_time
         - f5_bigip.log.client.ip
@@ -549,10 +792,3 @@ processors:
         - f5_bigip.log.application.name
       ignore_failure: true
       ignore_missing: true
-on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
