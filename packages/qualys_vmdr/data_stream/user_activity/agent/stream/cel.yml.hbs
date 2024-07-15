@@ -67,7 +67,10 @@ program: |
             "want_more": data.?next.URL.hasValue(),
             "pagination_url": data.?next.URL.orValue(null),
             "cursor": {
-                ?"latest_ts": size(data.csv) > 0 ?
+                // The API roughly returns data from newest to oldest. For simplicity
+                // only update the cursor for the non-pagination response which
+                // should hold newer data than any of the pagination responses.
+                ?"latest_ts": !state.?want_more.orValue(false) && size(data.csv) > 0 ?
                   optional.of(data.csv.map(e, e.Date.parse_time(time_layout.RFC3339)).max())
                 :
                   state.?cursor.latest_ts,
