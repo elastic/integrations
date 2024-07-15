@@ -1,0 +1,122 @@
+config_version: "2"
+interval: {{interval}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#unless token}}
+{{#if username}}
+{{#if password}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+{{/if}}
+{{/if}}
+{{/unless}}
+cursor:
+  index_earliest:
+    value: '[[.last_event.result.max_indextime]]'
+request.url: {{url}}/services/search/jobs/export
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: POST
+request.transforms:
+  - set:
+      target: url.params.search
+      value: |-
+        {{search}} | streamstats max(_indextime) AS max_indextime
+  - set:
+      target: url.params.output_mode
+      value: "json"
+  - set:
+      target: url.params.index_earliest
+      value: '[[ .cursor.index_earliest ]]'
+      default: '[[(now (parseDuration "-{{interval}}")).Unix]]'
+  - set:
+      target: url.params.index_latest
+      value: '[[(now).Unix]]'
+  - set:
+      target: header.Content-Type
+      value: application/x-www-form-urlencoded
+{{#unless username}}
+{{#unless password}}
+{{#if token}}
+  - set:
+      target: header.Authorization
+      value: {{token}}
+{{/if}}
+{{/unless}}
+{{/unless}}
+response.decode_as: application/x-ndjson
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- decode_json_fields:
+    fields: message
+    target: json
+    add_error_key: true
+- drop_event:
+    when:
+      not:
+        has_fields: ['json.result']
+- fingerprint:
+    fields:
+      - json.result._cd
+      - json.result._indextime
+      - json.result._raw
+      - json.result._time
+      - json.result.host
+      - json.result.source
+    target_field: "@metadata._id"
+- drop_fields:
+    fields: message
+- rename:
+    fields:
+      - from: json.result._raw
+        to: event.original
+      - from: json.result.host
+        to: host.name
+      - from: json.result.source
+        to: event.provider
+    ignore_missing: true
+    fail_on_error: false
+- drop_fields:
+    fields: json
+- decode_xml_wineventlog:
+    field: event.original
+    target_field: winlog
+    ignore_missing: true
+    ignore_failure: true
+    map_ecs_fields: true
+- script:
+    lang: javascript
+    id: rename_fields_in_winlog_event_data_that_have_spaces
+    source: >
+      function process(event) {
+        var eventData = event.Get("winlog.event_data");
+        if (eventData !== null) {
+          var newEventData = {};
+          for (var key in eventData) {
+            if (eventData.hasOwnProperty(key)) {
+              var newKey = key.replace(/ /g, "_");
+              newEventData[newKey] = eventData[key];
+            }
+          }
+          event.Put("winlog.event_data", newEventData);
+        }
+      }
+{{#if processors.length}}
+{{processors}}
+{{/if}}
