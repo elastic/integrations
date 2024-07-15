@@ -215,12 +215,15 @@ All BitDefender GravityZone log events are available in the `bitdefender_gravity
 | bitdefender.event.hash |  | keyword |
 | bitdefender.event.host_name |  | keyword |
 | bitdefender.event.hwid |  | keyword |
+| bitdefender.event.id |  | long |
 | bitdefender.event.incident_id |  | keyword |
 | bitdefender.event.isSuccessful |  | integer |
 | bitdefender.event.is_container_host |  | integer |
 | bitdefender.event.is_fileless_attack |  | integer |
 | bitdefender.event.issueType |  | long |
 | bitdefender.event.item_count |  | keyword |
+| bitdefender.event.jsonrpc.method |  | keyword |
+| bitdefender.event.jsonrpc.version |  | keyword |
 | bitdefender.event.lastAdReportDate |  | keyword |
 | bitdefender.event.last_blocked |  | keyword |
 | bitdefender.event.lastupdate |  | keyword |
@@ -301,8 +304,6 @@ All BitDefender GravityZone log events are available in the `bitdefender_gravity
 | bitdefender.event.user_sid |  | keyword |
 | bitdefender.event.username |  | keyword |
 | bitdefender.event.victim_ip |  | keyword |
-| bitdefender.id |  | keyword |
-| bitdefender.jsonrpc |  | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
@@ -444,13 +445,13 @@ An example event for `push_configuration` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-03T11:35:09.791Z",
+    "@timestamp": "2024-07-15T09:30:33.869Z",
     "agent": {
-        "ephemeral_id": "72c66a59-5a0a-46bc-a719-c8bf015eac18",
-        "id": "a4d9e952-40c8-4e6e-89f0-3914c5a45b07",
+        "ephemeral_id": "d1d677fd-e585-4395-a4ee-8c3c2670cb99",
+        "id": "b2122e94-e7cd-4274-9c2e-856609628a36",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.14.0"
+        "version": "8.14.3"
     },
     "bitdefender": {
         "id": "1",
@@ -504,15 +505,15 @@ An example event for `push_configuration` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a4d9e952-40c8-4e6e-89f0-3914c5a45b07",
+        "id": "b2122e94-e7cd-4274-9c2e-856609628a36",
         "snapshot": false,
-        "version": "8.14.0"
+        "version": "8.14.3"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2024-07-03T11:35:09.791Z",
+        "created": "2024-07-15T09:30:33.869Z",
         "dataset": "bitdefender.push_configuration",
-        "ingested": "2024-07-03T11:35:21Z",
+        "ingested": "2024-07-15T09:30:45Z",
         "original": "{\"id\":\"1\",\"jsonrpc\":\"2.0\",\"result\":{\"serviceSettings\":{\"requireValidSslCertificate\":true,\"url\":\"https://your.elastic.agent/bitdefender/push/notification\"},\"serviceType\":\"qradar\",\"status\":1,\"subscribeToEventTypes\":{\"adcloud\":true,\"antiexploit\":true,\"aph\":true,\"av\":true,\"avc\":true,\"dp\":true,\"endpoint-moved-in\":true,\"endpoint-moved-out\":true,\"exchange-malware\":true,\"exchange-user-credentials\":true,\"fw\":true,\"hd\":true,\"hwid-change\":true,\"install\":true,\"modules\":true,\"network-monitor\":true,\"network-sandboxing\":true,\"new-incident\":true,\"ransomware-mitigation\":true,\"registration\":true,\"security-container-update-available\":true,\"supa-update-status\":true,\"sva\":true,\"sva-load\":true,\"task-status\":true,\"troubleshooting-activity\":true,\"uc\":true,\"uninstall\":true}}}"
     },
     "input": {

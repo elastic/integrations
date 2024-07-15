@@ -1,6 +1,17 @@
 ---
 description: Processes HTTP JSON events from BitDefender
 processors:
+
+- set:
+    field: ecs.version
+    value: '8.11.0'
+
+# Fail when jsonRPC is enabled, but message is not in jsonRPC format. 
+# Use the json.error.message set on the input.
+- fail:
+    if: ctx.json?.error?.message != null
+    message: error message set and no data to process.
+
 - json:
     field: message
     target_field: bitdefender.event
@@ -10,13 +21,29 @@ processors:
     description: "qradar/plain NDJSON parsed event"
     field: json
     target_field: bitdefender.event
-    if: ctx.json != null && ctx.json?.event == null
+    if: ctx.json != null && ctx.json.event == null
 
 - rename:
-    description: "Splunk HEC format parsed event"
+    description: "jsonRPC or Splunk HEC format parsed event"
     field: json.event
     target_field: bitdefender.event
-    if: ctx.json != null && ctx.json?.event != null
+    if: ctx.json?.event != null
+
+# Extract fields from jsonRPC message root
+- rename:
+    field: json.jsonrpc.version
+    target_field: bitdefender.event.jsonrpc.version
+    if: ctx.json?.jsonrpc?.version != null
+
+- rename:
+    field: json.jsonrpc.method
+    target_field: bitdefender.event.jsonrpc.method
+    if: ctx.json?.jsonrpc?.method != null
+
+- rename:
+    field: json.id
+    target_field: bitdefender.event.id
+    if: ctx.json?.id != null
 
 - rename:
     field: _tmp.bitdefender_id
@@ -27,10 +54,6 @@ processors:
     field: message
     target_field: event.original
     if: ctx.message != null && ctx.message != "" && ctx.event?.original == null
-
-- set:
-    field: ecs.version
-    value: '8.11.0'
 
 - convert:
     field: bitdefender.event.status

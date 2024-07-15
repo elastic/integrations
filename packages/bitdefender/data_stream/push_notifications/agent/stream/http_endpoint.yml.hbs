@@ -24,39 +24,23 @@ secret.value: "{{authorization_value}}"
 ssl: {{ssl}}
 {{/if}}
 
-{{#if jsonrpc_format}}
+{{#if enable_jsonrpc_format}}
 program: |
   has(obj.jsonrpc) ?
     obj.params.events.map(e, {
-      "message": {"count": int(e.count), "companyId": e.companyId}
+      "event": e,
+      "id": obj.id,
+      "jsonrpc": {
+        "version": obj.jsonrpc,
+        "method": obj.method
+      }
     })
   : 
-    [{
-      "message": {"error": "Not jsonrpc formatted message root1"}
-    }]
-  
-  {{!-- debug("HAS_OBJECT-JSONRPC", has(obj.jsonrpc)) ?
-    [{"message": debug("OBJECT-ID", obj.id)}] --}}
-
-  {{!-- has(obj.jsonrpc) ?
-    has(obj.params) ?
-      has(obj.params.events) ?
-        obj.params.events.map(e, {
-          "message": e
-        })
-      :
-        [{"message": "Not jsonrpc formatted message root3"}]
-    : 
-      [{"message": "Not jsonrpc formatted message root2"}]
-  : 
-    [{"message": "Not jsonrpc formatted message root1"}] --}}
-{{!-- program: |
-  {
-    "events": [
-      "message": "{\"aph_type\":\"phishing\"}"
-    ],
-    "error": "Not jsonrpc formatted message",
-  } --}}
+    dyn({
+      "error": {
+        "message": "Not jsonrpc formatted message, but parameter `Enable jsonRPC Format` is selected."
+      }
+    })
 {{/if}}
 
 {{#if preserve_original_event}}
