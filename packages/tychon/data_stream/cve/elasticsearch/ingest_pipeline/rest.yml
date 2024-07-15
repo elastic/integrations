@@ -41,6 +41,9 @@ processors:
   - set:
       field: event.category
       value: [vulnerability]
+
+  # ECS fields from the tychon fieldset
+
   - script:
       source: |
         if (ctx.tychon.vulnerability?.result == "fail") {
@@ -50,3 +53,35 @@ processors:
         } else {
           ctx.event.outcome = "unknown"
         }
+  - set:
+      field: vulnerability.category
+      copy_from: tychon.vulnerability.category
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.classification
+      copy_from: tychon.vulnerability.classification
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.enumeration
+      copy_from: tychon.vulnerability.enumeration
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.id
+      copy_from: tychon.vulnerability.id
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.reference
+      copy_from: tychon.vulnerability.reference
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.scanner.vendor
+      copy_from: tychon.vulnerability.scanner.vendor
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.score.base
+      copy_from: tychon.vulnerability.score.base
+      ignore_empty_value: true
+  - set:
+      field: vulnerability.severity
+      copy_from: tychon.vulnerability.severity
+      ignore_empty_value: true

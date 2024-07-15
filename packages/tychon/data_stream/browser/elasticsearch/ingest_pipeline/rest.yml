@@ -2,21 +2,56 @@
 description: Pipeline for TYCHON Browser Tables
 processors:
 
-    - remove:
-        field: tychon.package.installed
-        if: ctx.tychon.package.installed == ""
-        ignore_missing: true
-    - remove:
-        field: tychon.package.size
-        if: ctx.tychon.package.size == ""
-        ignore_missing: true
-    - convert:
-        field: tychon.package.size
-        type: long
-        ignore_missing: true
+  - remove:
+      field: tychon.package.installed
+      if: ctx.tychon.package.installed == ""
+      ignore_missing: true
+  - remove:
+      field: tychon.package.size
+      if: ctx.tychon.package.size == ""
+      ignore_missing: true
+  - convert:
+      field: tychon.package.size
+      type: long
+      ignore_missing: true
 
-    # ECS fields
+  # ECS fields
 
-    - set:
-        field: event.category
-        value: [network]
+  - set:
+      field: event.category
+      value: [network]
+
+  # ECS fields from the tychon fieldset
+
+  - set:
+      field: event.reason
+      copy_from: tychon.event.reason
+      ignore_empty_value: true
+  - set:
+      field: package.architecture
+      copy_from: tychon.package.architecture
+      ignore_empty_value: true
+  - set:
+      field: package.name
+      copy_from: tychon.package.name
+      ignore_empty_value: true
+  - set:
+      field: package.path
+      copy_from: tychon.package.path
+      ignore_empty_value: true
+  - set:
+      field: package.size
+      copy_from: tychon.package.size
+      ignore_empty_value: true
+  - set:
+      field: package.type
+      copy_from: tychon.package.type
+      ignore_empty_value: true
+  - set:
+      field: package.version
+      copy_from: tychon.package.version
+      ignore_empty_value: true
+  - set:
+      field: tls.version_protocol
+      copy_from: tychon.tls.version_protocol
+      ignore_empty_value: true
