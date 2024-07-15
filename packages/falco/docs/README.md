@@ -46,10 +46,6 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | Field | Description | Type | Unit |
 |---|---|---|---|
 | @timestamp | Event timestamp with nanos. | date |  |
-| client.address | Matches the client IP address of the FD. | keyword |  |
-| client.domain | Domain name associated with the client IP address. | keyword |  |
-| client.ip | Matches the client IP address of the FD. | ip |  |
-| client.port | For TCP/UDP FDs, the client port. | long |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
@@ -60,34 +56,14 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.hash.all | The container image registry digest. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
-| container.image.tag | The container image tag. | keyword |  |
 | container.labels | Image labels. | object |  |
 | container.name | Container name. | keyword |  |
-| container.runtime | Container type (docker, cri-o, containerd etc) | keyword |  |
-| container.security_context.privileged | Denotes if containers are running as privileged. | boolean |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.namespace | Preserved Falco field | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| destination.address | Matches the remote IP address of the FD. | keyword |  |
-| destination.ip | Matches the remote IP address of the FD. | ip |  |
-| destination.port | For TCP/UDP FDs, the destination port. | long |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.category | The category of the event, based on the driver collecting data. | keyword |  |
-| event.created | Date / time the event was first read by an Agent. | date |  |
 | event.dataset | Data stream / event dataset. | constant_keyword |  |
-| event.ingested | Date / time the event first reached the datastore. | date |  |
-| event.kind | The kind of alert, which in the case of Falco is "alert". | constant_keyword |  |
 | event.module | The module the event belongs to. | constant_keyword |  |
-| event.original | Raw output of the Falco rule. | keyword |  |
-| event.outcome | How the event resolved. | keyword |  |
-| event.provider | Name of the source that produced the event. | keyword |  |
-| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |  |
-| event.severity | Priority of the event. Needs lowercase filter. | long |  |
-| event.start | Event timestamp with nanos. | date |  |
-| event.type | Name of the event. | keyword |  |
 | falco.container.mounts.dest |  | keyword |  |
 | falco.container.mounts.mode |  | keyword |  |
 | falco.container.mounts.propagation |  | keyword |  |
@@ -308,12 +284,6 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | falco.tags | Preserved Falco field | keyword |  |
 | falco.time | Preserved Falco field | date |  |
 | falco.uuid | Preserved Falco field | keyword |  |
-| file.directory | If the FD is a file, this lists the directory which contains it. | keyword |  |
-| file.inode | Inode number of the referenced file. | keyword |  |
-| file.name | If the FD is a file, the filename without the path. | keyword |  |
-| file.path | Path of file FD, if fd.type is file or directory. | keyword |  |
-| file.path.text | Multi-field of `file.path`. | match_only_text |  |
-| file.type | Type of FD, if fd.type is file or directory. | keyword |  |
 | host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
@@ -332,100 +302,33 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | input.type | Input type | keyword |  |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |  |
 | log.offset | Log offset | long |  |
 | log.source.address | Log source when collecting via tcp input | keyword |  |
-| log.syslog.facility.code | Facility as a number (0-23). | long |  |
-| log.syslog.facility.name | Facility as a string. | keyword |  |
-| log.syslog.severity.code | Severity as a number (0-7). | long |  |
-| log.syslog.severity.name | Severity as a string. Can have one of these values; emerg, alert, crit, err, warn, notice, info, debug. | keyword |  |
-| observer.hostname | Hostname of the observer. | keyword |  |
 | observer.product | Static value, falco. | text |  |
 | observer.type | The type of machine observing the event. | keyword |  |
 | observer.vendor | The source of the data event. | text |  |
-| orchestrator.namespace | Kubernetes namespace name. | keyword |  |
-| orchestrator.resource.id | Kubernetes pod UID, assigned upon pod creation within Kubernetes. | keyword |  |
-| orchestrator.resource.ip | Kubernetes pod IP. | ip |  |
-| orchestrator.resource.label | Kubernetes pod key/value labels. | keyword |  |
-| orchestrator.resource.name | Kubernetes pod name. | keyword |  |
-| orchestrator.resource.type | Returns "pod" if other pod fields are present. | keyword |  |
-| orchestrator.type | Returns "Kubernetes" if other pod fields are present. | keyword |  |
-| process.args | Arguments passed over the command line when starting the process which generated the event. | keyword |  |
-| process.args_count | The count of command line args. | long |  |
-| process.command_line | Concatenation of process.name and process.args. | wildcard |  |
-| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |  |
-| process.env_vars | Concatenated string of encironment variables for the process generating the event. | keyword |  |
-| process.executable | Full executable path of the process. | keyword |  |
-| process.executable.text | Multi-field of `process.executable`. | match_only_text |  |
-| process.group.id | Group ID. | keyword |  |
-| process.group.name | Group name. | keyword |  |
-| process.group_leader.executable | Full executable path of the current process's group leader. | keyword |  |
-| process.group_leader.executable.text | Multi-field of `process.group_leader.executable`. | match_only_text |  |
-| process.group_leader.name | Name of the current process's group leader. | keyword |  |
-| process.group_leader.name.text | Multi-field of `process.group_leader.name`. | match_only_text |  |
-| process.group_leader.same_as_process | Denotes if this process is the leader of the virtual process group. | boolean |  |
-| process.group_leader.vpid | Process group ID of the process generating the event, as seen from its current PID namespace. | long |  |
+| process.group.id | Preserved Falco field | text |  |
+| process.group.name | Preserved Falco field | text |  |
 | process.group_leader.vpid.exepath | Preserved Falco field | text |  |
 | process.group_leader.vpid.name | Preserved Falco field | text |  |
-| process.name | Name of the process generating the event. | keyword |  |
-| process.name.text | Multi-field of `process.name`. | match_only_text |  |
-| process.parent.command_line | The process.command_line equivalent for the parent process. | wildcard |  |
-| process.parent.command_line.text | Multi-field of `process.parent.command_line`. | match_only_text |  |
-| process.parent.executable | The process.exe path of the parent process. | keyword |  |
-| process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |  |
-| process.parent.name | Name of the parent of the process generating the event. | keyword |  |
-| process.parent.name.text | Multi-field of `process.parent.name`. | match_only_text |  |
-| process.parent.pid | PID for the parent of the process generating the event. | long |  |
-| process.parent.start | Start of parent process as epoch timestamp in nanos. | date |  |
-| process.parent.uptime | Number of nanoseconds since the parent process started. | long | nanos |
-| process.parent.vpid | ID of the parent process generating the event as seen from its current PID namespace. | long |  |
-| process.pid | ID of the process generating the event. | long |  |
 | process.pid.ts | Preserved Falco field | text |  |
-| process.session_leader.executable | Full executable path of the current process's session leader. | keyword |  |
-| process.session_leader.executable.text | Multi-field of `process.session_leader.executable`. | match_only_text |  |
-| process.session_leader.name | Name of the current process's session leader. | keyword |  |
-| process.session_leader.name.text | Multi-field of `process.session_leader.name`. | match_only_text |  |
 | process.session_leader.pid.exepath | Preserved Falco field | text |  |
-| process.session_leader.same_as_process | Denotes if this process is the leader of the process session. | boolean |  |
-| process.session_leader.vpid | Session ID of the process generating the event. | long |  |
-| process.start | Start of process as epoch timestamp in nanos. | date |  |
-| process.thread.capabilities.effective | Set of effective capabilities. | keyword |  |
-| process.thread.capabilities.permitted | Set of permitted capabilities. | keyword |  |
-| process.thread.id | ID of the thread generating the event. | long |  |
-| process.uptime | Number of nanoseconds since the process started. | long | nanos |
-| process.user.id | User ID. | keyword |  |
-| process.user.name | User name. | keyword |  |
-| process.user.name.text | Multi-field of `process.user.name`. | match_only_text |  |
-| process.vpid | ID of the process generating the event as seen from its current PID namespace. | long |  |
-| process.working_directory | Current working directory of the event. | keyword |  |
-| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |  |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |  |
-| rule.name | Name of the Falco rule. | keyword |  |
-| server.address | Matches the server IP address of the FD. | keyword |  |
-| server.domain | Domain name associated with the server IP address. | keyword |  |
-| server.ip | Matches the server IP address of the FD. | ip |  |
-| server.port | For TCP/UDP FDs, the server port. | long |  |
-| source.address | Matches the local IP address of the FD. | keyword |  |
-| source.ip | Matches the local IP address of the FD. | ip |  |
-| source.port | For TCP/UDP FDs, the source port. | long |  |
-| tags | Non-Mitre tags from Falco. | keyword |  |
-| threat.technique.id | ID based on Mitre tags within Falco. | keyword |  |
 
 
 An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-02T12:43:43.121Z",
+    "@timestamp": "2024-07-15T16:03:02.820Z",
     "agent": {
-        "ephemeral_id": "ea5851b0-ee6a-4080-97ad-8da4de00d148",
-        "id": "60a7d31f-715b-4de1-9641-ff9af2bc3161",
+        "ephemeral_id": "c4fe7d78-3d16-43ec-8056-9d6fa3b45beb",
+        "id": "1b52f58d-1b3f-49f6-be71-11d20f9918f8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.2"
     },
     "container": {
-        "id": "14596c383099",
+        "id": "a7d5e7bf5bec",
         "name": "elastic-package-service-falco-event-generator-1"
     },
     "data_stream": {
@@ -437,50 +340,50 @@ An example event for `alerts` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "60a7d31f-715b-4de1-9641-ff9af2bc3161",
+        "id": "1b52f58d-1b3f-49f6-be71-11d20f9918f8",
         "snapshot": false,
         "version": "8.12.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "falco.alerts",
-        "ingested": "2024-07-02T12:43:54Z",
+        "ingested": "2024-07-15T16:03:12Z",
         "kind": "alert",
-        "original": "{\"uuid\":\"c91f87d4-95d0-4c15-8483-d7ef8c0c4c5e\",\"output\":\"2024-07-02T12:43:43.121173772+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator2854613718/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=\\u003cNA\\u003e aname[7]=\\u003cNA\\u003e evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls \\u003e /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=14596c383099 container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Notice\",\"rule\":\"Run shell untrusted\",\"time\":\"2024-07-02T12:43:43.121173772Z\",\"output_fields\":{\"container.id\":\"14596c383099\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.arg.flags\":\"EXE_WRITABLE\",\"evt.time.iso8601\":1719924223121173772,\"evt.type\":\"execve\",\"proc.aname[2]\":\"event-generator\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"containerd-shim\",\"proc.aname[5]\":\"init\",\"proc.aname[6]\":null,\"proc.aname[7]\":null,\"proc.cmdline\":\"bash -c ls \\u003e /dev/null\",\"proc.exepath\":\"/bin/bash\",\"proc.name\":\"bash\",\"proc.pcmdline\":\"httpd --loglevel info run ^helper.RunShell$\",\"proc.pexe\":\"/tmp/falco-event-generator2854613718/httpd\",\"proc.pexepath\":\"/bin/event-generator\",\"proc.pname\":\"httpd\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1059.004\",\"container\",\"host\",\"maturity_stable\",\"mitre_execution\",\"process\",\"shell\"],\"hostname\":\"f72c4d559ccc\"}",
+        "original": "{\"uuid\":\"34c62001-dc25-4172-a66c-c8fa2d526880\",\"output\":\"2024-07-15T16:03:02.820333475+0000: Warning Sensitive file opened for reading by trusted program after startup (file=/etc/shadow pcmdline=event-generator run --loop gparent=containerd-shim ggparent=containerd-shim gggparent=init evt_type=openat user=root user_uid=0 user_loginuid=-1 process=httpd proc_exepath=/bin/event-generator parent=event-generator command=httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s terminal=0 container_id=a7d5e7bf5bec container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Warning\",\"rule\":\"Read sensitive file trusted after startup\",\"time\":\"2024-07-15T16:03:02.820333475Z\",\"output_fields\":{\"container.id\":\"a7d5e7bf5bec\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.time.iso8601\":1721059382820333475,\"evt.type\":\"openat\",\"fd.name\":\"/etc/shadow\",\"proc.aname[2]\":\"containerd-shim\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"init\",\"proc.cmdline\":\"httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s\",\"proc.exepath\":\"/bin/event-generator\",\"proc.name\":\"httpd\",\"proc.pcmdline\":\"event-generator run --loop\",\"proc.pname\":\"event-generator\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1555\",\"container\",\"filesystem\",\"host\",\"maturity_stable\",\"mitre_credential_access\"],\"hostname\":\"c59de1a7ddbc\"}",
         "provider": "syscall",
-        "start": 1719924223121173800,
+        "start": 1721059382820333600,
         "timezone": "+00:00"
     },
     "event.category": [
         "process"
     ],
-    "event.severity": 2,
+    "event.severity": 3,
     "event.type": [
-        "start"
+        "access"
     ],
     "falco": {
-        "hostname": "f72c4d559ccc",
-        "output": "2024-07-02T12:43:43.121173772+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator2854613718/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=<NA> aname[7]=<NA> evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls > /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=14596c383099 container_name=elastic-package-service-falco-event-generator-1)",
+        "hostname": "c59de1a7ddbc",
+        "output": "2024-07-15T16:03:02.820333475+0000: Warning Sensitive file opened for reading by trusted program after startup (file=/etc/shadow pcmdline=event-generator run --loop gparent=containerd-shim ggparent=containerd-shim gggparent=init evt_type=openat user=root user_uid=0 user_loginuid=-1 process=httpd proc_exepath=/bin/event-generator parent=event-generator command=httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s terminal=0 container_id=a7d5e7bf5bec container_name=elastic-package-service-falco-event-generator-1)",
         "output_fields": {
             "container": {
-                "id": "14596c383099",
+                "id": "a7d5e7bf5bec",
                 "name": "elastic-package-service-falco-event-generator-1"
             },
             "evt": {
-                "arg": {},
                 "time": {
-                    "iso8601": 1719924223121173800
+                    "iso8601": 1721059382820333600
                 },
-                "type": "execve"
+                "type": "openat"
+            },
+            "fd": {
+                "name": "/etc/shadow"
             },
             "proc": {
-                "cmdline": "bash -c ls > /dev/null",
-                "exepath": "/bin/bash",
-                "name": "bash",
-                "pcmdline": "httpd --loglevel info run ^helper.RunShell$",
-                "pexe": "/tmp/falco-event-generator2854613718/httpd",
-                "pexepath": "/bin/event-generator",
-                "pname": "httpd",
+                "cmdline": "httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s",
+                "exepath": "/bin/event-generator",
+                "name": "httpd",
+                "pcmdline": "event-generator run --loop",
+                "pname": "event-generator",
                 "tty": 0
             },
             "user": {
@@ -489,20 +392,19 @@ An example event for `alerts` looks as following:
                 "uid": "0"
             }
         },
-        "priority": "Notice",
-        "rule": "Run shell untrusted",
+        "priority": "Warning",
+        "rule": "Read sensitive file trusted after startup",
         "source": "syscall",
         "tags": [
-            "T1059.004",
+            "T1555",
             "container",
+            "filesystem",
             "host",
             "maturity_stable",
-            "mitre_execution",
-            "process",
-            "shell"
+            "mitre_credential_access"
         ],
-        "time": "2024-07-02T12:43:43.121173772Z",
-        "uuid": "c91f87d4-95d0-4c15-8483-d7ef8c0c4c5e"
+        "time": "2024-07-15T16:03:02.820333475Z",
+        "uuid": "34c62001-dc25-4172-a66c-c8fa2d526880"
     },
     "falco.container.mounts": null,
     "host": {
@@ -511,10 +413,10 @@ An example event for `alerts` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "29b44b57f32c4ff282841a8a4406ef95",
         "ip": [
-            "172.25.0.7"
+            "172.30.0.7"
         ],
         "mac": [
-            "02-42-AC-19-00-07"
+            "02-42-AC-1E-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -532,7 +434,7 @@ An example event for `alerts` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.25.0.4:43570"
+            "address": "172.30.0.4:50956"
         },
         "syslog": {
             "appname": "Falco",
@@ -540,26 +442,25 @@ An example event for `alerts` looks as following:
                 "code": 0,
                 "name": "kernel"
             },
-            "hostname": "a630900bc141",
-            "priority": 5,
-            "procid": "{\"uuid\":\"c91f87d4-95d0-4c15-8483-d7ef8c0c4c5e\",\"output\":\"2024-07-02T12:43:43.121173772+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator2854613718/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=\\u003cNA\\u003e aname[7]=\\u003cNA\\u003e evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls \\u003e /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=14596c383099 container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Notice\",\"rule\":\"Run shell untrusted\",\"time\":\"2024-07-02T12:43:43.121173772Z\",\"output_fields\":{\"container.id\":\"14596c383099\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.arg.flags\":\"EXE_WRITABLE\",\"evt.time.iso8601\":1719924223121173772,\"evt.type\":\"execve\",\"proc.aname[2]\":\"event-generator\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"containerd-shim\",\"proc.aname[5]\":\"init\",\"proc.aname[6]\":null,\"proc.aname[7]\":null,\"proc.cmdline\":\"bash -c ls \\u003e /dev/null\",\"proc.exepath\":\"/bin/bash\",\"proc.name\":\"bash\",\"proc.pcmdline\":\"httpd --loglevel info run ^helper.RunShell$\",\"proc.pexe\":\"/tmp/falco-event-generator2854613718/httpd\",\"proc.pexepath\":\"/bin/event-generator\",\"proc.pname\":\"httpd\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1059.004\",\"container\",\"host\",\"maturity_stable\",\"mitre_execution\",\"process\",\"shell\"",
+            "hostname": "7f26c2bd9471",
+            "priority": 4,
+            "procid": "{\"uuid\":\"34c62001-dc25-4172-a66c-c8fa2d526880\",\"output\":\"2024-07-15T16:03:02.820333475+0000: Warning Sensitive file opened for reading by trusted program after startup (file=/etc/shadow pcmdline=event-generator run --loop gparent=containerd-shim ggparent=containerd-shim gggparent=init evt_type=openat user=root user_uid=0 user_loginuid=-1 process=httpd proc_exepath=/bin/event-generator parent=event-generator command=httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s terminal=0 container_id=a7d5e7bf5bec container_name=elastic-package-service-falco-event-generator-1)\",\"priority\":\"Warning\",\"rule\":\"Read sensitive file trusted after startup\",\"time\":\"2024-07-15T16:03:02.820333475Z\",\"output_fields\":{\"container.id\":\"a7d5e7bf5bec\",\"container.name\":\"elastic-package-service-falco-event-generator-1\",\"evt.time.iso8601\":1721059382820333475,\"evt.type\":\"openat\",\"fd.name\":\"/etc/shadow\",\"proc.aname[2]\":\"containerd-shim\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"init\",\"proc.cmdline\":\"httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s\",\"proc.exepath\":\"/bin/event-generator\",\"proc.name\":\"httpd\",\"proc.pcmdline\":\"event-generator run --loop\",\"proc.pname\":\"event-generator\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1555\",\"container\",\"filesystem\",\"host\",\"maturity_stable\",\"mitre_credential_access\"",
             "severity": {
-                "code": 5,
-                "name": "Notice"
+                "code": 4,
+                "name": "Warning"
             }
         }
     },
     "observer": {
-        "hostname": "f72c4d559ccc"
+        "hostname": "c59de1a7ddbc"
     },
     "process": {
-        "command_line": "bash -c ls > /dev/null",
-        "executable": "/bin/bash",
-        "name": "bash",
+        "command_line": "httpd --loglevel info run ^syscall.ReadSensitiveFileUntrusted$ --sleep 6s",
+        "executable": "/bin/event-generator",
+        "name": "httpd",
         "parent": {
-            "command_line": "httpd --loglevel info run ^helper.RunShell$",
-            "executable": "/bin/event-generator",
-            "name": "httpd"
+            "command_line": "event-generator run --loop",
+            "name": "event-generator"
         },
         "user": {
             "id": "0",
@@ -568,18 +469,18 @@ An example event for `alerts` looks as following:
     },
     "related": {
         "hosts": [
-            "f72c4d559ccc"
+            "c59de1a7ddbc"
         ]
     },
     "rule": {
-        "name": "Run shell untrusted"
+        "name": "Read sensitive file trusted after startup"
     },
     "tags": [
         "preserve_original_event",
         "preserve_falco_fields"
     ],
     "threat.technique.id": [
-        "T1059"
+        "T1555"
     ]
 }
 ```
