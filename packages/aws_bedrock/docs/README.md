@@ -258,13 +258,13 @@ An example event for `runtime` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-14T13:05:00.000Z",
+    "@timestamp": "2024-07-15T07:35:00.000Z",
     "agent": {
-        "ephemeral_id": "41c087ce-5e3d-4980-9784-1483b050a343",
-        "id": "0610bf51-dc7c-4f77-9603-002ac32e2427",
+        "ephemeral_id": "63673811-d18c-4209-8818-df8b346bcb28",
+        "id": "47a2173f-3f59-4a7c-a022-dee86802c2c1",
         "name": "service-integration-dev-idc-1",
         "type": "metricbeat",
-        "version": "8.14.0"
+        "version": "8.13.4"
     },
     "aws": {
         "cloudwatch": {
@@ -273,10 +273,10 @@ An example event for `runtime` looks as following:
     },
     "aws_bedrock": {
         "runtime": {
-            "input_token_count": 164,
-            "invocation_latency": 1009,
-            "invocations": 3,
-            "output_token_count": 220
+            "input_token_count": 848,
+            "invocation_latency": 2757,
+            "invocations": 5,
+            "output_token_count": 1775
         }
     },
     "cloud": {
@@ -296,15 +296,15 @@ An example event for `runtime` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "0610bf51-dc7c-4f77-9603-002ac32e2427",
+        "id": "47a2173f-3f59-4a7c-a022-dee86802c2c1",
         "snapshot": false,
-        "version": "8.14.0"
+        "version": "8.13.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "aws_bedrock.runtime",
-        "duration": 142236746,
-        "ingested": "2024-07-14T13:11:11Z",
+        "duration": 174434808,
+        "ingested": "2024-07-15T07:44:02Z",
         "module": "aws"
     },
     "host": {
@@ -320,9 +320,9 @@ An example event for `runtime` looks as following:
             "172.20.0.1",
             "172.22.0.1",
             "172.23.0.1",
-            "172.25.0.1",
             "172.26.0.1",
             "172.27.0.1",
+            "172.28.0.1",
             "172.29.0.1",
             "172.30.0.1",
             "172.31.0.1",
@@ -331,27 +331,27 @@ An example event for `runtime` looks as following:
             "192.168.49.1",
             "192.168.80.1",
             "192.168.224.1",
-            "fe80::42:4dff:fecb:dbb4",
+            "fe80::42:9cff:fe5b:79b4",
             "fe80::42:a5ff:fe15:d63c",
             "fe80::42:beff:fe39:f457",
-            "fe80::83d:34ff:fe3f:ad71",
+            "fe80::42a:f7ff:fe6c:421d",
+            "fe80::1818:53ff:fea8:3f38",
             "fe80::4001:aff:fea0:4",
-            "fe80::4c39:7bff:fe9b:1bb5",
-            "fe80::68cf:c9ff:fea4:f713",
-            "fe80::9ce6:53ff:fe9c:a5a2",
-            "fe80::f084:8fff:fe07:642d"
+            "fe80::8cfa:3aff:fedb:656a",
+            "fe80::c890:29ff:fe99:ac1b",
+            "fe80::fcfc:c2ff:feca:1e28"
         ],
         "mac": [
             "02-42-0D-A6-43-C0",
             "02-42-23-32-CF-25",
             "02-42-27-90-E6-54",
             "02-42-34-10-CA-62",
-            "02-42-4D-CB-DB-B4",
             "02-42-4F-1D-94-1B",
             "02-42-50-2E-CB-58",
             "02-42-5D-42-F3-1D",
             "02-42-66-9B-25-B2",
             "02-42-99-B7-1B-26",
+            "02-42-9C-5B-79-B4",
             "02-42-A5-15-D6-3C",
             "02-42-A6-68-F8-E9",
             "02-42-BE-39-F4-57",
@@ -359,12 +359,12 @@ An example event for `runtime` looks as following:
             "02-42-E8-F3-CF-7A",
             "02-42-F1-35-B0-41",
             "02-42-F4-2F-0F-22",
-            "0A-3D-34-3F-AD-71",
+            "06-2A-F7-6C-42-1D",
+            "1A-18-53-A8-3F-38",
             "42-01-0A-A0-00-04",
-            "4E-39-7B-9B-1B-B5",
-            "6A-CF-C9-A4-F7-13",
-            "9E-E6-53-9C-A5-A2",
-            "F2-84-8F-07-64-2D"
+            "8E-FA-3A-DB-65-6A",
+            "CA-90-29-99-AC-1B",
+            "FE-FC-C2-CA-1E-28"
         ],
         "name": "service-integration-dev-idc-1",
         "os": {
@@ -393,9 +393,7 @@ An example event for `runtime` looks as following:
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
-| aws.dimensions.ImageSize |  | keyword |  |  |
-| aws.dimensions.ModelId |  | keyword |  |  |
-| aws.dimensions.Quality |  | keyword |  |  |
+| aws_bedrock.runtime.image_size |  | keyword |  |  |
 | aws_bedrock.runtime.input_token_count | The number of text input tokens. | long |  | gauge |
 | aws_bedrock.runtime.invocation_client_errors | The number of invocations that result in client-side errors. | long |  | gauge |
 | aws_bedrock.runtime.invocation_latency | The average latency of the invocations. | long | ms | gauge |
@@ -403,8 +401,10 @@ An example event for `runtime` looks as following:
 | aws_bedrock.runtime.invocation_throttles | The number of invocations that the system throttled. | long |  | gauge |
 | aws_bedrock.runtime.invocations | The number of requests to the `Converse`, `ConverseStream`, `InvokeModel`, and `InvokeModelWithResponseStream` API operations. | long |  | gauge |
 | aws_bedrock.runtime.legacymodel_invocations | The number of requests to the legacy models. | long |  | gauge |
+| aws_bedrock.runtime.model_id |  | keyword |  |  |
 | aws_bedrock.runtime.output_image_count | The number of output images. | long |  | gauge |
 | aws_bedrock.runtime.output_token_count | The number of text output tokens. | long |  | gauge |
+| aws_bedrock.runtime.quality |  | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
