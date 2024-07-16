@@ -1,0 +1,70 @@
+config_version: 2
+resource.url: {{url}}
+{{#if oauth2}}
+auth.oauth2: {{oauth2}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+interval: {{interval}}
+max_executions: {{max_executions}}
+resource.timeout: {{http_client_timeout}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/jamf_pro-versions/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+url: "{{api_host}}/api/preview/computers"
+page: 0
+fields_under_root: true
+keep_null: true
+fields:
+  _conf:
+    url: {{url}}
+program: |
+  request(
+    "GET",
+  ).with({
+    "Header": ({
+      "Content-Type": ["application/json"]
+    })
+  }).do_request().as(resp,
+    bytes(resp.Body).decode_json().as(body,
+      has(body.errors) && size(body.errors) > 0 ?
+        state.with({
+          "events": [{
+            "error": { "message": body.errors.map(e, e.message) },
+            "event": { "original": body.encode_json() }
+          }]
+        })
+      :
+        state.with({
+          "events": body.data.indicators.edges.map(e, e.node.with(
+            has(state.preserve_original_event) && state.preserve_original_event ?
+              { "event": { "original": e.node.encode_json() } }
+            :
+              {}
+          )),
+          "want_more": (total_count > (page+1) * page_size),
+          "cursor": { "value": body.data.indicators.pageInfo.endCursor },
+        })
+    )
+  )
+state:
+  total_count: {{total_count}}
+  page_size: {{page_size}}
+  page: {{page}} + 1
+  preserve_original_event: {{preserve_original_event}}
