@@ -29,7 +29,7 @@ export TMP_FOLDER_TEMPLATE="${TMP_FOLDER_TEMPLATE_BASE}.XXXXXXXXX"
 REPO_BUILD_TAG="${REPO_NAME}/$(buildkite_pr_branch_build_id)"
 export REPO_BUILD_TAG
 
-AWS_SERVICE_ACCOUNT_SECRET_PATH=kv/ci-shared/platform-ingest/aws_account_auth
+AWS_SERVICE_ACCOUNT_SECRET_PATH=kv/ci-shared/platform-ingest/aws_ingest_ci
 PRIVATE_CI_GCS_CREDENTIALS_PATH=kv/ci-shared/platform-ingest/gcp-platform-ingest-ci-service-account
 
 BUILDKITE_API_TOKEN_PATH=kv/ci-shared/platform-ingest/buildkite_token
@@ -74,12 +74,25 @@ if [ -n "${ELASTIC_PACKAGE_LINKS_FILE_PATH+x}" ]; then
     export ELASTIC_PACKAGE_LINKS_FILE_PATH=${BASE_DIR}/${ELASTIC_PACKAGE_LINKS_FILE_PATH}
 fi
 
-if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" ]]; then
+if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" &&  "${BUILDKITE_STEP_KEY}" == "reference-target-branch" ]]; then
+    # Get the commit from target branch in the first step (reference-target-branch).
+    # This step MUST be the first one and not run in parallel with any other step to ensure
+    # that there is just one value for this variable
+    if is_pr ; then
+        git fetch -v origin ${BUILDKITE_PULL_REQUEST_BASE_BRANCH}
+        commit_main=$(git rev-parse --verify FETCH_HEAD)
+        buildkite-agent meta-data set "REPOSITORY_TARGET_BRANCH_COMMIT" "${commit_main}"
+    fi
+fi
+
+if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-publish" ]]; then
     if [[ "${BUILDKITE_STEP_KEY}" == "trigger-publish" ]]; then
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token ${BUILDKITE_API_TOKEN_PATH})
         export BUILDKITE_API_TOKEN
     fi
+fi
 
+if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" ]]; then
     if [[ "${BUILDKITE_STEP_KEY}" == "test-integrations" ]]; then
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
@@ -113,18 +126,12 @@ fi
 
 if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-serverless" ]]; then
     if [[ "${BUILDKITE_STEP_KEY}" == "test-integrations-serverless-project" ]]; then
-        ELASTIC_PACKAGE_AWS_SECRET_KEY=$(retry 5 vault kv get -field secret_key "${AWS_SERVICE_ACCOUNT_SECRET_PATH}")
-        export ELASTIC_PACKAGE_AWS_SECRET_KEY
-        ELASTIC_PACKAGE_AWS_ACCESS_KEY=$(retry 5 vault kv get -field access_key "${AWS_SERVICE_ACCOUNT_SECRET_PATH}")
-        export ELASTIC_PACKAGE_AWS_ACCESS_KEY
+        # Currently, system tests are not run when testing with an Elastic Serverless project, so it is not required to
+        # add the AWS credentials as in the integrations pipeline.
 
         PRIVATE_CI_GCS_CREDENTIALS_SECRET=$(retry 5 vault kv get -field plaintext -format=json "${PRIVATE_CI_GCS_CREDENTIALS_PATH}")
         export PRIVATE_CI_GCS_CREDENTIALS_SECRET
         export JOB_GCS_BUCKET_INTERNAL="ingest-buildkite-ci"
-
-        # Environment variables required by the service deployer
-        export AWS_SECRET_ACCESS_KEY=${ELASTIC_PACKAGE_AWS_SECRET_KEY}
-        export AWS_ACCESS_KEY_ID=${ELASTIC_PACKAGE_AWS_ACCESS_KEY}
 
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
@@ -140,9 +147,18 @@ fi
 
 if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" ]]; then
   if [[ "$BUILDKITE_STEP_KEY" == "create-backport-branch" ]]; then
-    GITHUB_USERNAME_SECRET=$(retry 5 vault kv get -field username ${GITHUB_TOKEN_VAULT_PATH})
+    GITHUB_USERNAME_SECRET=$(retry 5 vault kv get -field username "${GITHUB_TOKEN_VAULT_PATH}")
     export GITHUB_USERNAME_SECRET
-    GITHUB_EMAIL_SECRET=$(retry 5 vault kv get -field email ${GITHUB_TOKEN_VAULT_PATH})
+    GITHUB_EMAIL_SECRET=$(retry 5 vault kv get -field email "${GITHUB_TOKEN_VAULT_PATH}")
     export GITHUB_EMAIL_SECRET
+    GITHUB_TOKEN=$(retry 5 vault kv get -field token "${GITHUB_TOKEN_VAULT_PATH}")
+    export GITHUB_TOKEN
   fi
 fi
+
+if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations" || "$BUILDKITE_PIPELINE_SLUG" == "integrations-serverless" ]]; then
+  if [[ "$BUILDKITE_STEP_KEY" == "report-failed-tests" ]]; then
+    export GITHUB_TOKEN="${VAULT_GITHUB_TOKEN}"
+  fi
+fi
+

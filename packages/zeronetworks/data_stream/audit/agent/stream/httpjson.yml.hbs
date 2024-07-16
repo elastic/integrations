@@ -18,11 +18,11 @@ request.proxy_url: {{proxy_url}}
 
 request.transforms:
   - set:
-      target: header.Authorization
+      target: header.Authorization 
       value: "{{api_token}}"
   - set:
       target: url.params.from
-      value: "[[.cursor.last_timestamp]]"
+      value: '[[.cursor.next_cursor]]'
       default: '[[(now (parseDuration "-{{initial_interval}}")).UnixMilli]]'
   - set:
       target: url.params.to
@@ -33,17 +33,24 @@ request.transforms:
 
 response.split:
   target: body.items
+  ignore_empty_value: true
 
 response.pagination:
 - set:
     target: url.params._cursor
     value: '[[.last_response.body.scrollCursor]]'
     fail_on_template_error: true
+- set:
+      target: url.params.from
+      value: '[[.last_response.url.params.Get "from"]]'
+- set:
+      target: url.params.to
+      value: '[[.last_response.url.params.Get "to"]]'
 
 cursor:
-  last_timestamp:
-    value: "[[.last_event.timestamp]]"
-    fail_on_template_error: true
+  next_cursor:
+    value: '[[.last_response.url.params.Get "to"]]'
+    ignore_empty_value: false
 
 {{#if tags.length}}
 tags:

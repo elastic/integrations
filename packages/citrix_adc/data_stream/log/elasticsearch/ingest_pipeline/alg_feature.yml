@@ -1,0 +1,186 @@
+---
+description:  Pipeline for Citrix Native messages of ALG feature.
+processors:
+  - grok:
+      description: Extract fields from message of ALG feature.
+      tag: grok_alg_feature
+      field: citrix.extended.message
+      patterns:
+        - '^Errmsg%{SPACE}:%{SPACE}\"%{GREEDYDATA:citrix_adc.log.errmsg}\" - Group%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.group} - Call_ID%{SPACE}:%{SPACE}%{NOTSPACE:citrix_adc.log.call_id} - Transport%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.transport} - Source_IP%{SPACE}:%{SPACE}%{IP:citrix_adc.log.source.ip} - Source_port%{SPACE}:%{SPACE}%{INT:citrix_adc.log.source.port} - Destination_IP%{SPACE}:%{SPACE}%{IP:citrix_adc.log.destination.ip} - Destination_port%{SPACE}:%{SPACE}%{INT:citrix_adc.log.destination.port} - Natted_IP%{SPACE}:%{SPACE}%{IP:citrix_adc.log.natted.ip} - Natted_port%{SPACE}:%{SPACE}%{INT:citrix_adc.log.natted.port} - Method%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.method} - Sequence_Number%{SPACE}:%{SPACE}%{INT:citrix_adc.log.sequence_number} - Register%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.register} - Content_Type%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.content_type} - Error%{SPACE}:%{SPACE}\"%{DATA:citrix_adc.log.error}\" - Error_line%{SPACE}:%{SPACE}\"%{DATA:citrix_adc.log.error_line}\" - Caller_user_name%{SPACE}:%{SPACE}%{USER:citrix_adc.log.caller.user_name} - Callee_user_name%{SPACE}:%{SPACE}%{USER:citrix_adc.log.callee.user_name} - Caller_domain_name%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.caller.domain_name} - Callee_domain_name%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.callee.domain_name} -$'
+        - '^Errmsg%{SPACE}:%{SPACE}\"%{GREEDYDATA:citrix_adc.log.errmsg}\" - Group%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.group} - Call_ID%{SPACE}:%{SPACE}%{NOTSPACE:citrix_adc.log.call_id} - Transport%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.transport} - Source_IP%{SPACE}:%{SPACE}%{IP:citrix_adc.log.source.ip} - Source_port%{SPACE}:%{SPACE}%{INT:citrix_adc.log.source.port} - Destination_IP%{SPACE}:%{SPACE}%{IP:citrix_adc.log.destination.ip} - Destination_port%{SPACE}:%{SPACE}%{INT:citrix_adc.log.destination.port} - Natted_IP%{SPACE}:%{SPACE}%{IP:citrix_adc.log.natted.ip} - Natted_port%{SPACE}:%{SPACE}%{INT:citrix_adc.log.natted.port} - Method%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.method} - Sequence_Number%{SPACE}:%{SPACE}%{INT:citrix_adc.log.sequence_number} - Register%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.register} - Content_Type%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.content_type} - Caller_user_name%{SPACE}:%{SPACE}%{USER:citrix_adc.log.caller.user_name} - Callee_user_name%{SPACE}:%{SPACE}%{USER:citrix_adc.log.callee.user_name} - Caller_domain_name%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.caller.domain_name} - Callee_domain_name%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.callee.domain_name}$'
+        - '^Errmsg%{SPACE}:%{SPACE}\"%{GREEDYDATA:citrix_adc.log.errmsg}\" - Error_Code%{SPACE}:%{SPACE}%{INT:citrix_adc.log.error_code} - Group%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.group}$'
+        - '^Infomsg%{SPACE}:%{SPACE}\"%{GREEDYDATA:citrix_adc.log.infomsg}\" - Group%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.group} - Session_ID%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.session_id} -$'
+        - '^Infomsg%{SPACE}:%{SPACE}\"%{GREEDYDATA:citrix_adc.log.infomsg}\" - Group%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.group} - Call_ID%{SPACE}:%{SPACE}%{NOTSPACE:citrix_adc.log.call_id} - Transport%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.transport} - Source_IP%{SPACE}:%{SPACE}%{IP:citrix_adc.log.source.ip} - Source_port%{SPACE}:%{SPACE}%{INT:citrix_adc.log.source.port} - Destination_IP%{SPACE}:%{SPACE}%{IP:citrix_adc.log.destination.ip} - Destination_port%{SPACE}:%{SPACE}%{INT:citrix_adc.log.destination.port} - Natted_IP%{SPACE}:%{SPACE}%{IP:citrix_adc.log.natted.ip} - Natted_port%{SPACE}:%{SPACE}%{INT:citrix_adc.log.natted.port} - Method%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.method} - Sequence_Number%{SPACE}:%{SPACE}%{INT:citrix_adc.log.sequence_number} - Register%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.register} - Content_Type%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.content_type} - Caller_user_name%{SPACE}:%{SPACE}%{USER:citrix_adc.log.caller.user_name} - Callee_user_name%{SPACE}:%{SPACE}%{USER:citrix_adc.log.callee.user_name} - Caller_domain_name%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.caller.domain_name} - Callee_domain_name%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.callee.domain_name} -$'
+        - '%{GREEDYDATA:citrix_adc.log.message}'
+      ignore_failure: true
+  - convert:
+      field: citrix_adc.log.destination.ip
+      tag: convert_destination_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.destination?.ip != null && ctx.citrix_adc.log.destination.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_destination_ip
+      copy_from: citrix_adc.log.destination.ip
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.natted.ip
+      tag: convert_natted_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.natted?.ip != null && ctx.citrix_adc.log.natted.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.nat.ip
+      tag: set_destination_nat_ip_from_natted_ip
+      copy_from: citrix_adc.log.natted.ip
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.natted.port
+      tag: convert_natted_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.nat.port
+      tag: set_destination_nat_port_from_natted_port
+      copy_from: citrix_adc.log.natted.port
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.destination.port
+      tag: convert_destination_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_destination_port
+      copy_from: citrix_adc.log.destination.port
+      ignore_empty_value: true
+  - set:
+      field: destination.user.domain
+      tag: set_destination_user_domain_from_callee_domain_name
+      copy_from: citrix_adc.log.callee.domain_name
+      ignore_empty_value: true
+  - set:
+      field: destination.user.name
+      tag: set_destination_user_name_from_callee_user_name
+      copy_from: citrix_adc.log.callee.user_name
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.error_code
+      tag: convert_error_code_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: error.code
+      tag: set_error_code_from_error_code
+      copy_from: citrix_adc.log.error_code
+      ignore_empty_value: true
+  - set:
+      field: error.message
+      tag: set_error_message_from_errmsg
+      copy_from: citrix_adc.log.errmsg
+      ignore_empty_value: true
+  - set:
+      field: group.name
+      tag: set_group_name_from_group
+      copy_from: citrix_adc.log.group
+      ignore_empty_value: true
+  - set:
+      field: http.request.method
+      tag: set_http_request_method_from_method
+      copy_from: citrix_adc.log.method
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_infomsg
+      copy_from: citrix_adc.log.infomsg
+      ignore_empty_value: true
+  - set:
+      field: network.transport
+      tag: set_network_transport_from_transport
+      copy_from: citrix_adc.log.transport
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.source.ip
+      tag: convert_source_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.source?.ip != null && ctx.citrix_adc.log.source.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_source_ip
+      copy_from: citrix_adc.log.source.ip
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.source.port
+      tag: convert_source_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_source_port
+      copy_from: citrix_adc.log.source.port
+      ignore_empty_value: true
+  - set:
+      field: source.user.domain
+      tag: set_source_user_domain_from_caller_domain_name
+      copy_from: citrix_adc.log.caller.domain_name
+      ignore_empty_value: true
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_caller_user_name
+      copy_from: citrix_adc.log.caller.user_name
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.sequence_number
+      tag: convert_sequence_number_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.session_id
+      tag: convert_session_id_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

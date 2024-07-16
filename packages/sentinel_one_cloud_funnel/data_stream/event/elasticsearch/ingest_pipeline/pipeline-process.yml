@@ -7,11 +7,14 @@ processors:
   - set:
       field: event.type
       value: [start]
-      if: ctx.sentinel_one_cloud_funnel?.event?.type == 'ProcessCreation'
+      if: ctx.sentinel_one_cloud_funnel?.event?.meta_event_name == 'PROCESSCREATION'
   - set:
       field: event.type
       value: [end]
-      if: ctx.sentinel_one_cloud_funnel?.event?.type == 'ProcessExit' || ctx.sentinel_one_cloud_funnel?.event?.type == 'ProcessTermination'
+      if: (
+            ctx.sentinel_one_cloud_funnel?.event?.type == 'ProcessExit' || ctx.sentinel_one_cloud_funnel?.event?.type == 'ProcessTermination' ||
+            ctx.sentinel_one_cloud_funnel?.event?.type == 'Process Exit' || ctx.sentinel_one_cloud_funnel?.event?.type == 'Process Termination'
+          )
   - set:
       field: event.action
       copy_from: event.type

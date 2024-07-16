@@ -2,20 +2,37 @@
 
 This integration is used to collect metrics from [etcd v2 and v3 instances](https://etcd.io/).
 
-It periodically fetches metrics from [etcd metrics APIs](https://etcd.io/docs/v3.1/op-guide/monitoring/). 
+It periodically fetches metrics from [etcd metrics APIs](https://etcd.io/docs/v3.5/op-guide/monitoring/). 
 
-## Compatibility
-
-The etcd package was tested with etcd `3.5.x`.
-
-## Metrics
+## Data streams
 
 For etcd v2, metrics are collected through the etcd v2 APIs, whereas for v3, they are fetched from the `/metrics` endpoint.
 
 When using v3, datasets are bundled within `metrics` data stream, while for v2, available datasets include `leader`, `self`, and `store`.
 
-The etcd v2 APIs are not enabled by default. However, you can enable etcd v2 APIs when using etcd v3 and above by utilizing the --enable-v2 flag, provided it is supported.
+etcd API endpoints:
+- `/v2/stats/leader`: This endpoint provides metrics related to the current leadership status. Used by `leader` data stream.
+- `/v2/stats/self`: Metrics exposed by this endpoint focus on the current node's status and performance. Used by `self` data stream.
+- `/v2/stats/store`: This endpoint offers metrics related to the data storage layer, including data size, read/write operations, and storage efficiency. Used by `store` data stream.
+- `/metrics` (v3 API): Unlike the more specific endpoints, this one provides a comprehensive set of metrics across various aspects of the system. Used by `metrics` data stream.
 
+The etcd v2 APIs are not enabled by default. However, you can enable etcd v2 APIs when using etcd v3 and above by utilizing the `--enable-v2` flag, provided it is supported.
+
+## Compatibility
+
+The etcd package was tested with etcd `3.5.x`.
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+In order to ingest data from etcd, you must know the instance host.
+
+Host Configuration Format: `http[s]://host:port`
+
+Example Host Configuration: `http://localhost:2379`
+
+## Metrics reference
 
 ### metrics
 
@@ -39,7 +56,7 @@ An example event for `metrics` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a4b14fa0-9721-4a94-8b4b-bebf87bd1ba4",
@@ -102,6 +119,10 @@ An example event for `metrics` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -117,7 +138,6 @@ An example event for `metrics` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | etcd.disk.backend_commit_duration_seconds.histogram | Latency for writing backend changes to disk | histogram |  |  |
 | etcd.disk.mvcc_db_total_size.bytes | Size of stored data at MVCC | long | byte | gauge |
 | etcd.disk.wal_fsync_duration_seconds.histogram | Latency for writing ahead logs to disk | histogram |  |  |
@@ -146,12 +166,9 @@ An example event for `metrics` looks as following:
 | etcd.store.watchers | Count of currently active watchers. | long |  | gauge |
 | etcd.store.writes_total | Total number of writes (e.g. set/compareAndDelete) seen by this member. | long |  | counter |
 | event.dataset | Event dataset | constant_keyword |  |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### leader
@@ -192,6 +209,10 @@ An example event for `leader` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -200,7 +221,6 @@ An example event for `leader` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | etcd.api_version | Etcd API version for metrics retrieval | keyword |
 | etcd.leader.follower.failed_operations | failed Raft RPC requests | long |
 | etcd.leader.follower.id | ID of follower | keyword |
@@ -209,9 +229,6 @@ An example event for `leader` looks as following:
 | etcd.leader.follower.success_operations | successful Raft RPC requests | long |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host.ip | Host ip addresses. | ip |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 ### self
@@ -266,6 +283,10 @@ An example event for `self` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -274,7 +295,6 @@ An example event for `self` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | etcd.api_version | Etcd API version for metrics retrieval | keyword |
 | etcd.self.id | The unique identifier for the member | keyword |
 | etcd.self.leaderinfo.leader | ID of the current leader member | keyword |
@@ -291,9 +311,6 @@ An example event for `self` looks as following:
 | etcd.self.state | Either leader or follower | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host.ip | Host ip addresses. | ip |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 ### store
@@ -357,6 +374,10 @@ An example event for `store` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -365,7 +386,6 @@ An example event for `store` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | etcd.api_version | Etcd API version for metrics retrieval | keyword |
 | etcd.store.compare_and_delete.fail |  | integer |
 | etcd.store.compare_and_delete.success |  | integer |
@@ -385,6 +405,3 @@ An example event for `store` looks as following:
 | etcd.store.watchers |  | integer |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host.ip | Host ip addresses. | ip |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |

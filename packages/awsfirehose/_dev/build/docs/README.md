@@ -1,8 +1,9 @@
-# Amazon Kinesis Data Firehose
-Amazon Kinesis Data Firehose integration offers users a way to stream logs from Firehose to Elastic Cloud.
-This integration includes predefined rules that automatically route AWS service logs to the respective integrations, which
-include field mappings, ingest pipelines, predefined dashboards and ect. Here is a list of log types that are supported
-by this integration:
+# Amazon Data Firehose
+Amazon Data Firehose integration offers users a way to stream logs and CloudWatch metrics from Firehose to Elastic Cloud.
+This integration includes predefined rules that automatically route AWS service logs and CloudWatch metrics to the respective integrations, which
+include field mappings, ingest pipelines, and predefined dashboards. 
+
+Here is a list of log types that are supported by this integration:
 
 | AWS service log    | Log destination          |
 |--------------------|--------------------------|
@@ -16,6 +17,31 @@ by this integration:
 | S3 access          | S3                       |
 | VPC Flow           | Firehose, CloudWatch, S3 |
 | WAF                | Firehose, CloudWatch. S3 |
+
+Here is a list of CloudWatch metrics that are supported by this integration:
+
+| AWS service monitoring metrics |
+|--------------------------------|
+| API Gateway                    |
+| DynamoDB                       |
+| EBS                            |
+| EC2                            |
+| ECS                            |
+| ELB                            |
+| EMR                            |
+| Network Firewall               |
+| Kafka                          |
+| Kinesis                        |
+| Lambda                         |
+| NATGateway                     |
+| RDS                            |
+| S3                             |
+| S3 Storage Lens                |
+| SNS                            |
+| SQS                            |
+| TransitGateway                 |
+| Usage                          |
+| VPN                            |
 
 ## Limitation
 It is not possible to configure a delivery stream to send data to Elastic Cloud via PrivateLink (VPC endpoint). 
@@ -34,12 +60,12 @@ This is a current limitation in Firehose, which we are working with AWS to resol
     
     ![Install AWS assets](../img/install-assets.png)
 
-2. Create a delivery stream in Amazon Kinesis Data Firehose
+2. Create a delivery stream in Amazon Data Firehose
 
-    Sign into the AWS console and navigate to Amazon Kinesis. Click **Create delivery stream**.
+    Sign into the AWS console and navigate to Amazon Data Firehose. Click **Create Firehose stream**.
     Configure the delivery stream using the following settings:
     
-    ![Amazon Kinesis Data Firehose](../img/aws-firehose.png)
+    ![Amazon Data Firehose](../img/aws-firehose.png)
     
     **Choose source and destination**
     
@@ -91,6 +117,12 @@ This is a current limitation in Firehose, which we are working with AWS to resol
        This parameter will increase the data volume in Elasticsearch and should be used with care.
 
 3. Send data to the Firehose delivery stream
-
+    1. logs
     Consult the [AWS documentation](https://docs.aws.amazon.com/firehose/latest/dev/basic-write.html) for details on how to
     configure a variety of log sources to send data to Firehose delivery streams.
+
+    2. metrics
+    Consult the [AWS documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-metric-streams-setup.html)
+    for details on how to set up a metric stream in CloudWatch and 
+    [Custom setup with Firehose](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-metric-streams-setup-datalake.html) 
+    to send metrics to Firehose. For Elastic, we only support JSON and OpenTelemetry 1.0.0 formats for the metrics.

@@ -1,0 +1,49 @@
+---
+description: Pipeline for Citrix Native messages of TRANSFORM feature.
+processors:
+  - grok:
+      description: Extract fields from message of TRANSFORM feature.
+      tag: grok_transform_feature
+      field: citrix.extended.message
+      patterns:
+        - '^Client %{IP:citrix_adc.log.client_ip} - Profile %{DATA:citrix_adc.log.profile} - Action %{DATA:citrix_adc.log.action} - Value %{GREEDYDATA:citrix_adc.log.value}$'
+        - '^Client %{IP:citrix_adc.log.client_ip} - Profile %{DATA:citrix_adc.log.profile} - Action %{DATA:citrix_adc.log.action} - PCRE%{SPACE}error%{SPACE}code %{INT:citrix_adc.log.pcre_error_code}$'
+        - '^Client %{IP:citrix_adc.log.client_ip} - Profile %{DATA:citrix_adc.log.profile} - Failed%{SPACE}to%{SPACE}write%{SPACE}%{DATA:citrix_adc.log.header}%{SPACE}request%{SPACE}header$'
+        - '%{GREEDYDATA:citrix_adc.log.message}'
+      ignore_failure: true
+  - convert:
+      field: citrix_adc.log.client_ip
+      tag: convert_client_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.client_ip != null && ctx.citrix_adc?.log.client_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.ip
+      tag: set_client_ip_from_client_ip
+      copy_from: citrix_adc.log.client_ip
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_action
+      copy_from: citrix_adc.log.action
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.pcre_error_code
+      tag: convert_pcre_error_code_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

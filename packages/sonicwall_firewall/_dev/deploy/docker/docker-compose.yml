@@ -7,8 +7,7 @@ services:
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
   sonicwall_firewall-syslog:
-    image: docker.elastic.co/observability/stream:v0.7.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-    entrypoint: /bin/bash
-    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=udp /sample_logs/log.log"
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=udp /sample_logs/log.log

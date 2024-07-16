@@ -1,7 +1,7 @@
 format_version: "3.0.2"
 name: snyk
 title: "Snyk"
-version: "1.20.1"
+version: "1.25.0"
 description: Collect logs from Snyk with Elastic Agent.
 type: integration
 categories:
@@ -9,7 +9,7 @@ categories:
   - cloudsecurity_cdr
 conditions:
   kibana:
-    version: "^8.12.0"
+    version: "^8.13.0"
 icons:
   - src: /img/snyk-logo.svg
     title: Snyk logo
@@ -20,9 +20,56 @@ policy_templates:
     title: Snyk Events
     description: Collect data from Snyk API
     inputs:
-      - type: httpjson
+      - type: cel
         title: Collect data from Snyk API
-        description: Collect Audit and Vulnerabilty data from the Snyk API
+        description: Collect Audit Logs and Issues data from the Snyk REST API
+        vars:
+          - name: url
+            type: text
+            title: Base URL of Snyk API Server
+            multi: false
+            show_user: false
+            required: true
+            default: https://api.snyk.io/
+            description: The base URL as found [here](https://apidocs.snyk.io/?version=2024-04-29#overview).
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+          - name: api_token
+            type: password
+            title: Snyk API Token
+            multi: false
+            show_user: true
+            required: true
+            secret: true
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+            multi: false
+            required: false
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+      - type: httpjson
+        title: Collect data from Snyk API (Legacy)
+        description: Collect Audit and Vulnerabilty data from the Snyk API v1
         vars:
           - name: url
             type: text

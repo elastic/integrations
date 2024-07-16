@@ -1,0 +1,238 @@
+title: Citrix ADC logs
+type: logs
+streams:
+  - input: udp
+    title: Citrix ADC logs
+    enabled: false
+    description: Collect Citrix ADC logs (via Syslog).
+    template_path: udp.yml.hbs
+    vars:
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - citrix_adc.log
+          - forwarded
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The UDP port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9521
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve citrix_adc.log fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+          This executes in the agent before the logs are parsed.
+          See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: udp_options
+        type: yaml
+        title: Custom UDP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #max_message_size: 50KiB
+          #timeout: 300s
+        description: Specify custom configuration options for the UDP input.
+      - name: tz_offset
+        type: text
+        title: Timezone
+        multi: false
+        required: false
+        show_user: false
+        default: UTC
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.
+  - input: tcp
+    title: Citrix ADC logs
+    enabled: false
+    description: Collect Citrix ADC logs (via Syslog).
+    template_path: tcp.yml.hbs
+    vars:
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - citrix_adc.log
+          - forwarded
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The TCP port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9522
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve citrix_adc.log fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+          This executes in the agent before the logs are parsed.
+          See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #certificate_authorities:
+          #  - |
+          #    -----BEGIN CERTIFICATE-----
+          #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+          #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+          #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+          #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+          #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+          #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+          #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+          #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+          #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+          #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+          #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+          #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+          #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+          #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+          #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+          #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+          #    sxSmbIUfc2SGJGCJD4I=
+          #    -----END CERTIFICATE-----
+      - name: tcp_options
+        type: yaml
+        title: Custom TCP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #max_message_size: 50KiB
+          #max_connections: 1
+        description: Specify custom configuration options for the TCP input.
+      - name: tz_offset
+        type: text
+        title: Timezone
+        multi: false
+        required: false
+        show_user: false
+        default: UTC
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.
+  - input: logfile
+    enabled: false
+    title: Citrix ADC logs
+    description: Collect Citrix ADC logs.
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/citrix-adc.log
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - citrix_adc.log
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+          This executes in the agent before the logs are parsed.
+          See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve citrix_adc.log fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: tz_offset
+        type: text
+        title: Timezone
+        multi: false
+        required: false
+        show_user: false
+        default: UTC
+        description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.

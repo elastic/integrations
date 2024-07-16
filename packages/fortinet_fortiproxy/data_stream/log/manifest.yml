@@ -1,0 +1,168 @@
+title: "Collect logs from Fortinet FortiProxy"
+type: logs
+streams:
+  - input: tcp
+    template_path: tcp.yml.hbs
+    title: Fortinet FortiProxy logs (tcp)
+    description: Collect Fortinet FortiProxy logs using the tcp input
+    vars:
+      - name: syslog_host
+        type: text
+        title: Listen Address
+        description: The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Listen Port
+        description: The TCP port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 514
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - fortinet-fortiproxy
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+        multi: false
+        required: false
+        show_user: false
+        default: |-
+          #certificate: "/etc/server/cert.pem"
+          #key: "/etc/server/key.pem"
+      - name: tcp_options
+        type: yaml
+        title: Custom TCP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |-
+          framing: rfc6587
+          # max_message_size: 50KiB
+          # max_connections: 1
+        description: Specify custom configuration options for the TCP input.
+  - input: udp
+    template_path: udp.yml.hbs
+    title: Fortinet FortiProxy logs (udp)
+    description: Collect Fortinet FortiProxy logs using the udp input
+    vars:
+      - name: syslog_host
+        type: text
+        title: Listen Address
+        description: The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Listen Port
+        description: The UDP port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 514
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - fortinet-fortiproxy
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: udp_options
+        type: yaml
+        title: Custom UDP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #read_buffer: 100MiB
+          #max_message_size: 50KiB
+          #timeout: 300s
+        description: Specify custom configuration options for the UDP input.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+  - input: filestream
+    template_path: filestream.yml.hbs
+    title: Fortinet FortiProxy logs (filestream)
+    description: Collect Fortinet FortiProxy logs using filestream input
+    enabled: false
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - /var/log/fortinet-fortiproxy.log
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - fortinet-fortiproxy
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+

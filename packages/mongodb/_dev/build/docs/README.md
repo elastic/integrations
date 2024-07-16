@@ -21,6 +21,14 @@ Additional supported URI examples include:
 
 When using the `directConnection=true` parameter in the connection URI, all operations are executed on the specified host. It's important to explicitly include `directConnection=true` in the URI as it won't be automatically added.
 
+- Authentication: `mongodb://username:password@host:port/authSource=$external?authMechanism=PLAIN`
+
+When specifying `authMechanism` as PLAIN, it indicates the use of the PLAIN authentication mechanism, which is commonly associated with LDAP.
+
+`authSource` can be used to specify the name of the database that has the collection with the user credentials.
+
+In MongoDB, `authSource=$external` is a special authentication database used for authenticating users externally, such as via LDAP.
+
 The username and password can either be included in the URI or set using the respective configuration options. If included in the URI, these credentials take precedence over any configured username and password configuration options.
 
 ## Compatibility
@@ -49,6 +57,10 @@ db.createUser(
     }
 )
 ```
+You can use the following command in Mongo shell to authenticate a user against a specific database with the provided username and password (make sure you are using the `admin` db by using `db` command in Mongo shell).
+```
+db.auth(user, pass)
+```
 
 You can use the following command in Mongo shell to grant the role to an 
 existing user (make sure you are using the `admin` db by using `db` command in 
@@ -67,6 +79,10 @@ The `log` dataset collects the MongoDB logs.
 {{event "log"}}
 
 The fields reported are:
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "log"}}
 
@@ -87,6 +103,10 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "collstats"}}
 
 ### dbstats
@@ -105,6 +125,10 @@ action on the [database resource](https://docs.mongodb.com/manual/reference/reso
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "dbstats"}}
 
 ### metrics
@@ -117,6 +141,10 @@ action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-
 {{event "metrics"}}
 
 The fields reported are:
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "metrics"}}
 
@@ -132,6 +160,10 @@ It requires the following privileges, which is covered by the [clusterMonitor](h
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "replstatus"}}
 
 ### status
@@ -146,5 +178,9 @@ action on [cluster resource](https://docs.mongodb.com/manual/reference/resource-
 {{event "status"}}
 
 The fields reported are:
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "status"}}

@@ -1,0 +1,105 @@
+---
+description: Pipeline for Citrix Native messages of DNS and SSLI feature.
+processors:
+  - grok:
+      description: Extract fields from message of DNS and SSLI feature.
+      tag: grok_dns_and_ssli_feature
+      field: citrix.extended.message
+      patterns:
+        - '^Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} User%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.user} - Domain%{SPACE}:%{SPACE}%{DATA:citrix_adc.log.domain} - Category%{SPACE}:%{SPACE}%{INT:citrix_adc.log.category} Action%{SPACE}:%{SPACE}%{WORD:citrix_adc.log.action} - Reason%{SPACE}:%{SPACE}%{GREEDYDATA:citrix_adc.log.reason}$'
+        - '%{GREEDYDATA:citrix_adc.log.message}'
+      ignore_failure: true
+  - convert:
+      field: citrix_adc.log.destination.ip
+      tag: convert_destination_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.destination?.ip != null && ctx.citrix_adc.log.destination.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_destination_ip
+      copy_from: citrix_adc.log.destination.ip
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.destination.port
+      tag: convert_destination_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_destination_port
+      copy_from: citrix_adc.log.destination.port
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_action
+      copy_from: citrix_adc.log.action
+      ignore_empty_value: true
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_reason
+      copy_from: citrix_adc.log.reason
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.source.ip
+      tag: convert_source_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.source?.ip != null && ctx.citrix_adc.log.source.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_source_ip
+      copy_from: citrix_adc.log.source.ip
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.source.port
+      tag: convert_source_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_source_port
+      copy_from: citrix_adc.log.source.port
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      tag: set_user_domain_from_domain
+      copy_from: citrix_adc.log.domain
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_user
+      copy_from: citrix_adc.log.user
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.category
+      tag: convert_category_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

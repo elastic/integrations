@@ -1,0 +1,17 @@
+version: "2.3"
+services:
+  stormshield-udp:
+    image: docker.elastic.co/observability/stream:v0.16.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:5144 -p=udp /sample_logs/stormshield.log
+  stormshield-tcp:
+    image: docker.elastic.co/observability/stream:v0.16.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:6011 -p=tcp /sample_logs/stormshield.log
+  stormshield-tls:
+    image: docker.elastic.co/observability/stream:v0.16.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:6514 -p=tls --insecure /sample_logs/stormshield.log

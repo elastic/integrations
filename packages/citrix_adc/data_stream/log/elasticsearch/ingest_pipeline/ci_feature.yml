@@ -1,0 +1,225 @@
+---
+description: Pipeline for Citrix Native messages of CI feature.
+processors:
+  - grok:
+      description: Extract fields from message of CI feature.
+      tag: grok_ci_feature
+      field: citrix.extended.message
+      patterns:
+        - '^Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Domain %{DATA:citrix_adc.log.domain} - Content-Type %{DATA:citrix_adc.log.content_type} - ICAP%{SPACE}Server %{IP:citrix_adc.log.icap_server.ip}:%{INT:citrix_adc.log.icap_server.port} - Mode %{WORD:citrix_adc.log.mode} - Service %{WORD:citrix_adc.log.service} - Response %{INT:citrix_adc.log.response.code} - Action %{WORD:citrix_adc.log.action}$'
+        - '^ID %{NUMBER:citrix_adc.log.id} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} Protocol %{WORD:citrix_adc.log.protocol} - URL %{URI:citrix_adc.log.url} - Domain %{DATA:citrix_adc.log.domain} - Service %{DATA:citrix_adc.log.service} - %{DATA}%{SPACE}%{DATA} - Action %{WORD:citrix_adc.log.action} - Bytes%{SPACE}Sent %{NUMBER:citrix_adc.log.bytes.sent} - Bytes%{SPACE}Received %{NUMBER:citrix_adc.log.bytes.received} - Origin%{SPACE}Server %{IP:citrix_adc.log.icap_server.ip}:%{INT:citrix_adc.log.icap_server.port}$'
+        - '^ID %{NUMBER:citrix_adc.log.id} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} Protocol %{WORD:citrix_adc.log.protocol} - URL %{URI:citrix_adc.log.url} - Domain %{DATA:citrix_adc.log.domain} - Service %{DATA:citrix_adc.log.service} - %{DATA}%{SPACE}%{DATA} - Action %{WORD:citrix_adc.log.action} - Request%{SPACE}Bytes%{SPACE}Sent %{NUMBER:citrix_adc.log.request.bytes_sent} - Response%{SPACE}Bytes%{SPACE}Sent %{NUMBER:citrix_adc.log.response.bytes_sent} - Origin%{SPACE}Server %{IP:citrix_adc.log.origin_server.ip}:%{INT:citrix_adc.log.origin_server.port}$'
+        - '%{GREEDYDATA:citrix_adc.log.message}'
+      ignore_failure: true
+  - convert:
+      field: citrix_adc.log.bytes.received
+      tag: convert_bytes_received_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.bytes
+      tag: set_destination_bytes_from_bytes_received
+      copy_from: citrix_adc.log.bytes.received
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.destination.ip
+      tag: convert_destination_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.destination?.ip != null && ctx.citrix_adc.log.destination.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_destination_ip
+      copy_from: citrix_adc.log.destination.ip
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.destination.port
+      tag: convert_destination_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_destination_port
+      copy_from: citrix_adc.log.destination.port
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_action
+      copy_from: citrix_adc.log.action
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.response.code
+      tag: convert_response_code_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code_from_response_code
+      copy_from: citrix_adc.log.response.code
+      ignore_empty_value: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_protocol
+      copy_from: citrix_adc.log.protocol
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.icap_server.ip
+      tag: convert_icap_server_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.icap_server?.ip != null && ctx.citrix_adc.log.icap_server.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.ip
+      tag: set_server_ip_from_icap_server_ip
+      copy_from: citrix_adc.log.icap_server.ip
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.origin_server.ip
+      tag: convert_origin_server_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.origin_server?.ip != null && ctx.citrix_adc.log.origin_server.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.ip
+      tag: set_server_ip_from_origin_server_ip
+      copy_from: citrix_adc.log.origin_server.ip
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.icap_server.port
+      tag: convert_icap_server_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.port
+      tag: set_server_port_from_icap_server_port
+      copy_from: citrix_adc.log.icap_server.port
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.origin_server.port
+      tag: convert_origin_server_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: server.port
+      tag: set_server_port_from_origin_server_port
+      copy_from: citrix_adc.log.origin_server.port
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.bytes.sent
+      tag: convert_bytes_sent_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.bytes
+      tag: set_source_bytes_from_bytes_sent
+      copy_from: citrix_adc.log.bytes.sent
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.source.ip
+      tag: convert_source_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.source?.ip != null && ctx.citrix_adc.log.source.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_source_ip
+      copy_from: citrix_adc.log.source.ip
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.source.port
+      tag: convert_source_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_source_port
+      copy_from: citrix_adc.log.source.port
+      ignore_empty_value: true
+  - set:
+      field: url.original
+      tag: set_url_original_from_url
+      copy_from: citrix_adc.log.url
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      tag: set_user_domain_from_domain
+      copy_from: citrix_adc.log.domain
+      ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.request.bytes_sent
+      tag: convert_request_bytes_sent_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.response.bytes_sent
+      tag: convert_response_bytes_sent_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: citrix_adc.log.id
+      tag: convert_id_to_string
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

@@ -1,0 +1,250 @@
+---
+description: Pipeline for parsing Jamf Protect Web Protection threat logs
+processors:
+    - set:
+        field: ecs.version
+        value: '8.11.0'
+    - json:
+        field: message
+        target_field: jamf_protect.threat
+        if: ctx.message != null
+    - rename:
+        field: json
+        target_field: jamf_protect.threat
+        if: ctx.json != null
+
+##########################
+## ECS Observer Mapping ##
+##########################
+    - set:
+        field: observer.product
+        value: Jamf Protect
+    - set:
+        field: observer.vendor
+        value: Jamf
+    - set:
+        field: observer.type
+        value: Endpoint Security
+
+#######################
+## ECS Event Mapping ##
+#######################
+    - set:
+        field: event.kind
+        value: alert
+    - set:
+        field: event.provider
+        value: Jamf Protect
+    - rename:
+        field: jamf_protect.threat.event.timestamp
+        target_field: event.start
+        if: ctx.jamf_protect?.threat?.event?.timestamp != null
+    - append:
+        field: event.category
+        value: host
+    - append:
+        field: event.category
+        value: malware
+        if: ctx.jamf_protect?.threat?.event?.eventType?.name == 'MALWARE'
+    - rename:
+        field: jamf_protect.threat.event.action
+        target_field: event.action
+        ignore_missing: true
+        if: ctx.jamf_protect?.threat?.event?.action != null
+    - set:
+        field: event.reason
+        value: '{{jamf_protect.threat.event.eventType.description}}'
+        if: ctx.jamf_protect?.threat?.event?.eventType?.description != null
+        # ignore_missing: true
+    - rename:
+        field: jamf_protect.threat.event.alertId
+        target_field: event.id
+        ignore_missing: true
+        if: ctx.jamf_protect?.threat?.event?.alertId != null
+    - rename:
+        field: jamf_protect.threat.event.severity
+        target_field: event.severity
+        ignore_missing: true
+        if: ctx.jamf_protect?.threat?.event?.severity != null
+    - rename:
+        field: jamf_protect.threat.event.eventUrl
+        target_field: event.url
+        ignore_missing: true
+        if: ctx.jamf_protect?.threat?.event?.eventUrl != null
+
+
+#######################
+## ECS Rule Mapping ##
+#######################
+    - rename:
+        field: jamf_protect.threat.event.eventType.name
+        target_field: rule.name       
+        if: ctx.jamf_protect?.threat?.event?.eventType?.name != null
+        ignore_missing: true
+    - set:
+        field: rule.description
+        value: '{{jamf_protect.threat.event.eventType.description}}'
+        if: ctx.jamf_protect?.threat?.event?.eventType?.description != null
+        # ignore_missing: true
+    - rename:
+        field: jamf_protect.threat.event.eventType.id.toString()
+        target_field: rule.id
+        if: ctx.jamf_protect?.threat?.event?.eventType?.id != null
+        ignore_missing: true
+
+
+#######################
+## ECS Host Mapping ##
+#######################
+    - rename:
+        field: jamf_protect.threat.event.device.userDeviceName
+        target_field: host.hostname
+        ignore_missing: true
+        if: ctx.jamf_protect?.threat?.event?.device?.userDeviceName != null
+    - rename:
+        field: jamf_protect.threat.event.device.deviceName
+        target_field: host.hostname
+        ignore_missing: true
+        if: ctx.jamf_protect?.threat?.event?.device?.deviceName == null && ctx.jamf_protect?.threat?.event?.device?.userDeviceName != null
+    - rename:
+        field: jamf_protect.threat.event.device.deviceId
+        target_field: host.id
+        ignore_missing: true
+        if: ctx.jamf_protect?.threat?.event?.device?.deviceId != null
+    - rename:
+        field: jamf_protect.threat.event.device.os
+        target_field: host.os.full
+        if: ctx.jamf_protect?.threat?.event?.device?.os != null
+        ignore_missing: true
+
+########################
+## ECS User Mapping ##
+########################
+
+    - rename:
+          field: jamf_protect.threat.event.user.name
+          target_field: user.name
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.user?.name != null
+    - rename:
+          field: jamf_protect.threat.event.user.email
+          target_field: user.email
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.user?.email != null
+
+########################
+## ECS GEO Mapping ##
+########################
+    - rename:
+          field: jamf_protect.threat.event.location
+          target_field: host.geo.country_iso_code
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.location != null
+
+
+#######################
+## ECS Destination Mapping ##
+#######################
+    - rename:
+          field: jamf_protect.threat.event.destination.ip
+          target_field: destination.address
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.destination?.ip != null
+    - rename:
+          field: jamf_protect.threat.event.destination.name
+          target_field: destination.domain
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.destination?.name != null
+    - rename:
+          field: jamf_protect.threat.event.destination.port
+          target_field: destination.port
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.destination?.port != null
+
+
+#######################
+## ECS File Mapping ##
+#######################
+    - rename:
+          field: jamf_protect.threat.event.app.name
+          target_field: file.name
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.app?.name != null
+    - rename:
+          field: jamf_protect.threat.event.app.sha1
+          target_field: file.hash.sha1
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.app?.sha1 != null
+    - rename:
+          field: jamf_protect.threat.event.app.sha256
+          target_field: file.hash.sha256
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.app?.sha256 != null
+
+#######################
+## ECS Source Mapping ##
+#######################
+    - rename:
+          field: jamf_protect.threat.event.source.ip
+          target_field: source.address
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.destination?.ip != null
+    - rename:
+          field: jamf_protect.threat.event.source.port
+          target_field: source.port
+        #   ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.source?.port != null
+
+# ########################
+# # ECS Organization Mapping ##
+# ########################
+    - rename:
+          field: jamf_protect.threat.event.account.customerId
+          target_field: organization.id
+          ignore_missing: true
+          if: ctx.jamf_protect?.threat?.event?.account?.customerId != null
+
+
+
+########################
+# ECS Related Mapping ##
+########################
+
+
+#############
+## Cleanup ##
+#############
+    - remove:
+        field:
+        - jamf_protect.threat
+        - jamf_protect
+        - message
+        ignore_missing: true
+    - remove:
+        field: event.original
+        if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+        ignore_failure: true
+    - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+            boolean dropEmptyFields(Object object) {
+            if (object == null || object == '') {
+                return true;
+            } else if (object instanceof Map) {
+                ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+                return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+                ((List) object).removeIf(value -> dropEmptyFields(value));
+                return (((List) object).length == 0);
+            }
+            return false;
+            }
+            dropEmptyFields(ctx);
+on_failure:
+    - set:
+        field: event.kind
+        value: pipeline_error
+    - append:
+        field: error.message
+        value: '{{{ _ingest.on_failure_message }}}'

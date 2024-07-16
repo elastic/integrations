@@ -1,12 +1,3 @@
-- name: "event.created"
-  type: date
-  description: Time when event got created.
-- name: "event.ingested"
-  type: date
-  description: Time when event gets ingested into Elasticsearch.
-- name: "@timestamp"
-  type: date
-  description: Event timestamp.
 - name: recordedfuture
   type: group
   description: >
@@ -14,10 +5,31 @@
 
   fields:
     - name: evidence_details
-      type: flattened
+      type: group
       description: >
         List of sightings used as evidence for this indicator.
 
+      fields:
+        - name: criticality
+          type: double
+        - name: criticality_label
+          type: keyword
+        - name: evidence_string
+          type: keyword
+        - name: mitigation_string
+          type: keyword
+        - name: name
+          type: keyword
+        - name: rule
+          type: keyword
+        - name: sources
+          type: keyword
+        - name: sources_count
+          type: integer
+        - name: sightings_count
+          type: integer
+        - name: timestamp
+          type: date
     - name: name
       type: keyword
       description: >
@@ -27,4 +39,9 @@
       type: keyword
       description: >
         Details of risk rules observed.
+
+    - name: list
+      type: keyword
+      description: >
+        User-configured risklist.
 

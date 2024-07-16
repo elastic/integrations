@@ -1,19 +1,44 @@
-title: Collect Indicator logs from ThreatConnect.
+# contains configuration inputs for the integration
+title: Collect Indicators from ThreatConnect.
 type: logs
 ilm_policy: logs-ti_threatconnect.indicator-default_policy
 streams:
   - input: cel
-    title: Indicator logs
-    description: Collect Indicator logs from ThreatConnect.
+    title: Indicators
+    description: Collect Indicators from ThreatConnect.
     template_path: cel.yml.hbs
     vars:
       - name: tql
         type: text
         title: TQL
-        description: Filter results based on query written in [TQL](https://knowledge.threatconnect.com/docs/threatconnect-query-language-tql).
+        description: Filter results based on query written in [TQL](https://knowledge.threatconnect.com/docs/constructing-query-expressions).
         multi: false
         required: false
         show_user: true
+      - name: include_attributes
+        type: bool
+        title: Include Attributes in the response
+        multi: false
+        required: false
+        show_user: false # Drives whether the input is shown at top and not under advanced settings.
+        description: Elastic has a default async search response size of 10MB. Enabling this option may result in larger response size, which may cause the Kibana discover view to have issues.
+        default: false # Default this bool to false on setup
+      - name: include_group_assoc
+        type: bool
+        title: Include Group Associations in the response
+        multi: false
+        required: false
+        show_user: false
+        description: Elastic has a default async search response size of 10MB. Enabling this option may result in larger response size, which may cause the Kibana discover view to have issues.
+        default: false
+      - name: include_indicator_assoc
+        type: bool
+        title: Include Indicator Associations in the response
+        multi: false
+        required: false
+        show_user: false
+        description: Elastic has a default async search response size of 10MB. Enabling this option may result in larger response size, which may cause the Kibana discover view to have issues.
+        default: false
       - name: initial_interval
         type: text
         title: Initial Interval
@@ -43,7 +68,7 @@ streams:
         type: integer
         title: Batch Size
         description: Batch size for the response of the ThreatConnect API. The maximum supported batch size value is 10000.
-        default: 5000
+        default: 2000
         multi: false
         required: true
         show_user: false

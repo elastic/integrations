@@ -1,0 +1,90 @@
+---
+description: Pipeline for processing Audit category logs.
+processors:
+  - set:
+      field: ses.category_name
+      tag: set_category_name
+      value: Audit
+  - append:
+      field: event.category
+      tag: append_event_category_session
+      value: session
+      if: ctx.ses.type_id == '20'
+  - append:
+      field: event.category
+      tag: append_event_category_configuration
+      value: configuration
+      if: ctx.ses.type_id == '22'
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      if: ctx.ses?.type_id != null && ['20', '22'].contains(ctx.ses.type_id)
+  - convert:
+      field: ses.session_id
+      tag: convert_session_id_to_string
+      type: string
+      if: ctx.ses?.session_id != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.override_duration
+      tag: convert_override_duration_to_long
+      type: long
+      if: ctx.ses?.override_duration != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_container" }}'
+      if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && ctx.ses?.container != null
+      tag: pipeline_object_container
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_cybox" }}'
+      if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && ctx.ses?.cybox != null
+      tag: pipeline_object_cybox
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_device" }}'
+      if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && (ctx.ses?.device_cloud_vm != null || ctx.ses?.device_location != null || ctx.ses?.device_networks != null)
+      tag: pipeline_object_device
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_file" }}'
+      if: ctx.ses?.type_id != null && ['22'].contains(ctx.ses.type_id) && (ctx.ses?.file != null || ctx.ses?.file_result != null)
+      tag: pipeline_object_file
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_policy" }}'
+      if: ctx.ses?.type_id != null && ['22'].contains(ctx.ses.type_id) && ctx.ses?.policy != null
+      tag: pipeline_object_policy
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_session" }}'
+      if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && (ctx.ses?.session != null || ctx.ses?.sessions != null)
+      tag: pipeline_object_session
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_source" }}'
+      if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && ctx.ses?.source != null
+      tag: pipeline_object_source
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_object_user" }}'
+      if: ctx.ses?.type_id != null && ['20', '21', '22'].contains(ctx.ses.type_id) && ctx.ses?.user != null
+      tag: pipeline_object_user
+      ignore_missing_pipeline: true
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

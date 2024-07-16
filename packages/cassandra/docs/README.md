@@ -6,12 +6,72 @@ This integration periodically fetches metrics from [Cassandra](https://cassandra
 
 This integration has been tested against `Cassandra version 3.11.11`.
 
-### Troubleshooting
+## Steps to Setup Jolokia
 
-If log.flags is shown conflicted under the ``logs-*`` data view, then this issue can be solved by reindexing the ``Logs`` data stream's indices.
+### Prerequisites
 
-Note:
-- This [document](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) provides details about reindexing.
+- Java Development Kit (JDK) 1.8 or later
+- Apache Cassandra 3.x or 4.x (depending on user's version)
+- Jolokia agent JAR file
+
+### Jolokia Setup
+
+Follow these steps to set up Jolokia for monitoring Apache Cassandra:
+
+1. Download the Jolokia JVM Agent:
+
+   Visit the [Jolokia official download page](https://repo1.maven.org/maven2/org/jolokia/jolokia-jvm/) to obtain the latest version of the Jolokia JVM agent JAR file. Download the `jolokia-jvm-<jolokia_version>-agent.jar` file.
+
+2. Copy the Jolokia Agent to Cassandra's Library Directory:
+
+   Copy the downloaded `jolokia-jvm-<jolokia_version>-agent.jar` file to the Cassandra library directory on the server where Cassandra is installed.
+
+   For example:
+
+   ```bash
+   cp jolokia-jvm-<jolokia_version>-agent.jar /path/to/cassandra/lib/
+   ```
+
+   Replace `/path/to/cassandra/lib/` with the actual path to Cassandra's library directory.
+
+3. Configure Cassandra to use the Jolokia Agent:
+
+   Open the `cassandra-env.sh` file, located in the Cassandra configuration directory, using a text editor, and add the following line at the bottom of the file:
+
+   ```
+   JVM_OPTS="$JVM_OPTS -javaagent:/path/to/jolokia-jvm-<jolokia_version>-agent.jar=port=<jolokia_port>,host=0.0.0.0"
+   ```
+
+   Replace `/path/to/jolokia-jvm-<version>-agent.jar` with the actual path to the Jolokia agent JAR file copied in Step 2. Save the changes and close the `cassandra-env.sh` file.
+
+4. Restart Cassandra:
+
+   Restart the Apache Cassandra service to apply the changes made to the configuration.
+
+   > Note:
+   - Restarting the Apache Cassandra service will temporarily disrupt database connectivity. Ensure that dependent services are designed to handle such interruptions gracefully.
+   - Immediately after a restart, Cassandra's performance may be impacted due to cold caches and commit log replay. Allow some time for the system to stabilize.
+   - Before restarting Cassandra, ensure that no cluster maintenance tasks are in progress to prevent any unintended consequences.
+   - The exact steps will vary based on the installation type, the setup process might differ based on the specific deployment method or environment.
+   - Procedures for restarting Cassandra may vary based on user's specific setup and configuration.
+
+## Verifying the setup
+
+After restarting Cassandra, user can verify that Jolokia is properly set up by accessing the Jolokia endpoint:
+
+```
+http://<cassandra-host>:<jolokia_port>/jolokia
+```
+
+Replace with the hostname or IP address of user's Cassandra server.
+
+If the setup is successful, user should see a JSON response containing information about the available Jolokia operations and the Cassandra instance.
+
+User can now use Jolokia to monitor and manage Apache Cassandra cluster.
+
+## Troubleshooting
+
+- If `log.flags` appears conflicted under the ``logs-*`` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Logs`` data stream.
 
 ## Logs
 
@@ -21,14 +81,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-01T07:33:01.952Z",
+    "@timestamp": "2024-06-18T06:33:32.952Z",
     "agent": {
-        "ephemeral_id": "d6102ad8-04fe-46fa-bf67-cc98e3665348",
-        "hostname": "docker-fleet-agent",
-        "id": "d1a9277c-e5a2-4ee3-a973-18f2b62e3ad8",
+        "ephemeral_id": "b1e9fa09-5c73-45d9-b26f-184761635dd9",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "cassandra.log",
@@ -36,12 +95,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d1a9277c-e5a2-4ee3-a973-18f2b62e3ad8",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "7.15.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -49,11 +108,12 @@ An example event for `log` looks as following:
             "database"
         ],
         "dataset": "cassandra.log",
-        "ingested": "2022-08-01T07:33:17Z",
+        "ingested": "2024-06-18T06:34:02Z",
         "kind": "event",
         "module": "cassandra",
-        "original": "INFO  [main] 2022-08-01 07:33:01,952 YamlConfigurationLoader.java:92 - Configuration location: file:/etc/cassandra/cassandra.yaml",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "log"
@@ -84,6 +144,10 @@ An example event for `log` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -93,21 +157,9 @@ An example event for `log` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Flags for the log file. | keyword |
-| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
-| log.origin.file.line | The line number of the file containing the source code which originated the log event. | long |
-| log.origin.file.name | The name of the file containing the source code which originated the log event. Note that this field is not meant to capture the log file. The correct field to capture the log file is `log.file.path`. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| process.thread.name | Thread name. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
 
 
 ## Metrics
@@ -118,23 +170,22 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-02T07:46:20.906Z",
+    "@timestamp": "2024-06-18T06:35:01.265Z",
     "agent": {
-        "ephemeral_id": "dd01aaac-f888-4fdb-832d-d05840060d78",
-        "hostname": "docker-fleet-agent",
-        "id": "f8436de1-7850-497f-905d-b6c9ca3116ca",
+        "ephemeral_id": "51e65675-8699-4d2e-8c14-ecde813096e9",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "7.15.0"
+        "version": "8.13.0"
     },
     "cassandra": {
         "metrics": {
             "cache": {
                 "key_cache": {
                     "capacity": 104857600,
-                    "one_minute_hit_rate": 0.7055988630359871,
+                    "one_minute_hit_rate": 0,
                     "requests": {
-                        "one_minute_rate": 10.000444146293233
+                        "one_minute_rate": 12
                     }
                 },
                 "row_cache": {
@@ -178,10 +229,10 @@ An example event for `metrics` looks as following:
                 }
             },
             "column_family": {
-                "total_disk_space_used": 72611
+                "total_disk_space_used": 72566
             },
             "compaction": {
-                "completed": 45,
+                "completed": 44,
                 "pending": 0
             },
             "dropped_message": {
@@ -200,11 +251,11 @@ An example event for `metrics` looks as following:
             "gc": {
                 "concurrent_mark_sweep": {
                     "collection_count": 1,
-                    "collection_time": 27
+                    "collection_time": 26
                 },
                 "par_new": {
                     "collection_count": 1,
-                    "collection_time": 24
+                    "collection_time": 29
                 }
             },
             "memory": {
@@ -212,34 +263,32 @@ An example event for `metrics` looks as following:
                     "committed": 4054777856,
                     "init": 4158652416,
                     "max": 4054777856,
-                    "used": 478032264
+                    "used": 481894272
                 },
                 "other_usage": {
-                    "committed": 62853120,
+                    "committed": 62337024,
                     "init": 2555904,
                     "max": -1,
-                    "used": 61234528
+                    "used": 60729840
                 }
             },
             "storage": {
                 "exceptions": 0,
-                "load": 72611,
+                "load": 72566,
                 "total_hint_in_progress": 0,
                 "total_hints": 0
             },
             "system": {
                 "cluster": "Test Cluster",
                 "data_center": "datacenter1",
-                "live_nodes": [
-                    "192.168.224.2"
-                ],
+                "live_nodes": "192.168.247.2",
                 "rack": "rack1",
                 "version": "3.11.11"
             },
             "table": {
-                "all_memtables_heap_size": 4569,
+                "all_memtables_heap_size": 4584,
                 "all_memtables_off_heap_size": 0,
-                "live_disk_space_used": 72611,
+                "live_disk_space_used": 72566,
                 "live_ss_table_count": 11
             },
             "task": {
@@ -287,22 +336,22 @@ An example event for `metrics` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f8436de1-7850-497f-905d-b6c9ca3116ca",
+        "id": "97400795-188c-4140-a1ee-0002078c785d",
         "snapshot": false,
-        "version": "7.15.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "database"
         ],
-        "created": "2022-08-02T07:46:20.906Z",
+        "created": "2024-06-18T06:35:01.265Z",
         "dataset": "cassandra.metrics",
-        "duration": 13448617,
-        "ingested": "2022-08-02T07:46:24Z",
+        "duration": 110507236,
+        "ingested": "2024-06-18T06:35:13Z",
         "kind": "event",
         "module": "cassandra",
         "type": [
@@ -313,22 +362,22 @@ An example event for `metrics` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "2cbd07697ac16c7d26f103cb3d40e3aa",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.192.7"
+            "192.168.245.7"
         ],
         "mac": [
-            "02:42:c0:a8:c0:07"
+            "02-42-C0-A8-F5-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "3.10.0-1160.71.1.el7.x86_64",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.102.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -336,11 +385,15 @@ An example event for `metrics` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://elastic-package-service_cassandra_1:8778/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://elastic-package-service-cassandra-1:8778/jolokia/%3FignoreErrors=true&canonicalNaming=false",
         "type": "jolokia"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -432,22 +485,12 @@ An example event for `metrics` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |  |
 | container.id | Unique container id. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 

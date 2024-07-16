@@ -1,0 +1,1183 @@
+---
+description: Pipeline for processing WatchGuard Firebox Traffic logs.
+processors:
+  - grok:
+      field: watchguard_firebox.log.body
+      tag: grok_traffic_message
+      patterns:
+        - '^%{WORD:watchguard_firebox.log.disposition} %{DATA:watchguard_firebox.log.in_interface_name} %{DATA:watchguard_firebox.log.out_interface_name}(?: %{NUMBER:watchguard_firebox.log.ip_packet_length:long})? %{WORD:watchguard_firebox.log.transport}(?: %{NUMBER:watchguard_firebox.log.iph_length:long} %{NUMBER:watchguard_firebox.log.ttl:long})? %{IP:watchguard_firebox.log.source_ip} %{IP:watchguard_firebox.log.destination_ip}(?: %{NUMBER:watchguard_firebox.log.source_port:long} %{NUMBER:watchguard_firebox.log.destination_port:long})?(?: offset %{NUMBER:watchguard_firebox.log.offset:long} %{DATA:watchguard_firebox.log.protocol_flags} %{NUMBER:watchguard_firebox.log.sequence_number:long} win %{NUMBER:watchguard_firebox.log.window_size:long})?(?: %{GREEDYDATA:_temp})? \(%{DATA:watchguard_firebox.log.policy_name}\)$'
+        - '^%{WORD:watchguard_firebox.log.disposition} %{DATA:watchguard_firebox.log.in_interface_name} %{DATA:watchguard_firebox.log.out_interface_name}(?: %{NUMBER:watchguard_firebox.log.ip_packet_length:long})? %{WORD:watchguard_firebox.log.transport}(?: %{NUMBER:watchguard_firebox.log.iph_length:long} %{NUMBER:watchguard_firebox.log.ttl:long})? %{IP:watchguard_firebox.log.source_ip} %{IP:watchguard_firebox.log.destination_ip}(?: %{NUMBER:watchguard_firebox.log.source_port:long} %{NUMBER:watchguard_firebox.log.destination_port:long})?(?: offset %{NUMBER:watchguard_firebox.log.offset:long} %{DATA:watchguard_firebox.log.protocol_flags} %{NUMBER:watchguard_firebox.log.sequence_number:long} win %{NUMBER:watchguard_firebox.log.window_size:long})?(?: %{GREEDYDATA:_temp})?$'
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      ignore_missing: true
+      ignore_failure: true
+  - kv:
+      field: _temp
+      tag: kv_parse_field
+      target_field: watchguard_firebox.log
+      field_split: '"\s+'
+      value_split: '="'
+      trim_value: '"'
+      trim_key: ' '
+      if: ctx._temp != ''
+      ignore_missing: true
+      on_failure:
+        - set:
+            field: watchguard_firebox.log.message
+            copy_from: _temp
+            ignore_empty_value: true
+  - set:
+      field: observer.ingress.interface.alias
+      tag: set_observer_ingress_interface_alias_from_log_in_interface_name
+      copy_from: watchguard_firebox.log.in_interface_name
+      ignore_empty_value: true
+  - set:
+      field: observer.egress.interface.alias
+      tag: set_observer_egress_interface_alias_from_log_out_interface_name
+      copy_from: watchguard_firebox.log.out_interface_name
+      ignore_empty_value: true
+  - set:
+      field: network.transport
+      tag: set_network_transport_from_log_transport
+      copy_from: watchguard_firebox.log.transport
+      ignore_empty_value: true
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+  - append:
+      field: source.ip
+      tag: append_log_source_ip_into_source_ip
+      value: '{{{watchguard_firebox.log.source_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.source_ip != null
+  - append:
+      field: related.ip
+      tag: append_source_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.source_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.source_ip != null
+  - append:
+      field: destination.ip
+      tag: append_log_destination_ip_into_destination_ip
+      value: '{{{watchguard_firebox.log.destination_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.destination_ip != null
+  - append:
+      field: related.ip
+      tag: append_destination_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.destination_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.destination_ip != null
+  - append:
+      field: source.port
+      tag: append_log_source_port_into_source_port
+      value: '{{{watchguard_firebox.log.source_port}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.source_port != null
+  - append:
+      field: destination.port
+      tag: append_log_destination_port_into_destination_port
+      value: '{{{watchguard_firebox.log.destination_port}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.destination_port != null
+  - set:
+      field: event.action
+      tag: set_event_action_from_log_action
+      copy_from: watchguard_firebox.log.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - append:
+      field: email.from.address
+      tag: append_log_address_into_email_from_address
+      value: '{{{watchguard_firebox.log.address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.address != null && ctx.watchguard_firebox?.log?.msg_id != null && ['1BFF-0004', '1BFF-0022'].contains(ctx.watchguard_firebox.log.msg_id)
+  - append:
+      field: email.to.address
+      tag: append_address_into_email_to_address
+      value: '{{{watchguard_firebox.log.address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.address != null && ctx.watchguard_firebox?.log?.msg_id != null && ['1BFF-0005'].contains(ctx.watchguard_firebox.log.msg_id)
+  - append:
+      field: related.user
+      tag: append_address_into_related_user
+      value: '{{{watchguard_firebox.log.address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.address != null
+  - rename:
+      field: watchguard_firebox.log.app_ctl_disp
+      tag: rename_app_ctl_disp
+      target_field: watchguard_firebox.log.app_control_disposition
+      ignore_missing: true
+  - set:
+      field: network.application
+      tag: set_network_application_from_log_app_name
+      copy_from: watchguard_firebox.log.app_name
+      ignore_empty_value: true
+  - lowercase:
+      field: network.application
+      tag: lowercase_network_application
+      ignore_missing: true
+  - set:
+      field: url.path
+      tag: set_url_path_from_log_arg
+      copy_from: watchguard_firebox.log.arg
+      ignore_empty_value: true
+  - grok:
+      field: watchguard_firebox.log.authenticated_user
+      ignore_missing: true
+      patterns:
+        - '^%{HOSTNAME:watchguard_firebox.log.authenticated_user_domain}\\%{USERNAME:watchguard_firebox.log.authenticated_user}$'
+        - '^%{HOSTNAME:watchguard_firebox.log.authenticated_user_domain}\\\\%{USERNAME:watchguard_firebox.log.authenticated_user}$'
+        - '^%{USERNAME:watchguard_firebox.log.authenticated_user}@%{HOSTNAME:watchguard_firebox.log.authenticated_user_domain}$'
+        - '^%{USERNAME:watchguard_firebox.log.authenticated_user}$'
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      if: ctx.watchguard_firebox?.log?.authenticated_user != null
+      ignore_failure: true
+  - append:
+      field: user.name
+      tag: append_authenticated_user_into_user_name
+      value: '{{{watchguard_firebox.log.authenticated_user}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.authenticated_user != null
+  - append:
+      field: related.user
+      tag: append_authenticated_user_into_related_user
+      value: '{{{watchguard_firebox.log.authenticated_user}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.authenticated_user != null
+  - append:
+      field: user.domain
+      tag: append_authenticated_user_domain_into_user_domain
+      value: '{{{watchguard_firebox.log.authenticated_user_domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.authenticated_user_domain != null
+  - append:
+      field: related.hosts
+      tag: append_authenticated_user_domain_into_related_hosts
+      value: '{{{watchguard_firebox.log.authenticated_user_domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.authenticated_user_domain != null
+  - rename:
+      field: watchguard_firebox.log.auth_method
+      tag: rename_auth_method
+      target_field: watchguard_firebox.log.authentication_method
+      ignore_missing: true
+  - rename:
+      field: watchguard_firebox.log.authtype
+      tag: rename_authtype
+      target_field: watchguard_firebox.log.authentication_type
+      ignore_missing: true
+  - convert:
+      field: watchguard_firebox.log.bounce_ip
+      tag: convert_bounce_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.bounce_ip != null && ctx.watchguard_firebox.log.bounce_ip != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.bounce_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_bounce_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.bounce_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.bounce_ip != null
+  - convert:
+      field: watchguard_firebox.log.rcvd_bytes
+      tag: convert_rcvd_bytes_to_long
+      target_field: watchguard_firebox.log.bytes_in
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.rcvd_bytes
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.bytes
+      tag: set_source_bytes_from_log_bytes_in
+      copy_from: watchguard_firebox.log.bytes_in
+      ignore_empty_value: true
+  - convert:
+      field: watchguard_firebox.log.sent_bytes
+      tag: convert_sent_bytes_to_long
+      target_field: watchguard_firebox.log.bytes_out
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.sent_bytes
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.bytes
+      tag: set_destination_bytes_from_log_bytes_out
+      copy_from: watchguard_firebox.log.bytes_out
+      ignore_empty_value: true
+  - script:
+      description: Calculate network.bytes
+      tag: script_calculate_network_bytes
+      ignore_failure: true
+      lang: painless
+      source: >-
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        if (ctx.source.bytes != null && ctx.destination.bytes != null) {
+          ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes
+        } else if (ctx.source.bytes == null && ctx.destination.bytes != null) {
+          ctx.network.bytes = ctx.destination.bytes
+        } else if (ctx.source.bytes != null && ctx.destination.bytes == null) {
+          ctx.network.bytes = ctx.source.bytes
+        }
+  - convert:
+      field: watchguard_firebox.log.call_from
+      tag: convert_call_from_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.call_from != null && ctx.watchguard_firebox.log.call_from != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.call_from
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_call_from_into_related_ip
+      value: '{{{watchguard_firebox.log.call_from}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.call_from != null
+  - convert:
+      field: watchguard_firebox.log.call_to
+      tag: convert_call_to_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.call_to != null && ctx.watchguard_firebox.log.call_to != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.call_to
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_call_to_into_related_ip
+      value: '{{{watchguard_firebox.log.call_to}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.call_to != null
+  - rename:
+      field: watchguard_firebox.log.cat_name
+      tag: rename_cat_name
+      target_field: watchguard_firebox.log.category_name
+      ignore_missing: true
+  - rename:
+      field: watchguard_firebox.log.cert_issuer
+      tag: rename_cert_issuer
+      target_field: watchguard_firebox.log.certificate_issuer
+      ignore_missing: true
+  - set:
+      field: tls.server.issuer
+      tag: set_tls_server_issuer_from_log_certificate_issuer
+      copy_from: watchguard_firebox.log.certificate_issuer
+      ignore_empty_value: true
+  - rename:
+      field: watchguard_firebox.log.cert_subject
+      tag: rename_cert_subject
+      target_field: watchguard_firebox.log.certificate_subject
+      ignore_missing: true
+  - set:
+      field: tls.server.x509.subject.distinguished_name
+      tag: set_tls_server_x509_subject_distinguished_name_from_log_certificate_subject
+      copy_from: watchguard_firebox.log.certificate_subject
+      ignore_empty_value: true
+  - append:
+      field: tls.client.supported_ciphers
+      tag: append_watchguard_firebox_log_client_ssl_into_tls_client_supported_ciphers
+      value: '{{{watchguard_firebox.log.client_ssl}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.client_ssl != null
+  - append:
+      field: tls.server.x509.subject.common_name
+      tag: append_watchguard_firebox_log_cn_into_tls_server_x509_subject_common_name
+      value: '{{{watchguard_firebox.log.cn}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.cn != null
+  - append:
+      field: related.hosts
+      tag: append_log_cn_into_related_hosts
+      value: '{{{watchguard_firebox.log.cn}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.cn != null
+  - rename:
+      field: watchguard_firebox.log.content_src
+      tag: rename_content_src
+      target_field: watchguard_firebox.log.content_source
+      ignore_missing: true
+  - grok:
+      field: watchguard_firebox.log.ctl_dst
+      tag: grok_parse_ctl_dst
+      patterns:
+        - '^%{IP:watchguard_firebox.log.ctl_dst_ip}:%{POSINT:watchguard_firebox.log.ctl_dst_port:long}$'
+        - '^%{IP:watchguard_firebox.log.ctl_dst_ip}$'
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: destination.ip
+      tag: append_ctl_dst_ip_into_destination_ip
+      value: '{{{watchguard_firebox.log.ctl_dst_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.ctl_dst_ip != null
+  - append:
+      field: related.ip
+      tag: append_ctl_dst_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.ctl_dst_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.ctl_dst_ip != null
+  - append:
+      field: destination.port
+      tag: append_ctl_dst_port_into_destination_port
+      value: '{{{watchguard_firebox.log.ctl_dst_port}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.ctl_dst_port != null
+  - grok:
+      field: watchguard_firebox.log.ctl_src
+      tag: grok_parse_ctl_src
+      patterns:
+        - '^%{IP:watchguard_firebox.log.ctl_src_ip}:%{POSINT:watchguard_firebox.log.ctl_src_port:long}$'
+        - '^%{IP:watchguard_firebox.log.ctl_src_ip}$'
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: source.ip
+      tag: append_ctl_src_ip_into_source_ip
+      value: '{{{watchguard_firebox.log.ctl_src_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.ctl_src_ip != null
+  - append:
+      field: related.ip
+      tag: append_ctl_src_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.ctl_src_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.ctl_src_ip != null
+  - append:
+      field: source.port
+      tag: append_ctl_src_port_into_source_port
+      value: '{{{watchguard_firebox.log.ctl_src_port}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.ctl_src_port != null
+  - rename:
+      field: watchguard_firebox.log.dstname
+      tag: rename_dstname
+      target_field: watchguard_firebox.log.destination_name
+      ignore_missing: true
+  - append:
+      field: destination.domain
+      tag: append_destination_name_into_destination_domain
+      value: '{{{watchguard_firebox.log.destination_name}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.destination_name != null
+  - append:
+      field: related.hosts
+      tag: append_destination_name_into_related_hosts
+      value: '{{{watchguard_firebox.log.destination_name}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.destination_name != null
+  - grok:
+      field: watchguard_firebox.log.dst_user
+      ignore_missing: true
+      patterns:
+        - '^%{HOSTNAME:watchguard_firebox.log.destination_user_domain}\\%{USERNAME:watchguard_firebox.log.destination_user}$'
+        - '^%{HOSTNAME:watchguard_firebox.log.destination_user_domain}\\\\%{USERNAME:watchguard_firebox.log.destination_user}$'
+        - '^%{USERNAME:watchguard_firebox.log.destination_user}@%{HOSTNAME:watchguard_firebox.log.destination_user_domain}$'
+        - '^%{USERNAME:watchguard_firebox.log.destination_user}$'
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      if: ctx.watchguard_firebox?.log?.dst_user != null
+      ignore_failure: true
+  - set:
+      field: destination.user.name
+      tag: set_destination_user_name_from_log_destination_user
+      copy_from: watchguard_firebox.log.destination_user
+      ignore_empty_value: true
+  - set:
+      field: destination.user.domain
+      tag: set_destination_user_domain_from_log_destination_user_domain
+      copy_from: watchguard_firebox.log.destination_user_domain
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_destination_user_into_related_user
+      value: '{{{watchguard_firebox.log.destination_user}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.destination_user != null
+  - append:
+      field: related.hosts
+      tag: append_destination_user_domain_into_related_hosts
+      value: '{{{watchguard_firebox.log.destination_user_domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.destination_user_domain != null
+  - append:
+      field: rule.name
+      tag: append_dlp_rule_into_rule_name
+      value: '{{{watchguard_firebox.log.dlp_rule}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.dlp_rule != null
+  - rename:
+      field: watchguard_firebox.log.question
+      tag: rename_question
+      target_field: watchguard_firebox.log.dns_question
+      ignore_missing: true
+  - set:
+      field: dns.question.name
+      tag: set_dns_question_name_from_log_dns_question
+      copy_from: watchguard_firebox.log.dns_question
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_dns_question_into_related_hosts
+      value: '{{{watchguard_firebox.log.dns_question}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.dns_question != null
+  - append:
+      field: related.hosts
+      tag: append_domain_into_related_hosts
+      value: '{{{watchguard_firebox.log.domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.domain != null
+  - convert:
+      field: watchguard_firebox.log.duration
+      tag: convert_duration_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.duration
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Convert duration from seconds to nanoseconds.
+      tag: script_duration_s_to_ns
+      lang: painless
+      if: ctx.watchguard_firebox?.log?.duration != null
+      source: >-
+        if (ctx.event == null) {
+          HashMap hm = new HashMap();
+          ctx.put('event', hm);
+        }
+        ctx.event.duration = ctx.watchguard_firebox.log.duration * 1000000000;
+  - convert:
+      field: watchguard_firebox.log.email_len
+      tag: convert_email_len_to_long
+      target_field: watchguard_firebox.log.email_length
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.email_len
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: watchguard_firebox.log.type
+      tag: rename_type
+      target_field: watchguard_firebox.log.encoding_type
+      ignore_missing: true
+  - rename:
+      field: watchguard_firebox.log.file
+      tag: rename_file
+      target_field: watchguard_firebox.log.file_name
+      ignore_missing: true
+  - rename:
+      field: watchguard_firebox.log.filename
+      tag: rename_filename
+      target_field: watchguard_firebox.log.file_name
+      ignore_missing: true
+  - set:
+      field: file.name
+      tag: set_file_name_from_log_file_name
+      copy_from: watchguard_firebox.log.file_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_from_into_related_user
+      value: '{{{watchguard_firebox.log.from}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.from != null
+  - rename:
+      field: watchguard_firebox.log.geo_dst
+      tag: rename_geo_dst
+      target_field: watchguard_firebox.log.geo_destination
+      ignore_missing: true
+  - convert:
+      field: watchguard_firebox.log.headers_size
+      tag: convert_headers_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.headers_size
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.host
+      tag: convert_host_to_ip
+      target_field: watchguard_firebox.log.host_dest_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.host != null && ctx.watchguard_firebox.log.host != ''
+      on_failure:
+        - rename:
+            field: watchguard_firebox.log.host
+            tag: rename_host
+            target_field: watchguard_firebox.log.host_dest_domain
+            ignore_missing: true
+  - append:
+      field: destination.domain
+      tag: append_host_dest_domain_into_destination_domain
+      value: '{{{watchguard_firebox.log.host_dest_domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.host_dest_domain != null
+  - append:
+      field: related.hosts
+      tag: append_host_dest_domain_into_related_hosts
+      value: '{{{watchguard_firebox.log.host_dest_domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.host_dest_domain != null
+  - append:
+      field: destination.ip
+      tag: append_host_dest_ip_into_destination_ip
+      value: '{{{watchguard_firebox.log.host_dest_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.host_dest_ip != null
+  - append:
+      field: related.ip
+      tag: append_host_dest_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.host_dest_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.host_dest_ip != null
+  - append:
+      field: destination.domain
+      tag: append_hostname_into_destination_domain
+      value: '{{{watchguard_firebox.log.hostname}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.hostname != null
+  - append:
+      field: related.hosts
+      tag: append_hostname_into_related_hosts
+      value: '{{{watchguard_firebox.log.hostname}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.hostname != null
+  - convert:
+      field: watchguard_firebox.log.ipaddress
+      tag: convert_ipaddress_to_ip
+      target_field: watchguard_firebox.log.ip_address
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.ipaddress != null && ctx.watchguard_firebox.log.ipaddress != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.ipaddress
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: destination.ip
+      tag: append_watchguard_firebox_log_ip_address_into_destination_ip
+      value: '{{{watchguard_firebox.log.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.ip_address != null
+  - append:
+      field: related.ip
+      tag: append_ip_address_into_related_ip
+      value: '{{{watchguard_firebox.log.ip_address}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.ip_address != null
+  - convert:
+      field: watchguard_firebox.log.length
+      tag: convert_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.length
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.line_length
+      tag: convert_line_length_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.line_length
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_log_md5
+      copy_from: watchguard_firebox.log.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_md5_into_related_hash
+      value: '{{{watchguard_firebox.log.md5}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.md5 != null
+  - set:
+      field: http.request.method
+      tag: set_http_request_method_from_log_method
+      copy_from: watchguard_firebox.log.method
+      ignore_empty_value: true
+  - convert:
+      field: watchguard_firebox.log.num_recipients
+      tag: convert_num_recipients_to_long
+      target_field: watchguard_firebox.log.number_of_recipients
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.num_recipients
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.request.method
+      tag: set_http_request_method_from_log_op
+      copy_from: watchguard_firebox.log.op
+      ignore_empty_value: true
+  - convert:
+      field: watchguard_firebox.log.rcvd_pkts
+      tag: convert_rcvd_pkts_to_long
+      target_field: watchguard_firebox.log.packets_in
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.rcvd_pkts
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.packets
+      tag: set_source_packets_from_log_packets_in
+      copy_from: watchguard_firebox.log.packets_in
+      ignore_empty_value: true
+  - convert:
+      field: watchguard_firebox.log.sent_pkts
+      tag: convert_rcvd_pkts_to_long
+      target_field: watchguard_firebox.log.packets_out
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.sent_pkts
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.packets
+      tag: set_destination_packets_from_log_packets_out
+      copy_from: watchguard_firebox.log.packets_out
+      ignore_empty_value: true
+  - set:
+      field: file.path
+      tag: set_file_path_from_log_path
+      copy_from: watchguard_firebox.log.path
+      ignore_empty_value: true
+  - append:
+      field: rule.name
+      tag: append_policy_name_into_rule_name
+      value: '{{{watchguard_firebox.log.policy_name}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.policy_name != null
+  - convert:
+      field: watchguard_firebox.log.port
+      tag: convert_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.port
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: destination.port
+      tag: append_log_port_into_destination_port
+      value: '{{{watchguard_firebox.log.port}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.port != null
+  - set:
+      field: dns.question.class
+      tag: set_dns_question_class_from_log_query_class
+      copy_from: watchguard_firebox.log.query_class
+      ignore_empty_value: true
+  - set:
+      field: dns.op_code
+      tag: set_dns_op_code_from_log_query_opcode
+      copy_from: watchguard_firebox.log.query_opcode
+      ignore_empty_value: true
+  - set:
+      field: dns.question.type
+      tag: set_dns_question_type_from_log_query_type
+      copy_from: watchguard_firebox.log.query_type
+      ignore_empty_value: true
+  - set:
+      field: dns.question.type
+      tag: set_dns_question_type_from_log_record_type
+      copy_from: watchguard_firebox.log.record_type
+      ignore_empty_value: true
+  - set:
+      field: event.reason
+      tag: set_event_reason_from_log_reason
+      copy_from: watchguard_firebox.log.reason
+      ignore_empty_value: true
+  - append:
+      field: email.to.address
+      tag: append_recipients_into_email_to_address
+      value: '{{{watchguard_firebox.log.recipients}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.recipients != null
+  - append:
+      field: related.user
+      tag: append_recipients_into_related_user
+      value: '{{{watchguard_firebox.log.recipients}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.recipients != null
+  - convert:
+      field: watchguard_firebox.log.reputation
+      tag: convert_reputation_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.reputation
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: watchguard_firebox.log.response
+      tag: convert_response_to_long
+      target_field: watchguard_firebox.log.response_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.response
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code_from_log_response_code
+      copy_from: watchguard_firebox.log.response_code
+      ignore_empty_value: true
+  - convert:
+      field: watchguard_firebox.log.response_size
+      tag: convert_response_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.response_size
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.body.bytes
+      tag: set_http_response_body_bytes_from_log_response_size
+      copy_from: watchguard_firebox.log.response_size
+      ignore_empty_value: true
+  - append:
+      field: rule.name
+      tag: append_watchguard_firebox_log_rule_name_into_rule_name
+      value: '{{{watchguard_firebox.log.rule_name}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.rule_name != null
+  - set:
+      field: email.sender.address
+      tag: set_email_sender_address_from_log_sender
+      copy_from: watchguard_firebox.log.sender
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_sender_into_related_user
+      value: '{{{watchguard_firebox.log.sender}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.sender != null
+  - append:
+      field: related.hosts
+      tag: append_sensor_into_related_hosts
+      value: '{{{watchguard_firebox.log.sensor}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.sensor != null
+  - set:
+      field: service.name
+      tag: set_service_name_from_log_service
+      copy_from: watchguard_firebox.log.service
+      ignore_empty_value: true
+  - convert:
+      field: watchguard_firebox.log.severity
+      tag: convert_severity_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.severity
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      tag: set_event_severity_from_log_severity
+      copy_from: watchguard_firebox.log.severity
+      ignore_empty_value: true
+  - rename:
+      field: watchguard_firebox.log.signature_cat
+      tag: rename_signature_cat
+      target_field: watchguard_firebox.log.signature_category
+      ignore_missing: true
+  - set:
+      field: rule.category
+      tag: set_rule_category_from_log_signature_category
+      copy_from: watchguard_firebox.log.signature_category
+      ignore_empty_value: true
+  - rename:
+      field: watchguard_firebox.log.sig_vers
+      tag: rename_sig_vers
+      target_field: watchguard_firebox.log.signature_version
+      ignore_missing: true
+  - convert:
+      field: watchguard_firebox.log.size
+      tag: convert_size_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.size
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      tag: set_file_size_from_log_size
+      copy_from: watchguard_firebox.log.size
+      ignore_empty_value: true
+  - set:
+      field: tls.client.server_name
+      tag: set_tls_client_server_name_from_log_sni
+      copy_from: watchguard_firebox.log.sni
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_sni_into_related_hosts
+      value: '{{{watchguard_firebox.log.sni}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.sni != null
+  - grok:
+      field: watchguard_firebox.log.src_user
+      ignore_missing: true
+      patterns:
+        - '^%{HOSTNAME:watchguard_firebox.log.source_user_domain}\\%{USERNAME:watchguard_firebox.log.source_user}$'
+        - '^%{HOSTNAME:watchguard_firebox.log.source_user_domain}\\\\%{USERNAME:watchguard_firebox.log.source_user}$'
+        - '^%{USERNAME:watchguard_firebox.log.source_user}@%{HOSTNAME:watchguard_firebox.log.source_user_domain}$'
+        - '^%{USERNAME:watchguard_firebox.log.source_user}$'
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      if: ctx.watchguard_firebox?.log?.src_user != null
+      ignore_failure: true
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_log_source_user
+      copy_from: watchguard_firebox.log.source_user
+      ignore_empty_value: true
+  - set:
+      field: source.user.domain
+      tag: set_source_user_domain_from_log_source_user_domain
+      copy_from: watchguard_firebox.log.source_user_domain
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_source_user_into_related_user
+      value: '{{{watchguard_firebox.log.source_user}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.source_user != null
+  - append:
+      field: related.hosts
+      tag: append_source_user_domain_into_related_hosts
+      value: '{{{watchguard_firebox.log.source_user_domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.source_user_domain != null
+  - convert:
+      field: watchguard_firebox.log.srv_ip
+      tag: convert_srv_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.watchguard_firebox?.log?.srv_ip != null && ctx.watchguard_firebox.log.srv_ip != ''
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.srv_ip
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: destination.ip
+      tag: append_watchguard_firebox_log_srv_ip_into_destination_ip
+      value: '{{{watchguard_firebox.log.srv_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.srv_ip != null
+  - append:
+      field: related.ip
+      tag: append_srv_ip_into_related_ip
+      value: '{{{watchguard_firebox.log.srv_ip}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.srv_ip != null
+  - convert:
+      field: watchguard_firebox.log.srv_port
+      tag: convert_srv_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.srv_port
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: destination.port
+      tag: append_watchguard_firebox_log_srv_port_into_destination_port
+      value: '{{{watchguard_firebox.log.srv_port}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.srv_port != null
+  - rename:
+      field: watchguard_firebox.log.subj_tag
+      tag: rename_subj_tag
+      target_field: watchguard_firebox.log.tag
+      ignore_missing: true
+  - convert:
+      field: watchguard_firebox.log.timeout
+      tag: convert_timeout_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: watchguard_firebox.log.timeout
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_to_into_related_user
+      value: '{{{watchguard_firebox.log.to}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.to != null
+  - grok:
+      field: watchguard_firebox.log.user
+      ignore_missing: true
+      patterns:
+        - '^%{HOSTNAME:watchguard_firebox.log.user_domain}\\%{USERNAME:watchguard_firebox.log.user_name}$'
+        - '^%{HOSTNAME:watchguard_firebox.log.user_domain}\\\\%{USERNAME:watchguard_firebox.log.user_name}$'
+        - '^%{USERNAME:watchguard_firebox.log.user_name}@%{HOSTNAME:watchguard_firebox.log.user_domain}$'
+        - '^%{USERNAME:watchguard_firebox.log.user_name}$'
+        - '^%{GREEDYDATA:watchguard_firebox.log.body}$'
+      if: ctx.watchguard_firebox?.log?.user != null
+      ignore_failure: true
+  - append:
+      field: user.name
+      tag: append_log_user_name_into_user_name
+      value: '{{{watchguard_firebox.log.user_name}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.user_name != null
+  - append:
+      field: related.user
+      tag: append_log_user_name_into_related_user
+      value: '{{{watchguard_firebox.log.user_name}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.user_name != null
+  - append:
+      field: user.domain
+      tag: append_user_domain_into_user_domain
+      value: '{{{watchguard_firebox.log.user_domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.user_domain != null
+  - append:
+      field: related.hosts
+      tag: append_user_domain_into_related_hosts
+      value: '{{{watchguard_firebox.log.user_domain}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.user_domain != null
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_log_virus
+      copy_from: watchguard_firebox.log.virus
+      ignore_empty_value: true
+  - rename:
+      field: watchguard_firebox.log.From-header
+      tag: rename_From-header
+      target_field: watchguard_firebox.log.from_header
+      ignore_missing: true
+  - rename:
+      field: watchguard_firebox.log.To-header
+      tag: rename_To-header
+      target_field: watchguard_firebox.log.to_header
+      ignore_missing: true
+  - rename:
+      field: watchguard_firebox.log.Protocol
+      tag: rename_Protocol
+      target_field: watchguard_firebox.log.protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      tag: set_network_protocol_from_log_protocol
+      copy_from: watchguard_firebox.log.protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.protocol
+      tag: lowercase_network_protocol
+      ignore_missing: true
+  - convert:
+      field: source.port
+      tag: convert_source_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: destination.port
+      tag: convert_destination_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - community_id:
+      source_ip: watchguard_firebox.log.source_ip
+      source_port: watchguard_firebox.log.source_port
+      destination_ip: watchguard_firebox.log.destination_ip
+      destination_port: watchguard_firebox.log.destination_port
+      ignore_missing: true
+  - geoip:
+      field: watchguard_firebox.log.source_ip
+      target_field: watchguard_firebox.log.source_ip_geo
+      ignore_missing: true
+  - set:
+      field: source.geo
+      copy_from: watchguard_firebox.log.source_ip_geo
+      ignore_empty_value: true
+  - geoip:
+      field: watchguard_firebox.log.destination_ip
+      target_field: watchguard_firebox.log.destination_ip_geo
+      ignore_missing: true
+  - set:
+      field: destination.geo
+      copy_from: watchguard_firebox.log.destination_ip_geo
+      ignore_empty_value: true
+  - remove:
+      field:
+        - _temp
+        - watchguard_firebox.log.rcvd_bytes
+        - watchguard_firebox.log.sent_bytes
+        - watchguard_firebox.log.email_len
+        - watchguard_firebox.log.host
+        - watchguard_firebox.log.ipaddress
+        - watchguard_firebox.log.num_recipients
+        - watchguard_firebox.log.rcvd_pkts
+        - watchguard_firebox.log.sent_pkts
+        - watchguard_firebox.log.ctl_src
+        - watchguard_firebox.log.ctl_dst
+        - watchguard_firebox.log.user
+        - watchguard_firebox.log.src_user
+        - watchguard_firebox.log.dst_user
+        - watchguard_firebox.log.response
+      tag: remove_fields
+      ignore_missing: true
+  - remove:
+      field:
+        - watchguard_firebox.log.action
+        - watchguard_firebox.log.app_name
+        - watchguard_firebox.log.arg
+        - watchguard_firebox.log.authenticated_user
+        - watchguard_firebox.log.authenticated_user_domain
+        - watchguard_firebox.log.bytes_in
+        - watchguard_firebox.log.bytes_out
+        - watchguard_firebox.log.certificate_issuer
+        - watchguard_firebox.log.certificate_subject
+        - watchguard_firebox.log.client_ssl
+        - watchguard_firebox.log.cn
+        - watchguard_firebox.log.destination_name
+        - watchguard_firebox.log.destination_user
+        - watchguard_firebox.log.destination_user_domain
+        - watchguard_firebox.log.dlp_rule
+        - watchguard_firebox.log.dns_question
+        - watchguard_firebox.log.file_name
+        - watchguard_firebox.log.hostname
+        - watchguard_firebox.log.in_interface_name
+        - watchguard_firebox.log.md5
+        - watchguard_firebox.log.method
+        - watchguard_firebox.log.op
+        - watchguard_firebox.log.out_interface_name
+        - watchguard_firebox.log.packets_in
+        - watchguard_firebox.log.packets_out
+        - watchguard_firebox.log.path
+        - watchguard_firebox.log.protocol
+        - watchguard_firebox.log.query_class
+        - watchguard_firebox.log.query_opcode
+        - watchguard_firebox.log.query_type
+        - watchguard_firebox.log.reason
+        - watchguard_firebox.log.recipients
+        - watchguard_firebox.log.record_type
+        - watchguard_firebox.log.response_code
+        - watchguard_firebox.log.response_size
+        - watchguard_firebox.log.sender
+        - watchguard_firebox.log.service
+        - watchguard_firebox.log.severity
+        - watchguard_firebox.log.signature_category
+        - watchguard_firebox.log.size
+        - watchguard_firebox.log.sni
+        - watchguard_firebox.log.source_user
+        - watchguard_firebox.log.source_user_domain
+        - watchguard_firebox.log.user_domain
+        - watchguard_firebox.log.user_name
+        - watchguard_firebox.log.virus
+        - watchguard_firebox.log.source_ip_geo.city_name
+        - watchguard_firebox.log.source_ip_geo.continent_name
+        - watchguard_firebox.log.source_ip_geo.country_iso_code
+        - watchguard_firebox.log.source_ip_geo.country_name
+        - watchguard_firebox.log.source_ip_geo.location
+        - watchguard_firebox.log.source_ip_geo.region_iso_code
+        - watchguard_firebox.log.source_ip_geo.region_name
+        - watchguard_firebox.log.destination_ip_geo.city_name
+        - watchguard_firebox.log.destination_ip_geo.continent_name
+        - watchguard_firebox.log.destination_ip_geo.country_iso_code
+        - watchguard_firebox.log.destination_ip_geo.country_name
+        - watchguard_firebox.log.destination_ip_geo.location
+        - watchguard_firebox.log.destination_ip_geo.region_iso_code
+        - watchguard_firebox.log.destination_ip_geo.region_name
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

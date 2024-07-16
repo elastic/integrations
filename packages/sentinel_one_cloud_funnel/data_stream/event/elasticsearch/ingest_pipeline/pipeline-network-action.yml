@@ -6,8 +6,18 @@ processors:
       value: [network]
   - set:
       field: event.type
-      value: [start]
-      if: ctx.sentinel_one_cloud_funnel?.event?.type == 'IPConnect'
+      value: [start, connection]
+      if: (ctx.sentinel_one_cloud_funnel?.event?.type == 'IPConnect' || ctx.sentinel_one_cloud_funnel?.event?.type == 'IP Connect')
+  - set:
+      field: event.action
+      value: [connection_attempted]
+      if: (ctx.sentinel_one_cloud_funnel?.event?.type == 'IPConnect' || ctx.sentinel_one_cloud_funnel?.event?.type == 'IP Connect') &&
+          ctx.sentinel_one_cloud_funnel?.event?.network?.direction == "OUTGOING"
+  - set:
+      field: event.action
+      value: [connection_accepted]
+      if: (ctx.sentinel_one_cloud_funnel?.event?.type == 'IPConnect' || ctx.sentinel_one_cloud_funnel?.event?.type == 'IP Connect') &&
+          ctx.sentinel_one_cloud_funnel?.event?.network?.direction == "INCOMING"
   - rename:
       field: json.k8sCluster.containerId
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.id

@@ -1,6 +1,8 @@
 config_version: 2
 interval: {{interval}}
-request.timeout: 2m
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
 request.method: POST
 {{#if enable_request_tracer}}
 request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
@@ -40,6 +42,7 @@ cursor:
     value: '[[.last_event.last_update_time]]'
 response.split:
   target: body.results
+  ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

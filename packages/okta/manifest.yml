@@ -1,13 +1,13 @@
 name: okta
 title: Okta
-version: "2.8.0"
+version: "2.11.0"
 description: Collect and parse event logs from Okta API with Elastic Agent.
 type: integration
 format_version: "3.0.2"
 categories: [security, iam]
 conditions:
   kibana:
-    version: ^8.12.0
+    version: ^8.13.0
 icons:
   - src: /img/okta-logo.svg
     title: Okta
@@ -61,30 +61,57 @@ policy_templates:
             multi: false
             required: false
             show_user: true
-            description: "This is the API Key of your Okta service application. This is only required for the standard api key based authentication. \nDo not use this field if you are using OAuth2 authentication.\n"
+            description: |
+              This is the API Key of your Okta service application. This is required for standard api key based authentication and Okta Integration Network (OIN) app authentication.
+              Do not use this field if you are using standard OAuth2 authentication.
             secret: true
+          - name: oin_app
+            type: bool
+            title: Use Okta Integration Network (OIN) Authentication
+            multi: false
+            required: false
+            show_user: true
+            description: Use the API Key as the OIN client secret.
           - name: okta_domain_url
             type: text
             title: Okta Domain URL
             multi: false
             required: false
             show_user: true
-            description: "This is the URL of your Okta domain. For example, https://dev-123456.okta.com. \nThis is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.\n"
+            description: |
+              This is the URL of your Okta domain. For example, https://dev-123456.okta.com.
+              This is only required for OAuth2 authentication. This is required for standard OAuth2 authentication and OIN app authentication.
+              Do not use this field if you are using API Key based authentication without OIN authentication.
           - name: client_id
             type: text
             title: Client ID
             multi: false
             required: false
             show_user: true
-            description: "This is the Client ID of your Okta service application. This is only required for OAuth2 authentication. \nDo not use this field if you are using API Key based authentication.\n"
+            description: |
+              This is the Client ID of your Okta service application. This is required for standard OAuth2 authentication and OIN app authentication.
+              Do not use this field if you are using API Key based authentication without OIN authentication.
           - name: jwk_json
             type: password
             title: JWK JSON
             multi: false
             required: false
             show_user: true
-            description: "This is the private JSON Web Key (JWK) of your Okta service application. \nThis is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.\n"
+            description: |
+              This is the private JSON Web Key (JWK) of your Okta service application.
+              This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+              Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
             secret: true
+          - name: key_pem
+            type: textarea
+            title: PEM Encoded Key
+            multi: false
+            required: false
+            show_user: true
+            description: |
+              This is the private key of your Okta service application in PEM format.
+              This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+              Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
           - name: jwk_file
             type: text
             title: JWK File
@@ -94,6 +121,7 @@ policy_templates:
             description: |
               This is the path to the file containing the private JSON Web Key (JWK) of your Okta service application.
               This is only required for OAuth2 authentication. Do not use this field if you are using API Key based authentication.
+              Only one of JWK JSON, PEM Encoded Key or JWK File may be used.
           - name: okta_scopes
             type: text
             title: Okta Scopes

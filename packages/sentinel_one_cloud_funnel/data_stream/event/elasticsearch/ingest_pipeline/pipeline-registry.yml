@@ -16,6 +16,26 @@ processors:
       field: event.type
       value: [change]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && (ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('change') || ctx.sentinel_one_cloud_funnel?.event?.type.toLowerCase().contains('modif'))
+  - set:
+      field: event.action
+      value: [creation]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null &&
+          (
+            ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regvaluecreate') ||
+            ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regkeycreate')
+          )
+  - set:
+      field: event.action
+      value: [modification]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regvaluemodified')
+  - set:
+      field: event.action
+      value: [deletion]
+      if: ctx.sentinel_one_cloud_funnel?.event?.type != null &&
+          (
+            ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regvaluedelete') ||
+            ctx.sentinel_one_cloud_funnel?.event?.meta_event_name.toLowerCase().contains('regkeydelete')
+          )
   - rename:
       field: json.registry.keyPath
       target_field: sentinel_one_cloud_funnel.event.registry.key.path

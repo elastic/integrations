@@ -13,7 +13,7 @@ The `kibana` package works with Kibana 8.10.0 and later.
 ## Usage for Stack Monitoring
 
 The `kibana` package can be used to collect metrics shown in our Stack Monitoring
-UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package config.
+UI in Kibana.
 
 **Note**: Using this integration package will require elasticsearch to be monitored as well in order to see the data in Stack Monitoring UI. If the elasticsearch data is not collected and only Kibana is monitored the Stack monitoring UI won't show the Kibana data.
 
