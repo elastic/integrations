@@ -41,7 +41,146 @@ processors:
       field: json.resourceId
       target_field: azure.resource_id
       ignore_missing: true
-
+  - rename:
+      field: json.properties.DestinationIp
+      target_field: destination.ip
+      ignore_missing: true
+  - rename:
+      field: json.properties.DestinationPort
+      target_field: destination.port
+      ignore_missing: true
+  - rename:
+      field: json.properties.Policy
+      target_field: azure.firewall.policy
+      ignore_missing: true
+  - rename:
+      field: json.properties.Protocol
+      target_field: azure.firewall.protocol
+      ignore_missing: true
+  - rename:
+      field: json.properties.Rule
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      field: json.properties.RuleCollection
+      target_field: rule.ruleset
+      ignore_missing: true
+  - rename:
+      field: json.properties.RuleCollectionGroup
+      target_field: azure.firewall.rule_collection_group
+      ignore_missing: true
+  - rename:
+      field: json.properties.SourceIp
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: json.properties.SourcePort
+      target_field: source.port
+      ignore_missing: true
+  - rename:
+      field: json.properties.TranslatedIp
+      target_field: destination.ip
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.properties.TranslatedPort
+      target_field: destination.port
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.azure?.firewall?.properties?.DestinationPort == null
+  - rename:
+      field: json.properties.Action
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.properties.ActionReason
+      target_field: event.reason
+      ignore_missing: true
+  - rename:
+      field: json.properties.Fqdn
+      target_field: destination.domain
+      ignore_missing: true
+  - rename:
+      field: json.properties.IsExplicitProxyRequest
+      target_field: azure.firewall.is_explicit_proxy_request
+      ignore_missing: true
+  - rename:
+      field: json.properties.IsTlsInspected
+      target_field: azure.firewall.is_tls_inspected
+      ignore_missing: true
+  - uri_parts:
+      field: json.properties.TargetUrl
+      if: ctx.json?.properties?.TargetUrl != null
+      tag: uri_parts_targeturl
+      keep_original: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      target_field: url
+  - remove:
+      field: json.properties.TargetUrl
+      ignore_missing: true
+  - rename:
+      field: json.properties.WebCategory
+      target_field: azure.firewall.web_category
+      ignore_missing: true
+  - rename:
+      field: json.properties.DnssecOkBit
+      target_field: azure.firewall.dnssec_ok_bit
+      ignore_missing: true  
+  - rename:
+      field: json.properties.EDNS0BufferSize
+      target_field: azure.firewall.edns0_buffer_size
+      ignore_missing: true
+  - rename:
+      field: json.properties.ErrorMessage
+      target_field: error.message
+      ignore_missing: true
+  - convert:
+      field: json.properties.ErrorNumber
+      target_field: error.id
+      type: string
+      ignore_missing: true
+      if: ctx.json?.properties?.ErrorNumber != ""
+  - rename:
+      field: json.properties.QueryClass
+      target_field: dns.question.class
+      ignore_missing: true
+  - convert:
+      field: json.properties.QueryId
+      target_field: dns.id
+      type: string
+      ignore_missing: true
+      if: ctx.json?.properties?.QueryId != ""  
+  - rename:
+      field: json.properties.QueryName
+      target_field: dns.question.name
+      ignore_missing: true    
+  - rename:
+      field: json.properties.QueryType
+      target_field: dns.question.type
+      ignore_missing: true  
+  - rename:
+      field: json.properties.RequestDurationSecs
+      target_field: azure.firewall.request_duration_secs
+      ignore_missing: true  
+  - rename:
+      field: json.properties.RequestSize
+      target_field: azure.firewall.request_size
+      ignore_missing: true  
+  - rename:
+      field: json.properties.ResponseCode
+      target_field: dns.response_code
+      ignore_missing: true  
+  - rename:
+      field: json.properties.ResponseFlags
+      target_field: dns.header_flags
+      ignore_missing: true  
+  - rename:
+      field: json.properties.ResponseSize
+      target_field: azure.firewall.response_size
+      ignore_missing: true  
   - grok:
       field: json.properties.msg
       patterns:
@@ -83,7 +222,6 @@ processors:
       field: event.type
       value: "{{json.event.alert.action}}"
       if: ctx.json?.event?.alert?.action != null
-
   - grok:
       field: source.address
       patterns:
@@ -176,7 +314,6 @@ processors:
       value: "{{dns.question.name}}"
       allow_duplicates: false
       ignore_failure: true
-
   - lowercase:
       field: azure.firewall.proto
       ignore_failure: true
@@ -192,7 +329,21 @@ processors:
       field:
         - azure.firewall.proto
       ignore_missing: true
-
+  - lowercase:
+      field: azure.firewall.protocol
+      if: ctx.azure?.firewall?.protocol != null
+  - set:
+      field: network.transport
+      value: "{{azure.firewall.protocol}}"
+      if: "ctx.azure?.firewall?.protocol != null && ['udp', 'tcp', 'icmp'].contains(ctx.azure.firewall.protocol) && ctx.json?.category != null && ['AZFWDnsQuery', 'AZFWApplicationRule', 'AZFWNetworkRule', 'AZFWNatRule'].contains(ctx.json.category)"
+  - set:
+      field: network.protocol
+      value: "{{azure.firewall.protocol}}"
+      if: "ctx.network?.transport == null && ctx.json?.category != null && ['AZFWDnsQuery', 'AZFWApplicationRule', 'AZFWNetworkRule', 'AZFWNatRule'].contains(ctx.json.category)"
+  - remove:
+      field:
+        - azure.firewall.protocol
+      ignore_missing: true
   - script:
       lang: painless
       ignore_failure: true
@@ -204,7 +355,6 @@ processors:
         } else if (transport == 'tcp') {
             ctx.network.iana_number = '6';
         }
-
   - uppercase:
       field: dns.header_flags
       ignore_missing: true
@@ -212,7 +362,10 @@ processors:
       field: dns.header_flags
       separator: ","
       ignore_missing: true
-
+  - set:
+      field: dns.type
+      value: "query"
+      if: ctx.json?.category == 'AZFWDnsQuery'
   - rename:
       field: json.category
       target_field: azure.firewall.category

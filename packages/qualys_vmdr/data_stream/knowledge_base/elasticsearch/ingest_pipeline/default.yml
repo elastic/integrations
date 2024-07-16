@@ -5,6 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process
   - set:
       field: event.kind
       tag: set_event_kind_1
@@ -17,11 +21,6 @@ processors:
       field: event.type
       tag: set_event_type
       value: [info]
-  - rename:
-      field: error
-      tag: rename_error
-      target_field: qualys_vmdr.knowledge_base.error
-      ignore_missing: true
   - rename:
       field: xml
       target_field: event.original
