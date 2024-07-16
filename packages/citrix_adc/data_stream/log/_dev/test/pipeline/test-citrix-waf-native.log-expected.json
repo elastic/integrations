@@ -2424,7 +2424,25 @@
             },
             "citrix_adc": {
                 "log": {
-                    "message": "Source 192.168.1.52:5060 - Destination 1.128.0.0:80 - SSLRelayAddress 10.0.0.52:443 - customername AcmeCorp - username:domainname someusername:example.domain.com - applicationName WebMail - startTime \"2023-04-01T09:00:00Z\" - connectionId 9a8b7c"
+                    "application_name": "WebMail",
+                    "connection_id": "9a8b7c",
+                    "customer_name": "AcmeCorp",
+                    "destination": {
+                        "ip": "1.128.0.0",
+                        "port": 80
+                    },
+                    "domain_name": "example.domain.com",
+                    "message": "Source 192.168.1.52:5060 - Destination 1.128.0.0:80 - SSLRelayAddress 10.0.0.52:443 - customername AcmeCorp - username:domainname someusername:example.domain.com - applicationName WebMail - startTime \"2023-04-01T09:00:00Z\" - connectionId 9a8b7c",
+                    "source": {
+                        "ip": "192.168.1.52",
+                        "port": 5060
+                    },
+                    "ssl_relay": {
+                        "address": "10.0.0.52",
+                        "port": 443
+                    },
+                    "start_time": "2023-04-01T09:00:00.000Z",
+                    "user": "someusername"
                 }
             },
             "client": {
@@ -2442,6 +2460,10 @@
                 },
                 "ip": "81.2.69.144"
             },
+            "destination": {
+                "ip": "1.128.0.0",
+                "port": 80
+            },
             "ecs": {
                 "version": "8.11.0"
             },
@@ -2452,6 +2474,7 @@
                 "id": "4471",
                 "original": "Oct 6 14:03:23 <local0.info> 81.2.69.144 10/06/2014:14:03:23 GMT ns1 0-PPE-0 : SSLVPN ICASTART 4471 0 : Source 192.168.1.52:5060 - Destination 1.128.0.0:80 - SSLRelayAddress 10.0.0.52:443 - customername AcmeCorp - username:domainname someusername:example.domain.com - applicationName WebMail - startTime \"2023-04-01T09:00:00Z\" - connectionId 9a8b7c",
                 "severity": 0,
+                "start": "2023-04-01T09:00:00.000Z",
                 "timezone": "GMT",
                 "type": [
                     "info"
@@ -2464,13 +2487,27 @@
             },
             "related": {
                 "ip": [
-                    "81.2.69.144"
+                    "192.168.1.52",
+                    "1.128.0.0",
+                    "81.2.69.144",
+                    "10.0.0.52"
+                ],
+                "user": [
+                    "someusername"
                 ]
+            },
+            "source": {
+                "ip": "192.168.1.52",
+                "port": 5060
             },
             "tags": [
                 "preserve_original_event",
                 "preserve_duplicate_custom_fields"
-            ]
+            ],
+            "user": {
+                "domain": "example.domain.com",
+                "name": "someusername"
+            }
         },
         {
             "@timestamp": "2014-10-06T14:03:23.000Z",
@@ -7980,7 +8017,7 @@
                     },
                     "session_id": "12690921",
                     "timestamp": "2022-06-14T16:07:48.000Z",
-                    "timezone": ": SSO is ON",
+                    "timezone": ": SSO is ON :",
                     "user": "someusername",
                     "vserver": {
                         "ip": "1.128.0.1",
@@ -8066,7 +8103,29 @@
             },
             "citrix_adc": {
                 "log": {
-                    "message": "Context another.email@company.com@1.128.0.0- SessionId: 104248- some-domain.company.com User some.email@company.com : Group(s) N/A : Vserver 1.128.0.1:443 - 07/07/2022:11:22:00 GMT POST /Some/Url/Concealed - -"
+                    "context": {
+                        "client": {
+                            "ip": "1.128.0.0"
+                        },
+                        "user": {
+                            "name": "another.email@company.com"
+                        }
+                    },
+                    "groups": "N/A",
+                    "hostname": "some-domain.company.com",
+                    "message": "Context another.email@company.com@1.128.0.0- SessionId: 104248- some-domain.company.com User some.email@company.com : Group(s) N/A : Vserver 1.128.0.1:443 - 07/07/2022:11:22:00 GMT POST /Some/Url/Concealed - -",
+                    "method": "POST",
+                    "request": {
+                        "path": "/Some/Url/Concealed"
+                    },
+                    "session_id": "104248",
+                    "timestamp": "2022-07-07T11:22:00.000Z",
+                    "timezone": "GMT",
+                    "user": "some.email@company.com",
+                    "vserver": {
+                        "ip": "1.128.0.1",
+                        "port": 443
+                    }
                 }
             },
             "client": {
@@ -8099,6 +8158,9 @@
                     "info"
                 ]
             },
+            "group": {
+                "name": "N/A"
+            },
             "observer": {
                 "product": "Netscaler",
                 "type": "firewall",
@@ -8106,13 +8168,27 @@
             },
             "related": {
                 "ip": [
+                    "1.128.0.1",
                     "81.2.69.144"
+                ],
+                "user": [
+                    "some.email@company.com"
                 ]
+            },
+            "server": {
+                "ip": "1.128.0.1",
+                "port": 443
             },
             "tags": [
                 "preserve_original_event",
                 "preserve_duplicate_custom_fields"
-            ]
+            ],
+            "url": {
+                "domain": "some-domain.company.com"
+            },
+            "user": {
+                "name": "some.email@company.com"
+            }
         },
         {
             "@timestamp": "2015-06-22T19:14:37.000Z",
@@ -8248,10 +8324,11 @@
             },
             "citrix_adc": {
                 "log": {
+                    "adm_user": "john",
                     "command": "scp file.txt",
                     "remote_ip": "192.168.1.105",
                     "status": "Success",
-                    "user": "jane.doe - ADM_User john"
+                    "user": "jane.doe"
                 }
             },
             "client": {
@@ -8299,7 +8376,7 @@
                     "81.2.69.144"
                 ],
                 "user": [
-                    "jane.doe - ADM_User john"
+                    "jane.doe"
                 ]
             },
             "source": {
@@ -8310,7 +8387,7 @@
                 "preserve_duplicate_custom_fields"
             ],
             "user": {
-                "name": "jane.doe - ADM_User john"
+                "name": "jane.doe"
             }
         },
         {
