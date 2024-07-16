@@ -393,6 +393,7 @@ An example event for `runtime` looks as following:
 | @timestamp | Event timestamp. | date |  |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
+| aws_bedrock.runtime.bucketed_step_size |  | keyword |  |  |
 | aws_bedrock.runtime.image_size |  | keyword |  |  |
 | aws_bedrock.runtime.input_token_count | The number of text input tokens. | long |  | gauge |
 | aws_bedrock.runtime.invocation_client_errors | The number of invocations that result in client-side errors. | long |  | gauge |
