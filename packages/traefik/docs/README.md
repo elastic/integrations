@@ -62,7 +62,7 @@ An example event for `access` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "event": {
         "category": [
@@ -165,8 +165,11 @@ An example event for `access` looks as following:
         "name": "-"
     }
 }
-
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
