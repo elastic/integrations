@@ -13,7 +13,7 @@ import (
 
 func main() {
 	http.HandleFunc("/", handleWebSocket)
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	log.Fatal(http.ListenAndServe(":443", nil))
 }
 
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
