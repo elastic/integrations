@@ -13,10 +13,20 @@ import (
 
 func main() {
 	http.HandleFunc("/", handleWebSocket)
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Fatal(http.ListenAndServe(":3000", nil))
 }
 
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool { return true },
+	}
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer conn.Close()
+
 	if r.URL.Path == "/testbasicauth" {
 		// Check if the 'Authorization' header is set for basic authentication
 		authHeader := r.Header.Get("Authorization")
@@ -27,16 +37,6 @@ func handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	upgrader := websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool { return true },
-	}
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer conn.Close()
 
 	var responseMessage []map[string]string
 
