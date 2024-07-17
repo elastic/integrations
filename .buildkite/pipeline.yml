@@ -20,8 +20,18 @@ env:
   ELASTIC_PACKAGE_LINKS_FILE_PATH: "links_table.yml"
   # Disable comparison of results in pipeline tests to avoid errors related to GeoIP fields
   ELASTIC_PACKAGE_SERVERLESS_PIPELINE_TEST_DISABLE_COMPARE_RESULTS: "true"
+  # Enable independent Elastic Agents for all packages
+  ELASTIC_PACKAGE_TEST_ENABLE_INDEPENDENT_AGENT: "true"
+  # Set maximum number of parallel tests to run if package allows it
+  ELASTIC_PACKAGE_MAXIMUM_NUMBER_PARALLEL_TESTS: "5"
 
 steps:
+  - label: "Get reference from target branch"
+    key: "reference-target-branch"
+    command: "echo 'Get reference from main'"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+
   - label: ":white_check_mark: Check go sources"
     key: "check"
     command: ".buildkite/scripts/check_sources.sh"
@@ -29,6 +39,9 @@ steps:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "4G"
+    depends_on:
+      - step: "reference-target-branch"
+        allow_failure: false
 
   - label: "Trigger integrations"
     key: "test-integrations"
@@ -54,10 +67,13 @@ steps:
 
   - label: ":sonarqube: Continuous Code Inspection"
     soft_fail: true # FIXME: Coverage is failing, remove this after solving the issue
+    timeout_in_minutes: 120
     env:
       VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
     agents:
       image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
+      cpu: "8"
+      memory: "4G"
     command: ".buildkite/scripts/run_sonar_scanner.sh"
     artifact_paths:
       - build/test-coverage/coverage_merged.xml

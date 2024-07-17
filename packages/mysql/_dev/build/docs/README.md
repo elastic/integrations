@@ -15,11 +15,19 @@ versions >= 5.7.0. It is also tested with MariaDB 10.2, 10.3 and 10.4.
 
 The `error` dataset collects the MySQL error logs.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "error"}}
 
 ### slowlog
 
 The `slowlog` dataset collects the MySQL slow logs.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "slowlog"}}
 
@@ -31,6 +39,10 @@ The `galera_status` dataset periodically fetches metrics from [Galera](http://ga
 
 {{event "galera_status"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "galera_status"}}
 
 ### status
@@ -38,5 +50,9 @@ The `galera_status` dataset periodically fetches metrics from [Galera](http://ga
 The MySQL `status` dataset collects data from MySQL by running a `SHOW GLOBAL STATUS;` SQL query. This query returns a large number of metrics.
 
 {{event "status"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "status"}}
