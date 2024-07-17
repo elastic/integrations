@@ -1,0 +1,60 @@
+data_stream:
+  dataset: {{data_stream.dataset}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+url: {{url}}
+
+program: {{escape_string program}}
+
+{{#if state}}
+state:
+  {{state}}
+{{/if}}
+redact.delete: {{delete_redacted_fields}}
+{{#if redact_fields}}
+redact.fields:
+{{#each redact_fields as |field|}}
+  - {{field}}
+{{/each}}
+{{/if}}
+
+{{#if regexp}}
+regexp:
+  {{regexp}}
+{{/if}}
+
+{{#if basic_token}}
+auth.basic_token: {{basic_token}}
+{{else if bearer_token}}
+auth.bearer_token: {{bearer_token}}
+{{/if}}
+
+{{#unless basic_token}}
+{{#unless bearer_token}}
+{{#if header_key}}
+auth.custom.header: {{header_key}}
+{{/if}}
+{{#if header_value}}
+auth.custom.value: {{header_value}}
+{{/if}}
+{{/unless}}
+{{/unless}}
+
+{{#if pipeline}}
+pipeline: {{pipeline}}
+{{/if}}
+
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
