@@ -49,7 +49,7 @@ func readTeamLabels(teamlabelsPath string) (*githubTeamLabels, error) {
 			continue
 		}
 		teamHandle, teamLabel, found := strings.Cut(line, " ")
-		if !found {
+		if !found || !isValidTeamHandle(teamHandle) || !isValidTeamLabel(teamLabel) {
 			return nil, fmt.Errorf("%s file wrongly formatted", teamlabelsPath)
 		}
 
@@ -63,4 +63,12 @@ func readTeamLabels(teamlabelsPath string) (*githubTeamLabels, error) {
 	}
 
 	return &ghTeamLabels, nil
+}
+
+func isValidTeamHandle(teamHandle string) bool {
+	return strings.HasPrefix(teamHandle, "@")
+}
+
+func isValidTeamLabel(teamLabel string) bool {
+	return strings.HasPrefix(strings.ToLower(teamLabel), "team:")
 }
