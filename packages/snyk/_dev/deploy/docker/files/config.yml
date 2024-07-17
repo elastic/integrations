@@ -74,6 +74,45 @@ rules:
             ]
           }
 
+  - path: /rest/orgs
+    methods: ["GET"]
+    request_headers:
+      authorization: xxxxxx
+    query_params:
+      version: "2024-04-29"
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+              "data": [
+                  {
+                      "id": "0de7b2d6-c1da-46aa-887e-1886f96770d4",
+                      "type": "org",
+                      "attributes": {
+                          "is_personal": true,
+                          "name": "5f9d",
+                          "slug": "5f9d"
+                      },
+                      "relationships": {
+                          "member_role": {
+                              "data": {
+                                  "id": "67ef05a4-3d2c-4fd8-8ede-9c22673c8108",
+                                  "type": "org_role"
+                              }
+                          }
+                      }
+                  }
+              ],
+              "jsonapi": {
+                  "version": "1.0"
+              },
+              "links": {
+                  "self": "/rest/orgs?limit=10&version=2024-04-29",
+                  "first": "/rest/orgs?limit=10&version=2024-04-29"
+              }
+          }
+          `}}
   - path: /rest/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4/audit_logs/search
     methods: ["GET"]
     request_headers:
@@ -276,7 +315,6 @@ rules:
             }
           }
           `}}
-
   - path: /rest/orgs/0de7b2d6-c1da-46aa-887e-1886f96770d4/issues
     methods: ["GET"]
     request_headers:
