@@ -1328,6 +1328,23 @@ processors:
       tag: urldecode_url
       ignore_missing: true
       ignore_failure: true
+  - script:
+      lang: painless
+      description: Add scheme to url if not already present
+      if: ctx.zscaler_zia?.web?.url?.name != null
+      source: |-
+        def regex = /[a-z]+:\/\/.*/;
+        def url = ctx.zscaler_zia.web.url.name;
+        if (!regex.matcher(url).matches()) {
+          if (ctx.network?.protocol != null) {
+            url = ctx.network.protocol + '://' + url;
+          }
+          // Add default protocol https
+          else {
+            url = 'https://' + url;
+          }
+        }
+        ctx.zscaler_zia.web.url.name = url;
   - set:
       field: url.original
       tag: set_url_original_from_web_url_name
