@@ -17,6 +17,10 @@ func main() {
 }
 
 func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/health" {
+		return
+	}
+
 	authHeader := r.Header.Get("Authorization")
 	if authHeader != "Bearer xxxx" {
 		// If the header is incorrect, return an authentication error message
