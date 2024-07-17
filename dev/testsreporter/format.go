@@ -36,6 +36,15 @@ func (r ResultsFormatter) TeamLabels() []string {
 	return r.result.TeamLabels
 }
 
+func (r ResultsFormatter) Labels() []string {
+	labels := []string{"flaky-test", "automation"}
+	// Add TeamLabels to Issue Labels. Added quotes in case TeamLabels contain spaces.
+	for _, teamlabel := range r.TeamLabels() {
+		labels = append(labels, "\""+teamlabel+"\"")
+	}
+	return labels
+}
+
 func (r ResultsFormatter) Summary() string {
 	var rendered bytes.Buffer
 	templ := template.Must(template.New("summary").Parse(summaryTmpl))

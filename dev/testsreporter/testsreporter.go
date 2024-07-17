@@ -59,6 +59,7 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverle
 		fmt.Println("---- Issue ----")
 		fmt.Printf("Title: %q\n", r.Title())
 		fmt.Printf("Teams: %q\n", strings.Join(r.Owners(), ", "))
+		fmt.Printf("TeamLabels: %q\n", strings.Join(r.TeamLabels(), ", "))
 		fmt.Printf("Summary:\n%s\n", r.Summary())
 		fmt.Println("----")
 		fmt.Println()
@@ -66,7 +67,7 @@ func Check(resultsPath, buildURL, stackVersion string, serverless bool, serverle
 		ghIssue := NewGithubIssue(GithubIssueOptions{
 			Title:       r.Title(),
 			Description: r.Description(),
-			Labels:      []string{"flaky-test", "automation"},
+			Labels:      r.Labels(),
 			Repository:  "elastic/integrations",
 		})
 

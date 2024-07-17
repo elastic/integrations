@@ -16,16 +16,16 @@ const (
 )
 
 type githubTeamLabels struct {
-	teamlabels map[string]string
-	path       string
+	tlabels map[string]string
+	path    string
 }
 
-func GetTeamLabels() (*githubTeamLabels, error) {
+func GetTeamLabels() (map[string]string, error) {
 	githubTeamLabels, err := readTeamLabels(teamlabelsPath)
 	if err != nil {
 		return nil, err
 	}
-	return githubTeamLabels, nil
+	return githubTeamLabels.tlabels, nil
 }
 
 func readTeamLabels(teamlabelsPath string) (*githubTeamLabels, error) {
@@ -35,9 +35,9 @@ func readTeamLabels(teamlabelsPath string) (*githubTeamLabels, error) {
 	}
 	defer f.Close()
 
-	tlabels := githubTeamLabels{
-		teamlabels: make(map[string]string),
-		path:       teamlabelsPath,
+	ghTeamLabels := githubTeamLabels{
+		tlabels: make(map[string]string),
+		path:    teamlabelsPath,
 	}
 
 	scanner := bufio.NewScanner(f)
@@ -56,11 +56,11 @@ func readTeamLabels(teamlabelsPath string) (*githubTeamLabels, error) {
 		path, label := teamHandle, teamLabel
 
 		// It is ok to overwrite because latter lines have precedence in these files.
-		tlabels.teamlabels[path] = label
+		ghTeamLabels.tlabels[path] = label
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, fmt.Errorf("scanner error: %w", err)
 	}
 
-	return &tlabels, nil
+	return &ghTeamLabels, nil
 }
