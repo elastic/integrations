@@ -12,7 +12,13 @@ processors:
   - json:
       field: event.original
       target_field: json
-      ignore_failure: true
+      on_failure:
+        - set:
+            field: event.kind
+            value: pipeline_error
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - drop:
       if: ctx.json?.response instanceof List && ctx.json.response.length == 0
   - fingerprint:
@@ -86,6 +92,14 @@ processors:
       if: ctx.json?.description != null
       ignore_failure: true
   - set:
+      field: cisco_duo.admin.errors
+      copy_from: cisco_duo.admin.flattened.Errors
+      ignore_empty_value: true
+  - set:
+      field: cisco_duo.admin.status
+      copy_from: cisco_duo.admin.flattened.status
+      ignore_empty_value: true
+  - set:
       field: event.reason
       value: '{{{message}}}'
   - set:
@@ -135,6 +149,7 @@ processors:
         - message
         - event.reason
       if: ctx.cisco_duo?.admin?.flattened != null
+      ignore_missing: true
   - append:
       field: related.user
       value: '{{{user.name}}}'

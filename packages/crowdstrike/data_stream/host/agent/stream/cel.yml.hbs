@@ -26,61 +26,96 @@ state:
 redact:
   fields: ~
 program: |
-  (
-    state.with(
-      (
-        !state.want_more ?
-          request("GET", state.url + "/devices/queries/devices/v1?sort=modified_timestamp.asc&offset=0&limit=" + string(state.batch_size) + '&filter=modified_timestamp:>"' + (
-            has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null ?
-              state.cursor.last_timestamp + '"'
-            :
-              (now - duration(state.initial_interval)).format(time_layout.RFC3339) + '"'
-          ))
-        :
-          request("GET", state.url + "/devices/queries/devices/v1?sort=modified_timestamp.asc&offset=" + string(state.offset) + "&limit=" + string(state.batch_size) + '&filter=modified_timestamp:>"' + (
-            has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-              state.cursor.first_timestamp + '"'
-            :
-              '"'
-          ))
-      ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
-        "resources": has(body.resources) && body.resources.size() > 0 ? body.resources : "",
+  state.with(
+    (
+      !state.want_more ?
+        request(
+          "GET",
+          state.url.trim_right("/") + "/devices/queries/devices/v1?" + {
+            "sort": ["modified_timestamp.asc"],
+            "offset": ["0"],
+            "limit": [string(state.batch_size)],
+            "filter": ['modified_timestamp:>"'+state.?cursor.last_timestamp.orValue(string(now - duration(state.initial_interval)))+'"'],
+          }.format_query()
+        )
+      :
+        request(
+          "GET",
+          state.url.trim_right("/") + "/devices/queries/devices/v1?" + {
+            "sort": ["modified_timestamp.asc"],
+            "offset": [string(state.offset)],
+            "limit": [string(state.batch_size)],
+            ?"filter": has(state.?cursor.first_timestamp) ? optional.of(['modified_timestamp:>"'+state.cursor.first_timestamp+'"']) : optional.none(),
+          }.format_query()
+        )
+    ).do_request().as(get_resp, get_resp.StatusCode == 200 ?
+      bytes(get_resp.Body).decode_json().as(body, {
+        ?"resources": has(body.resources) && body.resources.size() > 0 ? optional.of(body.resources) : optional.none(),
         "want_more": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total),
         "offset": ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
-          int(state.offset) + int(body.resources.size())
+          int(state.offset) + body.resources.size()
         :
           0,
-        "url": state.url,
-        "batch_size": state.batch_size,
-        "initial_interval": state.initial_interval,
-      }))
-    ).as(state, state.with(
-      !has(state.resources) || state.resources == "" ? {"events": []} :
-        post_request(
-          state.url + "/devices/entities/devices/v2",
-          "application/json",
-          {"ids": state.resources }.encode_json()
-        ).do_request().as(resp, bytes(resp.Body).decode_json().as(inner_body, {
-           "events": inner_body.resources.map(e, {
-             "message": e.encode_json(),
-           }),
-           "cursor": {
-              "last_timestamp": (
-                has(inner_body.resources) && inner_body.resources.size() > 0 ?
-                  inner_body.resources.map(e, e.modified_timestamp).max()
-                : has(state.cursor) && has(state.cursor.last_timestamp) ?
-                  state.cursor.last_timestamp
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(get_resp.StatusCode),
+            "id": string(get_resp.Status),
+            "message": "GET:"+(
+              size(get_resp.Body) != 0 ?
+                string(get_resp.Body)
+              :
+                string(get_resp.Status) + ' (' + string(get_resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  ).as(state, state.with(
+    !has(state.resources) ? state : // Exit early due to GET failure or no resources to collect.
+      post_request(
+        state.url + "/devices/entities/devices/v2",
+        "application/json",
+        {"ids": state.resources }.encode_json()
+      ).do_request().as(post_resp, post_resp.StatusCode == 200 ?
+        bytes(post_resp.Body).decode_json().as(inner_body, {
+          "events": inner_body.resources.map(e, {
+            "message": e.encode_json(),
+          }),
+          "cursor": {
+            ?"last_timestamp": (
+              has(inner_body.resources) && inner_body.resources.size() > 0 ?
+                optional.of(inner_body.resources.map(e, e.modified_timestamp).max())
+              :
+                state.?cursor.last_timestamp
+            ),
+            "first_timestamp": (
+              state.?cursor.first_timestamp.orValue(null) != null ?
+                (state.want_more ? state.cursor.first_timestamp : state.cursor.last_timestamp)
+              :
+                string(now - duration(state.initial_interval))
+            ),
+          },
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(post_resp.StatusCode),
+              "id": string(post_resp.Status),
+              "message": "POST:"+(
+                size(post_resp.Body) != 0 ?
+                  string(post_resp.Body)
                 :
-                  null
+                  string(post_resp.Status) + ' (' + string(post_resp.StatusCode) + ')'
               ),
-              "first_timestamp": (
-                has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-                  ( state.want_more ? state.cursor.first_timestamp : state.cursor.last_timestamp )
-                :
-                  (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-              ),
-           },
-        }))
+            },
+          },
+          "want_more": false,
+        }
       )
     )
   )

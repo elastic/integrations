@@ -23,7 +23,7 @@ processors:
       name: '{{ IngestPipeline "third-party" }}'
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.11.0'
   - date:
       field: json.eventTime
       target_field: "@timestamp"
@@ -234,17 +234,35 @@ processors:
       field: json.readOnly
       target_field: aws.cloudtrail.read_only
       ignore_failure: true
+  - script:
+      description: 'Drops duplicates where the same combination of ARN, accountId and type is found multiple times in the resources list.'
+      lang: painless
+      source: >
+        if (ctx.json?.resources instanceof List) {
+              def resources = ctx.json.resources;
+              
+              Map uniqueResources = new HashMap();
+              for (def originalResource : resources) {
+                if (originalResource instanceof Map) {
+                  Map resource = new HashMap();
+                  resource.putAll(originalResource);
+                  if (resource.containsKey('ARN')) {
+                    resource['arn'] = resource.remove('ARN');
+                  }
+                  if (resource.containsKey('accountId')) {
+                    resource['account_id'] = resource.remove('accountId');
+                  }
+                  String key = (resource.containsKey('arn') ? resource.arn : '') + '_' +
+                               (resource.containsKey('account_id') ? resource.account_id : '') + '_' +
+                               (resource.containsKey('type') ? resource.type : '');
+                  uniqueResources[key] = resource;
+                }
+              }
+             ctx.json.resources = new ArrayList(uniqueResources.values());
+            }
   - rename:
-      field: json.resources.ARN
-      target_field: aws.cloudtrail.resources.arn
-      ignore_failure: true
-  - rename:
-      field: json.resources.accountId
-      target_field: aws.cloudtrail.resources.account_id
-      ignore_failure: true
-  - rename:
-      field: json.resources.type
-      target_field: aws.cloudtrail.resources.type
+      field: json.resources
+      target_field: aws.cloudtrail.resources
       ignore_failure: true
   - rename:
       field: json.recipientAccountId

@@ -132,50 +132,54 @@ An example event for `collector` looks as following:
 ```json
 {
     "@timestamp": "2022-09-21T13:53:53.737Z",
+    "data_stream": {
+        "dataset": "prometheus.collector",
+        "namespace": "default",
+        "type": "metrics"
+    },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
+        "snapshot": true,
+        "version": "8.4.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "prometheus.collector",
+        "duration": 10509824,
+        "ingested": "2022-09-21T13:53:54Z",
+        "module": "prometheus"
+    },
+    "host": {},
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "prometheus": {
+        "labels": {
+            "instance": "prometheus-server-server:80",
+            "job": "prometheus",
+            "quantile": "0.5",
+            "scrape_job": "kubernetes-services"
+        },
+        "prometheus_target_sync_length_seconds": {
+            "value": 0.000103602
+        }
     },
     "service": {
         "address": "http://prometheus-server-server:80/metrics",
         "type": "prometheus"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "prometheus.collector"
-    },
-    "elastic_agent": {
-        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
-        "version": "8.4.0",
-        "snapshot": true
-    },
-    "host": {},
-    "metricset": {
-        "period": 10000,
-        "name": "collector"
-    },
-    "prometheus": {
-        "prometheus_target_sync_length_seconds": {
-            "value": 0.000103602
-        },
-        "labels": {
-            "scrape_job": "kubernetes-services",
-            "instance": "prometheus-server-server:80",
-            "quantile": "0.5",
-            "job": "prometheus"
-        }
-    },
-    "event": {
-        "duration": 10509824,
-        "agent_id_status": "verified",
-        "ingested": "2022-09-21T13:53:54Z",
-        "module": "prometheus",
-        "dataset": "prometheus.collector"
     }
 }
 ```
 
 The fields reported are:
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -183,51 +187,28 @@ The fields reported are:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
 | event.module | Event module. | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | prometheus.\*.counter | Prometheus counter metric | object | counter |
 | prometheus.\*.histogram | Prometheus histogram metric | object |  |
 | prometheus.\*.rate | Prometheus rated counter metric | object | gauge |
 | prometheus.\*.value | Prometheus gauge metric | object | gauge |
-| prometheus.labels.\* | Prometheus metric labels | object |  |
-| prometheus.labels_fingerprint | Autogenerated ID representing the fingerprint of labels object | keyword |  |
+| prometheus.labels.\* | Prometheus metric labels | keyword |  |
 | prometheus.metrics.\* | Prometheus metric | object | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 
@@ -327,69 +308,73 @@ An example event for `remote_write` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-09-22T12:23:35.757Z",
     "agent": {
-        "name": "kind-control-plane",
-        "id": "af0df4c2-33b7-41fd-8eb5-573376996db2",
         "ephemeral_id": "5c3d912b-9bf3-4747-b784-1f7c275a5979",
+        "id": "af0df4c2-33b7-41fd-8eb5-573376996db2",
+        "name": "kind-control-plane",
         "type": "metricbeat",
         "version": "8.4.0"
     },
-    "@timestamp": "2022-09-22T12:23:35.757Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "service": {
-        "type": "prometheus"
-    },
     "data_stream": {
+        "dataset": "prometheus.remote_write",
         "namespace": "default",
-        "type": "metrics",
-        "dataset": "prometheus.remote_write"
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "af0df4c2-33b7-41fd-8eb5-573376996db2",
-        "version": "8.4.0",
-        "snapshot": true
+        "snapshot": true,
+        "version": "8.4.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "prometheus.remote_write",
+        "ingested": "2022-09-22T12:24:16Z",
+        "module": "prometheus"
     },
     "host": {},
     "metricset": {
         "name": "remote_write"
     },
     "prometheus": {
-        "node_cpu_guest_seconds_total": {
-            "rate": 0,
-            "counter": 0
-        },
-        "node_cpu_seconds_total": {
-            "rate": 0,
-            "counter": 2284.68
-        },
         "labels": {
             "app": "prometheus",
             "app_kubernetes_io_managed_by": "Helm",
-            "instance": "172.19.0.2:9100",
-            "release": "prometheus-server",
+            "chart": "prometheus-15.10.1",
+            "component": "node-exporter",
             "cpu": "5",
             "heritage": "Helm",
-            "mode": "user",
-            "node": "kind-control-plane",
-            "component": "node-exporter",
-            "service": "prometheus-server-node-exporter",
-            "namespace": "kube-system",
+            "instance": "172.19.0.2:9100",
             "job": "kubernetes-service-endpoints",
-            "chart": "prometheus-15.10.1"
+            "mode": "user",
+            "namespace": "kube-system",
+            "node": "kind-control-plane",
+            "release": "prometheus-server",
+            "service": "prometheus-server-node-exporter"
+        },
+        "node_cpu_guest_seconds_total": {
+            "counter": 0,
+            "rate": 0
+        },
+        "node_cpu_seconds_total": {
+            "counter": 2284.68,
+            "rate": 0
         }
     },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2022-09-22T12:24:16Z",
-        "module": "prometheus",
-        "dataset": "prometheus.remote_write"
+    "service": {
+        "type": "prometheus"
     }
 }
 ```
 
 The fields reported are:
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -397,51 +382,28 @@ The fields reported are:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
 | event.module | Event module. | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
 | prometheus.\*.counter | Prometheus counter metric | object | counter |
 | prometheus.\*.histogram | Prometheus histogram metric | object |  |
 | prometheus.\*.rate | Prometheus rated counter metric | object | gauge |
 | prometheus.\*.value | Prometheus gauge metric | object | gauge |
-| prometheus.labels.\* | Prometheus metric labels | object |  |
-| prometheus.labels_fingerprint | Autogenerated ID representing the fingerprint of all labels and the list of metrics names | keyword |  |
+| prometheus.labels.\* | Prometheus metric labels | keyword |  |
 | prometheus.metrics.\* | Prometheus metric | object | gauge |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| prometheus.metrics_names_fingerprint | Autogenerated ID representing the fingerprint of the list of metrics names | keyword |  |
 
 
 #### Histograms and types
@@ -570,53 +532,57 @@ An example event for `query` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-09-21T14:06:49.000Z",
     "agent": {
-        "name": "kind-control-plane",
-        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
-        "type": "metricbeat",
         "ephemeral_id": "63ab98c3-c4ae-4a30-84f9-9a2d7f459728",
+        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
+        "name": "kind-control-plane",
+        "type": "metricbeat",
         "version": "8.4.0"
     },
-    "@timestamp": "2022-09-21T14:06:49.000Z",
+    "data_stream": {
+        "dataset": "prometheus.query",
+        "namespace": "default",
+        "type": "metrics"
+    },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
+        "snapshot": true,
+        "version": "8.4.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "prometheus.query",
+        "duration": 1153570,
+        "ingested": "2022-09-21T14:06:50Z",
+        "module": "prometheus"
+    },
+    "host": {},
+    "metricset": {
+        "name": "query",
+        "period": 10000
+    },
+    "prometheus": {
+        "labels": {},
+        "query": {
+            "instant_vector": 0.7838951248394681
+        }
     },
     "service": {
         "address": "http://prometheus-server-server:80",
         "type": "prometheus"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "prometheus.query"
-    },
-    "elastic_agent": {
-        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
-        "version": "8.4.0",
-        "snapshot": true
-    },
-    "host": {},
-    "metricset": {
-        "period": 10000,
-        "name": "query"
-    },
-    "prometheus": {
-        "query": {
-            "instant_vector": 0.7838951248394681
-        },
-        "labels": {}
-    },
-    "event": {
-        "duration": 1153570,
-        "agent_id_status": "verified",
-        "ingested": "2022-09-21T14:06:50Z",
-        "module": "prometheus",
-        "dataset": "prometheus.query"
     }
 }
 ```
 
 The fields reported are:
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -624,50 +590,27 @@ The fields reported are:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
 | cloud.region | Region in which this host is running. | keyword |  |
 | container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
-| container.labels | Image labels. | object |  |
-| container.name | Container name. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
 | event.module | Event module. | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
 | host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
-| prometheus.labels.\* | Prometheus metric labels | object |  |
-| prometheus.labels_fingerprint | Autogenerated ID representing the fingerprint of labels object and includes query name | keyword |  |
+| prometheus.labels.\* | Prometheus metric labels | keyword |  |
 | prometheus.query.\* | Prometheus value resulted from PromQL | object | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ## Dashboard
 
 Prometheus integration is shipped including default overview dashboard.
-Default dashboard works only for `remote_write` datastream and `collector` darastream, if metrics are scraped from the Prometheus server metrics endpoint.
+Default dashboard works only for `remote_write` datastream and `collector` datastream, if metrics are scraped from the Prometheus server metrics endpoint.

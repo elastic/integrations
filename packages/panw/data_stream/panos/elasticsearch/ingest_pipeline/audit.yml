@@ -1,0 +1,53 @@
+---
+description: Pipeline for PanOS Audit Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/audit-log-fields
+processors:
+  - csv:
+      field: message
+      ignore_failure: true
+      target_fields:
+        - panw.panos.config_version
+        - panw.panos.cmd_source
+        - user.name
+        - panw.panos.cmd
+        - event.outcome
+  - uppercase:
+      field: panw.panos.type
+      ignore_missing: true
+# Set event.kind & event.category field.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - configuration
+
+# Set custom fields to ECS fields
+  - date:
+      if: ctx._temp_?.syslog_time != null
+      field: _temp_.syslog_time
+      target_field: event.created
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+  - set:
+      field: observer.hostname
+      copy_from: panw.panos.device_name
+      ignore_failure: true
+  - set:
+      field: source.ip
+      copy_from: panw.panos.source.ip
+      ignore_failure: true
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        error in Audit pipeline:
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{_ingest.on_failure_message}}}

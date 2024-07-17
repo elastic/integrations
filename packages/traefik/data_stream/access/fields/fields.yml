@@ -1,32 +1,109 @@
+- name: http.request.headers.*
+  type: object
+  object_type: keyword
+  description: |
+    The canonical headers of the monitored HTTP request.
+- name: http.response.headers.*
+  type: object
+  object_type: keyword
+  description: |
+    The canonical headers of the monitored HTTP response.
 - name: traefik.access
   type: group
   fields:
+    - name: origin
+      type: group
+      fields:
+        - name: content_size
+          type: long
+          description: |
+            The content length specified by the origin server, or 0 if unspecified.
+        - name: duration
+          type: long
+          description: |
+            The time taken (in nanoseconds) by the origin server ('upstream') to return its response.
+        - name: headers.*
+          type: object
+          object_type: keyword
+          description: |
+            The canonical headers of the monitored HTTP request.
+        - name: status_code
+          type: long
+          description: |
+            The HTTP status code returned by the origin server.
+            If the request was handled by this Traefik instance (e.g. with a redirect), then this value will be absent (0).
+        - name: status_line
+          type: keyword
+          description: |
+            OriginStatus + Status code explanation
+    - name: overhead
+      type: long
+      description: |
+        The processing time overhead (in nanoseconds) caused by Traefik
+    - name: request_count
+      type: long
+      description: |
+        The number of requests received since the Traefik instance started.
+    - name: retry_attempts
+      type: long
+      description: |
+        The amount of attempts the request was retried
+    - name: router
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The name of the Traefik router
+    - name: service
+      type: group
+      fields:
+        - name: address
+          type: keyword
+          description: The IP:port of the Traefik backend (extracted from ServiceURL)
+        - name: duration
+          type: long
+          description: The time taken (in nanoseconds) by the origin server ('upstream') to return its response.
+        - name: url
+          type: group
+          description: The URL of the Traefik backend
+          fields:
+            - name: domain
+              type: keyword
+              description: Domain of the url
+            - name: force_query
+              type: boolean
+              description: Traefik specific url field
+            - name: fragment
+              type: keyword
+              description: The fragment of the url
+            - name: opaque
+              type: keyword
+              description: Traefik specific url field
+            - name: original
+              type: keyword
+              description: Traefik url as used in common log format
+            - name: path
+              type: keyword
+              description: The path of the url
+            - name: query
+              type: keyword
+              description: The query string of the url
+            - name: raw_path
+              type: keyword
+              description: Traefik specific url field
+            - name: raw_query
+              type: keyword
+              description: Traefik specific url field
+            - name: scheme
+              type: keyword
+              description: The scheme of the url
+            - name: user
+              type: group
+              description: Traefik specific url field
+            - name: username
+              type: keyword
+              description: The username of the url
     - name: user_identifier
       type: keyword
       description: |
         Is the RFC 1413 identity of the client
-    - name: request_count
-      type: long
-      description: |
-        The number of requests
-    - name: frontend_name
-      type: keyword
-      description: |
-        The name of the frontend used
-    - name: backend_url
-      type: keyword
-      description: The url of the backend where request is forwarded
-    - name: user_agent
-      type: group
-      fields:
-        - name: os
-          type: alias
-          path: user_agent.os.full_name
-    - name: geoip
-      type: group
-- name: input.type
-  type: keyword
-  description: Input type
-- name: log.offset
-  type: long
-  description: Log offset

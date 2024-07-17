@@ -72,6 +72,10 @@ https://management.usgovcloudapi.net/
 
 {{event "functionapplogs"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "functionapplogs"}}
 
 ### Metrics
@@ -107,7 +111,7 @@ To start collecting data with this integration, you need to:
 To create a new app registration:
 
 1. Sign in to the [Azure Portal](https://portal.azure.com/).
-2. Search for and select **Azure Active Directory**.
+2. Search for and select **Microsoft Entra ID**.
 3. Under **Manage**, select **App registrations** > **New registration**.
 4. Enter a display _Name_ for your application (for example, "elastic-agent").
 5. Specify who can use the application.
@@ -200,5 +204,9 @@ Examples:
 #### Metrics Reference
 
 {{event "metrics"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "metrics"}}

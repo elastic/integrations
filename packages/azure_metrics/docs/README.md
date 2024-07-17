@@ -497,7 +497,7 @@ so the `period` for `container_instance` should be `300s` or multiples of `300s`
 | azure.container_instance.network_bytes_received_per_second.avg | The network bytes received per second. | float | byte | gauge |
 | azure.container_instance.network_bytes_transmitted_per_second.avg | The network bytes transmitted per second. | float | byte | gauge |
 | azure.dimensions.container_name | The container name | keyword |  |  |
-| azure.metrics.cpu_usage.avg | CPU usage on all cores in millicores. | float |  | gauge |
+| azure.metrics.cpu_usage.avg |  | alias |  |  |
 | azure.metrics.memory_usage.avg |  | alias |  |  |
 | azure.metrics.network_bytes_received_per_second.avg |  | alias |  |  |
 | azure.metrics.network_bytes_transmitted_per_second.avg |  | alias |  |  |

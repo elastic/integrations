@@ -1,0 +1,277 @@
+---
+description: Pipeline to process gitlab production logs
+processors:
+- set:
+    field: ecs.version
+    tag: set_ecs_version
+    value: 8.11.0
+- rename:
+    field: message
+    target_field: event.original
+    tag: rename_message
+    ignore_missing: true
+    if: ctx.event?.original == null
+- remove:
+    field: message
+    ignore_missing: true
+    tag: remove_message
+    if: ctx.event?.original != null
+- drop: 
+    if: ctx.event.original.startsWith('#')
+    description: Drop if logline contains header(s), which startswith `#`.
+- json:
+    field: event.original
+    tag: json_original
+    target_field: gitlab.production
+- rename:
+    field: gitlab.production.method
+    target_field: http.request.method
+    ignore_missing: true
+- rename:
+    field: gitlab.production.path
+    target_field: url.path
+    ignore_missing: true
+- rename:
+    field: gitlab.production.location
+    target_field: url.full
+    ignore_missing: true
+- dot_expander:
+    path: gitlab.production
+    field: meta.caller_id
+- dot_expander:
+    path: gitlab.production
+    field: meta.client_id
+- dot_expander:
+    path: gitlab.production
+    field: meta.feature_category
+- dot_expander:
+    path: gitlab.production
+    field: meta.remote_ip
+- convert:
+    field: gitlab.production.meta.remote_ip
+    type: ip
+    ignore_missing: true
+    on_failure:
+        - remove:
+            field: gitlab.production.meta.remote_ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+- dot_expander:
+    path: gitlab.production
+    field: meta.user
+- dot_expander:
+    path: gitlab.production
+    field: meta.user_id
+- dot_expander:
+    path: gitlab.production
+    field: meta.search.page
+- rename:
+    field: gitlab.production.action
+    target_field: event.action
+    ignore_missing: true
+- rename:
+    field: gitlab.production.meta.caller_id
+    target_field: event.provider
+    ignore_missing: true
+- rename:
+    field: gitlab.production.status
+    target_field: http.response.status_code
+    ignore_missing: true
+- date:
+    field: gitlab.production.time
+    target_field: '@timestamp'
+    formats:
+    - yyyy-MM-dd'T'HH:mm:ss.SSSX
+    if: ctx.gitlab.production.time != null
+- rename:
+    field: gitlab.production.pid
+    target_field: process.pid
+    ignore_missing: true
+- rename:
+    field: gitlab.production.worker_id
+    target_field: process.name
+    ignore_missing: true
+- rename:
+    field: gitlab.production.correlation_id
+    target_field: event.id
+    ignore_missing: true
+- rename:
+    field: gitlab.production.duration_s
+    target_field: event.duration
+    ignore_missing: true
+- script:
+    description: Convert event.duration from seconds to nanoseconds.
+    if: ctx.event?.duration != null
+    lang: painless
+    source:
+      ctx.event['duration'] = ctx.event.duration * 1e9;
+- convert:
+    target_field: source.ip
+    field: gitlab.production.remote_ip
+    type: ip
+    ignore_missing: true
+    ignore_failure: true
+- remove:
+    field: gitlab.production.remote_ip
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: gitlab.production.user_id
+    target_field: user.id
+    ignore_missing: true
+- convert:
+    field: user.id
+    type: string
+    ignore_missing: true
+- rename:
+    field: gitlab.production.username
+    target_field: user.name
+    ignore_missing: true
+- rename:
+    field: gitlab.production.ua
+    target_field: user_agent.original
+    ignore_missing: true
+- script:
+    lang: painless
+    description: Move the object `params.value` to `params.value_json` to avoid conflicts with the string `params.value`.
+    source: |
+        List paramList = new ArrayList();
+        for (param in ctx.gitlab.production.params) {
+            if (param.value instanceof String) {
+                paramList.add(param);
+            } else {
+                Map objParam = new HashMap();
+                objParam.put("key",param.key);
+                objParam.put("value_json",param.value);
+                paramList.add(objParam);
+            }
+        }
+        ctx.gitlab.production.params = paramList;
+- geoip:
+    field: source.ip
+    tag: geoip_source_ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    ignore_missing: true
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    tag: geoip_source_asn
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+- rename:
+    field: source.as.asn
+    tag: rename_source_as_asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    tag: rename_source_as_organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- geoip:
+    field: destination.ip
+    tag: geoip_destination_ip
+    target_field: destination.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: destination.ip
+    tag: geoip_destination_asn
+    target_field: destination.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: destination.as.asn
+    tag: rename_destination_as_asn
+    target_field: destination.as.number
+    ignore_missing: true
+- rename:
+    field: destination.as.organization_name
+    tag: rename_destination_as_organization_name
+    target_field: destination.as.organization.name
+    ignore_missing: true
+- append:
+    field: event.type
+    value:
+    - info
+    allow_duplicates: false
+- append:
+    field: event.category
+    value:
+    - database
+    allow_duplicates: false
+    if: ctx.url?.path == '/-/metrics'
+- append:
+    field: event.category
+    value:
+    - database
+    allow_duplicates: false
+    if: ctx.url?.path == '/dashboard/activity'
+- append:
+    field: event.category
+    value:
+    - database
+    allow_duplicates: false
+    if: ctx.url?.path == '/api/graphql'
+- append:
+    field: event.category
+    value:
+    - web
+    allow_duplicates: false
+    if: ctx.url?.path == '/-/manifest.json'
+- append:
+    field: event.category
+    value:
+    - authentication
+    allow_duplicates: false
+    if: ctx.url?.path == '/users/sign_in'
+- append:
+    field: event.category
+    value:
+    - web
+    allow_duplicates: false
+    if: ctx.url?.path.contains("/search/")
+- append:
+    field: event.category
+    value:
+    - database
+    allow_duplicates: false
+    if: ctx.url?.path == '/dashboard/groups'
+- remove:
+    field: event.original
+    tag: remove_original_event
+    if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    description: Drops null/empty values recursively.
+    lang: painless
+    source: |
+      boolean dropEmptyFields(Object object) {
+        if (object == null || object == "") {
+          return true;
+        } else if (object instanceof Map) {
+          ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+          return (((Map) object).size() == 0);
+        } else if (object instanceof List) {
+          ((List) object).removeIf(value -> dropEmptyFields(value));
+          return (((List) object).length == 0);
+        }
+        return false;
+      }
+      dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+      in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- set:
+    field: event.kind
+    value: pipeline_error

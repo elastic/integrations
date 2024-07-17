@@ -162,9 +162,14 @@ with_docker() {
     fi
     echo "deb [arch=${architecture} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${ubuntu_codename} stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt-get update
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce=${debian_version}"
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-downgrades -y "docker-ce-cli=${debian_version}"
-    sudo systemctl start docker
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce=${debian_version}"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --allow-change-held-packages --allow-downgrades -y "docker-ce-cli=${debian_version}"
+    retry 3 sudo systemctl restart docker
+
+    echo "- Installed docker client version:"
+    docker version -f json  | jq -r '.Client.Version'
+    echo "- Installed docker server version:"
+    docker version -f json  | jq -r '.Server.Version'
 }
 
 with_docker_compose_plugin() {
@@ -309,7 +314,6 @@ create_kind_cluster() {
     kind create cluster --config "${WORKSPACE}/kind-config.yaml" --image "kindest/node:${K8S_VERSION}"
 }
 
-
 delete_kind_cluster() {
     echo "--- Delete kind cluster"
     kind delete cluster || true
@@ -395,7 +399,11 @@ packages_excluded() {
     echo "${excluded_packages}"
 }
 
-is_package_excluded() {
+package_name_manifest() {
+    cat manifest.yml | yq -r '.name'
+}
+
+is_package_excluded_in_config() {
     local package=$1
     local config_file_path=$2
     local excluded_packages=""
@@ -404,12 +412,14 @@ is_package_excluded() {
     if [[ "${excluded_packages}" == "null" ]]; then
         return 1
     fi
-    if echo "${excluded_packages}" | grep -q -E "\"${package}\""; then
+    local package_name=""
+    package_name=$(package_name_manifest)
+
+    if echo "${excluded_packages}" | grep -q -E "\"${package_name}\""; then
         return 0
     fi
     return 1
 }
-
 
 is_supported_capability() {
     if [ "${SERVERLESS_PROJECT}" == "" ]; then
@@ -419,7 +429,7 @@ is_supported_capability() {
     local capabilities=""
     capabilities=$(capabilities_manifest)
 
-    # if no capabilities defined, it is available iavailable all projects
+    # if no capabilities defined, it is available in all projects
     if [[  "${capabilities}" == "null" ]]; then
         return 0
     fi
@@ -588,7 +598,7 @@ get_commit_from_build() {
 get_previous_commit() {
     local pipeline="$1"
     local branch="$2"
-    # Not using state=finished because it implies also skip and cancelled builds https://buildkite.com/docs/pipelines/notifications#build-states
+    # Not using state=finished because it implies also skip and canceled builds https://buildkite.com/docs/pipelines/notifications#build-states
     local status="state[]=failed&state[]=passed"
     local previous_commit
     previous_commit=$(get_commit_from_build "${pipeline}" "${branch}" "${status}")
@@ -656,7 +666,7 @@ is_pr_affected() {
     fi
 
     if is_serverless; then
-        if is_package_excluded "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
+        if is_package_excluded_in_config "${package}" "${WORKSPACE}/kibana.serverless.config.yml";  then
             echo "[${package}] PR is not affected: package ${package} excluded in Kibana config for ${SERVERLESS_PROJECT}"
             return 1
         fi
@@ -682,7 +692,7 @@ is_pr_affected() {
 
     echo "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|.github/CODEOWNERS|README.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
@@ -755,6 +765,19 @@ build_zip_package() {
     return 0
 }
 
+skip_installation_step() {
+    local package=$1
+    if ! is_serverless ; then
+        return 1
+    fi
+
+    if [[ "$package" == "security_detection_engine" ]]; then
+        return 0
+    fi
+
+    return 1
+}
+
 install_package() {
     local package=$1
     echo "Install package: ${package}"
@@ -796,6 +819,9 @@ test_package_in_serverless() {
     if ! ${ELASTIC_PACKAGE_BIN} test pipeline ${TEST_OPTIONS} ; then
         return 1
     fi
+    if ! ${ELASTIC_PACKAGE_BIN} test policy ${TEST_OPTIONS} ${COVERAGE_OPTIONS}; then
+        return 1
+    fi
     echo ""
     return 0
 }
@@ -814,10 +840,13 @@ run_tests_package() {
         fi
     fi
 
-    echo "--- [${package}] test installation"
-    if ! install_package "${package}" ; then
-        return 1
+    if ! skip_installation_step "${package}" ; then
+        echo "--- [${package}] test installation"
+        if ! install_package "${package}" ; then
+            return 1
+        fi
     fi
+
     echo "--- [${package}] run test suites"
     if is_serverless; then
         if ! test_package_in_serverless "${package}" ; then
@@ -877,6 +906,10 @@ upload_safe_logs_from_package() {
     fi
 
     local package=$1
+    local retry_count="${BUILDKITE_RETRY_COUNT:-"0"}"
+    if [[ "${retry_count}" -ne 0 ]]; then
+        package="${package}_retry_${retry_count}"
+    fi
     local build_directory=$2
 
     local parent_folder="insecure-logs"

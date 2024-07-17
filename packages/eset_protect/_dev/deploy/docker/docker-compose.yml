@@ -1,12 +1,12 @@
 version: '3.7'
 services:
   eset_protect-event-tls:
-    image: docker.elastic.co/observability/stream:v0.13.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9589 -p=tls --insecure /sample_logs/event.log
   eset_protect-detection:
-    image: docker.elastic.co/observability/stream:v0.13.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     hostname: xx.incident-management.eset.systems
     ports:
       - 443
@@ -21,7 +21,7 @@ services:
       - --tls-cert=/files/detection-certificate.crt
       - --tls-key=/files/detection-private.key
   eset_protect-device_task:
-    image: docker.elastic.co/observability/stream:v0.13.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     hostname: xx.automation.eset.systems
     ports:
       - 443
@@ -36,7 +36,7 @@ services:
       - --tls-cert=/files/device_task-certificate.crt
       - --tls-key=/files/device_task-private.key
   eset_protect-oauth:
-    image: docker.elastic.co/observability/stream:v0.13.0
+    image: docker.elastic.co/observability/stream:v0.15.0
     hostname: xx.business-account.iam.eset.systems
     networks:
       - elastic-package-stack_default

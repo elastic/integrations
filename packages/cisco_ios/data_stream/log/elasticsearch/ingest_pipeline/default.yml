@@ -38,12 +38,13 @@ processors:
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} %{IP} %{CISCO_HOSTNAME:log.syslog.hostname}: (?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{NUMBER:cisco.ios.sequence}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{CISCO_HOSTNAME:log.syslog.hostname}|%{IP})[:]? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{GREEDYDATA:_temp_.message}$'
       pattern_definitions:
         CISCO_PRIORITY_MSGCOUNT: '<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT:cisco.ios.message_count})?(?:: )?'
         CISCO_TIMESTAMP: '[*]?%{CISCOTIMESTAMP:_temp_.cisco_timestamp}(?: %{CISCO_TZ:_temp_.tz})?'
         CISCO_UPTIME: '[0-9a-zA-Z]+'
         CISCO_HOSTNAME: '[a-zA-Z][0-9a-zA-Z_-]{0,61}[0-9a-zA-Z]?'
-        CISCO_TZ: '[a-zA-Z]{1,4}'
+        CISCO_TZ: '[a-zA-Z]{1,4}([+-]\d{1,2}|[+-]\d{2}:\d{2})?'
   - grok:
       field: _temp_.message
       tag: grok_message
@@ -68,7 +69,7 @@ processors:
       field: _temp_.cisco_timestamp
       tag: gsub_cisco_timestamp
       ignore_missing: true
-      pattern: ' {2,}'
+      pattern: '\s+'
       replacement: ' '
   - script:
       lang: painless
@@ -78,22 +79,47 @@ processors:
         Java manually. If no match is found, it will default back to
         _conf.tz_offset as before. If tz_offset is not set, it will default to
         UTC as before.
-      if:
+      if: ctx._temp_?.cisco_timestamp != null
       source: |-
-          if (ctx._temp_?.tz != null && ctx._conf?.tz_map != null) {
-            for (def item : ctx._conf.tz_map) {
-              if (item.tz_short == ctx._temp_.tz) {
-                ctx.event.timezone = item.tz_long;
-                return;
+        String get_timezone(def ctx) { 
+          if (ctx._temp_?.tz != null) {
+            if (ctx._conf?.tz_map != null) {
+              for (def item : ctx._conf.tz_map) {
+                if (item.tz_short == ctx._temp_.tz) {
+                  return item.tz_long;
+                }
               }
             }
+          
+            if (ctx._temp_.tz.length() <= 4) {
+              // all time zone abbreviations need to be uppercase
+              return ctx._temp_.tz.toUpperCase();
+            }
+              
+            return ctx._temp_.tz;
           }
+          
           if (ctx._conf?.tz_offset != null) {
-            ctx.event.timezone = ctx._conf.tz_offset;
+              ctx.event.timezone = ctx._conf.tz_offset;
+              return ctx._conf.tz_offset;
           }
-          if (ctx.event?.timezone == null) {
-            ctx.event.timezone = 'UTC';
-          }
+        
+          ctx.event.timezone = 'UTC';
+          return 'UTC';
+        }
+        
+        def event_timezone = get_timezone(ctx);
+        if (!event_timezone.contains('+') && !event_timezone.contains('-') && !(event_timezone.length() > 4)) {
+          // timezone abbreviation e.g. CEST need to be put inside the timestamp
+          SimpleDateFormat sdf = new SimpleDateFormat("z");
+          sdf.parse(event_timezone);
+          ctx._temp_.date_timezone = ZoneId.of(sdf.getTimeZone().getID(), ZoneId.SHORT_IDS).getId();
+          ctx?._temp_.cisco_timestamp = ctx?._temp_.cisco_timestamp + " " + event_timezone;
+        } else {
+          // timezone is either abbreviation+-offset e.g. UTC+1 or long representation
+          // e.g. Europe/Athens needs to be put as a ZoneId and *not* inside the timestamp
+          ctx._temp_.date_timezone = event_timezone;
+        }
   - date:
       if: ctx?._temp_.cisco_timestamp != null
       field: _temp_.cisco_timestamp
@@ -109,7 +135,7 @@ processors:
         - "MMM d HH:mm:ss.SSS"
         - "MMM d HH:mm:ss z"
         - "MMM d HH:mm:ss"
-      timezone: '{{{event.timezone}}}'
+      timezone: '{{{_temp_.date_timezone}}}'
   - grok:
       field: message
       tag: grok_message
@@ -122,7 +148,7 @@ processors:
       patterns:
         - '%%{DATA:cisco.ios.facility}-%{POSINT:event.severity}-%{DATA:event.code}:\s+(\w+\d+(/\d+)?\:\s+)?([a-zA-Z0-9_]+\:\s+)?%{GREEDYDATA:message}'
       ignore_missing: true
-      if: ctx.cisco?.ios?.facility == 'IOSXE' && ctx.event?.code == 'PLATFORM'
+      if: "ctx.cisco?.ios?.facility == 'IOSXE' && ctx.event?.code == 'PLATFORM' && ctx.message.indexOf('%') != -1"
   - grok:
       field: message
       tag: grok_audit_details
@@ -171,7 +197,12 @@ processors:
       field: message
       tag: dissect_gsp
       pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.transport} %{source.address} %{} %{destination.address} (%{igmp.type}), %{source.packets} packet"
-      if: "['IPACCESSLOGSP', 'ACCESSLOGSP'].contains(ctx.event?.code)"
+      if: "ctx.event?.code == 'IPACCESSLOGSP'"
+  - dissect:
+      field: message
+      tag: dissect_sp
+      pattern: "list %{cisco.ios.access_list} %{_temp_.event.action} %{network.type} %{source.address} %{} %{destination.address}, %{source.packets} packet"
+      if: "ctx.event?.code == 'ACCESSLOGSP'"
   - dissect:
       field: message
       tag: dissect_gnp
