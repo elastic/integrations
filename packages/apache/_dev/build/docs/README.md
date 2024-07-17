@@ -26,7 +26,7 @@ Supported format for the access logs are:
 
 - [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)
 
-  - Defined in apache `LogFormat` by :
+  - The common `LogFormat` can be used as follows:
  
     >```%h %l %u %t \"%r\" %>s %b```
 
