@@ -1,0 +1,44 @@
+---
+description: Pipeline for EKS logs ingested from Kinesis Firehose/CloudWatch
+
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - remove:
+      field: message
+      if: 'ctx.event?.original != null'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+  - set:
+      field: cloud.provider
+      value: aws
+  - set:
+      field: event.kind
+      value: event
+  - json:
+      field: event.original
+      target_field: _tmp.eks
+      strict_json_parsing: true
+  - set:
+      field: event.dataset
+      value: kubernetes.audit_logs
+      if: "ctx?._tmp?.eks?.apiVersion?.startsWith('audit.k8s.io')"
+  - rename:
+      field: _tmp.eks
+      target_field: kubernetes.audit
+      if: "ctx?.event?.dataset == 'kubernetes.audit_logs'"
+  - remove:
+      field: _tmp
+
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
