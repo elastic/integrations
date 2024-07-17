@@ -18,6 +18,7 @@ type PackageError struct {
 	StackVersion      string
 	BuildURL          string
 	Teams             []string
+	TeamLabels        []string
 	PackageName       string
 	DataStream        string
 	PreviousBuilds    []string
@@ -59,6 +60,15 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 		return nil, fmt.Errorf("failed to find owners for package %s: %w", p.PackageName, err)
 	}
 	p.Teams = owners
+
+	ghTeamLabels, err := GetTeamLabels()
+	if err != nil {
+		fmt.Printf("")
+	}
+	for _, owner := range owners {
+		// fmt.Println(owner)
+
+	}
 
 	return &p, nil
 }

@@ -32,6 +32,10 @@ func (r ResultsFormatter) Owners() []string {
 	return r.result.Teams
 }
 
+func (r ResultsFormatter) TeamLabels() []string {
+	return r.result.TeamLabels
+}
+
 func (r ResultsFormatter) Summary() string {
 	var rendered bytes.Buffer
 	templ := template.Must(template.New("summary").Parse(summaryTmpl))
