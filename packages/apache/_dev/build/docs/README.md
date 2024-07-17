@@ -54,7 +54,7 @@ Supported format for the access logs are:
 
 - Combined Log Format + X-Forwarded-For header
 
-  - Defined in apache `LogFormat` by:
+  - The combined `LogFormat` with x-forwarded-for header can be used as follows:
 
     >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
 
