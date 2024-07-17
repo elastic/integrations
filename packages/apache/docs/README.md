@@ -158,9 +158,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 Supported format for the access logs are:
 
-- [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)
+- [Common Log Format](https://httpd.apache.org/docs/2.4/logs.html#:~:text=format%20strings.-,Common%20Log%20Format,-A%20typical%20configuration)
 
-  - Defined in apache `LogFormat` by :
+  - The common `LogFormat` can be used as follows:
  
     >```%h %l %u %t \"%r\" %>s %b```
 
@@ -170,7 +170,7 @@ Supported format for the access logs are:
 
 - Combined Log Format
 
-  - Defined in apache `LogFormat` by:
+  - The combined `LogFormat` can be used as follows:
 
     >I. ```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
 
@@ -188,7 +188,7 @@ Supported format for the access logs are:
 
 - Combined Log Format + X-Forwarded-For header
 
-  - Defined in apache `LogFormat` by:
+  - The combined `LogFormat` with x-forwarded-for header can be used as follows:
 
     >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
 

@@ -24,7 +24,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 Supported format for the access logs are:
 
-- [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)
+- [Common Log Format](https://httpd.apache.org/docs/2.4/logs.html#:~:text=format%20strings.-,Common%20Log%20Format,-A%20typical%20configuration)
 
   - The common `LogFormat` can be used as follows:
  
