@@ -36,7 +36,7 @@ Supported format for the access logs are:
 
 - Combined Log Format
 
-  - Defined in apache `LogFormat` by:
+  - The combined `LogFormat` can be used as follows:
 
     >I. ```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
 
