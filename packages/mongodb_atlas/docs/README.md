@@ -6,7 +6,7 @@
 
 Use the MongoDB Atlas integration to:
 
-- Collect MongoDB Atlas mongod audit logs, mongod database logs, organization logs, hardware and process metrics for comprehensive monitoring and analysis.
+- Collect MongoDB Atlas mongod audit logs, mongod database logs, organization logs, project logs, hardware, and process metrics for comprehensive monitoring and analysis.
 - Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
 - Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
 
@@ -14,7 +14,7 @@ Use the MongoDB Atlas integration to:
 
 The MongoDB Atlas integration collects logs and metrics.
 
-Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration are `mongod_audit`, `mongod_database`, and `organization`.
+Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration are `mongod_audit`, `mongod_database`, `organization`, and `project`.
 
 Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration are `process` and `hardware` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
 
@@ -23,7 +23,8 @@ Data streams:
 - `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 - `mongod_database`: This data stream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
 - `organization`: Organization logs provide a detailed view of your organization's activities, enabling tracking and monitoring of significant actions and status changes involving database operations, billing, security, hosts, encryption, user access, and more, as performed by users and teams.
-- `process`: This data stream collects host metrics per process for all the hosts of the specified group. Metrics, like measurements for the host such as CPU usage, number of I/O operations, and memory, are available on this data stream.
+- `process`: This data stream collects host metrics per process for all the hosts in the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory usage are available in this data stream.
+- `project`: This data stream collects events from MongoDB Atlas, providing a comprehensive record of actions and changes made within a project. These events can include modifications to database configurations, user access changes, and general project activity. It's a crucial resource for auditing and monitoring the activities within a MongoDB Atlas project.
 
 Note:
 - Users can monitor and see the logs and metrics inside the ingested documents for MongoDB Atlas in the `logs-*` index pattern from `Discover`.
@@ -67,7 +68,7 @@ Note: Both of the above attributes can be set by using a `period` in configurati
 6. Finally, save the integration.
 
 Note:
-- The `mongod_audit`, `mongod_database`, and `organization` data streams gather historical data spanning the previous 30 minutes.
+- The `mongod_audit`, `mongod_database`, `organization`, and `project` data streams gather historical data spanning the previous 30 minutes.
 - We recommend setting an interval of five minutes or higher for collecting mongod audit and database logs, as MongoDB Atlas refreshes logs from the cluster's backend infrastructure at five minutes intervals as described in this Atlas [document](https://www.mongodb.com/docs/atlas/reference/api-resources-spec/v2/#tag/Monitoring-and-Logs/operation/getHostLogs).
 - The logs collection from MongoDB Atlas does not support M0 free clusters, M2/M5 shared clusters, or serverless instances.
 - Mongod: Mongod is the primary daemon method for the MongoDB system. It helps in handling the data requests, managing the data access, performing background management operations, and other core database operations.
@@ -199,6 +200,10 @@ An example event for `mongod_audit` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -227,7 +232,7 @@ An example event for `mongod_audit` looks as following:
 
 ### Mongod Database
 
-This is the `mongod_database` data stream. This datastream collects a running log of events, including entries such as incoming connections, commands run, monitoring deployment, tuning performance, and issues encountered. To collect database logs, the requesting API Key must have the `Project Data Access Read Only` or higher role.
+This is the `mongod_database` data stream. This data stream collects a running log of events, including entries such as incoming connections, commands run, monitoring deployment, tuning performance, and issues encountered. To collect database logs, the requesting API Key must have the `Project Data Access Read Only` or higher role.
 
 An example event for `mongod_database` looks as following:
 
@@ -316,6 +321,10 @@ An example event for `mongod_database` looks as following:
     ]
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -520,6 +529,10 @@ An example event for `organization` looks as following:
 }
 ```
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -554,6 +567,270 @@ An example event for `organization` looks as following:
 | mongodb_atlas.organization.target.username | Username for the Cloud Manager user targeted by this event. | keyword |
 | mongodb_atlas.organization.target_public_key | Public key of the API Key targeted by the event. | keyword |
 | mongodb_atlas.organization.team.id | Unique identifier for the Cloud Manager team associated with this event. | keyword |
+
+
+### Project
+
+This is the `project` data stream. This data stream collects events from MongoDB Atlas, providing a comprehensive record of actions and changes made within a project. These events can include modifications to database configurations, user access changes, and general project activity. It's a crucial resource for auditing and monitoring the activities within a MongoDB Atlas project. To collect project logs, the requesting API Key must have the `Project Read Only` role.
+
+An example event for `project` looks as following:
+
+```json
+{
+    "@timestamp": "2024-02-21T10:00:29.000Z",
+    "agent": {
+        "ephemeral_id": "71a12b64-a637-4933-b64e-676b42558591",
+        "id": "c8e31bbe-eb0d-443a-a1e1-bcdbe26acdb4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "client": {
+        "ip": "0.0.0.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb_atlas.project",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "c8e31bbe-eb0d-443a-a1e1-bcdbe26acdb4",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "configuration",
+            "database"
+        ],
+        "dataset": "mongodb_atlas.project",
+        "id": "65d5c9bd2c86e3377aa5e5e4",
+        "ingested": "2024-07-08T11:21:04Z",
+        "kind": "event",
+        "module": "mongodb_atlas",
+        "type": [
+            "info",
+            "change"
+        ]
+    },
+    "group": {
+        "id": "646f4379c47da356740d14ad"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": [
+            "172.20.0.7"
+        ],
+        "mac": [
+            "02-42-AC-14-00-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "mongodb_atlas": {
+        "project": {
+            "additional_info": {
+                "_t": "USER_AUDIT",
+                "cid": "646f4379c47da356740d14ad",
+                "cre": "2024-02-21T10:00:29Z",
+                "description": "User was invited to project",
+                "et": "INVITED_TO_GROUP",
+                "hidden": false,
+                "id": "65d5c9bd2c86e3377aa5e5e4",
+                "is_mms_admin": false,
+                "remote_addr": "0.0.0.0",
+                "severity": "INFO",
+                "source": "USER",
+                "target_username": "sample.user@example.com",
+                "un": "sample1.user@example.com",
+                "user_id": "sample_user_id",
+                "ut": "LOCAL"
+            },
+            "alert": {
+                "config": {
+                    "id": "sample_alert_config_id"
+                },
+                "id": "sample_alert_id"
+            },
+            "api_key": {
+                "id": "sample_api_key_id"
+            },
+            "application": {
+                "id": "647ef2c43a8a03710fbceda1",
+                "name": "Application-0"
+            },
+            "cluster": {
+                "id": "sample_cluster_id",
+                "name": "sample_cluster"
+            },
+            "collection": {
+                "name": "sample_collection"
+            },
+            "database": {
+                "name": "sample_db",
+                "username": "atlas-sample-dataset-load-646f4e082084495b64d07ead"
+            },
+            "endpoint": {
+                "id": "123e4567-e89b-12d3-a456-426614174000"
+            },
+            "event_type": {
+                "name": "INVITED_TO_GROUP"
+            },
+            "host": {
+                "id": "sample_host_id",
+                "name": "sample_hostname"
+            },
+            "invoice": {
+                "id": "sample_invoice_id"
+            },
+            "is_global_admin": false,
+            "metric": {
+                "name": "sample_metric",
+                "unit": "RAW",
+                "value": 50
+            },
+            "operation": {
+                "type": "update"
+            },
+            "payment": {
+                "id": "sample_payment_id"
+            },
+            "processor": {
+                "error_msg": "Failed to connect to database instance due to timeout.",
+                "instance": {
+                    "name": "mongo-instance-01"
+                },
+                "name": "eventProcessorService",
+                "state": "active"
+            },
+            "provider_endpoint": {
+                "id": "456f7890-f12a-34d5-b678-567890123456"
+            },
+            "public_key": "sample_public_key",
+            "replicaset": {
+                "name": "sample_replica_set"
+            },
+            "resource": {
+                "id": "789g1011-h12i-34j5-k678-890123456789",
+                "type": "database"
+            },
+            "shard": {
+                "name": "sample_shard"
+            },
+            "snapshot": {
+                "completion_date": "2024-06-18T05:51:05Z",
+                "frequency_type": "HOURLY",
+                "scheduled_creation_date": "2024-06-18T05:47:05Z"
+            },
+            "target_public_key": "sample_target_public_key",
+            "target_user": {
+                "email": "sample.user@example.com"
+            },
+            "team": {
+                "id": "sample_team_id"
+            },
+            "white_list_entry": "sample.user@example.com"
+        }
+    },
+    "organization": {
+        "id": "sample_org_id"
+    },
+    "related": {
+        "hosts": [
+            "sample_hostname"
+        ],
+        "ip": [
+            "0.0.0.0"
+        ],
+        "user": [
+            "sample1.user@example.com",
+            "atlas-sample-dataset-load-646f4e082084495b64d07ead",
+            "sample.user@example.com"
+        ]
+    },
+    "server": {
+        "port": 80
+    },
+    "tags": [
+        "mongodb_atlas-project"
+    ],
+    "user": {
+        "email": "sample1.user@example.com",
+        "id": "sample_user_id"
+    }
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| mongodb_atlas.project.additional_info.\* | Additional meta information about the event. Only present when includeRaw query parameter is true. | object |
+| mongodb_atlas.project.alert.config.id | Unique identifier for the alert configuration associated with the alertId. | keyword |
+| mongodb_atlas.project.alert.id | Unique identifier for the alert associated with this event. | keyword |
+| mongodb_atlas.project.api_key.id | Unique identifier for the API Key that triggered this event. If this field is present in the response, Cloud Manager does not return the userId field. | keyword |
+| mongodb_atlas.project.application.id | Unique identifier for the application within the MongoDB Atlas. | keyword |
+| mongodb_atlas.project.application.name | Human-readable name assigned to the application. | keyword |
+| mongodb_atlas.project.cluster.id | ID of the cluster to which this event applies. | keyword |
+| mongodb_atlas.project.cluster.name | Name of the cluster to which this event applies. | keyword |
+| mongodb_atlas.project.collection.name | Name of the collection on which the event occurred. | keyword |
+| mongodb_atlas.project.database.name | Name of the database on which the event occurred. | keyword |
+| mongodb_atlas.project.database.username | The username of the MongoDB User that was created, deleted, or edited. | keyword |
+| mongodb_atlas.project.endpoint.id | Unique 24-hexadecimal digit string that identifies the endpoint associated with this event. | keyword |
+| mongodb_atlas.project.event_type.name | Indicates name of the event. | keyword |
+| mongodb_atlas.project.host.id | ID of the host on which this event occurred. | keyword |
+| mongodb_atlas.project.host.name | Hostname, FQDN, IPv4 address, or IPv6 address of the host on which this event occurred. | keyword |
+| mongodb_atlas.project.invoice.id | Unique identifier of the invoice associated with this event. | keyword |
+| mongodb_atlas.project.is_global_admin | Flag indicating whether the user who triggered this event is a MongoDB employee. | boolean |
+| mongodb_atlas.project.metric.name | Name of the measurement whose value went outside the threshold. | keyword |
+| mongodb_atlas.project.metric.unit | Unit for the value. | keyword |
+| mongodb_atlas.project.metric.value | Value of the metric. | float |
+| mongodb_atlas.project.operation.type | Type of operation that generated the event. | keyword |
+| mongodb_atlas.project.payment.id | Unique identifier of the invoice payment associated with this event. | keyword |
+| mongodb_atlas.project.processor.error_msg | Error message linked to the stream processor associated with the event. | keyword |
+| mongodb_atlas.project.processor.instance.name | Name of the stream processing instance associated with the event. | keyword |
+| mongodb_atlas.project.processor.name | Name of the stream processor associated with the event. | keyword |
+| mongodb_atlas.project.processor.state | State of the stream processor associated with the event. | keyword |
+| mongodb_atlas.project.provider_endpoint.id | Unique identification string that the cloud provider uses to identify the private endpoint. | keyword |
+| mongodb_atlas.project.public_key | Public key associated with the API Key that triggered this event. If this field is present in the response, Cloud Manager does not return the username field. | keyword |
+| mongodb_atlas.project.replicaset.name | Name of the replica set. | keyword |
+| mongodb_atlas.project.resource.id | Unique 24-hexadecimal digit string that identifies the resource associated with the event. | keyword |
+| mongodb_atlas.project.resource.type | Unique identifier of resource type. | keyword |
+| mongodb_atlas.project.shard.name | The name of the shard associated with the event. | keyword |
+| mongodb_atlas.project.snapshot.completion_date | Date and time when the snapshot process was completed.its value in the ISO 8601 timestamp format in UTC. | date |
+| mongodb_atlas.project.snapshot.frequency_type | Specifies the interval at which snapshots are taken, such as hourly, daily, weekly, or monthly, to ensure regular data backups. | keyword |
+| mongodb_atlas.project.snapshot.scheduled_creation_date | Date and time when the scheduled date and time for the snapshot to be created.Its value in the ISO 8601 timestamp format in UTC. | date |
+| mongodb_atlas.project.target_public_key | Public key of the API Key targeted by the event. | keyword |
+| mongodb_atlas.project.target_user.email | Email address for the console user that this event targets. | keyword |
+| mongodb_atlas.project.team.id | Unique identifier for the Cloud Manager team associated with this event. | keyword |
+| mongodb_atlas.project.white_list_entry | Entry in the list of source host addresses that the API key accepts and this event targets. | keyword |
 
 
 ## Metrics reference
@@ -647,6 +924,10 @@ An example event for `hardware` looks as following:
     ]
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -756,6 +1037,10 @@ An example event for `process` looks as following:
     ]
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
