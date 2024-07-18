@@ -20,7 +20,7 @@ The `dataset_id` is the unique identifier of your BigQuery dataset where your bi
 
 ### table_pattern
 
-The `table_pattern` defines which tables to pull from within the specified dataset. This can be set to either `gcp_billing_export_v1` for standard usage cost data or `gcp_billing_export_resource_v1` for detailed usage cost data.
+The `table_pattern` parameter allows you to specify which tables to retrieve from the specified dataset. This can be set to either `gcp_billing_export_v1` for standard usage cost data or `gcp_billing_export_resource_v1` for detailed usage cost data.
 
 ### cost_type
 
