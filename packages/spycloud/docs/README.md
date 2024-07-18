@@ -1,22 +1,24 @@
-# SpyCloud
+# SpyCloud Enterprise Protection
 
-This [SpyCloud](https://spycloud.com/) integration is the market leader in protecting enterprises and their customers from online fraud, account takeover, and follow-on attacks like ransomware. It offers unique data richness and transparency that goes beyond just finding compromised credentials. We provide an early warning of compromised credentials and malware-infected users, so you can take action before the criminals do.
+## Ingest SpyCloud Cybercrime Analytics into Elastic Agent
 
-The SpyCloud integration uses REST API mode to collect data. Elastic Agent fetches data via API endpoints.
+[SpyCloud’s Enterprise Protection](https://spycloud.com/) integration leverages recaptured darknet data to safeguard employee’s digital identities by producing actionable insights to proactively prevent account takeover and follow-on targeted attacks before they happen.
+
+The Elastic Agent uses the SpyCloud Enterprise Protection REST API to collect data.
 
 ## Compatibility
 
-This module has been tested against the latest SpyCloud version **v2**.
+This module has been tested against the latest SpyCloud Enterprise Protection API **V2**.
 
 ## Data streams
 
-The SpyCloud integration collects three types of logs: Breach Catalog, Breach Record and Compass.
+The SpyCloud integration collects three types of logs: Breach Catalog, Breach Record and Compass Malware Records.
 
-**[Breach Catalog](https://spycloud-external.readme.io/sc-enterprise-api/reference/catalog-list)** - SpyCloud maintains a catalog of thousands of breaches which allows it to search for different breaches in the network.
+**[Breach Catalog](https://spycloud-external.readme.io/sc-enterprise-api/reference/catalog-list)** - a collection of third-party breach and malware data ingested into SpyCloud. The catalog contains thousands of breach objects, each of which contain metadata for a particular breach. A typical breach object contains a variety of metadata including a breach title, description, acquisition date, link to affected websites and many more data points.
 
-**[Breach Record](https://spycloud-external.readme.io/sc-enterprise-api/reference/data-watchlist)** - SpyCloud maintains their own watchlist.
+**[Breach Record](https://spycloud-external.readme.io/sc-enterprise-api/reference/data-watchlist)** - a collection of data assets extracted from third-party breach and malware data. These assets are grouped together to form a data record which represents a single user account or individual persona in parsed data.
 
-**[Compass](https://spycloud-external.readme.io/sc-enterprise-api/reference/compass-data-get)** - Compass gives enterprises full visibility into a malware infection including compromised assets like exposed credentials and authentication cookies that lead to future ransomware attacks.
+**[Compass Malware Records](https://spycloud-external.readme.io/sc-enterprise-api/reference/compass-data-get)** - a collection of data assets extracted from malware data that provides full visibility into infection events to enable post-infection remediation on compromised devices, users, and applications.
 
 ## Requirements
 
@@ -51,14 +53,14 @@ The minimum **kibana.version** required is **8.11.0**.
 - Considering you already have a SpyCloud account, log in to your SpyCloud instance to obtain your API key. Navigate to Main > API, where you will find your API key under the Keys > API Key section.
 - To obtain the Base URL, navigate to Main > API and click on the "View Docs" link, your URL can be located within the API Reference section.
 
-**NOTE**: Your system's IP should be whitelisted by the SpyCloud team to be able to access the APIs and get the data.
+**NOTE**: Your system's IP should be allowlisted by the SpyCloud team to be able to access the APIs and get the data.
 
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type SpyCloud.
-3. Click on the "SpyCloud" integration from the search results.
-4. Click on the Add SpyCloud Integration button to add the integration.
+2. In "Search for integrations" search bar, type SpyCloud Enterprise Protection.
+3. Click on the "SpyCloud Enterprise Protection" integration from the search results.
+4. Click on the Add SpyCloud Enterprise Protection Integration button to add the integration.
 5. While adding the integration, if you want to collect Breach Catalog logs via REST API, please enter the following details:
    - URL
    - API Key
@@ -93,8 +95,8 @@ An example event for `breach_catalog` looks as following:
 {
     "@timestamp": "2022-11-24T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "43465500-928b-44e0-a61e-ce829f2aca4b",
-        "id": "39a281a2-e8fc-4481-bde1-68c17e605826",
+        "ephemeral_id": "033ce450-bddb-4e6a-9a03-d214bd1a33df",
+        "id": "d5066797-a1af-421b-a65f-90ac9dfb5a3d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -108,7 +110,7 @@ An example event for `breach_catalog` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "39a281a2-e8fc-4481-bde1-68c17e605826",
+        "id": "d5066797-a1af-421b-a65f-90ac9dfb5a3d",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -116,7 +118,7 @@ An example event for `breach_catalog` looks as following:
         "agent_id_status": "verified",
         "dataset": "spycloud.breach_catalog",
         "id": "39997",
-        "ingested": "2024-01-01T09:22:13Z",
+        "ingested": "2024-04-19T06:14:06Z",
         "kind": "asset",
         "original": "{\"acquisition_date\":\"2022-10-14T00:00:00Z\",\"assets\":{\"address_2\":363,\"age\":817,\"city\":1859,\"country\":177225,\"country_code\":177225,\"dob\":198,\"email\":177219,\"first_name\":177114,\"full_name\":177030,\"gender\":119505,\"industry\":162612,\"job_title\":160712,\"last_name\":177099,\"middle_name\":17749,\"phone\":511,\"postal_code\":1971,\"social_facebook\":51841,\"social_twitter\":57193},\"confidence\":3,\"description\":\"This source has been marked as sensitive due to one of the following reasons: Revealing the source may compromise an on-going investigation. The affected site is of a controversial nature but does not validate email addresses and could therefore be used to tarnish an employee's reputation.\",\"id\":39997,\"num_records\":177225,\"spycloud_publish_date\":\"2022-11-24T00:00:00Z\",\"title\":\"Sensitive Source\",\"type\":\"PRIVATE\",\"uuid\":\"9f5bf34b-092e-46f4-b87f-02c91b0adb3a\"}"
     },
@@ -439,10 +441,10 @@ An example event for `breach_record` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-01-20T08:00:00.000Z",
+    "@timestamp": "2023-11-29T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "6c9acb4f-15a5-47cf-b20f-59fbd4cdea17",
-        "id": "39a281a2-e8fc-4481-bde1-68c17e605826",
+        "ephemeral_id": "58bf9533-c4d9-49d6-aa00-516b1a7c92a3",
+        "id": "d5066797-a1af-421b-a65f-90ac9dfb5a3d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -460,7 +462,7 @@ An example event for `breach_record` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "39a281a2-e8fc-4481-bde1-68c17e605826",
+        "id": "d5066797-a1af-421b-a65f-90ac9dfb5a3d",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -468,7 +470,7 @@ An example event for `breach_record` looks as following:
         "agent_id_status": "verified",
         "dataset": "spycloud.breach_record",
         "id": "3350f1da-fa39-4415-b2cc-02057e2fbe99",
-        "ingested": "2024-01-01T09:23:22Z",
+        "ingested": "2024-04-19T06:17:48Z",
         "kind": "event",
         "original": "{\"account_image_url\":\"https://www.chess.com/bundles/web/images/noavatar_l.84a92436.gif\",\"account_login_time\":\"2018-06-29T23:51:46Z\",\"account_modification_time\":\"2018-06-29T23:51:10Z\",\"account_signup_time\":\"2016-07-29T18:47:11Z\",\"av_softwares\":[\"McAfee\",\"Windows Defender\"],\"cc_bin\":\"489486\",\"cc_expiration\":\"06/2025\",\"cc_last_four\":\"1237\",\"cc_number\":\"3fdd0ce028ffaa147afdb6461f6ce95f8c07f484\",\"company_name\":\"ABC Corporation\",\"country\":\"United States\",\"country_code\":\"US\",\"display_resolution\":\"1920x1080\",\"document_id\":\"3350f1da-fa39-4415-b2cc-02057e2fbe99\",\"domain\":\"example1.com\",\"email\":\"john.doe@example.com\",\"email_domain\":\"example.com\",\"email_username\":\"john.doe\",\"first_name\":\"John\",\"full_name\":\"John Doe\",\"homepage\":\"https://www.chess.com/member/sarahjoh\",\"industry\":\"Technology\",\"infected_machine_id\":\"ABC123\",\"infected_path\":\"/documents/confidential\",\"infected_time\":\"2023-01-15T12:30:45Z\",\"ip_addresses\":[\"89.160.20.128\",\"89.160.20.112\"],\"job_title\":\"Software Engineer\",\"keyboard_languages\":[\"English\",\"Spanish\"],\"last_name\":\"Doe\",\"log_id\":\"76afa48107ec32f51a2aba4a314357c1e69d2267f1b04bf1afc948d0f77b1658\",\"password\":\"P@ssw0rd123\",\"password_plaintext\":\"******\",\"password_type\":\"alphanumeric\",\"record_addition_date\":\"2023-12-06T00:00:00Z\",\"record_cracked_date\":\"2023-11-29T00:00:00Z\",\"record_modification_date\":\"2023-11-29T00:00:00Z\",\"salt\":\"fbbdhd\",\"severity\":3,\"sighting\":17,\"social_linkedin\":[\"ildar-bazanov-961b14160\"],\"source_id\":50436,\"spycloud_publish_date\":\"2023-01-20T08:00:00Z\",\"target_domain\":\"example.com\",\"target_subdomain\":\"login.example.com\",\"target_url\":\"https://example.com/login\",\"user_browser\":\"Chrome\",\"user_hostname\":\"workstation-1\",\"user_os\":\"Windows 10\",\"user_sys_domain\":\"8ad8.default\",\"user_sys_registered_owner\":\"John Milk\",\"username\":\"john_doe\"}",
         "severity": 3
@@ -694,8 +696,8 @@ An example event for `compass` looks as following:
 {
     "@timestamp": "2022-11-17T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "bef38944-c281-4338-ac54-973debbb4aca",
-        "id": "39a281a2-e8fc-4481-bde1-68c17e605826",
+        "ephemeral_id": "b28d2203-1422-48c9-86e7-9b54a251565b",
+        "id": "d5066797-a1af-421b-a65f-90ac9dfb5a3d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.11.0"
@@ -713,7 +715,7 @@ An example event for `compass` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "39a281a2-e8fc-4481-bde1-68c17e605826",
+        "id": "d5066797-a1af-421b-a65f-90ac9dfb5a3d",
         "snapshot": false,
         "version": "8.11.0"
     },
@@ -721,7 +723,7 @@ An example event for `compass` looks as following:
         "agent_id_status": "verified",
         "dataset": "spycloud.compass",
         "id": "3807a672-e5c4-4a58-8ade-93a690136c24",
-        "ingested": "2024-01-01T09:24:32Z",
+        "ingested": "2024-04-19T06:19:55Z",
         "kind": "event",
         "original": "{\"av_softwares\":[\"Windows Defender\"],\"country\":\"PHILIPPINES\",\"country_code\":\"PH\",\"document_id\":\"3807a672-e5c4-4a58-8ade-93a690136c24\",\"domain\":\"gmail.com\",\"email\":\"wer****************r@gmail.com\",\"email_domain\":\"gmail.com\",\"email_username\":\"wer****************r\",\"infected_machine_id\":\"76c9a60b-1d06-4bc1-8e08-4f07f82c0bdd\",\"infected_path\":\"C:\\\\Windows\\\\Microsoft.NET\\\\Framework\\\\v4.0.30319\\\\AppLaunch.exe\",\"infected_time\":\"2022-08-11T18:02:31Z\",\"ip_addresses\":[\"110.18.12.120\"],\"keyboard_languages\":\"english (united states)\",\"log_id\":\"fc201cf30d2727c57f07f05f3ab6ee43c7260609d973d508f818c1abcc4fcb39\",\"password\":\"********\",\"password_plaintext\":\"********\",\"password_type\":\"plaintext\",\"severity\":25,\"source_id\":40351,\"spycloud_publish_date\":\"2022-11-17T00:00:00Z\",\"target_domain\":\"sparefactor.com\",\"target_subdomain\":\"application.sparefactor.com\",\"target_url\":\"application.sparefactor.com\",\"user_browser\":\"Google Chrome [Default]\",\"user_hostname\":\"LAPTOP-4G2P1N13\",\"user_os\":\"Windows 10 Home Single Language [x64]\",\"user_sys_registered_owner\":\"NewAdmin\"}",
         "severity": 25

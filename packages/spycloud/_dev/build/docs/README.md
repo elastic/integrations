@@ -1,22 +1,24 @@
-# SpyCloud
+# SpyCloud Enterprise Protection
 
-This [SpyCloud](https://spycloud.com/) integration is the market leader in protecting enterprises and their customers from online fraud, account takeover, and follow-on attacks like ransomware. It offers unique data richness and transparency that goes beyond just finding compromised credentials. We provide an early warning of compromised credentials and malware-infected users, so you can take action before the criminals do.
+## Ingest SpyCloud Cybercrime Analytics into Elastic Agent
 
-The SpyCloud integration uses REST API mode to collect data. Elastic Agent fetches data via API endpoints.
+[SpyCloud’s Enterprise Protection](https://spycloud.com/) integration leverages recaptured darknet data to safeguard employee’s digital identities by producing actionable insights to proactively prevent account takeover and follow-on targeted attacks before they happen.
+
+The Elastic Agent uses the SpyCloud Enterprise Protection REST API to collect data.
 
 ## Compatibility
 
-This module has been tested against the latest SpyCloud version **v2**.
+This module has been tested against the latest SpyCloud Enterprise Protection API **V2**.
 
 ## Data streams
 
-The SpyCloud integration collects three types of logs: Breach Catalog, Breach Record and Compass.
+The SpyCloud integration collects three types of logs: Breach Catalog, Breach Record and Compass Malware Records.
 
-**[Breach Catalog](https://spycloud-external.readme.io/sc-enterprise-api/reference/catalog-list)** - SpyCloud maintains a catalog of thousands of breaches which allows it to search for different breaches in the network.
+**[Breach Catalog](https://spycloud-external.readme.io/sc-enterprise-api/reference/catalog-list)** - a collection of third-party breach and malware data ingested into SpyCloud. The catalog contains thousands of breach objects, each of which contain metadata for a particular breach. A typical breach object contains a variety of metadata including a breach title, description, acquisition date, link to affected websites and many more data points.
 
-**[Breach Record](https://spycloud-external.readme.io/sc-enterprise-api/reference/data-watchlist)** - SpyCloud maintains their own watchlist.
+**[Breach Record](https://spycloud-external.readme.io/sc-enterprise-api/reference/data-watchlist)** - a collection of data assets extracted from third-party breach and malware data. These assets are grouped together to form a data record which represents a single user account or individual persona in parsed data.
 
-**[Compass](https://spycloud-external.readme.io/sc-enterprise-api/reference/compass-data-get)** - Compass gives enterprises full visibility into a malware infection including compromised assets like exposed credentials and authentication cookies that lead to future ransomware attacks.
+**[Compass Malware Records](https://spycloud-external.readme.io/sc-enterprise-api/reference/compass-data-get)** - a collection of data assets extracted from malware data that provides full visibility into infection events to enable post-infection remediation on compromised devices, users, and applications.
 
 ## Requirements
 
@@ -51,14 +53,14 @@ The minimum **kibana.version** required is **8.11.0**.
 - Considering you already have a SpyCloud account, log in to your SpyCloud instance to obtain your API key. Navigate to Main > API, where you will find your API key under the Keys > API Key section.
 - To obtain the Base URL, navigate to Main > API and click on the "View Docs" link, your URL can be located within the API Reference section.
 
-**NOTE**: Your system's IP should be whitelisted by the SpyCloud team to be able to access the APIs and get the data.
+**NOTE**: Your system's IP should be allowlisted by the SpyCloud team to be able to access the APIs and get the data.
 
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type SpyCloud.
-3. Click on the "SpyCloud" integration from the search results.
-4. Click on the Add SpyCloud Integration button to add the integration.
+2. In "Search for integrations" search bar, type SpyCloud Enterprise Protection.
+3. Click on the "SpyCloud Enterprise Protection" integration from the search results.
+4. Click on the Add SpyCloud Enterprise Protection Integration button to add the integration.
 5. While adding the integration, if you want to collect Breach Catalog logs via REST API, please enter the following details:
    - URL
    - API Key

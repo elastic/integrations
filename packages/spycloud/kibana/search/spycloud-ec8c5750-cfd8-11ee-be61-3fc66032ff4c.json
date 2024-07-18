@@ -1,8 +1,10 @@
 {
     "attributes": {
         "columns": [
-            "spycloud.breach_catalog.title",
-            "message"
+            "spycloud.compass.log_id",
+            "host.hostname",
+            "spycloud.compass.infected.time",
+            "host.os.full"
         ],
         "description": "",
         "grid": {},
@@ -18,18 +20,40 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "data_stream.dataset",
+                            "field": "event.severity",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
+                            "key": "event.severity",
                             "negate": false,
                             "params": {
-                                "query": "spycloud.breach_catalog"
+                                "query": "25"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "spycloud.breach_catalog"
+                                "event.severity": "25"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "spycloud.breach_record"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "spycloud.breach_record"
                             }
                         }
                     }
@@ -48,13 +72,13 @@
             ]
         ],
         "timeRestore": false,
-        "title": "Breach Catalog [Logs SpyCloud]",
+        "title": "Infected Devices [Logs SpyCloud]",
         "usesAdHocDataView": false
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-02-20T06:30:20.974Z",
-    "id": "spycloud-90f45670-9e48-11ee-acf7-7108ddc3dcca",
-    "managed": true,
+    "created_at": "2024-02-20T10:15:08.357Z",
+    "id": "spycloud-ec8c5750-cfd8-11ee-be61-3fc66032ff4c",
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -64,6 +88,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         }
     ],

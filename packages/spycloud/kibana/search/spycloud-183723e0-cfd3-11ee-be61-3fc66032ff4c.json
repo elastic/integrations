@@ -1,11 +1,10 @@
 {
     "attributes": {
         "columns": [
-            "spycloud.breach_record.log_id",
-            "host.ip",
-            "host.os.full",
-            "spycloud.breach_record.user.sys.registered_owner",
-            "url.original"
+            "destination.subdomain",
+            "user.email",
+            "user.name",
+            "spycloud.compass.log_id"
         ],
         "description": "",
         "grid": {},
@@ -26,13 +25,13 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "spycloud.breach_record"
+                                "query": "spycloud.compass"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "spycloud.breach_record"
+                                "data_stream.dataset": "spycloud.compass"
                             }
                         }
                     },
@@ -57,6 +56,26 @@
                                 "event.severity": "25"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "destination.subdomain",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "destination.subdomain",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "destination.subdomain"
+                            }
+                        }
                     }
                 ],
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
@@ -73,12 +92,12 @@
             ]
         ],
         "timeRestore": false,
-        "title": "Machine Drilldown [Logs SpyCloud]",
+        "title": "Infected Target Subdomains [Logs SpyCloud]",
         "usesAdHocDataView": false
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-06-07T11:16:08.773Z",
-    "id": "spycloud-b2beff20-aadd-11ee-bf13-df1477528748",
+    "created_at": "2024-04-25T07:04:24.406Z",
+    "id": "spycloud-183723e0-cfd3-11ee-be61-3fc66032ff4c",
     "managed": true,
     "references": [
         {
@@ -94,6 +113,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         }
     ],

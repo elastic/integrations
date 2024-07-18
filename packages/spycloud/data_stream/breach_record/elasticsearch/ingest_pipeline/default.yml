@@ -383,9 +383,14 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
+      tag: set_@timestamp_from_breach_record_modification_date
+      copy_from: spycloud.breach_record.record.modification_date
+      if: ctx.json?.record_modification_date != null
+  - set:
+      field: '@timestamp'
       tag: set_@timestamp_from_breach_record_spycloud_publish_date
       copy_from: spycloud.breach_record.spycloud_publish_date
-      ignore_empty_value: true
+      if: ctx.json?.record_modification_date == null
   - rename:
       field: json.target_domain
       tag: rename_target_domain
@@ -510,7 +515,6 @@ processors:
         - spycloud.breach_record.full_name
         - spycloud.breach_record.ip_addresses
         - spycloud.breach_record.severity
-        - spycloud.breach_record.spycloud_publish_date
         - spycloud.breach_record.target.domain
         - spycloud.breach_record.target.subdomain
         - spycloud.breach_record.target.url
@@ -524,11 +528,6 @@ processors:
       field: json
       tag: remove_json
       ignore_missing: true
-  - remove:
-      field: event.original
-      tag: remove_event_original
-      ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
   - script:
       tag: script_to_drop_null_values
       lang: painless
