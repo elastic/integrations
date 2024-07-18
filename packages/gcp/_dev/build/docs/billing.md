@@ -16,7 +16,7 @@ For detailed usage cost data, set the table pattern to `gcp_billing_export_resou
 
 ### dataset_id
 
-The `dataset_id` is the ID of your BigQuery dataset where your billing data is stored. This is a unique identifier for the dataset within the project. You can find this ID in your Google Cloud Console under BigQuery.
+The `dataset_id` is the unique identifier of your BigQuery dataset where your billing data is stored. You can find this ID in your Google Cloud Console under the BigQuery section.
 
 ### table_pattern
 
