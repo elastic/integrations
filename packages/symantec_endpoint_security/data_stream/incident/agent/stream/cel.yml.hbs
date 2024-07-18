@@ -1,0 +1,120 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+  endpoint_params:
+    grant_type: client_credentials
+state:
+  initial_interval: {{initial_interval}}
+  want_more: false
+  limit: {{batch_size}}
+  next: 0
+program: |
+  (
+    state.want_more
+    ?
+      state
+    :
+      state.with({
+        "limit": state.limit,
+        "start_date": (
+          has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null
+          ?
+            state.cursor.last_timestamp
+          :
+            string(now - duration(state.initial_interval))
+        ),
+        "end_date": now,
+        "next": state.next
+      })
+  ).as(state,
+    post_request(
+      state.url.trim_right("/") + "/v1/incidents",
+      "application/json",
+      {
+        "limit": state.limit,
+        "start_date": state.start_date,
+        "end_date": state.end_date,
+        "next": state.next
+      }.encode_json()
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+        bytes(resp.Body).decode_json().as(body, {
+          "events": body.incidents.map(e, {
+            "message": e.encode_json(),
+          }),
+          "next": (
+            has(body.next) && (body.next != body.total)
+            ?
+              body.next
+            :
+              0
+          ),
+          "want_more": has(body.next) && (body.next != body.total),
+          "limit": state.limit,
+          "start_date": string(state.start_date),
+          "end_date": string(state.end_date),
+          "cursor": {
+            "last_timestamp": (
+              (has(body.next) ? (body.next == body.total) : true)
+              ?
+                state.end_date
+              :
+                has(state.cursor) && has(state.cursor.last_timestamp)
+                ?
+                  state.cursor.last_timestamp
+                :
+                  null
+            )
+          }
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST:"+(
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

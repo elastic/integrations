@@ -1,0 +1,470 @@
+---
+description: Pipeline for processing Incident logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process
+  - rename:
+      field: message
+      target_field: event.original
+      tag: rename_message
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      tag: json_decoding
+      target_field: ses.incident
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - ses.incident.incident_uid
+        - ses.incident.time
+      tag: fingerprint_processor
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - append:
+      field: event.category
+      tag: append_malware_into_event_category
+      value: malware
+      if: >-
+        ctx.ses?.incident?.conclusion != null && [
+          'targeted malware',
+          'suspicious activity',
+          'malicious activity',
+          'malicious file',
+          'dual use tool',
+          'malware',
+          'hacktool'
+        ].contains(ctx.ses.incident.conclusion.toLowerCase())
+  - append:
+      field: event.category
+      tag: append_threat_into_event_category
+      value: threat
+      if: >-
+        ctx.ses?.incident?.conclusion != null && [
+          'network threat',
+          'potential threat',
+          'targeted attack'
+        ].contains(ctx.ses.incident.conclusion.toLowerCase())
+  - append:
+      field: event.category
+      tag: append_intrusion_detection_into_event_category
+      value: intrusion_detection
+      if: >-
+        ctx.ses?.incident?.conclusion != null && [
+          'breach'
+        ].contains(ctx.ses.incident.conclusion.toLowerCase())
+  - append:
+      field: event.category
+      tag: append_network_into_event_category
+      value: network
+      if: >-
+        ctx.ses?.incident?.conclusion != null && [
+          'network threat'
+        ].contains(ctx.ses.incident.conclusion.toLowerCase())
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      if: >-
+        ctx.ses?.incident?.conclusion != null && [
+          'targeted malware',
+          'suspicious activity',
+          'malicious activity',
+          'malicious file',
+          'dual use tool',
+          'malware',
+          'hacktool',
+          'breach',
+          'network threat'
+        ].contains(ctx.ses.incident.conclusion.toLowerCase())
+  - append:
+      field: event.type
+      tag: append_indicator_into_event_type
+      value: indicator
+      if: >-
+        ctx.ses?.incident?.conclusion != null && [
+          'network threat',
+          'potential threat',
+          'targeted attack'
+        ].contains(ctx.ses.incident.conclusion.toLowerCase())
+  - date:
+      field: ses.incident.device_time
+      tag: date_device_time
+      target_field: ses.incident.device_time
+      formats:
+        - UNIX_MS
+      if: ctx.ses?.incident?.device_time != null && ctx.ses.incident.device_time != ''
+      on_failure:
+        - remove:
+            field: ses.incident.device_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ses.incident.time
+      tag: date_timestamp_from_time
+      formats:
+        - UNIX_MS
+      if: ctx.ses?.incident?.time != null && ctx.ses.incident.time != ''
+      on_failure:
+        - remove:
+            field: ses.incident.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ses.incident.time
+      tag: date_time
+      target_field: ses.incident.time
+      formats:
+        - UNIX_MS
+      if: ctx.ses?.incident?.time != null && ctx.ses.incident.time != ''
+      on_failure:
+        - remove:
+            field: ses.incident.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ses.incident.log_time
+      tag: date_log_time
+      target_field: ses.incident.log_time
+      formats:
+        - ISO8601
+      if: ctx.ses?.incident?.log_time != null && ctx.ses.incident.log_time != ''
+      on_failure:
+        - remove:
+            field: ses.incident.log_time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: ses.incident.created
+      tag: date_created
+      target_field: ses.incident.created
+      formats:
+        - ISO8601
+      if: ctx.ses?.incident?.created != null && ctx.ses.incident.created != ''
+      on_failure:
+        - remove:
+            field: ses.incident.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created
+      copy_from: ses.incident.created
+      ignore_empty_value: true
+  - date:
+      field: ses.incident.modified
+      tag: date_modified
+      target_field: ses.incident.modified
+      formats:
+        - ISO8601
+      if: ctx.ses?.incident?.modified != null && ctx.ses.incident.modified != ''
+      on_failure:
+        - remove:
+            field: ses.incident.modified
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.incident.category_id
+      tag: convert_category_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ses.incident.event_id
+      tag: convert_event_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ses.incident.ref_incident_uid
+      tag: convert_ref_incident_uid_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ses.incident.id
+      tag: convert_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ses.incident.priority_id
+      tag: convert_priority_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ses.incident.resolution_id
+      tag: convert_resolution_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ses.incident.state_id
+      tag: convert_state_id_to_string
+      type: string
+      ignore_missing: true
+  - convert:
+      field: ses.incident.type_id
+      tag: convert_type_id_to_string
+      type: string
+      ignore_missing: true
+  - lowercase:
+      field: ses.incident.suspected_breach
+      tag: lowercase_suspected_breach
+      ignore_missing: true
+  - set:
+      field: ses.incident.suspected_breach
+      tag: set_suspected_breach_to_true
+      value: true
+      if: ctx.ses?.incident?.suspected_breach == 'yes'
+  - set:
+      field: ses.incident.suspected_breach
+      tag: set_suspected_breach_to_false
+      value: false
+      if: ctx.ses?.incident?.suspected_breach == 'no'
+  - set:
+      field: event.reason
+      tag: set_event_reason
+      copy_from: ses.incident.conclusion
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: ses.incident.incident_uid
+      ignore_empty_value: true
+  - set:
+      field: event.url
+      tag: set_event_url
+      copy_from: ses.incident.incident_url
+      ignore_empty_value: true
+  - uri_parts:
+      field: event.url
+      tag: uri_parts_event_url
+      if: ctx.event?.url != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: message
+      tag: set_message
+      copy_from: ses.incident.message
+      ignore_empty_value: true
+  - set:
+      field: event.provider
+      tag: set_event_provider
+      copy_from: ses.incident.product_name
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: ses.incident.rule_name
+      ignore_empty_value: true
+  - set:
+      field: http.version
+      tag: set_http_version
+      copy_from: ses.incident.version
+      ignore_empty_value: true
+  - convert:
+      field: ses.incident.severity_id
+      tag: convert_severity_id_to_string
+      type: string
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.ses?.incident?.severity_id != null
+      description: Set Severity.
+      tag: painless_set_severity
+      params:
+        "3": "Minor"
+        "4": "Major"
+        "5": "Critical"
+      source: |-
+        ctx.ses.incident.put("severity",params[ctx.ses.incident.severity_id])
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: ses.incident.severity_id
+      tag: convert_severity_id_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: ses.incident.severity_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      tag: set_event_severity
+      copy_from: ses.incident.severity_id
+      ignore_empty_value: true
+  - set:
+      field: ses.incident.outcome
+      tag: set_outcome_to_unknown
+      value: Unknown
+      if: ctx.ses?.incident?.id == '0'
+  - set:
+      field: ses.incident.outcome
+      tag: set_outcome_to_logged
+      value: Logged
+      if: ctx.ses?.incident?.id == '4'
+  - set:
+      field: ses.incident.category
+      tag: set_category_to_security
+      value: Security
+  - script:
+      lang: painless
+      if: ctx.ses?.incident?.state_id != null
+      description: Set State Types.
+      tag: painless_set_state
+      params:
+        State:
+          - Unknown
+          - New
+          - In Progress
+          - On Hold
+          - Resolved
+          - Closed
+      source: |-
+        def StateID = Integer.parseInt(ctx.ses.incident.state_id);
+        if (StateID >= 0 && StateID < params.State.length) {
+          ctx.ses.incident.put('state', params['State'][StateID]);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      if: ctx.ses?.incident?.priority_id != null
+      description: Set Priority Types.
+      tag: painless_set_priority
+      params:
+        Priority:
+          - Unknown
+          - Informational
+          - Normal
+          - High
+          - Critical
+      source: |-
+        def PriorityID = Integer.parseInt(ctx.ses.incident.priority_id);
+        if (PriorityID >= 0 && PriorityID < params.Priority.length) {
+          ctx.ses.incident.put('priority', params['Priority'][PriorityID]);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      if: ctx.ses?.incident?.resolution_id != null
+      description: Set Resolution Types.
+      tag: painless_set_resolution
+      params:
+        Resolution:
+          - Insufficient data
+          - Security risk
+          - False positive
+          - Managed externally
+          - Benign
+          - Test
+      source: |-
+        def ResolutionID = Integer.parseInt(ctx.ses.incident.resolution_id)-1;
+        if (ResolutionID >= 0 && ResolutionID < params.Resolution.length) {
+          ctx.ses.incident.put('resolution', params['Resolution'][ResolutionID]);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      if: ctx.ses?.incident?.event_id != null
+      description: Set event name.
+      tag: painless_set_event
+      params:
+        "8075004": "Incident Creation: Logged"
+        "8075000": "Incident Creation: Unknown"
+        "8076004": "Incident Update: Logged"
+        "8076000": "Incident Update: Unknown"
+        "8077004": "Incident Closure: Logged"
+        "8077000": "Incident Closure: Unknown"
+      source: |-
+        ctx.ses.incident.put("event",params[ctx.ses.incident.event_id])
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - ses.incident.conclusion
+        - ses.incident.created
+        - ses.incident.incident_uid
+        - ses.incident.incident_url
+        - ses.incident.message
+        - ses.incident.time
+        - ses.incident.product_name
+        - ses.incident.rule_name
+        - ses.incident.severity_id
+        - ses.incident.version
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
