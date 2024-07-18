@@ -18,15 +18,27 @@ keep_null: {{keep_null}}
 {{/if}}
 {{#if tags}}
 tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+{{else if preserve_original_event}}
+tags:
+  - preserve_original_event
 {{/if}}
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
 {{#if processors}}
 processors:
+{{#if preserve_original_event}}
+- copy_fields:
+    fields:
+      - from: message
+        to: event.original
+{{/if}}
 {{#if syslog}}
 - syslog:
     {{syslog_options}}
@@ -34,8 +46,20 @@ processors:
 {{processors}}
 {{else if syslog}}
 processors:
+{{#if preserve_original_event}}
+- copy_fields:
+    fields:
+      - from: message
+        to: event.original
+{{/if}}
 - syslog:
     {{syslog_options}}
+{{else if preserve_original_event}}
+processors:
+- copy_fields:
+    fields:
+      - from: message
+        to: event.original
 {{/if}}
 
 {{custom}}
