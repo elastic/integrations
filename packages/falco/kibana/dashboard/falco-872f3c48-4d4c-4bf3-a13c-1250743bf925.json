@@ -60,7 +60,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "### Overview\nThis dashboard provides information about the Security Alerts collected by the Falco Integration.\n\nAlerts are broken down by category, source, and type of alert. Further investigation into the details of the individual alerts can be done via the Raw Events display.",
+                            "markdown": "### Overview\nThis dashboard provides information about the Security Alerts collected by the Falco Integration.\n\nAlerts are broken down by category, source, and type of alert. Further investigation into the details of the individual alerts can be done via the Alert Stream display.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -70,12 +70,12 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "09cddf3c-43b8-43a0-b58a-07d95f56087d",
+                    "i": "870875bc-884a-406f-b6dd-ca138e99da77",
                     "w": 12,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "09cddf3c-43b8-43a0-b58a-07d95f56087d",
+                "panelIndex": "870875bc-884a-406f-b6dd-ca138e99da77",
                 "type": "visualization"
             },
             {
@@ -195,12 +195,12 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "419c1322-0363-4b8f-8fd6-7263334d2531",
+                    "i": "2078f109-fccb-4018-9b2b-7fa09d8b191b",
                     "w": 18,
                     "x": 12,
                     "y": 0
                 },
-                "panelIndex": "419c1322-0363-4b8f-8fd6-7263334d2531",
+                "panelIndex": "2078f109-fccb-4018-9b2b-7fa09d8b191b",
                 "title": "Alerts Over Time [Logs Falco]",
                 "type": "lens"
             },
@@ -339,12 +339,12 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "e84ceca6-20d8-4663-acca-d7d2506a9b38",
+                    "i": "4c13b099-95cf-40ff-9a94-c762e939862a",
                     "w": 18,
                     "x": 30,
                     "y": 0
                 },
-                "panelIndex": "e84ceca6-20d8-4663-acca-d7d2506a9b38",
+                "panelIndex": "4c13b099-95cf-40ff-9a94-c762e939862a",
                 "title": "Alerts by Host - Top 10 [Logs Falco]",
                 "type": "lens"
             },
@@ -483,12 +483,12 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "2d793bd7-92e6-48ef-a45c-4ed2d0cbca99",
+                    "i": "9bcb127d-f1a7-4d3d-9a67-aa5e64e27c72",
                     "w": 24,
                     "x": 0,
                     "y": 15
                 },
-                "panelIndex": "2d793bd7-92e6-48ef-a45c-4ed2d0cbca99",
+                "panelIndex": "9bcb127d-f1a7-4d3d-9a67-aa5e64e27c72",
                 "title": "Alerts by Pod - Top 10 [Logs Falco]",
                 "type": "lens"
             },
@@ -532,19 +532,13 @@
                                                 },
                                                 "ce1b6a9d-3334-493a-a415-7ff3d36a7fe3": {
                                                     "customLabel": true,
-                                                    "dataType": "number",
+                                                    "dataType": "string",
                                                     "isBucketed": true,
                                                     "label": "Event Priority",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
                                                         "excludeIsRegex": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        },
                                                         "include": [],
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
@@ -557,10 +551,11 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 8
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "event.severity"
+                                                    "sourceField": "falco.priority"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -616,12 +611,12 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "448ea46c-ec33-4ffa-b2ad-089a73d6752a",
+                    "i": "3e25fb05-fb7a-46c8-a37e-5e0059d7c579",
                     "w": 24,
                     "x": 24,
                     "y": 15
                 },
-                "panelIndex": "448ea46c-ec33-4ffa-b2ad-089a73d6752a",
+                "panelIndex": "3e25fb05-fb7a-46c8-a37e-5e0059d7c579",
                 "title": "Alerts by Priority - Top 10 [Logs Falco]",
                 "type": "lens"
             },
@@ -742,38 +737,83 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "c9406d51-e3ef-4c21-b1cf-d5b8753e9133",
+                    "i": "f87c7e28-2bd7-4672-b85c-a87aa09097c6",
                     "w": 24,
                     "x": 0,
                     "y": 30
                 },
-                "panelIndex": "c9406d51-e3ef-4c21-b1cf-d5b8753e9133",
+                "panelIndex": "f87c7e28-2bd7-4672-b85c-a87aa09097c6",
                 "title": "Rules Triggered - Top 10 [Logs Falco]",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "event.original",
+                            "process.name",
+                            "event.severity",
+                            "rule.name"
+                        ],
+                        "grid": {
+                            "columns": {
+                                "event.original": {
+                                    "width": 695
+                                }
+                            }
+                        },
+                        "hideChart": false,
+                        "isTextBasedQuery": false,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": {
+                                "filter": [],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": "data_stream.dataset : \"falco.alerts\""
+                                }
+                            }
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "rowsPerPage": 25,
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ],
+                        "timeRestore": false,
+                        "usesAdHocDataView": false
+                    },
+                    "description": "",
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "f3b209c7-4197-4582-856e-5b67b3d8be4a",
+                    "i": "783e0fa2-9820-4c87-8a69-c3b744b67dd6",
                     "w": 24,
                     "x": 24,
                     "y": 30
                 },
-                "panelIndex": "f3b209c7-4197-4582-856e-5b67b3d8be4a",
-                "panelRefName": "panel_f3b209c7-4197-4582-856e-5b67b3d8be4a",
+                "panelIndex": "783e0fa2-9820-4c87-8a69-c3b744b67dd6",
+                "title": "Alert Stream [Logs Falco]",
                 "type": "search"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Falco] Alerts Overview",
-        "version": 1
+        "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-07-16T17:32:43.745Z",
-    "id": "falco-a09a6e5f-6568-40bb-9f09-bbb836545688",
+    "created_at": "2024-07-18T16:22:11.284Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "falco-872f3c48-4d4c-4bf3-a13c-1250743bf925",
     "managed": false,
     "references": [
         {
@@ -783,35 +823,35 @@
         },
         {
             "id": "logs-*",
-            "name": "419c1322-0363-4b8f-8fd6-7263334d2531:indexpattern-datasource-layer-bbf1e7a8-220a-4a72-8dff-78ef0a8d76bb",
+            "name": "2078f109-fccb-4018-9b2b-7fa09d8b191b:indexpattern-datasource-layer-bbf1e7a8-220a-4a72-8dff-78ef0a8d76bb",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "e84ceca6-20d8-4663-acca-d7d2506a9b38:indexpattern-datasource-layer-4e4bbe76-095b-4148-ba0f-c4c625d30465",
+            "name": "4c13b099-95cf-40ff-9a94-c762e939862a:indexpattern-datasource-layer-4e4bbe76-095b-4148-ba0f-c4c625d30465",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "2d793bd7-92e6-48ef-a45c-4ed2d0cbca99:indexpattern-datasource-layer-ec8cc475-7057-4045-832a-6b54d1d6071a",
+            "name": "9bcb127d-f1a7-4d3d-9a67-aa5e64e27c72:indexpattern-datasource-layer-ec8cc475-7057-4045-832a-6b54d1d6071a",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "448ea46c-ec33-4ffa-b2ad-089a73d6752a:indexpattern-datasource-layer-3262928f-5119-4364-a33d-048d27242eeb",
+            "name": "3e25fb05-fb7a-46c8-a37e-5e0059d7c579:indexpattern-datasource-layer-3262928f-5119-4364-a33d-048d27242eeb",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "c9406d51-e3ef-4c21-b1cf-d5b8753e9133:indexpattern-datasource-layer-a138435d-cbd0-4df4-bbfe-a090a3de9712",
+            "name": "f87c7e28-2bd7-4672-b85c-a87aa09097c6:indexpattern-datasource-layer-a138435d-cbd0-4df4-bbfe-a090a3de9712",
             "type": "index-pattern"
         },
         {
-            "id": "falco-f0d52d00-50cb-4b23-8755-c6966a30462b",
-            "name": "f3b209c7-4197-4582-856e-5b67b3d8be4a:panel_f3b209c7-4197-4582-856e-5b67b3d8be4a",
-            "type": "search"
+            "id": "logs-*",
+            "name": "783e0fa2-9820-4c87-8a69-c3b744b67dd6:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "8.9.0"
+    "typeMigrationVersion": "10.2.0"
 }
