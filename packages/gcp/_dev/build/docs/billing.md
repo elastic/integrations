@@ -24,7 +24,7 @@ The `table_pattern` parameter allows you to specify which tables to retrieve fro
 
 ### cost_type
 
-The `cost_type` specifies the type of cost data you want to retrieve from your billing data.
+The `cost_type` parameter enables you to filter the cost data based on specific cost categories. You can select one of the following options:
 
 - `regular`: This cost type includes all the regular costs associated with your usage of GCP services. This does not include any taxes, adjustments, or rounding errors.
 
