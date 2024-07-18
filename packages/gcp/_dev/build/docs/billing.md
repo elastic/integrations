@@ -30,7 +30,7 @@ The `cost_type` specifies the type of cost data you want to retrieve from your b
 
 - `tax`: This cost type includes all the taxes associated with your usage of GCP services. This does not include the regular costs, adjustments, or rounding errors.
 
-- `adjustment`: This cost type includes any adjustments made to your billing data. Adjustments could be due to a variety of reasons such as credits, discounts, or any other modifications made to the original cost.
+- `adjustment`: This cost type includes any adjustments made to your billing data. Adjustments can include credits, discounts, refunds, or any other modifications to the original costs.
 
 - `rounding_error`: This cost type includes any rounding errors that occurred when calculating your costs. These are typically very small amounts and are used to reconcile any discrepancies due to rounding.
 
