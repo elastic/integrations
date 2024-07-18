@@ -12,25 +12,41 @@ For standard usage cost data, set the table pattern format to `gcp_billing_expor
 
 For detailed usage cost data, set the table pattern to `gcp_billing_export_resource_v1`. Detailed tables include the standard fields and additional fields, such as `effective_price`, enabling a more granular view of expenses.
 
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using any GCP integration you will need:
+
+* **GCP Credentials** to connect with your GCP account.
+* **GCP Permissions** to make sure the service account you're using to connect has permission to share the relevant data.
+
+To collect GCP Billing metrics, you would need specific permissions to access the necessary data. Here's a list of permissions required:
+
+- `roles/bigquery.dataViewer`
+- `roles/bigquery.jobUser`
+- `roles/billing.viewer`
+
 ## Configuration Parameters
 
 ### dataset_id
 
-The `dataset_id` is the ID of your BigQuery dataset where your billing data is stored. This is a unique identifier for the dataset within the project. You can find this ID in your Google Cloud Console under BigQuery.
+The `dataset_id` is the unique identifier of your BigQuery dataset where your billing data is stored. You can find this ID in your Google Cloud Console under the BigQuery section.
 
 ### table_pattern
 
-The `table_pattern` defines which tables to pull from within the specified dataset. This can be set to either `gcp_billing_export_v1` for standard usage cost data or `gcp_billing_export_resource_v1` for detailed usage cost data.
+The `table_pattern` parameter allows you to specify which tables to retrieve from the specified dataset. This can be set to either `gcp_billing_export_v1` for standard usage cost data or `gcp_billing_export_resource_v1` for detailed usage cost data.
 
 ### cost_type
 
-The `cost_type` specifies the type of cost data you want to retrieve from your billing data.
+The `cost_type` parameter enables you to filter the cost data based on specific cost categories. You can select one of the following options:
 
 - `regular`: This cost type includes all the regular costs associated with your usage of GCP services. This does not include any taxes, adjustments, or rounding errors.
 
 - `tax`: This cost type includes all the taxes associated with your usage of GCP services. This does not include the regular costs, adjustments, or rounding errors.
 
-- `adjustment`: This cost type includes any adjustments made to your billing data. Adjustments could be due to a variety of reasons such as credits, discounts, or any other modifications made to the original cost.
+- `adjustment`: This cost type includes any adjustments made to your billing data. Adjustments can include credits, discounts, refunds, or any other modifications to the original costs.
 
 - `rounding_error`: This cost type includes any rounding errors that occurred when calculating your costs. These are typically very small amounts and are used to reconcile any discrepancies due to rounding.
 
@@ -45,7 +61,7 @@ project_id: "my_project"
 cost_type: "regular"
 ```
 
-In this example, the agent will pull data from the `gcp_billing_export_resource_v1` table within the `my_billing_dataset` dataset.
+In this example, the Agent will pull data from all tables within the `my_billing_dataset` dataset that start with the pattern `gcp_billing_export_resource_v1`.
 
 ## Sample Event
     

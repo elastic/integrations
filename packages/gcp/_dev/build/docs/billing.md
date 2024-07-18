@@ -12,6 +12,22 @@ For standard usage cost data, set the table pattern format to `gcp_billing_expor
 
 For detailed usage cost data, set the table pattern to `gcp_billing_export_resource_v1`. Detailed tables include the standard fields and additional fields, such as `effective_price`, enabling a more granular view of expenses.
 
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using any GCP integration you will need:
+
+* **GCP Credentials** to connect with your GCP account.
+* **GCP Permissions** to make sure the service account you're using to connect has permission to share the relevant data.
+
+To collect GCP Billing metrics, you would need specific permissions to access the necessary data. Here's a list of permissions required:
+
+- `roles/bigquery.dataViewer`
+- `roles/bigquery.jobUser`
+- `roles/billing.viewer`
+
 ## Configuration Parameters
 
 ### dataset_id
@@ -45,7 +61,7 @@ project_id: "my_project"
 cost_type: "regular"
 ```
 
-In this example, the agent will pull data from the `gcp_billing_export_resource_v1` table within the `my_billing_dataset` dataset.
+In this example, the Agent will pull data from all tables within the `my_billing_dataset` dataset that start with the pattern `gcp_billing_export_resource_v1`.
 
 ## Sample Event
     
