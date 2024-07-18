@@ -29,6 +29,7 @@ func TestErrorsFromTest(t *testing.T) {
 						Failure:       "could not find hits in logs-cisco_umbrella.log-ep data stream",
 					},
 					Teams:       []string{"@elastic/security-service-integrations"},
+					TeamLabels:  []string{"Team:Security-Service Integrations"},
 					DataStream:  "log",
 					PackageName: "cisco_umbrella",
 					Serverless:  false,
@@ -41,6 +42,7 @@ func TestErrorsFromTest(t *testing.T) {
 						Error:         "could not find hits in logs-elastic_package_registry.metrics-ep data stream",
 					},
 					Teams:       []string{"@elastic/ecosystem"},
+					TeamLabels:  []string{"Team:Ecosystem"},
 					DataStream:  "metrics",
 					PackageName: "elastic_package_registry",
 					Serverless:  false,
@@ -65,6 +67,7 @@ func TestErrorsFromTest(t *testing.T) {
 					PackageName: "fortinet_fortigate",
 					DataStream:  "log",
 					Teams:       []string{"@elastic/sec-deployment-and-devices"},
+					TeamLabels:  []string{"Team:Security-Deployment and Devices"},
 					Serverless:  false,
 				},
 				{
@@ -77,6 +80,7 @@ func TestErrorsFromTest(t *testing.T) {
 					PackageName: "sql_input",
 					DataStream:  "",
 					Teams:       []string{"@elastic/obs-infraobs-integrations"},
+					TeamLabels:  []string{"Team:Obs-InfraObs"},
 					Serverless:  false,
 				},
 				{
@@ -89,6 +93,7 @@ func TestErrorsFromTest(t *testing.T) {
 					PackageName: "sql_input",
 					DataStream:  "",
 					Teams:       []string{"@elastic/obs-infraobs-integrations"},
+					TeamLabels:  []string{"Team:Obs-InfraObs"},
 					Serverless:  false,
 				},
 			},
@@ -103,6 +108,7 @@ func TestErrorsFromTest(t *testing.T) {
 				StackVersion:   "",
 				BuildURL:       "",
 				CodeownersPath: "testdata/CODEOWNERS-default-tests",
+				TeamLabelsPath: "testdata/team_labels-default-tests",
 			})
 			require.NoError(t, err)
 
@@ -140,6 +146,7 @@ func TestErrorDataStream(t *testing.T) {
 				StackVersion:   "",
 				BuildURL:       "",
 				CodeownersPath: "testdata/CODEOWNERS-default-tests",
+				TeamLabelsPath: "testdata/team_labels-default-tests",
 			})
 			require.NoError(t, err)
 
@@ -181,6 +188,7 @@ func TestErrorPackageName(t *testing.T) {
 				StackVersion:   "",
 				BuildURL:       "",
 				CodeownersPath: "testdata/CODEOWNERS-default-tests",
+				TeamLabelsPath: "testdata/team_labels-default-tests",
 			})
 			require.NoError(t, err)
 

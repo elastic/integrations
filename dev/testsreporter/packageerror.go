@@ -33,6 +33,7 @@ type PackageErrorOptions struct {
 	BuildURL          string
 	TestCase          testCase
 	CodeownersPath    string
+	TeamLabelsPath    string
 }
 
 func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
@@ -63,7 +64,12 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 	p.Teams = owners
 
 	// Get Team:Labels to add to Github Issue Labels
-	ghTeamLabels, err := teamlabels.GetTeamLabels()
+	var ghTeamLabels map[string]string
+	if options.TeamLabelsPath != "" {
+		ghTeamLabels, err = teamlabels.GetTeamLabelsFromPath(options.TeamLabelsPath)
+	} else {
+		ghTeamLabels, err = teamlabels.GetTeamLabels()
+	}
 	if err != nil {
 		fmt.Printf("Error while fetching team labels: %s", err)
 	}

@@ -21,7 +21,11 @@ type githubTeamLabels struct {
 }
 
 func GetTeamLabels() (map[string]string, error) {
-	githubTeamLabels, err := readTeamLabels(teamlabelsPath)
+	return GetTeamLabelsFromPath(teamlabelsPath)
+}
+
+func GetTeamLabelsFromPath(path string) (map[string]string, error) {
+	githubTeamLabels, err := readTeamLabels(path)
 	if err != nil {
 		return nil, err
 	}
