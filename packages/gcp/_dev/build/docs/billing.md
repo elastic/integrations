@@ -53,4 +53,8 @@ In this example, the agent will pull data from the `gcp_billing_export_resource_
 
 ## Exported fields
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "billing"}}

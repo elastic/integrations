@@ -1,15 +1,16 @@
+# contains connection inputs for the integration
 format_version: 3.0.3
 name: ti_threatconnect
 title: ThreatConnect
-version: 0.4.0
-description: Collect logs from ThreatConnect with Elastic Agent.
+version: "1.2.0"
+description: Collects Indicators from ThreatConnect using the Elastic Agent and saves them as logs inside Elastic
 type: integration
 categories:
   - security
   - threat_intel
 conditions:
   kibana:
-    version: ^8.12.0
+    version: "^8.13.0"
   elastic:
     subscription: basic
 screenshots:
@@ -19,22 +20,22 @@ screenshots:
     type: image/png
 icons:
   - src: /img/threat-connect-logo.svg
-    title: Sample logo
+    title: Logo
     size: 32x32
     type: image/svg+xml
 policy_templates:
   - name: threatconnect
-    title: ThreatConnect logs
-    description: Collect ThreatConnect logs.
+    title: ThreatConnect Indicators
+    description: Collect ThreatConnect indicators.
     inputs:
       - type: cel
-        title: Collect ThreatConnect logs via API
-        description: Collecting ThreatConnect logs via API.
+        title: Collect ThreatConnect indicators via API
+        description: Collecting ThreatConnect indicators via API.
         vars:
           - name: url
             type: text
             title: URL
-            description: "Base URL of the ThreatConnect API. Default URL given is for the ThreatConnect's Public Cloud instance. Note: Do not include trailing slash “/” character."
+            description: "Base URL of the ThreatConnect API. Default URL given is for ThreatConnect's Public Cloud instance. Note: Do not include trailing slash “/” character."
             default: https://app.threatconnect.com
             required: true
             show_user: true
@@ -63,32 +64,10 @@ policy_templates:
           - name: ssl
             type: yaml
             title: SSL Configuration
-            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            description: Configuration for SSL communication if needed.
             multi: false
             required: false
             show_user: false
-            default: |
-              #certificate_authorities:
-              #  - |
-              #    -----BEGIN CERTIFICATE-----
-              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
-              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
-              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
-              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
-              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
-              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
-              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
-              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
-              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
-              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
-              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
-              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
-              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
-              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
-              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
-              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
-              #    sxSmbIUfc2SGJGCJD4I=
-              #    -----END CERTIFICATE-----
 owner:
   github: elastic/security-service-integrations
-  type: elastic
+  type: partner

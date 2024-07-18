@@ -1,25 +1,40 @@
 config_version: 2
+# Set interval in between polling.
 interval: {{interval}}
+
+# Set the filename and max backups if need be.
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 request.tracer.maxbackups: 5
 {{/if}}
+
+# Set proxy url.
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
+
+# Set expiration duration.
 {{#if ioc_expiration_duration}}
 fields_under_root: true
 fields:
   _conf:
     ioc_expiration_duration: "{{ioc_expiration_duration}}"
 {{/if}}
+
+# This specifies SSL/TLS configuration. If the ssl section is missing, the host’s CAs are used for HTTPS connections.
+# If set to a boolean, this controls if SSL verification is enabled or not.
 {{#if ssl}}
 resource.ssl: {{ssl}}
 {{/if}}
+
+# Timeout for contacting TC.
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
+
+# Set the base url.
 resource.url: {{url}}
+
 state:
   access_id: {{escape_string access_id}}
   secret_key: {{escape_string secret_key}}
@@ -28,19 +43,27 @@ state:
   batch: {{batch_size}}
   initial_interval: {{initial_interval}}
   event_list:
+{{#if include_group_assoc}}
     - associatedGroups
+{{/if}}
+{{#if include_indicator_assoc}}
     - associatedIndicators
+{{/if}}
+{{#if include_attributes}}
     - attributes
+{{/if}}
     - securityLabels
     - sightings
     - tags
     - threatAssess
-{{#if tql}}
   tql_filter: {{tql}}
-{{/if}}
+
+# Hide the secret_key.
 redact:
   fields:
     - secret_key
+
+# The program section is where the logic of the stream processor is defined.
 program: |
   ['lastModified GEQ "'+(
       !state.want_more ?
@@ -72,51 +95,69 @@ program: |
               ],
               "Timestamp": [string(int(now))],
           }
-      }))).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
-          "events": body.data.map(e, {
-              "message": e.encode_json(),
-          }),
-          "url": state.url.trim_right("/"),
-          "counter": has(body.next) && body.next != null && body.next != "" ? int(state.counter) + int(state.batch) : 0,
-          "access_id": state.access_id,
-          "secret_key": state.secret_key,
-          "want_more": has(body.next) && body.next != null && body.next != "",
-          "batch": state.batch,
-          "initial_interval": state.initial_interval,
-          "event_list": state.event_list,
-          ?"tql_filter": state.?tql_filter,
-          "next_url": (
-              has(body.next) && body.next != null && body.next != "" ?
-                  state.url.trim_right("/") + "/api/v3/indicators?" + {
-                      "fields": state.event_list,
-                      "resultStart": [string(int(state.counter) + body.data.size())],
-                      "resultLimit": [string(state.batch)],
-                      "sorting": ["lastModified asc"],
-                      "tql": tql,
-                  }.format_query()
-              :
-                  state.url.trim_right("/")
-          ),
-          "cursor": {
-              ?"last_timestamp": (
-                  has(body.data) && body.data.size() > 0 ?
-                      optional.of(body.data.map(e, timestamp(e.lastModified)).max() + duration("1s"))
+      }))).do_request().as(resp, resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body, {
+              "events": body.data.map(e, {
+                  "message": e.encode_json(),
+              }),
+              "url": state.url.trim_right("/"),
+              "counter": has(body.next) && body.next != null && body.next != "" ? int(state.counter) + int(state.batch) : 0,
+              "access_id": state.access_id,
+              "secret_key": state.secret_key,
+              "want_more": has(body.next) && body.next != null && body.next != "",
+              "batch": state.batch,
+              "initial_interval": state.initial_interval,
+              "event_list": state.event_list,
+              ?"tql_filter": state.?tql_filter,
+              "next_url": (
+                  has(body.next) && body.next != null && body.next != "" ?
+                      state.url.trim_right("/") + "/api/v3/indicators?" + {
+                          "fields": state.event_list,
+                          "resultStart": [string(int(state.counter) + body.data.size())],
+                          "resultLimit": [string(state.batch)],
+                          "sorting": ["lastModified asc"],
+                          "tql": tql,
+                      }.format_query()
                   :
-                      state.?cursor.last_timestamp
+                      state.url.trim_right("/")
               ),
-              "first_timestamp": (
-                  has(body.data) && state.?cursor.first_timestamp.orValue(null) != null ?
-                      (
-                          has(body.next) && body.next != null && body.next != "" ?
-                              state.cursor.first_timestamp
+              "cursor": {
+                  ?"last_timestamp": (
+                      has(body.data) && body.data.size() > 0 ?
+                          optional.of(body.data.map(e, timestamp(e.lastModified)).max() + duration("1s"))
+                      :
+                          state.?cursor.last_timestamp
+                  ),
+                  "first_timestamp": (
+                      has(body.data) && state.?cursor.first_timestamp.orValue(null) != null ?
+                          (
+                              has(body.next) && body.next != null && body.next != "" ?
+                                  state.cursor.first_timestamp
+                              :
+                                  state.cursor.last_timestamp
+                          )
+                      :
+                          string(now - duration(state.initial_interval))
+                  ),
+              }
+          })
+      :
+          state.with({
+              "events": {
+                  "error": {
+                      "code": string(resp.StatusCode),
+                      "id": string(resp.Status),
+                      "message": "GET:"+(
+                          size(resp.Body) != 0 ?
+                              string(resp.Body)
                           :
-                              state.cursor.last_timestamp
-                      )
-                  :
-                      string(now - duration(state.initial_interval))
-              ),
-          }
-      }))
+                              string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                      ),
+                  },
+              },
+              "want_more": false,
+          })
+      )
   )
 tags:
 {{#if preserve_original_event}}
