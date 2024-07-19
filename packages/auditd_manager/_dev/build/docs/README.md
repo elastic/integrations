@@ -5,6 +5,25 @@ is a part of the Linux kernel.
 
 This integration is available only for Linux.
 
+<DocCallOut id="ls-serverless-notes" title="Logstash for Elasticsearch on serverless">
+
+[Beta] Session View powered by Auditd Manager
+
+The `add_session_metadata` processor for ((auditbeat)) powers the [Session View](((security-guide))/session-view.html) utility for the ((elastic-sec)) Platform.
+This feature is in Beta at ((elastic-sec)) version 8.15.0.
+
+//ToDo: Insert screenshot to show users end result???
+
+To enable the `add_session_metadata` processor for Auditd Manager: 
+
+. Navigate to the Auditd Manager integration configuration in {kib}.
+. Add the `add_session_metadata` processor configuration under the advanced options section.
+. Configure the audit rules.
+
+Changes are applied automatically, and you do not have to restart the service.
+
+</DocCallOut>
+
 ## How it works
 
 This integration establishes a subscription to the kernel to receive the events
