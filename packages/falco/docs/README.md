@@ -278,9 +278,6 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | input.type | Input type | keyword |  |
 | log.offset | Log offset | long |  |
 | log.source.address | Log source when collecting via TCP input | keyword |  |
-| observer.product | Static value, falco. | text |  |
-| observer.type | The type of machine observing the event. | keyword |  |
-| observer.vendor | The source of the data event. | text |  |
 | process.group.id | Preserved Falco field | text |  |
 | process.group.name | Preserved Falco field | text |  |
 | process.group_leader.vpid.exepath | Preserved Falco field | text |  |
