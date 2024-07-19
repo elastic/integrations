@@ -11,18 +11,31 @@ For more detailed information refer to the following blogs:
 1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Domain Generation Algorithm Detection**. Configure the integration name and agent policy. Click Save and Continue.
 1. **Install assets**: Install the assets by clicking **Settings > Install Domain Generation Algorithm Detection assets**.
-1. **Configure the ingest pipeline**: Once you’ve installed the package you can ingest your data using the ingest pipeline via the ingest pipeline. This will enrich your incoming data with its predictions from the machine learning model.
+1. **Configure the ingest pipeline**: Once you’ve installed the package you can ingest your data using the ingest pipeline via the ingest pipeline. This will enrich your incoming data with its predictions from the machine learning model. You can use one of the following methods depending on your setup:
     - If using an Elastic Beat such as Packetbeat, add the ingest pipeline to it by adding a simple configuration [setting](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#pipelines-for-beats) to `packetbeat.yml`.
-    - If adding the ingest pipeline to an existing pipeline, use a [pipeline processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/pipeline-processor.html). For example, you can check if Packetbeat (default index pattern `packetbeat-*`) or Elastic Defend (the default index pattern being `logs-endpoint.events.network-default`), already has an ingest pipeline by navigating to **Stack Management > Data > Index Management**, finding the index (sometimes you need to toggle "Include hidden indices"), and checking the index's settings for a default or final [pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#set-default-pipeline). 
-    - To enable the enrichment policy as the default pipeline on an index, you can use this example and replace `INDEX_NAME` with the desired index:
-    ```
-    POST INDEX_NAME/_settings
-    {
-      "index" : {
-        "default_pipeline" : "<VERSION>-ml_dga_ingest_pipeline"
+    - If adding the ingest pipeline to an existing pipeline, use a [pipeline processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/pipeline-processor.html). For example, you can check if Packetbeat (default index pattern `packetbeat-*`) or Elastic Defend (the default index pattern being `logs-endpoint.events.network-default`), already has an ingest pipeline by navigating to **Stack Management > Data > Index Management**, finding the index (sometimes you need to toggle "Include hidden indices"), and checking the index's settings for a default or final [pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#set-default-pipeline). To enable the enrichment policy as the default pipeline on an index, you can use this example and replace `INDEX_NAME` with the desired index:
+      ```
+      POST INDEX_NAME/_settings
+      {
+        "index" : {
+          "default_pipeline" : "<VERSION>-ml_dga_ingest_pipeline"
+        }
+      }
+      ```
+1. **Check mappings** Check that DGA mappings exist in `GET INDEX_NAME/_mapping`, look for `ml_is_dga`. If they do not, add them with:
+  ```
+  PUT INDEX_NAME/_mapping
+  {
+    "runtime": {
+      "ml_is_dga.malicious_prediction": {
+        "type": "long"
+      },
+      "ml_is_dga.malicious_probability": {
+        "type": "long"
       }
     }
-    ```
+  }
+  ```
 1. **Add preconfigured anomaly detection jobs**: In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for `DGA`. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment. Note this job is only useful for indices that have been enriched by the ingest pipeline.
 1. **Enable detection rules**: You can also enable detection rules to alert on DGA activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine in **Security > Rules**, and can be found using the tag `Use Case: Domain Generated Algorithm Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
