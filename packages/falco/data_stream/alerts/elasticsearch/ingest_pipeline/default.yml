@@ -215,6 +215,20 @@ processors:
                 break;
             }
         }
+- script:
+    lang: painless
+    tag: 'painless_set_threat_subtechnique_id'
+    if: ctx?.falco?.tags != null
+    source: |
+        def mitreRegex = /T\d{4}.\d{3}/;
+        for (int i = 0; i < ctx?.falco?.tags.length; i++) {
+            def tag = ctx?.falco?.tags[i];
+            def matcher = mitreRegex.matcher(tag);
+            if (matcher.find()) {
+                ctx['threat.technique.subtechnique.id'] = [matcher.group()];
+                break;
+            }
+        }
 - set:
     field: event.original
     copy_from: message
