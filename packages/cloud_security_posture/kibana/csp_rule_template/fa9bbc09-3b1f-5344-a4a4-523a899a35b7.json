@@ -1,0 +1,38 @@
+{
+    "id": "fa9bbc09-3b1f-5344-a4a4-523a899a35b7",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Keys cannot be used beyond their assigned expiration dates respectively. Keys need to be rotated periodically wherever they are used.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/key-vault/key-vault-whatis\n2. https://docs.microsoft.com/en-us/rest/api/keyvault/about-keys--secrets-and-certificates#key-vault-keys\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-data-protection#dp-6-use-a-secure-key-management-process\n4. https://docs.microsoft.com/en-us/powershell/module/az.keyvault/set-azkeyvaultkeyattribute?view=azps-0.10.0",
+            "id": "fa9bbc09-3b1f-5344-a4a4-523a899a35b7",
+            "name": "Ensure that the Expiration Date is set for all Keys in RBAC Key Vaults",
+            "profile_applicability": "* Level 1",
+            "description": "Ensure that all Keys in Role Based Access Control (RBAC) Azure Key Vaults have an expiration date set.",
+            "rationale": "Azure Key Vault enables users to store and use cryptographic keys within the Microsoft Azure environment.\nThe `exp` (expiration date) attribute identifies the expiration date on or after which the key MUST NOT be used for encryption of new data, wrapping of new keys, and signing.\nBy default, keys never expire.\nIt is thus recommended that keys be rotated in the key vault and set an explicit expiration date for all keys to help enforce the key rotation.\nThis ensures that the keys cannot be used beyond their assigned lifetimes.",
+            "audit": "**From Azure Portal:**\n\n1. Go to `Key vaults`.\n2. For each Key vault, click on `Keys`.\n3. In the main pane, ensure that an appropriate `Expiration date` is set for any keys that are `Enabled`.\n\n**From Azure CLI:**\n\nGet a list of all the key vaults in your Azure environment by running the following command:\n\n```\naz keyvault list\n```\n\nThen for each key vault listed ensure that the output of the below command contains Key ID (kid), enabled status as `true` and Expiration date (expires) is not empty or null:\n\n```\naz keyvault key list --vault-name <VaultName> --query '[*].{\"kid\":kid,\"enabled\":attributes.enabled,\"expires\":attributes.expires}'\n```\n\n**From PowerShell:**\n\nRetrieve a list of Azure Key vaults:\n\n```\nGet-AzKeyVault\n```\n\nFor each Key vault run the following command to determine which vaults are configured to use RBAC.\n\n```\nGet-AzKeyVault -VaultName <VaultName>\n```\n\nFor each Key vault with the `EnableRbacAuthorizatoin` setting set to `True`, run the following command.\n\n```\nGet-AzKeyVaultKey -VaultName <VaultName>\n```\n\nMake sure the `Expires` setting is configured with a value as appropriate wherever the `Enabled` setting is set to `True`.",
+            "remediation": "**From Azure Portal:**\n\n1. Go to `Key vaults`.\n2. For each Key vault, click on `Keys`.\n3. In the main pane, ensure that an appropriate `Expiration date` is set for any keys that are `Enabled`.\n\n**From Azure CLI:**\n\nUpdate the `Expiration date` for the key using the below command:\n\n```\naz keyvault key set-attributes --name <keyName> --vault-name <vaultName> --expires Y-m-d'T'H:M:S'Z'\n```\n\n**Note:**\nTo view the expiration date on all keys in a Key Vault using Microsoft API, the \"List\" Key permission is required.\n\nTo update the expiration date for the keys:\n4. Go to the Key vault, click on Access Control (IAM).\n5. Click on Add role assignment and assign the role of Key Vault Crypto Officer to the appropriate user.\n\n**From PowerShell:**\n\n```\nSet-AzKeyVaultKeyAttribute -VaultName <VaultName> -Name <KeyName> -Expires <DateTime>\n```",
+            "section": "Key Vault",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 8.1",
+                "Key Vault"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "8.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_8_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

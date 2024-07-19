@@ -1,0 +1,73 @@
+# contains connection inputs for the integration
+format_version: 3.0.3
+name: ti_threatconnect
+title: ThreatConnect
+version: "1.2.0"
+description: Collects Indicators from ThreatConnect using the Elastic Agent and saves them as logs inside Elastic
+type: integration
+categories:
+  - security
+  - threat_intel
+conditions:
+  kibana:
+    version: "^8.13.0"
+  elastic:
+    subscription: basic
+screenshots:
+  - src: /img/threat-connect-indicator-dashboard.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/threat-connect-logo.svg
+    title: Logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: threatconnect
+    title: ThreatConnect Indicators
+    description: Collect ThreatConnect indicators.
+    inputs:
+      - type: cel
+        title: Collect ThreatConnect indicators via API
+        description: Collecting ThreatConnect indicators via API.
+        vars:
+          - name: url
+            type: text
+            title: URL
+            description: "Base URL of the ThreatConnect API. Default URL given is for ThreatConnect's Public Cloud instance. Note: Do not include trailing slash “/” character."
+            default: https://app.threatconnect.com
+            required: true
+            show_user: true
+          - name: access_id
+            type: text
+            title: Access ID
+            description: Access ID of a ThreatConnect API User.
+            multi: false
+            required: true
+            show_user: true
+          - name: secret_key
+            type: password
+            title: Secret Key
+            description: Secret Key of a ThreatConnect API User.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: Configuration for SSL communication if needed.
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/security-service-integrations
+  type: partner

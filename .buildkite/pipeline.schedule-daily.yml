@@ -2,7 +2,7 @@
 name: integrations-schedule-daily
 
 env:
-  SETUP_GVM_VERSION: "v0.5.1"
+  SETUP_GVM_VERSION: "v0.5.2"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
 
 # The pipeline is triggered by the scheduler every day
@@ -20,21 +20,20 @@ steps:
     build:
       env:
         SERVERLESS: "false"
-        SKIP_PUBLISHING: "true"
         FORCE_CHECK_ALL: "true"
-        STACK_VERSION: 7.17-SNAPSHOT
+        STACK_VERSION: 7.17.23-SNAPSHOT
     depends_on:
       - step: "check"
         allow_failure: false
 
-  - label: "Check integrations local stacks - Stack Version v8.12"
+  - label: "Check integrations local stacks - Stack Version v8.15"
     trigger: "integrations"
     build:
       env:
         SERVERLESS: "false"
-        SKIP_PUBLISHING: "true"
         FORCE_CHECK_ALL: "true"
-        STACK_VERSION: 8.12-SNAPSHOT
+        STACK_VERSION: 8.15.0-SNAPSHOT
+        PUBLISH_COVERAGE_REPORTS: "true"
     depends_on:
       - step: "check"
         allow_failure: false
@@ -55,6 +54,13 @@ steps:
     build:
       env:
         SERVERLESS_PROJECT: security
+    depends_on:
+      - step: "check"
+        allow_failure: false
+
+  - label: ":package: Publish missing packages"
+    key: "trigger-integrations-publish"
+    trigger: "integrations-publish"
     depends_on:
       - step: "check"
         allow_failure: false

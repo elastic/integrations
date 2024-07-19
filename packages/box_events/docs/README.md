@@ -236,8 +236,10 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | box.source.parent.name | The name of the folder | keyword |
 | box.source.parent.sequence_id | A numeric identifier that represents the most recent user event that has been applied to this item (parent) | keyword |
 | box.source.parent.type | Value is always `folder` | keyword |
+| box.source.path_collection.entries.etag | The HTTP etag of this folder | keyword |
 | box.source.path_collection.entries.id | The unique identifier that represent a folder. This field is an array | keyword |
 | box.source.path_collection.entries.name | The name of the parent folder. This field is an array | keyword |
+| box.source.path_collection.entries.sequence_id | A numeric identifier that represents the most recent user event that has been applied to this item | keyword |
 | box.source.path_collection.entries.type | Value is always `folder`. This field is an array | keyword |
 | box.source.path_collection.total_count | The number of folders in this list | long |
 | box.source.phone | Phone number | boolean |
@@ -250,120 +252,22 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | box.source.synced | Legacy property for compatibility with Box Desktop | boolean |
 | box.source.timezone | Timezone | boolean |
 | box.source.trashed_at | The time at which this file was put in the trash | boolean |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
-| client.user.email | User email address. | keyword |
-| client.user.full_name | User's full name, if available. | keyword |
-| client.user.full_name.text | Multi-field of `client.user.full_name`. | match_only_text |
-| client.user.id | Unique identifier of the user. | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
-| event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| event.risk_score | Risk score or priority of the event (e.g. security solutions). Use your system's original value here. | float |
-| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| file.created | File creation time. Note that not all filesystems store the creation time. | date |
-| file.ctime | Last time the file attributes or metadata changed. Note that changes to the file content will update `mtime`. This implies `ctime` will be adjusted at the same time, since `mtime` is an attribute of the file. | date |
-| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
-| file.hash.sha1 | SHA1 hash. | keyword |
-| file.mtime | Last time the file content was modified. | date |
-| file.name | Name of the file including the extension, without the directory. | keyword |
-| file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
-| file.type | File type (file, dir, or symlink). | keyword |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |
-| host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |
-| host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | long |
 | host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |
 | host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | long |
 | host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | related.description | Array of `description` derived from `threat[.enrichments].indicator.description` | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.indicator_type | Array of `indicator_type` derived from `threat[.enrichments].indicator.type` | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
 | related.location | Array of `location` derived from `related.ip` | geo_point |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
-| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
-| rule.name | The name of the rule or signature generating the event. | keyword |
-| rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
-| threat.enrichments.indicator.description | Describes the type of action conducted by the threat. | keyword |
-| threat.enrichments.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
-| threat.enrichments.indicator.geo.city_name | City name. | keyword |
-| threat.enrichments.indicator.geo.continent_name | Name of the continent. | keyword |
-| threat.enrichments.indicator.geo.country_iso_code | Country ISO code. | keyword |
-| threat.enrichments.indicator.geo.country_name | Country name. | keyword |
-| threat.enrichments.indicator.geo.location | Longitude and latitude. | geo_point |
-| threat.enrichments.indicator.geo.region_iso_code | Region ISO code. | keyword |
-| threat.enrichments.indicator.geo.region_name | Region name. | keyword |
-| threat.enrichments.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
-| threat.enrichments.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.enrichments.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
-| threat.enrichments.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
-| threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| threat.indicator.as.organization.name | Organization name. | keyword |
-| threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
-| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
-| threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
-| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
-| threat.indicator.geo.city_name | City name. | keyword |
-| threat.indicator.geo.continent_name | Name of the continent. | keyword |
-| threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
-| threat.indicator.geo.country_name | Country name. | keyword |
-| threat.indicator.geo.location | Longitude and latitude. | geo_point |
-| threat.indicator.geo.region_iso_code | Region ISO code. | keyword |
-| threat.indicator.geo.region_name | Region name. | keyword |
-| threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
-| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
-| threat.indicator.sightings | Number of times this indicator was observed conducting threat activity. | long |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
-| user.effective.email | User email address. | keyword |
-| user.effective.id | Unique identifier of the user. | keyword |
-| user.effective.name | Short name or login of the user. | keyword |
-| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
 

@@ -1,10 +1,57 @@
 {
     "attributes": {
         "description": "",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "apache_spark.driver",
+                                "apache_spark.executor",
+                                "apache_spark.node",
+                                "apache_spark.application"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_spark.driver"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_spark.executor"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_spark.node"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "apache_spark.application"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -14,6 +61,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -23,28 +72,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-d7cd2d50-503d-48cc-b9d1-77da873349ef",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "9857a495-b7e6-4893-93e6-f16c050e0e41",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "d59683b7-5f29-46b9-b01b-20b6aea422fe",
+                                "name": "f1fa5d56-79c5-4410-acee-4363edcc3b52",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "d7cd2d50-503d-48cc-b9d1-77da873349ef": {
                                             "columnOrder": [
@@ -59,6 +99,7 @@
                                                     "label": "Memory",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -71,6 +112,7 @@
                                                     "label": "Timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -90,28 +132,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "9857a495-b7e6-4893-93e6-f16c050e0e41",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.driver"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.driver"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "d59683b7-5f29-46b9-b01b-20b6aea422fe",
+                                        "index": "f1fa5d56-79c5-4410-acee-4363edcc3b52",
                                         "key": "apache_spark.driver.memory.used",
                                         "negate": false,
                                         "type": "exists",
@@ -124,6 +145,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -159,6 +181,7 @@
                                     "horizontalAlignment": "left",
                                     "isInside": false,
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "top",
                                     "showSingleSeries": true,
                                     "verticalAlignment": "top"
@@ -193,7 +216,7 @@
                 "panelIndex": "a3339a86-6f2b-4f1a-85b8-4619c417a110",
                 "title": "Memory usage over time [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -201,28 +224,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-37e4c96b-3ba5-4033-9727-fad41089931d",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "8198873e-cf0a-43cf-8cd0-cd42a8df02c5",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "5df2fe94-f51b-44f9-b922-75663cb6996a",
+                                "name": "9a5b37cb-eea9-4078-8237-c5a920e37075",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "37e4c96b-3ba5-4033-9727-fad41089931d": {
                                             "columnOrder": [
@@ -236,6 +250,7 @@
                                                     "label": "Number of Stages Completed",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -255,28 +270,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "8198873e-cf0a-43cf-8cd0-cd42a8df02c5",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.driver"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.driver"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "5df2fe94-f51b-44f9-b922-75663cb6996a",
+                                        "index": "9a5b37cb-eea9-4078-8237-c5a920e37075",
                                         "key": "apache_spark.driver.stages.completed_count",
                                         "negate": false,
                                         "type": "exists",
@@ -289,6 +283,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -297,12 +292,15 @@
                                 "accessor": "3c99f57f-933e-432c-8038-b95d81f3443f",
                                 "colorMode": "None",
                                 "layerId": "37e4c96b-3ba5-4033-9727-fad41089931d",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -317,7 +315,7 @@
                 "panelIndex": "2943002d-504e-4a30-a581-cd92fd621fe1",
                 "title": "Number of stages completed [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -325,28 +323,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-bb1faa77-fef6-486c-aaf9-ec1411bdad13",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "603b47e3-4608-4094-8826-f923eab506a8",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "4a09ba27-dc93-43cf-be91-0632bc81cb47",
+                                "name": "b6da6da2-e44f-4c9b-86f1-3314d21ad564",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "bb1faa77-fef6-486c-aaf9-ec1411bdad13": {
                                             "columnOrder": [
@@ -360,6 +349,7 @@
                                                     "label": "Number of Stages Skipped",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -379,28 +369,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "603b47e3-4608-4094-8826-f923eab506a8",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.driver"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.driver"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "4a09ba27-dc93-43cf-be91-0632bc81cb47",
+                                        "index": "b6da6da2-e44f-4c9b-86f1-3314d21ad564",
                                         "key": "apache_spark.driver.stages.skipped_count",
                                         "negate": false,
                                         "type": "exists",
@@ -413,6 +382,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -420,12 +390,15 @@
                             "visualization": {
                                 "accessor": "31520286-aa33-494c-8f42-412342c54e48",
                                 "layerId": "bb1faa77-fef6-486c-aaf9-ec1411bdad13",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -440,7 +413,7 @@
                 "panelIndex": "784e4a18-20e7-48ef-8737-3a8a4643c4fe",
                 "title": "Number of stages skipped [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -448,28 +421,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-6fc27bd4-9bc3-4233-9b1d-61df80582ad8",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "7e8d1def-772c-494c-b14e-eae96e52b074",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "c5b629cf-0836-49ff-a409-23cb47735f02",
+                                "name": "f847ce79-3f28-48ad-bdfe-383de0a679a2",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "6fc27bd4-9bc3-4233-9b1d-61df80582ad8": {
                                             "columnOrder": [
@@ -483,6 +447,7 @@
                                                     "label": "Number of Stages Failed",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -502,28 +467,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "7e8d1def-772c-494c-b14e-eae96e52b074",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.driver"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.driver"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "c5b629cf-0836-49ff-a409-23cb47735f02",
+                                        "index": "f847ce79-3f28-48ad-bdfe-383de0a679a2",
                                         "key": "apache_spark.driver.stages.failed_count",
                                         "negate": false,
                                         "type": "exists",
@@ -536,6 +480,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -543,12 +488,15 @@
                             "visualization": {
                                 "accessor": "cd6cf970-b884-4c72-94a1-0104f46eda4a",
                                 "layerId": "6fc27bd4-9bc3-4233-9b1d-61df80582ad8",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -563,7 +511,7 @@
                 "panelIndex": "19bd059b-ca79-4fb0-b450-f8adeb8acc8f",
                 "title": "Number of failed stages [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -571,23 +519,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-df39527d-9339-47cb-9833-2e3d3ccc9c30",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "787550e5-b4cd-4892-babc-4f3d33c078ec",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "df39527d-9339-47cb-9833-2e3d3ccc9c30": {
                                             "columnOrder": [
@@ -631,6 +570,7 @@
                                                     "label": "Timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -642,29 +582,8 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "787550e5-b4cd-4892-babc-4f3d33c078ec",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.driver"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.driver"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": "apache_spark.driver.tasks.failed : * or apache_spark.driver.tasks.skipped : * or apache_spark.driver.tasks.completed : * "
@@ -709,6 +628,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "top",
                                     "showSingleSeries": true
                                 },
@@ -742,7 +662,7 @@
                 "panelIndex": "f84a1cd9-1b4b-484e-87f7-953c2f645570",
                 "title": "Number of Tasks over time [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -750,28 +670,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-efa9fcdd-f421-4c27-a85b-3a6d2512a09d",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "b8679379-0bbe-4028-b3e7-2cc0f84fa045",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "97467acb-706a-4078-ae1a-ac6ab5fd47d7",
+                                "name": "8977b3b6-d4be-4dfa-9afa-fa3b31be4c89",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "efa9fcdd-f421-4c27-a85b-3a6d2512a09d": {
                                             "columnOrder": [
@@ -785,6 +696,7 @@
                                                     "label": "Max Memory (MB)",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -804,28 +716,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "b8679379-0bbe-4028-b3e7-2cc0f84fa045",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.driver"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.driver"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "97467acb-706a-4078-ae1a-ac6ab5fd47d7",
+                                        "index": "8977b3b6-d4be-4dfa-9afa-fa3b31be4c89",
                                         "key": "apache_spark.driver.memory.max_mem",
                                         "negate": false,
                                         "type": "exists",
@@ -838,6 +729,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -845,12 +737,15 @@
                             "visualization": {
                                 "accessor": "6962059b-392d-416f-a321-b0de80b841a7",
                                 "layerId": "efa9fcdd-f421-4c27-a85b-3a6d2512a09d",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -865,7 +760,7 @@
                 "panelIndex": "64cbf207-795a-4818-915c-137eaebc6198",
                 "title": "Maximum amount of memory available for storage [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -873,28 +768,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-483b85ff-1b76-41d9-926b-25f70122ef28",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "509e9888-4307-45b6-9c04-5b7feafeef87",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "df5be9fa-fb96-4da2-a042-71b37b7c3275",
+                                "name": "830070a2-3bf5-40df-a57d-1094cfef42f3",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "483b85ff-1b76-41d9-926b-25f70122ef28": {
                                             "columnOrder": [
@@ -908,6 +794,7 @@
                                                     "label": "Failed Jobs",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -927,28 +814,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "509e9888-4307-45b6-9c04-5b7feafeef87",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.driver"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.driver"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "df5be9fa-fb96-4da2-a042-71b37b7c3275",
+                                        "index": "830070a2-3bf5-40df-a57d-1094cfef42f3",
                                         "key": "apache_spark.driver.jobs.failed",
                                         "negate": false,
                                         "type": "exists",
@@ -961,6 +827,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -968,12 +835,15 @@
                             "visualization": {
                                 "accessor": "6ecaa697-7840-4a3c-a949-687d66bd9cdd",
                                 "layerId": "483b85ff-1b76-41d9-926b-25f70122ef28",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -988,7 +858,7 @@
                 "panelIndex": "62c6f93e-b6c1-4004-b780-535ed730ebaa",
                 "title": "Number of jobs failed [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -996,28 +866,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-aec1fa6a-6818-41f0-862a-8c7feed2ea3e",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "3fe0b162-ec79-4815-895a-79ac382ca1d7",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "62857a2d-669f-4c70-9f92-dcab405c9f9a",
+                                "name": "b5592314-e99b-4ef7-bc6d-69993664fb6f",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "aec1fa6a-6818-41f0-862a-8c7feed2ea3e": {
                                             "columnOrder": [
@@ -1031,6 +892,7 @@
                                                     "label": "Succeeded Jobs",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -1050,28 +912,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "3fe0b162-ec79-4815-895a-79ac382ca1d7",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.driver"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.driver"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "62857a2d-669f-4c70-9f92-dcab405c9f9a",
+                                        "index": "b5592314-e99b-4ef7-bc6d-69993664fb6f",
                                         "key": "apache_spark.driver.jobs.succeeded",
                                         "negate": false,
                                         "type": "exists",
@@ -1084,6 +925,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1091,12 +933,15 @@
                             "visualization": {
                                 "accessor": "f69b66b5-f920-44c1-9b5a-0f6076ac9f6a",
                                 "layerId": "aec1fa6a-6818-41f0-862a-8c7feed2ea3e",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -1111,7 +956,7 @@
                 "panelIndex": "bb9eb57d-fbf2-41a4-8187-5cead0c80faa",
                 "title": "Number of Succeeded jobs [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -1119,23 +964,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-df39527d-9339-47cb-9833-2e3d3ccc9c30",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "1215080a-2795-41e4-a618-d54b0e020cbc",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "df39527d-9339-47cb-9833-2e3d3ccc9c30": {
                                             "columnOrder": [
@@ -1179,6 +1015,7 @@
                                                     "label": "Timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
+                                                        "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
                                                     "scale": "interval",
@@ -1190,29 +1027,8 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "1215080a-2795-41e4-a618-d54b0e020cbc",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.executor"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.executor"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": "apache_spark.executor.threadpool.complete_tasks : * or apache_spark.executor.threadpool.active_tasks : * or apache_spark.executor.threadpool.started_tasks : * "
@@ -1257,6 +1073,7 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendSize": "auto",
                                     "position": "top",
                                     "showSingleSeries": true
                                 },
@@ -1290,10 +1107,100 @@
                 "panelIndex": "b5caa5d1-221e-400d-a11a-ea539f1f4546",
                 "title": "Number of Threadpool tasks over time [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-3a277aff-7c7b-443b-bccf-271cb4486f72",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "e2038555-6ef6-4a33-b50c-c175b2ebbe02",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "3a277aff-7c7b-443b-bccf-271cb4486f72": {
+                                            "columnOrder": [
+                                                "08a11063-090b-4210-a4e4-30189048b7aa"
+                                            ],
+                                            "columns": {
+                                                "08a11063-090b-4210-a4e4-30189048b7aa": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Bytes Read",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_spark.executor.bytes.read"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "e2038555-6ef6-4a33-b50c-c175b2ebbe02",
+                                        "key": "apache_spark.executor.bytes.read",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "apache_spark.executor.bytes.read"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "08a11063-090b-4210-a4e4-30189048b7aa",
+                                "layerId": "3a277aff-7c7b-443b-bccf-271cb4486f72",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "title": "Number of Bytes Read [Metrics Apache Spark]",
+                        "visualizationType": "lnsLegacyMetric"
+                    },
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
@@ -1305,12 +1212,101 @@
                     "y": 23
                 },
                 "panelIndex": "7a729bca-db45-4ffe-b1bf-51fdc30e3b18",
-                "panelRefName": "panel_7a729bca-db45-4ffe-b1bf-51fdc30e3b18",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-5d66805e-b15a-4a65-b914-128afac75b09",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "f4140b61-62cd-4abe-a34e-bb7a1d14fefb",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "5d66805e-b15a-4a65-b914-128afac75b09": {
+                                            "columnOrder": [
+                                                "55aa8a79-a965-4ad3-bd75-1182fc29570e"
+                                            ],
+                                            "columns": {
+                                                "55aa8a79-a965-4ad3-bd75-1182fc29570e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Bytes Written",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "apache_spark.executor.bytes.written"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "f4140b61-62cd-4abe-a34e-bb7a1d14fefb",
+                                        "key": "apache_spark.executor.bytes.written",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "apache_spark.executor.bytes.written"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "55aa8a79-a965-4ad3-bd75-1182fc29570e",
+                                "layerId": "5d66805e-b15a-4a65-b914-128afac75b09",
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
+                            }
+                        },
+                        "title": "Number of Bytes Written [Metrics Apache Spark]",
+                        "visualizationType": "lnsLegacyMetric"
+                    },
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
@@ -1322,9 +1318,8 @@
                     "y": 23
                 },
                 "panelIndex": "0595e44f-e6b0-4d93-868f-040f2eb0de31",
-                "panelRefName": "panel_0595e44f-e6b0-4d93-868f-040f2eb0de31",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -1332,28 +1327,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-d4698267-4169-47b1-81cd-17bd8621879f",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "171181c8-0b9a-4664-85cb-0e8b82132b7a",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "6ffc819a-ab7a-43bd-aa18-dbd327428425",
+                                "name": "0b721af7-4c9c-4e69-8463-955e33a1b646",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "d4698267-4169-47b1-81cd-17bd8621879f": {
                                             "columnOrder": [
@@ -1367,6 +1353,7 @@
                                                     "label": "Waiting Applications",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -1386,28 +1373,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "171181c8-0b9a-4664-85cb-0e8b82132b7a",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.node"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.node"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "6ffc819a-ab7a-43bd-aa18-dbd327428425",
+                                        "index": "0b721af7-4c9c-4e69-8463-955e33a1b646",
                                         "key": "apache_spark.node.main.applications.waiting",
                                         "negate": false,
                                         "type": "exists",
@@ -1420,6 +1386,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1427,12 +1394,15 @@
                             "visualization": {
                                 "accessor": "f718a530-bd5f-4e8e-8960-ffac1ce48483",
                                 "layerId": "d4698267-4169-47b1-81cd-17bd8621879f",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -1447,7 +1417,7 @@
                 "panelIndex": "ab8c87f3-ec56-4ddc-b0b0-7bb8a21366c2",
                 "title": "Number of Applications waiting [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -1455,28 +1425,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-aa4bc89a-1467-4370-980f-99b6e33890d7",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "975bff6a-acfa-481f-86ba-7d697e207f65",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "b889078f-52b4-4fdd-8fd5-6a636ff903a6",
+                                "name": "f4a2fb8e-abca-4281-a05d-0674a52289b5",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "aa4bc89a-1467-4370-980f-99b6e33890d7": {
                                             "columnOrder": [
@@ -1490,6 +1451,7 @@
                                                     "label": "Records Read",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -1509,28 +1471,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "975bff6a-acfa-481f-86ba-7d697e207f65",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.executor"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.executor"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "b889078f-52b4-4fdd-8fd5-6a636ff903a6",
+                                        "index": "f4a2fb8e-abca-4281-a05d-0674a52289b5",
                                         "key": "apache_spark.executor.records.read",
                                         "negate": false,
                                         "type": "exists",
@@ -1543,6 +1484,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1550,12 +1492,15 @@
                             "visualization": {
                                 "accessor": "f983c8f0-92bc-4d73-b8d4-f8d7c7851fb0",
                                 "layerId": "aa4bc89a-1467-4370-980f-99b6e33890d7",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -1570,7 +1515,7 @@
                 "panelIndex": "75c23769-a2bd-4825-b20a-d140aeb36175",
                 "title": "Number of Records Read [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -1578,28 +1523,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-de0d9a21-100f-4912-a985-ca42e4347241",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "cffd3ad8-723b-4694-bf3e-9d8a826ce05e",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "a3034e1f-cb79-4ef6-91f1-ff8b1f2510c8",
+                                "name": "3602cfcf-280e-49ef-a6ad-9e1384efa7e9",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "de0d9a21-100f-4912-a985-ca42e4347241": {
                                             "columnOrder": [
@@ -1613,6 +1549,7 @@
                                                     "label": "Records Written",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -1632,28 +1569,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "cffd3ad8-723b-4694-bf3e-9d8a826ce05e",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.executor"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.executor"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "a3034e1f-cb79-4ef6-91f1-ff8b1f2510c8",
+                                        "index": "3602cfcf-280e-49ef-a6ad-9e1384efa7e9",
                                         "key": "apache_spark.executor.records.written",
                                         "negate": false,
                                         "type": "exists",
@@ -1666,6 +1582,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1673,12 +1590,15 @@
                             "visualization": {
                                 "accessor": "b14cce00-3621-4cc5-b9c9-75f22b038c77",
                                 "layerId": "de0d9a21-100f-4912-a985-ca42e4347241",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -1693,7 +1613,7 @@
                 "panelIndex": "ab9316b5-5728-4b03-aadb-a93e22da9257",
                 "title": "Number of Records Written [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -1701,28 +1621,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-6eefe8fe-74a8-4b9d-a786-7d9dc8ca26e6",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "6fdd6b46-a1d0-470b-bf9a-527dc0444653",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "948085ee-3b01-4c26-8bb4-b3c40b02049d",
+                                "name": "86fc698f-4b5a-46c4-9387-36aab76fdbf2",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "6eefe8fe-74a8-4b9d-a786-7d9dc8ca26e6": {
                                             "columnOrder": [
@@ -1736,6 +1647,7 @@
                                                     "label": "Total Applications",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -1755,28 +1667,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "6fdd6b46-a1d0-470b-bf9a-527dc0444653",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.node"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.node"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "948085ee-3b01-4c26-8bb4-b3c40b02049d",
+                                        "index": "86fc698f-4b5a-46c4-9387-36aab76fdbf2",
                                         "key": "apache_spark.node.main.applications.count",
                                         "negate": false,
                                         "type": "exists",
@@ -1789,6 +1680,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1796,12 +1688,15 @@
                             "visualization": {
                                 "accessor": "1a987909-acd1-47bf-a0ad-4c8c046399a3",
                                 "layerId": "6eefe8fe-74a8-4b9d-a786-7d9dc8ca26e6",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -1816,7 +1711,7 @@
                 "panelIndex": "ab2aa190-2b49-4ec6-9479-ad4a4ade95ad",
                 "title": "Total number of Applications [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -1824,28 +1719,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-530fc85b-0ba7-4f65-862b-a303af533c19",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "e76b86a5-b6ba-4537-a0d1-046096a9807d",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "d950973c-f5b8-4aae-857a-e8eccbecd2d6",
+                                "name": "3823aee8-bc88-4d1c-a2e5-7ce36d8e7f68",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "530fc85b-0ba7-4f65-862b-a303af533c19": {
                                             "columnOrder": [
@@ -1859,6 +1745,7 @@
                                                     "label": "Workers Alive",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -1878,28 +1765,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "e76b86a5-b6ba-4537-a0d1-046096a9807d",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.node"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.node"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "d950973c-f5b8-4aae-857a-e8eccbecd2d6",
+                                        "index": "3823aee8-bc88-4d1c-a2e5-7ce36d8e7f68",
                                         "key": "apache_spark.node.main.workers.alive",
                                         "negate": false,
                                         "type": "exists",
@@ -1912,6 +1778,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1919,12 +1786,15 @@
                             "visualization": {
                                 "accessor": "759453c2-c093-4aed-8bb4-3e873849ff92",
                                 "layerId": "530fc85b-0ba7-4f65-862b-a303af533c19",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -1939,7 +1809,7 @@
                 "panelIndex": "cfbdf185-1437-478f-a856-eedbe62d1de2",
                 "title": "Number of Workers Alive [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -1947,23 +1817,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-148ce684-6f54-430c-9b71-69989419abd4",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "c7bd1bca-ca54-4168-8ed5-2e45bd906d13",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "148ce684-6f54-430c-9b71-69989419abd4": {
                                             "columnOrder": [
@@ -2008,29 +1869,8 @@
                                     }
                                 }
                             },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "c7bd1bca-ca54-4168-8ed5-2e45bd906d13",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.application"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.application"
-                                        }
-                                    }
-                                }
-                            ],
+                            "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2040,15 +1880,18 @@
                                     {
                                         "categoryDisplay": "default",
                                         "emptySizeRatio": 0.54,
-                                        "groups": [
-                                            "47b92b87-6745-4aa9-86cb-988e730f8db0"
-                                        ],
                                         "layerId": "148ce684-6f54-430c-9b71-69989419abd4",
                                         "layerType": "data",
                                         "legendDisplay": "show",
-                                        "metric": "9baa45f5-7118-4b46-a1f7-9dde678df6f0",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "9baa45f5-7118-4b46-a1f7-9dde678df6f0"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "hidden"
+                                        "numberDisplay": "hidden",
+                                        "primaryGroups": [
+                                            "47b92b87-6745-4aa9-86cb-988e730f8db0"
+                                        ]
                                     }
                                 ],
                                 "shape": "donut"
@@ -2073,7 +1916,7 @@
                 "panelIndex": "78e81e12-c659-4d89-a80d-14ec4e49368a",
                 "title": "Application Source Status [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -2081,28 +1924,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-87763c10-0d2a-4ff0-afb1-4d261c6c52de",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "7c76ed08-e31a-4d5a-a8a3-d6f7763d3c40",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "fffcc31c-dfa7-4d03-baf5-d0c48357153f",
+                                "name": "b18d5ce8-13ab-49d8-9247-9c4ac4aef5df",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "87763c10-0d2a-4ff0-afb1-4d261c6c52de": {
                                             "columnOrder": [
@@ -2116,6 +1950,7 @@
                                                     "label": "Number of Cores Used",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -2135,28 +1970,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "7c76ed08-e31a-4d5a-a8a3-d6f7763d3c40",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.node"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.node"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "fffcc31c-dfa7-4d03-baf5-d0c48357153f",
+                                        "index": "b18d5ce8-13ab-49d8-9247-9c4ac4aef5df",
                                         "key": "apache_spark.node.worker.cores.used",
                                         "negate": false,
                                         "type": "exists",
@@ -2169,6 +1983,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2176,12 +1991,15 @@
                             "visualization": {
                                 "accessor": "0c759a6f-eef3-4849-81bb-9482134df3c0",
                                 "layerId": "87763c10-0d2a-4ff0-afb1-4d261c6c52de",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true,
@@ -2197,7 +2015,7 @@
                 "panelIndex": "fa3bca1d-df9c-4e2b-8785-cfe9211a7843",
                 "title": "Number of Cores used [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -2205,28 +2023,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-7a60dd89-db58-4e7e-b73a-139574b69402",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "a871806a-160b-4da4-bcd5-700175899a73",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "55f22446-ec98-430e-b92e-0660335ab2d9",
+                                "name": "4c2f45a1-1487-45a7-a9f8-a402910cbb5c",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "7a60dd89-db58-4e7e-b73a-139574b69402": {
                                             "columnOrder": [
@@ -2240,6 +2049,7 @@
                                                     "label": "Memory Used (MB)",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -2259,28 +2069,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "a871806a-160b-4da4-bcd5-700175899a73",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.node"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.node"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "55f22446-ec98-430e-b92e-0660335ab2d9",
+                                        "index": "4c2f45a1-1487-45a7-a9f8-a402910cbb5c",
                                         "key": "apache_spark.node.worker.memory.used",
                                         "negate": false,
                                         "type": "exists",
@@ -2293,6 +2082,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2300,12 +2090,15 @@
                             "visualization": {
                                 "accessor": "2001af6a-ebf0-4acc-afe2-d58db49ee160",
                                 "layerId": "7a60dd89-db58-4e7e-b73a-139574b69402",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true,
@@ -2321,7 +2114,7 @@
                 "panelIndex": "18c0d3d3-912f-42e4-a322-a5fcaa9002b0",
                 "title": "Memory Used [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -2329,28 +2122,19 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-340a830f-a169-4a46-959d-6471aac521f9",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "metrics-*",
-                                "name": "1723d45d-1e3e-422c-921d-06a9ad1d3309",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "59410b0e-e834-4387-b6a8-dd1e252c87c9",
+                                "name": "31447df0-e71d-4c6d-a410-9e456564b03b",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "340a830f-a169-4a46-959d-6471aac521f9": {
                                             "columnOrder": [
@@ -2364,6 +2148,7 @@
                                                     "label": "Total Workers",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "showArrayValues": true,
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -2383,28 +2168,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "1723d45d-1e3e-422c-921d-06a9ad1d3309",
-                                        "key": "event.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "apache_spark.node"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "event.dataset": "apache_spark.node"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "index": "59410b0e-e834-4387-b6a8-dd1e252c87c9",
+                                        "index": "31447df0-e71d-4c6d-a410-9e456564b03b",
                                         "key": "apache_spark.node.main.workers.count",
                                         "negate": false,
                                         "type": "exists",
@@ -2417,6 +2181,7 @@
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2424,12 +2189,15 @@
                             "visualization": {
                                 "accessor": "fa33204d-6b0a-45ee-8a54-480191ba2782",
                                 "layerId": "340a830f-a169-4a46-959d-6471aac521f9",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "xl",
+                                "textAlign": "center",
+                                "titlePosition": "bottom"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": true
@@ -2444,22 +2212,23 @@
                 "panelIndex": "54e6714e-c9b2-4e0b-85f4-500ca898eb4d",
                 "title": "Total Workers [Metrics Apache Spark]",
                 "type": "lens",
-                "version": "8.1.0"
+                "version": "8.7.0"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Apache Spark] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.1.0",
+    "coreMigrationVersion": "8.7.0",
+    "created_at": "2024-04-10T15:56:11.148Z",
     "id": "apache_spark-b22dc960-a06c-11ec-8d4f-4fe3367a4156",
     "migrationVersion": {
-        "dashboard": "8.1.0"
+        "dashboard": "8.7.0"
     },
     "references": [
         {
             "id": "metrics-*",
-            "name": "a3339a86-6f2b-4f1a-85b8-4619c417a110:indexpattern-datasource-current-indexpattern",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
@@ -2469,17 +2238,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "a3339a86-6f2b-4f1a-85b8-4619c417a110:9857a495-b7e6-4893-93e6-f16c050e0e41",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "a3339a86-6f2b-4f1a-85b8-4619c417a110:d59683b7-5f29-46b9-b01b-20b6aea422fe",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "2943002d-504e-4a30-a581-cd92fd621fe1:indexpattern-datasource-current-indexpattern",
+            "name": "a3339a86-6f2b-4f1a-85b8-4619c417a110:f1fa5d56-79c5-4410-acee-4363edcc3b52",
             "type": "index-pattern"
         },
         {
@@ -2489,17 +2248,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "2943002d-504e-4a30-a581-cd92fd621fe1:8198873e-cf0a-43cf-8cd0-cd42a8df02c5",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "2943002d-504e-4a30-a581-cd92fd621fe1:5df2fe94-f51b-44f9-b922-75663cb6996a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "784e4a18-20e7-48ef-8737-3a8a4643c4fe:indexpattern-datasource-current-indexpattern",
+            "name": "2943002d-504e-4a30-a581-cd92fd621fe1:9a5b37cb-eea9-4078-8237-c5a920e37075",
             "type": "index-pattern"
         },
         {
@@ -2509,17 +2258,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "784e4a18-20e7-48ef-8737-3a8a4643c4fe:603b47e3-4608-4094-8826-f923eab506a8",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "784e4a18-20e7-48ef-8737-3a8a4643c4fe:4a09ba27-dc93-43cf-be91-0632bc81cb47",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "19bd059b-ca79-4fb0-b450-f8adeb8acc8f:indexpattern-datasource-current-indexpattern",
+            "name": "784e4a18-20e7-48ef-8737-3a8a4643c4fe:b6da6da2-e44f-4c9b-86f1-3314d21ad564",
             "type": "index-pattern"
         },
         {
@@ -2529,17 +2268,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "19bd059b-ca79-4fb0-b450-f8adeb8acc8f:7e8d1def-772c-494c-b14e-eae96e52b074",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "19bd059b-ca79-4fb0-b450-f8adeb8acc8f:c5b629cf-0836-49ff-a409-23cb47735f02",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "f84a1cd9-1b4b-484e-87f7-953c2f645570:indexpattern-datasource-current-indexpattern",
+            "name": "19bd059b-ca79-4fb0-b450-f8adeb8acc8f:f847ce79-3f28-48ad-bdfe-383de0a679a2",
             "type": "index-pattern"
         },
         {
@@ -2549,32 +2278,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "f84a1cd9-1b4b-484e-87f7-953c2f645570:787550e5-b4cd-4892-babc-4f3d33c078ec",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "64cbf207-795a-4818-915c-137eaebc6198:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "64cbf207-795a-4818-915c-137eaebc6198:indexpattern-datasource-layer-efa9fcdd-f421-4c27-a85b-3a6d2512a09d",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "64cbf207-795a-4818-915c-137eaebc6198:b8679379-0bbe-4028-b3e7-2cc0f84fa045",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "64cbf207-795a-4818-915c-137eaebc6198:97467acb-706a-4078-ae1a-ac6ab5fd47d7",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "62c6f93e-b6c1-4004-b780-535ed730ebaa:indexpattern-datasource-current-indexpattern",
+            "name": "64cbf207-795a-4818-915c-137eaebc6198:8977b3b6-d4be-4dfa-9afa-fa3b31be4c89",
             "type": "index-pattern"
         },
         {
@@ -2584,17 +2293,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "62c6f93e-b6c1-4004-b780-535ed730ebaa:509e9888-4307-45b6-9c04-5b7feafeef87",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "62c6f93e-b6c1-4004-b780-535ed730ebaa:df5be9fa-fb96-4da2-a042-71b37b7c3275",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "bb9eb57d-fbf2-41a4-8187-5cead0c80faa:indexpattern-datasource-current-indexpattern",
+            "name": "62c6f93e-b6c1-4004-b780-535ed730ebaa:830070a2-3bf5-40df-a57d-1094cfef42f3",
             "type": "index-pattern"
         },
         {
@@ -2604,17 +2303,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "bb9eb57d-fbf2-41a4-8187-5cead0c80faa:3fe0b162-ec79-4815-895a-79ac382ca1d7",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "bb9eb57d-fbf2-41a4-8187-5cead0c80faa:62857a2d-669f-4c70-9f92-dcab405c9f9a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "b5caa5d1-221e-400d-a11a-ea539f1f4546:indexpattern-datasource-current-indexpattern",
+            "name": "bb9eb57d-fbf2-41a4-8187-5cead0c80faa:b5592314-e99b-4ef7-bc6d-69993664fb6f",
             "type": "index-pattern"
         },
         {
@@ -2624,22 +2313,32 @@
         },
         {
             "id": "metrics-*",
-            "name": "b5caa5d1-221e-400d-a11a-ea539f1f4546:1215080a-2795-41e4-a618-d54b0e020cbc",
+            "name": "7a729bca-db45-4ffe-b1bf-51fdc30e3b18:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
-            "id": "apache_spark-114428e0-c165-11ec-97dc-abb2b7efe8a8",
-            "name": "7a729bca-db45-4ffe-b1bf-51fdc30e3b18:panel_7a729bca-db45-4ffe-b1bf-51fdc30e3b18",
-            "type": "lens"
-        },
-        {
-            "id": "apache_spark-478726a0-c165-11ec-97dc-abb2b7efe8a8",
-            "name": "0595e44f-e6b0-4d93-868f-040f2eb0de31:panel_0595e44f-e6b0-4d93-868f-040f2eb0de31",
-            "type": "lens"
+            "id": "metrics-*",
+            "name": "7a729bca-db45-4ffe-b1bf-51fdc30e3b18:indexpattern-datasource-layer-3a277aff-7c7b-443b-bccf-271cb4486f72",
+            "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "ab8c87f3-ec56-4ddc-b0b0-7bb8a21366c2:indexpattern-datasource-current-indexpattern",
+            "name": "7a729bca-db45-4ffe-b1bf-51fdc30e3b18:e2038555-6ef6-4a33-b50c-c175b2ebbe02",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "0595e44f-e6b0-4d93-868f-040f2eb0de31:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "0595e44f-e6b0-4d93-868f-040f2eb0de31:indexpattern-datasource-layer-5d66805e-b15a-4a65-b914-128afac75b09",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "0595e44f-e6b0-4d93-868f-040f2eb0de31:f4140b61-62cd-4abe-a34e-bb7a1d14fefb",
             "type": "index-pattern"
         },
         {
@@ -2649,17 +2348,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "ab8c87f3-ec56-4ddc-b0b0-7bb8a21366c2:171181c8-0b9a-4664-85cb-0e8b82132b7a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "ab8c87f3-ec56-4ddc-b0b0-7bb8a21366c2:6ffc819a-ab7a-43bd-aa18-dbd327428425",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "75c23769-a2bd-4825-b20a-d140aeb36175:indexpattern-datasource-current-indexpattern",
+            "name": "ab8c87f3-ec56-4ddc-b0b0-7bb8a21366c2:0b721af7-4c9c-4e69-8463-955e33a1b646",
             "type": "index-pattern"
         },
         {
@@ -2669,17 +2358,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "75c23769-a2bd-4825-b20a-d140aeb36175:975bff6a-acfa-481f-86ba-7d697e207f65",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "75c23769-a2bd-4825-b20a-d140aeb36175:b889078f-52b4-4fdd-8fd5-6a636ff903a6",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "ab9316b5-5728-4b03-aadb-a93e22da9257:indexpattern-datasource-current-indexpattern",
+            "name": "75c23769-a2bd-4825-b20a-d140aeb36175:f4a2fb8e-abca-4281-a05d-0674a52289b5",
             "type": "index-pattern"
         },
         {
@@ -2689,17 +2368,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "ab9316b5-5728-4b03-aadb-a93e22da9257:cffd3ad8-723b-4694-bf3e-9d8a826ce05e",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "ab9316b5-5728-4b03-aadb-a93e22da9257:a3034e1f-cb79-4ef6-91f1-ff8b1f2510c8",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "ab2aa190-2b49-4ec6-9479-ad4a4ade95ad:indexpattern-datasource-current-indexpattern",
+            "name": "ab9316b5-5728-4b03-aadb-a93e22da9257:3602cfcf-280e-49ef-a6ad-9e1384efa7e9",
             "type": "index-pattern"
         },
         {
@@ -2709,17 +2378,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "ab2aa190-2b49-4ec6-9479-ad4a4ade95ad:6fdd6b46-a1d0-470b-bf9a-527dc0444653",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "ab2aa190-2b49-4ec6-9479-ad4a4ade95ad:948085ee-3b01-4c26-8bb4-b3c40b02049d",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "cfbdf185-1437-478f-a856-eedbe62d1de2:indexpattern-datasource-current-indexpattern",
+            "name": "ab2aa190-2b49-4ec6-9479-ad4a4ade95ad:86fc698f-4b5a-46c4-9387-36aab76fdbf2",
             "type": "index-pattern"
         },
         {
@@ -2729,17 +2388,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "cfbdf185-1437-478f-a856-eedbe62d1de2:e76b86a5-b6ba-4537-a0d1-046096a9807d",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "cfbdf185-1437-478f-a856-eedbe62d1de2:d950973c-f5b8-4aae-857a-e8eccbecd2d6",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "78e81e12-c659-4d89-a80d-14ec4e49368a:indexpattern-datasource-current-indexpattern",
+            "name": "cfbdf185-1437-478f-a856-eedbe62d1de2:3823aee8-bc88-4d1c-a2e5-7ce36d8e7f68",
             "type": "index-pattern"
         },
         {
@@ -2749,32 +2398,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "78e81e12-c659-4d89-a80d-14ec4e49368a:c7bd1bca-ca54-4168-8ed5-2e45bd906d13",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "fa3bca1d-df9c-4e2b-8785-cfe9211a7843:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "fa3bca1d-df9c-4e2b-8785-cfe9211a7843:indexpattern-datasource-layer-87763c10-0d2a-4ff0-afb1-4d261c6c52de",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "fa3bca1d-df9c-4e2b-8785-cfe9211a7843:7c76ed08-e31a-4d5a-a8a3-d6f7763d3c40",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "fa3bca1d-df9c-4e2b-8785-cfe9211a7843:fffcc31c-dfa7-4d03-baf5-d0c48357153f",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "18c0d3d3-912f-42e4-a322-a5fcaa9002b0:indexpattern-datasource-current-indexpattern",
+            "name": "fa3bca1d-df9c-4e2b-8785-cfe9211a7843:b18d5ce8-13ab-49d8-9247-9c4ac4aef5df",
             "type": "index-pattern"
         },
         {
@@ -2784,17 +2413,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "18c0d3d3-912f-42e4-a322-a5fcaa9002b0:a871806a-160b-4da4-bcd5-700175899a73",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "18c0d3d3-912f-42e4-a322-a5fcaa9002b0:55f22446-ec98-430e-b92e-0660335ab2d9",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "54e6714e-c9b2-4e0b-85f4-500ca898eb4d:indexpattern-datasource-current-indexpattern",
+            "name": "18c0d3d3-912f-42e4-a322-a5fcaa9002b0:4c2f45a1-1487-45a7-a9f8-a402910cbb5c",
             "type": "index-pattern"
         },
         {
@@ -2804,12 +2423,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "54e6714e-c9b2-4e0b-85f4-500ca898eb4d:1723d45d-1e3e-422c-921d-06a9ad1d3309",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "54e6714e-c9b2-4e0b-85f4-500ca898eb4d:59410b0e-e834-4387-b6a8-dd1e252c87c9",
+            "name": "54e6714e-c9b2-4e0b-85f4-500ca898eb4d:31447df0-e71d-4c6d-a410-9e456564b03b",
             "type": "index-pattern"
         }
     ],

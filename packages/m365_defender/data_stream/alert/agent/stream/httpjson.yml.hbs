@@ -1,0 +1,66 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+auth.oauth2.client.id: {{client_id}}
+auth.oauth2.client.secret: {{client_secret}}
+auth.oauth2.token_url: {{login_url}}/{{tenant_id}}/oauth2/v2.0/token
+auth.oauth2.scopes: {{request_url}}/.default
+request.url: {{request_url}}/v1.0/security/alerts_v2
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.transforms:
+  - set:
+      target: url.params.$top
+      value: {{batch_size}}
+  - set:
+      target: url.params.$skip
+      value: 0
+  - set:
+      target: url.params.$filter
+      value: 'lastUpdateDateTime ge [[.cursor.last_update_time]]'
+      default: 'lastUpdateDateTime ge [[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
+  - set:
+      target: url.params.$orderby
+      value: 'lastUpdateDateTime asc'
+response.pagination:
+  - set:
+      target: url.params.$filter
+      value: '[[.last_response.url.params.Get "$filter"]]'
+      fail_on_template_error: true
+  - set:
+      target: url.params.$skip
+      value: '[[if (eq (len .last_response.body.value) {{batch_size}})]][[add (toInt (.last_response.url.params.Get "$skip")) {{batch_size}}]][[end]]'
+      fail_on_template_error: true
+response.split:
+  target: body.value
+  ignore_empty_value: true
+cursor:
+  last_update_time:
+    value: '[[.last_event.lastUpdateDateTime]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

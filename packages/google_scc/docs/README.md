@@ -248,6 +248,7 @@ An example event for `asset` looks as following:
 | google_scc.asset.access_level.basic.conditions.negate | Whether to negate the Condition. If true, the Condition becomes a NAND over its non-empty fields, each field must be false for the Condition overall to be satisfied. Defaults to false. | boolean |
 | google_scc.asset.access_level.basic.conditions.regions | The request must originate from one of the provided countries/regions. Must be valid ISO 3166-1 alpha-2 codes. | keyword |
 | google_scc.asset.access_level.basic.conditions.required_access_levels | A list of other access levels defined in the same Policy, referenced by resource name. Referencing an AccessLevel which does not exist is an error. All access levels listed must be granted for the Condition to be true. Example: "accessPolicies/MY_POLICY/accessLevels/LEVEL_NAME". | keyword |
+| google_scc.asset.access_level.basic.conditions.sub_networks | CIDR block IP subnetwork specification. May be IPv4 or IPv6. Note that for a CIDR IP address block, the specified IP address portion must be properly truncated (i.e. all the host bits must be zero) or the input is considered malformed. For example, "192.0.2.0/24" is accepted but "192.0.2.1/24" is not. Similarly, for IPv6, "2001:db8::/32" is accepted whereas "2001:db8::1/32" is not. The originating IP of a request must be in one of the listed subnets in order for this Condition to be true. If empty, all IP addresses are allowed. | keyword |
 | google_scc.asset.access_level.custom.expression.description | Optional. Description of the expression. This is a longer text which describes the expression, e.g. when hovered over it in a UI. | keyword |
 | google_scc.asset.access_level.custom.expression.location | Optional. String indicating the location of the expression for error reporting, e.g. a file name and a position in the file. | keyword |
 | google_scc.asset.access_level.custom.expression.text | Textual representation of an expression in Common Expression Language syntax. | keyword |
@@ -494,7 +495,6 @@ An example event for `asset` looks as following:
 | google_scc.asset.window.start_time |  | date |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Finding
@@ -781,7 +781,6 @@ An example event for `finding` looks as following:
 | google_scc.finding.vulnerability.cve.upstream_fix_available | Whether upstream fix is available for the CVE. | boolean |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Source
@@ -866,7 +865,6 @@ An example event for `source` looks as following:
 | google_scc.source.name | The relative resource name of this source. See: https://cloud.google.com/apis/design/resource_names#relative_resource_name Example: "organizations/\{organization_id\}/sources/\{source_id\}". | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Audit
@@ -1085,4 +1083,3 @@ An example event for `audit` looks as following:
 | google_scc.audit.trace_sampled | The sampling decision of the trace associated with the log entry. | boolean |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |

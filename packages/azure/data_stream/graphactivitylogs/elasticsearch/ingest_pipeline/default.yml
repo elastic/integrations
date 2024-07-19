@@ -1,0 +1,466 @@
+---
+description: Pipeline for parsing azure graph activity logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+      tag: set-ecs_version
+  - set:
+      field: event.kind
+      value: event
+      tag: set-event_kind
+  - append:
+      field: event.type
+      value: access
+      tag: append-event_type
+  - rename:
+      field: azure
+      target_field: azure-eventhub
+      ignore_missing: true
+      tag: rename-azure
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+      tag: rename-message
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+      tag: remove-message
+  - json:
+      field: event.original
+      target_field: azure.graphactivitylogs
+      tag: json-event_original
+  - script:
+      description: Convert Azure JSON keys to snake case.
+      tag: azure-json-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def out = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            out.put(k, v);
+          }
+
+          return out;
+        }
+
+        ctx.azure['graphactivitylogs'] = keysToSnakeCase(ctx.azure.graphactivitylogs);
+  - date:
+      field: azure.graphactivitylogs.time
+      target_field: '@timestamp'
+      if: ctx.azure?.graphactivitylogs?.time != null
+      tag: date-time
+      formats:
+        - ISO8601
+  - remove:
+      field: azure.graphactivitylogs.time
+      ignore_missing: true
+      tag: remove-time
+  - date:
+      field: azure.graphactivitylogs.properties.token_issued_at
+      target_field: azure.graphactivitylogs.properties.token_issued_at
+      if: ctx.azure?.graphactivitylogs?.properties?.token_issued_at != null
+      tag: date-token_issued_at
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: azure.graphactivitylogs.resource_id
+      target_field: azure.resource_id
+      ignore_missing: true
+      tag: rename-resource_id
+  - convert:
+        field: azure.graphactivitylogs.caller_ip_address
+        target_field: source.ip
+        type: ip
+        ignore_missing: true
+        tag: convert-caller_ip_address
+        on_failure:
+        - rename: 
+            field: azure.graphactivitylogs.caller_ip_address
+            target_field: source.address
+            ignore_missing: true 
+            tag: rename-caller_ip_address
+            on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+        field: azure.graphactivitylogs.properties.ip_address
+        target_field: source.ip
+        type: ip
+        ignore_missing: true
+        tag: convert-properties_ip_address
+        if: ctx.source?.ip == null
+        on_failure:
+        - rename: 
+            field: azure.graphactivitylogs.properties.ip_address
+            target_field: source.address
+            ignore_missing: true 
+            tag: rename-properties_ip_address
+            if: ctx.source?.address == null
+            on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - remove:
+      field: 
+        - azure.graphactivitylogs.caller_ip_address
+        - azure.graphactivitylogs.properties.ip_address
+      if: 'ctx.source?.ip != null'
+      tag: remove-caller_ip_address
+      ignore_missing: true
+  - set:
+      field: client.ip
+      value: '{{source.ip}}'
+      tag: set-client_ip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append-related_ip
+      value: '{{source.ip}}'
+      allow_duplicates: false
+      if: 'ctx.source?.ip != null'
+  - convert:
+      field: azure.graphactivitylogs.level
+      target_field: log.level
+      type: string
+      tag: convert-level
+      ignore_missing: true
+  - remove:
+      field: azure.graphactivitylogs.level
+      ignore_missing: true
+      tag: remove-level
+  - rename:
+      field: azure.graphactivitylogs.duration_ms
+      target_field: event.duration
+      if: ctx.azure?.graphactivitylogs?.duration_ms != null
+      tag: rename-duration_ms
+  - rename:
+      field: azure.graphactivitylogs.properties.duration_ms
+      target_field: event.duration
+      if: ctx.azure?.graphactivitylogs?.properties?.durationMs != null && ctx.event?.duration == null
+      tag: rename-properties-durationMs
+  - script:
+      lang: painless
+      source: |
+        if (ctx.event.duration!= null) {
+          ctx.event.duration = ctx.event.duration * 1000000;
+        }
+      ignore_failure: true
+      tag: script-duration
+  - remove:
+      field:
+        - azure.graphactivitylogs.duration_ms
+        - azure.graphactivitylogs.properties.duration_ms
+      tag: remove-duration_ms
+      if: ctx.event?.duration != null
+      ignore_missing: true
+  - rename:
+      field: azure.graphactivitylogs.location
+      target_field: destination.geo.region_name
+      ignore_missing: true
+      tag: rename-location
+  - rename:
+      field: azure.graphactivitylogs.properties.location
+      target_field: destination.geo.region_name
+      if: ctx.destination?.geo?.region_name == null && ctx.azure?.graphactivitylogs?.properties?.location != null
+      tag: rename-properties-location
+  - remove:
+      field:
+        - azure.graphactivitylogs.location
+        - azure.graphactivitylogs.properties.location
+      tag: remove-location
+      if: ctx.destination?.geo?.region_name != null
+      ignore_missing: true
+  - convert:
+      field: azure.graphactivitylogs.operation_name
+      target_field: event.action
+      type: string
+      ignore_missing: true
+      tag: convert-operation_name
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: azure.graphactivitylogs.tenant_id
+      target_field: azure.tenant_id
+      ignore_missing: true
+      tag: rename-tenant_id
+  - rename:
+      field: azure.graphactivitylogs.properties.tenant_id
+      target_field: azure.tenant_id
+      ignore_missing: true
+      if: ctx.azure?.tenant_id == null
+      tag: rename-properties_tenant_id
+  - remove:
+      field:
+        - azure.graphactivitylogs.tenant_id
+        - azure.graphactivitylogs.properties.tenant_id
+      tag: remove-tenant_id
+      if: ctx.azure?.tenant_id != null
+      ignore_missing: true
+  - rename:
+      field: azure.graphactivitylogs.correlation_id
+      target_field: azure.correlation_id
+      ignore_missing: true
+      tag: rename-correlation_id
+  - rename:
+      field: azure.graphactivitylogs.properties.request_id
+      target_field: http.request.id
+      ignore_missing: true
+      tag: rename-properties_request_id
+  - rename:
+      field: azure.graphactivitylogs.properties.request_method
+      target_field: http.request.method
+      ignore_missing: true
+      tag: rename-properties_request_methods
+  - uri_parts:
+      field: azure.graphactivitylogs.properties.request_uri
+      if: ctx.azure?.graphactivitylogs?.properties?.request_uri != null
+      keep_original: true
+      tag: uri_parts-properties-request_uri
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: azure.graphactivitylogs.properties.request_uri
+      tag: remove-properties_request_uri
+      if: ctx.url?.original != null
+      ignore_missing: true
+  - rename:
+      field: azure.graphactivitylogs.properties.response_size_bytes
+      target_field: http.response.bytes
+      ignore_missing: true
+      tag: rename-properties_response_bytes
+  - rename:
+      field: azure.graphactivitylogs.properties.response_status_code
+      target_field: http.response.status_code
+      ignore_missing: true
+      tag: rename-properties_response_statuscode
+  - split:
+      field: azure.graphactivitylogs.properties.roles
+      if: ctx.azure?.graphactivitylogs?.properties?.roles != null && ctx.azure.graphactivitylogs.properties.roles != ''
+      separator: ' '
+      tag: split-properties_roles
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: azure.graphactivitylogs.properties.scopes
+      if: ctx.azure?.graphactivitylogs?.properties?.scopes != null && ctx.azure.graphactivitylogs.properties.scopes != ''
+      separator: ' '
+      tag: split-properties_scopes
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: azure.graphactivitylogs.properties.wids
+      if: ctx.azure?.graphactivitylogs?.properties?.wids != null && ctx.azure.graphactivitylogs.properties.wids != ''
+      separator: ' '
+      tag: split-properties_wids
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - user_agent:
+      field: azure.graphactivitylogs.properties.user_agent
+      if: ctx.azure?.graphactivitylogs?.properties?.user_agent != null && ctx.azure.graphactivitylogs.properties.user_agent != ''
+      tag: user_agent-properties_user_agent
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: azure.graphactivitylogs.properties.user_agent
+      tag: remove-properties_user_agent
+      if: ctx.user_agent != null
+      ignore_missing: true
+  - rename:
+      field: azure.graphactivitylogs.properties.user_id
+      target_field: user.id
+      tag: rename-properties_user_id
+      if: ctx.azure?.graphactivitylogs?.properties?.user_id != null && ctx.azure.graphactivitylogs.properties.user_id != ''
+  - set:
+      field: client.user.id
+      value: '{{user.id}}'
+      tag: set-client_ip
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      value: '{{user.id}}'
+      tag: append-related_user
+      allow_duplicates: false
+      if: 'ctx.user?.id != null'
+  - rename:
+      field: azure.graphactivitylogs.properties._billed_size
+      target_field: azure.graphactivitylogs.properties.billed_size
+      if: ctx.azure?.graphactivitylogs?.properties?._billed_size != null
+      tag: rename-properties_billed_size
+  - rename:
+      field: azure.graphactivitylogs.properties._is_billable
+      target_field: azure.graphactivitylogs.properties.is_billable
+      if: ctx.azure?.graphactivitylogs?.properties?._is_billable != null
+      tag: rename-properties_is_billable
+  - convert:
+      field: azure.graphactivitylogs.properties.is_billable
+      type: boolean
+      tag: convert-properties_is_billable
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: azure.graphactivitylogs.properties.client_auth_method
+      type: integer
+      tag: convert-properties_client_auth_method
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: azure.graphactivitylogs.properties.time_generated
+      target_field: azure.graphactivitylogs.properties.time_generated
+      if: ctx.azure?.graphactivitylogs?.properties?.time_generated != null
+      tag: date-properties_time_generated
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - pipeline:
+      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+      tag: pipeline-azure-shared-pipeline
+  - fingerprint:
+      fields: 
+        - azure.graphactivitylogs.properties.request_uri
+        - http.request.id
+        - azure.tenant_id
+        - azure.graphactivitylogs.properties.time_generated
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint-id
+  - set:
+      field: cloud.account.id
+      value: '{{azure.tenant_id}}'
+      tag: set-cloud_account_id
+      ignore_empty_value: true
+  - set:
+      field: cloud.region
+      value: '{{destination.geo.region_name}}'
+      tag: set-cloud_region
+      ignore_empty_value: true
+  - set:
+      field: cloud.service.name
+      value: 'Microsoft Graph'
+      tag: set-cloud_region
+      ignore_empty_value: true
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_missing: true
+      tag: remove-event_original
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

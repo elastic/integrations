@@ -1,0 +1,27 @@
+---
+description: Pipeline for Jamf Protect Telemetry aue_tasknameforpid audit logs.
+processors:
+  - convert:
+      field: json.arguments.process
+      target_field: jamf_protect.telemetry.arguments.process
+      type: string
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.arguments.target_port
+      target_field: jamf_protect.telemetry.arguments.target.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.arguments.task_port
+      target_field: jamf_protect.telemetry.arguments.task.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'

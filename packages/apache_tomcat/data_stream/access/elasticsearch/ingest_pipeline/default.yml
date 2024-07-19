@@ -3,7 +3,7 @@ description: Pipeline for processing Apache Tomcat Access logs.
 processors:
   - set:
       field: ecs.version
-      value: 8.7.0
+      value: 8.11.0
   - set:
       field: event.kind
       value: event
@@ -42,7 +42,7 @@ processors:
       field: _tmp.dissectgrok
       tag: 'grok_parse_log_dissectgrok'
       patterns:
-        - '^%{NUMBER:http.response.status_code} %{POSINT:destination.bytes}( %{GREEDYDATA:_tmp.grok})?$'
+        - '^%{NUMBER:http.response.status_code} (-|%{POSINT:destination.bytes})( %{GREEDYDATA:_tmp.grok})?$'
       on_failure:
         - append:
             field: error.message
@@ -97,11 +97,11 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 200 && ctx.http.response.status_code < 300
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400
   - set:
       field: event.outcome
       value: failure
-      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400 && ctx.http.response.status_code < 600
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
   - remove:
       if: ctx.destination?.bytes == '-'
       field: destination.bytes

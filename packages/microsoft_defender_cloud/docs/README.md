@@ -116,7 +116,12 @@ This is the `Event` dataset.
 | microsoft_defender_cloud.event.entities.elevation_token |  | keyword |
 | microsoft_defender_cloud.event.entities.end_time_utc |  | date |
 | microsoft_defender_cloud.event.entities.etag |  | keyword |
+| microsoft_defender_cloud.event.entities.file_hashes.algorithm |  | keyword |
+| microsoft_defender_cloud.event.entities.file_hashes.asset |  | boolean |
+| microsoft_defender_cloud.event.entities.file_hashes.id |  | keyword |
 | microsoft_defender_cloud.event.entities.file_hashes.ref |  | keyword |
+| microsoft_defender_cloud.event.entities.file_hashes.type |  | keyword |
+| microsoft_defender_cloud.event.entities.file_hashes.value |  | keyword |
 | microsoft_defender_cloud.event.entities.files.ref |  | keyword |
 | microsoft_defender_cloud.event.entities.host.ref |  | keyword |
 | microsoft_defender_cloud.event.entities.host_ip_address.ref |  | keyword |
@@ -166,6 +171,7 @@ This is the `Event` dataset.
 | microsoft_defender_cloud.event.entities.process_id |  | keyword |
 | microsoft_defender_cloud.event.entities.project_id |  | keyword |
 | microsoft_defender_cloud.event.entities.protocol |  | keyword |
+| microsoft_defender_cloud.event.entities.ref |  | keyword |
 | microsoft_defender_cloud.event.entities.related_azure_resource_ids |  | keyword |
 | microsoft_defender_cloud.event.entities.resource_id |  | keyword |
 | microsoft_defender_cloud.event.entities.resource_name |  | keyword |
@@ -288,5 +294,4 @@ This is the `Event` dataset.
 | microsoft_defender_cloud.event.workspace.id |  | keyword |
 | microsoft_defender_cloud.event.workspace.resource_group |  | keyword |
 | microsoft_defender_cloud.event.workspace.subscription_id |  | keyword |
-| tags | User defined tags. | keyword |
 

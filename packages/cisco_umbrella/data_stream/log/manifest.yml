@@ -71,18 +71,21 @@ streams:
         multi: false
         required: false
         show_user: true
+        secret: false
       - name: secret_access_key
-        type: text
+        type: password
         title: Secret Access Key
         multi: false
         required: false
         show_user: true
+        secret: true
       - name: session_token
-        type: text
+        type: password
         title: Session Token
         multi: false
         required: false
         show_user: true
+        secret: true
       - name: role_arn
         type: text
         title: Role ARN
@@ -151,6 +154,45 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: file_selectors
+        type: yaml
+        title: File Selectors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          If the S3 bucket will have events that correspond to files that this integration shouldn't process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and other options such as expand_event_list_from_field or parsers. If file_selectors is given, then any global expand_event_list_from_field or parsers values are ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that don’t match one of the regexes will not be processed. For more information see [File Selectors](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#_file_selectors)
+        default: |
+          - regex: "dnslogs/.+"
+          - regex: "proxylogs/.+"
+          - regex: "firewalllogs/.+"
+          - regex: "cloudfirewalllogs/.+"
+          - regex: "iplogs/.+"
+          - regex: "intrusionlogs/.+"
+          - regex: "dlplogs/.+"
+          - regex: "auditlogs/.+"
+            parsers:
+              - multiline:
+                  # Prevent multiline CSV being split in audit logs.
+                  type: pattern
+                  pattern: '\"$'
+                  negate: true
+                  match: before
+      - name: parsers
+        type: yaml
+        title: Parsers
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          This option expects a list of parsers that the payload has to go through. If file_selectors is given, parsers must be set for each regex entry in the file_selectors box as this global option will be ignored. For more information see [Parsers](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#input-aws-s3-parsers)
+        default: |
+          - multiline:
+              # Prevent multiline CSV being split in audit logs.
+              type: pattern
+              pattern: '\"$'
+              negate: true
+              match: before
       - name: processors
         type: yaml
         title: Processors

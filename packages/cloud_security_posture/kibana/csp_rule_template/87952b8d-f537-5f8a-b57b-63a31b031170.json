@@ -1,0 +1,38 @@
+{
+    "id": "87952b8d-f537-5f8a-b57b-63a31b031170",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/security-center/security-center-provide-security-contact-details\n2. https://docs.microsoft.com/en-us/rest/api/securitycenter/securitycontacts/list\n3. https://docs.microsoft.com/en-us/rest/api/securitycenter/security-contacts\n4. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-incident-response#ir-2-preparation--setup-incident-notification",
+            "id": "87952b8d-f537-5f8a-b57b-63a31b031170",
+            "name": "Ensure 'Additional email addresses' is Configured with a Security Contact Email",
+            "profile_applicability": "* Level 1",
+            "description": "Microsoft Defender for Cloud emails the subscription owners whenever a high-severity alert is triggered for their subscription.\nYou should provide a security contact email address as an additional email address.",
+            "rationale": "Microsoft Defender for Cloud emails the Subscription Owner to notify them about security alerts.\nAdding your Security Contact's email address to the 'Additional email addresses' field ensures that your organization's Security Team is included in these alerts.\nThis ensures that the proper people are aware of any potential compromise in order to mitigate the risk in a timely fashion.",
+            "audit": "**From Azure Portal**\n\n1. From Azure Home select the Portal Menu.\n2. Select `Microsoft Defender for Cloud`\n3. Click on `Environment Settings`\n4. Click on the appropriate Management Group, Subscription, or Workspace\n5. Click on `Email notifications`\n6. Ensure that a valid security contact email address is listed in the `Additional email addresses` field \n\n**From Azure CLI**\n\nEnsure the output of the below command is set not empty and is set with appropriate email ids.\n\n```\naz account get-access-token --query \"{subscription:subscription,accessToken:accessToken}\" --out tsv | xargs -L1 bash -c 'curl -X GET -H \"Authorization: Bearer $1\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/$0/providers/Microsoft.Security/securityContacts?api-version=2020-01-01-preview' | jq '.|.[] | select(.name==\"default\")'|jq '.properties.emails'\n```",
+            "remediation": "**From Azure Portal**\n\n1. From Azure Home select the Portal Menu\n2. Select `Microsoft Defender for Cloud`\n3. Click on `Environment Settings`\n4. Click on the appropriate Management Group, Subscription, or Workspace\n5. Click on `Email notifications`\n6. Enter a valid security contact email address (or multiple addresses separated by commas) in the `Additional email addresses` field \n7. Click `Save`\n\n**From Azure CLI**\n\nUse the below command to set `Security contact emails` to `On`.\n```\naz account get-access-token --query \"{subscription:subscription,accessToken:accessToken}\" --out tsv | xargs -L1 bash -c 'curl -X PUT -H \"Authorization: Bearer $1\" -H \"Content-Type: application/json\" https://management.azure.com/subscriptions/$0/providers/Microsoft.Security/securityContacts/default?api-version=2020-01-01-preview -d@\"input.json\"'\n```\nWhere `input.json` contains the data below, replacing `validEmailAddress` with a single email address or multiple comma-separated email addresses:\n\n```\n {\n \"id\": \"/subscriptions/<Your_Subscription_Id>/providers/Microsoft.Security/securityContacts/default\",\n \"name\": \"default\",\n \"type\": \"Microsoft.Security/securityContacts\",\n \"properties\": {\n \"email\": \"<validEmailAddress>\",\n \"alertNotifications\": \"On\",\n \"alertsToAdmins\": \"On\"\n }\n }\n```",
+            "section": "Microsoft Defender for Cloud",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 2.1.19",
+                "Microsoft Defender for Cloud"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "2.1.19",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_2_1_19"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

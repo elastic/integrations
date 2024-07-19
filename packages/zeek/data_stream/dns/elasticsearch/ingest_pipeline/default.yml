@@ -147,22 +147,22 @@ processors:
   - script:
       lang: painless
       source: >-
-        def answers = ctx.zeek.dns.answers; def ttls = ctx.zeek.dns.TTLs; if (answers.isEmpty() || ttls.isEmpty() || answers.length != ttls.length) {
-
-
+        def answers = ctx.zeek.dns.answers;
+        def ttls = ctx.zeek.dns.TTLs;
+        if (answers.isEmpty() || ttls.isEmpty() || answers.length != ttls.length) {
           return;
-        } def lst = new ArrayList(); for (def i = 0; i < answers.length; i++) {
-
-
+        }
+        def lst = new ArrayList();
+        for (def i = 0; i < answers.length; i++) {
           lst.add([
             "data": answers[i],
             "ttl": (int)ttls[i]
           ])
-        } if (ctx.dns == null) {
-
-
+        }
+        if (ctx.dns == null) {
           ctx.dns = new HashMap();
-        } ctx.dns.answers = lst;
+        }
+        ctx.dns.answers = lst;
       if: "ctx.zeek?.dns?.answers != null && ctx.zeek?.dns?.TTLs != null"
   - foreach:
       field: dns.answers
@@ -177,14 +177,15 @@ processors:
   - script:
       lang: painless
       source: >-
-        def answers = ctx.dns.answers; def iplist = new ArrayList(); for (def i = 0; i < ctx.dns.answers.length; i++) {
-
-
+        def answers = ctx.dns.answers;
+        def iplist = new ArrayList();
+        for (def i = 0; i < ctx.dns.answers.length; i++) {
           if (answers[i].containsKey("tmpip")) {
             iplist.add(answers[i].tmpip);
             answers[i].remove("tmpip");
           }
-        } ctx.dns.resolved_ip = iplist;
+        }
+        ctx.dns.resolved_ip = iplist;
       if: 'ctx.dns?.answers != null && !ctx.dns?.answers.isEmpty()'
   - set:
       field: event.outcome

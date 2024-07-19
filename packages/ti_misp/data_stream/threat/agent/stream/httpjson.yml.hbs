@@ -32,14 +32,22 @@ request.transforms:
     value: 1
 - set:
     target: body.limit
-    value: 10
+    value: {{limit}}
 - set:
     target: body.returnFormat
     value: json
 - set:
     target: body.timestamp
-    value: '[[.cursor.timestamp.Unix]]'
+    value: >-
+      [[- if index .cursor "timestamp" -]]
+        [[- .cursor.timestamp -]]
+      [[- else -]]
+        [[- .last_response.url.params.Get "timestamp" -]]
+      [[- end -]]
     default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
+- set:
+    target: body.order
+    value: timestamp
 - set:
     # Ignored by MISP, set as a workaround to make it available in response.pagination.
     target: url.params.timestamp
@@ -47,6 +55,7 @@ request.transforms:
 
 response.split:
   target: body.response
+  ignore_empty_value: true
   split:
     target: body.Event.Attribute
     ignore_empty_value: true

@@ -2,9 +2,29 @@
 
 The VMware Carbon Black Cloud integration collects and parses data from the Carbon Black Cloud REST APIs and AWS S3 bucket.
 
-## Compatibility
+## Version 2.0.0+ Update Disclaimer
+Carbon Black Cloud `Alerts API (v6)` [will be deactivated on July 31, 2024](https://developer.carbonblack.com/reference/carbon-black-cloud/api-migration/#migration-summary). After this, the current alert data stream will become unusable. To enable a smooth transition we have introduced a new data stream named `alert_v7` based on the major `Alerts API (v7)` schema changes and `Data Forwarder 2.0` schema changes. This data stream has significant changes compared to the original data stream and is only available for our new `CEL input` which is currently tagged as `[Beta]`. Please consult the official docs [Alerts v7](https://developer.carbonblack.com/reference/carbon-black-cloud/guides/api-migration/alerts-migration) and [Data Forwarder 2.0](https://developer.carbonblack.com/reference/carbon-black-cloud/data-forwarder/schema/latest/alert-2.0.0/) for further info. After July 31, 2024, the old alerts v6 data stream will be deprecated and removed from the HTTPJSON input and only the new `alert_v7` data stream will exist under the `CEL input`.
 
-This module has been tested against `Alerts API (v6)`, `Audit Log Events (v3)` and `Vulnerability Assessment (v1)`.
+## Version 1.21+ Update Disclaimer
+Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
+data stream. The default values of file selector regexes have been commented out for this reason. The only reason the global queue now exists is to avoid
+a breaking change while upgrading to version 1.21 and above. A separate SQS queue per data stream should help fix the data loss that's been occurring in the 
+older versions.
+
+## HTTPJSON vs CEL 
+Version 2.0.0 introduces the use of the CEL input. This input method is currently marked as [Beta] while the older HTTPJSON input method has been
+marked as [Legacy]. The HTTPJSON input method will not receive enhancement changes and will not support the new `alert_v7` data stream.
+
+## Note (Important)
+1. Do not enable both the HTTPJSON and CEL input methods within a single data stream; having both enabled simultaneously can cause unexpected/duplicated results, as they operate on the same data streams.
+
+2. When using the AWS-S3 input, use either the old alert data stream or the new [Beta] alert_v7 data stream that supports the Data Forwarder 2.0 schema.
+
+3. The `alert_v7` data stream is supported by our new `Alert V7` dashboards. The old `Alert` dashboards will not reflect the new changes.
+
+
+## Compatibility
+This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`, `Audit Log Events (v3)` and `Vulnerability Assessment (v1)`.
 
 ## Requirements
 
@@ -15,27 +35,30 @@ This module has been tested against `Alerts API (v6)`, `Audit Log Events (v3)` a
 
   | Data Stream Name  | Bucket List Prefix     |
   | ----------------- | ---------------------- |
+  | Alert_v7          | alert_logs_v7          |
   | Alert             | alert_logs             |
   | Endpoint Event    | endpoint_event_logs    |
   | Watchlist Hit     | watchlist_hit_logs     |
 
 ### To collect data from AWS SQS, follow the below steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
-2. To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
   - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
-3. Setup event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
-  - The user has to perform Step 3 for all the data-streams individually, and each time prefix parameter should be set the same as the S3 Bucket List Prefix as created earlier. (for example, `alert_logs/` for alert data stream.)
+3. Set up event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+  - The user has to perform Step 3 for all the data streams individually, and each time prefix parameter should be set the same as the S3 Bucket List Prefix as created earlier. (for example, `alert_logs/` for the alert data stream.)
   - For all the event notifications that have been created, select the event type as s3:ObjectCreated:*, select the destination type SQS Queue, and select the queue that has been created in Step 2.
 
 **Note**:
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
+  - When configuring SQS queues, separate queues should be used for each data stream instead of the global SQS queue from version 1.21 onwards to avoid data 
+    loss. File selectors should not be used to filter out data stream logs using the global queue as it was in versions prior.
 
 ### In order to ingest data from the APIs you must generate API keys and API Secret Keys:
 1. In Carbon Black Cloud, On the left navigation pane, click **Settings > API Access**.
 2. Click Add API Key.
 3. Give the API key a unique name and description.
-    - Select the appropriate access level type. Please check required Access Levels & Permissions for integration in below table.  
+    - Select the appropriate access level type. Please check the required Access Levels & Permissions for integration in the table below.  
      **Note:** To use a custom access level, select Custom from the Access Level type drop-down menu and specify the Custom Access Level.
     - Optional: Add authorized IP addresses.
     - You can restrict the use of an API key to a specific set of IP addresses for security reasons.  
@@ -73,6 +96,14 @@ This is the `alert` dataset.
 {{event "alert"}}
 
 {{fields "alert"}}
+
+### Alert
+
+This is the `alert_v7` dataset.
+
+{{event "alert_v7"}}
+
+{{fields "alert_v7"}}
 
 ### Endpoint Event
 

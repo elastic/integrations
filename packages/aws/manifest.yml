@@ -1,7 +1,7 @@
 format_version: 3.0.0
 name: aws
 title: AWS
-version: 2.11.3
+version: 2.20.0
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
@@ -10,7 +10,7 @@ conditions:
   elastic:
     subscription: basic
   kibana:
-    version: "^8.10.2"
+    version: "^8.14.0"
 screenshots:
   - src: /img/metricbeat-aws-overview.png
     title: metricbeat aws overview
@@ -36,20 +36,23 @@ vars:
     required: false
     show_user: false
   - name: access_key_id
-    type: text
+    type: password
     title: Access Key ID
+    secret: true
     multi: false
     required: false
     show_user: true
   - name: secret_access_key
-    type: text
+    type: password
     title: Secret Access Key
+    secret: true
     multi: false
     required: false
     show_user: true
   - name: session_token
-    type: text
+    type: password
     title: Session Token
+    secret: true
     multi: false
     required: false
     show_user: true
@@ -75,6 +78,28 @@ vars:
     show_user: false
     description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
 policy_templates:
+  - name: awshealth
+    title: AWS Health
+    description: Collect AWS Health metrics with Elastic Agent (experimental)
+    data_streams:
+      - awshealth
+    categories:
+      - observability
+    inputs:
+      - type: aws/metrics
+        title: Collect AWS Health metrics (experimental)
+        description: Collect AWS Health metrics (experimental).
+        input_group: metrics
+    icons:
+      - src: /img/logo_aws_health.svg
+        title: AWS Health logo
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat-aws-awshealth.png
+        title: AWS Health overview
+        size: 2640x2240
+        type: image/png
   - name: billing
     title: AWS Billing
     description: Collect billing metrics with Elastic Agent
@@ -679,6 +704,7 @@ policy_templates:
       - securityhub_insights
     categories:
       - security
+      - cloudsecurity_cdr
     inputs:
       - type: httpjson
         title: Collect AWS Security Hub logs via API
@@ -704,6 +730,7 @@ policy_templates:
       - inspector
     categories:
       - security
+      - cloudsecurity_cdr
     inputs:
       - type: httpjson
         title: Collect AWS Inspector logs via API
@@ -723,6 +750,8 @@ policy_templates:
     description: Collect Amazon GuardDuty logs with Elastic Agent.
     data_streams:
       - guardduty
+    categories:
+      - cloudsecurity_cdr
     inputs:
       - type: httpjson
         title: Collect Amazon GuardDuty logs via API
@@ -806,6 +835,28 @@ policy_templates:
         title: AWS EMR logo
         size: 32x32
         type: image/svg+xml
+  - name: kafka
+    title: Amazon Managed Streaming for Apache Kafka (MSK)
+    description: Collect Amazon MSK metrics with Elastic Agent
+    data_streams:
+      - kafka_metrics
+    categories:
+      - observability
+    inputs:
+      - type: aws/metrics
+        title: Collect Amazon MSK metrics
+        description: Collect Amazon MSK metrics using AWS CloudWatch
+        input_group: metrics
+    icons:
+      - src: /img/logo_msk.svg
+        title: Amazon MSK logo
+        size: 32x32
+        type: image/svg+xml
+    screenshots:
+      - src: /img/metricbeat-aws-kafka-overview.png
+        title: metricbeat aws kafka overview
+        size: 2640x2240
+        type: image/png
 owner:
   github: elastic/obs-ds-hosted-services
   type: elastic

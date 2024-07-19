@@ -1,0 +1,92 @@
+---
+description: Pipeline for processing Pleasant Password Server logs.
+processors:
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+  - grok:
+      field: event.original
+      patterns:
+        - '^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.hostname}\s%{DATA}:%{IP:client.ip}\s-\s%{USERNAME:user.name}@%{DATA:user.domain}\s%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{GREEDYDATA:message}'
+        - '^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\s+%{NOTSPACE:host.domain}\s%{DATA}:%{IP:client.ip}%{DATA}(?<event.outcome>(Success)|(Error))\s-\s%{GREEDYDATA:message}'
+        - '^%{GREEDYDATA:message}$'
+  # Set the Event Outcome to Lower Case to be ECS Compliant
+  - lowercase:
+      field: event.outcome
+      if: ctx.event?.outcome != null
+  # Set the Event Outcome to failure if the event.outcome is error
+  - set:
+      field: event.outcome
+      value: "failure"
+      if: ctx.event?.outcome == 'error'
+  # Set the Event Outcome to unknown if neither error nor success is present
+  - set:
+      field: event.outcome
+      value: "unknown"
+      if: ctx.event?.outcome != 'success' && ctx.event?.outcome != 'failure'
+  - rename:
+      field: _conf.tz_offset
+      target_field: event.timezone
+      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
+      ignore_missing: true
+      ignore_failure: true
+  - date:
+      field: event.created
+      target_field: "event.created"
+      formats:
+        - "MMM dd HH:mm:ss"
+      timezone: "{{{event.timezone}}}"
+      if: ctx.event?.timezone != null && ctx.event?.created != null
+      on_failure:
+        - remove:
+            field: event.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
+  - date:
+      field: event.created
+      target_field: "event.created"
+      formats:
+        - "MMM dd HH:mm:ss"
+      if: ctx.event?.timezone == null && ctx.event?.created != null
+      on_failure:
+        - remove:
+            field: event.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
+  # Since logstash sets the @timestamp if not present, `override: true` is required to overwrite the value with event timestamp.
+  - set:
+      field: "@timestamp"
+      value: "{{{event.created}}}"
+      if: "ctx.event?.created != null"
+      override: true
+  - set:
+      field: "user.email"
+      value: "{{{user.name}}}@{{{user.domain}}}"
+      if: ctx.user?.name != null && ctx.user?.domain != null
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - _conf
+        - _tmp
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: event.kind
+      value: pipeline_error

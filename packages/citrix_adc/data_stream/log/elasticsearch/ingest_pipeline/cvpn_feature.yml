@@ -1,0 +1,35 @@
+---
+description: Pipeline for Citrix Native messages of CVPN feature.
+processors:
+  - grok:
+      description: Extract fields from message of CVPN feature.
+      tag: grok_cvpn_feature
+      field: citrix.extended.message
+      patterns:
+        - '^HTML_URL %{URI:citrix_adc.log.html_url}$'
+        - '^REWRITTEN_URL %{URI:citrix_adc.log.rewritten_url}$'
+        - '^MATCHED_URL %{URI:citrix_adc.log.matched_url}$'
+        - '%{GREEDYDATA:citrix_adc.log.message}'
+      ignore_failure: true
+  - set:
+      field: url.original
+      tag: set_url_original_from_html_url
+      copy_from: citrix_adc.log.html_url
+      ignore_empty_value: true
+  - set:
+      field: url.original
+      tag: set_url_original_from_rewritten_url
+      copy_from: citrix_adc.log.rewritten_url
+      ignore_empty_value: true
+  - set:
+      field: url.original
+      tag: set_url_original_from_matched_url
+      copy_from: citrix_adc.log.matched_url
+      ignore_empty_value: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

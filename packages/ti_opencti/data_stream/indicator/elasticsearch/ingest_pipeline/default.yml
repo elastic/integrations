@@ -126,6 +126,16 @@ processors:
   - rename:
       field: valid_until
       target_field: opencti.indicator.valid_until
+  - script:
+      lang: painless
+      source: |
+        if (ctx.opencti.indicator.revoked == true &&
+            ctx.threat.indicator.modified_at.compareTo(ctx.opencti.indicator.valid_until) < 0) {
+            ctx.opencti.indicator.invalid_or_revoked_from = ctx.threat.indicator.modified_at;
+        } else {
+            // valid_until always has a value, will be epoch + 10^14 ms if no other value
+            ctx.opencti.indicator.invalid_or_revoked_from = ctx.opencti.indicator.valid_until;
+        }
   - rename:
       field: x_opencti_score
       target_field: opencti.indicator.score
@@ -146,19 +156,21 @@ processors:
   - rename:
       field: createdBy.name
       target_field: threat.indicator.provider
+      ignore_missing: true
   - rename:
       field: createdBy.identity_class
       target_field: opencti.indicator.creator_identity_class
+      ignore_missing: true
   - remove:
       field: createdBy
       ignore_missing: true
 
   - gsub:
       if: |
-        ctx.objectMarking.edges != null &&
-        !ctx.objectMarking.edges.isEmpty() &&
-        ctx.objectMarking.edges[0].node.definition_type == "TLP"
-      field: objectMarking.edges.0.node.definition
+        ctx.objectMarking != null &&
+        !ctx.objectMarking.isEmpty() &&
+        ctx.objectMarking[0].definition_type == "TLP"
+      field: objectMarking.0.definition
       pattern: '^TLP:'
       replacement: ''
       target_field: threat.indicator.marking.tlp
@@ -166,23 +178,23 @@ processors:
       field: objectMarking
 
   - foreach:
-      field: objectLabel.edges
+      field: objectLabel
       ignore_missing: true
       processor:
         append:
           field: tags
-          value: "{{{_ingest._value.node.value}}}"
+          value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - remove:
       field: objectLabel
 
   - foreach:
-      field: killChainPhases.edges
+      field: killChainPhases
       ignore_missing: true
       processor:
         append:
           field: opencti.indicator.kill_chain_phase
-          value: "[{{{_ingest._value.node.kill_chain_name}}}] {{{_ingest._value.node.phase_name}}}"
+          value: "[{{{_ingest._value.kill_chain_name}}}] {{{_ingest._value.phase_name}}}"
   - remove:
       field: killChainPhases
 

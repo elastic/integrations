@@ -4,6 +4,15 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+cleanup_gh() {
+    pushd $WORKSPACE > /dev/null
+    git config remote.origin.url "https://github.com/elastic/integrations.git"
+    popd > /dev/null
+}
+
+trap cleanup_gh EXIT
+
+
 DRY_RUN="$(buildkite-agent meta-data get DRY_RUN --default ${DRY_RUN:-"true"})"
 BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default ${BASE_COMMIT:-""})"
 PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default ${PACKAGE_NAME:-""})"
@@ -14,6 +23,20 @@ if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
   buildkite-agent annotate "The variables **PACKAGE_NAME** or **PACKAGE_VERSION** aren't defined, please try again" --style "warning"
   exit 1
 fi
+
+# Report data set in the input step
+PARAMETERS=(
+    "**DRY_RUN**=$DRY_RUN"
+    "**BASE_COMMIT**=$BASE_COMMIT"
+    "**PACKAGE_NAME**=$PACKAGE_NAME"
+    "**PACKAGE_VERSION**=$PACKAGE_VERSION"
+    "**REMOVE_OTHER_PACKAGES**=$REMOVE_OTHER_PACKAGES"
+)
+
+# Show each parameter in a different line
+echo "Parameters: ${PARAMETERS[*]}" | sed 's/ /\n- /g' | buildkite-agent annotate \
+    --style "info" \
+    --context "context-parameters"
 
 FULL_ZIP_PACKAGE_NAME="${PACKAGE_NAME}-${PACKAGE_VERSION}.zip"
 TRIMMED_PACKAGE_VERSION="$(echo "$PACKAGE_VERSION" | cut -d '.' -f -2)"
@@ -81,9 +104,19 @@ removeOtherPackages() {
   done
 }
 
+update_git_config() {
+    pushd $WORKSPACE > /dev/null
+    git config --global user.name "${GITHUB_USERNAME_SECRET}"
+    git config --global user.email "${GITHUB_EMAIL_SECRET}"
+
+    git config remote.origin.url "https://${GITHUB_USERNAME_SECRET}:${GITHUB_TOKEN}@github.com/elastic/integrations.git"
+    popd > /dev/null
+}
+
 updateBackportBranchContents() {
   local BUILDKITE_FOLDER_PATH=".buildkite"
   local JENKINS_FOLDER_PATH=".ci"
+  local files_cached_num=""
   if git ls-tree -d --name-only main:.ci >/dev/null 2>&1; then
     git checkout $BACKPORT_BRANCH_NAME
     echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
@@ -105,20 +138,32 @@ updateBackportBranchContents() {
   fi
 
   echo "Setting up git environment..."
-  git config --global user.name "${GITHUB_USERNAME_SECRET}"
-  git config --global user.email "${GITHUB_EMAIL_SECRET}"
+  update_git_config
+
+  echo "Commiting"
+  git add $BUILDKITE_FOLDER_PATH
+  if [ -d "${JENKINS_FOLDER_PATH}" ]; then
+    git add $JENKINS_FOLDER_PATH
+  fi
+  git add $PACKAGES_FOLDER_PATH/
+  git status
+
+  files_cached_num=$(git diff --name-only --cached | wc -l)
+  if [ "${files_cached_num}" -gt 0 ]; then
+    git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
+  else
+    echo "Nothing to commit, skip."
+  fi
 
   if [ "$DRY_RUN" == "true" ];then
     echo "DRY_RUN mode, nothing will be pushed."
     git diff $SOURCE_BRANCH...$BACKPORT_BRANCH_NAME
   else
-    echo "Commiting and pushing..."
-    git add $BUILDKITE_FOLDER_PATH
-    git add $JENKINS_FOLDER_PATH
-    git add $PACKAGES_FOLDER_PATH/
-    git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
+    echo "Pushing..."
     git push origin $BACKPORT_BRANCH_NAME
   fi
+
+  cleanup_gh
 }
 
 if ! [[ $PACKAGE_VERSION =~ ^[0-9]+(\.[0-9]+){2}(\-.*)?$ ]]; then
@@ -152,15 +197,15 @@ if branchExist "$BACKPORT_BRANCH_NAME"; then
 fi
 
 # backport branch does not exist, running checks and create branch
-echo "Check the entered version and PACKAGE_VERSION are equal"
-version="$(cat packages/${PACKAGE_NAME}/manifest.yml | yq -r .version)"
+version="$(git show "${BASE_COMMIT}":"packages/${PACKAGE_NAME}/manifest.yml" | yq -r .version)"
+echo "Check if version from ${BASE_COMMIT} (${version}) matches with version from input step ${PACKAGE_VERSION}"
 if [[ "${version}" != "${PACKAGE_VERSION}" ]]; then
   buildkite-agent annotate "Unexpected version found in packages/${PACKAGE_NAME}/manifest.yml" --style "error"
   exit 1
 fi
 
 echo "Check that this changeset is the one creating the version $PACKAGE_NAME"
-if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_NAME}/manifest.yml | grep -E "^\+version: ${PACKAGE_VERSION}" ; then
+if ! git show -p ${BASE_COMMIT} packages/${PACKAGE_NAME}/manifest.yml | grep -E "^\+version: \"{0,1}${PACKAGE_VERSION}" ; then
   buildkite-agent annotate "This changeset does not creates the version ${PACKAGE_VERSION}" --style "error"
   exit 1
 fi
@@ -172,4 +217,7 @@ MSG="The backport branch: **$BACKPORT_BRANCH_NAME** has been created."
 echo "Adding CI files into the branch ${BACKPORT_BRANCH_NAME}"
 updateBackportBranchContents
 
+if [ "${DRY_RUN}" == "true" ]; then
+  MSG="[DRY_RUN] ${MSG}."
+fi
 buildkite-agent annotate "$MSG" --style "success"

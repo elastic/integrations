@@ -1,90 +1,315 @@
-- name: trendmicro.event
+- name: source.process.name
+  type: keyword
+  description: Source process name.
+- name: trendmicro
   type: group
   fields:
-    - name: action_reason
-      type: keyword
-      description: The reason why application control performed the specified action, such as "notWhitelisted" (the software did not have a matching rule, and application control was configured to block unrecognized software).
-    - name: tags
-      type: keyword
-      description: Deep Security event tags assigned to the event.
-    - name: tenant_id
-      type: keyword
-      description: Deep Security tenant ID.
-    - name: tenant_name
-      type: keyword
-      description: Deep Security tenant name.
-    - name: aggregation_type
-      type: keyword
-      description: An integer that indicates how the event is aggregated.
-    - name: count
-      type: keyword
-      description: The number of occurrences of the event.
-    - name: tcp_flag
-      type: keyword
-      description: TCP Flag.
-    - name: packet_fragmentation
-      type: keyword
-      description: Packet Fragmentation Information.
-    - name: ethernet_frame_type
-      type: keyword
-      description: Connection ethernet frame type.
-    - name: packet_data
-      type: keyword
-      description: The packet data, represented in Base64.
-    - name: old_file_path
-      type: keyword
-      description: The previous integrity rule target entity to capture the rename action from the previous target entity to the new, which is recorded in the filePath field.
-    - name: ips_stream_position
-      type: keyword
-      description: Position within stream of data that triggered the event.
-    - name: ips_packet_position
-      type: keyword
-      description: Position within packet of data that triggered the event.
-    - name: ips_flag
-      type: keyword
-      description: A combined value that includes the sum of the flag values.
-    - name: log_inspection_description
-      type: keyword
-      description: The Log Inspection sub-rule which triggered this event.
-    - name: threat_type
-      type: keyword
-      description: The type of system resource that this malware was trying to affect, such as the file system, a process, or Windows registry.
-    - name: malware_target
-      type: keyword
-      description: The file, process, or registry key (if any) that the malware was trying to affect. If the malware was trying to affect more than one, this field will contain the value "Multiple."
-    - name: malware_target_type
-      type: keyword
-      description: The type of system resource that this malware was trying to affect, such as the file system, a process, or Windows registry.
-    - name: threat_probability
-      type: keyword
-      description: Indicates how closely (in %) the file matched the malware model.
-    - name: spyware_risklevel
-      type: keyword
-      description: Risk level values.
-    - name: spyware_resourcetype
-      type: keyword
-      description: Resource Type values.For example, if there's a spyware file named spy.exe that creates a registry run key to keep its persistence after system reboot, there will be two items in the spyware report; the item for spy.exe has Files and Directories, and the item for the run key registry has System Registry.
-    - name: target
-      type: keyword
-      description: The subject of the event. It can be the administrator account logged into Deep Security Manager, or a computer.
-    - name: target_id
-      type: keyword
-      description: The identifier added in the manager.
-    - name: target_type
-      type: keyword
-      description: The event target entity type.
-    - name: message
-      type: keyword
-      description: The event short message.
-    - name: name
-      type: keyword
-      description: Name of the event type.
-    - name: probable_threat_type
-      type: keyword
-      description: Probable Threat Type.Indicates the most likely type of threat contained in the file after Predictive Machine Learning compared the analysis to other known threats(separate by semicolon";" ).
-    - name: category
-      type: keyword
-      description: proper categorization of some events.
-    - name: signature_id
-      type: integer
-      description: The "Signature ID" value indicates what kind of event has been triggered.
+    - name: deep_security
+      type: group
+      fields:
+        - name: action
+          type: keyword
+          description: The action detected by the integrity rule.
+        - name: aggregation_type
+          type: keyword
+          description: An integer that indicates how the event is aggregated:.
+        - name: base_event_count
+          type: long
+          description: Base event count.
+        - name: bytes_in
+          type: long
+          description: Number of inbound bytes read.
+        - name: computer_name
+          type: keyword
+          description: The computer name.
+        - name: destination
+          type: group
+          fields:
+            - name: address
+              type: ip
+              description: IP address of the destination computer.
+            - name: mac_address
+              type: keyword
+              description: Destination MAC Address.
+            - name: port
+              type: long
+              description: Port number of the destination computer's connection or session.
+            - name: user_name
+              type: keyword
+              description: Destination user name.
+        - name: device
+          type: group
+          fields:
+            - name: custom_number1
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name label for the field cn1.
+                - name: value
+                  type: keyword
+                  description: The value for the field cn1.
+            - name: custom_number2
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name label for the field cn2.
+                - name: value
+                  type: long
+                  description: The value for the field cn2.
+            - name: custom_number3
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name label for the field cn3.
+                - name: value
+                  type: long
+                  description: The value for the field cn3.
+            - name: custom_string1
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name label for the field cs1.
+                - name: value
+                  type: keyword
+                  description: The value for the field cs1.
+            - name: custom_string2
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name label for the field cs2.
+                - name: value
+                  type: keyword
+                  description: The value for the field cs2.
+            - name: custom_string3
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name label for the field cs3.
+                - name: value
+                  type: keyword
+                  description: The value for the field cs3.
+            - name: custom_string4
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name label for the field cs4.
+                - name: value
+                  type: keyword
+                  description: The value for the field cs4.
+            - name: custom_string5
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name label for the field cs5.
+                - name: value
+                  type: keyword
+                  description: The value for the field cs5.
+            - name: custom_string6
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name label for the field cs6.
+                - name: value
+                  type: keyword
+                  description: The value for the field cs6.
+            - name: custom_string7
+              type: group
+              fields:
+                - name: label
+                  type: keyword
+                  description: The name label for the field cs7.
+                - name: value
+                  type: keyword
+                  description: The value for the field cs7.
+            - name: product
+              type: keyword
+              description: Product name.
+            - name: vendor
+              type: keyword
+              description: Vendor name.
+            - name: version
+              type: keyword
+              description: Product version.
+        - name: deviceHostName
+          type: keyword
+          description: The hostname for cn1.
+        - name: domain_name
+          type: keyword
+          description: The domain name.
+        - name: event_category
+          type: keyword
+          description: Event category of deep security event.
+        - name: event_class_id
+          type: keyword
+          description: Event Class ID.
+        - name: file
+          type: group
+          fields:
+            - name: hash
+              type: keyword
+              description: The SHA 256 hash that identifies the software file.
+            - name: size
+              type: long
+              description: The file size in bytes.
+        - name: file_path
+          type: keyword
+          description: The location of the malware file.
+        - name: filename
+          type: keyword
+          description: The file name that was accessed.
+        - name: message
+          type: keyword
+          description: A list of changed attribute names.
+        - name: model
+          type: keyword
+          description: The product name of the device.
+        - name: name
+          type: keyword
+          description: CEF event containing message.
+        - name: permission
+          type: keyword
+          description: The block reason of the access.
+        - name: process
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The process name.
+        - name: repeat_count
+          type: keyword
+          description: The number of occurrences of the event.
+        - name: request_url
+          type: keyword
+          description: The URL of the request.
+        - name: result
+          type: keyword
+          description: The result of the failed Anti-Malware action.
+        - name: serial
+          type: keyword
+          description: The serial number of the device.
+        - name: severity
+          type: long
+          description: Severity of the Event.
+        - name: signature_id
+          type: long
+          description: Signature ID of event.
+        - name: source
+          type: group
+          fields:
+            - name: address
+              type: ip
+              description: Source computer IP address.
+            - name: host_name
+              type: keyword
+              description: Source computer hostname.
+            - name: mac_address
+              type: keyword
+              description: MAC address of the source computer's network interface.
+            - name: port
+              type: long
+              description: Port number of the source computer's connection or session.
+            - name: process_name
+              type: keyword
+              description: The name of the event's source process.
+            - name: user_id
+              type: keyword
+              description: Source user ID.
+            - name: user_name
+              type: keyword
+              description: Account of the user who changed the file being monitored.
+        - name: target
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The identifier added in the manager.
+            - name: value
+              type: keyword
+              description: The subject of the event. It can be the administrator account logged into Deep Security Manager, or a computer.
+        - name: transport_protocol
+          type: keyword
+          description: Name of the transport protocol used.
+        - name: trendmicro
+          type: group
+          fields:
+            - name: ds_behavior
+              type: group
+              fields:
+                - name: rule_id
+                  type: keyword
+                  description: The behavior monitoring rule ID for internal malware case tracking.
+                - name: type
+                  type: keyword
+                  description: The type of behavior monitoring event detected.
+            - name: ds_command_line
+              type: keyword
+              description: The commands that the subject process executes.
+            - name: ds_cve
+              type: keyword
+              description: The CVE information, if the process behavior is identified in one of Common Vulnerabilities and Exposures.
+            - name: ds_detection_confidence
+              type: long
+              description: Indicates how closely the file matched the malware model.
+            - name: ds_file
+              type: group
+              fields:
+                - name: md5
+                  type: keyword
+                  description: The MD5 hash of the file.
+                - name: sha1
+                  type: keyword
+                  description: The SHA1 hash of the file.
+                - name: sha256
+                  type: keyword
+                  description: The SHA256 hash of the file.
+            - name: ds_frame_type
+              type: keyword
+              description: Connection ethernet frame type.
+            - name: ds_malware_target
+              type: group
+              fields:
+                - name: count
+                  type: long
+                  description: The number of target files.
+                - name: type
+                  type: keyword
+                  description: The type of system resource that this malware was trying to affect.
+                - name: value
+                  type: keyword
+                  description: The file, process, or registry key (if any) that the malware was trying to affect.
+            - name: ds_mitre
+              type: keyword
+              description: The MITRE information, if the process behavior is identified in one of MITRE attack scenarios.
+            - name: ds_packet_data
+              type: keyword
+              description: The packet data, represented in Base64.
+            - name: ds_process
+              type: keyword
+              description: Name of ds process.
+            - name: ds_relevant_detection_names
+              type: keyword
+              description: Probable Threat Type.
+            - name: ds_tenant
+              type: keyword
+              description: Deep Security tenant.
+            - name: ds_tenant_id
+              type: keyword
+              description: Deep Security tenant ID.
+        - name: type
+          type: keyword
+          description: The device type of the device.
+        - name: version
+          type: keyword
+          description: Deep Security version.
+        - name: xff
+          type: ip
+          description: The IP address of the last hub in the X-Forwarded-For header.

@@ -17,11 +17,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-10-10T12:34:56.000Z",
     "agent": {
-        "ephemeral_id": "9ff3fcbd-3ca0-4634-bbaa-604ac67b8188",
-        "id": "383c6290-eea2-4a18-8adf-2ed05723031e",
+        "ephemeral_id": "bb12e06f-beb2-4447-82ba-7dd497fe6283",
+        "id": "6a762ace-ff7a-4a1f-9fc4-cae4c2122d76",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.3"
+        "version": "8.13.2"
     },
     "cisco": {
         "asa": {
@@ -44,25 +44,27 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "383c6290-eea2-4a18-8adf-2ed05723031e",
+        "id": "6a762ace-ff7a-4a1f-9fc4-cae4c2122d76",
         "snapshot": false,
-        "version": "8.10.3"
+        "version": "8.13.2"
     },
     "event": {
-        "action": "firewall-rule",
+        "action": "nat-slot",
         "agent_id_status": "verified",
         "category": [
-            "network"
+            "network",
+            "configuration"
         ],
         "code": "305011",
         "dataset": "cisco_asa.log",
-        "ingested": "2023-10-17T09:19:55Z",
+        "ingested": "2024-04-23T19:53:14Z",
         "kind": "event",
         "original": "Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:192.168.98.44/8256",
+        "outcome": "success",
         "severity": 6,
         "timezone": "UTC",
         "type": [
-            "info"
+            "creation"
         ]
     },
     "host": {
@@ -74,7 +76,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.208.4:60290"
+            "address": "192.168.192.4:46208"
         }
     },
     "network": {
@@ -123,7 +125,6 @@ An example event for `log` looks as following:
         "forwarded"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -143,14 +144,19 @@ An example event for `log` looks as following:
 | cisco.asa.command_line_arguments | The command line arguments logged by the local audit log | keyword |
 | cisco.asa.connection_id | Unique identifier for a flow. | keyword |
 | cisco.asa.connection_type | The VPN connection type | keyword |
+| cisco.asa.connections_in_use | The number of connections in use. | long |
+| cisco.asa.connections_most_used | The number of most used connections. | long |
 | cisco.asa.dap_records | The assigned DAP records | keyword |
 | cisco.asa.destination_interface | Destination interface for the flow or event. | keyword |
 | cisco.asa.destination_user_security_group_tag | The Security Group Tag for the destination user. Security Group Tag are 16-bit identifiers used to represent logical group privilege. | long |
 | cisco.asa.destination_user_security_group_tag_name | The name of Security Group Tag for the destination user. | keyword |
 | cisco.asa.destination_username | Name of the user that is the destination for this event. | keyword |
+| cisco.asa.device_type | The device type. | keyword |
 | cisco.asa.full_message | The Cisco log message text. | keyword |
+| cisco.asa.group_policy | The group policy name. | keyword |
 | cisco.asa.icmp_code | ICMP code. | short |
 | cisco.asa.icmp_type | ICMP type. | short |
+| cisco.asa.interface_name | The interface name. | keyword |
 | cisco.asa.mapped_destination_host |  | keyword |
 | cisco.asa.mapped_destination_ip | The translated destination IP address. | ip |
 | cisco.asa.mapped_destination_port | The translated destination port. | long |
@@ -160,11 +166,16 @@ An example event for `log` looks as following:
 | cisco.asa.message | The message associated with SIP and Skinny VoIP events | keyword |
 | cisco.asa.message_id | The Cisco ASA message identifier. | keyword |
 | cisco.asa.original_iana_number | IANA Protocol Number of the original IP payload. | short |
+| cisco.asa.peer_type | The peer type. | keyword |
+| cisco.asa.pool_address | The pool address. | ip |
+| cisco.asa.pool_name | The pool name. | keyword |
 | cisco.asa.privilege.new | When a users privilege is changed this is the new value | keyword |
 | cisco.asa.privilege.old | When a users privilege is changed this is the old value | keyword |
+| cisco.asa.redundant_interface_name | The redundant interface name. | keyword |
 | cisco.asa.rejection_reason | Reason for an AAA authentication rejection. | keyword |
 | cisco.asa.rule_name | Name of the Access Control List rule that matched this event. | keyword |
 | cisco.asa.security | Cisco FTD security event fields. | flattened |
+| cisco.asa.session_id | The session id. | keyword |
 | cisco.asa.session_type | Session type (for example, IPsec or UDP). | keyword |
 | cisco.asa.source_interface | Source interface for the flow or event. | keyword |
 | cisco.asa.source_user_security_group_tag | The Security Group Tag for the source user. Security Group Tag are 16-bit identifiers used to represent logical group privilege. | long |
@@ -175,6 +186,8 @@ An example event for `log` looks as following:
 | cisco.asa.termination_user | AAA name of user requesting termination | keyword |
 | cisco.asa.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.asa.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
+| cisco.asa.trustpoint | The trustpoint name. | keyword |
+| cisco.asa.tunnel_group | The tunnel group name. | keyword |
 | cisco.asa.tunnel_type | SA type (remote access or L2L) | keyword |
 | cisco.asa.username |  | keyword |
 | cisco.asa.webvpn.group_name | The WebVPN group name the user belongs to | keyword |
@@ -341,6 +354,8 @@ An example event for `log` looks as following:
 | source.user.name | Short name or login of the user. | keyword |
 | source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
+| tls.version | Numeric part of the version parsed from the original string. | keyword |
+| tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
@@ -360,3 +375,5 @@ An example event for `log` looks as following:
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
+| user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |

@@ -1,0 +1,15 @@
+version: '2.3'
+services:
+  threatconnect-indicator:
+    image: docker.elastic.co/observability/stream:v0.15.0
+    hostname: threatconnect-indicator
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-indicator.yml

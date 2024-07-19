@@ -9,6 +9,14 @@ processors:
       value: 
         - cribl
       allow_duplicates: false
+  - rename:
+      field: _raw
+      target_field: message
+      ignore_missing: true
+  # The Cribl routing pipeline is managed by Kibana 
+  # https://github.com/elastic/kibana/pull/176439
+  - pipeline:
+      name: 'cribl-routing-pipeline'
 on_failure:
   - set:
       field: error.message

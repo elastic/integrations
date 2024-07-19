@@ -1,13 +1,13 @@
-format_version: "3.0.0"
+format_version: "3.0.2"
 name: sentinel_one_cloud_funnel
 title: SentinelOne Cloud Funnel
-version: "0.10.1"
+version: "1.3.0"
 description: Collect logs from SentinelOne Cloud Funnel with Elastic Agent.
 type: integration
 categories: ["security", "edr_xdr"]
 conditions:
   kibana:
-    version: ^8.11.0
+    version: ^8.13.0
   elastic:
     subscription: basic
 screenshots:
@@ -78,6 +78,7 @@ policy_templates:
             required: false
             show_user: true
             description: First part of access key. This parameter along with the secret_access_key parameter is required if we are not providing shared_credential_file.
+            secret: true
           - name: secret_access_key
             type: password
             title: Secret Access Key
@@ -85,13 +86,15 @@ policy_templates:
             required: false
             show_user: true
             description: Second part of access key. This parameter along with the access_key_id parameter is required if we are not providing shared_credential_file.
+            secret: true
           - name: session_token
-            type: text
+            type: password
             title: Session Token
             multi: false
             required: false
             show_user: true
             description: Required when using temporary security credentials.
+            secret: true
           - name: shared_credential_file
             type: text
             title: Shared Credential File
@@ -157,6 +160,113 @@ policy_templates:
               #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
+
+          # Rerouting options
+          - name: reroute_command_script
+            type: bool
+            title: Reroute Command Script events to `sentinel_one_cloud_funnel.command_script`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes command_script events to `sentinel_one_cloud_funnel.command_script` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_cross_process
+            type: bool
+            title: Reroute Coss Process events to `sentinel_one_cloud_funnel.cross_process`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes cross_process events to `sentinel_one_cloud_funnel.cross_process` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_dns
+            type: bool
+            title: Reroute DNS events to `sentinel_one_cloud_funnel.dns`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes dns events to `sentinel_one_cloud_funnel.dns` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_file
+            type: bool
+            title: Reroute File events to `sentinel_one_cloud_funnel.file`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes file events to `sentinel_one_cloud_funnel.file` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_indicators
+            type: bool
+            title: Reroute Indicator events to `sentinel_one_cloud_funnel.indicators`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes indicators events to `sentinel_one_cloud_funnel.indicators` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_logins
+            type: bool
+            title: Reroute Login events to `sentinel_one_cloud_funnel.logins`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes logins events to `sentinel_one_cloud_funnel.logins` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_module
+            type: bool
+            title: Reroute Module events to `sentinel_one_cloud_funnel.module`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes module events to `sentinel_one_cloud_funnel.module` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_ip
+            type: bool
+            title: Reroute IP events to `sentinel_one_cloud_funnel.ip`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes ip events to `sentinel_one_cloud_funnel.ip` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_process
+            type: bool
+            title: Reroute Process events to `sentinel_one_cloud_funnel.process`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes process events to `sentinel_one_cloud_funnel.process` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_registry
+            type: bool
+            title: Reroute registry events to `sentinel_one_cloud_funnel.registry`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes registry events to `sentinel_one_cloud_funnel.registry` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_scheduled_task
+            type: bool
+            title: Reroute Scheduled Task events to `sentinel_one_cloud_funnel.scheduled_task`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes scheduled_task events to `sentinel_one_cloud_funnel.scheduled_task` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_threat_intelligence_indicators
+            type: bool
+            title: Reroute Threat Intelligence Indicator events to `sentinel_one_cloud_funnel.threat_intelligence_indicators`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes threat_intelligence_indicators events to `sentinel_one_cloud_funnel.threat_intelligence_indicators` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_url
+            type: bool
+            title: Reroute URL events to `sentinel_one_cloud_funnel.url`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes url events to `sentinel_one_cloud_funnel.url` from `sentinel_one_cloud_funnel.event`.
+
       - type: gcs
         title: Collect SentinelOne Cloud Funnel logs via Google Cloud Storage.
         description: Collecting logs from SentinelOne Cloud Funnel via Google Cloud Storage.
@@ -176,6 +286,7 @@ policy_templates:
             multi: false
             required: false
             show_user: true
+            secret: true
           - name: service_account_file
             type: text
             title: "JSON Credentials file path"
@@ -183,6 +294,112 @@ policy_templates:
             multi: false
             required: false
             show_user: false
+
+          # Rerouting options
+          - name: reroute_command_script
+            type: bool
+            title: Reroute Command Script events to `sentinel_one_cloud_funnel.command_script`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes command_script events to `sentinel_one_cloud_funnel.command_script` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_cross_process
+            type: bool
+            title: Reroute Coss Process events to `sentinel_one_cloud_funnel.cross_process`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes cross_process events to `sentinel_one_cloud_funnel.cross_process` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_dns
+            type: bool
+            title: Reroute DNS events to `sentinel_one_cloud_funnel.dns`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes dns events to `sentinel_one_cloud_funnel.dns` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_file
+            type: bool
+            title: Reroute File events to `sentinel_one_cloud_funnel.file`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes file events to `sentinel_one_cloud_funnel.file` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_indicators
+            type: bool
+            title: Reroute Indicator events to `sentinel_one_cloud_funnel.indicators`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes indicators events to `sentinel_one_cloud_funnel.indicators` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_logins
+            type: bool
+            title: Reroute Login events to `sentinel_one_cloud_funnel.logins`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes logins events to `sentinel_one_cloud_funnel.logins` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_module
+            type: bool
+            title: Reroute Module events to `sentinel_one_cloud_funnel.module`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes module events to `sentinel_one_cloud_funnel.module` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_ip
+            type: bool
+            title: Reroute IP events to `sentinel_one_cloud_funnel.ip`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes ip events to `sentinel_one_cloud_funnel.ip` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_process
+            type: bool
+            title: Reroute Process events to `sentinel_one_cloud_funnel.process`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes process events to `sentinel_one_cloud_funnel.process` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_registry
+            type: bool
+            title: Reroute registry events to `sentinel_one_cloud_funnel.registry`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes registry events to `sentinel_one_cloud_funnel.registry` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_scheduled_task
+            type: bool
+            title: Reroute Scheduled Task events to `sentinel_one_cloud_funnel.scheduled_task`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes scheduled_task events to `sentinel_one_cloud_funnel.scheduled_task` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_threat_intelligence_indicators
+            type: bool
+            title: Reroute Threat Intelligence Indicator events to `sentinel_one_cloud_funnel.threat_intelligence_indicators`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes threat_intelligence_indicators events to `sentinel_one_cloud_funnel.threat_intelligence_indicators` from `sentinel_one_cloud_funnel.event`.
+          - name: reroute_url
+            type: bool
+            title: Reroute URL events to `sentinel_one_cloud_funnel.url`
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: Enabling this option reroutes url events to `sentinel_one_cloud_funnel.url` from `sentinel_one_cloud_funnel.event`.
 owner:
   github: elastic/security-service-integrations
   type: elastic

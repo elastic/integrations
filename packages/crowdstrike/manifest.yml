@@ -1,13 +1,13 @@
 name: crowdstrike
 title: CrowdStrike
-version: "1.28.1"
+version: "1.38.0"
 description: Collect logs from Crowdstrike with Elastic Agent.
 type: integration
-format_version: "3.0.0"
+format_version: "3.0.3"
 categories: [security, edr_xdr]
 conditions:
   kibana:
-    version: "^8.11.0"
+    version: "^8.13.0"
 icons:
   - src: /img/logo-integrations-crowdstrike.svg
     title: CrowdStrike
@@ -34,6 +34,14 @@ screenshots:
     title: CrowdStrike Overview
     size: 1535x626
     type: image/png
+  - src: /img/crowdstrike-alert-dashboard.png
+    title: CrowdStrike Alert
+    size: 1535x626
+    type: image/png
+  - src: /img/crowdstrike-host-dashboard.png
+    title: CrowdStrike Host
+    size: 1535x626
+    type: image/png
 policy_templates:
   - name: crowdstrike
     title: CrowdStrike
@@ -45,6 +53,75 @@ policy_templates:
       - type: aws-s3
         title: "Collect CrowdStrike Falcon Data Replicator logs (input: aws-s3)"
         description: "Collecting logs from CrowdStrike Falcon Data Replicator (input: aws-s3)"
+      - type: cel
+        title: Collect CrowdStrike logs via API
+        description: Collecting CrowdStrike logs via API.
+        vars:
+          - name: client_id
+            type: text
+            title: Client ID
+            description: Client ID for the CrowdStrike.
+            multi: false
+            required: true
+            show_user: true
+          - name: client_secret
+            type: password
+            title: Client Secret
+            description: Client Secret for the CrowdStrike.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: url
+            type: text
+            title: URL
+            description: Base URL of the CrowdStrike API. Defaults to https://api.crowdstrike.com
+            default: https://api.crowdstrike.com
+            required: true
+            show_user: true
+          - name: token_url
+            type: text
+            title: Token URL
+            description: Token URL of CrowdStrike.
+            default: https://api.crowdstrike.com/oauth2/token
+            required: true
+            show_user: false
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
 owner:
   github: elastic/security-service-integrations
   type: elastic

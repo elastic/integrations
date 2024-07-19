@@ -7,14 +7,12 @@ package codeowners
 import (
 	"bufio"
 	"fmt"
-	"io/fs"
-	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -26,21 +24,39 @@ func Check() error {
 	if err != nil {
 		return err
 	}
-
 	const packagesDir = "packages"
-	return filepath.WalkDir(packagesDir, func(path string, d fs.DirEntry, err error) error {
-		if d.IsDir() {
-			if path != packagesDir && filepath.Dir(path) != packagesDir {
-				return fs.SkipDir
-			}
-			return nil
-		}
-		if d.Name() != "manifest.yml" {
-			return nil
-		}
+	if err := validatePackages(codeowners, packagesDir); err != nil {
+		return err
+	}
 
-		return codeowners.checkManifest(path)
-	})
+	return nil
+}
+
+func PackageOwners(packageName, dataStream string) ([]string, error) {
+	return PackageOwnersCustomCodeowners(packageName, dataStream, codeownersPath)
+}
+
+func PackageOwnersCustomCodeowners(packageName, dataStream, codeownersPath string) ([]string, error) {
+	owners, err := readGithubOwners(codeownersPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read CODEOWNERS file: %w", err)
+	}
+	packagePath := fmt.Sprintf("/packages/%s", packageName)
+	packageTeams, found := owners.owners[packagePath]
+	if !found {
+		return nil, fmt.Errorf("no owner found for package %s", packageName)
+	}
+
+	if dataStream == "" {
+		return packageTeams, nil
+	}
+
+	dataStreamPath := fmt.Sprintf("/packages/%s/data_stream/%s", packageName, dataStream)
+	dataStreamTeams, found := owners.owners[dataStreamPath]
+	if !found {
+		return packageTeams, nil
+	}
+	return dataStreamTeams, nil
 }
 
 type githubOwners struct {
@@ -48,10 +64,48 @@ type githubOwners struct {
 	path   string
 }
 
+// validatePackages checks if all packages in packagesDir have a manifest.yml file
+// with the correct owner as captured in codeowners. Also, for packages that share ownership across
+// data_streams, it checks that all data_streams are explicitly owned by a single owner. Such ownership
+// sharing packages are identified by having at least one data_stream with explicit ownership in codeowners.
+func validatePackages(codeowners *githubOwners, packagesDir string) error {
+	packageDirEntries, err := os.ReadDir(packagesDir)
+	if err != nil {
+		return err
+	}
+
+	if len(packageDirEntries) == 0 {
+		if len(codeowners.owners) == 0 {
+			return nil
+		}
+		return fmt.Errorf("no packages found in %q", packagesDir)
+	}
+
+	for _, packageDirEntry := range packageDirEntries {
+		packageName := packageDirEntry.Name()
+
+		packagePath := path.Join(packagesDir, packageName)
+
+		packageManifestPath := path.Join(packagePath, "manifest.yml")
+		err = codeowners.checkManifest(packageManifestPath)
+		if err != nil {
+			return err
+		}
+
+		err = codeowners.checkDataStreams(packagePath)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 func readGithubOwners(codeownersPath string) (*githubOwners, error) {
 	f, err := os.Open(codeownersPath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to open %q", codeownersPath)
+		return nil, fmt.Errorf("failed to open %q: %w", codeownersPath, err)
 	}
 	defer f.Close()
 
@@ -82,7 +136,7 @@ func readGithubOwners(codeownersPath string) (*githubOwners, error) {
 		codeowners.owners[path] = owners
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, errors.Wrapf(err, "scanner error")
+		return nil, fmt.Errorf("scanner error: %w", err)
 	}
 
 	return &codeowners, nil
@@ -128,7 +182,7 @@ func (codeowners *githubOwners) checkManifest(path string) error {
 		return fmt.Errorf("there is no owner for %q in %q", pkgDir, codeowners.path)
 	}
 
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
@@ -157,5 +211,46 @@ func (codeowners *githubOwners) checkManifest(path string) error {
 	if !found {
 		return fmt.Errorf("owner %q defined in %q is not in %q", manifest.Owner.Github, path, codeowners.path)
 	}
+	return nil
+}
+
+func (codeowners *githubOwners) checkDataStreams(packagePath string) error {
+	packageDataStreamsPath := path.Join(packagePath, "data_stream")
+	if _, err := os.Stat(packageDataStreamsPath); os.IsNotExist(err) {
+		// package doesn't have data_streams
+		return nil
+	}
+
+	dataStreamDirEntries, err := os.ReadDir(packageDataStreamsPath)
+	if err != nil {
+		return err
+	}
+
+	totalDataStreams := len(dataStreamDirEntries)
+	if totalDataStreams == 0 {
+		// package doesn't have data_streams
+		return nil
+	}
+
+	var dataStreamsWithoutOwner []string
+	for _, dataStreamDirEntry := range dataStreamDirEntries {
+		dataStreamName := dataStreamDirEntry.Name()
+		dataStreamDir := path.Join(packageDataStreamsPath, dataStreamName)
+		dataStreamOwners, found := codeowners.owners["/"+dataStreamDir]
+		if !found {
+			dataStreamsWithoutOwner = append(dataStreamsWithoutOwner, dataStreamDir)
+			continue
+		}
+		if len(dataStreamOwners) > 1 {
+			return fmt.Errorf("data stream \"%s\" of package \"%s\" has more than one owners [%s]", dataStreamDir,
+				packagePath, strings.Join(dataStreamOwners, ", "))
+		}
+	}
+
+	if notFound := len(dataStreamsWithoutOwner); notFound > 0 && notFound != totalDataStreams {
+		return fmt.Errorf("package \"%s\" shares ownership across data streams but these ones [%s] lack owners", packagePath,
+			strings.Join(dataStreamsWithoutOwner, ", "))
+	}
+
 	return nil
 }

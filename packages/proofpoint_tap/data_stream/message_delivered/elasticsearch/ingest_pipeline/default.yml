@@ -24,8 +24,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - fingerprint:
       fields:
-        - json.GUID
-        - json.messageTime
+        - event.original
       target_field: _id
       ignore_missing: true
   - append:
@@ -95,7 +94,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.messageParts != null && ctx.json.messageParts instanceof List
+      if: ctx.json?.messageParts instanceof List
   - foreach:
       field: json.messageParts
       processor:
@@ -105,7 +104,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.messageParts != null && ctx.json.messageParts instanceof List
+      if: ctx.json?.messageParts instanceof List
   - rename:
       field: json.ccAddresses
       target_field: email.cc.address
@@ -164,7 +163,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.recipient != null && ctx.json.recipient instanceof List
+      if: ctx.json?.recipient instanceof List
   - rename:
       field: json.xmailer
       target_field: email.x_mailer
@@ -187,7 +186,7 @@ processors:
             - _ingest._value.sandboxStatus
           ignore_missing: true
       ignore_failure: true
-      if: ctx.email?.attachments != null && ctx.email.attachments instanceof List
+      if: ctx.email?.attachments instanceof List
   - foreach:
       field: email.attachments
       processor:
@@ -196,7 +195,7 @@ processors:
           target_field: _ingest._value.file.mime_type
           ignore_missing: true
       ignore_failure: true
-      if: ctx.email?.attachments != null && ctx.email.attachments instanceof List
+      if: ctx.email?.attachments instanceof List
   - foreach:
       field: email.attachments
       processor:
@@ -205,7 +204,7 @@ processors:
           target_field: _ingest._value.file.hash.md5
           ignore_missing: true
       ignore_failure: true
-      if: ctx.email?.attachments != null && ctx.email.attachments instanceof List
+      if: ctx.email?.attachments instanceof List
   - foreach:
       field: email.attachments
       processor:
@@ -214,7 +213,7 @@ processors:
           target_field: _ingest._value.file.hash.sha256
           ignore_missing: true
       ignore_failure: true
-      if: ctx.email?.attachments != null && ctx.email.attachments instanceof List
+      if: ctx.email?.attachments instanceof List
   - foreach:
       field: email.attachments
       processor:
@@ -223,14 +222,14 @@ processors:
           target_field: _ingest._value.file.name
           ignore_missing: true
       ignore_failure: true
-      if: ctx.email?.attachments != null && ctx.email.attachments instanceof List
+      if: ctx.email?.attachments instanceof List
   - script:
       description: Adding hash in related.hash from artifact field.
       lang: painless
       ignore_failure: true
       source: |
         if (ctx.json?.threatsInfoMap instanceof List) {
-            for (artifact in ctx.json?.threatsInfoMap) {
+            for (artifact in ctx.json.threatsInfoMap) {
                 def flag = true;
                 def str = artifact.threat.toLowerCase();
                 if (str?.length() == 64) {
@@ -319,7 +318,7 @@ processors:
             - _ingest._value.sha256
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.message_parts != null && ctx.proofpoint_tap.message_delivered.message_parts instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.message_parts instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.message_parts
       processor:
@@ -328,7 +327,7 @@ processors:
           target_field: _ingest._value.o_content_type
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.message_parts != null && ctx.proofpoint_tap.message_delivered.message_parts instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.message_parts instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.message_parts
       processor:
@@ -337,7 +336,7 @@ processors:
           target_field: _ingest._value.sandbox_status
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.message_parts != null && ctx.proofpoint_tap.message_delivered.message_parts instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.message_parts instanceof List
   - convert:
       field: json.messageSize
       target_field: proofpoint_tap.message_delivered.message_size
@@ -403,7 +402,7 @@ processors:
           target_field: _ingest._value.campaign_id
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -412,7 +411,7 @@ processors:
           target_field: _ingest._value.threat.artifact
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -421,7 +420,7 @@ processors:
           target_field: _ingest._value.threat.id
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -430,7 +429,7 @@ processors:
           target_field: _ingest._value.threat.status
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -441,7 +440,7 @@ processors:
           formats:
             - ISO8601
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -449,7 +448,7 @@ processors:
           field: _ingest._value.threatTime
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -458,7 +457,7 @@ processors:
           target_field: _ingest._value.threat.type
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
   - foreach:
       field: proofpoint_tap.message_delivered.threat_info_map
       processor:
@@ -467,10 +466,23 @@ processors:
           target_field: _ingest._value.threat.url
           ignore_missing: true
       ignore_failure: true
-      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map != null && ctx.proofpoint_tap.message_delivered.threat_info_map instanceof List
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
+  - script:
+      lang: painless
+      description: Set the @timestamp to the maximum of messageTime and threatTime.
+      tag: timestamp-is-maximum
+      if: ctx.proofpoint_tap?.message_delivered?.threat_info_map instanceof List
+      ignore_failure: true
+      source: |
+        def ts = Instant.parse(ctx['@timestamp']);
+        for (item in ctx.proofpoint_tap.message_delivered.threat_info_map) {
+          if (item?.threat?.time instanceof String && Instant.parse(item.threat.time).isAfter(ts)) {
+            ctx['@timestamp'] = item.threat.time;
+          }
+        }
   - remove:
       field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
   - remove:

@@ -1,0 +1,47 @@
+---
+description: Pipeline for Jamf Protect Telemetry aue_posix_spawn audit logs.
+processors:
+  - convert:
+      field: json.arguments.child_PID
+      target_field: jamf_protect.telemetry.arguments.child.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.exec_args.args
+      target_field: json.args
+      ignore_missing: true
+  - rename:
+      field: json.exec_args.args_compiled
+      target_field: jamf_protect.telemetry.exec_args.args_compiled
+      ignore_missing: true
+  - rename:
+      field: json.exec_env.env.XPC_FLAGS
+      target_field: jamf_protect.telemetry.exec_env.env.xpc.flags
+      ignore_missing: true
+  - rename:
+      field: json.exec_env.env_compiled
+      target_field: jamf_protect.telemetry.exec_env.env.compiled
+      ignore_missing: true
+  - rename:
+      field: json.path
+      target_field: jamf_protect.telemetry.path
+      ignore_missing: true
+  - rename:
+      field: json.exec_chain_parent.uuid
+      target_field: jamf_protect.telemetry.exec_chain_parent.uuid
+      ignore_missing: true
+  - script:
+      description: Convert Object into Array.
+      lang: painless
+      source: |
+        def args_list = new ArrayList();
+        ctx.process.args = args_list;
+        for (Map.Entry m : ctx.json?.args.entrySet()) {
+          ctx.process?.args.add(m.getValue());
+        }
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'

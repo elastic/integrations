@@ -1,81 +1,860 @@
 ---
-description: Pipeline for trendmicro deep security logs.
-
+description: Pipeline for processing Deep Security logs.
 processors:
   - set:
       field: ecs.version
-      value: "8.11.0"
+      tag: set_ecs_version
+      value: 8.11.0
   - set:
-      field: trendmicro.event.signature_id
-      value: "{{{event.code}}}"
+      field: event.kind
+      tag: set_event_kind
+      value: event
   - rename:
-      field: message
-      target_field: trendmicro.event.message
+      field: cef.device.event_class_id
+      tag: rename_device_event_class_id
+      target_field: trendmicro.deep_security.event_class_id
       ignore_missing: true
-  - rename:
-      field: cef.name
-      target_field: trendmicro.event.name
-      ignore_missing: true
+  - set:
+      field: event.code
+      tag: set_event_code_from_deep_security_device_event_class_id
+      copy_from: trendmicro.deep_security.event_class_id
+      ignore_empty_value: true
   - convert:
-      field: trendmicro.event.signature_id
-      type: integer
+      field: event.code
+      tag: convert_event_code
+      target_field: trendmicro.deep_security.signature_id
+      type: long
       ignore_missing: true
+      if: ctx.event?.code != ''
       on_failure:
-        - remove:
-            field: trendmicro.event.signature_id
-            ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-
-  # pipeline per signature id
-  - pipeline:
-      name: '{{ IngestPipeline "application-control-event" }}'
-      if: "ctx.trendmicro?.event?.signature_id >= 6000000 && ctx.trendmicro?.event?.signature_id <= 6999999"
-  - pipeline:
-      name: '{{ IngestPipeline "firewall-event" }}'
-      if: "ctx.trendmicro?.event?.signature_id == 20 || ctx.trendmicro?.event?.signature_id == 21"
-  - pipeline:
-      name: '{{ IngestPipeline "intrusion-prevention-event" }}'
-      if: "ctx.trendmicro?.event?.signature_id == 10 || (ctx.trendmicro?.event?.signature_id >= 1000000 && ctx.trendmicro?.event?.signature_id <= 1999999)"
-  - pipeline:
-      name: '{{ IngestPipeline "integrity-monitoring-event" }}'
-      if: "ctx.trendmicro?.event?.signature_id == 30 || (ctx.trendmicro?.event?.signature_id >= 2000000 && ctx.trendmicro?.event?.signature_id <= 2999999)"
-  - pipeline:
-      name: '{{ IngestPipeline "malware-event" }}'
-      if: "ctx.trendmicro?.event?.signature_id >= 4000000 && ctx.trendmicro?.event?.signature_id <= 4999999"
-  - pipeline:
-      name: '{{ IngestPipeline "system-event" }}'
-      if: "ctx.trendmicro?.event?.signature_id >= 100 && ctx.trendmicro?.event?.signature_id <= 7499"
-  - pipeline:
-      name: '{{ IngestPipeline "log-inspection" }}'
-      if: "ctx.trendmicro?.event?.signature_id == 40 || (ctx.trendmicro?.event?.signature_id >= 3000000 && ctx.trendmicro?.event?.signature_id <= 3999999)"
-  - pipeline:
-      name: '{{ IngestPipeline "web-reputation" }}'
-      if: "ctx.trendmicro?.event?.signature_id >= 5000000 && ctx.trendmicro?.event?.signature_id <= 5999999"
-
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.action
+      tag: set_default_event_action_from_event_name
+      copy_from: cef.name
+      ignore_empty_value: true
+  - gsub:
+      field: event.action
+      pattern: '[^a-zA-Z0-0]'
+      replacement: ' '
+      if: ctx.event?.action != null
+  - rename:
+      field: cef.device.product
+      tag: rename_cef_device_product
+      target_field: trendmicro.deep_security.device.product
+      ignore_missing: true
+  - set:
+      field: observer.product
+      tag: set_observer_product_from_deep_security_device_product
+      copy_from: trendmicro.deep_security.device.product
+      ignore_empty_value: true
+  - rename:
+      field: cef.device.vendor
+      tag: rename_cef_device_vendor
+      target_field: trendmicro.deep_security.device.vendor
+      ignore_missing: true
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor_from_deep_security_device_vendor
+      copy_from: trendmicro.deep_security.device.vendor
+      ignore_empty_value: true
+  - rename:
+      field: cef.device.version
+      tag: rename_cef_device_version
+      target_field: trendmicro.deep_security.device.version
+      ignore_missing: true
+  - set:
+      field: observer.version
+      tag: set_observer_version_from_deep_security_device_version
+      copy_from: trendmicro.deep_security.device.version
+      ignore_empty_value: true
   - convert:
-      field: file.size
+      field: cef.extensions.baseEventCount
+      tag: convert_cef_extensions_baseEventCount_to_long
+      target_field: trendmicro.deep_security.base_event_count
       type: long
       ignore_missing: true
       on_failure:
-        - remove:
-            field: file.size
-            ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-
-  - remove:
-      field:
-        - cef
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cef.extensions.bytesIn
+      tag: convert_cef_extensions_bytesIn_to_long
+      target_field: trendmicro.deep_security.bytes_in
+      type: long
       ignore_missing: true
-  #
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.bytes
+      tag: set_source_bytes_from_deep_security_bytes_in
+      copy_from: trendmicro.deep_security.bytes_in
+      ignore_empty_value: true
+  - convert:
+      field: cef.extensions.destinationAddress
+      tag: convert_cef_extensions_destinationAddress_to_ip
+      target_field: trendmicro.deep_security.destination.address
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.destinationAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_deep_security_destination_address
+      copy_from: trendmicro.deep_security.destination.address
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_destination_ip_to_related_ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - geoip:
+      field: destination.ip
+      tag: geoip_destination_ip
+      target_field: destination.geo
+      ignore_missing: true
+  - gsub:
+      field: cef.extensions.destinationMacAddress
+      tag: gsub_destinationMacAddress
+      target_field: trendmicro.deep_security.destination.mac_address
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      field: trendmicro.deep_security.destination.mac_address
+      tag: uppercase_destination_mac_address
+      ignore_missing: true
+      if: ctx.trendmicro?.deep_security?.extensions?.destination?.mac_address != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.mac
+      tag: set_destination_mac_from_deep_security_destination_mac_address
+      copy_from: trendmicro.deep_security.destination.mac_address
+      ignore_empty_value: true
+  - convert:
+      field: cef.extensions.destinationPort
+      tag: convert_cef_extensions_destinationPort_to_long
+      target_field: trendmicro.deep_security.destination.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_deep_security_destination_port
+      copy_from: trendmicro.deep_security.destination.port
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.deviceAction
+      tag: rename_cef_extensions_deviceAction
+      target_field: trendmicro.deep_security.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_deep_security_device_action
+      copy_from: trendmicro.deep_security.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != null && ctx.event.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.deviceCustomNumber1Label
+      tag: rename_cef_extensions_deviceCustomNumber1Label
+      target_field: trendmicro.deep_security.device.custom_number1.label
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.deviceCustomNumber1
+      tag: convert_cef_extensions_deviceCustomNumber1_to_string
+      target_field: trendmicro.deep_security.device.custom_number1.value
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.id
+      tag: set_host_id_from_deep_security_device_custom_number1_value
+      copy_from: trendmicro.deep_security.device.custom_number1.value
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_host_id_to_related_hosts
+      value: '{{{host.id}}}'
+      allow_duplicates: false
+      if: ctx.host?.id != null
+  - rename:
+      field: cef.extensions.deviceCustomNumber2Label
+      tag: rename_cef_extensions_deviceCustomNumber2Label
+      target_field: trendmicro.deep_security.device.custom_number2.label
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.deviceCustomNumber2
+      tag: convert_cef_extensions_deviceCustomNumber2_to_long
+      target_field: trendmicro.deep_security.device.custom_number2.value
+      ignore_missing: true
+      type: long
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.deviceCustomNumber3Label
+      tag: rename_cef_extensions_deviceCustomNumber3Label
+      target_field: trendmicro.deep_security.device.custom_number3.label
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.deviceCustomNumber3
+      tag: convert_cef_extensions_deviceCustomNumber3_to_long
+      target_field: trendmicro.deep_security.device.custom_number3.value
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.deviceCustomString1Label
+      tag: rename_cef_extensions_deviceCustomString1Label
+      target_field: trendmicro.deep_security.device.custom_string1.label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString1
+      tag: rename_cef_extensions_deviceCustomString1
+      target_field: trendmicro.deep_security.device.custom_string1.value
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString2Label
+      tag: rename_cef_extensions_deviceCustomString2Label
+      target_field: trendmicro.deep_security.device.custom_string2.label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString2
+      tag: rename_cef_extensions_deviceCustomString2
+      target_field: trendmicro.deep_security.device.custom_string2.value
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString3Label
+      tag: rename_cef_extensions_deviceCustomString3Label
+      target_field: trendmicro.deep_security.device.custom_string3.label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString3
+      tag: rename_cef_extensions_deviceCustomString3
+      target_field: trendmicro.deep_security.device.custom_string3.value
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString4Label
+      tag: rename_extensions_deviceCustomString4Label
+      target_field: trendmicro.deep_security.device.custom_string4.label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString4
+      tag: rename_extensions_deviceCustomString4
+      target_field: trendmicro.deep_security.device.custom_string4.value
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString5Label
+      tag: rename_cef_extensions_deviceCustomString5Label
+      target_field: trendmicro.deep_security.device.custom_string5.label
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.deviceCustomString5
+      tag: convert_cef_extensions_deviceCustomString5_to_string
+      target_field: trendmicro.deep_security.device.custom_string5.value
+      ignore_missing: true
+      type: string
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.deviceCustomString6Label
+      tag: rename_cef_extensions_deviceCustomString6Label
+      target_field: trendmicro.deep_security.device.custom_string6.label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString6
+      tag: rename_cef_extensions_deviceCustomString6
+      target_field: trendmicro.deep_security.device.custom_string6.value
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.cs7Label
+      tag: rename_cef_extensions_cs7Label
+      target_field: trendmicro.deep_security.device.custom_string7.label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.cs7
+      tag: rename_cef_extensions_cs7
+      target_field: trendmicro.deep_security.device.custom_string7.value
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceHostName
+      tag: rename_cef_extensions_deviceHostName
+      target_field: trendmicro.deep_security.deviceHostName
+      ignore_missing: true
+  - set:
+      field: observer.hostname
+      tag: set_observer_hostname_from_deep_security_deviceHostName
+      copy_from: trendmicro.deep_security.deviceHostName
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.filePath
+      tag: rename_extensions_filePath
+      target_field: trendmicro.deep_security.file_path
+      ignore_missing: true
+  - set:
+      field: file.path
+      tag: set_file_path_from_deep_security_file_path
+      copy_from: trendmicro.deep_security.file_path
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.message
+      tag: rename_extensions_message
+      target_field: trendmicro.deep_security.message
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.sourceAddress
+      tag: convert_cef_extensions_sourceAddress_to_ip
+      target_field: trendmicro.deep_security.source.address
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.sourceAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_deep_security_source_address
+      copy_from: trendmicro.deep_security.source.address
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_source_ip_to_related_ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+  - gsub:
+      field: cef.extensions.sourceMacAddress
+      tag: gsub_sourceMacAddress
+      target_field: trendmicro.deep_security.source.mac_address
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - uppercase:
+      field: trendmicro.deep_security.source.mac_address
+      tag: uppercase_source_mac_address
+      ignore_missing: true
+      if: ctx.trendmicro?.deep_security?.extensions?.source?.mac_address != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.mac
+      tag: set_source_mac_from_deep_security_source_mac_address
+      copy_from: trendmicro.deep_security.source.mac_address
+      ignore_empty_value: true
+  - convert:
+      field: cef.extensions.sourcePort
+      tag: convert_cef_extensions_sourcePort_to_long
+      target_field: trendmicro.deep_security.source.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_deep_security_source_port
+      copy_from: trendmicro.deep_security.source.port
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.sourceProcessName
+      tag: rename_extensions_sourceProcessName
+      target_field: trendmicro.deep_security.source.process_name
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.sourceUserName
+      tag: rename_extensions_sourceUserName
+      target_field: trendmicro.deep_security.source.user_name
+      ignore_missing: true
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_deep_security_source_user_name
+      copy_from: trendmicro.deep_security.source.user_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_source_user_name_to_related_user
+      value: '{{{source.user.name}}}'
+      allow_duplicates: false
+      if: ctx.source?.user?.name != null
+  - rename:
+      field: cef.extensions.transportProtocol
+      tag: rename_cef_extensions_transportProtocol
+      target_field: trendmicro.deep_security.transport_protocol
+      ignore_missing: true
+  - set:
+      field: network.transport
+      tag: set_network_transport_from_deep_security_transport_protocol
+      copy_from: trendmicro.deep_security.transport_protocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsFrameType
+      tag: rename_cef_extensions_TrendMicroDsFrameType
+      target_field: trendmicro.deep_security.trendmicro.ds_frame_type
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsPacketData
+      tag: rename_cef_extensions_TrendMicroDsPacketData
+      target_field: trendmicro.deep_security.trendmicro.ds_packet_data
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsTenant
+      tag: rename_cef_extensions_TrendMicroDsTenant
+      target_field: trendmicro.deep_security.trendmicro.ds_tenant
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsTenantId
+      tag: rename_cef_extensions_TrendMicroDsTenantId
+      target_field: trendmicro.deep_security.trendmicro.ds_tenant_id
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsTags
+      tag: rename_cef_extensions_TrendMicroDsTags
+      target_field: trendmicro.deep_security.trendmicro.ds_tags
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsReasonId
+      tag: rename_cef_extensions_TrendMicroDsReasonId
+      target_field: trendmicro.deep_security.trendmicro.ds_reason_id
+      ignore_missing: true
+  - rename:
+      field: cef.name
+      tag: rename_cef_name
+      target_field: trendmicro.deep_security.name
+      ignore_missing: true
+  - convert:
+      field: cef.severity
+      tag: convert_cef_severity_to_long
+      target_field: trendmicro.deep_security.severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      tag: set_event_severity_from_deep_security_severity
+      copy_from: trendmicro.deep_security.severity
+      ignore_empty_value: true
+  - rename:
+      field: cef.version
+      tag: rename_cef_version
+      target_field: trendmicro.deep_security.version
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsBehaviorRuleID
+      tag: rename_extensions_TrendMicroDsBehaviorRuleID
+      target_field: trendmicro.deep_security.trendmicro.ds_behavior.rule_id
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsBehaviorType
+      tag: rename_extensions_TrendMicroDsBehaviorType
+      target_field: trendmicro.deep_security.trendmicro.ds_behavior.type
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsCommandLine
+      tag: rename_extensions_TrendMicroDsCommandLine
+      target_field: trendmicro.deep_security.trendmicro.ds_command_line
+      ignore_missing: true
+  - set:
+      field: process.command_line
+      tag: set_process_command_line
+      copy_from: trendmicro.deep_security.trendmicro.ds_command_line
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.TrendMicroDsCve
+      tag: rename_extensions_TrendMicroDsCve
+      target_field: trendmicro.deep_security.trendmicro.ds_cve
+      ignore_missing: true
+  - set:
+      field: vulnerability.id
+      tag: set_vulnerability_id
+      copy_from: trendmicro.deep_security.trendmicro.ds_cve
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.filename
+      tag: rename_extensions_filename
+      target_field: trendmicro.deep_security.filename
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.result
+      tag: rename_extensions_result
+      target_field: trendmicro.deep_security.result
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.sourceHostName
+      tag: rename_extensions_sourceHostName
+      target_field: trendmicro.deep_security.source.host_name
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.target
+      tag: rename_extensions_target
+      target_field: trendmicro.deep_security.target.value
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.targetID
+      tag: rename_extensions_targetID
+      target_field: trendmicro.deep_security.target.id
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.TrendMicroDsDetectionConfidence
+      tag: convert_extensions_TrendMicroDsDetectionConfidence_to_long
+      target_field: trendmicro.deep_security.trendmicro.ds_detection_confidence
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.TrendMicroDsFileMD5
+      tag: rename_extensions_TrendMicroDsFileMD5
+      target_field: trendmicro.deep_security.trendmicro.ds_file.md5
+      ignore_missing: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5
+      copy_from: trendmicro.deep_security.trendmicro.ds_file.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_ds_file_md5_to_related_hash
+      value: '{{{trendmicro.deep_security.trendmicro.ds_file.md5}}}'
+      allow_duplicates: false
+      if: ctx.trendmicro?.deep_security?.extensions?.trendmicro?.ds_file?.md5 != null
+  - rename:
+      field: cef.extensions.TrendMicroDsFileSHA1
+      tag: rename_extensions_TrendMicroDsFileSHA1
+      target_field: trendmicro.deep_security.trendmicro.ds_file.sha1
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_ds_file_sha1_to_related_hash
+      value: '{{{trendmicro.deep_security.trendmicro.ds_file.sha1}}}'
+      allow_duplicates: false
+      if: ctx.trendmicro?.deep_security?.extensions?.trendmicro?.ds_file?.sha1 != null
+  - set:
+      field: file.hash.sha1
+      tag: set_file_hash_sha1
+      copy_from: trendmicro.deep_security.trendmicro.ds_file.sha1
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.TrendMicroDsFileSHA256
+      tag: rename_extensions_TrendMicroDsFileSHA256
+      target_field: trendmicro.deep_security.trendmicro.ds_file.sha256
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_ds_file_sha256_to_related_hash
+      value: '{{{trendmicro.deep_security.trendmicro.ds_file.sha256}}}'
+      allow_duplicates: false
+      if: ctx.trendmicro?.deep_security?.extensions?.trendmicro?.ds_file?.sha256 != null
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256
+      copy_from: trendmicro.deep_security.trendmicro.ds_file.sha256
+      ignore_empty_value: true
+  - convert:
+      field: cef.extensions.TrendMicroDsMalwareTargetCount
+      tag: convert_extensions_TrendMicroDsMalwareTargetCount_to_long
+      target_field: trendmicro.deep_security.trendmicro.ds_malware_target.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.TrendMicroDsMalwareTargetType
+      tag: rename_extensions_TrendMicroDsMalwareTargetType
+      target_field: trendmicro.deep_security.trendmicro.ds_malware_target.type
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsMalwareTarget
+      tag: rename_extensions_TrendMicroDsMalwareTarget
+      target_field: trendmicro.deep_security.trendmicro.ds_malware_target.value
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsMitre
+      tag: rename_extensions_TrendMicroDsMitre
+      target_field: trendmicro.deep_security.trendmicro.ds_mitre
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsProcess
+      tag: rename_extensions_TrendMicroDsProcess
+      target_field: trendmicro.deep_security.trendmicro.ds_process
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.TrendMicroDsRelevantDetectionNames
+      tag: rename_extensions_TrendMicroDsRelevantDetectionNames
+      target_field: trendmicro.deep_security.trendmicro.ds_relevant_detection_names
+      ignore_missing: true
+  - community_id:
+      tag: community_id
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.aggregationType
+      tag: rename_extensions_aggregationType
+      target_field: trendmicro.deep_security.aggregation_type
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.computerName
+      tag: rename_extensions_computerName
+      target_field: trendmicro.deep_security.computer_name
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      copy_from: trendmicro.deep_security.computer_name
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.destinationUserName
+      tag: rename_extensions_destinationUserName
+      target_field: trendmicro.deep_security.destination.user_name
+      ignore_missing: true
+  - set:
+      field: destination.user.name
+      tag: set_destination_user_name_from_deep_security_destination_user_name
+      copy_from: trendmicro.deep_security.destination.user_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_destination_user_name_to_related_user
+      value: '{{{destination.user.name}}}'
+      allow_duplicates: false
+      if: ctx.destination?.user?.name != null
+  - rename:
+      field: cef.extensions.deviceType
+      tag: rename_extensions_deviceType
+      target_field: trendmicro.deep_security.type
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.domainName
+      tag: rename_extensions_domainName
+      target_field: trendmicro.deep_security.domain_name
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.fileHash
+      tag: rename_extensions_fileHash
+      target_field: trendmicro.deep_security.file.hash
+      ignore_missing: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_deep_security_file_hash
+      copy_from: trendmicro.deep_security.file.hash
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha256_to_related_hash
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - convert:
+      field: cef.extensions.fileSize
+      tag: convert_extensions_fileSize_to_long
+      target_field: trendmicro.deep_security.file.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      tag: set_file_size_from_deep_security_file_size
+      copy_from: trendmicro.deep_security.file.size
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.model
+      tag: rename_extensions_model
+      target_field: trendmicro.deep_security.model
+      ignore_missing: true
+  - set:
+      field: device.model.identifier
+      tag: set_device_model_identifier
+      copy_from: trendmicro.deep_security.model
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.permission
+      tag: rename_extensions_permission
+      target_field: trendmicro.deep_security.permission
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.processName
+      tag: rename_extensions_processName
+      target_field: trendmicro.deep_security.process.name
+      ignore_missing: true
+  - set:
+      field: process.name
+      tag: set_process_name_from_deep_security_process_name
+      copy_from: trendmicro.deep_security.process.name
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.repeatCount
+      tag: rename_extensions_repeatCount
+      target_field: trendmicro.deep_security.repeat_count
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.requestUrl
+      tag: rename_extensions_requestUrl
+      target_field: trendmicro.deep_security.request_url
+      ignore_missing: true
+  - set:
+      field: url.original
+      tag: set_url_original
+      copy_from: trendmicro.deep_security.request_url
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.serial
+      tag: rename_extensions_serial
+      target_field: trendmicro.deep_security.serial
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.sourceUserId
+      tag: rename_extensions_sourceUserId
+      target_field: trendmicro.deep_security.source.user_id
+      ignore_missing: true
+  - set:
+      field: source.user.id
+      tag: set_source_user_id_from_deep_security_source_user_id
+      copy_from: trendmicro.deep_security.source.user_id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_source_user_id_to_related_user
+      value: '{{{source.user.id}}}'
+      allow_duplicates: false
+      if: ctx.source?.user?.id != null
+  - convert:
+      field: cef.extensions.xff
+      tag: convert_extensions_xff_to_ip
+      target_field: trendmicro.deep_security.xff
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.xff != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_xff_to_related_ip
+      value: '{{{trendmicro.deep_security.xff}}}'
+      allow_duplicates: false
+      if: ctx.trendmicro?.deep_security?.extensions?.xff != null
+  # pipeline per signature id
+  - pipeline:
+      name: '{{ IngestPipeline "application-control-event" }}'
+      tag: pipeline_application_control_event
+      if: ctx.trendmicro?.deep_security?.signature_id >= 6000000 && ctx.trendmicro.deep_security.signature_id <= 6999999
+  - pipeline:
+      name: '{{ IngestPipeline "firewall-event" }}'
+      tag: pipeline_firewall_event
+      if: ctx.trendmicro?.deep_security?.signature_id == 20 || ctx.trendmicro.deep_security.signature_id == 21
+  - pipeline:
+      name: '{{ IngestPipeline "intrusion-prevention-event" }}'
+      tag: pipeline_intrusion_prevention_event
+      if: ctx.trendmicro?.deep_security?.signature_id == 10 || (ctx.trendmicro.deep_security.signature_id >= 1000000 && ctx.trendmicro.deep_security.signature_id <= 1999999)
+  - pipeline:
+      name: '{{ IngestPipeline "integrity-monitoring-event" }}'
+      tag: pipeline_integrity_monitoring_event
+      if: ctx.trendmicro?.deep_security?.signature_id == 30 || (ctx.trendmicro.deep_security.signature_id >= 2000000 && ctx.trendmicro.deep_security.signature_id <= 2999999)
+  - pipeline:
+      name: '{{ IngestPipeline "malware-event" }}'
+      tag: pipeline_malware_event
+      if: ctx.trendmicro?.deep_security?.signature_id >= 4000000 && ctx.trendmicro.deep_security.signature_id <= 4999999
+  - pipeline:
+      name: '{{ IngestPipeline "system-event" }}'
+      tag: pipeline_system_event
+      if: ctx.trendmicro?.deep_security?.signature_id >= 100 && ctx.trendmicro.deep_security.signature_id <= 7499
+  - pipeline:
+      name: '{{ IngestPipeline "log-inspection" }}'
+      tag: pipeline_log_inspection
+      if: ctx.trendmicro?.deep_security?.signature_id == 40 || (ctx.trendmicro.deep_security.signature_id >= 3000000 && ctx.trendmicro.deep_security.signature_id <= 3999999)
+  - pipeline:
+      name: '{{ IngestPipeline "web-reputation" }}'
+      tag: pipeline_web_reputation
+      if: ctx.trendmicro?.deep_security?.signature_id >= 5000000 && ctx.trendmicro.deep_security.signature_id <= 5999999
+  - pipeline:
+      name: '{{ IngestPipeline "device-control-event" }}'
+      tag: pipeline_device_control_event
+      if: ctx.trendmicro?.deep_security?.signature_id >= 7000000 && ctx.trendmicro.deep_security.signature_id <= 7999999
   # Timestamp parsing.
-  #
   - grok:
       # decode_cef sets @timestamp when deviceReceiptTime is provided.
       description: Extract timestamp from log header when deviceReceiptTime not given.
+      tag: grok_extract_timestamp
       if: ctx.cef?.extensions?.deviceReceiptTime == null
       field: event.original
       patterns:
@@ -86,29 +865,132 @@ processors:
         ECS_SYSLOG_PRI: "<%{NONNEGINT:log.syslog.priority:long}>"
         SYSLOG_TIMESTAMP: "(?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})"
   - date:
-      if: ctx._tmp?.timestamp8601 != null
       field: _tmp.timestamp8601
+      tag: date_tmp_timestamp8601
+      if: ctx._tmp?.timestamp8601 != null && ctx.event?.timezone == null
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      if: ctx._tmp?.timestamp != null
       field: _tmp.timestamp
+      tag: date_tmp_timestamp
+      if: ctx._tmp?.timestamp != null && ctx.event?.timezone == null
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: _conf.tz_offset
+      target_field: event.timezone
+      if: ctx._conf?.tz_offset != null
+      tag: 'rename_tz_offset'
+      ignore_missing: true
+  - date:
+      field: _tmp.timestamp8601
+      tag: date_tmp_timestamp8601_tz
+      timezone: '{{{event.timezone}}}'
+      if: ctx._tmp?.timestamp8601 != null && ctx.event?.timezone != null
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: _tmp.timestamp
+      tag: date_tmp_timestamp_tz
+      timezone: '{{{event.timezone}}}'
+      if: ctx._tmp?.timestamp != null && ctx.event?.timezone != null
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field:
-        - _tmp
+        - trendmicro.deep_security.filename
+        - trendmicro.deep_security.source.host_name
+        - trendmicro.deep_security.event_class_id
+        - trendmicro.deep_security.device.product
+        - trendmicro.deep_security.device.vendor
+        - trendmicro.deep_security.device.version
+        - trendmicro.deep_security.bytes_in
+        - trendmicro.deep_security.destination.address
+        - trendmicro.deep_security.destination.mac_address
+        - trendmicro.deep_security.destination.port
+        - trendmicro.deep_security.device.custom_number1.value
+        - trendmicro.deep_security.deviceHostName
+        - trendmicro.deep_security.file_path
+        - trendmicro.deep_security.message
+        - trendmicro.deep_security.source.address
+        - trendmicro.deep_security.source.mac_address
+        - trendmicro.deep_security.source.port
+        - trendmicro.deep_security.source.user_name
+        - trendmicro.deep_security.transport_protocol
+        - trendmicro.deep_security.name
+        - trendmicro.deep_security.severity
+        - trendmicro.deep_security.destination.user_name
+        - trendmicro.deep_security.file.hash
+        - trendmicro.deep_security.file.size
+        - trendmicro.deep_security.process.name
+        - trendmicro.deep_security.source.user_id
+        - trendmicro.deep_security.request_url
+        - trendmicro.deep_security.trendmicro.ds_cve
+        - trendmicro.deep_security.trendmicro.ds_file.md5
+        - trendmicro.deep_security.trendmicro.ds_file.sha1
+        - trendmicro.deep_security.trendmicro.ds_file.sha256
+        - trendmicro.deep_security.model
+        - trendmicro.deep_security.computer_name
+        - trendmicro.deep_security.trendmicro.ds_command_line
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+      - _tmp
+      - cef
+      tag: remove_cef_and_tmp
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      tag: remove_event_original
       ignore_missing: true
-
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null/empty values recursively.
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'

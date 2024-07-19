@@ -1,7 +1,7 @@
-format_version: "3.0.0"
+format_version: "3.0.2"
 name: ping_one
 title: PingOne
-version: "1.13.1"
+version: "1.16.0"
 description: Collect logs from PingOne with Elastic-Agent.
 type: integration
 categories:
@@ -9,7 +9,7 @@ categories:
   - iam
 conditions:
   kibana:
-    version: ^8.7.1
+    version: "^8.13.0"
 screenshots:
   - src: /img/ping-one-dashboard.png
     title: PingOne Audit Dashboard Screenshot
@@ -72,12 +72,14 @@ policy_templates:
             description: The header to check for a specific value specified by `secret.value`.
             required: false
             show_user: false
+            secret: false
           - name: secret_value
             type: password
             title: Secret Value
             description: The secret stored in the header name specified by `secret.header`.
             required: false
             show_user: false
+            secret: true
       - type: httpjson
         title: Collect PingOne logs via API
         description: Collecting PingOne logs via API.
@@ -89,9 +91,10 @@ policy_templates:
             required: true
           - name: token_url
             type: text
-            title: Token URL
-            description: Token URL of the PingOne App.
+            title: Token Endpoint
+            description: Token Endpoint URL of the PingOne App.
             required: true
+            secret: false
           - name: environment_id
             type: text
             title: Environment ID
@@ -107,6 +110,7 @@ policy_templates:
             title: Client Secret
             description: Client Secret.
             required: true
+            secret: true
           - name: proxy_url
             type: text
             title: Proxy URL

@@ -19,7 +19,7 @@ Usage details metrics track actual expenses including details like subscription 
 
 To use this integration you will need:
 
-* **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires the Billing Reader role to access the billing information for the subscription, department, or billing account. See more details in the [Setup section](#setup).
+* **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires a role to access the billing information. The required role is different depending on the subscription, department, or billing account scope. Check the [Setup section](#setup) for more details.
 * **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch?tab=Overview), or self-manage the Elastic Stack on your hardware.
 * **Payment method**: Azure Billing Metrics integration queries are charged based on the number of standard API calls. One integration makes two calls every 24 hours in the standard configuration.
 
@@ -54,7 +54,7 @@ Set up a new app registration in Azure.
 To create the app registration:
 
 1. Sign in to the [Azure Portal](https://portal.azure.com/).
-2. Search for and select **Azure Active Directory**.
+2. Search for and select **Microsoft Entra ID**.
 3. Under **Manage**, select **App registrations** > **New registration**.
 4. Enter a display _Name_ for your application (for example, "elastic-agent").
 5. Specify who can use the application.
@@ -79,6 +79,10 @@ Take note of the content in the **Value** column in the **Client secrets** table
 
 #### Assign role
 
+Assign a role to the App Registration depending on the scope you're interested in.
+
+To collect billing metrics from a single subscription, assign the **Billing Reader** to the App Registration on that subscription:
+
 1. In the [Azure Portal](https://portal.azure.com/), search for and select **Subscriptions**.
 1. Select the subscription to assign the application.
 1. Select **Access control (IAM)**.
@@ -90,10 +94,34 @@ Take note of the content in the **Value** column in the **Client secrets** table
 1. Click the **Select** button.
 1. Then click the **Review + assign** button.
 
+You can use the department scope (EA accounts only) or the billing account scope (EA and MCA accounts) to collect billing metrics from multiple subscriptions.
+
+To collect billing metrics from a department (instead of a subscription):
+
+1. In the [Azure Portal](https://portal.azure.com/), search for and select **Cost Management + Billing**.
+1. Select **Billing** > **Departments** and select the department you're interested in.
+1. Select **Access control (IAM)**.
+1. Select **Add**.
+1. In the **Add role assignment** panel, select the role **Department reader**.
+1. In the **Users, groups, or apps** search box, type the name of the App Registration you created and select it.
+1. Click on the **Add** button.
+
+To collect billing metrics from a billing account (instead of a subscription):
+
+1. In the [Azure Portal](https://portal.azure.com/), search for and select **Cost Management + Billing**.
+1. Select **Access control (IAM)**.
+1. Select **Add**.
+1. In the **Add role assignment** panel, select the role **Billing account reader** (view-only access).
+1. In the **Users, groups, or apps** search box, type the name of the App Registration you created and select it.
+1. Click on the **Add** button.
+
 Take note of the following values, which you will use later when specifying settings.
 
-* `Subscription ID`: use the content of the "Subscription ID" you selected.
-* `Tenant ID`: use the "Tenant ID" from the Azure Active Directory you use.
+* `Tenant ID`: use the "Tenant ID" from your Microsoft Entra ID.
+* Only one of the following:
+	* `Subscription ID`: use the "Subscription Id" content if you decide to collect metrics from a subscription.
+	* `Department Id`: use the "Department Id" content if you decide to collect metrics from a department.
+	* `Billing account ID`: use the "Billing account ID" content if you decide to collect metrics from a billing account.
 
 Your App Registration is now ready for the Elastic Agent.
 
@@ -190,92 +218,96 @@ An example event for `billing` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-11-16T14:53:50.309Z",
     "agent": {
-        "hostname": "docker-fleet-agent",
-        "name": "docker-fleet-agent",
-        "id": "ac0aba17-80ba-472c-a850-25b8eee31b4a",
-        "type": "metricbeat",
         "ephemeral_id": "00acbc2a-2f96-4c8a-99fe-790f724e9b9e",
+        "hostname": "docker-fleet-agent",
+        "id": "ac0aba17-80ba-472c-a850-25b8eee31b4a",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
         "version": "7.15.3"
     },
-    "elastic_agent": {
-        "id": "ac0aba17-80ba-472c-a850-25b8eee31b4a",
-        "version": "7.15.3",
-        "snapshot": true
+    "azure": {
+        "billing": {
+            "account_name": "R&D",
+            "billing_period_id": "/subscriptions/7657426d-c4c3-44ac-88a2-3b2cd59e6dba/providers/Microsoft.Billing/billingPeriods/20211101",
+            "currency": "USD",
+            "department_name": "DEpartment",
+            "pretax_cost": 0.000002327970961,
+            "product": "Bandwidth Inter-Region - Data Transfer Out - North America",
+            "usage_end": "2021-11-15T23:59:59.000Z",
+            "usage_start": "2021-11-15T00:00:00.000Z"
+        },
+        "resource": {
+            "group": "alex-test-resources",
+            "name": "testthis",
+            "type": "Microsoft.Storage"
+        },
+        "subscription_id": "7657426d-c4c3-44ac-88a2-3b2cd59e6dba"
     },
     "cloud": {
         "instance": {
-            "name": "alextest223",
-            "id": "/subscriptions/7657426d-c4c3-44ac-88a2-3b2cd59e6dba/resourceGroups/alex-test-resources/providers/Microsoft.Storage/storageAccounts/testthis"
+            "id": "/subscriptions/7657426d-c4c3-44ac-88a2-3b2cd59e6dba/resourceGroups/alex-test-resources/providers/Microsoft.Storage/storageAccounts/testthis",
+            "name": "alextest223"
         },
         "provider": "azure",
         "region": "CentralUS"
     },
-    "@timestamp": "2021-11-16T14:53:50.309Z",
-    "ecs": {
-        "version": "1.11.0"
-    },
-    "service": {
-        "type": "azure"
-    },
     "data_stream": {
+        "dataset": "azure.billing",
         "namespace": "default",
-        "type": "metrics",
-        "dataset": "azure.billing"
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "ac0aba17-80ba-472c-a850-25b8eee31b4a",
+        "snapshot": true,
+        "version": "7.15.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "azure.billing",
+        "duration": 37147626300,
+        "ingested": "2021-11-16T14:53:51Z",
+        "module": "azure"
     },
     "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "4.19.128-microsoft-standard",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
+        "architecture": "x86_64",
         "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "0e45dc0f765dee79aa8992abcd05b189",
         "ip": [
             "192.168.16.7"
         ],
-        "name": "docker-fleet-agent",
-        "id": "0e45dc0f765dee79aa8992abcd05b189",
         "mac": [
-            "02:42:c0:a8:10:07"
+            "02-42-AC-1F-00-07"
         ],
-        "architecture": "x86_64"
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "4.19.128-microsoft-standard",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
     },
     "metricset": {
-        "period": 86400000,
-        "name": "billing"
+        "name": "billing",
+        "period": 86400000
     },
-    "event": {
-        "duration": 37147626300,
-        "agent_id_status": "verified",
-        "ingested": "2021-11-16T14:53:51Z",
-        "module": "azure",
-        "dataset": "azure.billing"
-    },
-    "azure": {
-        "subscription_id": "7657426d-c4c3-44ac-88a2-3b2cd59e6dba",
-        "resource": {
-            "name": "testthis",
-            "type": "Microsoft.Storage",
-            "group": "alex-test-resources"
-        },
-        "billing": {
-            "product": "Bandwidth Inter-Region - Data Transfer Out - North America",
-            "pretax_cost": 0.000002327970961,
-            "usage_start": "2021-11-15T00:00:00.000Z",
-            "usage_end": "2021-11-15T23:59:59.000Z",
-            "department_name": "DEpartment",
-            "account_name": "R\u0026D",
-            "currency": "USD",
-            "billing_period_id": "/subscriptions/7657426d-c4c3-44ac-88a2-3b2cd59e6dba/providers/Microsoft.Billing/billingPeriods/20211101"
-        }
+    "service": {
+        "type": "azure"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -304,45 +336,14 @@ An example event for `billing` looks as following:
 | azure.resource.type | The type of the resource | keyword |
 | azure.subscription_id | The subscription ID | keyword |
 | azure.timegrain | The Azure metric timegrain | keyword |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | dataset.name | Dataset name. | constant_keyword |
 | dataset.namespace | Dataset namespace. | constant_keyword |
 | dataset.type | Dataset type. | constant_keyword |
-| ecs.version | ECS version | keyword |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| service.address | Service address | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 

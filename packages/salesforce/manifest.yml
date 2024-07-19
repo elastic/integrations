@@ -1,8 +1,9 @@
-format_version: 3.0.0
+format_version: 3.0.2
 name: salesforce
 title: Salesforce
-version: "0.12.1"
-description: Collect logs from Salesforce with Elastic Agent.
+version: "0.15.0"
+description: |
+  Collect logs from Salesforce instances using the Elastic Agent. This integration allows you to monitor and analyze various Salesforce logs, including Login, Logout, Setup Audit Trail, and Apex logs.
 type: integration
 categories:
   - observability
@@ -10,29 +11,29 @@ conditions:
   elastic:
     subscription: basic
   kibana:
-    version: ^8.7.1
-screenshots:
-  - src: /img/salesforce-login.png
-    title: Salesforce Login Dashboard
-    size: 1366x1912
-    type: image/png
-  - src: /img/salesforce-logout.png
-    title: Salesforce Logout Dashboard
-    size: 1366x1912
-    type: image/png
-  - src: /img/salesforce-setupaudittrail.png
-    title: Salesforce SetupAuditTrail Dashboard
-    size: 1366x1912
-    type: image/png
-  - src: /img/salesforce-apex.png
-    title: Salesforce Apex Dashboard
-    size: 1366x1912
-    type: image/png
+    version: ^8.14.0
 icons:
   - src: /img/salesforce.svg
     title: Salesforce
     size: 32x32
     type: image/svg+xml
+screenshots:
+  - src: /img/salesforce-apex-dashboard.png
+    title: Salesforce Apex Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/salesforce-login-dashboard.png
+    title: Salesforce Login Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/salesforce-logout-dashboard.png
+    title: Salesforce Logout Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/salesforce-setupaudittrail-dashboard.png
+    title: Salesforce SetupAuditTrail Dashboard
+    size: 600x600
+    type: image/png
 vars:
   - name: instance_url
     type: text
@@ -41,60 +42,76 @@ vars:
     required: true
     show_user: true
     default: https://instance-url.salesforce.com
-  - name: client_id
-    type: text
-    title: Client ID
-    description: OAuth 2.0 client ID.
+  - name: jwt_enabled
+    type: bool
+    title: Enable JWT Authentication
+    description: |
+      Enable JWT-based authentication for secure communication with Salesforce APIs. If disabled, the package will use the Username-Password authentication flow.
+
+      **Required fields for JWT Authentication**: JWT Authentication Audience URL, JWT Authentication Client Key Path, Username, Client ID
+
+      **Required fields for User-Password Authentication**: Username, Password, Client ID, Client Secret, Token URL
     required: true
     show_user: true
-    default: client_id
-  - name: client_secret
-    type: password
-    title: Client Secret
-    description: OAuth 2.0 client secret.
-    required: true
-    show_user: true
-    default: client_secret
+    default: false
   - name: username
     type: text
     title: Username
-    description: Email Id used while registering salesforce, (i.e. my.email@here.com).
+    description: The email address or username associated with your Salesforce account, used for OAuth 2.0 authentication flows (Username-Password and JWT).
     required: true
     show_user: true
     default: username
   - name: password
     type: password
     title: Password
-    description: The password used as part of the authentication flow.
-    required: true
+    secret: true
+    description: The password associated with your Salesforce account, used for OAuth 2.0 authentication flow Username-Password.
+    required: false
     show_user: true
     default: password
+  - name: client_id
+    type: text
+    title: Client ID
+    description: The client ID obtained from your Salesforce connected app, used for OAuth 2.0 authentication flows (Username-Password and JWT).
+    required: true
+    show_user: true
+  - name: client_secret
+    type: password
+    title: Client Secret
+    description: The client secret obtained from your Salesforce connected app, used for OAuth 2.0 authentication flows (Username-Password and JWT).
+    required: false
+    secret: true
+    show_user: true
   - name: token_url
     type: text
     title: Token URL
-    description: The OAuth 2.0 token URL for Salesforce.
+    secret: false
+    description: The token endpoint URL for the Salesforce connected app, typically set to https://login.salesforce.com or https://instance-url.salesforce.com, used for OAuth 2.0 authentication flow Username-Password.
     required: true
-    show_user: false
-    default: https://login.salesforce.com/services/oauth2/token
+    show_user: true
+    default: https://login.salesforce.com
+  - name: client_key_path
+    type: text
+    title: JWT Authentication Client Key Path
+    description: The path to the private key file used for JWT authentication, used for OAuth 2.0 authentication flow JWT.
+    required: false
+    show_user: true
+    default: client-key.pem
+  - name: jwt_url
+    type: text
+    title: JWT Authentication Audience URL
+    description: The audience URL, typically set to https://login.salesforce.com, used for OAuth 2.0 authentication flow JWT.
+    required: false
+    show_user: true
+    default: https://login.salesforce.com
 policy_templates:
   - name: salesforce
     title: Salesforce logs
-    description: Collect logs from Salesforce instances.
+    description: Collect logs from Salesforce instances using the Elastic Agent. This policy template configures the necessary inputs and settings to ingest Salesforce Login, Logout, Setup Audit Trail, and Apex logs into Elastic.
     inputs:
-      - type: httpjson
+      - type: salesforce
         title: Collect Salesforce logs using REST API
         description: Collecting logs from Salesforce instances using REST API.
-        vars:
-          - name: enable_request_tracer
-            type: bool
-            title: Enable request tracing
-            multi: false
-            required: false
-            show_user: false
-            description: The request tracer logs requests and responses to the agent's local filesystem for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
-      - type: cometd
-        title: Collect Salesforce logs using Streaming API
-        description: Collecting logs from Salesforce instances using Streaming API.
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic

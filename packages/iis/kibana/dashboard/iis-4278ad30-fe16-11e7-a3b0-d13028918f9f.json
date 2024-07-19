@@ -1,26 +1,68 @@
 {
     "attributes": {
         "description": "Dashboard for the Logs IIS integration",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
-                "highlightAll": true,
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "iis.access",
+                                "iis.error"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "iis.access"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "iis.error"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
-                },
-                "version": true
+                }
             }
         },
         "optionsJSON": {
-            "darkTheme": false,
             "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "layerListJSON": "[{\"alpha\":1,\"id\":\"5875b362-0633-4f76-a8d3-6e24337bacc0\",\"includeInFitToBounds\":true,\"label\":null,\"maxZoom\":24,\"minZoom\":0,\"sourceDescriptor\":{\"isAutoSelect\":true,\"lightModeDefault\":\"road_map_desaturated\",\"type\":\"EMS_TMS\"},\"style\":{\"type\":\"TILE\"},\"type\":\"EMS_VECTOR_TILE\",\"visible\":true},{\"alpha\":0.75,\"id\":\"cc7a42a7-7e5c-4ee5-90f3-972c488b05ee\",\"includeInFitToBounds\":true,\"joins\":[],\"label\":\"Access map [Logs IIS]\",\"maxZoom\":24,\"minZoom\":0,\"sourceDescriptor\":{\"applyForceRefresh\":true,\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"geoField\":\"source.geo.location\",\"id\":\"bb680314-5606-4509-ac4f-f1089c1180db\",\"metrics\":[{\"type\":\"count\"}],\"requestType\":\"point\",\"resolution\":\"MOST_FINE\",\"type\":\"ES_GEO_GRID\",\"indexPatternRefName\":\"layer_1_source_index_pattern\"},\"style\":{\"isTimeAware\":true,\"properties\":{\"fillColor\":{\"options\":{\"color\":\"Yellow to Red\",\"colorCategory\":\"palette_0\",\"field\":{\"name\":\"doc_count\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":false,\"sigma\":3},\"type\":\"ORDINAL\"},\"type\":\"DYNAMIC\"},\"icon\":{\"options\":{\"value\":\"marker\"},\"type\":\"STATIC\"},\"iconOrientation\":{\"options\":{\"orientation\":0},\"type\":\"STATIC\"},\"iconSize\":{\"options\":{\"field\":{\"name\":\"doc_count\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":false,\"sigma\":3},\"maxSize\":18,\"minSize\":7},\"type\":\"DYNAMIC\"},\"labelBorderColor\":{\"options\":{\"color\":\"#FFFFFF\"},\"type\":\"STATIC\"},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}},\"labelColor\":{\"options\":{\"color\":\"#000000\"},\"type\":\"STATIC\"},\"labelSize\":{\"options\":{\"size\":14},\"type\":\"STATIC\"},\"labelText\":{\"options\":{\"value\":\"\"},\"type\":\"STATIC\"},\"lineColor\":{\"options\":{\"color\":\"#3d3d3d\"},\"type\":\"STATIC\"},\"lineWidth\":{\"options\":{\"size\":1},\"type\":\"STATIC\"},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}}},\"type\":\"VECTOR\"},\"type\":\"GEOJSON_VECTOR\",\"visible\":true}]",
+                        "mapStateJSON": "{\"center\":{\"lat\":19.94277,\"lon\":0},\"filters\":[],\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"refreshConfig\":{\"interval\":0,\"isPaused\":true},\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"browserLocation\":{\"zoom\":2},\"disableInteractive\":false,\"disableTooltipControl\":false,\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"hideLayerControl\":false,\"hideToolbarOverlay\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"},\"timeFilters\":{\"from\":\"now-15m\",\"to\":\"now\"},\"zoom\":1.58}",
+                        "title": "Access map",
+                        "uiStateJSON": "{\"isLayerTOCOpen\":true,\"openTOCDetails\":[]}"
+                    },
                     "enhancements": {},
                     "hiddenLayers": [],
                     "isLayerTOCOpen": false,
@@ -45,9 +87,8 @@
                     "y": 0
                 },
                 "panelIndex": "ec72819b-6985-4761-94ae-5d5fcc9e682a",
-                "panelRefName": "panel_ec72819b-6985-4761-94ae-5d5fcc9e682a",
                 "type": "map",
-                "version": "8.5.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -62,7 +103,7 @@
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "238d8224-43e0-4df5-9862-decc0b59c88e": {
                                             "columnOrder": [
@@ -193,7 +234,7 @@
                 "panelIndex": "88dc28a3-1ff6-448c-aa64-06f954ea2e8f",
                 "title": "Response codes over time",
                 "type": "lens",
-                "version": "8.5.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -208,7 +249,7 @@
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "ddb9c755-6e2e-4aa2-a0ad-47f5a3802700": {
                                             "columnOrder": [
@@ -339,7 +380,7 @@
                 "panelIndex": "1823acfd-eadf-42be-b208-773047e26dec",
                 "title": "Error logs over time",
                 "type": "lens",
-                "version": "8.5.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -354,7 +395,7 @@
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "fd149e1e-318c-4e85-b6d6-aea79fa8f331": {
                                             "columnOrder": [
@@ -458,7 +499,9 @@
                                         "layerId": "fd149e1e-318c-4e85-b6d6-aea79fa8f331",
                                         "layerType": "data",
                                         "legendDisplay": "show",
-                                        "metric": "482cc37a-80e9-4259-92dc-da53d07c23f2",
+                                        "metrics": [
+                                            "482cc37a-80e9-4259-92dc-da53d07c23f2"
+                                        ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
@@ -491,7 +534,7 @@
                 "panelIndex": "ff2a5b50-3711-4db3-b189-0581ddba15f6",
                 "title": "Browsers breakdown",
                 "type": "lens",
-                "version": "8.5.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -506,7 +549,7 @@
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "83c02141-7b27-4ae9-8c80-d251c18f5685": {
                                             "columnOrder": [
@@ -610,7 +653,9 @@
                                         "layerId": "83c02141-7b27-4ae9-8c80-d251c18f5685",
                                         "layerType": "data",
                                         "legendDisplay": "show",
-                                        "metric": "42cb9808-f556-4da5-a3d5-07e3d28a48dc",
+                                        "metrics": [
+                                            "42cb9808-f556-4da5-a3d5-07e3d28a48dc"
+                                        ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
@@ -643,7 +688,7 @@
                 "panelIndex": "9af5aff6-6430-485d-b606-faf9a2199a1e",
                 "title": "Operating systems breakdown",
                 "type": "lens",
-                "version": "8.5.0"
+                "version": "8.7.0"
             },
             {
                 "embeddableConfig": {
@@ -658,7 +703,7 @@
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "47ae5d42-07e3-4ac9-9ff8-9cec51f84c91": {
                                             "columnOrder": [
@@ -792,23 +837,29 @@
                 "panelIndex": "763a513d-7bdc-489f-8088-9ae32d65b5ca",
                 "title": "Top URLs by response code",
                 "type": "lens",
-                "version": "8.5.0"
+                "version": "8.7.0"
             }
         ],
         "timeRestore": false,
         "title": "[Logs IIS] Access and error logs",
         "version": 1
     },
-    "coreMigrationVersion": "8.5.0",
+    "coreMigrationVersion": "8.7.0",
+    "created_at": "2024-04-10T17:06:21.272Z",
     "id": "iis-4278ad30-fe16-11e7-a3b0-d13028918f9f",
     "migrationVersion": {
-        "dashboard": "8.5.0"
+        "dashboard": "8.7.0"
     },
     "references": [
         {
-            "id": "iis-0ac17980-e1d8-11ec-baf0-970634a1784d",
-            "name": "ec72819b-6985-4761-94ae-5d5fcc9e682a:panel_ec72819b-6985-4761-94ae-5d5fcc9e682a",
-            "type": "map"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ec72819b-6985-4761-94ae-5d5fcc9e682a:layer_1_source_index_pattern",
+            "type": "index-pattern"
         },
         {
             "id": "logs-*",

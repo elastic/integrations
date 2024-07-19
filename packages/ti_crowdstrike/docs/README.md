@@ -35,7 +35,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.11.0**.
 This module has been tested against the **CrowdStrike Falcon Intelligence API Version v1**.
 
 ## Setup
@@ -46,6 +45,16 @@ This module has been tested against the **CrowdStrike Falcon Intelligence API Ve
 2. Client Secret
 3. Token url
 4. API Endpoint url
+5. Required scopes for each data stream :
+
+    | Data Stream   | Scope         |
+    | ------------- | ------------- |
+    | Intel         | read:intel    |
+    | IOC           | read:iocs     |
+
+Follow the [documentation](https://www.crowdstrike.com/blog/tech-center/consume-ioc-and-threat-feeds/) for enabling the scopes from the CrowdStrike console.
+
+User should either have `admin` role or `Detection Exception Manager` role to access IOCs endpoint. Follow the [documentation](https://falcon.crowdstrike.com/documentation/page/f20650df/default-roles-reference) for managing user roles and permissions.
 
 ### Enabling the integration in Elastic:
 
@@ -85,11 +94,11 @@ An example event for `intel` looks as following:
 {
     "@timestamp": "2023-11-21T06:16:01.000Z",
     "agent": {
-        "ephemeral_id": "91894e79-85f9-4358-897b-3e25722c7277",
-        "id": "3ac65ec0-d6ad-4ccb-ae51-f7d6cbd54eff",
+        "ephemeral_id": "ee250a38-ef6d-486c-a245-6d0dd0785a11",
+        "id": "803f2aef-a6c1-47c8-b64d-e484bb967db4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.12.0"
     },
     "data_stream": {
         "dataset": "ti_crowdstrike.intel",
@@ -100,9 +109,9 @@ An example event for `intel` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3ac65ec0-d6ad-4ccb-ae51-f7d6cbd54eff",
+        "id": "803f2aef-a6c1-47c8-b64d-e484bb967db4",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.12.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -111,17 +120,12 @@ An example event for `intel` looks as following:
         ],
         "dataset": "ti_crowdstrike.intel",
         "id": "hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d",
-        "ingested": "2024-01-11T11:53:46Z",
+        "ingested": "2024-03-28T10:49:11Z",
         "kind": "enrichment",
         "original": "{\"_marker\":\"17005473618d17ae6353d123235e4158c5c81f25f0\",\"actors\":[\"SALTYSPIDER\"],\"deleted\":false,\"domain_types\":[\"abc.com\"],\"id\":\"hash_sha256_c98e1a7f563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"indicator\":\"c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d\",\"ip_address_types\":[\"81.2.69.192\"],\"kill_chains\":[\"Installation\",\"C2\"],\"labels\":[{\"created_on\":1700547356,\"last_valid_on\":1700547360,\"name\":\"MaliciousConfidence/High\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"Malware/Mofksys\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/Commodity\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/CredentialHarvesting\"},{\"created_on\":1700547359,\"last_valid_on\":1700547359,\"name\":\"ThreatType/InformationStealer\"}],\"last_updated\":1700547361,\"malicious_confidence\":\"high\",\"malware_families\":[\"Mofksys\"],\"published_date\":1700547356,\"relations\":[{\"created_date\":1700547339,\"id\":\"domain.com.yy\",\"indicator\":\"domain.ds\",\"last_valid_date\":1700547339,\"type\":\"domain\"},{\"created_date\":1700547339,\"id\":\"domain.xx.yy\",\"indicator\":\"domain.xx.fd\",\"last_valid_date\":1700547339,\"type\":\"domain\"}],\"reports\":[\"reports\"],\"targets\":[\"abc\"],\"threat_types\":[\"Commodity\",\"CredentialHarvesting\",\"InformationStealer\"],\"type\":\"hash_sha256\",\"vulnerabilities\":[\"vuln\"]}",
         "type": [
             "indicator"
         ]
-    },
-    "file": {
-        "hash": {
-            "sha256": "c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d"
-        }
     },
     "input": {
         "type": "cel"
@@ -143,6 +147,11 @@ An example event for `intel` looks as following:
     "threat": {
         "indicator": {
             "confidence": "High",
+            "file": {
+                "hash": {
+                    "sha256": "c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d"
+                }
+            },
             "name": "c98e192bf71a7f97563824cd448b47613743dcd1c853742b78f42b000192b83d",
             "provider": "crowdstrike",
             "type": "file"
@@ -256,7 +265,6 @@ An example event for `intel` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | threat.feed.name | Display friendly feed name. | constant_keyword |
 | ti_crowdstrike.intel._marker | A special marker associated with the Intel Indicator. | keyword |
 | ti_crowdstrike.intel.actors | Information related to actors associated with the Intel Indicator. | keyword |
@@ -265,7 +273,7 @@ An example event for `intel` looks as following:
 | ti_crowdstrike.intel.domain_types | Information related to domain types associated with the Intel Indicator. | keyword |
 | ti_crowdstrike.intel.expiration_duration |  | keyword |
 | ti_crowdstrike.intel.id | A unique identifier for the Intel Indicator. | keyword |
-| ti_crowdstrike.intel.ip_address_types | Information related to IP address types associated with the Intel Indicator. | ip |
+| ti_crowdstrike.intel.ip_address_types | Information related to IP address types associated with the Intel Indicator. | keyword |
 | ti_crowdstrike.intel.kill_chains | Information related to kill chains associated with the Intel Indicator. | keyword |
 | ti_crowdstrike.intel.labels.created_on | Timestamp indicating when the labels were created. | date |
 | ti_crowdstrike.intel.labels.last_valid_on | Timestamp indicating when the labels were last valid. | date |
@@ -299,11 +307,11 @@ An example event for `ioc` looks as following:
 {
     "@timestamp": "2023-11-01T10:22:23.106Z",
     "agent": {
-        "ephemeral_id": "1a68a49b-98f5-4aee-adf5-df243cdb4637",
-        "id": "3ac65ec0-d6ad-4ccb-ae51-f7d6cbd54eff",
+        "ephemeral_id": "ca4c5a70-0aa1-4cb3-867c-3c099798eef4",
+        "id": "803f2aef-a6c1-47c8-b64d-e484bb967db4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.11.0"
+        "version": "8.12.0"
     },
     "data_stream": {
         "dataset": "ti_crowdstrike.ioc",
@@ -314,9 +322,9 @@ An example event for `ioc` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3ac65ec0-d6ad-4ccb-ae51-f7d6cbd54eff",
+        "id": "803f2aef-a6c1-47c8-b64d-e484bb967db4",
         "snapshot": false,
-        "version": "8.11.0"
+        "version": "8.12.0"
     },
     "event": {
         "action": "detect-again",
@@ -326,7 +334,7 @@ An example event for `ioc` looks as following:
         ],
         "dataset": "ti_crowdstrike.ioc",
         "id": "34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44",
-        "ingested": "2024-01-11T11:54:47Z",
+        "ingested": "2024-03-28T10:50:10Z",
         "kind": "enrichment",
         "original": "{\"action\":\"detect again\",\"applied_globally\":true,\"created_by\":\"abc.it@example.com\",\"created_on\":\"2023-11-01T10:22:23.10607613Z\",\"deleted\":false,\"description\":\"IS-38887\",\"expired\":false,\"from_parent\":false,\"id\":\"34874a88935860cf6yyfc856d6abb6f35a29d8c077195ed6291aa8373696b44\",\"metadata\":{\"filename\":\"High_Serverity_Heuristic_Sandbox_Threat.docx\"},\"modified_by\":\"example.it@ex.com\",\"modified_on\":\"2023-11-01T10:22:23.10607613Z\",\"platforms\":[\"windows\",\"mac\",\"linux\"],\"severity\":\"critical\",\"tags\":[\"IS-38887\"],\"type\":\"ipv4\",\"value\":\"81.2.69.192\"}",
         "type": [
@@ -415,7 +423,6 @@ An example event for `ioc` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 | threat.feed.name | Display friendly feed name. | constant_keyword |
 | ti_crowdstrike.ioc.action | Describes the action taken when the IOC is detected. | keyword |
 | ti_crowdstrike.ioc.applied_globally | Indicates whether the IOC is applied globally. | boolean |

@@ -1,20 +1,63 @@
 {
     "attributes": {
         "description": "Overview of Redis server metrics",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
-                "highlightAll": true,
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "redis.info",
+                                "redis.key",
+                                "redis.keyspace"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "redis.info"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "redis.key"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "redis.keyspace"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
-                },
-                "version": true
+                }
             }
         },
         "optionsJSON": {
-            "darkTheme": false
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
         },
         "panelsJSON": [
             {
@@ -23,18 +66,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-42f14593-5da1-4fb7-adbc-aeb5e9a4e2cc",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "42f14593-5da1-4fb7-adbc-aeb5e9a4e2cc": {
                                             "columnOrder": [
@@ -57,9 +96,10 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "(data_stream.dataset:redis.info OR data_stream.dataset:redis.key OR data_stream.dataset:redis.keyspace)"
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "659dc838-53d8-4d49-9133-e789047508c5",
@@ -72,7 +112,7 @@
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {}
                 },
@@ -85,8 +125,7 @@
                 },
                 "panelIndex": "9587ad36-13de-4de0-8586-16065d55d029",
                 "title": "Clients [Metrics Redis]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -94,18 +133,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-663fc5eb-ba63-4cb6-b9af-d996c9496392",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "663fc5eb-ba63-4cb6-b9af-d996c9496392": {
                                             "columnOrder": [
@@ -151,9 +186,10 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "(data_stream.dataset:redis.info OR data_stream.dataset:redis.key OR data_stream.dataset:redis.keyspace)"
+                                "query": ""
                             },
                             "visualization": {
                                 "gridlinesVisibilitySettings": {
@@ -219,8 +255,7 @@
                 },
                 "panelIndex": "452a1f6f-4931-4391-88bf-dfd23334b77b",
                 "title": "Connected clients [Metrics Redis]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -233,8 +268,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "4b781053-c878-4b17-9517-9dbd0482b634": {
                                             "columnOrder": [
@@ -290,9 +326,10 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "(data_stream.dataset:redis.info OR data_stream.dataset:redis.key OR data_stream.dataset:redis.keyspace)"
+                                "query": ""
                             },
                             "visualization": {
                                 "emphasizeFitting": false,
@@ -354,8 +391,7 @@
                 },
                 "panelIndex": "6ceb010f-3be5-402d-a4cf-42f52a01d0db",
                 "title": "Keyspaces [Metrics Redis]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -368,8 +404,9 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "0af489b3-738e-40c0-9ae4-43dd70bf9fed": {
                                             "columnOrder": [
@@ -470,9 +507,10 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "(data_stream.dataset:redis.info OR data_stream.dataset:redis.key OR data_stream.dataset:redis.keyspace)"
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -529,8 +567,7 @@
                 },
                 "panelIndex": "e38aacc7-f856-4306-86d2-3746d0143d6a",
                 "title": "Hosts [Metrics Redis]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -538,18 +575,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-495b0b3d-5f1c-49b0-ac9b-788f6f4d2b06",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "495b0b3d-5f1c-49b0-ac9b-788f6f4d2b06": {
                                             "columnOrder": [
@@ -592,24 +625,27 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "(data_stream.dataset:redis.info OR data_stream.dataset:redis.key OR data_stream.dataset:redis.keyspace)"
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "d32bf426-f3bf-43f9-a1f6-825c2ac9cd5a"
-                                        ],
                                         "layerId": "495b0b3d-5f1c-49b0-ac9b-788f6f4d2b06",
                                         "layerType": "data",
                                         "legendDisplay": "show",
                                         "legendSize": "auto",
-                                        "metric": "3996a38e-2cff-4888-b0cc-234ec8debdf8",
+                                        "metrics": [
+                                            "3996a38e-2cff-4888-b0cc-234ec8debdf8"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "d32bf426-f3bf-43f9-a1f6-825c2ac9cd5a"
+                                        ]
                                     }
                                 ],
                                 "palette": {
@@ -634,8 +670,7 @@
                 },
                 "panelIndex": "e59f5a8f-6f47-471c-bf7c-96d6eab6baf3",
                 "title": "Server Versions [Metrics Redis]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -643,18 +678,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-88f523d4-adf4-423a-9a09-a6ae74f410ff",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "88f523d4-adf4-423a-9a09-a6ae74f410ff": {
                                             "columnOrder": [
@@ -697,24 +728,27 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "(data_stream.dataset:redis.info OR data_stream.dataset:redis.key OR data_stream.dataset:redis.keyspace)"
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "a60e9838-ac8c-440d-b42f-07cc81d2694c"
-                                        ],
                                         "layerId": "88f523d4-adf4-423a-9a09-a6ae74f410ff",
                                         "layerType": "data",
                                         "legendDisplay": "show",
                                         "legendSize": "auto",
-                                        "metric": "3f54a1a9-ff71-44a3-80f5-f16d7db12c58",
+                                        "metrics": [
+                                            "3f54a1a9-ff71-44a3-80f5-f16d7db12c58"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "a60e9838-ac8c-440d-b42f-07cc81d2694c"
+                                        ]
                                     }
                                 ],
                                 "palette": {
@@ -739,8 +773,7 @@
                 },
                 "panelIndex": "989efbbc-7d45-466c-8bb3-9322a6fa6a46",
                 "title": "Server mode [Metrics Redis]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -748,18 +781,14 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-7dd18b64-cbba-40ed-b1e3-56aa0f27f3f3",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "7dd18b64-cbba-40ed-b1e3-56aa0f27f3f3": {
                                             "columnOrder": [
@@ -802,24 +831,27 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "(data_stream.dataset:redis.info OR data_stream.dataset:redis.key OR data_stream.dataset:redis.keyspace)"
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
                                     {
                                         "categoryDisplay": "default",
-                                        "groups": [
-                                            "cfccf32e-014a-43c4-b8f5-7bcc29ce6e46"
-                                        ],
                                         "layerId": "7dd18b64-cbba-40ed-b1e3-56aa0f27f3f3",
                                         "layerType": "data",
                                         "legendDisplay": "show",
                                         "legendSize": "auto",
-                                        "metric": "a2c1d752-9b78-45b8-ae86-f71e48c5fee1",
+                                        "metrics": [
+                                            "a2c1d752-9b78-45b8-ae86-f71e48c5fee1"
+                                        ],
                                         "nestedLegend": false,
-                                        "numberDisplay": "percent"
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "cfccf32e-014a-43c4-b8f5-7bcc29ce6e46"
+                                        ]
                                     }
                                 ],
                                 "palette": {
@@ -844,33 +876,26 @@
                 },
                 "panelIndex": "eed90cad-e313-4af5-b26b-965cfc02ea24",
                 "title": "Multiplexing API [Metrics Redis]",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Redis] Overview",
         "version": 1
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-19T07:20:04.193Z",
     "id": "redis-AV4YjZ5pux-M-tCAunxK",
-    "migrationVersion": {
-        "dashboard": "8.3.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "metrics-*",
-            "name": "9587ad36-13de-4de0-8586-16065d55d029:indexpattern-datasource-current-indexpattern",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
             "name": "9587ad36-13de-4de0-8586-16065d55d029:indexpattern-datasource-layer-42f14593-5da1-4fb7-adbc-aeb5e9a4e2cc",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "452a1f6f-4931-4391-88bf-dfd23334b77b:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
@@ -890,17 +915,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "e59f5a8f-6f47-471c-bf7c-96d6eab6baf3:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "e59f5a8f-6f47-471c-bf7c-96d6eab6baf3:indexpattern-datasource-layer-495b0b3d-5f1c-49b0-ac9b-788f6f4d2b06",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "989efbbc-7d45-466c-8bb3-9322a6fa6a46:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
@@ -910,14 +925,10 @@
         },
         {
             "id": "metrics-*",
-            "name": "eed90cad-e313-4af5-b26b-965cfc02ea24:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "eed90cad-e313-4af5-b26b-965cfc02ea24:indexpattern-datasource-layer-7dd18b64-cbba-40ed-b1e3-56aa0f27f3f3",
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

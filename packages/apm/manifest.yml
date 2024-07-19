@@ -1,7 +1,7 @@
-format_version: 3.0.1
+format_version: 3.1.0
 name: apm
 title: Elastic APM
-version: 8.13.0-preview-1
+version: 8.15.0-preview-1716438434
 description: Monitor, detect, and diagnose complex application performance issues.
 type: integration
 categories: ["elastic_stack", "monitoring"]
@@ -10,7 +10,7 @@ conditions:
     capabilities:
       - apm
   kibana:
-    version: ^8.13.0
+    version: ^8.15.0
 icons:
   - src: /img/logo_apm.svg
     title: APM Logo
@@ -54,9 +54,13 @@ policy_templates:
             default: http://localhost:8200
           - name: secret_token
             type: text
+            # setting false due to https://github.com/elastic/apm-server/issues/11450
+            secret: false
           - name: api_key_enabled
             type: bool
             default: false
+            # secret param is required to pass validation as name contains api_key
+            secret: false
           - name: enable_rum
             type: bool
             default: true
@@ -96,6 +100,8 @@ policy_templates:
           - name: api_key_limit
             type: integer
             default: 100
+            # secret param is required to pass validation as name contains api_key
+            secret: false
           - name: max_event_bytes
             type: integer
             default: 307200

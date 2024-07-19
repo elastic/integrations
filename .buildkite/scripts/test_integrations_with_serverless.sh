@@ -27,6 +27,14 @@ if running_on_buildkite; then
     buildkite-agent annotate "Serverless Project: ${SERVERLESS_PROJECT}" --context "ctx-info-${SERVERLESS_PROJECT}" --style "info"
 fi
 
+# Download config files from kibana
+kibana_url="https://raw.githubusercontent.com/elastic/kibana/main/config/serverless.oblt.yml"
+if [[ "$SERVERLESS_PROJECT" == "security" ]]; then
+    kibana_url="https://raw.githubusercontent.com/elastic/kibana/main/config/serverless.security.yml"
+fi
+export KIBANA_CONFIG_FILE_PATH="${WORKSPACE}/kibana.serverless.config.yml"
+curl -sSL -o "${KIBANA_CONFIG_FILE_PATH}" "${kibana_url}"
+
 if [ ! -d packages ]; then
     echo "Missing packages folder"
     if running_on_buildkite ; then

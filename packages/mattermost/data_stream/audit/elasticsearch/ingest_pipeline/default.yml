@@ -12,6 +12,9 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - fail:
+      if: "!(ctx.json instanceof Map)"
+      message: Missing JSON object
   - date:
       field: json.timestamp
       formats:
@@ -30,7 +33,7 @@ processors:
       field: json.errors
       target_field: mattermost.audit.error.message
       ignore_missing: true
-      if: ctx.json?.errors != "[]"
+      if: ctx.json.errors != "[]"
   - gsub:
       field: mattermost.audit.error.message
       pattern: "(\\[|\\])"
@@ -44,15 +47,15 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx.json?.status == "success"
+      if: ctx.json.status == "success"
   - set:
       field: event.outcome
       value: failure
-      if: ctx.json?.status == "fail" || ctx.mattermost?.audit?.error?.message != null
+      if: ctx.json.status == "fail" || ctx.mattermost?.audit?.error?.message != null
   - set:
       field: event.outcome
       value: unknown
-      if: ctx.event?.outcome == null
+      if: ctx.event.outcome == null
   - rename:
       field: json.user_id
       target_field: user.id
@@ -210,7 +213,6 @@ processors:
           category:
             - configuration
           type:
-            - admin
             - info
         updateConfig:
           category:
@@ -233,7 +235,6 @@ processors:
           category:
             - iam
           type:
-            - admin
             - user
             - change
         patchUser:
@@ -308,63 +309,53 @@ processors:
             - group
             - change
       source: >-
-        ctx.event.kind = 'event'; ctx.event.category = ['configuration']; ctx.event.type = ['info']; if (ctx?.event?.action == null) {
-
-
+        ctx.event.kind = 'event';
+        ctx.event.category = ['configuration'];
+        ctx.event.type = ['info'];
+        if (ctx.event.action == null) {
             return;
-        } if (params.get(ctx.event.action) == null) {
-
-
+        }
+        if (params.get(ctx.event.action) == null) {
             return;
-        } def hm = new HashMap(params.get(ctx.event.action)); hm.forEach((k, v) -> ctx.event[k] = v);
+        }
+        def hm = new HashMap(params.get(ctx.event.action));
+        hm.forEach((k, v) -> ctx.event[k] = v);
   - script:
       lang: painless
       description: Add ECS User fields
-      if: "ctx.event?.category.contains('iam')"
+      if: ctx.event.category.contains('iam')
       source: >-
-        if (ctx?.event?.action == null) {
-
-
+        if (ctx.event.action == null) {
             return;
-        } if (ctx.group == null) {
-
-
+        }
+        if (ctx.group == null) {
           Map map = new HashMap();
           ctx.put("group", map);
-        } if (ctx.user == null) {
-
-
+        }
+        if (ctx.user == null) {
           Map map = new HashMap();
           ctx.put("user", map);
-        } if (ctx.user?.target == null) {
-
-
+        }
+        if (ctx.user.target == null) {
           Map map = new HashMap();
           ctx.user.put("target", map);
-        } if (ctx.user?.changes == null) {
-
-
+        }
+        if (ctx.user.changes == null) {
           Map map = new HashMap();
           ctx.user.put("changes", map);
-        } if (ctx.user?.target?.group == null) {
-
-
+        }
+        if (ctx.user.target.group == null) {
           Map map = new HashMap();
           ctx.user.target.put("group", map);
-        } if(['patchUser'].contains(ctx.event.action)) {
-
-
-          if(ctx.user?.target?.name != ctx.mattermost?.audit?.patch?.name) {
+        }
+        if (['patchUser'].contains(ctx.event.action)) {
+          if(ctx.user.target.name != ctx.mattermost?.audit?.patch?.name) {
             ctx.user.changes.put("name", ctx.mattermost?.audit?.patch?.name);
           }
-        } if(['createTeam','patchTeam','deleteTeam'].contains(ctx.event.action)) {
-
-
+        } else if (['createTeam','patchTeam','deleteTeam'].contains(ctx.event.action)) {
           ctx.group.put("name", ctx.mattermost?.audit?.team?.name);
           ctx.group.put("id", ctx.mattermost?.audit?.team?.id);
-        } if(['addTeamMembers','removeTeamMember'].contains(ctx.event.action)) {
-
-
+        } else if (['addTeamMembers','removeTeamMember'].contains(ctx.event.action)) {
           ctx.user.target.group.put("name", ctx.mattermost?.audit?.team?.name);
           ctx.user.target.group.put("id", ctx.mattermost?.audit?.team?.id);
         }
@@ -387,7 +378,7 @@ processors:
       field: related.user
       value: '{{user.target.id}}'
       allow_duplicates: false
-      if: ctx.user?.target?.id != null && ctx.user.target.id instanceof String
+      if: ctx.user?.target?.id instanceof String
   - foreach:
       field: user.target.id
       processor:
@@ -396,7 +387,7 @@ processors:
           value: '{{_ingest._value}}'
           allow_duplicates: false
       ignore_missing: true
-      if: ctx.user?.target?.id != null && ctx.user.target.id instanceof List
+      if: ctx.user?.target?.id instanceof List
   - append:
       field: related.ip
       value: '{{source.ip}}'
@@ -423,7 +414,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
   - script:

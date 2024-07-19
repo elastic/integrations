@@ -16,7 +16,7 @@ The `info` and `stat` datasets were tested with tested with HAProxy versions fro
 
 ## Troubleshooting
 
-If `source.address` is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the `stat` data stream indices.
+If `source.address` is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds-reindex.html) the `stat` data stream indices.
 
 ## Logs
 
@@ -25,6 +25,10 @@ If `source.address` is shown conflicted under ``metrics-*`` data view, then this
 The `log` dataset collects the HAProxy application logs.
 
 {{event "log"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "log"}}
 
@@ -39,6 +43,10 @@ The HAProxy `info` dataset collects general information about HAProxy processes.
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "info"}}
 
 ### stat
@@ -50,5 +58,9 @@ See section "9.1. CSV format" of the official [HAProxy Management Guide](http://
 {{event "stat"}}
 
 The fields reported are:
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "stat"}}

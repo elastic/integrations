@@ -34,7 +34,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **Kibana version** required is **8.12.0**.
 This module has been tested against the **ESET PROTECT (version: 5.0.9.1)**.
 
 ## Setup
@@ -77,8 +76,8 @@ An example event for `detection` looks as following:
 {
     "@timestamp": "2023-10-26T13:36:53.000Z",
     "agent": {
-        "ephemeral_id": "eaf0a213-9722-4532-9223-51619c3f6c91",
-        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
+        "ephemeral_id": "a2da59f5-382d-41e2-be5e-0b06df998911",
+        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -114,8 +113,8 @@ An example event for `detection` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
-        "snapshot": true,
+        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
+        "snapshot": false,
         "version": "8.12.0"
     },
     "eset_protect": {
@@ -151,7 +150,7 @@ An example event for `detection` looks as following:
             "intrusion_detection"
         ],
         "dataset": "eset_protect.detection",
-        "ingested": "2024-01-04T10:08:34Z",
+        "ingested": "2024-04-16T05:41:07Z",
         "kind": "alert",
         "original": "{\"category\":\"DETECTION_CATEGORY_NETWORK_INTRUSION\",\"context\":{\"circumstances\":\"Eicar\",\"deviceUuid\":\"xxx-xxxx-1234-5678-xxxxxxxxxxxx\",\"process\":{\"path\":\"C:\\\\Windows\\\\chrome.exe\"},\"userName\":\"testingpc\\\\example\"},\"networkCommunication\":{\"protocolName\":\"0\",\"remoteIpAddress\":\"89.160.20.112\",\"remotePort\":443},\"objectHashSha1\":\"AAF4C61DDCC5E8A2DABEDE0F3B4820123456789D\",\"objectTypeName\":\"File\",\"objectUrl\":\"C:\\\\Temp\\\\06516f11-xxxx-xxxx-xxxx-37da66b5de99_ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8.zip.e99\\\\ccf7464ba6e2e12e984514f694bfb10d03de77358d8a3afd7a2ffed150ec1df8\",\"occurTime\":\"2023-10-26T13:36:53Z\",\"responses\":[{}],\"severityLevel\":\"SEVERITY_LEVEL_MEDIUM\",\"typeName\":\"TCP Port scanning attack\",\"uuid\":\"xxx-xxxx-xxxx-1234-xxxxxxxxxxxx\"}",
         "type": [
@@ -160,7 +159,7 @@ An example event for `detection` looks as following:
     },
     "file": {
         "hash": {
-            "sha1": "AAF4C61DDCC5E8A2DABEDE0F3B4820123456789D"
+            "sha1": "aaf4c61ddcc5e8a2dabede0f3b4820123456789d"
         }
     },
     "host": {
@@ -181,7 +180,7 @@ An example event for `detection` looks as following:
     },
     "related": {
         "hash": [
-            "AAF4C61DDCC5E8A2DABEDE0F3B4820123456789D"
+            "aaf4c61ddcc5e8a2dabede0f3b4820123456789d"
         ],
         "hosts": [
             "xxx-xxxx-1234-5678-xxxxxxxxxxxx"
@@ -252,7 +251,6 @@ An example event for `detection` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Device Task
@@ -265,10 +263,10 @@ An example event for `device_task` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-01-04T10:09:14.915Z",
+    "@timestamp": "2024-04-16T05:41:49.641Z",
     "agent": {
-        "ephemeral_id": "3873a5a6-ab80-4d05-b35a-e91aa4c7f86e",
-        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
+        "ephemeral_id": "a2da59f5-382d-41e2-be5e-0b06df998911",
+        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -282,8 +280,8 @@ An example event for `device_task` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
-        "snapshot": true,
+        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
+        "snapshot": false,
         "version": "8.12.0"
     },
     "eset_protect": {
@@ -324,7 +322,7 @@ An example event for `device_task` looks as following:
         "action": "Shutdown computer",
         "agent_id_status": "verified",
         "dataset": "eset_protect.device_task",
-        "ingested": "2024-01-04T10:09:26Z",
+        "ingested": "2024-04-16T05:41:59Z",
         "kind": "event",
         "original": "{\"action\":{\"name\":\"Shutdown computer\",\"params\":{\"@type\":\"type.googleapis.com/Era.Common.DataDefinition.Task.ESS.OnDemandScan\",\"cleaningEnabled\":true,\"customProfileName\":\"DefaultProfile\",\"scanProfile\":\"InDepth\",\"scanTargets\":[\"eset://AllTargets\"]}},\"description\":\"Automatically created via context menu\",\"displayName\":\"Reboot Computer - via context menu\",\"targets\":{\"devicesUuids\":[\"0205321e-XXXX-XXXX-1234-feeb35010ea7\",\"0205321e-XXXX-XXXX-5678-feeb35010ea7\",\"0205321e-XXXX-1234-5678-feeb35010ea7\"]},\"triggers\":[{\"manual\":{\"expireTime\":\"2023-12-01T01:30:00Z\"}}],\"uuid\":\"c93070e0-XXXX-1234-5678-c48f0e5e0b7e\",\"versionId\":\"1511\"}",
         "type": [
@@ -386,7 +384,6 @@ An example event for `device_task` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| tags | User defined tags. | keyword |
 
 
 ### Event
@@ -401,8 +398,8 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2021-06-21T03:56:20.000Z",
     "agent": {
-        "ephemeral_id": "677639c3-b8cb-4791-bd2d-a6f2c144f964",
-        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
+        "ephemeral_id": "fe2f9827-1823-4a86-8826-b6789530f104",
+        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.12.0"
@@ -437,8 +434,8 @@ An example event for `event` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7e7335eb-8b8a-400b-9634-4d8caf719b70",
-        "snapshot": true,
+        "id": "930b36c5-0fd6-41c4-83bc-d8547e3fa880",
+        "snapshot": false,
         "version": "8.12.0"
     },
     "eset_protect": {
@@ -472,7 +469,7 @@ An example event for `event` looks as following:
             "web"
         ],
         "dataset": "eset_protect.event",
-        "ingested": "2024-01-04T10:10:20Z",
+        "ingested": "2024-04-16T05:42:56Z",
         "kind": "alert",
         "original": "{\"event_type\":\"FilteredWebsites_Event\",\"ipv4\":\"192.168.30.30\",\"hostname\":\"win-test\",\"group_name\":\"All/Lost & found\",\"os_name\":\"Microsoft Windows 11 Pro\",\"group_description\":\"Lost & found static group\",\"source_uuid\":\"d9477661-8fa4-4144-b8d4-e37b983bcd69\",\"occured\":\"21-Jun-2021 03:56:20\",\"severity\":\"Warning\",\"event\":\"An attempt to connect to URL\",\"target_address\":\"89.160.20.128\",\"target_address_type\":\"IPv4\",\"scanner_id\":\"HTTP filter\",\"action_taken\":\"blocked\",\"object_uri\":\"https://test.com\",\"hash\":\"ABCDAA625E6961037B8904E113FD0C232A7D0EDC\",\"username\":\"WIN-TEST\\\\Administrator\",\"processname\":\"C:\\\\Program Files\\\\Web browser\\\\brwser.exe\",\"rule_id\":\"Blocked by PUA blacklist\"}",
         "type": [
@@ -488,6 +485,7 @@ An example event for `event` looks as following:
         "ip": [
             "192.168.30.30"
         ],
+        "name": "win-test",
         "os": {
             "name": "Microsoft Windows 11 Pro"
         }
@@ -497,7 +495,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.64.8:46716"
+            "address": "192.168.247.8:59824"
         },
         "syslog": {
             "appname": "ERAServer",
@@ -521,7 +519,7 @@ An example event for `event` looks as following:
     },
     "related": {
         "hash": [
-            "ABCDAA625E6961037B8904E113FD0C232A7D0EDC"
+            "abcdaa625e6961037b8904e113fd0c232a7d0edc"
         ],
         "hosts": [
             "win-test",
@@ -625,5 +623,4 @@ An example event for `event` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
-| tags | User defined tags. | keyword |
 

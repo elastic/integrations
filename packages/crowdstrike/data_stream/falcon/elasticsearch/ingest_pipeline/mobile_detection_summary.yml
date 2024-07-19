@@ -41,6 +41,11 @@ processors:
       target_field: event.id
       ignore_missing: true
       tag: rename_mobile_detect_id
+  - convert:
+      field: event.id
+      type: string
+      ignore_missing: true
+      tag: convert_event_id_to_string
   - rename:
       field: crowdstrike.event.DetectId
       target_field: rule.id
@@ -58,7 +63,19 @@ processors:
       tag: rename_detect_description
   - set: 
       field: threat.framework
+      value: CrowdStrike Falcon Detections Framework
+      tag: set_threat_framework_cs
+      description: For Crowdstrike Falcon Detection tactics and/or that are prefixed with "CS"
+      if: >-
+        (ctx.crowdstrike?.event?.TacticId != null && ctx.crowdstrike.event.TacticId.startsWith("CS")) 
+        || (ctx.crowdstrike?.event?.TechniqueId != null && ctx.crowdstrike.event.TechniqueId.startsWith("CS"))
+        || (ctx.crowdstrike?.event?.Tactic != null && ['malware','exploit','post-exploit','machine learning','custom intelligence','falcon overwatch','falcon intel','ai powered ioa','insecure security posture'].contains(ctx.crowdstrike.event.Tactic.toLowerCase()))
+  - set: 
+      field: threat.framework
       value: MITRE ATT&CK
+      override: false
+      tag: set_threat_framework
+      if: ctx.threat?.framework == null && ctx.crowdstrike?.event?.TacticId != null && ctx.crowdstrike.event.TacticId.startsWith("TA")
   - append:
       field: threat.technique.name
       value: "{{{crowdstrike.event.Technique}}}"
@@ -81,7 +98,7 @@ processors:
       if: ctx.crowdstrike?.event?.TacticId != null
   - rename:
       field: crowdstrike.event.ComputerName
-      target_field: host.name     
+      target_field: host.name
       ignore_missing: true
       tag: rename_computer_name
   - rename:
@@ -91,12 +108,12 @@ processors:
       tag: rename_user_name
   - rename:
       field: crowdstrike.event.FalconHostLink
-      target_field: event.reference    
+      target_field: event.reference
       ignore_missing: true
       tag: rename_falcon_host_link
   - rename:
       field: crowdstrike.event.Severity
-      target_field: event.severity    
+      target_field: event.severity
       ignore_missing: true
       tag: rename_severity
   - rename:

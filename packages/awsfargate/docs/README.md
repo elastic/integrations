@@ -1,8 +1,14 @@
 # AWS Fargate Integration
 
-The AWS Fargate integration helps to retrieve metadata, network metrics, and Docker stats about your containers and the tasks that are a part of an [Amazon Elastic Container Service (Amazon ECS)](https://aws.amazon.com/ecs/?pg=ln&sec=hiw) cluster.
+## Overview
 
-## How to set it up
+The AWS Fargate integration helps to retrieve metadata, network metrics, and Docker stats about your containers and the tasks that are part of an [Amazon Elastic Container Service (Amazon ECS)](https://aws.amazon.com/ecs/?pg=ln&sec=hiw) cluster.
+
+## Credentials
+
+No AWS credentials are required for this integration. The ECS task metadata endpoint is accessible inside the cluster only.
+
+## Setup
 
 To start collecting AWS Fargate metrics, you must run the Elastic Agent as a [sidecar](https://www.oreilly.com/library/view/designing-distributed-systems/9781491983638/ch02.html) container alongside your application container in the same task definition.
 
@@ -24,37 +30,27 @@ TaskDefinition:
           Image: <application-container-image>
           <application-container-settings>
         - Name: elastic-agent-container              << ===== Elastic Agent container
-          Image: docker.elastic.co/beats/elastic-agent:8.1.0
+          Image: docker.elastic.co/beats/elastic-agent:8.12.0
 ```
 
 The Elastic Agent collects metrics using the [Amazon ECS task metadata endpoint](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-fargate.html).
 
 The Amazon ECS task metadata endpoint is an HTTP endpoint available to each container and enabled by default on [AWS Fargate platform version 1.4.0](https://aws.amazon.com/blogs/containers/aws-fargate-launches-platform-version-1-4/) and later. The Elastic Agent uses [Task metadata endpoint version 4](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-v4-fargate.html).
 
-## Credentials
-
-No AWS credentials are required for this integration. The ECS task metadata endpoint is accessible inside the cluster only.
-
-## Getting Started
+## Getting started using the AWS Management Console
 
 This section shows you how to run the Elastic Agent in a ECS cluster, start collecting Fargate on ECS metrics, and send them to an Elastic Stack.
 
-First, we'll see a simple example, setting up a task definition and a service on an existing ECS cluster using the AWS web console; this is the quickest path to have the integration up and running in your existing ECS cluster.
+To quickly deploy on your existing ECS cluster, follow these steps.
 
-Second, we'll see a complete setup from scratch of a cluster, a service, and a task using a CloudFormation template and the AWS CLI.
+### Task Definition
 
-Let's get started!
+Open the AWS Management Console and visit the Amazon ECS page. Here you can select "Task Definitions" and then "Create new Task Definition" to start the wizard.
 
-### Using the AWS web console
+Step 1:
+- Select "Fargate" from the list of available launch types.
 
-#### Task Definition
-
-Open the AWS web console and visit the Amazon ECS page. Here you can select "Task Definitions" and then "Create new Task Definition" to start the wizard.
-
-In the step 1 select "Fargate" from the list of available launch types.
-
-In the step 2:
-
+Step 2:
 - Add your preferred name for the "Task definition name", for example "elastic-agent-fargate-deployment".
 - For the "Task role", select "ecsFargateTaskExecutionRole".
 - For the "Operating system family", select "Linux".
@@ -64,7 +60,7 @@ In the step 2:
 As for the container, you can use the following values:
 
 - Container name: `elastic-agent-container`
-- Image: `docker.elastic.co/beats/elastic-agent:8.1.0`
+- Image: `docker.elastic.co/beats/elastic-agent:8.12.0`
 - Environment variables:
   - FLEET_ENROLL: `yes`
   - FLEET_ENROLLMENT_TOKEN: `<enrollment-token>`
@@ -72,13 +68,13 @@ As for the container, you can use the following values:
   
 Tip: use the AWS Secrets Manager to store the Fleet Server enrollment token.
 
-#### Service
+### Service
 
 Select an existing ECS cluster and create a new service with launch type "FARGATE". Use the task definition we just created.
 
 As soon as the Elastic Agent is started, open the dashboard "\[AWS Fargate\] Fargate Overview" and you will see the metrics show up in few minutes.
 
-### Using the AWS CLI
+## Getting started using the AWS CLI
 
 In this example, we will use the AWS CLI and a CloudFormation template to set up the following resources:
 
@@ -86,11 +82,11 @@ In this example, we will use the AWS CLI and a CloudFormation template to set up
 - a task definition for the Elastic Agent,
 - a service to execute the agent task on the cluster.
 
-#### Setup
+### Setup
 
 Prepare you terminal and AWS environment to create the ECS cluster for the testing.
 
-##### Pick a region
+#### Pick a region
 
 Set default AWS region for this session:
 
@@ -98,7 +94,7 @@ Set default AWS region for this session:
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
-##### Secrets management
+#### Secrets management
 
 Store the enrollment token and the Fleet Server URL in the AWS Secrets Manager:
 
@@ -122,11 +118,11 @@ aws secretsmanager put-secret-value \
     --secret-string <fleet-enrollment-token>
 ```
 
-##### Networking
+#### Networking
 
 One more thing. You need to pick one subnet where your ECS cluster will be created in. Take note of the subnet ID for the very next step.
 
-#### Deploy the stack
+### Deploy the stack
 
 Copy the following CloudFormation template and save it on you computer with the name `cloudformation.yml`:
 
@@ -207,7 +203,7 @@ Resources:
       ExecutionRoleArn: !Ref ExecutionRole
       ContainerDefinitions:
         - Name: elastic-agent-container
-          Image: docker.elastic.co/beats/elastic-agent:8.1.0
+          Image: docker.elastic.co/beats/elastic-agent:8.12.0
           Secrets:
             - Name: FLEET_ENROLLMENT_TOKEN
               ValueFrom: !Ref FleetEnrollmentTokenSecretArn
@@ -271,7 +267,7 @@ The AWS CLI will return a `StackId`:
 }
 ```
 
-Check the stack status until it has reached the `CREATE_COMPLETE` status. Use the AWS web console or the AWS CLI (requires the tool [jq](https://stedolan.github.io/jq/)):
+Check the stack status until it has reached the `CREATE_COMPLETE` status. Use the AWS Management Console or the AWS CLI (requires the tool [jq](https://stedolan.github.io/jq/)):
 
 ```shell
 $ aws cloudformation list-stacks | jq '.StackSummaries[] | .StackName + " " + .StackStatus'
@@ -281,7 +277,7 @@ $ aws cloudformation list-stacks | jq '.StackSummaries[] | .StackName + " " + .S
 
 That's it!
 
-#### Clean up
+### Clean up
 
 Once you're done with experimenting, you can remove all the resources (ECS cluster, task, service, etc) with the following command:
 
@@ -296,6 +292,10 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 ## Metrics
 
 ### Task Stats
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -352,7 +352,6 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 | awsfargate.task_stats.memory.rss.usage.total | Total memory usage. | long | gauge |
 | awsfargate.task_stats.memory.stats.\* | Raw memory stats from the cgroups memory.stat interface | unsigned_long |  |
 | awsfargate.task_stats.memory.usage.max | Max memory usage. | long | counter |
-| awsfargate.task_stats.memory.usage.pct | Memory usage percentage. | scaled_float | gauge |
 | awsfargate.task_stats.memory.usage.total | Total memory usage. | long | gauge |
 | awsfargate.task_stats.network.\*.inbound.bytes | Total number of incoming bytes. | long | counter |
 | awsfargate.task_stats.network.\*.inbound.dropped | Total number of dropped incoming packets. | long | counter |
@@ -365,17 +364,6 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 | awsfargate.task_stats.task_desired_status | The desired status for the task from Amazon ECS. | keyword |  |
 | awsfargate.task_stats.task_known_status | The known status for the task from Amazon ECS. | keyword |  |
 | awsfargate.task_stats.task_name | ECS task name | keyword |  |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |  |
-| container | Container fields are used for meta information about the specific container that is the source of information. These fields help correlate data based containers from any runtime. | group |  |
-| container.id | Unique container id. | keyword |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |
 | container.labels.com_amazonaws_ecs_cluster | ECS Cluster name | keyword |  |
 | container.labels.com_amazonaws_ecs_container-name | ECS container name | keyword |  |
 | container.labels.com_amazonaws_ecs_task-arn | ECS task ARN | keyword |  |
@@ -385,10 +373,6 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |  |
-| error.message | Error message. | match_only_text |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 An example event for `task_stats` looks as following:
@@ -521,7 +505,6 @@ An example event for `task_stats` looks as following:
                 },
                 "usage": {
                     "max": 15294464,
-                    "pct": 0.003136136404770672,
                     "total": 12349440
                 }
             },

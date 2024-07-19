@@ -3,7 +3,43 @@
         "description": "Overview dashboard for the FIlebeat Redis integration",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "redis.log",
+                                "redis.slowlog"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "redis.log"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "redis.slowlog"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -20,6 +56,44 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "host.name",
+                            "log.level",
+                            "redis.log.role",
+                            "message"
+                        ],
+                        "description": "",
+                        "hits": 0,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"filter\":[{\"$state\":{\"store\":\"appState\"},\"meta\":{\"alias\":null,\"disabled\":false,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\",\"key\":\"data_stream.dataset\",\"negate\":false,\"params\":{\"query\":\"redis.log\"},\"type\":\"phrase\"},\"query\":{\"match_phrase\":{\"data_stream.dataset\":\"redis.log\"}}}],\"highlightAll\":true,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"version\":true}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ],
+                        "title": "Logs [Logs Redis]",
+                        "version": 1
+                    },
                     "columns": [
                         "host.name",
                         "log.level",
@@ -42,12 +116,38 @@
                     "y": 30
                 },
                 "panelIndex": "4",
-                "panelRefName": "panel_4",
-                "type": "search",
-                "version": "8.10.2"
+                "type": "search"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "columns": [
+                            "host.name",
+                            "message",
+                            "redis.slowlog.duration.us",
+                            "redis.slowlog.key"
+                        ],
+                        "description": "",
+                        "hits": 0,
+                        "kibanaSavedObjectMeta": {
+                            "searchSourceJSON": "{\"filter\":[],\"highlightAll\":true,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\",\"query\":{\"language\":\"kuery\",\"query\":\"data_stream.dataset:redis.slowlog\"},\"version\":true}"
+                        },
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "sort": [
+                            [
+                                "@timestamp",
+                                "desc"
+                            ]
+                        ],
+                        "title": "Slow logs [Logs Redis]",
+                        "version": 1
+                    },
                     "columns": [
                         "host.name",
                         "message",
@@ -65,9 +165,7 @@
                     "y": 0
                 },
                 "panelIndex": "6",
-                "panelRefName": "panel_6",
-                "type": "search",
-                "version": "8.10.2"
+                "type": "search"
             },
             {
                 "embeddableConfig": {
@@ -140,7 +238,7 @@
                             "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset:redis.slowlog"
+                                "query": ""
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -211,8 +309,7 @@
                 },
                 "panelIndex": "048af531-a2d5-4a14-b7d2-6156dce83cbc",
                 "title": "Top slowest commands [Logs Redis]",
-                "type": "lens",
-                "version": "8.10.2"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -225,6 +322,7 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -289,9 +387,10 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset:redis.log"
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -334,8 +433,7 @@
                 },
                 "panelIndex": "62b73fa0-e562-4af6-9d4e-9158eba31a8b",
                 "title": "Log levels and roles breakdown [Logs Redis]",
-                "type": "lens",
-                "version": "8.10.2"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -348,6 +446,7 @@
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -405,9 +504,10 @@
                                 }
                             },
                             "filters": [],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset:redis.log"
+                                "query": ""
                             },
                             "visualization": {
                                 "gridlinesVisibilitySettings": {
@@ -471,8 +571,7 @@
                 },
                 "panelIndex": "5150d808-cfa0-4a30-ab6f-e9517fa2ceec",
                 "title": "Logs over time [Logs Redis]",
-                "type": "lens",
-                "version": "8.10.2"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
@@ -480,19 +579,34 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2023-10-23T06:52:58.334Z",
+    "created_at": "2024-04-19T07:25:32.795Z",
     "id": "redis-7fea2930-478e-11e7-b1f0-cb29bac6bf8b",
     "managed": false,
     "references": [
         {
-            "id": "redis-73613570-4791-11e7-be88-2ddb32f3df97",
-            "name": "4:panel_4",
-            "type": "search"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "redis-0ab87b80-478e-11e7-b1f0-cb29bac6bf8b",
-            "name": "6:panel_6",
-            "type": "search"
+            "id": "logs-*",
+            "name": "4:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4:kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
         },
         {
             "id": "logs-*",

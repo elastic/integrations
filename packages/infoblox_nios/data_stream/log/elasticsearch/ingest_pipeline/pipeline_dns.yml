@@ -8,11 +8,11 @@ processors:
         - "^transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}' from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^validating %{DATA:dns.question.name}/%{WORD:dns.question.type}: %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} updating zone '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:client.domain}\\): %{VIEW}?query failed %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): %{VIEW}?query failed %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:infoblox_nios.log.dns.before_query}\\): rewriting query name %{DATA} to '%{DATA:infoblox_nios.log.dns.after_query}', type %{DATA:dns.question.type}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:client.domain}\\): %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} %{DATA:infoblox_nios.log.dns.header_flags} \\(%{IP:server.ip}\\)$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} %{DATA:infoblox_nios.log.dns.header_flags} \\(%{IP:server.ip}\\)$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:client.domain}\\): transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*CEF:0\\|Infoblox\\|NIOS\\|%{GREEDYDATA:infoblox_nios.log.dns.version}\\|RPZ-%{DATA:dns.answers.type}\\|%{DATA:infoblox_nios.log.dns.answers_policy}\\|\\d+\\|app=DNS dst=%{IP:server.ip} src=%{IP:client.ip} spt=%{NUMBER:client.port:long} view=%{DATA:infoblox_nios.log.dns.view_name} qtype=%{WORD:dns.question.type} msg=%{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags} %{GREEDYDATA:repeat_message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
@@ -92,7 +92,7 @@ processors:
         map.put('type', new ArrayList());
         map.put('data', new ArrayList());
 
-        for (def i = 0; i < arr?.length; i++) {
+        for (def i = 0; i < arr.length; i++) {
           def response = splitUnquoted(arr[i], " ");
           if (response.size() >= 4) {
             map['name'].add(response[0]);
@@ -124,7 +124,7 @@ processors:
       if: ctx.dns?.answers?.data instanceof List
       source: |
         def hash = new ArrayList();
-        for(data in ctx.dns?.answers?.data){
+        for(data in ctx.dns.answers.data){
           def n = data.length();
           if(data.charAt(n-1).toString() == '.'){
             def data_substring = data.substring(0,n-1) + data.substring(n);
@@ -141,7 +141,7 @@ processors:
       if: ctx.dns?.answers?.name instanceof List
       source: |
         def hash = new ArrayList();
-        for(name in ctx.dns?.answers?.name){
+        for(name in ctx.dns.answers.name){
           def n = name.length();
           if(name.charAt(n-1).toString() == '.'){
             def name_substring = name.substring(0,n-1) + name.substring(n);
@@ -198,12 +198,6 @@ processors:
       if: ctx.server?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - append:
-      field: related.hosts
-      value: '{{{client.domain}}}'
-      if: ctx.client?.domain != null
-      allow_duplicates: false
-      ignore_failure: true
   - foreach:
       field: dns.answers.name
       if: ctx.dns?.answers?.name != null
@@ -251,7 +245,7 @@ processors:
           ctx.put('dns', hm);
         }
         ctx.dns.put('header_flags', hf);
-  - registered_domain: 
+  - registered_domain:
       field: "dns.question.name"
       target_field: "dns.question"
       if: ctx.dns?.question != null

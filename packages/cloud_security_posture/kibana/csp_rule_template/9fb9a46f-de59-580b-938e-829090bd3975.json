@@ -1,0 +1,38 @@
+{
+    "id": "9fb9a46f-de59-580b-938e-829090bd3975",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "Microsoft Defender for SQL is a paid feature and will incur additional cost for each SQL server.",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/azure/azure-sql/database/azure-defender-for-sql?view=azuresql\n2. https://docs.microsoft.com/en-us/powershell/module/azurerm.sql/get-azurermsqlserverthreatdetectionpolicy?view=azurermps-6.13.0&viewFallbackFrom=azurermps-5.2.0\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-data-protection#dp-2-monitor-anomalies-and-threats-targeting-sensitive-data",
+            "id": "9fb9a46f-de59-580b-938e-829090bd3975",
+            "name": "Ensure that Microsoft Defender for SQL is set to 'On' for critical SQL Servers",
+            "profile_applicability": "* Level 2",
+            "description": "Enable \"Microsoft Defender for SQL\" on critical SQL Servers.",
+            "rationale": "Microsoft Defender for SQL is a unified package for advanced SQL security capabilities.\nMicrosoft Defender is available for Azure SQL Database, Azure SQL Managed Instance, and Azure Synapse Analytics.\nIt includes functionality for discovering and classifying sensitive data, surfacing and mitigating potential database vulnerabilities, and detecting anomalous activities that could indicate a threat to your database.\nIt provides a single go-to location for enabling and managing these capabilities.",
+            "audit": "**From Azure Portal**\n\n1. Go to `SQL servers`\n\nFor each production SQL server instance:\n\n2. Click `Microsoft Defender for Cloud`\n3. Ensure that `Enablement Status` is `Enabled`\n\n**From PowerShell**\n\nGet the list of all SQL Servers\n```\nGet-AzSqlServer\n```\nFor each Server\n```\nGet-AzSqlServerAdvancedThreatProtectionSetting -ResourceGroupName <resource group name> -ServerName <server name>\n```\nEnsure that `ThreatDetectionState` is set to `Enabled`.",
+            "remediation": "**From Azure Portal**\n\n1. Go to `SQL servers`\n\nFor each production SQL server instance:\n\n2. Click `Microsoft Defender for Cloud`\n3. Click `Enable Microsoft Defender for SQL`\n\n**From PowerShell**\n\nEnable `Advanced Data Security` for a SQL Server: \n```\nSet-AzSqlServerThreatDetectionPolicy -ResourceGroupName <resource group name> -ServerName <server name> -EmailAdmins $True\n```\n\nNote:\n- Enabling 'Microsoft Defender for SQL' from the Azure portal enables `Threat Detection`\n- Using Powershell command `Set-AzSqlServerThreatDetectionPolicy` enables `Microsoft Defender for SQL` for a SQL server",
+            "section": "SQL Server - Microsoft Defender for SQL",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.2.1",
+                "SQL Server - Microsoft Defender for SQL"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.2.1",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_2_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

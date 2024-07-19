@@ -35,7 +35,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.11.0**.
 This module has been tested against the **CrowdStrike Falcon Intelligence API Version v1**.
 
 ## Setup
@@ -46,6 +45,16 @@ This module has been tested against the **CrowdStrike Falcon Intelligence API Ve
 2. Client Secret
 3. Token url
 4. API Endpoint url
+5. Required scopes for each data stream :
+
+    | Data Stream   | Scope         |
+    | ------------- | ------------- |
+    | Intel         | read:intel    |
+    | IOC           | read:iocs     |
+
+Follow the [documentation](https://www.crowdstrike.com/blog/tech-center/consume-ioc-and-threat-feeds/) for enabling the scopes from the CrowdStrike console.
+
+User should either have `admin` role or `Detection Exception Manager` role to access IOCs endpoint. Follow the [documentation](https://falcon.crowdstrike.com/documentation/page/f20650df/default-roles-reference) for managing user roles and permissions.
 
 ### Enabling the integration in Elastic:
 

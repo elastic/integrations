@@ -84,7 +84,9 @@ After the integration is successfully configured, clicking on the Assets tab of 
 
 ## Troubleshooting
 
-If `host.ip` appears conflicted under the `log-*` or `metrics-*` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the indices of the `Audit`, `Log`, `Broker`, `Queue` and `Topic` data streams.
+If `host.ip` is shown conflicted under ``logs-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Audit`` and ``Log`` data stream's indices.
+
+If `host.ip` is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds-reindex.html) the ``Broker``, ``Queue`` and ``Topic`` data stream's indices.
 
 ## Logs
 
@@ -94,6 +96,10 @@ These logs are System logs of ActiveMQ.
 
 {{event "log"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "log"}}
 
 ### Audit Logs
@@ -101,6 +107,10 @@ These logs are System logs of ActiveMQ.
 In secured environments, it is required to log every user management action. ActiveMQ implements audit logging, which means that every management action made through JMX or Web Console management interface is logged and available for later inspection.
 
 {{event "audit"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "audit"}}
 
@@ -112,6 +122,10 @@ ActiveMQ brokers serve as implementations of the Java Messaging Service (JMS), a
 
 {{event "broker"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "broker"}}
 
 ### Queue Metrics
@@ -120,6 +134,10 @@ Queues are FIFO (first-in, first-out) pipelines of messages produced and consume
 
 {{event "queue"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "queue"}}
 
 ### Topic Metrics
@@ -127,5 +145,9 @@ Queues are FIFO (first-in, first-out) pipelines of messages produced and consume
 Topics are subscription-based message broadcast channels. When a producing application sends a message, multiple recipients who are 'subscribed' to that topic receive a broadcast of the message. Metrics show statistics of exchanged messages, consumers, producers and memory usage.
 
 {{event "topic"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "topic"}}

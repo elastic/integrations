@@ -25,7 +25,8 @@ processors:
       if: ctx.panw_cortex?.xdr?.reply?.result_count == 0
   - fingerprint:
       fields:
-        - panw_cortex.xdr.alert_count
+        - panw_cortex.xdr.creation_time
+        - panw_cortex.xdr.modification_time
         - panw_cortex.xdr.incident_id
       target_field: "_id"
       ignore_missing: true
@@ -48,9 +49,12 @@ processors:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.modification_time != null
   - set:
-      field: "@timestamp"
+      field: event.created
       copy_from: panw_cortex.xdr.creation_time
-      if: ctx.panw_cortex?.xdr?.creation_time != null
+  - set:
+      field: "@timestamp"
+      copy_from: panw_cortex.xdr.modification_time
+      if: ctx.panw_cortex?.xdr?.modification_time != null
   - set:
       field: event.severity
       value: 0
@@ -71,6 +75,10 @@ processors:
       field: event.severity
       value: 4
       if: ctx.panw_cortex?.xdr?.severity == "high"
+  - set:
+      field: event.severity
+      value: 5
+      if: ctx.panw_cortex?.xdr?.severity == "critical"    
   - rename:
       field: panw_cortex.xdr.incident_id
       target_field: event.id
@@ -123,7 +131,7 @@ processors:
             ctx.threat.technique.name.add(y);
           }
         }
-        for (mitre_technique in ctx.panw_cortex?.xdr?.mitre_techniques_ids_and_names) {
+        for (mitre_technique in ctx.panw_cortex.xdr.mitre_techniques_ids_and_names) {
           addTechnique(ctx, mitre_technique.splitOnToken(' - ')[0], mitre_technique.splitOnToken(' - ')[1]);
         }
   - script:
@@ -151,7 +159,7 @@ processors:
           ctx.threat.tactic.name.add(y);
           }
         }
-        for (mitre_tactic in ctx.panw_cortex?.xdr?.mitre_tactics_ids_and_names) {
+        for (mitre_tactic in ctx.panw_cortex.xdr.mitre_tactics_ids_and_names) {
             addTactic(ctx, mitre_tactic.splitOnToken(' - ')[0], mitre_tactic.splitOnToken(' - ')[1]);
         }
   - set:
@@ -202,7 +210,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags?.contains('preserve_original_event') != true
       ignore_failure: true
       ignore_missing: true
 on_failure:

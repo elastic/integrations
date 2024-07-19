@@ -4,14 +4,24 @@
 
 PHP-FPM (FastCGI Process Manager) is a web tool used to speed up the performance of a website. It is much faster than traditional CGI based methods and has the ability to handle tremendous loads simultaneously.
 
+Use the PHP-FPM integration to:
+
+- Collect metrics related to the pool and process.
+- Create visualizations to monitor, measure, and analyze usage trends and key data, deriving business insights.
+- Create alerts to reduce the MTTD and MTTR by referencing relevant logs when troubleshooting an issue.
+
 ## Data streams
 
 The PHP-FPM integration collects metrics data.
 
-Metrics give you insight into the statistics of the PHP-FPM. Metrics data streams collected by the PHP-FPM integration include [pool](https://www.php.net/manual/en/fpm.status.php#:~:text=Basic%20information%20%2D%20Always%20displayed%20on%20the%20status%20page) and [process](https://www.php.net/manual/en/fpm.status.php#:~:text=Per%2Dprocess%20information%20%2D%20only%20displayed%20in%20full%20output%20mode) so that the user can monitor and troubleshoot the performance of the PHP-FPM instances.
+Metrics provide insight into the statistics of the PHP-FPM. The Metrics data streams collected by the PHP-FPM integration include [pool](https://www.php.net/manual/en/fpm.status.php#:~:text=Basic%20information%20%2D%20Always%20displayed%20on%20the%20status%20page) and [process](https://www.php.net/manual/en/fpm.status.php#:~:text=Per%2Dprocess%20information%20%2D%20only%20displayed%20in%20full%20output%20mode) so that the user can monitor and troubleshoot the performance of the PHP-FPM instances.
+
+Data streams:
+- `pool`: Collects information related to the connection handling, queue metrics, process manager configuration, process activity and performance indicators.
+- `process`: Collects information related to the request metrics, the latest CPU and memory usage and the current running state.
 
 Note:
-- Users can monitor and see the metrics inside the ingested documents for PHP-FPM in the logs-* index pattern from `Discover`.
+- Users can monitor and view the metrics inside the ingested documents for PHP-FPM in the `logs-*` index pattern in `Discover`.
 
 ## Compatibility
 
@@ -29,116 +39,42 @@ Example host configuration: `http://localhost:8080`
 
 Status path configuration format: `/path`
 
-Example Status path configuration: `/status` 
+Example Status path configuration: `/status`
 
-### Troubleshooting
+## Setup
 
-If host.ip is shown conflicted under ``logs-*`` data view, then this issue can be solved by reindexing the ``Pool`` and ``Process`` data stream's indices.
-To reindex the data, the following steps must be performed.
+For step-by-step instructions on how to set up an integration, see the [Getting Started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-1. Stop the data stream by going to `Integrations -> PHP-FPM -> Integration policies` open the configuration of PHP-FPM and disable the `Collect PHP-FPM metrics` toggle to reindex metrics data stream and save the integration.
+## Validation
 
-2. Copy data into the temporary index and delete the existing data stream and index template by performing the following steps in the Dev tools.
+After successfully configuring the integration, click on the *Assets* tab of the PHP-FPM integration to display the available dashboards. Select the dashboard for your configured data stream, which should be populated with the required data.
 
-```
-POST _reindex
-{
-  "source": {
-    "index": "<index_name>"
-  },
-  "dest": {
-    "index": "temp_index"
-  }
-}  
-```
-Example:
-```
-POST _reindex
-{
-  "source": {
-    "index": "logs-php_fpm.pool-default"
-  },
-  "dest": {
-    "index": "temp_index"
-  }
-}
-```
+## Troubleshooting
 
-```
-DELETE /_data_stream/<data_stream>
-```
-Example:
-```
-DELETE /_data_stream/logs-php_fpm.pool-default
-```
-
-```
-DELETE _index_template/<index_template>
-```
-Example:
-```
-DELETE _index_template/logs-php_fpm.pool
-```
-3. Go to `Integrations -> PHP-FPM -> Settings` and click on `Reinstall PHP-FPM`.
-
-4. Copy data from temporary index to new index by performing the following steps in the Dev tools.
-
-```
-POST _reindex
-{
-  "conflicts": "proceed",
-  "source": {
-    "index": "temp_index"
-  },
-  "dest": {
-    "index": "<index_name>",
-    "op_type": "create"
-
-  }
-}
-```
-Example:
-```
-POST _reindex
-{
-  "conflicts": "proceed",
-  "source": {
-    "index": "temp_index"
-  },
-  "dest": {
-    "index": "logs-php_fpm.pool-default",
-    "op_type": "create"
-
-  }
-}
-```
-
-5. Verify data is reindexed completely.
-
-6. Start the data stream by going to the `Integrations -> PHP-FPM -> Integration policies` and open configuration of integration and enable the `Collect PHP-FPM metrics` toggle and save the integration.
-
-7. Delete temporary index by performing the following step in the Dev tools.
-
-```
-DELETE temp_index
-```
-
-More details about reindexing can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
+If `host.ip` appears conflicted under the ``logs-*`` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the indices of the ``Pool`` and ``Process`` data streams.
 
 ## Metrics reference
 
 ### Pool
 
-This is the `pool` data stream. `pool` data stream collects metrics related to the setup and contents of the FPM status page.
+The `pool` data stream collects metrics related to the setup and contents of the FPM status page.
 
 {{event "pool"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "pool"}}
 
 ### Process
 
-This is the `process` data stream. `process` data stream collects metrics like request duration, content length, process state, etc.
+The `process` data stream collects metrics related to the request duration, content length, process state, etc.
 
 {{event "process"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "process"}}

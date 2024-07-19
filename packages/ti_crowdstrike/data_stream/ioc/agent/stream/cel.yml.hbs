@@ -47,47 +47,71 @@ program: |
         :
           '"'
       ))
-  ).do_request().as(resp, bytes(resp.Body).decode_json().as(body, {
-    "events": body.resources.map(e, {
-      "message": e.encode_json(),
-    }),
-    "want_more": has(body.meta.pagination) && (int(state.offset) + body.resources.size()) < body.meta.pagination.total,
-    "offset": has(body.meta.pagination) && ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
-      int(state.offset) + int(body.resources.size()) 
+  ).do_request().as(resp,
+    resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body, {
+        "events": body.resources.map(e, {
+          "message": e.encode_json(),
+        }),
+        "want_more": has(body.meta.pagination) && (int(state.offset) + body.resources.size()) < body.meta.pagination.total,
+        "offset": has(body.meta.pagination) && ((int(state.offset) + body.resources.size()) < body.meta.pagination.total) ?
+          int(state.offset) + int(body.resources.size())
+        :
+          0,
+        "url": state.url,
+        "batch_size": state.batch_size,
+        "initial_interval": state.initial_interval,
+        "cursor": {
+          "last_timestamp": (
+            has(body.resources) && body.resources.size() > 0 ?
+              (
+                has(state.cursor) && has(state.cursor.last_timestamp) && body.resources.map(e, e.modified_on).max() < state.cursor.last_timestamp ?
+                  state.cursor.last_timestamp
+                :
+                  body.resources.map(e, e.modified_on).max()
+              )
+            :
+              (
+                has(state.cursor) && has(state.cursor.last_timestamp) ?
+                  state.cursor.last_timestamp
+                :
+                  null
+              )
+          ),
+          "first_timestamp": (
+            has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
+              (
+                state.want_more ?
+                  state.cursor.first_timestamp
+                :
+                  state.cursor.last_timestamp
+              )
+            :
+              (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+          ),
+        },
+      })
     :
-      0,
-    "url": state.url,
-    "batch_size": state.batch_size,
-    "cursor": {
-      "last_timestamp": (
-        has(body.resources) && body.resources.size() > 0 ?
-          (
-            has(state.cursor) && has(state.cursor.last_timestamp) && body.resources.map(e, e.modified_on).max() < state.cursor.last_timestamp ?
-              state.cursor.last_timestamp
-            :
-              body.resources.map(e, e.modified_on).max()
-          )
-        :
-          (
-            has(state.cursor) && has(state.cursor.last_timestamp) ?
-              state.cursor.last_timestamp
-            :
-              null
-          )
-      ),
-      "first_timestamp": (
-        has(state.cursor) && has(state.cursor.first_timestamp) && state.cursor.first_timestamp != null ?
-          (
-            state.want_more ? 
-              state.cursor.first_timestamp
-            :
-              state.cursor.last_timestamp
-          )
-        :
-          (now - duration(state.initial_interval)).format(time_layout.RFC3339)
-      ),
-    },
-  }))
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET:"+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+        "offset": 0,
+        "url": state.url,
+        "batch_size": state.batch_size,
+        "initial_interval": state.initial_interval,
+      }
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

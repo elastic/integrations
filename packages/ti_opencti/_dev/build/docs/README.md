@@ -15,7 +15,7 @@ Each event in the log data stream collected by the OpenCTI integration is an ind
 
 This integration requires Filebeat version 8.9.0, or later.
 
-It was initially developed using OpenCTI version 5.10.1 and updated for verison 5.12.X.
+It has been updated for OpenCTI version 5.12.24 and requires that version or later.
 
 ## Setup
 
@@ -32,6 +32,18 @@ The simplest authentication method to use is an API key (bearer token). You can 
 The `indicator` data stream includes indicators of the following types (`threat.indicator.type`): `artifact`, `autonomous-system`, `bank-account`, `cryptocurrency-wallet`, `cryptographic-key`, `directory`, `domain-name`, `email-addr`, `email-message`, `email-mime-part-type`, `hostname`, `ipv4-addr`, `ipv6-addr`, `mac-addr`, `media-content`, `mutex`, `network-traffic`, `payment-card`, `phone-number`, `process`, `software`, `file`, `text`, `url`, `user-account`, `user-agent`, `windows-registry-key`, `windows-registry-value-type`, `x509-certificate`, `unknown`.
 
 OpenCTI's data model closely follows the [STIX standard](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html). It supports complex indicators defined using STIX patterns or other languages, and each indicator can be related to one or more observables. In the [ECS threat fields](https://www.elastic.co/guide/en/ecs/current/ecs-threat.html) the focus is on atomic indicators. This integration fetches as much data as possible about indicators and their related observables, and populates relevant ECS fields wherever possible. It uses related observables rather than the indicator pattern as the data source for type-specific indicator fields.
+
+#### Expiration of inactive indicators
+
+The `opencti.indicator.invalid_or_revoked_from` field is set to the earliest time at which an indicator reaches its `valid_until` time or is marked as revoked. From that time the indicator should no longer be considered active.
+
+An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to provide a view of active indicators for end users. This transform creates destination indices that are accessible via the alias `logs-ti_opencti_latest.indicator`. When querying for active indicators or setting up indicator match rules, use that alias to avoid false positives from expired indicators.
+
+The dashboards show only active indicators, except the Ingestion dashboard, which shows data from both the source data stream and the indices of the latest indicators.
+
+Indicators that are never expired or revoked will not be removed from the indices of the latest indicators. If accumulation of indicators is a problem there, it can be managed upstream in OpenCTI, or by manually deleting indicators from those indices.
+
+To prevent unbounded growth of the source data stream `logs-ti_opencti.indicator-*`, it has an index lifecycle management (ILM) policy that deletes records 5 days after ingestion.
 
 #### Example
 
@@ -57,6 +69,7 @@ Timestamps are mapped as follows:
 | modified    | threat.indicator.modified_at  | Time of the indicator's last modification |
 | valid_from  | opencti.indicator.valid_from  | Time from which this indicator is considered a valid indicator of the behaviors it is related to or represents |
 | valid_until | opencti.indicator.valid_until | Time at which this indicator should no longer be considered a valid indicator of the behaviors it is related to or represents |
+| -           | opencti.indicator.invalid_or_revoked_from | The earliest time at which an indicator reaches its `valid_until` time or is marked as revoked |
 
 The table below lists all `opencti.*` fields.
 

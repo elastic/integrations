@@ -1,0 +1,109 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $agentId := generate "agent.id" }}
+{{- $agentName := generate "agent.name" }}
+{{- $agentEphemeralid := generate "agent.ephemeral_id" }}
+{{- $eventDuration := generate "EventDuration" }}
+{{- $sourceDomain := generate "source_domain" }}
+{{- $sourceIp := generate "source_ip" }}
+{{- $threadId := generate "thread_id" }}
+{{- $queryTime := generate "query_time" }}
+{{- $lockTime := generate "lock_time" }}
+{{- $rowsSent := generate "rows_sent" }}
+{{- $rowsExamined := generate "rows_examined" }}
+{{- $rowsAffected := generate "rows_affected" }}
+{{- $lastErrNo := generate "last_err_no" }}
+{{- $killed := generate "killed" }}
+{{- $bytesReceived := generate "bytes_received" }}
+{{- $bytesSent := generate "bytes_sent" }}
+{{- $readFirst := generate "read_first" }}
+{{- $readLast := generate "read_last" }}
+{{- $readKey := generate "read_key" }}
+{{- $readNext := generate "read_next" }}
+{{- $readPrev := generate "read_prev" }}
+{{- $readRnd := generate "read_rnd" }}
+{{- $readRndNext := generate "read_rnd_next" }}
+{{- $sortMergePasses := generate "sort_merge_passes" }}
+{{- $sortRangeCount := generate "sort_range_count" }}
+{{- $sortRows := generate "sort_rows" }}
+{{- $sortScanCount := generate "sort_scan_count" }}
+{{- $createdTmpDiskTables := generate "created_tmp_disk_tables" }}
+{{- $createdTmpTables := generate "created_tmp_tables" }}
+{{- $tmpTableSizes := generate "tmp_table_sizes" }}
+{{- $duration_start := generate "duration_start" }}
+{{- $duration_end := generate "duration_end" }}
+{{- $startTime := generate "timestamp" | date_modify (print $duration_start) }}
+{{- $endTime := generate "timestamp" | date_modify (print $duration_end) }}
+{{- $innodbTrxId := generate "innodb_trx_id" }}
+{{- $mergePasses := generate "merge_passes" }}
+{{- $innodbIoROps := generate "innodb_io_r_ops" }}
+{{- $innodbIoRBytes := generate "innodb_io_r_bytes" }}
+{{- $innodbIoRWait := generate "innodb_io_r_wait" }}
+{{- $innodbRecLockWait := generate "innodb_rec_lock_wait" }}
+{{- $innodbQueueWait := generate "innodb_queue_wait" }}
+{{- $innodbPagesDistinct := generate "innodb_pages_distinct" }}
+{{- $logSlowRateType := generate "log_slow_rate_type" }}
+{{- $logSlowRateLimit := generate "log_slow_rate_limit" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z07:00" }}",
+    "agent": {
+      "name": "{{ $agentName }}",
+      "id": "{{ $agentId }}",
+      "type": "filebeat",
+      "ephemeral_id": "{{ $agentEphemeralid }}",
+      "version": "8.5.1"
+  },
+  "log": {
+    "file": {
+      "path": "/tmp/service_logs/test-mariadb-10-2-12.log"
+    },
+    "offset": 0,
+    "flags": [
+      "multiline"
+    ]
+  },
+  "elastic_agent": {
+    "id": "{{ $agentId }}",
+    "version": "8.5.1",
+    "snapshot": false
+  },
+  "tags": [
+    "mysql-slowlog"
+  ],
+  "input": {
+    "type": "log"
+  },
+  "data_stream": {
+    "namespace": "default",
+    "type": "logs",
+    "dataset": "mysql.slowlog"
+  },
+  "host": {
+    "hostname": "docker-fleet-agent",
+    "os": {
+      "kernel": "3.10.0-1160.102.1.el7.x86_64",
+      "codename": "focal",
+      "name": "Ubuntu",
+      "type": "linux",
+      "family": "debian",
+      "version": "20.04.6 LTS (Focal Fossa)",
+      "platform": "ubuntu"
+    },
+    "containerized": true,
+    "ip": [
+      "172.21.0.7"
+    ],
+    "name": "docker-fleet-agent",
+    "id": "919d5098b9d34b348dd441912f7ad638",
+    "mac": [
+      "02-42-AC-15-00-07"
+    ],
+    "architecture": "x86_64"
+  },
+  "message": "# User@Host: root[root] @ {{ $sourceDomain }} [{{ $sourceIp }}]  Id:    {{ $threadId }}\n# Query_time: {{ $queryTime }}  Lock_time: {{ $lockTime }} Rows_sent: {{ $rowsSent }}  Rows_examined: {{ $rowsExamined }} Rows_affected: {{ $rowsAffected }} Errno: {{ $lastErrNo }} Killed: {{ $killed }} Bytes_received: {{ $bytesReceived }} Bytes_sent: {{ $bytesSent }} Read_first: {{ $readFirst }} Read_last: {{ $readLast }} Read_key: {{ $readKey }} Read_next: {{ $readNext }} Read_prev: {{ $readPrev }} Read_rnd: {{ $readRnd }} Read_rnd_next: {{ $readRndNext }} Sort_merge_passes: {{ $sortMergePasses }} Sort_range_count: {{ $sortRangeCount }} Sort_rows: {{ $sortRows }} Sort_scan_count: {{ $sortScanCount }} Created_tmp_disk_tables: {{ $createdTmpDiskTables }} Created_tmp_tables: {{ $createdTmpTables }} Tmp_table_sizes: {{ $tmpTableSizes }} Start: {{ $startTime.Format "2006-01-02T15:04:05.000000Z" }} End: {{ $endTime.Format "2006-01-02T15:04:05.000000Z" }} InnoDB_trx_id: {{ $innodbTrxId }} QC_Hit: Yes Full_scan: No Full_join: Yes Tmp_table: Yes Tmp_table_on_disk: No Filesort: Yes Filesort_on_disk: No Merge_passes: {{ $mergePasses }} Priority_queue: No InnoDB_IO_r_ops: {{ $innodbIoROps }} InnoDB_IO_r_bytes: {{ $innodbIoRBytes }} InnoDB_IO_r_wait: {{ $innodbIoRWait }} InnoDB_rec_lock_wait: {{ $innodbRecLockWait }} InnoDB_queue_wait: {{ $innodbQueueWait }} InnoDB_pages_distinct: {{ $innodbPagesDistinct }} Log_slow_rate_type: {{ $logSlowRateType }} Log_slow_rate_limit: {{ $logSlowRateLimit }}\nuse employees;\nSET timestamp={{ $timestamp.Unix }};\nSELECT last_name, MAX(salary) AS salary FROM employees\n    INNER JOIN salaries ON employees.emp_no = salaries.emp_no\n    GROUP BY last_name\n    ORDER BY salary DESC\n    LIMIT 10;",
+  "event": {
+    "duration": {{ $eventDuration }},
+    "agent_id_status": "verified",
+    "timezone": "{{ $timestamp.Format "-07:00" }}",
+    "dataset": "mysql.slowlog"
+  }
+}

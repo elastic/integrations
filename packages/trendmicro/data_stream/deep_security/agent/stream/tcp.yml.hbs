@@ -1,10 +1,16 @@
-host: "{{tcp_host}}:{{tcp_port}}"
+host: "{{listen_address}}:{{listen_port}}"
+{{#if tcp_options}}
+{{tcp_options}}
+{{/if}}
 {{#if ssl}}
 ssl: {{ssl}}
 {{/if}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
 {{/if}}
 {{#each tags as |tag|}}
   - {{tag}}
@@ -18,8 +24,11 @@ processors:
       - {from: "message", to: "event.original"}
 - decode_cef:
     field: event.original
-{{#if decode_trendmicro_timezone}}
-    timezone: {{ decode_trendmicro_timezone }}
+{{#if tz_offset}}
+fields_under_root: true
+fields:
+  _conf:
+    tz_offset: {{tz_offset}}
 {{/if}}
 {{#if processors}}
 {{processors}}

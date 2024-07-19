@@ -1,7 +1,7 @@
-format_version: "3.0.0"
+format_version: "3.0.2"
 name: cloudflare_logpush
 title: Cloudflare Logpush
-version: "1.17.4"
+version: "1.21.0"
 description: Collect and parse logs from Cloudflare API with Elastic Agent.
 type: integration
 categories:
@@ -10,7 +10,7 @@ categories:
   - cdn_security
 conditions:
   kibana:
-    version: ^8.7.1
+    version: "^8.13.0"
 screenshots:
   - src: /img/cloudflare_logpush-overview1.png
     title: Cloudflare Logpush - Zero Trust Overview
@@ -60,12 +60,14 @@ policy_templates:
             description: The header to check for a specific value specified by `secret.value`.
             required: false
             show_user: false
+            secret: false
           - name: secret_value
             type: password
             title: Secret Value
             description: The secret stored in the header name specified by `secret.header`.
             required: false
             show_user: false
+            secret: true
           - name: ssl
             type: yaml
             title: SSL Configuration
@@ -137,6 +139,7 @@ policy_templates:
             required: false
             show_user: true
             description: First part of access key.
+            secret: true
           - name: secret_access_key
             type: password
             title: Secret Access Key
@@ -144,13 +147,15 @@ policy_templates:
             required: false
             show_user: true
             description: Second part of access key.
+            secret: true
           - name: session_token
-            type: text
+            type: password
             title: Session Token
             multi: false
             required: false
             show_user: true
             description: Required when using temporary security credentials.
+            secret: true
           - name: shared_credential_file
             type: text
             title: Shared Credential File
@@ -222,6 +227,7 @@ policy_templates:
             multi: false
             required: false
             show_user: true
+            secret: true
           - name: service_account_file
             type: text
             title: "JSON Credentials file path"

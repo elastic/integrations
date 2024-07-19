@@ -1,12 +1,37 @@
 # Apache Spark Integration
 
-The Apache Spark integration collects and parses data using the Jolokia Input.
+## Overview
+
+[Apache Spark](https://spark.apache.org) is an open-source, distributed computing system that provides a fast and general-purpose cluster-computing framework. It offers in-memory data processing capabilities, which significantly enhances the performance of big data analytics applications. Spark provides support for a variety of programming languages including Scala, Python, Java, and R, and comes with built-in modules for SQL, streaming, machine learning, and graph processing. This makes it a versatile tool for a wide range of data processing and analysis tasks.
+
+Use the Apache Spark integration to:
+
+- Collect metrics related to the application, driver, executor and node.
+- Create visualizations to monitor, measure, and analyze usage trends and key data, deriving business insights.
+- Create alerts to reduce the MTTD and MTTR by referencing relevant logs when troubleshooting an issue.
+
+## Data streams
+
+The Apache Spark integration collects metrics data.
+
+Metrics provide insight into the statistics of Apache Spark. The `Metric` data streams collected by the Apache Spark integration include `application`, `driver`, `executor`, and `node`, allowing users to monitor and troubleshoot the performance of their Apache Spark instance.
+
+Data streams:
+- `application`: Collects information related to the number of cores used, application name, runtime in milliseconds and current status of the application.
+- `driver`: Collects information related to the driver details, job durations, task execution, memory usage, executor status and JVM metrics.
+- `executor`: Collects information related to the operations, memory usage, garbage collection, file handling, and threadpool activity.
+- `node`: Collects information related to the application count, waiting applications, worker metrics, executor count, core usage and memory usage.
+
+Note:
+- Users can monitor and view the metrics inside the ingested documents for Apache Spark under the `metrics-*` index pattern in `Discover`.
 
 ## Compatibility
 
-This integration has been tested against `Apache Spark version 3.5.0`
+This integration has been tested against `Apache Spark version 3.5.0`.
 
 ## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
 In order to ingest data from Apache Spark, you must know the full hosts for the Main and Worker nodes.
 
@@ -63,15 +88,23 @@ Restart Spark master.
 
 Follow the same set of steps for Spark Worker, Driver and Executor.
 
-### Troubleshooting
+## Setup
 
-If host.ip is shown conflicted under ``metrics-*`` data view, then this issue can be solved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/use-a-data-stream.html#reindex-with-a-data-stream) the ``Application``, ``Driver``, ``Executor`` and ``Node`` data stream's indices.
+For step-by-step instructions on how to set up an integration, see the [Getting Started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Validation
+
+After the integration is successfully configured, click on the *Assets* tab of the Apache Spark Integration to display the available dashboards. Select the dashboard for your configured data stream, which should be populated with the required data.
+
+## Troubleshooting
+
+If `host.ip` appears conflicted under the ``metrics-*`` data view, this issue can be resolved by [reindexing](https://www.elastic.co/guide/en/elasticsearch/reference/current/tsds-reindex.html) the ``Application``, ``Driver``, ``Executor`` and ``Node`` data stream.
 
 ## Metrics
 
 ### Application
 
-This is the `application` data stream.
+The `application` data stream collects metrics related to the number of cores used, application name, runtime in milliseconds, and current status of the application.
 
 An example event for `application` looks as following:
 
@@ -98,7 +131,7 @@ An example event for `application` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a6bdbb4a-4bac-4243-83cb-dba157f24987",
@@ -124,7 +157,9 @@ An example event for `application` looks as following:
         "ip": [
             "172.20.0.7"
         ],
-        "mac": "02-42-AC-14-00-07",
+        "mac": [
+            "02-42-C0-A8-F5-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -141,11 +176,15 @@ An example event for `application` looks as following:
         "period": 60000
     },
     "service": {
-        "address": "http://apache-spark-main:7777/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://apache-spark-main:7777/jolokia/%3FignoreErrors=true&canonicalNaming=false",
         "type": "jolokia"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -167,22 +206,13 @@ An example event for `application` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| tags | List of keywords used to tag each event. | keyword |  |
 
 
 ### Driver
 
-This is the `driver` data stream.
+The `driver` data stream collects metrics related to the driver details, job durations, task execution, memory usage, executor status, and JVM metrics.
 
 An example event for `driver` looks as following:
 
@@ -213,7 +243,7 @@ An example event for `driver` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a76f5e50-2a98-4b96-80f6-026ad822e3e8",
@@ -239,7 +269,9 @@ An example event for `driver` looks as following:
         "ip": [
             "172.26.0.7"
         ],
-        "mac": "02-42-AC-1A-00-07",
+        "mac": [
+            "02-42-AC-1A-00-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -256,11 +288,15 @@ An example event for `driver` looks as following:
         "period": 60000
     },
     "service": {
-        "address": "http://apache-spark-main:7779/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://apache-spark-main:7779/jolokia/%3FignoreErrors=true&canonicalNaming=false",
         "type": "jolokia"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -349,22 +385,13 @@ An example event for `driver` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| tags | List of keywords used to tag each event. | keyword |  |
 
 
 ### Executor
 
-This is the `executor` data stream.
+The `executor` data stream collects metrics related to the operations, memory usage, garbage collection, file handling, and threadpool activity.
 
 An example event for `executor` looks as following:
 
@@ -394,7 +421,7 @@ An example event for `executor` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a6bdbb4a-4bac-4243-83cb-dba157f24987",
@@ -420,7 +447,9 @@ An example event for `executor` looks as following:
         "ip": [
             "172.20.0.7"
         ],
-        "mac": "02-42-AC-14-00-07",
+        "mac": [
+            "02-42-AC-14-00-07"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -437,11 +466,15 @@ An example event for `executor` looks as following:
         "period": 60000
     },
     "service": {
-        "address": "http://apache-spark-main:7780/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://apache-spark-main:7780/jolokia/%3FignoreErrors=true&canonicalNaming=false",
         "type": "jolokia"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -528,22 +561,13 @@ An example event for `executor` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| tags | List of keywords used to tag each event. | keyword |  |
 
 
 ### Node
 
-This is the `node` data stream.
+The `node` data stream collects metrics related to the application count, waiting applications, worker metrics, executor count, core usage, and memory usage.
 
 An example event for `node` looks as following:
 
@@ -577,7 +601,7 @@ An example event for `node` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f051059f-86be-46d5-896d-ff1b2cdab179",
@@ -603,7 +627,7 @@ An example event for `node` looks as following:
             "192.168.32.5"
         ],
         "mac": [
-            "02:42:c0:a8:20:05"
+            "02-42-AC-14-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -621,11 +645,15 @@ An example event for `node` looks as following:
         "period": 60000
     },
     "service": {
-        "address": "http://apache-spark-main:7777/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://apache-spark-main:7777/jolokia/%3FignoreErrors=true&canonicalNaming=false",
         "type": "jolokia"
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -651,15 +679,6 @@ An example event for `node` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| tags | List of keywords used to tag each event. | keyword |  |
 

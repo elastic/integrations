@@ -22,14 +22,14 @@ processors:
 
   The kubernetes provider supports[^1] pods annotations, making it possible to add
   them to the event using the `include_annotations` configuration option.
-  
+
   However, adding annotations to the event is disabled by default, and it is
   not possible to enable it on Fleet-managed agents.
 
   The following processors are a workaround to add the annotations to the event
   without using the `include_annotations` configuration option.
 
-  
+
   [^1]: https://github.com/elastic/elastic-agent/blob/37ec2bb7ee1d2cc6c0fccf2f0cd0a44eb3d61efd/internal/pkg/composable/providers/kubernetes/pod.go#L311-L315
 }}
 - add_fields:
@@ -37,6 +37,7 @@ processors:
     fields:
       annotations.elastic_co/dataset: ${kubernetes.annotations.elastic.co/dataset|""}
       annotations.elastic_co/namespace: ${kubernetes.annotations.elastic.co/namespace|""}
+      annotations.elastic_co/preserve_original_event: ${kubernetes.annotations.elastic.co/preserve_original_event|""}
 - drop_fields:
     fields:
       - kubernetes.annotations.elastic_co/dataset
@@ -51,7 +52,23 @@ processors:
       equals:
         kubernetes.annotations.elastic_co/namespace: ""
     ignore_missing: true
-{{#if processors}}      
+- drop_fields:
+    fields:
+      - kubernetes.annotations.elastic_co/preserve_original_event
+    when:
+      equals:
+        kubernetes.annotations.elastic_co/preserve_original_event: ""
+    ignore_missing: true
+- add_tags:
+    tags: ["preserve_original_event"]
+    when:
+      and:
+        - has_fields:
+            - kubernetes.annotations.elastic_co/preserve_original_event
+        - regexp:
+            kubernetes.annotations.elastic_co/preserve_original_event: "^(?i)true$"
+
+{{#if processors}}
 {{processors}}
 {{/if}}
 

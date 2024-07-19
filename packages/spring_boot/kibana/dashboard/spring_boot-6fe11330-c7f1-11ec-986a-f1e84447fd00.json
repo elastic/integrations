@@ -1,10 +1,32 @@
 {
     "attributes": {
         "description": "Audit events of the Spring Boot system.",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "spring_boot.audit_events"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "spring_boot.audit_events"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -14,11 +36,192 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-41dbf555-e40a-45dc-83d7-18b18263e8de",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "41dbf555-e40a-45dc-83d7-18b18263e8de": {
+                                            "columnOrder": [
+                                                "3624c7a7-411d-4138-9fdf-8b8a0694d285",
+                                                "769bee1d-5cdf-49f1-9fa3-53ce8f2388c8",
+                                                "a84b9b2d-8712-4975-a242-7996161a71da",
+                                                "5209c821-5ae2-40d6-b2c5-321b76c96ebc",
+                                                "52932019-4385-469b-9f4d-6becd3a912f6",
+                                                "5c3ff6ac-16ca-4b9b-912d-a47e7c7d7081"
+                                            ],
+                                            "columns": {
+                                                "3624c7a7-411d-4138-9fdf-8b8a0694d285": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 100 values of spring_boot.audit_events.document_id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 100
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "spring_boot.audit_events.document_id"
+                                                },
+                                                "5209c821-5ae2-40d6-b2c5-321b76c96ebc": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": false,
+                                                    "label": "Host",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "spring_boot.audit_events.data.remote_address"
+                                                },
+                                                "52932019-4385-469b-9f4d-6becd3a912f6": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": false,
+                                                    "label": "Session ID",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "spring_boot.audit_events.data.session_id"
+                                                },
+                                                "5c3ff6ac-16ca-4b9b-912d-a47e7c7d7081": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": false,
+                                                    "label": "Authentication type",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "spring_boot.audit_events.type"
+                                                },
+                                                "769bee1d-5cdf-49f1-9fa3-53ce8f2388c8": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "includeEmptyRows": false,
+                                                        "interval": "1s"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "a84b9b2d-8712-4975-a242-7996161a71da": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": false,
+                                                    "label": "Principal",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "showArrayValues": true,
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "spring_boot.audit_events.principal"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "a84b9b2d-8712-4975-a242-7996161a71da",
+                                        "hidden": false,
+                                        "isTransposed": false,
+                                        "width": 166
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "5209c821-5ae2-40d6-b2c5-321b76c96ebc",
+                                        "isTransposed": false,
+                                        "width": 183.41666666666669
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "5c3ff6ac-16ca-4b9b-912d-a47e7c7d7081",
+                                        "isTransposed": false,
+                                        "width": 296.41666666666674
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "3624c7a7-411d-4138-9fdf-8b8a0694d285",
+                                        "hidden": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "769bee1d-5cdf-49f1-9fa3-53ce8f2388c8",
+                                        "isTransposed": false,
+                                        "width": 128.16666666666652
+                                    },
+                                    {
+                                        "alignment": "center",
+                                        "columnId": "52932019-4385-469b-9f4d-6becd3a912f6",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "fitRowToContent": true,
+                                "layerId": "41dbf555-e40a-45dc-83d7-18b18263e8de",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "auto",
+                                "rowHeightLines": 2,
+                                "sorting": {
+                                    "columnId": "769bee1d-5cdf-49f1-9fa3-53ce8f2388c8",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "Audit Events [Logs Spring Boot]",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
@@ -30,12 +233,107 @@
                     "y": 0
                 },
                 "panelIndex": "e3c09d50-2585-4fdf-90bd-1b1a837edf6a",
-                "panelRefName": "panel_e3c09d50-2585-4fdf-90bd-1b1a837edf6a",
-                "type": "lens",
-                "version": "8.1.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-73272b0b-e1d4-4a44-9904-adaad0d24159",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "73272b0b-e1d4-4a44-9904-adaad0d24159": {
+                                            "columnOrder": [
+                                                "2fe1f301-207a-48ff-aa1c-13aaed31b9db",
+                                                "1b8c4683-1d76-49cc-95c8-691612657847"
+                                            ],
+                                            "columns": {
+                                                "1b8c4683-1d76-49cc-95c8-691612657847": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "2fe1f301-207a-48ff-aa1c-13aaed31b9db": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Authentication Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "1b8c4683-1d76-49cc-95c8-691612657847",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "spring_boot.audit_events.type"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "layerId": "73272b0b-e1d4-4a44-9904-adaad0d24159",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendMaxLines": 1,
+                                        "legendPosition": "bottom",
+                                        "legendSize": "auto",
+                                        "metrics": [
+                                            "1b8c4683-1d76-49cc-95c8-691612657847"
+                                        ],
+                                        "nestedLegend": true,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "2fe1f301-207a-48ff-aa1c-13aaed31b9db"
+                                        ],
+                                        "truncateLegend": true
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "Authentication type [Logs Spring Boot]",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
@@ -47,31 +345,34 @@
                     "y": 0
                 },
                 "panelIndex": "33cab98f-7c8f-4d79-ad28-f2a0e7113b46",
-                "panelRefName": "panel_33cab98f-7c8f-4d79-ad28-f2a0e7113b46",
-                "type": "lens",
-                "version": "8.1.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Spring Boot] Audit Events",
         "version": 1
     },
-    "coreMigrationVersion": "8.2.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-19T06:18:21.126Z",
     "id": "spring_boot-6fe11330-c7f1-11ec-986a-f1e84447fd00",
-    "migrationVersion": {
-        "dashboard": "8.2.0"
-    },
+    "managed": false,
     "references": [
         {
-            "id": "spring_boot-a41702e0-c7f1-11ec-986a-f1e84447fd00",
-            "name": "e3c09d50-2585-4fdf-90bd-1b1a837edf6a:panel_e3c09d50-2585-4fdf-90bd-1b1a837edf6a",
-            "type": "lens"
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
         },
         {
-            "id": "spring_boot-aa0c95c0-c7f1-11ec-986a-f1e84447fd00",
-            "name": "33cab98f-7c8f-4d79-ad28-f2a0e7113b46:panel_33cab98f-7c8f-4d79-ad28-f2a0e7113b46",
-            "type": "lens"
+            "id": "logs-*",
+            "name": "e3c09d50-2585-4fdf-90bd-1b1a837edf6a:indexpattern-datasource-layer-41dbf555-e40a-45dc-83d7-18b18263e8de",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "33cab98f-7c8f-4d79-ad28-f2a0e7113b46:indexpattern-datasource-layer-73272b0b-e1d4-4a44-9904-adaad0d24159",
+            "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

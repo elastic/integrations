@@ -1,0 +1,643 @@
+---
+description: Pipeline for processing event logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - set:
+      field: event.kind
+      tag: set_event_kind_alert
+      value: alert
+      if: ctx.cef?.name != "Normal"
+  - set:
+      field: event.kind
+      tag: set_event_kind_event
+      value: event
+      if: ctx.cef?.name == "Normal"
+  - set:
+      field: event.category
+      tag: set_event_category_web
+      value: [web]
+  - set:
+      field: event.type
+      tag: set_event_type_info
+      value: [info]
+  - fingerprint:
+      fields:
+        - file.inode
+        - event.start
+        - event.end
+      tag: fingerprint_processor
+      target_field: '_id'
+      ignore_missing: true
+  - rename:
+      field: cef.device.event_class_id
+      tag: rename_device_event_class_id
+      target_field: imperva_cloud_waf.event.device.event_class_id
+      ignore_missing: true
+  - rename:
+      field: cef.device.product
+      tag: rename_device_product
+      target_field: imperva_cloud_waf.event.device.product
+      ignore_missing: true
+  - rename:
+      field: cef.device.vendor
+      tag: rename_device_vendor
+      target_field: imperva_cloud_waf.event.device.vendor
+      ignore_missing: true
+  - rename:
+      field: cef.device.version
+      tag: rename_device_version
+      target_field: imperva_cloud_waf.event.device.version
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceAction
+      tag: rename_extensions_deviceAction
+      target_field: imperva_cloud_waf.event.extensions.action
+      ignore_missing: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - gsub:
+      field: event.action
+      pattern: '_'
+      replacement: '-'
+      tag: gsub_event_action
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: event.action
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - json:
+      field: cef.extensions.additionalReqHeaders
+      tag: json_extensions_additionalReqHeaders
+      target_field: imperva_cloud_waf.event.extensions.additional.req_headers
+      if: ctx.cef?.extensions?.additionalReqHeaders != null && ctx.cef.extensions.additionalReqHeaders != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - json:
+      field: cef.extensions.additionalResHeaders
+      tag: json_extensions_additionalResHeaders
+      target_field: imperva_cloud_waf.event.extensions.additional.res_headers
+      if: ctx.cef?.extensions?.additionalResHeaders != null && ctx.cef.extensions.additionalResHeaders != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.applicationProtocol
+      tag: rename_extensions_applicationProtocol
+      target_field: imperva_cloud_waf.event.extensions.application_protocol
+      ignore_missing: true
+  - lowercase:
+      field: network.application
+      tag: lowercase_network_application
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.bytesIn
+      tag: convert_extensions_bytesIn_to_long
+      target_field: imperva_cloud_waf.event.extensions.bytes_in
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.ccode
+      tag: rename_extensions_ccode
+      target_field: imperva_cloud_waf.event.extensions.ccode
+      ignore_missing: true
+  - set:
+      field: source.geo.country_iso_code
+      tag: set_source_geo_country_iso_code_from_event_extensions_ccode
+      copy_from: imperva_cloud_waf.event.extensions.ccode
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.cicode
+      tag: rename_extensions_cicode
+      target_field: imperva_cloud_waf.event.extensions.cicode
+      ignore_missing: true
+  - json:
+      field: cef.extensions.cs10
+      tag: json_extensions_cs10
+      target_field: imperva_cloud_waf.event.extensions.cs10
+      if: ctx.cef?.extensions?.cs10 != null && ctx.cef.extensions.cs10 != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.cs10Label
+      tag: rename_extensions_cs10Label
+      target_field: imperva_cloud_waf.event.extensions.cs10Label
+      ignore_missing: true
+  - json:
+      field: cef.extensions.cs11
+      tag: json_extensions_cs11
+      target_field: imperva_cloud_waf.event.extensions.cs11
+      if: ctx.cef?.extensions?.cs11 != null && ctx.cef.extensions.cs11 != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.cs11Label
+      tag: rename_extensions_cs11Label
+      target_field: imperva_cloud_waf.event.extensions.cs11Label
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.cs7
+      tag: convert_extensions_cs7_to_double
+      target_field: imperva_cloud_waf.event.extensions.cs7
+      type: double
+      ignore_missing: true
+      if: ctx.cef?.extensions?.cs7 != null && ctx.cef.extensions.cs7 != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.cs7Label
+      tag: rename_extensions_cs7Label
+      target_field: imperva_cloud_waf.event.extensions.cs7Label
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.cs8
+      tag: convert_extensions_cs8_to_double
+      target_field: imperva_cloud_waf.event.extensions.cs8
+      type: double
+      ignore_missing: true
+      if: ctx.cef?.extensions?.cs8 != null && ctx.cef.extensions.cs8 != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.cs8Label
+      tag: rename_extensions_cs8Label
+      target_field: imperva_cloud_waf.event.extensions.cs8Label
+      ignore_missing: true
+  - set:
+      field: source.geo.location.lat
+      tag: set_source_geo_location_lat_from_event_extensions_cs7
+      copy_from: imperva_cloud_waf.event.extensions.cs7
+      ignore_empty_value: true
+  - set:
+      field: source.geo.location.lon
+      tag: set_source_geo_location_lon_from_event_extensions_cs8
+      copy_from: imperva_cloud_waf.event.extensions.cs8
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.cs9
+      tag: rename_extensions_cs9
+      target_field: imperva_cloud_waf.event.extensions.cs9
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_event_extensions_cs9
+      copy_from: imperva_cloud_waf.event.extensions.cs9
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.cs9Label
+      tag: rename_extensions_cs9Label
+      target_field: imperva_cloud_waf.event.extensions.cs9Label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.Customer
+      tag: rename_extensions_Customer
+      target_field: imperva_cloud_waf.event.extensions.customer
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.destinationProcessName
+      tag: rename_extensions_destinationProcessName
+      target_field: imperva_cloud_waf.event.extensions.destination_process_name
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomNumber1
+      tag: rename_extensions_deviceCustomNumber1
+      target_field: imperva_cloud_waf.event.extensions.device.custom_number1
+      ignore_missing: true
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code_from_event_extensions_device_custom_number1
+      copy_from: imperva_cloud_waf.event.extensions.device.custom_number1
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.deviceCustomString1
+      tag: rename_extensions_deviceCustomString1
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string1
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString1Label
+      tag: rename_extensions_deviceCustomString1Label
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string1_label
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.deviceCustomString2
+      tag: convert_extensions_deviceCustomString2_to_boolean
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string2
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.deviceCustomString2Label
+      tag: rename_extensions_deviceCustomString2Label
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string2_label
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.deviceCustomString3
+      tag: convert_extensions_deviceCustomString3_to_boolean
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string3
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.deviceCustomString3Label
+      tag: rename_extensions_deviceCustomString3Label
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string3_label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString4
+      tag: rename_extensions_deviceCustomString4
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string4
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString4Label
+      tag: rename_extensions_deviceCustomString4Label
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string4_label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString5
+      tag: rename_extensions_deviceCustomString5
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string5
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString5Label
+      tag: rename_extensions_deviceCustomString5Label
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string5_label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString6
+      tag: rename_extensions_deviceCustomString6
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string6
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString6Label
+      tag: rename_extensions_deviceCustomString6Label
+      target_field: imperva_cloud_waf.event.extensions.device.custom_string6_label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceExternalId
+      tag: rename_extensions_deviceExternalId
+      target_field: imperva_cloud_waf.event.extensions.device.externalId
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceFacility
+      tag: rename_extensions_deviceFacility
+      target_field: imperva_cloud_waf.event.extensions.device.facility
+      ignore_missing: true
+  - date:
+      field: cef.extensions.endTime
+      tag: date_extensions_endTime
+      target_field: imperva_cloud_waf.event.extensions.end_time
+      formats:
+        - ISO8601
+      if: ctx.cef?.extensions?.endTime != null && ctx.cef.extensions.endTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.filePermission
+      tag: rename_extensions_filePermission
+      target_field: imperva_cloud_waf.event.extensions.file.permission
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.fileType
+      tag: rename_extensions_fileType
+      target_field: imperva_cloud_waf.event.extensions.file.type
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.fileId
+      tag: rename_extensions_fileId
+      target_field: imperva_cloud_waf.event.extensions.file_id
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.postbody
+      tag: rename_extensions_postbody
+      target_field: imperva_cloud_waf.event.extensions.postbody
+      ignore_missing: true
+  - set:
+      field: http.request.body.content
+      tag: set_http_request_body_content_from_event_extensions_postbody
+      copy_from: imperva_cloud_waf.event.extensions.postbody
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.qstr
+      tag: rename_extensions_qstr
+      target_field: imperva_cloud_waf.event.extensions.qstr
+      ignore_missing: true
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_url_original
+      if: ctx.url?.original != null
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - user_agent:
+      field: user_agent.original
+      tag: user_agent_original
+      if: ctx.user_agent?.original != null
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: url.query
+      tag: set_url_query_from_event_extensions_qstr
+      copy_from: imperva_cloud_waf.event.extensions.qstr
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.ref
+      tag: rename_extensions_ref
+      target_field: imperva_cloud_waf.event.extensions.ref
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.requestClientApplication
+      tag: rename_extensions_requestClientApplication
+      target_field: imperva_cloud_waf.event.extensions.request.client_application
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.requestMethod
+      tag: rename_extensions_requestMethod
+      target_field: imperva_cloud_waf.event.extensions.request.method
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.requestUrl
+      tag: rename_extensions_requestUrl
+      target_field: imperva_cloud_waf.event.extensions.request.url
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.sip
+      tag: convert_extensions_sip_to_ip
+      target_field: imperva_cloud_waf.event.extensions.sip
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.sip != null && ctx.cef.extensions.sip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      tag: set_destination_ip_from_event_extensions_sip
+      copy_from: imperva_cloud_waf.event.extensions.sip
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_destination_ip_into_related_ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - rename:
+      field: cef.extensions.siteid
+      tag: rename_extensions_siteid
+      target_field: imperva_cloud_waf.event.extensions.site.id
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.siteTag
+      tag: rename_extensions_siteTag
+      target_field: imperva_cloud_waf.event.extensions.site.tag
+      ignore_missing: true
+  - convert:
+      field: cef.extensions.sourceAddress
+      tag: convert_extensions_sourceAddress_to_ip
+      target_field: imperva_cloud_waf.event.extensions.source.address
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.sourceAddress != null && ctx.cef.extensions.sourceAddress != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_event_extensions_source_address_into_related_ip
+      value: '{{{imperva_cloud_waf.event.extensions.source.address}}}'
+      allow_duplicates: false
+      if: ctx.imperva_cloud_waf?.event?.extensions?.source?.address != null
+  - convert:
+      field: cef.extensions.sourcePort
+      tag: convert_extensions_sourcePort_to_long
+      target_field: imperva_cloud_waf.event.extensions.source.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: source.port
+      tag: remove_source_port
+      ignore_missing: true
+      if: ctx.imperva_cloud_waf?.event?.extensions?.source?.port != null
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_event_extensions_source_port
+      copy_from: imperva_cloud_waf.event.extensions.source.port
+      ignore_empty_value: true
+  - convert:
+      field: cef.extensions.cpt
+      tag: convert_extensions_cpt_to_long
+      target_field: imperva_cloud_waf.event.extensions.cpt
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_event_extensions_cpt
+      copy_from: imperva_cloud_waf.event.extensions.cpt
+      ignore_empty_value: true
+  - rename:
+      field: cef.extensions.sourceServiceName
+      tag: rename_extensions_sourceServiceName
+      target_field: imperva_cloud_waf.event.extensions.source.service_name
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.sourceUserId
+      tag: rename_extensions_sourceUserId
+      target_field: imperva_cloud_waf.event.extensions.source.user_id
+      ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_event_extensions_source_user_id_into_related_user
+      value: '{{{imperva_cloud_waf.event.extensions.source.user_id}}}'
+      allow_duplicates: false
+      if: ctx.imperva_cloud_waf?.event?.extensions?.source?.user_id != null
+  - date:
+      field: cef.extensions.startTime
+      tag: date_extensions_startTime
+      target_field: imperva_cloud_waf.event.extensions.start_time
+      formats:
+        - ISO8601
+      if: ctx.cef?.extensions?.startTime != null && ctx.cef.extensions.startTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.extensions.tag
+      tag: rename_extensions_tag
+      target_field: imperva_cloud_waf.event.extensions.tag
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.ver
+      tag: rename_extensions_ver
+      target_field: imperva_cloud_waf.event.extensions.ver
+      ignore_missing: true
+  - grok:
+      field: imperva_cloud_waf.event.extensions.ver
+      tag: grok_to_extract_tls_cipher_and_version
+      ignore_missing: true
+      patterns:
+      - ^(TLSv%{GREEDYDATA:tls.version} %{GREEDYDATA:tls.cipher})$
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: cef.extensions.xff
+      tag: convert_extensions_xff_to_ip
+      target_field: imperva_cloud_waf.event.extensions.xff
+      type: ip
+      ignore_missing: true
+      if: ctx.cef?.extensions?.xff != null && ctx.cef.extensions.xff != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: network.forwarded_ip
+      tag: set_network_forwarded_ip_from_event_extensions_xff
+      copy_from: imperva_cloud_waf.event.extensions.xff
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_network_forwarded_ip_into_related_ip
+      value: '{{{network.forwarded_ip}}}'
+      allow_duplicates: false
+      if: ctx.network?.forwarded_ip != null
+  - rename:
+      field: cef.name
+      tag: rename_name
+      target_field: imperva_cloud_waf.event.name
+      ignore_missing: true
+  - convert:
+      field: cef.severity
+      tag: convert_severity_to_long
+      target_field: imperva_cloud_waf.event.severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: cef.version
+      tag: rename_version
+      target_field: imperva_cloud_waf.event.version
+      ignore_missing: true
+  - remove:
+      field:
+        - imperva_cloud_waf.event.device.event_class_id
+        - imperva_cloud_waf.event.device.product
+        - imperva_cloud_waf.event.device.vendor
+        - imperva_cloud_waf.event.device.version
+        - imperva_cloud_waf.event.extensions.action
+        - imperva_cloud_waf.event.extensions.application_protocol
+        - imperva_cloud_waf.event.extensions.bytes_in
+        - imperva_cloud_waf.event.extensions.ccode
+        - imperva_cloud_waf.event.extensions.cpt
+        - imperva_cloud_waf.event.extensions.cs9
+        - imperva_cloud_waf.event.extensions.device.custom_number1
+        - imperva_cloud_waf.event.extensions.end_time
+        - imperva_cloud_waf.event.extensions.file_id
+        - imperva_cloud_waf.event.extensions.postbody
+        - imperva_cloud_waf.event.extensions.qstr
+        - imperva_cloud_waf.event.extensions.request.client_application
+        - imperva_cloud_waf.event.extensions.request.method
+        - imperva_cloud_waf.event.extensions.request.url
+        - imperva_cloud_waf.event.extensions.sip
+        - imperva_cloud_waf.event.extensions.source.address
+        - imperva_cloud_waf.event.extensions.source.port
+        - imperva_cloud_waf.event.extensions.source.user_id
+        - imperva_cloud_waf.event.extensions.start_time
+        - imperva_cloud_waf.event.extensions.xff
+        - imperva_cloud_waf.event.severity
+        - imperva_cloud_waf.event.extensions.cs7
+        - imperva_cloud_waf.event.extensions.cs8
+        - imperva_cloud_waf.event.extensions.file.permission
+        - imperva_cloud_waf.event.extensions.file.type
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field: cef
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object o) {
+          if (o == null || o == '') {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      description: Drops null/empty values recursively.
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

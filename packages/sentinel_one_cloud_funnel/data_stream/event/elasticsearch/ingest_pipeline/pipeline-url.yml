@@ -9,6 +9,18 @@ processors:
       field: url.original
       copy_from: sentinel_one_cloud_funnel.event.url.address
       ignore_empty_value: true
+  - uri_parts:
+      field: url.original
+      keep_original: true
+      ignore_missing: true
+  - set:
+      field: destination.address
+      copy_from: url.domain
+      ignore_empty_value: true
+  - registered_domain:
+      field: destination.address
+      target_field: destination
+      if: ctx.destination?.address != null
   - rename:
       field: json.event.url.action
       target_field: sentinel_one_cloud_funnel.event.url.action

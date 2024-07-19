@@ -1,0 +1,139 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $event_count := generate "event_count" }}
+{{- $event_duration := generate "event_duration" }}
+{{- $duration_start := generate "duration_start" }}
+{{- $duration_end := generate "duration_end" }}
+{{- $first_occurrence := generate "timestamp" | date_modify (print $duration_start) }}
+{{- $last_occurrence := generate "timestamp" | date_modify (print $duration_end) }}
+{{- $involved_object_kind := generate "involved_object_kind" }}
+{{- $involved_object_name := generate "involved_object_name" }}
+{{- $message_normal := generate "message_normal" }}
+{{- $message_warning_backoff := generate "message_warning_backoff" }}
+{{- $message_warning_failed := generate "message_warning_failed" }}
+{{- $reason_normal := generate "reason_normal" }}
+{{- $reason_warning := generate "reason_warning" }}
+{{- $metadata_generate_name := generate "metadata_generate_name" }}
+{{- $metadata_resource_version := generate "metadata_resource_version" }}
+{{- $reason := generate "reason" }}
+{{- $type := generate "type" }}
+{{- $rangeofid := generate "rangeofid" -}}
+{{- $eventid := div $rangeofid 110 -}}
+{
+    "@timestamp": "{{$timestamp.Format "2006-01-02T15:04:05.000Z07:00"}}",
+    "metricset": {
+        "name": "event"
+    },
+    "agent": {
+        "type": "metricbeat",
+        "version": "8.8.0",
+        "ephemeral_id": "22ed892c-43bd-408a-9121-65e2f5b6a56e",
+        "id": "de42127b-4db8-4471-824e-a7b14f478663",
+        "name": "kubernetes-scale-123456"
+    },
+     "elastic_agent": {
+        "id": "de42127b-4db8-4471-824e-a7b14f478663",
+        "version": "8.8.0",
+        "snapshot": true
+    },
+    "ecs": {
+        "version": "8.5.0"
+    },
+    "event": {
+        "duration": {{ $event_duration }},
+        "dataset": "kubernetes.event",
+        "module": "kubernetes"
+    },
+    "data_stream": {
+      "namespace": "ep",
+      "type": "metrics",
+      "dataset": "kubernetes.event"
+    },
+    "service": {
+        "type": "kubernetes"
+    },
+    "orchestrator":{
+        "cluster":{
+        "name":"kubernetes-scale",
+        "url":"https://{{ generate `Ip` }}"
+        }
+    },
+    "kubernetes": {
+        "event": {
+            "metadata": {
+                "uid": "host-{{ $eventid }}",
+                "resource_version": "{{ $metadata_resource_version }}",
+                "timestamp": {
+                    "created": "{{ $first_occurrence.Format "2006-01-02T15:04:05.000Z07:00" }}"
+                },
+                "name": "host-{{ $eventid }}",
+                "namespace": "demo-{{ $eventid }}",
+                "self_link": "/api/v1/namespaces/events/host-{{ $eventid }}",
+                "generate_name": "{{ $metadata_generate_name }}",
+                {{- if eq $type "Normal"}}
+                "annotations": {
+                    "kubectl_kubernetes_io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"involvedObject\":{\"kind\":\"{{ $involved_object_kind }}\"},\"kind\":\"Event\",\"message\":\"{{ $message_normal }} {{ $reason_normal }}\",\"metadata\":{\"annotations\":{},\"name\":\"host-{{ $eventid }}\",\"namespace\":\"demo-{{ $eventid }}\"},\"type\":\"{{ $type }}\"}\n"
+                }
+                {{- else if eq $type "Warning"}}
+                    {{- if eq $reason_warning "BackOff"}}
+                    "annotations": {
+                        "kubectl_kubernetes_io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"involvedObject\":{\"kind\":\"{{ $involved_object_kind }}\"},\"kind\":\"Event\",\"message\":\"{{ $message_warning_backoff }}\",\"metadata\":{\"annotations\":{},\"name\":\"host-{{ $eventid }}\",\"namespace\":\"demo-{{ $eventid }}\"},\"type\":\"{{ $type }}\"}\n"
+                    }
+                    {{- else if eq $reason_warning "Failed"}}
+                   "annotations": {
+                        "kubectl_kubernetes_io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"involvedObject\":{\"kind\":\"{{ $involved_object_kind }}\"},\"kind\":\"Event\",\"message\":\"{{ $message_warning_failed }}\",\"metadata\":{\"annotations\":{},\"name\":\"host-{{ $eventid }}\",\"namespace\":\"demo-{{ $eventid }}\"},\"type\":\"{{ $type }}\"}\n"
+                    }
+                    {{- end}}
+                {{- end}}
+            },
+            "timestamp": {
+                "first_occurrence": "{{ $first_occurrence.Format "2006-01-02T15:04:05.000Z07:00" }}",
+                "last_occurrence": "{{ $last_occurrence.Format "2006-01-02T15:04:05.000Z07:00" }}"
+            },
+            {{- if eq $type "Normal"}}
+            "message": "{{ $message_normal }} {{ $reason_normal }}",
+            "reason": "{{ $reason_normal }}",
+            "type": "{{ $type }}",
+            "count": {{ $event_count }},
+            {{- else if eq $type "Warning"}}
+                {{- if eq $reason_warning "BackOff"}}
+                "message": "{{ $message_warning_backoff }}",
+                "reason": "{{ $reason_warning }}",
+                "type": "{{ $type }}",
+                "count": {{ $event_count }},
+                {{- else if eq $reason_warning "Failed"}}
+                "message": "{{ $message_warning_failed }}",
+                "reason": "{{ $reason_warning }}",
+                "type": "{{ $type }}",
+                "count": {{ $event_count }},
+                {{- end}}
+            {{- end}}
+            "source": {
+                "host": "host-{{ $eventid }}",
+                "component": "demo-component-{{ $eventid }}"
+            },
+            "involved_object": {
+                "api_version": "v1",
+                "resource_version": "{{ $metadata_resource_version }}",
+                "name": "{{ $involved_object_name }}",
+                "kind": "{{ $involved_object_kind }}",
+                "uid": "host-{{ $eventid }}"
+            }
+        }    
+    },
+    "host": {
+        "hostname": "kubernetes-scale-123456",
+        "os": {
+            "kernel": "5.10.47-linuxkit",
+            "codename": "Core",
+            "name": "CentOS Linux",
+            "type": "linux",
+            "family": "redhat",
+            "version": "7 (Core)",
+            "platform": "centos"
+        },
+        "containerized": true,
+        "name": "kubernetes-scale-123456",
+        "id": "85e35c2b5e1b39ba72393a6baf6ee7cd",
+        "architecture": "x86_64"
+    }
+}

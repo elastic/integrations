@@ -4,9 +4,8 @@ This [Amazon Security Lake](https://aws.amazon.com/security-lake/) integration h
 
 Security Lake automates the collection of security-related log and event data from integrated AWS services and third-party services. It also helps you manage the lifecycle of data with customizable retention and replication settings. Security Lake converts ingested data into Apache Parquet format and a standard open-source schema called the Open Cybersecurity Schema Framework (OCSF). With OCSF support, Security Lake normalizes and combines security data from AWS and a broad range of enterprise security data sources.
 
-The Amazon Security Lake integration can be used in two different modes to collect data:
+The Amazon Security Lake integration currently supports only one mode of log collection:
 - AWS S3 polling mode: Amazon Security Lake writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
-- AWS S3 SQS mode: Amazon Security Lake writes data to S3, S3 sends a notification of a new object to SQS, the Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple agents can be used in this mode.
 
 ## Compatibility
 
@@ -29,7 +28,7 @@ The Amazon Security Lake integration collects logs from both [Third-party servic
 ### To collect data from Amazon Security Lake follow the below steps:
 
 1. To enable and start Amazon Security Lake, follow the steps mentioned here: [`https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html`](https://docs.aws.amazon.com/security-lake/latest/userguide/getting-started.html).
-2. After creating data lake, follow below steps to create a data subscribers to consume data.
+2. After creating the data lake, follow the steps below to create data subscribers to consume data.
    - Open the [Security Lake console](https://console.aws.amazon.com/securitylake/).
    - By using the AWS Region selector in the upper-right corner of the page, select the Region where you want to create the subscriber.
    - In the navigation pane, choose **Subscribers**.
@@ -38,9 +37,8 @@ The Amazon Security Lake integration collects logs from both [Third-party servic
    - For **Log and event sources**, choose which sources the subscriber is authorized to consume.
    - For **Data access method**, choose **S3** to set up data access for the subscriber.
    - For **Subscriber credentials**, provide the subscriber's **AWS account ID** and **external ID**.
-   - For **Notification details**, select **SQS queue**.
    - Choose Create.
-3. Above mentioned steps will create and provide required details such as IAM roles/AWS role ID, external id and queue url to configure AWS Security Lake Integration.
+3. Above mentioned steps will create and provide the required details such as IAM roles/AWS role ID, external ID and queue URL to configure AWS Security Lake Integration.
 
 ### Enabling the integration in Elastic:
 
@@ -50,16 +48,8 @@ The Amazon Security Lake integration collects logs from both [Third-party servic
 3. Click on the "Amazon Security Lake" integration from the search results.
 4. Click on the Add Amazon Security Lake Integration button to add the integration.
    ![Home Page](../img/home_page.png)
-5. By default collect logs via S3 Bucket toggle will be off and collect logs for AWS SQS.
-6. While adding the integration, if you want to collect logs via AWS SQS, then you have to put the following details:
-   - queue url
-      ![Queue URL](../img/queue_url.png)
-   - collect logs via S3 Bucket toggled off
-   - role ARN
-   - external id
-      ![Role ARN and External ID](../img/role_arn_and_external_id.png)
-
-   or if you want to collect logs via AWS S3, then you have to put the following details:
+5. The integration currently only supports collecting logs via AWS S3.
+6. While adding the integration, you have to configure the following details:
    - bucket arn
    - collect logs via S3 Bucket toggled on
    - role ARN
@@ -1970,4 +1960,3 @@ This is the `Event` dataset.
 | process.user.full_name |  | keyword |
 | process.user.group.id |  | keyword |
 | process.user.group.name |  | keyword |
-| tags | User defined tags. | keyword |

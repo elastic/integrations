@@ -7,15 +7,15 @@ processors:
 - append:
     field: event.type
     value: creation
-    if: "['phone.caller_ringing', 'phone.callee_ringing'].contains(ctx?.event?.action)"
+    if: "['phone.caller_ringing', 'phone.callee_ringing'].contains(ctx.event?.action)"
 - append:
     field: event.type
     value: start
-    if: "['phone.callee_answered', 'phone.caller_connected'].contains(ctx?.event?.action)"
+    if: "['phone.callee_answered', 'phone.caller_connected'].contains(ctx.event?.action)"
 - append:
     field: event.type
     value: end
-    if: "['phone.callee_missed', 'phone.callee_ended', 'phone.caller_ended'].contains(ctx?.event?.action)"
+    if: "['phone.callee_missed', 'phone.callee_ended', 'phone.caller_ended'].contains(ctx.event?.action)"
 - rename:
     field: zoom.object
     target_field: zoom.phone
@@ -29,35 +29,41 @@ processors:
     target_field: '@timestamp'
     formats:
     - ISO_INSTANT
-    if: "['phone.callee_ringing', 'phone.caller_ringing', 'phone.caller_ended'].contains(ctx?.event?.action)"
+    if: "['phone.callee_ringing', 'phone.caller_ringing', 'phone.caller_ended'].contains(ctx.event?.action)"
     ignore_failure: true
 - date:
     field: zoom.phone.connected_start_time
     target_field: '@timestamp'
     formats:
     - ISO_INSTANT
-    if: ctx?.event?.action == 'phone.caller_connected'
+    if: ctx.event?.action == 'phone.caller_connected'
     ignore_failure: true
 - date:
     field: zoom.phone.answer_start_time
     target_field: '@timestamp'
     formats:
     - ISO_INSTANT
-    if: "ctx?.zoom?.phone.answer_start_time != null && ctx?.event?.action == 'phone.callee_answered'"
+    if: ctx.zoom?.phone?.answer_start_time != null && ctx.event?.action == 'phone.callee_answered'
     ignore_failure: true
 - date:
     field: zoom.phone.call_end_time
     target_field: '@timestamp'
     formats:
     - ISO_INSTANT
-    if: "['phone.callee_missed', 'phone.callee_ended', 'phone.caller_ended', 'phone.callee_rejected'].contains(ctx?.event?.action)"
+    if: >-
+      [
+        'phone.callee_missed',
+        'phone.callee_ended',
+        'phone.caller_ended',
+        'phone.callee_rejected'
+      ].contains(ctx.event?.action)
     ignore_failure: true
 - date:
     field: zoom.phone.date_time
     target_field: '@timestamp'
     formats:
     - ISO_INSTANT
-    if: ctx?.event?.action == 'phone.voicemail_received'
+    if: ctx.event?.action == 'phone.voicemail_received'
     ignore_failure: true
 - convert:
     field: zoom.phone.duration
@@ -66,7 +72,7 @@ processors:
 # Calculates duration when duration is unknown but start and end time is known (with ringing_start_time)
 - script:
     lang: painless
-    if: "ctx?.zoom?.phone?.ringing_start_time != null && ctx?.zoom?.phone?.answer_start_time == null && ctx?.zoom?.phone?.call_end_time != null && ctx?.zoom?.phone?.duration == null"
+    if: ctx.zoom?.phone?.ringing_start_time != null && ctx.zoom?.phone?.answer_start_time == null && ctx.zoom?.phone?.call_end_time != null && ctx.zoom?.phone?.duration == null
     source: >-
       ctx.event.start = ctx.zoom.phone.ringing_start_time;
       ctx.event.end = ctx.zoom.phone.call_end_time;
@@ -77,7 +83,7 @@ processors:
 # Calculates duration when duration is unknown but start and end time is known (with answer_start_time)
 - script:
     lang: painless
-    if: "ctx?.zoom?.phone?.ringing_start_time == null && ctx?.zoom?.phone?.answer_start_time != null && ctx?.zoom?.phone?.call_end_time != null && ctx?.zoom?.phone?.duration == null"
+    if: ctx.zoom?.phone?.ringing_start_time == null && ctx.zoom?.phone?.answer_start_time != null && ctx.zoom?.phone?.call_end_time != null && ctx.zoom?.phone?.duration == null
     source: >-
       ctx.event.start = ctx.zoom.phone.answer_start_time;
       ctx.event.end = ctx.zoom.phone.call_end_time;
@@ -88,7 +94,7 @@ processors:
 # Duration is in minutes, so multiply by seconds and then multiply again to convert seconds to nano
 - script:
     lang: painless
-    if: ctx?.zoom?.duration != null
+    if: ctx.zoom?.duration != null
     source: >-
       ctx.event.duration = ctx.zoom.phone.duration * 60L * 1000000000L;
 
@@ -144,30 +150,30 @@ processors:
     ignore_missing: true
 - append:
     field: related.user
-    value: "{{zoom.phone.callee.user_id}}"
+    value: "{{{zoom.phone.callee.user_id}}}"
     allow_duplicates: false
-    if: ctx?.zoom?.phone?.callee?.user_id != null
+    if: ctx.zoom?.phone?.callee?.user_id != null
 - append:
     field: related.user
-    value: "{{zoom.phone.callee_user_id}}"
+    value: "{{{zoom.phone.callee_user_id}}}"
     allow_duplicates: false
-    if: ctx?.zoom?.phone?.callee_user_id != null
+    if: ctx.zoom?.phone?.callee_user_id != null
 - append:
     field: related.user
-    value: "{{zoom.phone.caller.user_id}}"
+    value: "{{{zoom.phone.caller.user_id}}}"
     allow_duplicates: false
-    if: ctx?.zoom?.phone?.caller?.user_id != null
+    if: ctx.zoom?.phone?.caller?.user_id != null
 - remove:
     field: zoom.phone.date_time
     ignore_missing: true
-    if: ctx?.event?.action == 'phone.voicemail_received'
+    if: ctx.event?.action == 'phone.voicemail_received'
 - set:
     field: source.user.id
-    value: '{{zoom.phone.caller.user_id}}'
+    value: '{{{zoom.phone.caller.user_id}}}'
     ignore_empty_value: true
 - set:
     field: destination.user.id
-    value: '{{zoom.phone.callee.user_id}}'
+    value: '{{{zoom.phone.callee.user_id}}}'
     ignore_empty_value: true
 on_failure:
   - set:

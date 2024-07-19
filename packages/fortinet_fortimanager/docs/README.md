@@ -169,7 +169,7 @@ An example event for `log` looks as following:
 | fortimanager.log.cause | Reason that causes HA status down. | keyword |
 | fortimanager.log.cert.name | Name of certificate. | keyword |
 | fortimanager.log.cert.type | Type of certificate. | keyword |
-| fortimanager.log.changes | Changes done on fortimanager subtype. | keyword |
+| fortimanager.log.changes | Changes done on fortimanager subtype. | match_only_text |
 | fortimanager.log.cli_act | CLI command action. | keyword |
 | fortimanager.log.cmd_from | CLI command from. | keyword |
 | fortimanager.log.comment | The description of this policy package. | keyword |

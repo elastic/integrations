@@ -1,0 +1,199 @@
+---
+description: Pipeline for Citrix Web App Firewall logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '8.11.0'
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: 'Citrix'
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: 'Netscaler'
+  - set:
+      field: observer.type
+      tag: set_observer_type
+      value: 'firewall'
+  - rename:
+      field: message
+      tag: rename_message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - grok:
+      description: Extract header details and message from log line.
+      tag: grok_event_original
+      field: event.original
+      patterns:
+        - '^%{SYSLOG_TIMESTAMP}( %{LEVEL} %{IP:client.ip:ip})?( %{HOSTNAME:citrix.hostname})? %{GREEDYDATA:citrix.detail}'
+        - '^%{GREEDYDATA:citrix.detail}'
+      pattern_definitions:
+        LEVEL: '<?%{IDENT:citrix.facility:keyword}\.%{IDENT:citrix.priority:keyword}>?'
+        IDENT: '[a-zA-Z][a-zA-Z0-9]*'
+        SYSLOG_TIMESTAMP: '(?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})'
+        TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
+  - pipeline:
+      name: '{{ IngestPipeline "cef" }}'
+      tag: pipeline_cef
+      if: ctx.citrix?.detail != null && ctx.citrix.detail.startsWith("CEF:")
+  - pipeline:
+      name: '{{ IngestPipeline "native" }}'
+      tag: pipeline_native
+      if: ctx.citrix?.detail != null && !ctx.citrix.detail.startsWith("CEF:")
+  - convert:
+      field: event.severity
+      tag: convert_event_severity_to_long
+      type: long
+      ignore_missing: true
+  - set:
+      field: _conf.tz_offset
+      tag: set_tz_offset_utc
+      value: UTC
+      override: false
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_tz_offset
+      copy_from: _conf.tz_offset
+      if: ctx.event?.timezone == null || ctx.event?.timezone == ""
+  - date:
+      if: ctx._tmp?.timestamp8601 != null
+      tag: date_tmp_timestamp8601
+      field: _tmp.timestamp8601
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - ISO8601
+  - set:
+      field: _tmp.timestamp
+      tag: set_tmp_timestamp
+      if: ctx._tmp?.timestamp != null && ctx.citrix?.event_year != null
+      value: "{{{citrix.event_year}}} {{{_tmp.timestamp}}}"
+  - date:
+      if: ctx._tmp?.timestamp != null
+      tag: date_tmp_timestamp
+      field: _tmp.timestamp
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - MMM d HH:mm:ss
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMMM d HH:mm:ss
+        - MMMM  d HH:mm:ss
+        - MMMM dd HH:mm:ss
+        - yyyy MMM d HH:mm:ss
+        - yyyy MMM  d HH:mm:ss
+        - yyyy MMM dd HH:mm:ss
+        - yyyy MMMM d HH:mm:ss
+        - yyyy MMMM  d HH:mm:ss
+        - yyyy MMMM dd HH:mm:ss
+  - date:
+      if: ctx._tmp?.timestamp_native != null
+      tag: date_tmp_timestamp_native
+      field: _tmp.timestamp_native
+      formats:
+        - MM/dd/yyyy:HH:mm:ss
+        - yyyy/MM/dd:HH:mm:ss
+      timezone: '{{{event.timezone}}}'
+  - remove:
+      field: citrix.event_year
+      tag: remove_event_year
+      ignore_missing: true
+  - geoip:
+      field: client.ip
+      tag: geoip_client_ip_to_client_geo
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip_to_source_geo
+      target_field: source.geo
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geoip_source_ip_to_source_as
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geoip_client_ip_to_client_as
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      tag: rename_client_as_asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      tag: rename_client_as_organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_url_original
+      target_field: url
+      if: ctx.url?.original != null && ctx.url?.original != ""
+  - script:
+      description: Drops null/empty values recursively
+      tag: drop_empty_fields
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+  - remove:
+      field:
+        - _tmp
+        - _conf
+      tag: remove_tmp_and_conf
+      ignore_missing: true
+on_failure:
+  - remove:
+      field:
+        - _tmp
+        - _conf
+      tag: remove_tmp_and_conf
+      ignore_missing: true
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

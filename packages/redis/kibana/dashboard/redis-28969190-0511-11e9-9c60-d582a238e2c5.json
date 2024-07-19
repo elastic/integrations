@@ -7,7 +7,6 @@
             "panelsJSON": "{\"88495d21-6261-4c60-8de6-e9aa688b2085\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"title\":\"Keyspace\",\"fieldName\":\"redis.keyspace.id\",\"id\":\"88495d21-6261-4c60-8de6-e9aa688b2085\",\"selectedOptions\":[\"db0\",\"db1\"],\"enhancements\":{}}}}"
         },
         "description": "Redis keys metrics",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -44,6 +43,41 @@
                                 ]
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "redis.key",
+                                "redis.keyspace"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "redis.key"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "redis.keyspace"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -53,8 +87,10 @@
             }
         },
         "optionsJSON": {
-            "darkTheme": false,
             "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -70,7 +106,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "9d7816a6-2ec8-4b54-aecf-ae00937afd79": {
                                             "columnOrder": [
@@ -201,8 +237,7 @@
                 },
                 "panelIndex": "79fa7446-f3ce-466c-a4b5-bd4fde483e5d",
                 "title": "Keys by type",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -221,7 +256,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "ab5b97a3-2883-46a9-8740-a9e19a13bc0d": {
                                             "columnOrder": [
@@ -380,8 +415,7 @@
                 },
                 "panelIndex": "3199303d-19cf-430f-ab40-ac73f0ec9ea2",
                 "title": "Lists length",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -400,7 +434,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "a99f131f-7844-46d3-801d-3023f3eb35d2": {
                                             "columnOrder": [
@@ -546,8 +580,7 @@
                 },
                 "panelIndex": "161bf113-0b65-4f2c-ad1c-64f06c8b2344",
                 "title": "Average size of string keys",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -566,7 +599,7 @@
                         ],
                         "state": {
                             "datasourceStates": {
-                                "indexpattern": {
+                                "formBased": {
                                     "layers": {
                                         "93604465-9546-445d-8756-e2fe12469522": {
                                             "columnOrder": [
@@ -727,23 +760,26 @@
                 },
                 "panelIndex": "375cffab-4569-45e7-8848-c4464789a543",
                 "title": "Average keys TTL",
-                "type": "lens",
-                "version": "8.3.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Metrics Redis] Keys",
         "version": 1
     },
-    "coreMigrationVersion": "8.3.0",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-04-19T07:16:18.086Z",
     "id": "redis-28969190-0511-11e9-9c60-d582a238e2c5",
-    "migrationVersion": {
-        "dashboard": "8.3.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
@@ -787,5 +823,6 @@
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

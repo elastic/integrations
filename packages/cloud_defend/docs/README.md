@@ -412,7 +412,7 @@ The following fields are populated for all events where `event.category: file`
 
 # Support matrix
 
-| &nbsp; | EKS 1.24-1.26 (AL2022) | GKE 1.24-1.26 (COS) |
+| &nbsp; | EKS 1.24-1.27 (AL2022) | GKE 1.24-1.27 (COS) |
 | -- | -- | -- |
 | Process event exports | ✅ | ✅ |
 | File event exports | ✅ | ✅ |

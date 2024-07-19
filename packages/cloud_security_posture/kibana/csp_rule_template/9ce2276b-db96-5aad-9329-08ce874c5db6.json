@@ -1,0 +1,38 @@
+{
+    "id": "9ce2276b-db96-5aad-9329-08ce874c5db6",
+    "type": "csp-rule-template",
+    "attributes": {
+        "metadata": {
+            "impact": "",
+            "default_value": "",
+            "references": "1. https://docs.microsoft.com/en-us/rest/api/postgresql/singleserver/configurations/list-by-server\n2. https://docs.microsoft.com/en-us/azure/postgresql/howto-configure-server-parameters-using-portal\n3. https://docs.microsoft.com/en-us/security/benchmark/azure/security-controls-v3-logging-threat-detection#lt-4-enable-logging-for-azure-resources\n4. https://learn.microsoft.com/en-us/powershell/module/az.postgresql/get-azpostgresqlconfiguration?view=azps-9.2.0#example-2-get-specified-postgresql-configuration-by-name\n5. https://learn.microsoft.com/en-us/powershell/module/az.postgresql/update-azpostgresqlconfiguration?view=azps-9.2.0#example-1-update-postgresql-configuration-by-name",
+            "id": "9ce2276b-db96-5aad-9329-08ce874c5db6",
+            "name": "Ensure server parameter 'connection_throttling' is set to 'ON' for PostgreSQL Database Server",
+            "profile_applicability": "* Level 1",
+            "description": "Enable `connection_throttling` on `PostgreSQL Servers`.",
+            "rationale": "Enabling `connection_throttling` helps the PostgreSQL Database to `Set the verbosity of logged messages`.\nThis in turn generates query and error logs with respect to concurrent connections that could lead to a successful Denial of Service (DoS) attack by exhausting connection resources.\nA system can also fail or be degraded by an overload of legitimate users.\nQuery and error logs can be used to identify, troubleshoot, and repair configuration errors and sub-optimal performance.",
+            "audit": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com.\n2. Go to `Azure Database for PostgreSQL servers`.\n3. For each database, click on `Server parameters`.\n4. Search for `connection_throttling`.\n5. Ensure that value is set to `ON`.\n\n**From Azure CLI**\n\nEnsure `connection_throttling` value is set to `ON`\n```\naz postgres server configuration show --resource-group <resourceGroupName> --server-name <serverName> --name connection_throttling\n```\n\n**From PowerShell**\n\nEnsure `connection_throttling` value is set to `ON`\n```\nGet-AzPostgreSqlConfiguration -ResourceGroupName <ResourceGroupName> -ServerName <ServerName> -Name connection_throttling\n```",
+            "remediation": "**From Azure Portal**\n\n1. Login to Azure Portal using https://portal.azure.com.\n2. Go to `Azure Database for PostgreSQL servers`.\n3. For each database, click on `Server parameters`.\n4. Search for `connection_throttling`.\n5. Click `ON` and save.\n\n**From Azure CLI**\n\nUse the below command to update `connection_throttling` configuration.\n```\naz postgres server configuration set --resource-group <resourceGroupName> --server-name <serverName> --name connection_throttling --value on\n```\n\n**From PowerShell**\n\nUse the below command to update `connection_throttling` configuration.\n```\nUpdate-AzPostgreSqlConfiguration -ResourceGroupName <ResourceGroupName> -ServerName <ServerName> -Name connection_throttling -Value on\n```",
+            "section": "PostgreSQL Database Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "AZURE",
+                "CIS 4.3.5",
+                "PostgreSQL Database Server"
+            ],
+            "benchmark": {
+                "name": "CIS Microsoft Azure Foundations",
+                "version": "v2.0.0",
+                "id": "cis_azure",
+                "rule_number": "4.3.5",
+                "posture_type": "cspm"
+            },
+            "rego_rule_id": "cis_4_3_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.7.0"
+    },
+    "coreMigrationVersion": "8.7.0"
+}

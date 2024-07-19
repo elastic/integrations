@@ -15,7 +15,7 @@ Each event in the log data stream collected by the OpenCTI integration is an ind
 
 This integration requires Filebeat version 8.9.0, or later.
 
-It was initially developed using OpenCTI version 5.10.1 and updated for verison 5.12.X.
+It has been updated for OpenCTI version 5.12.24 and requires that version or later.
 
 ## Setup
 
@@ -33,6 +33,18 @@ The `indicator` data stream includes indicators of the following types (`threat.
 
 OpenCTI's data model closely follows the [STIX standard](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html). It supports complex indicators defined using STIX patterns or other languages, and each indicator can be related to one or more observables. In the [ECS threat fields](https://www.elastic.co/guide/en/ecs/current/ecs-threat.html) the focus is on atomic indicators. This integration fetches as much data as possible about indicators and their related observables, and populates relevant ECS fields wherever possible. It uses related observables rather than the indicator pattern as the data source for type-specific indicator fields.
 
+#### Expiration of inactive indicators
+
+The `opencti.indicator.invalid_or_revoked_from` field is set to the earliest time at which an indicator reaches its `valid_until` time or is marked as revoked. From that time the indicator should no longer be considered active.
+
+An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to provide a view of active indicators for end users. This transform creates destination indices that are accessible via the alias `logs-ti_opencti_latest.indicator`. When querying for active indicators or setting up indicator match rules, use that alias to avoid false positives from expired indicators.
+
+The dashboards show only active indicators, except the Ingestion dashboard, which shows data from both the source data stream and the indices of the latest indicators.
+
+Indicators that are never expired or revoked will not be removed from the indices of the latest indicators. If accumulation of indicators is a problem there, it can be managed upstream in OpenCTI, or by manually deleting indicators from those indices.
+
+To prevent unbounded growth of the source data stream `logs-ti_opencti.indicator-*`, it has an index lifecycle management (ILM) policy that deletes records 5 days after ingestion.
+
 #### Example
 
 Here is an example `indicator` event:
@@ -41,26 +53,26 @@ An example event for `indicator` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-11-09T01:59:11.241Z",
+    "@timestamp": "2024-06-12T06:54:25.854Z",
     "agent": {
-        "ephemeral_id": "f115b31f-9c4f-4f14-a73b-3a54e25f204e",
-        "id": "00b6764d-580c-4a5e-bd48-b4e128e0d894",
+        "ephemeral_id": "de8fc32a-4eaf-4e32-97ae-bcdb93b8d8ee",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "ti_opencti.indicator",
-        "namespace": "ep",
+        "namespace": "66338",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "00b6764d-580c-4a5e-bd48-b4e128e0d894",
+        "id": "d2a14a09-96fc-4f81-94ef-b0cd75ad71e7",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -70,9 +82,9 @@ An example event for `indicator` looks as following:
         "created": "2018-02-05T08:04:53.000Z",
         "dataset": "ti_opencti.indicator",
         "id": "d019b01c-b637-4eb2-af53-6d527be3193d",
-        "ingested": "2023-11-09T01:59:14Z",
+        "ingested": "2024-06-12T06:54:37Z",
         "kind": "enrichment",
-        "original": "{\"confidence\":15,\"created\":\"2018-02-05T08:04:53.000Z\",\"createdBy\":{\"identity_class\":\"organization\",\"name\":\"CthulhuSPRL.be\"},\"description\":\"\",\"externalReferences\":{\"edges\":[]},\"id\":\"d019b01c-b637-4eb2-af53-6d527be3193d\",\"is_inferred\":false,\"killChainPhases\":{\"edges\":[]},\"lang\":\"en\",\"modified\":\"2023-01-17T05:53:42.851Z\",\"name\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"objectLabel\":{\"edges\":[{\"node\":{\"value\":\"information-credibility-6\"}},{\"node\":{\"value\":\"osint\"}}]},\"objectMarking\":{\"edges\":[{\"node\":{\"definition\":\"TLP:GREEN\",\"definition_type\":\"TLP\"}}]},\"observables\":{\"edges\":[{\"node\":{\"entity_type\":\"Hostname\",\"id\":\"b0a91059-5637-4050-8dce-a976a607f75c\",\"observable_value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"standard_id\":\"hostname--2047cd44-ffae-5b34-b912-5856add59b59\",\"value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\"}}],\"pageInfo\":{\"globalCount\":1}},\"pattern\":\"[hostname:value = 'ec2-23-21-172-164.compute-1.amazonaws.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":true,\"standard_id\":\"indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b\",\"valid_from\":\"2018-02-05T08:04:53.000Z\",\"valid_until\":\"2019-02-05T08:04:53.000Z\",\"x_opencti_detection\":false,\"x_opencti_main_observable_type\":\"Hostname\",\"x_opencti_score\":40}",
+        "original": "{\"confidence\":15,\"created\":\"2018-02-05T08:04:53.000Z\",\"createdBy\":{\"identity_class\":\"organization\",\"name\":\"CthulhuSPRL.be\"},\"description\":\"\",\"externalReferences\":{\"edges\":[]},\"id\":\"d019b01c-b637-4eb2-af53-6d527be3193d\",\"is_inferred\":false,\"killChainPhases\":[],\"lang\":\"en\",\"modified\":\"2023-01-17T05:53:42.851Z\",\"name\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"objectLabel\":[{\"value\":\"information-credibility-6\"},{\"value\":\"osint\"}],\"objectMarking\":[{\"definition\":\"TLP:GREEN\",\"definition_type\":\"TLP\"}],\"observables\":{\"edges\":[{\"node\":{\"entity_type\":\"Hostname\",\"id\":\"b0a91059-5637-4050-8dce-a976a607f75c\",\"observable_value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\",\"standard_id\":\"hostname--2047cd44-ffae-5b34-b912-5856add59b59\",\"value\":\"ec2-23-21-172-164.compute-1.amazonaws.com\"}}],\"pageInfo\":{\"globalCount\":1}},\"pattern\":\"[hostname:value = 'ec2-23-21-172-164.compute-1.amazonaws.com']\",\"pattern_type\":\"stix\",\"pattern_version\":\"2.1\",\"revoked\":true,\"standard_id\":\"indicator--cde0a6e1-c622-52c4-b857-e9aeac56131b\",\"valid_from\":\"2018-02-05T08:04:53.000Z\",\"valid_until\":\"2019-02-05T08:04:53.000Z\",\"x_opencti_detection\":false,\"x_opencti_main_observable_type\":\"Hostname\",\"x_opencti_score\":40}",
         "type": [
             "indicator"
         ]
@@ -84,6 +96,7 @@ An example event for `indicator` looks as following:
         "indicator": {
             "creator_identity_class": "organization",
             "detection": false,
+            "invalid_or_revoked_from": "2019-02-05T08:04:53.000Z",
             "is_inferred": false,
             "lang": "en",
             "observables_count": 1,
@@ -133,8 +146,8 @@ An example event for `indicator` looks as following:
             "modified_at": "2023-01-17T05:53:42.851Z",
             "name": "ec2-23-21-172-164.compute-1.amazonaws.com",
             "provider": "CthulhuSPRL.be",
-            "reference": "http://elastic-package-service-opencti_stub-1:8080/dashboard/observations/indicators/d019b01c-b637-4eb2-af53-6d527be3193d",
-            "type": "hostname",
+            "reference": "http://svc-opencti_stub:8080/dashboard/observations/indicators/d019b01c-b637-4eb2-af53-6d527be3193d",
+            "type": "domain-name",
             "url": {
                 "domain": "ec2-23-21-172-164.compute-1.amazonaws.com",
                 "registered_domain": "ec2-23-21-172-164.compute-1.amazonaws.com",
@@ -143,7 +156,6 @@ An example event for `indicator` looks as following:
         }
     }
 }
-
 ```
 
 #### Exported fields
@@ -164,6 +176,7 @@ Timestamps are mapped as follows:
 | modified    | threat.indicator.modified_at  | Time of the indicator's last modification |
 | valid_from  | opencti.indicator.valid_from  | Time from which this indicator is considered a valid indicator of the behaviors it is related to or represents |
 | valid_until | opencti.indicator.valid_until | Time at which this indicator should no longer be considered a valid indicator of the behaviors it is related to or represents |
+| -           | opencti.indicator.invalid_or_revoked_from | The earliest time at which an indicator reaches its `valid_until` time or is marked as revoked |
 
 The table below lists all `opencti.*` fields.
 
@@ -180,13 +193,16 @@ The documentation for ECS fields can be found at:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| event.module | Event module | constant_keyword |
 | input.type | Input type. | keyword |
+| labels.is_ioc_transform_source | Field indicating if the document is a source for the transform. This field is not added to destination indices to facilitate easier filtering of indicators for indicator match rules. | constant_keyword |
 | opencti.indicator.creator_identity_class | The type of the creator of this indicator (e.g. "organization"). | keyword |
 | opencti.indicator.detection | Whether the indicator has been detected. | boolean |
 | opencti.indicator.external_reference.description | A description for a related record in an external system. | keyword |
 | opencti.indicator.external_reference.external_id | A non-STIX ID for a related record in an external system. | keyword |
 | opencti.indicator.external_reference.source_name | The name of an external source of related records. | keyword |
 | opencti.indicator.external_reference.url | A URL for a related record in an external system. | keyword |
+| opencti.indicator.invalid_or_revoked_from | A time from which this indicator should be considered invalid or revoked. | date |
 | opencti.indicator.is_inferred | Whether the indicator is inferred. | boolean |
 | opencti.indicator.kill_chain_phase | The kill chain name and kill change phase name (e.g. "[mitre-attack] exfiltration"). | keyword |
 | opencti.indicator.lang | A language associated with the indicator record. | keyword |
@@ -497,6 +513,5 @@ The documentation for ECS fields can be found at:
 | opencti.observable.x509_certificate.version | The version of the encoded certificate. | keyword |
 | threat.indicator.file.hash.sha3_256 | SHA3-256 hash. | keyword |
 | threat.indicator.file.hash.sha3_512 | SHA3-512 hash. | keyword |
-| threat.indicator.name | The display name indicator in an UI friendly format | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.1 or OpenCTI | keyword |
 

@@ -12,7 +12,7 @@ processors:
       value: [threat]
   - set:
       field: event.type
-      value: indicator
+      value: [indicator]
   - rename:
       field: message
       target_field: event.original
@@ -27,11 +27,6 @@ processors:
       ignore_missing: true
   - drop:
       if: ctx?.cybersixgill?.type != "indicator"
-  - fingerprint:
-      fields:
-        - cybersixgill.id
-      target_field: "_id"
-      ignore_missing: true
   #####################
   # Threat ECS Fields #
   #####################
@@ -74,6 +69,13 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ss.SSSz"
         - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
       if: "ctx.cybersixgill?.valid_from != null"
+  - fingerprint:
+      fields:
+        - cybersixgill.id
+        - cybersixgill.created
+        - cybersixgill.modified
+      target_field: "_id"
+      ignore_missing: true
   - grok:
       field: cybersixgill.pattern
       patterns:
@@ -106,6 +108,22 @@ processors:
           value: "{{_ingest._value}}"
           override: false
       ignore_missing: true
+  - set:
+      field: threat.indicator.name
+      value: '{{_temp_.threatvalue}}'
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      copy_from: threat.indicator.file.hash.md5
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      copy_from: threat.indicator.file.hash.sha1
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.name
+      copy_from: threat.indicator.file.hash.sha256
+      ignore_empty_value: true
   - rename:
       field: _temp_.threatvalue
       target_field: threat.indicator.ip
@@ -167,6 +185,59 @@ processors:
       field: cybersixgill.sixgill_confidence
       type: integer
       target_field: threat.indicator.confidence
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: script-default-deleted_at
+      if: ctx.cybersixgill?.deleted_at == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
+      description: Indicator Expiration is done after `_conf.ioc_expiration_duration` (default 90d) since its creation time. This script adds a default `cybersixgill.indicator.deleted_at` field to allow indicator expiration.
+      source: >
+        def dur = ctx._conf.ioc_expiration_duration;
+        ZonedDateTime _tmp_deleted_at;
+        ZonedDateTime _tmp_created_at = ZonedDateTime.parse(ctx.cybersixgill.created);
+        if (dur instanceof String){
+          String time_unit = dur.substring(dur.length() -  1, dur.length());
+          String time_value = dur.substring(0, dur.length() - 1);
+          if (time_unit == 'd') {
+            _tmp_deleted_at = _tmp_created_at.plusDays(Long.parseLong(time_value));
+          } else if (time_unit == 'h') {
+            _tmp_deleted_at = _tmp_created_at.plusHours(Long.parseLong(time_value));
+          } else if (time_unit == 'm') {
+            _tmp_deleted_at = _tmp_created_at.plusMinutes(Long.parseLong(time_value));
+          } else {
+            _tmp_deleted_at = _tmp_created_at.plusDays(90L);
+            if (ctx.error == null) {
+              ctx.error = new HashMap();
+            }
+            if (ctx.error.message == null) {
+              ctx.error.message = new ArrayList();
+            }
+            ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
+          }
+          ctx.cybersixgill.deleted_at = _tmp_deleted_at;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: cybersixgill.deleted_at
+      tag: date_deleted_at
+      target_field: cybersixgill.deleted_at
+      formats:
+        - ISO8601
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - fail:
+            description: 'If this date processor fails, it leads to transform errors, hence failing the document for investigation.'
+            message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
+  - rename:
+      field: _conf.ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration
+      target_field: cybersixgill.expiration_duration
       ignore_missing: true
   - script:
       lang: painless
@@ -280,6 +351,7 @@ processors:
         - cybersixgill.sixgill_feedid
         - cybersixgill.sixgill_post_virustotallink
         - cybersixgill.type
+        - _conf
       ignore_missing: true
 on_failure:
   - set:

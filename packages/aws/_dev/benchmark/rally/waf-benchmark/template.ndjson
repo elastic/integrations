@@ -1,0 +1,76 @@
+{{- $timestamp := generate "timestamp" }}
+{{- $cloud_region := generate "cloud_region" }}
+{{- $cloud_account_id := generate "cloud_account_id" }}
+{{- $file_name := generate "file_name" }}
+{{- $rangeofid := generate "rangeofid" }}
+{{- $rule_id := generate "rule_id" }}
+{{- $rule_ruleset := generate "rule_ruleset" }}
+{{- $event_action := generate "event_action" }}
+{{- $aws_waf_rate_based_rule_list := generate "aws_waf_rate_based_rule_list" }}
+{{- $aws_waf_rule_group_list := generate "aws_waf_rule_group_list" }}
+{{- $aws_waf_non_terminating_matching_rules := generate "aws_waf_non_terminating_matching_rules" }}
+{{- $aws_waf_terminating_rule_match_details := generate "aws_waf_terminating_rule_match_details" }}
+{{- $aws_waf_source_name := generate "aws_waf_source_name" }}
+{{- $client_ip := generate "client_ip" }}
+{{- $condition_type := generate "condition_type" }}
+{{- $location := generate "location" }}
+{{- $matched_data := generate "matched_data" }}
+{{- $http_method := generate "http_method" }}
+{{- $bucket_num := generate "bucket_num" }}
+{{- $args := generate "args" }}
+{{- $uri_path := generate "uri_path" }}
+{{- $uri_extension := generate "uri_extension" }}
+{{- $long_num := generate "long_num" }}
+{{- $country_codes := generate "country_codes" }}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.000Z" }}",
+    "agent": {
+        "ephemeral_id": "22ed892c-43bd-408a-9121-65e2f5b6a56e",
+        "id": "de42127b-4db8-4471-824e-a7b14f478663",
+        "name": "aws-scale-123456",
+        "type": "filebeat",
+        "version": "8.8.0"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-{{ $bucket_num }}",
+                "name": "elastic-package-aws-bucket-{{ $bucket_num }}"
+            },
+            "object": {
+                "key": "{{ $file_name }}.log"
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "aws.waf",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "de42127b-4db8-4471-824e-a7b14f478663",
+        "snapshot": false,
+        "version": "8.8.0"
+    },
+    {{- if eq $rule_id "Default_Action" }}
+    "message": "{\"timestamp\":{{ $timestamp.UnixMilli }},\"formatVersion\":1,\"webaclId\":\"arn:aws:wafv2:{{ $cloud_region }}:{{ $cloud_account_id }}:9b3b8307-f0d8-4425-bd32-499444d92ea1\",\"terminatingRuleId\":\"{{ $rule_id }}\",\"terminatingRuleType\":\"{{ $rule_ruleset }}\",\"action\":\"{{ $event_action }}\",\"httpSourceName\":\"{{ $aws_waf_source_name }}\",\"httpSourceId\":\"{{ $long_num }}-app/wordpress/d3fad233572a26a0\",\"ruleGroupList\":[],\"rateBasedRuleList\":[],\"nonTerminatingMatchingRules\":[],\"httpRequest\":{\"clientIp\":\"{{ $client_ip}}\",\"country\":\"{{ $country_codes }}\",\"headers\":[{\"name\":\"Host\",\"value\":\"wordpress-{{ $long_num }}.{{ $cloud_region }}.elb.amazonaws.com\"},{\"name\":\"User-Agent\",\"value\":\"Apache-HttpClient/4.5.6 (Java/1.8.0_191)\"}],\"uri\":\"/wp-content/{{ $uri_path }}{{ $uri_extension }}\",\"args\":\"{{ $args }}\",\"httpVersion\":\"HTTP/1.1\",\"httpMethod\":\"{{ $http_method }}\",\"requestId\":\"rid-{{ $rangeofid }}\"}}",
+    {{- else}}
+    "message": "{\"timestamp\":{{ $timestamp.UnixMilli }},\"formatVersion\":1,\"webaclId\":\"arn:aws:wafv2:{{ $cloud_region }}:{{ $cloud_account_id }}:9b3b8307-f0d8-4425-bd32-499444d92ea1\",\"terminatingRuleId\":\"{{ $rule_id }}\",\"terminatingRuleType\":\"{{ $rule_ruleset }}\",\"action\":\"{{ $event_action }}\",\"terminatingRuleMatchDetails\": [{\"conditionType\": \"{{ $condition_type }}\",\"location\": \"{{ generate "location" }}\",\"matchedData\": [\"{{ $matched_data }}\",\"AND\",\"{{ $matched_data }}\"]}],\"httpSourceName\":\"{{ $aws_waf_source_name }}\",\"httpSourceId\":\"{{ $long_num }}-app/wordpress/d3fad233572a26a0\",\"ruleGroupList\":[],\"rateBasedRuleList\":[],\"nonTerminatingMatchingRules\":[],\"requestHeadersInserted\":null,\"responseCodeSent\":null,\"httpRequest\":{\"clientIp\":\"{{ $client_ip}}\",\"country\":\"{{ $country_codes }}\",\"headers\":[{\"name\":\"Host\",\"value\":\"wordpress-{{ $long_num }}.{{ $cloud_region }}.elb.amazonaws.com\"},{\"name\":\"User-Agent\",\"value\":\"Apache-HttpClient/4.5.6 (Java/1.8.0_191)\"}],\"uri\":\"/wp-content/{{ $uri_path }}{{ $uri_extension }}\",\"args\":\"{{ $args }}\",\"httpVersion\":\"HTTP/1.1\",\"httpMethod\":\"{{ $http_method }}\",\"requestId\":\"rid-{{ $rangeofid }}\"}}",
+    {{- end}}
+    "event": {
+        "dataset": "aws.waf"
+    },
+    "input": {
+        "type": "aws-s3"
+    },
+    "log": {
+        "file": {
+            "path": "https://elastic-package-aws-bucket-{{ $bucket_num }}.s3.us-east-1.amazonaws.com/waf.log"
+        },
+        "offset": 0
+    },
+    "tags": [
+        "forwarded",
+        "aws-waf"
+    ]
+}

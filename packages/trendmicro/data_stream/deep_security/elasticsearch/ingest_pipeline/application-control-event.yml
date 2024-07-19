@@ -1,100 +1,42 @@
 ---
-description: Pipeline for processing Application Control event logs
+description: Pipeline for processing Application Control event logs.
 processors:
   - set:
-      field: trendmicro.event.category
-      value: "app-control"
-  - set:
+      field: trendmicro.deep_security.event_category
+      tag: set_deep_security_event_category
+      value: application-control-event
+  - append:
       field: event.category
-      value: [intrusion_detection,package]
+      tag: set_event_category
+      value: intrusion_detection
+      allow_duplicates: false
   - append:
       field: event.type
+      tag: set_event_type
       value: info
       allow_duplicates: false
   - append:
       field: event.type
+      tag: set_event_type
       value: denied
       allow_duplicates: false
-      if: ctx.trendmicro?.event?.signature_id != null && !['6002100','6002200'].contains(ctx.trendmicro.event.signature_id)
-  
-  - script:
-      lang: painless
-      params:
-        extensions:
-          # Rename field
-          - name: deviceCustomNumber1
-            to: host.id
-          - name: deviceCustomString1
-            to: trendmicro.event.action_reason
-          - name: deviceCustomString3
-            to: file.hash.md5
-          - name: deviceCustomString2
-            to: file.hash.sha1
-          - name: fileHash
-            to: file.hash.sha256
-          - name: deviceAddress
-            to: host.ip
-          - name: deviceHostName
-            to: host.hostname
-          - name: TrendMicroDsTags
-            to: trendmicro.event.tags
-          - name: TrendMicroDsTenantId
-            to: trendmicro.event.tenant_id
-          - name: TrendMicroDsTenant
-            to: trendmicro.event.tenant_name
-          - name: aggregationType
-            to: trendmicro.event.aggregation_type
-            convert:
-              "0": The event is not aggregated
-              "1": The event is aggregated based on file name,path,and event type
-              "2": The event is aggregated based on event type
-          - name: repeatCount
-            to: trendmicro.event.count
-
-      source: |
-        def actions = new ArrayList();
-        def exts = ctx.cef?.extensions;
-        if (exts == null) return;
-        for (entry in params.extensions) {
-          def value = exts[entry.name];
-          if (value == null ||
-            (entry.convert != null &&
-              (value=entry.convert[value.toLowerCase()]) == null))
-            continue;
-          if (entry.to != null) {
-            actions.add([
-              "value": value,
-              "to": entry.to
-            ]);
-            continue;
-          }
-          def label = exts[entry.name + "Label"];
-          if (label == null) continue;
-          def dest = entry.labels[label.toLowerCase()];
-          if (dest == null) continue;
-          actions.add([
-            "value": value,
-            "to": dest
-          ]);
-        }
-        ctx["_tmp_copy"] = actions;
-  - foreach:
-      field: _tmp_copy
-      processor:
-        set:
-          field: "{{_ingest._value.to}}"
-          value: "{{_ingest._value.value}}"
-          ignore_empty_value: true
-
-  - remove:
-      field:
-        - _tmp_copy
-      ignore_missing: true
-
+      if: ctx.trendmicro?.deep_security?.signature_id != null && ctx.trendmicro.deep_security.signature_id != 6002100 && ctx.trendmicro.deep_security.signature_id != 6002200
+  - append:
+      field: related.hash
+      tag: append_cs2_value_to_related_hash
+      value: '{{{trendmicro.deep_security.extensions.device.custom_string2.value}}}'
+      allow_duplicates: false
+      if: ctx.trendmicro?.deep_security?.extensions?.device?.custom_string2?.value != null
+  - append:
+      field: related.hash
+      tag: append_cs3_value_to_related_hash
+      value: '{{{trendmicro.deep_security.extensions.device.custom_string3.value}}}'
+      allow_duplicates: false
+      if: ctx.trendmicro?.deep_security?.extensions?.device?.custom_string3?.value != null
 on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error
-  - append:
-      field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'

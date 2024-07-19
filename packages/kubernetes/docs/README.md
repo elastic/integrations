@@ -86,11 +86,20 @@ This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
 #### Routing
 
-The container-logs data stream allows routing logs to a different *dataset* or *namespace* using pod annotations. 
+The container-logs data stream allows routing logs to a different *dataset* or *namespace* using pod annotations.
 
 For example, suppose you are running Nginx on your Kubernetes cluster, and you want to drive the Nginx container logs into a dedicated dataset or namespace. By annotating the pod with `elastic.co/namespace: nginx`, the integration will send all the container logs to the `nginx` namespace.
 
 To learn more about routing container-logs, see https://docs.elastic.co/integrations/kubernetes/container-logs.
+
+#### Preserve original event
+
+The agent can be configured to set the tag `preserve_original_event` on container-logs using pod annotation.
+
+For example, suppose you are routing your Nginx container logs into a dedicated dataset or namespace as described above to make use of the Nginx fleet integration. Enabling preserve_original_event on the Nginx integration will have no effect
+since the logs were shipped via kubernetes integration and not Nginx. As well, you may not want to have all original events from all Nginx pods preserved as well.
+
+By annotating the pod with `elastic.co/preserve_original_event: 'true'`, the integration will add the tag `preserve_original_event` as it would be done by the `nginx` integration otherwise.
 
 ### audit-logs
 
@@ -99,7 +108,7 @@ This defaults to `/var/log/kubernetes/kube-apiserver-audit.log`.
 
 ## Compatibility
 
-The Kubernetes package is tested with Kubernetes [1.26.x - 1.29.x] versions
+The Kubernetes package is tested with Kubernetes [1.27.x - 1.30.x] versions
 
 ## Dashboard
 

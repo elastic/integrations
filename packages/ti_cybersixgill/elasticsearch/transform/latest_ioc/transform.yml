@@ -1,0 +1,37 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-ti_cybersixgill.threat-*"
+# The version suffix on the dest.index should be incremented if a breaking change
+# is made to the index mapping. You must also bump the fleet_transform_version
+# for any change to this transform configuration to take effect. The old destination
+# index is not automatically deleted. We are dependent on https://github.com/elastic/package-spec/issues/523 to give
+# us that ability in order to prevent having duplicate IoC data and prevent query
+# time field type conflicts.
+dest:
+  index: "logs-ti_cybersixgill_latest.dest_threat-2"
+  aliases:
+    - alias: "logs-ti_cybersixgill_latest.threat"
+      move_on_creation: true
+latest:
+  unique_key:
+    - event.dataset
+    - event.id
+  sort: '@timestamp'
+description: Latest Indicator data retrieved from cybersixgill Darkfeed TAXII server.
+frequency: 30s
+sync:
+  time:
+    field: event.ingested
+    # Updated to 120s because of refresh delay in Serverless. With default 60s, sometimes transform wouldn't process all documents.
+    delay: 120s
+retention_policy:
+  time:
+    field: cybersixgill.deleted_at
+    # Delete immediately after reaching the `deleted_at` timestamp.
+    max_age: 1m
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during package.
+  # Version bump is needed if there is any code change in transform.
+  fleet_transform_version: 0.2.0

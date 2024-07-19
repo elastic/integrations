@@ -15,7 +15,8 @@ streams:
       - name: interval
         type: text
         title: Interval
-        description: "Interval between two REST API calls. User can choose interval as per their plan mentioned in [Qualys API Limits](https://www.qualys.com/docs/qualys-api-limits.pdf). Supported units for this parameter are h/m/s."
+        description: >-
+          Interval between two REST API calls. User can choose interval as per their plan mentioned in [Qualys API Limits](https://www.qualys.com/docs/qualys-api-limits.pdf). Supported units for this parameter are h/m/s.
         default: 4h
         multi: false
         required: true
@@ -23,7 +24,8 @@ streams:
       - name: batch_size
         type: integer
         title: Batch Size
-        description: "Batch size for the response of the Qualys Server API. This parameter specifies the truncation limit for the response. Specify 0 for no truncation limit."
+        description: >-
+          Batch size for the response of the Qualys Server API. This parameter specifies the truncation limit for the response. Specify 0 for no truncation limit.
         default: 1000
         multi: false
         required: true
@@ -31,15 +33,17 @@ streams:
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
-        description: "Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h."
+        description: >-
+          Duration before declaring that the HTTP client connection has timed out. Give a timeout of more than 1 minute when retrieving data which is more than 15 days old. Supported time units are ns, us, ms, s, m, h. Requests may take significant time, so short timeouts are not recommended.
         multi: false
         required: true
         show_user: false
-        default: 30s
+        default: 10m
       - name: input_parameters
         type: text
         title: Input Parameters
-        description: "Input Parameters for the URL. param1=value&param2=value&param3=....*"
+        description: >-
+          Input Parameters for the URL. param1=value&param2=value&param3=....*
         multi: false
         required: false
         show_user: true
@@ -58,6 +62,14 @@ streams:
         show_user: false
         title: Preserve duplicate custom fields
         description: Preserve qualys_vmdr.asset_host_detection fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_original_event
+        required: true
+        show_user: false
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
         type: bool
         multi: false
         default: false

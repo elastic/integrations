@@ -2,41 +2,53 @@
 
 ## Overview
 
-The Salesforce integration allows users to monitor a [Salesforce](https://www.salesforce.com/) instance. Salesforce is a customer relationship management (CRM) platform. It provides an ecosystem for businesses to manage marketing, sales, commerce, service, and IT teams from anywhere with one integrated CRM platform.
+The Salesforce integration enables users to monitor their [Salesforce](https://www.salesforce.com/) instance effectively. Salesforce is a comprehensive customer relationship management (CRM) platform that supports businesses in managing marketing, sales, commerce, service, and IT teams from a unified platform accessible from anywhere.
 
-Use the Salesforce integration to:
-- Gain insights into login and other operational activities by the users of the organization.
-- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
-- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
+### Key benefits of Salesforce Integration
 
-As an example, users can use the data from this integration to understand the activity patterns of users based on region or the distribution of users by license type. 
+- **Operational Insights**: Gain valuable insights into login and logout activities and other operational events within your organization.
+- **Data Visualization**: Create detailed visualizations to monitor, measure, and analyze usage trends and key data, helping you derive actionable business insights.
+- **Proactive Alerts**: Set up alerts to minimize Mean Time to Detection (MTTD) and Mean Time to Resolution (MTTR) by referencing relevant logs during troubleshooting.
 
 ## Data streams
 
-The Salesforce integration collects log events using the REST API and Streaming API of Salesforce.
+The Salesforce integration provides the following data streams:
 
-**Logs** help users to keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Login Stream](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm), [Logout REST](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm), [Logout Stream](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm), and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
+- `login`: Tracks login activity of users who log in to Salesforce.
+- `logout`: Tracks logout activity of users who log out from Salesforce.
+- `apex`: Represents information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, etc.
+- `setupaudittrail`: Represents changes users made in the organization's setup area for at least the last 180 days.
 
-Data streams:
-- `login_rest` and `login_stream`: Tracks login activity of users who log in to Salesforce.
-- `logout_rest` and `logout_stream`: Tracks logout activity of users who logout from Salesforce.
-- `apex`: Represents information about various Apex events like Callout, Execution, REST API, SOAP API, Trigger, etc.
-- `setupaudittrail`: Represents changes users made in the user's organization's Setup area for at least the last 180 days.
+The Salesforce integration collects events using the Salesforce REST API. We are collecting following events:
+
+- [Login EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm)
+- [Login Platform Events](https://developer.salesforce.com/docs/atlas.en-us.236.0.platform_events.meta/platform_events/sforce_api_objects_logineventstream.htm)
+- [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm)
+- [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm)
+- [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm)
+- [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm)
 
 ## Compatibility
 
-This integration has been tested against Salesforce `Spring '22 (v54.0) release`.
+This integration has been tested against Salesforce Spring '22 (v54.0) release. Minimum supported version is v46.0.
 
-In order to find out the Salesforce version of the user's instance, see below:
+### Finding your Salesforce Instance Version
 
-1. On the Home tab in Salesforce Classic, in the top right corner of the screen is a link to releases like `Summer '22`. This indicates the release version of the salesforce instance.
+You can determine your Salesforce instance version using one of the following methods:
 
-2. An alternative way to find out the version of Salesforce is by hitting the following URL:
-    - Format: (Salesforce Instance URL)/services/data
-    - Example: `https://na9.salesforce.com/services/data`
+#### Method 1: Salesforce Classic
 
-Example response:
+1. Navigate to the Home tab in Salesforce Classic.
+2. Look for a link in the top right corner of the screen, such as `Summer '22`.
+3. This link indicates the current release version of your Salesforce instance.
+
+#### Method 2: Using the Salesforce Instance URL
+
+1. Use your Salesforce Instance URL with the following format:
+   `(Salesforce Instance URL)/services/data`
+
+Example: `https://na9.salesforce.com/services/data`. This will return an XML response listing with available API versions:
+
 ```xml
 <Versions>
     <Version>
@@ -56,89 +68,84 @@ Example response:
     </Version>
 </Versions>
 ```
-The last one on the list is the release of the user's salesforce instance. In the example above, the version is `Summer '22` i.e. `v55.0`.
+
+The last entry in the list indicates the current release version of your Salesforce instance. In the example above, the version is `Summer '22 (v55.0)`.
 
 ## Prerequisites
 
-Users need Elasticsearch for storing and searching their data and Kibana for visualizing and managing it.
-Users can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on their own hardware.
+To use this integration, you need Elasticsearch for storing and searching your data, and Kibana for visualizing and managing it. We recommend using our hosted Elasticsearch Service on Elastic Cloud, but you can also self-manage the Elastic Stack on your own hardware.
 
-In the user's Salesforce instance, ensure that `API Enabled permission` is selected for the user profile. Follow the below steps to enable the same:
+### Enabling API Access in Salesforce
 
-1. Go to `Setup` > `Quick Find` > `Users`, and Click on `Users`.
+Ensure that the `API Enabled` permission is selected for the user profile in your Salesforce instance. Follow these steps to enable it:
+
+1. Navigate to `Setup` > `Quick Find` > `Users`, and click on `Users`.
 2. Click on the profile link associated with the `User Account` used for data collection.
-3. Search for `API Enabled` permission on the same page. In case it’s not present, search it under `System Permissions` and check if `API Enabled` privilege is selected. If not, enable it for data collection.
+3. Search for the `API Enabled` permission on the profile page. If it’s not present, search under `System Permissions` and check if the `API Enabled` privilege is selected. If not, enable it for data collection.
 
-For collecting data using `Streaming API`:
+### Collecting Data using Real-Time Event Monitoring API
 
-In the user's Salesforce instance, ensure that `View Real-Time Event Monitoring Data` is selected for the user profile. Follow the below steps to enable the same:
+To enable data collection using the [Real-Time Event Monitoring API](https://help.salesforce.com/s/articleView?id=sf.real_time_event_monitoring_enable.htm&type=5):
 
-1. Go to `Setup` > `Quick Find` > `Users`, and Click on `Users`.
-2. Click on the profile link associated with the `User Account` used for data collection.
-3. Search for `View Real-Time Event Monitoring Data` permission on the same page. In case it’s not present, search it under `System Permissions` and check if `View Real-Time Event Monitoring Data` privilege is selected. If not, enable it for data collection.
+1. Navigate to `Setup` > `Quick Find` > `Event Manager`.
+2. Click on "Event Manager".
+3. For each event type you want to monitor (e.g., Login Event, Logout Event), click the dropdown arrow and select "Enable Storage".
+4. Ensure you have the necessary permissions: "View Real-Time Event Monitoring Data" and "Use Real-Time Event Monitoring APIs".
 
-Also, ensure that `Event Streaming` is enabled for `Login Event` and `Logout Event`. Follow the below steps to enable the same: 
-
-1. Go to `Setup` > `Quick Find` > `Event Manager`, and Click on `Event Manager`.
-2. For `Login Event` and `Logout Event` click on the down arrow button on the left corner and select `Enable Streaming`.
+> **Note**: Real-Time Event Monitoring may require additional licensing. Check with your Salesforce account representative if you're unsure about your subscription level.
 
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-Note: Please enable either `login_rest` / `login_stream` data stream and either `logout_rest` / `logout_stream` data stream to avoid data duplication.
-
 ## Configuration
 
-Users need the following information from the user's Salesforce instance to configure this integration in Elastic:
+To configure the Salesforce integration, you will need the following information from your Salesforce instance:
 
 ### Salesforce Instance URL
 
-The instance the user's Salesforce Organization uses is indicated in the URL of the address bar in Salesforce Classic. The value before 'salesforce.com' is the user's Salesforce Instance.
+The Salesforce Instance URL is the URL of your Salesforce Organization. It can be found in the address bar in Salesforce Classic or Salesforce Lightning.
 
-Example URL: `https://na9.salesforce.com/home/home.jsp`
+- **Salesforce Classic**: Given the example URL `https://na9.salesforce.com/home/home.jsp`, the Salesforce Instance URL is extracted as `https://na9.salesforce.com`.
 
-In the above example, the value before 'salesforce.com' is the user's Salesforce Instance. In this example, the Salesforce Organization is located on NA9. 
-
-The Salesforce Instance URL is: `https://na9.salesforce.com`
-
-In Salesforce Lightning, it is available under the user name in the “View Profile” tab.
+- **Salesforce Lightning**: The instance URL is available under your user name in the "View Profile" tab.
 
 ### Client Key and Client Secret for Authentication
 
-In order to use this integration, users need to create a new Salesforce Application using OAuth. Follow the steps below to create a connected application in Salesforce:
+To use this integration, you need to create a new Salesforce Application using OAuth. Follow these steps to create a connected application in Salesforce:
 
-1. Login to [Salesforce](https://login.salesforce.com/) with the same user credentials that the user wants to collect data with.
-2. Click on Setup on the top right menu bar. On the Setup page search `App Manager` in the `Search Setup` search box at the top of the page, then select `App Manager`.
-3. Click *New Connected App*.
-4. Provide a name for the connected application. This will be displayed in the App Manager and on its App Launcher tile. 
-5. Enter the API name. The default is a version of the name without spaces. Only letters, numbers, and underscores are allowed. If the original app name contains any other characters, edit the default name.
-6. Enter the contact email for Salesforce.
-7. Under the API (Enable OAuth Settings) section of the page, select *Enable OAuth Settings*.
-8. In the Callback URL enter the Instance URL (Please refer to `Salesforce Instance URL`)
-9. Select the following OAuth scopes to apply to the connected app:
-    - Manage user data via APIs (api). 
-    - Perform requests at any time (refresh_token, offline_access).
-    - (Optional) In case of data collection, if any permission issues arise, add the Full access (full) scope.
-10. Select *Require Secret for the Web Server Flow* to require the app's client secret in exchange for an access token.
-11. Select *Require Secret for Refresh Token Flow* to require the app's client secret in the authorization request of a refresh token and hybrid refresh token flow.
-12. Click Save. It may take approximately 10 minutes for the changes to take effect.
-13. Click Continue and then under API details click Manage Consumer Details, Verify the user account using Verification Code.
-14. Copy `Consumer Key` and `Consumer Secret` from the Consumer Details section, which should be populated as value to Client ID and Client Secret respectively in the configuration.
+1. Log in to [Salesforce](https://login.salesforce.com/) with the user credentials you want to collect data with.
+2. Click on **Setup** in the top right menu bar.
+3. In the Setup page, search for `App Manager` in the `Search Setup` box at the top of the page, then select **App Manager**.
+4. Click **New Connected App**.
+5. Provide a name for the connected application. This name will be displayed in the App Manager and on its App Launcher tile.
+6. Enter the API name. The default is a version of the name without spaces. Only letters, numbers, and underscores are allowed. If the original app name contains any other characters, edit the default name.
+7. Enter the contact email for Salesforce.
+8. Under the **API (Enable OAuth Settings)** section, select **Enable OAuth Settings**.
+9. In the **Callback URL**, enter the Instance URL (refer to `Salesforce Instance URL` above).
+10. Select the following OAuth scopes to apply to the connected app:
+    - **Manage user data via APIs (api)**
+    - **Perform requests at any time (refresh_token, offline_access)**
+    - (Optional) If you encounter any permission issues during data collection, add the **Full access (full)** scope.
+11. Select **Require Secret for the Web Server Flow** to require the app's client secret in exchange for an access token.
+12. Select **Require Secret for Refresh Token Flow** to require the app's client secret in the authorization request of a refresh token and hybrid refresh token flow.
+13. Click **Save**. It may take approximately 10 minutes for the changes to take effect.
+14. Click **Continue**, then under **API details**, click **Manage Consumer Details**. Verify the user account using the Verification Code.
+15. Copy the `Consumer Key` and `Consumer Secret` from the Consumer Details section. These should be populated as the values for Client ID and Client Secret, respectively, in the configuration.
 
-For more details on how to Create a Connected App refer to the salesforce documentation [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
+For more details on how to create a connected app, refer to the Salesforce documentation [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
 
 ### Username
 
-User Id of the registered user in Salesforce.
+The User ID of the registered user in Salesforce.
 
 ### Password
 
-Password used for authenticating the above user.
+The password used for authenticating the above user.
 
-## Additional Information
+## Additional information
 
-Follow the steps below, in case the user needs to find the API version:
+Follow the steps below if you need to find the API version:
 
 1. Go to `Setup` > `Quick Find` > `Apex Classes`.
 2. Click the `New` button.
@@ -147,178 +154,91 @@ Follow the steps below, in case the user needs to find the API version:
 
 ## Validation
 
-After the integration is successfully configured, clicking on the Assets tab of the Salesforce Integration should display a list of available dashboards. Click on the dashboard available for the user's configured datastream. It should be populated with the required data.
+Once the Salesforce integration is successfully configured, you can validate the setup by following these steps:
+
+1. Navigate to the **Assets** tab within the Salesforce Integration.
+2. You should see a list of available dashboards corresponding to your configured data streams.
+3. Select the dashboard relevant to your data stream (e.g., login, logout, apex, setupaudittrail).
+4. Verify that the dashboard is populated with the expected data.
+
+If the dashboard displays the data correctly, your integration is successfully validated.
+
+## Salesforce Integration: v0.15.0 and Beyond
+
+With version 0.15.0, we've significantly enhanced the Salesforce integration, introducing major changes in data collection mechanisms, authentication, and data streams. Due to these changes, we recommend using Salesforce integration v0.15.0 or above and uninstalling previous versions.
+
+### Key enhancements
+
+1. Unified data collection: The integration now uses a single Filebeat input ([Salesforce input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-salesforce.html)) for data collection from EventLogFile and Real-time Event Monitoring APIs.
+2. JWT authentication: Introduced JWT authentication mechanism.
+3. Expanded configuration options: Added `initial_interval` and other options to fine-tune data collection, including historical data retrieval.
+4. Change in data-collection mechanism: Replaced Streaming API (cometd) with Real-time Event Monitoring APIs.
+5. Performance optimization: Significantly reduced CPU and memory usage during data collection.
+6. Enhanced dashboards: Improved visualizations.
+
+### Breaking changes
+
+1. Data stream consolidation: Reduced from 6 to 4 data streams — `apex`, `login`, `logout`, and `setupaudittrail`.
+2. Field mapping updates: Modified mappings for multiple fields.
+3. Additional changes: Various other modifications to enhance overall integration performance and functionality.
 
 ## Troubleshooting
 
+This section provides solutions to common issues you might encounter while using the Salesforce integration.
+
 ### Request timeout
 
-In `Apex`, `Login Rest`, `Logout Rest`, or `SetupAuditTrail` datastreams, if the response is getting delayed from the Salesforce server side due to any reason then the following error might occur:
+If you experience delays in the response from the Salesforce server in the `apex`, `login`, `logout`, or `setupaudittrail` data streams, you might encounter the following error:
+
 ```
 Error while processing http request: failed to execute rf.collectResponse: failed to execute http client.Do: failed to execute http client.Do: failed to read http.response.body
 ```
-In this case, consider increasing `Request timeout` configuration from `Advanced options` section of that data stream.
+
+**Solution:** Consider increasing the `Request timeout` setting in the `Advanced options` section for the affected data stream.
 
 ### Data ingestion error
 
-In case of data ingestion if the user finds the following type of error logs:
-```
-{
-    "log.level": "error",
-    "@timestamp": "2022-11-24T12:59:36.835+0530",
-    "log.logger": "input.httpjson-cursor",
-    "log.origin": {
-        "[file.name](http://file.name/)": "compat/compat.go",
-        "file.line": 124
-    },
-    "message": "Input 'httpjson-cursor' failed with: input.go:130: input 8A049E17A5CA661D failed (id=8A049E17A5CA661D)\n\toauth2 client: error loading credentials using user and password: oauth2: cannot fetch token: 400 Bad Request\n\tResponse: {\"error\":\"invalid_grant\",\"error_description\":\"authentication failure\"}",
-    "[service.name](http://service.name/)": "filebeat",
-    "id": "8A049E17A5CA661D",
-    "ecs.version": "1.6.0"
-}
-```
-Please check if the `API Enabled permission` is provided to the `profile` associated with the `username` used as part of the integration.
-Please refer to the Prerequisites section above for more information.
+If you encounter data ingestion errors, you might see an error message similar to the following:
 
-If the error continues follow these steps:
+> oauth2 client: error loading credentials using user and password: oauth2: cannot fetch token: 400 Bad Request
+
+**Solution:** Ensure that the `API Enabled` permission is granted to the `profile` associated with the `username` used for the integration. Refer to the **Prerequisites** section above for more information.
+
+If the error persists, follow these steps:
 
 1. Go to `Setup` > `Quick Find` > `Manage Connected Apps`.
-2. Click on the Connected App name created by the user to generate the client id and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
-3. Click on Edit Policies, and select `Relax IP restrictions` from the dropdown for IP Relaxation.
-
-### Missing old events in **Login events table** panel
-
-If **Login events table** does not display older documents after upgrading to ``0.8.0`` or later versions, then this issue can be solved by reindexing the ``login_rest`` data stream's indices.
-
-To reindex the data, the following steps must be performed.
-
-1. Stop the data stream by going to `Integrations -> Salesforce -> Integration policies` open the configuration of Salesforce and disable the `Salesforce Login logs` toggle to reindex ``login_rest`` data stream and save the integration.
-
-2. Copy data into the temporary index by performing the following steps in the Dev tools.
-
-```
-POST _reindex
-{
-  "source": {
-    "index": "<index_name>"
-  },
-  "dest": {
-    "index": "temp_index"
-  }
-}
-```
-Example:
-```
-POST _reindex
-{
-  "source": {
-    "index": "logs-salesforce.login_rest-default"
-  },
-  "dest": {
-    "index": "temp_index"
-  }
-}
-```
-
-3. Delete the existing data stream and index template by performing the following steps in the Dev tools.
-
-```
-DELETE /_data_stream/<data_stream>
-DELETE _index_template/<index_template>
-```
-Example:
-```
-DELETE /_data_stream/logs-salesforce.login_rest-default
-DELETE _index_template/logs-salesforce.login_rest
-```
-
-4. Go to `Integrations ->  Salesforce  -> Settings` and click on `Reinstall Salesforce`.
-
-5. Copy data from temporary index to new index by performing the following steps in the Dev tools.
-
-```
-POST _reindex
-{
-  "source": {
-    "index": "temp_index"
-  },
-  "dest": {
-    "index": "<index_name>",
-    "op_type": "create"
-  }
-}
-```
-Example:
-```
-POST _reindex
-{
-  "source": {
-    "index": "temp_index"
-  },
-  "dest": {
-    "index": "logs-salesforce.login_rest-default",
-    "op_type": "create"
-  }
-}
-```
-
-6. Verify data is reindexed completely.
-
-7. Start the data stream by going to the `Integrations -> Salesforce -> Integration policies` and open configuration of integration and enable the `Salesforce Login logs` toggle.
-
-8. Delete temporary index by performing the following step in the Dev tools.
-
-```
-DELETE temp_index
-```
-
-More details about reindexing can be found [here](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html).
+2. Click on the Connected App name created to generate the client ID and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
+3. Click on `Edit Policies` and select `Relax IP restrictions` from the dropdown for IP Relaxation.
 
 ## Logs reference
 
 ### Apex
 
-This is the `apex` data stream. Apex enables developers to access the Salesforce platform back-end database and client-server interfaces to create third-party SaaS applications.
+The `apex` data stream captures events related to Apex operations, enabling developers to access the Salesforce platform back-end database and client-server interfaces to create third-party SaaS applications.
 
 {{event "apex"}}
 
 {{fields "apex"}}
 
-### Login Rest
+### Login
 
-This is the `login_rest` data stream. It represents events containing details about the user's organization's login history.
+The `login` data stream captures events that detail the login history of users within your Salesforce organization. This data stream provides insights into user authentication activities, helping you monitor and analyze login patterns, detect anomalies, and ensure security compliance.
 
-{{event "login_rest"}}
+{{event "login"}}
 
-{{fields "login_rest"}}
+{{fields "login"}}
 
-### Login Stream
+### Logout
 
-This is the `login_stream` data stream. It represents events containing details about the user's organization's login history.
+The `logout` data stream captures events that detail the logout history of users within your Salesforce organization. This data stream provides insights into user authentication activities, helping you monitor and analyze logout patterns, detect anomalies, and ensure security compliance.
 
-{{event "login_stream"}}
+{{event "logout"}}
 
-{{fields "login_stream"}}
-
-### Logout Rest
-
-This is the `logout_rest` data stream. It represents events containing details about the user's organization's logout history.
-
-{{event "logout_rest"}}
-
-{{fields "logout_rest"}}
-
-### Logout Stream
-
-This is the `logout_stream` data stream. It represents events containing details about the user's organization's logout history.
-
-{{event "logout_stream"}}
-
-{{fields "logout_stream"}}
+{{fields "logout"}}
 
 ### SetupAuditTrail
 
-This is the `setupaudittrail` data stream. It represents changes users made in the user's organization's Setup area for at least the last 180 days.
+The `setupaudittrail` data stream captures and records changes made by users in the organization's Setup area. By default, it collects data from the last week, but users can configure it to collect data from up to the last 180 days by adjusting the initial interval in the configuration.
 
 {{event "setupaudittrail"}}
 

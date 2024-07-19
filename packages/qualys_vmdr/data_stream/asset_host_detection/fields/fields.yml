@@ -3,35 +3,26 @@
   fields:
     - name: asset_id
       type: keyword
-    - name: cloud
+    - name: cloud_provider
+      type: keyword
+    - name: cloud_provider_tags
       type: group
       fields:
-        - name: provider
+        - name: cloud_tag
           type: group
           fields:
+            - name: last_success_date
+              type: date
             - name: name
               type: keyword
-            - name: tags
-              type: group
-              fields:
-                - name: cloud_tag
-                  type: group
-                  fields:
-                    - name: last_success_date
-                      type: date
-                    - name: name
-                      type: keyword
-                    - name: value
-                      type: keyword
-        - name: resource_id
-          type: keyword
-        - name: service
-          type: keyword
+            - name: value
+              type: keyword
+    - name: cloud_resource_id
+      type: keyword
+    - name: cloud_service
+      type: keyword
     - name: dns
-      type: group
-      fields:
-        - name: value
-          type: keyword
+      type: keyword
     - name: dns_data
       type: group
       fields:
@@ -49,28 +40,19 @@
       type: ip
     - name: ipv6
       type: ip
-    - name: last
-      type: group
-      fields:
-        - name: pc_scanned_date
-          type: date
-        - name: scan_datetime
-          type: date
-        - name: vm
-          type: group
-          fields:
-            - name: auth
-              type: group
-              fields:
-                - name: scanned_date
-                  type: date
-                - name: scanned_duration
-                  type: long
-            - name: scanned_date
-              type: date
-            - name: scanned_duration
-              type: long
-    - name: list
+    - name: last_pc_scanned_date
+      type: date
+    - name: last_scan_datetime
+      type: date
+    - name: last_vm_auth_scanned_date
+      type: date
+    - name: last_vm_auth_scanned_duration
+      type: long
+    - name: last_vm_scanned_date
+      type: date
+    - name: last_vm_scanned_duration
+      type: long
+    - name: vulnerability
       type: group
       fields:
         - name: affect
@@ -156,6 +138,8 @@
               type: long
         - name: type
           type: keyword
+        - name: unique_vuln_id
+          type: keyword
     - name: metadata
       type: group
       fields:
@@ -236,13 +220,10 @@
     - name: network_id
       type: keyword
     - name: os
-      type: group
-      fields:
-        - name: value
-          type: keyword
-        - name: cpe
-          type: keyword
-    - name: qg_host_id
+      type: keyword
+    - name: os_cpe
+      type: keyword
+    - name: qg_hostid
       type: keyword
     - name: tags
       type: group

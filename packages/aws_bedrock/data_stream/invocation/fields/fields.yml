@@ -1,0 +1,256 @@
+- name: aws_bedrock.invocation
+  type: group
+  fields:
+    - name: input.input_body_json
+      type: flattened
+    - name: input.input_body_json_massive_hash
+      type: keyword
+    - name: input.input_body_json_massive_length
+      type: long
+    - name: input.input_content_type
+      type: keyword
+    - name: input.input_token_count
+      type: long
+      description: todo
+    - name: model_id
+      type: keyword
+    - name: output.output_body_json
+      type: flattened
+    - name: output.output_content_type
+      type: keyword
+    - name: output.output_token_count
+      type: long
+    - name: request_id
+      type: keyword
+    - name: schema_type
+      type: keyword
+    - name: schema_version
+      type: keyword
+    - name: artifacts
+      type: flattened
+    - name: error
+      type: keyword
+    - name: error_code
+      type: keyword
+    - name: image_generation_config.cfg_scale
+      type: double
+    - name: image_generation_config.height
+      type: long
+    - name: image_generation_config.number_of_images
+      type: long
+    - name: image_generation_config.quality
+      type: keyword
+    - name: image_generation_config.seed
+      type: long
+    - name: image_generation_config.width
+      type: long
+    - name: image_variation_params.images
+      type: keyword
+    - name: image_variation_params.text
+      type: keyword
+    - name: images
+      type: keyword
+    - name: input.input_body_s3_path
+      type: keyword
+    - name: output.output_body_s3_path
+      type: keyword
+    - name: result
+      type: keyword
+    - name: task_type
+      type: keyword
+- name: gen_ai.prompt
+  type: text
+  description: The full text of the user's request to the gen_ai.
+- name: gen_ai.usage.prompt_tokens
+  type: integer
+  description: Number of tokens in the user's request.
+- name: gen_ai.completion
+  type: text
+  description: The full text of the LLM's response.
+- name: gen_ai.usage.completion_tokens
+  type: integer
+  description: Number of tokens in the LLM's response.
+- name: gen_ai.system
+  type: keyword
+  description: Name of the LLM foundation model vendor.
+- name: gen_ai.user.id
+  type: keyword
+  description: Unique identifier for the user.
+- name: gen_ai.user.rn
+  type: keyword
+  description: Unique resource name for the user.
+- name: gen_ai.request.id
+  type: keyword
+  description: Unique identifier for the LLM request.
+- name: gen_ai.response.id
+  type: keyword
+  description: Unique identifier for the LLM response.
+- name: gen_ai.response.error_code
+  type: keyword
+  description: Error code returned in the LLM response.
+- name: gen_ai.response.finish_reasons
+  type: keyword
+  description: Reason the LLM response stopped.
+- name: gen_ai.request.timestamp
+  type: date
+  description: Timestamp when the request was made.
+- name: gen_ai.response.timestamp
+  type: date
+  description: Timestamp when the response was received.
+- name: gen_ai.response.model
+  type: keyword
+  description: Name of the LLM a response was generated from.
+- name: gen_ai.request.max_tokens
+  type: integer
+  description: Maximum number of tokens the LLM generates for a request.
+- name: gen_ai.request.temperature
+  type: float
+  description: Temperature setting for the LLM request.
+- name: gen_ai.request.top_k
+  type: float
+  description: The top_k sampling setting for the LLM request.
+- name: gen_ai.request.top_p
+  type: float
+  description: The top_p sampling setting for the LLM request.
+- name: gen_ai.request.model.version
+  type: keyword
+  description: Version of the LLM model used to generate the response.
+- name: gen_ai.request.model.id
+  type: keyword
+  description: Unique identifier for the LLM model.
+- name: gen_ai.request.model.role
+  type: keyword
+  description: Role of the LLM model in the interaction.
+- name: gen_ai.request.model.type
+  type: keyword
+  description: Type of LLM model.
+- name: gen_ai.request.model.description
+  type: keyword
+  description: Description of the LLM model.
+- name: gen_ai.request.model.instructions
+  type: text
+  description: Custom instructions for the LLM model.
+- name: gen_ai.text.readability_score
+  type: float
+  description: Measures the readability level of the text.
+- name: gen_ai.text.complexity_score
+  type: float
+  description: Evaluates the complexity of the text.
+- name: gen_ai.text.similarity_score
+  type: float
+  description: Measures the similarity between the prompt and response.
+- name: gen_ai.security.regex_pattern_count
+  type: integer
+  description: Counts occurrences of strings matching user-defined regex patterns.
+- name: gen_ai.security.jailbreak_score
+  type: float
+  description: Measures similarity to known jailbreak attempts.
+- name: gen_ai.security.prompt_injection_score
+  type: float
+  description: Measures similarity to known prompt injection attacks.
+- name: gen_ai.security.hallucination_consistency
+  type: float
+  description: Consistency check between multiple responses.
+- name: gen_ai.security.refusal_score
+  type: float
+  description: Measures similarity to known LLM refusal responses.
+- name: gen_ai.policy.name
+  type: keyword
+  description: Name of the specific policy that was triggered.
+- name: gen_ai.policy.violation
+  type: boolean
+  description: Specifies if a security policy was violated.
+- name: gen_ai.policy.action
+  type: keyword
+  description: Action taken due to a policy violation, such as blocking, alerting, or modifying the content.
+- name: gen_ai.policy.match_detail
+  type: group
+  description: Details about what specifically triggered the policy, including matched words, phrases, or patterns.
+- name: gen_ai.policy.match_detail.*
+  type: object
+  object_type: keyword
+  object_type_mapping_type: "*"
+- name: gen_ai.policy.confidence
+  type: keyword
+  description: Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria.
+- name: gen_ai.threat.risk_score
+  type: float
+  description: Numerical score indicating the potential risk associated with the response.
+- name: gen_ai.threat.type
+  type: keyword
+  description: Type of threat detected in the LLM interaction.
+- name: gen_ai.threat.detected
+  type: boolean
+  description: Whether a security threat was detected.
+- name: gen_ai.threat.category
+  type: keyword
+  description: Category of the detected security threat.
+- name: gen_ai.threat.description
+  type: text
+  description: Description of the detected security threat.
+- name: gen_ai.threat.action
+  type: keyword
+  description: Recommended action to mitigate the detected security threat.
+- name: gen_ai.threat.source
+  type: keyword
+  description: Source of the detected security threat.
+- name: gen_ai.threat.signature
+  type: keyword
+  description: Signature of the detected security threat.
+- name: gen_ai.threat.yara_matches
+  type: nested
+  description: Stores results from YARA scans including rule matches and categories.
+- name: gen_ai.compliance.violation_detected
+  type: boolean
+  description: Indicates if any compliance violation was detected during the interaction.
+- name: gen_ai.compliance.violation_code
+  type: keyword
+  description: Code identifying the specific compliance rule that was violated.
+- name: gen_ai.compliance.response_triggered
+  type: keyword
+  description: Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks.
+- name: gen_ai.compliance.request_triggered
+  type: keyword
+  description: Lists compliance-related filters that were triggered during the processing of the request, such as data privacy filters or regulatory compliance checks.
+- name: gen_ai.owasp.id
+  type: keyword
+  description: Identifier for the OWASP risk addressed.
+- name: gen_ai.owasp.description
+  type: text
+  description: Description of the OWASP risk triggered.
+- name: gen_ai.analysis.tool_names
+  type: keyword
+  description: Name of the security or analysis tools used.
+- name: gen_ai.analysis.function
+  type: keyword
+  description: Name of the security or analysis function used.
+- name: gen_ai.analysis.findings
+  type: nested
+  description: Detailed findings from security tools.
+- name: gen_ai.analysis.action_recommended
+  type: keyword
+  description: Recommended actions based on the analysis.
+- name: gen_ai.sentiment.score
+  type: float
+  description: Sentiment analysis score.
+- name: gen_ai.sentiment.toxicity_score
+  type: float
+  description: Toxicity analysis score.
+- name: gen_ai.sentiment.content_inappropriate
+  type: boolean
+  description: Whether the content was flagged as inappropriate or sensitive.
+- name: gen_ai.sentiment.content_categories
+  type: keyword
+  description: Categories of content identified as sensitive or requiring moderation.
+- name: gen_ai.performance.response_time
+  type: long
+  description: Time taken by the LLM to generate a response in milliseconds.
+- name: gen_ai.performance.start_response_time
+  type: long
+  description: Time taken by the LLM to send first response byte in milliseconds.
+- name: gen_ai.performance.request_size
+  type: long
+  description: Size of the request payload in bytes.
+- name: gen_ai.performance.response_size
+  type: long
+  description: Size of the response payload in bytes.
