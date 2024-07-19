@@ -1,0 +1,200 @@
+---
+description: "Pipeline for CloudFront standard access logs"
+
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: ["web"]
+  - append:
+      field: event.type
+      value: ["access"]
+  - set:
+      field: cloud.provider
+      value: aws
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - drop:
+      if: "ctx.event.original.startsWith('#')"
+      description: "Drop if logline contains header(s), which startswith `#`"
+  - grok:
+      field: event.original
+      patterns:
+        - '^%{TIMESTAMP:_tmp.time}\s%{EDGE_LOCATION:aws.cloudfront.edge_location}\s%{INT:http.response.bytes:long}\s%{IP:source.address}\s%{WORD:http.request.method}\s%{HOSTNAME:aws.cloudfront.domain}\s%{UNIXPATH:url.path}\s%{INT:http.response.status_code:long}\s(-|%{DATA:http.request.referrer})\s%{DATA:_tmp.user_agent}\s(-|%{DATA:url.query})\s(-|%{DATA:aws.cloudfront.cookies})\s%{WORD:aws.cloudfront.edge_result_type}\s%{DATA:http.request.id}\s%{HOSTNAME:destination.address}\s%{WORD:network.protocol}\s%{INT:http.request.bytes:long}\s%{NUMBER:_tmp.duration:float}\s(-|%{FORWARDED_IPS:_tmp.forwarded_ip})\s(-|%{TLS:tls.version_protocol}v%{NUMBER:tls.version})\s(-|%{DATA:tls.cipher})\s%{WORD:aws.cloudfront.edge_response_result_type}\s%{DATA:_tmp.protocol}\s(-|%{WORD:aws.cloudfront.fle_status})\s(-|%{DATA:aws.cloudfront.fle_encrypted_fields})\s(-|%{POSINT:source.port:long})\s(-|%{NUMBER:aws.cloudfront.time_to_first_byte:float})\s(-|%{WORD:aws.cloudfront.edge_detailed_result_type})\s%{DATA:aws.cloudfront.content_type}\s(-|%{INT:http.response.body.bytes:long})\s(-|%{DATA:aws.cloudfront.range_start})\s(-|%{DATA:aws.cloudfront.range_end})$'
+      pattern_definitions:
+        TIMESTAMP: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}%{SPACE}%{HOUR}:%{MINUTE}:%{SECOND}'
+        TLS: '(TLS|SSL)'
+        EDGE_LOCATION: '[A-Z]{3}\d+(-[A-Z]+\d+)?'
+        FORWARDED_IPS: '(%{IP}?(,(\s*)%{IP})*)+'
+  - gsub:
+      field: _tmp.time
+      pattern: \t
+      replacement: " "
+      ignore_missing: true
+  - date:
+      field: _tmp.time
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+  - urldecode:
+      field: _tmp.user_agent
+      ignore_missing: true
+  - user_agent:
+      field: _tmp.user_agent
+      target_field: user_agent
+      ignore_missing:
+  - dissect:
+      field: _tmp.protocol
+      pattern: "%{}/%{http.version}"
+      ignore_failure: true
+  - set:
+      field: destination.domain
+      copy_from: destination.address
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: This script builds the `url.full` field out of the available `url.*` parts.
+      source: |
+        def full = "";
+        if(ctx.network?.protocol != null && ctx.network?.protocol != "") {
+            full += ctx.network.protocol+"://";
+        }
+        if(ctx.destination?.domain != null && ctx.destination?.domain != "") {
+            full += ctx.destination.domain;
+        }
+        if(ctx.url?.path != null && ctx.url?.path != "") {
+            full += ctx.url.path;
+        }
+        if(ctx.url?.query != null && ctx.url?.query != "") {
+            full += "?"+ctx.url.query;
+        }
+        if(full != "") {
+            ctx._tmp.url_full = full
+        }
+  - uri_parts:
+      field: _tmp.url_full
+      target_field: url
+      keep_original: false
+  - rename:
+      field: _tmp.url_full
+      target_field: url.full
+      ignore_missing: true
+  - registered_domain:
+      field: url.domain
+      target_field: url
+      ignore_missing: true
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: network.type
+      value: ipv4
+      if: 'ctx.source?.ip != null && ctx.source?.ip.contains(".")'
+  - set:
+      field: network.type
+      value: ipv6
+      if: 'ctx.source?.ip != null && ctx.source?.ip.contains(":")'
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - split:
+      field: _tmp.forwarded_ip
+      target_field: related.ip
+      separator: ','
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: ctx.source?.ip != null
+  - split:
+      field: _tmp.forwarded_ip
+      target_field: network.forwarded_ip
+      separator: ','
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: "{{destination.domain}}"
+      allow_duplicates: false
+      if: ctx.destination?.domain != null
+  - append:
+      field: related.hosts
+      value: "{{aws.cloudfront.domain}}"
+      allow_duplicates: false
+      if: ctx.aws?.cloudfront.domain != null
+  - set:
+      field: event.id
+      copy_from: http.request.id
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.http?.response?.status_code >= 400
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.http?.response?.status_code < 400 && ctx.http?.response?.status_code > 000
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.http?.response?.status_code == 000
+  - script:
+      lang: painless
+      if: ctx.event?.duration != null
+      params:
+        S_TO_NS: 1000000000
+      source: >-
+        ctx.event.duration *= params.S_TO_NS;
+  - lowercase:
+      field: tls.version_protocol
+      ignore_missing: true
+  - remove:
+      field: _tmp
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "ppbgdi" }}'
+on_failure:
+  - set:
+      field: 'error.message'
+      value: '{{ _ingest.on_failure_message }}'
