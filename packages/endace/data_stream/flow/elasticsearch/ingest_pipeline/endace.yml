@@ -8,14 +8,19 @@ processors:
       if: ctx.destination?.ip != null && ctx.destination?.ip != '' && ctx.source?.ip != null && ctx.source?.ip != ''
       tag: endace conversation set
   
-  
   - set: 
-      description: "Set IP Conversation if either destination.ip and source.ip are present"
-      field: _conf.ipconv
-      value: "ip={{ source.ip }}{{ destination.ip }}"
-      if: ctx._conf.ipconv != null && ctx.destination?.ip != null && ctx.destination?.ip != '' || ctx.source?.ip != null && ctx.source?.ip != ''
-      tag: endace ip set
+      description: "Set IP Conversation if only destination.ip is present"
+      field: _conf.ip_conv
+      value: "ip={{ destination.ip }}"
+      if: ctx.destination?.ip != null && ctx.destination?.ip != '' && (ctx.source?.ip == null || ctx.source?.ip == '')
+      tag: endace destination ip set
 
+  - set: 
+      description: "Set IP Conversation if only source.ip is present"
+      field: _conf.ip_conv
+      value: "ip={{ source.ip }}"
+      if: (ctx.destination?.ip == null || ctx.destination?.ip == '') && ctx.source?.ip != null && ctx.source?.ip != ''
+      tag: endace source ip set
 
   - date:
       description: "Convert Start time to Epoch"
@@ -26,11 +31,10 @@ processors:
       if: ctx.event?.start != null && ctx.event?.start != ''
 
   - convert:
-        field: _conf.event.start
-        type: long
-        description: "Convert Start time to Long"
-        if: ctx._conf?.event?.start != null && ctx._conf?.event?.start != ''
-
+      field: _conf.event.start
+      type: long
+      description: "Convert Start time to Long"
+      if: ctx._conf?.event?.start != null && ctx._conf?.event?.start != ''
 
   - date:
       description: "Convert End time to Epoch"
@@ -40,40 +44,45 @@ processors:
       output_format: epoch_millis
       if: ctx.event?.end != null && ctx.event?.end != ''
 
-
   - convert:
-        field: _conf.event.end
-        type: long
-        description: "Convert End time to Long"
-        if: ctx._conf?.event?.end != null && ctx._conf?.event?.end != ''
-
-
-  - script:
-        source: "ctx._conf.timedelta = ctx._conf.endace_lookback * 60 * 1000"
-        tag: "Calculate Timedelta"
-        description: "Calculate Timedelta"
-        if: ctx._conf?.endace_lookback != null && ctx._conf?.endace_lookback != ''
-
+      field: _conf.event.end
+      type: long
+      description: "Convert End time to Long"
+      if: ctx._conf?.event?.end != null && ctx._conf?.event?.end != ''
 
   - script:
-        source: "ctx._conf.event.end = ctx._conf.event.end - ctx._conf.timedelta"
-        tag: "Calculate Endtime + additional lookback"
-        description: "Calculate Endtime + additional lookback"
-        if: ctx._conf?.event?.end != null && ctx._conf?.event?.end != '' && ctx._conf?.timedelta != null && ctx._conf?.timedelta != ''
+      source: "ctx._conf.timedelta = ctx._conf.endace_lookback * 60 * 1000"
+      tag: "Calculate Timedelta"
+      description: "Calculate Timedelta"
+      if: ctx._conf?.endace_lookback != null && ctx._conf?.endace_lookback != ''
 
+  - script:
+      source: "ctx._conf.event.end = ctx._conf.event.end + ctx._conf.timedelta/2"
+      tag: "Calculate Endtime as Timestamp + half of Timedelta"
+      description: "Calculate Endtime"
+      if: ctx._conf?.event?.end != null && ctx._conf?.event?.end != '' && ctx._conf?.timedelta != null && ctx._conf?.timedelta != ''
+
+  - script:
+      source: "ctx._conf.event.start = ctx._conf.event.start - ctx._conf.timedelta/2"
+      tag: "Calculate Starttime as Timestamp - half of Timedelta"
+      description: "Calculate Endtime"
+      if: ctx._conf?.event?.start != null && ctx._conf?.event?.start != '' && ctx._conf?.timedelta != null && ctx._conf?.timedelta != ''
 
   - set:
       field: event.reference
       value: "{{ _conf.endace_url}}/vision2/pivotintovision/?title=endace_pivot&datasources={{_conf.endace_datasources }}&start={{ _conf.event.start }}&end={{ _conf.event.end }}&tools={{ _conf.endace_tools }}&{{ _conf.ip_conv }}"
       ignore_empty_value: true
       tag: endace reference url
-      if: ctx.destination?.ip != null && ctx.destination?.ip != '' && ctx.source?.ip != null && ctx.source?.ip != ''
+      if: (ctx.destination?.ip != null && ctx.destination?.ip != '') || (ctx.source?.ip != null && ctx.source?.ip != '')
+      description: "Create P2V URL"
 
 on_failure:
   - append:
       field: error.message
+      description: "Error Message"
       value: |-
           Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
+      description: "Event Kind"
       value: pipeline_error
