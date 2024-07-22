@@ -93,6 +93,10 @@ The Windows `application` data stream provides events from the Windows
 
 - Windows
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "application"}}
 
 ### System
@@ -103,6 +107,10 @@ event log.
 #### Supported operating systems
 
 - Windows
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "system"}}
 
@@ -118,6 +126,10 @@ The Windows `security` data stream provides events from the Windows
 
 {{event "security"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "security"}}
 
 ### Auth
@@ -129,6 +141,10 @@ The `auth` data stream provides auth logs.
 - macOS prior to 10.8
 - Linux
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "auth"}}
 
 ### syslog
@@ -139,6 +155,10 @@ The `syslog` data stream provides system logs.
 
 - macOS
 - Linux
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "syslog"}}
 
@@ -160,6 +180,10 @@ The System `core` data stream provides usage statistics for each CPU core.
 
 This data should be available without elevated permissions.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "core"}}
 
 ### CPU
@@ -177,6 +201,10 @@ The System `cpu` data stream provides CPU statistics.
 #### Permissions
 
 This data should be available without elevated permissions.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "cpu"}}
 
@@ -198,6 +226,10 @@ operating system. One event is created for each disk mounted on the system.
 
 This data should be available without elevated permissions.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "diskio"}}
 
 ### Filesystem
@@ -217,6 +249,10 @@ system, one document is provided.
 
 This data should be available without elevated permissions.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "filesystem"}}
 
 ### Fsstat
@@ -235,6 +271,10 @@ The System `fsstat` data stream provides overall file system statistics.
 
 This data should be available without elevated permissions.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "fsstat"}}
 
 ### Load
@@ -251,6 +291,10 @@ The System `load` data stream provides load statistics.
 #### Permissions
 
 This data should be available without elevated permissions.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "load"}}
 
@@ -271,6 +315,10 @@ The System `memory` data stream provides memory statistics.
 
 This data should be available without elevated permissions.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "memory"}}
 
 ### Network
@@ -288,6 +336,10 @@ operating system. One event is created for each network interface.
 #### Permissions
 
 This data should be available without elevated permissions.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "network"}}
 
@@ -308,6 +360,10 @@ provided for each process.
 Process execution data should be available for an authorized user.
 If running as less privileged user, it may not be able to read process data belonging to other users.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "process"}}
 
 ### Process summary
@@ -326,6 +382,10 @@ processes.
 
 General process summary data should be available without elevated permissions.
 If the process data belongs to the other users, it will be counted as unknown value.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "process_summary"}}
 
@@ -348,6 +408,10 @@ connections and the count of listening ports.
 
 This data should be available without elevated permissions.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "socket_summary"}}
 
 ### Uptime
@@ -365,5 +429,9 @@ The System `uptime` data stream provides the uptime of the host operating system
 #### Permissions
 
 This data should be available without elevated permissions.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "uptime"}}

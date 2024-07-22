@@ -1,9 +1,15 @@
 host: "{{listen_address}}:{{listen_port}}"
+{{#if tcp_options}}
+{{tcp_options}}
+{{/if}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#each tags as |tag i|}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{#contains "forwarded" tags}}

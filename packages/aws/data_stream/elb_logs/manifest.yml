@@ -6,27 +6,65 @@ streams:
     title: AWS ELB Logs via S3
     description: Collect AWS ELB logs using s3 input
     vars:
+      - name: collect_s3_logs
+        required: true
+        show_user: true
+        title: Collect logs via S3 Bucket
+        description: To Collect logs via S3 bucket enable the toggle switch. By default, it will collect logs via SQS Queue.
+        type: bool
+        multi: false
+        default: false
+      - name: bucket_arn
+        type: text
+        title: "[S3] Bucket ARN"
+        multi: false
+        required: false
+        show_user: true
+        description: Mandatory if the "Collect logs via S3 Bucket" switch is on. It is a required parameter for collecting logs via the AWS S3 Bucket.
+      - name: bucket_list_prefix
+        type: text
+        title: "[S3] Bucket Prefix"
+        multi: false
+        required: false
+        show_user: false
+        description: Prefix to apply for the list request to the S3 bucket.
+      - name: interval
+        type: text
+        title: "[S3] Interval"
+        multi: false
+        required: false
+        show_user: false
+        default: 1m
+        description: "Time interval for polling listing of the S3 bucket. NOTE: Supported units for this parameter are h/m/s."
+      - name: number_of_workers
+        type: integer
+        title: "[S3] Number of Workers"
+        multi: false
+        required: false
+        show_user: false
+        default: 5
+        description: Number of workers that will process the S3 objects listed.
       - name: visibility_timeout
         type: text
-        title: Visibility Timeout
+        title: "[SQS] Visibility Timeout"
         multi: false
         required: false
         show_user: false
         description: The duration that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request.  The maximum is 12 hours.
       - name: api_timeout
         type: text
-        title: API Timeout
+        title: "[SQS] API Timeout"
         multi: false
         required: false
         show_user: false
         description: The maximum duration of AWS API can take. The maximum is half of the visibility timeout value.
       - name: queue_url
         type: text
-        title: Queue URL
+        title: "[SQS] Queue URL"
         multi: false
-        required: true
+        required: false
         show_user: true
-        description: URL of the AWS SQS queue that messages will be received from.
+        description: Mandatory if the "Collect logs via S3 Bucket" switch is off. URL of the AWS SQS queue that messages will be received from.
       - name: endpoint
         type: text
         title: Endpoint
@@ -42,7 +80,7 @@ streams:
         required: false
         show_user: false
         default: ""
-        description: The name of the AWS region of the endpoint
+        description: The name of the AWS region of the end point
       - name: fips_enabled
         type: bool
         title: Enable S3 FIPS
