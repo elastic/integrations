@@ -2339,10 +2339,33 @@ processors:
 
   # Network fields (Only one of them exists in an event)
   - set:
-      field: network.protocol
+      field: network.transport
       copy_from: m365_defender.event.protocol
-      tag: set_network_protocol
+      tag: set_network_transport
       ignore_empty_value: true
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+  - rename:
+      field: network.transport
+      target_field: network.protocol
+      tag: rename_network_transport_to_protocol_if_ntlm
+      if: ctx.network?.transport == 'ntlm'
+  - rename:
+      field: network.protocol
+      target_field: network.transport
+      tag: rename_network_protocol_to_transport_if_icmp
+      if: ctx.network?.protocol == 'icmp'
+  - set:
+      field: network.transport
+      value: tcp
+      tag: set_network_transport_tcp_if_tcpv4_or_tcpv6
+      if: ctx.network?.transport == 'tcpv4' || ctx.network?.transport == 'tcpv6'
+  - remove:
+      field: network.transport
+      tag: cleanup_network_transport
+      if: ctx.network?.transport == 'negotiate' || ctx.network?.transport == 'microsoft_authentication_package_v1_0'
   - set:
       field: network.protocol
       copy_from: m365_defender.event.request.protocol
@@ -2358,6 +2381,27 @@ processors:
       tag: set_network_protocol_dns
       if: ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('dns')
       override: true
+  - set:
+      field: network.protocol
+      value: http
+      tag: set_network_protocol_http
+      if: ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('http')
+      override: true
+  - set:
+      field: network.protocol
+      value: dns
+      tag: set_network_protocol_ssl
+      if: ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('ssl')
+      override: true
+  - set:
+      field: network.protocol
+      value: ftp
+      tag: set_network_protocol_ftp
+      if: ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('ftp')
+  - remove:
+      field: network.protocol
+      tag: cleanup_network_protocol
+      if: ctx.network?.protocol == 'local' || ctx.network?.protocol == 'unknown'
   - set:
       field: network.direction
       value: inbound
