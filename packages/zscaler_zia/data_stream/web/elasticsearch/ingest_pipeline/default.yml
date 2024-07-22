@@ -857,11 +857,36 @@ processors:
       tag: rename_proto
       target_field: zscaler_zia.web.prototype
       ignore_missing: true
+  # Set network.protocol from alpnprotocol
   - set:
       field: network.protocol
-      tag: set_network_protocol_from_web_prototype
-      copy_from: zscaler_zia.web.prototype
+      tag: set_network_protocol_from_web_alpn_protocol
+      copy_from: zscaler_zia.web.alpn_protocol
       ignore_empty_value: true
+  - script:
+      lang: painless
+      if: ctx.network?.protocol == null
+      description: Set network.protocol from prototype, if not already set.
+      tag: script_set_network_protocol
+      params:
+        dns-over-https: dns
+        ftp: ftp
+        ftp-over-http: email-addr
+        http: http
+        http-proxy: http
+        https: https
+        ssl: https
+        tunnel: ssh
+        tunnel-ssl: ssh
+        websocket: ws
+        websocket-ssl: wss
+      source: >
+        String prototype = ctx.zscaler_zia?.web?.prototype?.toLowerCase()?.replace(' ', '-');
+        String scheme = params.getOrDefault(prototype, 'https');
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        ctx.network.protocol = scheme;
   - lowercase:
       field: network.protocol
       tag: lowercase_network_protocol
@@ -1332,17 +1357,12 @@ processors:
       lang: painless
       description: Add scheme to url if not already present
       if: ctx.zscaler_zia?.web?.url?.name != null
+      tag: script_add_url_scheme
       source: |-
         def regex = /[a-z]+:\/\/.*/;
         def url = ctx.zscaler_zia.web.url.name;
         if (!regex.matcher(url).matches()) {
-          if (ctx.network?.protocol != null) {
-            url = ctx.network.protocol + '://' + url;
-          }
-          // Add default protocol https
-          else {
-            url = 'https://' + url;
-          }
+          url = ctx.network.protocol + '://' + url;
         }
         ctx.zscaler_zia.web.url.name = url;
   - set:
