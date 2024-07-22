@@ -5,29 +5,24 @@ is a part of the Linux kernel.
 
 This integration is available only for Linux.
 
-<DocCallOut id="ls-serverless-notes" title="Logstash for Elasticsearch on serverless">
+## Session View powered by Auditd Manager [BETA]
 
-[Beta] Session View powered by Auditd Manager
-
-The `add_session_metadata` processor for ((auditbeat)) powers the [Session View](((security-guide))/session-view.html) utility for the ((elastic-sec)) Platform.
-This feature is in Beta at ((elastic-sec)) version 8.15.0.
-
-//ToDo: Insert screenshot to show users end result???
+The `add_session_metadata` processor for Auditd Manager powers the [Session View](https://www.elastic.co/guide/en/security/current/session-view.html) utility for the Elastic Security Platform.
+This feature is in Beta at Elastic Security version 8.15.0.
 
 To enable the `add_session_metadata` processor for Auditd Manager: 
 
-. Navigate to the Auditd Manager integration configuration in {kib}.
-. Add the `add_session_metadata` processor configuration under the advanced options section.
-. Add these rules to the **Audit Rules** section of the configuration: 
+1. Navigate to the Auditd Manager integration configuration in Kibana.
+2. Add the `add_session_metadata` processor configuration under the advanced options section.
+3. Add these rules to the **Audit Rules** section of the configuration: 
 
-```bash
+```
 -a always,exit -F arch=b64 -S execve,execveat -k exec 
 -a always,exit -F arch=b64 -S exit_group 
 -a always,exit -F arch=b64 -S setsid
+```
 
 Changes are applied automatically, and you do not have to restart the service.
-
-</DocCallOut>
 
 ## How it works
 
