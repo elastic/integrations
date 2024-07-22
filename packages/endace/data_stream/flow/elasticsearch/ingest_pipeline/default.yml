@@ -4,6 +4,7 @@ processors:
 - set:
     field: ecs.version
     value: '8.11.0'
+    tag: set_ecs_version
 
 # ECS compatibility pipeline
 - pipeline:
@@ -21,20 +22,26 @@ processors:
     replacement: ''
     ignore_missing: true
     tag: gsub_host_mac_remove_seperators
+
 - gsub:
     field: host.mac
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
     tag: gsub_host_mac
+
 - uppercase:
     field: host.mac
     ignore_missing: true
+    tag: uppercase_host_mac
+
 - append:
     field: related.hosts
     value: "{{{observer.hostname}}}"
     if: ctx.observer?.hostname != null && ctx.observer.hostname != ''
     allow_duplicates: false
+    tag: append_observer_hostname
+
 - foreach:
     if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
     tag: foreach_observer_ip
@@ -44,53 +51,64 @@ processors:
         field: related.ip
         value: '{{{_ingest._value}}}'
         allow_duplicates: false
+
 - remove:
     if: ctx.host != null && ctx.tags != null && ctx.tags.contains('forwarded')
     field: host
+    tag: remove_host_if_forwarded
+
 - gsub:
     field: source.mac
     pattern: '[-:.]'
     replacement: ''
     ignore_missing: true
     tag: gsub_source_mac_remove_seperators
+
 - gsub:
     field: source.mac
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
     tag: gsub_source_mac
+
 - uppercase:
     field: source.mac
     ignore_missing: true
+    tag: uppercase_source_mac
+
 - gsub:
     field: destination.mac
     pattern: '[-:.]'
     replacement: ''
     ignore_missing: true
     tag: gsub_destination_mac_remove_seperators
+
 - gsub:
     field: destination.mac
     pattern: '(..)(?!$)'
     replacement: '$1-'
     ignore_missing: true
     tag: gsub_destination_mac
+
 - uppercase:
     field: destination.mac
     ignore_missing: true
+    tag: uppercase_destination_mac
 
 - pipeline:
     if: ctx._conf?.geoip_enrich != null && ctx._conf.geoip_enrich
     name: '{{ IngestPipeline "geoip" }}'
-    tag: pipeline_processor
+    tag: pipeline_processor_geoip
 
 - pipeline:
     name: '{{ IngestPipeline "endace" }}'
-    tag: pipeline_processor
-    if: ctx.source?.ip != null && ctx.destination?.ip != null && ctx.source?.ip != '0.0.0.0' && ctx.destination?.ip != '0.0.0.0'
+    if: (ctx.source?.ip != null || ctx.destination?.ip != null) && (ctx.source?.ip != '0.0.0.0' && ctx.destination?.ip != '0.0.0.0')
+    tag: pipeline_processor_endace
 
 - remove:
     field: _conf
     ignore_missing: true
+    tag: remove_conf
 
 on_failure:
   - append:
