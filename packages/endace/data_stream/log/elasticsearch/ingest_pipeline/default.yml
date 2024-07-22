@@ -5,69 +5,83 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
+      tag: add_ecs_version
   - convert:
       field: network.iana_number
       type: string
       ignore_missing: true
       ignore_failure: true
+      tag: convert_network_iana_number
   - rename:
       field: observer.ip
       target_field: _tmp_.observer.ip
       ignore_missing: true
+      tag: rename_observer_ip
   - append:
       field: observer.ip
       value: '{{_tmp_.observer.ip}}'
       if: ctx._tmp_?.observer?.ip != null
+      tag: append_observer_ip
   - set:
       field: event.category
       value:
         - network
         - session
       if: ctx.event?.category != null && ctx.event?.category == "network_session"
+      tag: set_event_category
   - set: 
       field: network.type
       value: ipv4
       if: ctx.netflow?.source_ipv4_address != null || ctx.netflow?.destination_ipv4_address != null
+      tag: set_network_type_ipv4
   - set: 
       field: network.type
       value: ipv6
       if: (ctx.netflow?.source_ipv6_address != null || ctx.netflow?.destination_ipv6_address != null) && ctx.network?.type == null
+      tag: set_network_type_ipv6
   - append: 
       field: network.type
       value: ipv6
       if: (ctx.netflow?.source_ipv6_address != null || ctx.netflow?.destination_ipv6_address != null) && ctx.network?.type == "ipv4"
+      tag: append_network_type_ipv6
   - set:
       field: network.direction
       value: inbound
       if: ctx.source?.locality == "external" && ctx.destination?.locality == "internal"
+      tag: set_network_direction_inbound
   - set:
       field: network.direction
       value: outbound
       if: ctx.source?.locality == "internal" && ctx.destination?.locality == "external"
+      tag: set_network_direction_outbound
   - set:
       field: network.direction
       value: internal
       if: ctx.source?.locality == "internal" && ctx.destination?.locality == "internal"
+      tag: set_network_direction_internal
   - set:
       field: network.direction
       value: external
       if: ctx.source?.locality == "external" && ctx.destination?.locality == "external"
+      tag: set_network_direction_external
   - set:
       field: network.direction
       value: unknown
       if: ctx.network?.direction == null
-
+      tag: set_network_direction
   # IP Geolocation Lookup
   - geoip:
       if: ctx.source?.geo == null
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+      tag: geoip_source_lookup
   - geoip:
       if: ctx.destination?.geo == null
       field: destination.ip
       target_field: destination.geo
-      ignore_missing: true 
+      ignore_missing: true
+      tag: geoip_destination_lookup 
 
   # IP Autonomous System (AS) Lookup
   - geoip:
@@ -78,6 +92,7 @@ processors:
           - asn
           - organization_name
       ignore_missing: true
+      tag: geoip_source_as_lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -86,22 +101,27 @@ processors:
           - asn
           - organization_name
       ignore_missing: true
+      tag: geoip_dest_as_lookup
   - rename:
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
+      tag: rename_source_as_field_asn
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+      tag: rename_source_as_field_org
   - rename:
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
+      tag: rename_as_field_asn
   - rename:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+      tag: rename_as_field_org
   - remove:
       field: 
         - _tmp_
@@ -109,7 +129,7 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "endace-netflow" }}'
       tag: pipeline_processor
-      if: ctx.source?.ip != null && ctx.destination?.ip != null && ctx.source?.ip != '0.0.0.0' && ctx.destination?.ip != '0.0.0.0'
+      if: (ctx.source?.ip != null || ctx.destination?.ip != null) && (ctx.source?.ip != '0.0.0.0' && ctx.destination?.ip != '0.0.0.0')
   - remove:
       field: "_conf"
 on_failure:
