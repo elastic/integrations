@@ -1,0 +1,272 @@
+- name: mysql
+  type: group
+  fields:
+    - name: replica_status
+      type: group
+      fields:
+        - name: channel.name
+          type: keyword
+          description: "The replication channel which is being displayed. There is always a default replication channel, and more replication channels can be added."
+        - name: connection.retry.sec
+          type: long
+          metric_type: gauge
+          description: "The number of seconds between connect retries."
+        - name: event_skip.count
+          type: long
+          metric_type: counter
+          description: "Number of events that a replica skips from the master, as recorded in the sql_slave_skip_counter system variable."
+        - name: gtid
+          type: group
+          fields:
+            - name: executed.set
+              type: keyword
+              description: "The set of global transaction IDs written in the binary log. This is same as the value for the global gtid_executed system variable on this server, as well as the value for Executed_Gtid_Set in the output of SHOW MASTER STATUS on this server."
+            - name: retrieved.set
+              type: keyword
+              description: "The set of global transaction IDs corresponding to all transactions received by this replica. Empty if GTIDs are not in use."
+        - name: gtid_io_position
+          type: long
+          metric_type: counter
+          description: "Current global transaction ID value."
+        - name: is_auto_position
+          type: boolean
+          description: "True if GTID auto-positioning is in use for the channel, otherwise false."
+        - name: is_gtid_using
+          type: keyword
+          description: "Whether or not global transaction ID's are being used for replication (can be No, Slave_Pos, or Current_Pos)."
+        - name: is_io_thread_running
+          type: keyword
+          description: "Whether the replication I/O (receiver) thread is started and has connected successfully to the source."
+        - name: is_sql_thread_running
+          type: keyword
+          description: "Whether the replication SQL (applier) thread is started."
+        - name: last_error
+          type: group
+          fields:
+            - name: io
+              type: group
+              fields:
+                - name: message
+                  type: keyword
+                  description: "The error message of the most recent error that caused the replication I/O (receiver) thread to stop."
+                - name: number
+                  type: long
+                  metric_type: gauge
+                  description: "The error number of the most recent error that caused the replication I/O (receiver) thread to stop."
+                - name: timestamp
+                  type: date
+                  description: "A timestamp in YYMMDD hh:mm:ss format that shows when the most recent I/O error took place."
+            - name: message
+              type: keyword
+              description: "It is an alias of Last_SQL_Error."
+            - name: number
+              type: long
+              metric_type: gauge
+              description: "It is an alias of Last_SQL_Errno."
+            - name: sql
+              type: group
+              fields:
+                - name: message
+                  type: keyword
+                  description: "The error message of the most recent error that caused the SQL thread to stop."
+                - name: number
+                  type: long
+                  metric_type: gauge
+                  description: "The error number of the most recent error that caused the SQL thread to stop."
+                - name: timestamp
+                  type: date
+                  description: "A timestamp in YYMMDD hh:mm:ss format that shows when the most recent SQL error occurred."
+        - name: parallel_mode
+          type: keyword
+          description: "Controls what transactions are applied in parallel when using parallel replication."
+        - name: relay
+          type: group
+          fields:
+            - name: log_file
+              type: keyword
+              description: "The name of the relay log file from which the SQL (applier) thread is currently reading and executing."
+            - name: log_position
+              type: long
+              metric_type: counter
+              description: "The position in the current relay log file up to which the SQL (applier) thread has read and executed."
+            - name: log_space
+              type: long
+              metric_type: counter
+              description: "The total combined size of all existing relay log files."
+        - name: replica
+          type: group
+          fields:
+            - name: ddl_groups
+              type: long
+              metric_type: counter
+              description: "This status variable counts the occurrence of DDL statements. This is a replica-side counter for optimistic parallel replication."
+            - name: io.state
+              type: keyword
+              description: "The current status of the replica."
+            - name: non_transactional_groups
+              type: long
+              metric_type: counter
+              description: "This status variable counts the occurrence of non-transactional event groups. This is a replica-side counter for optimistic parallel replication."
+            - name: sql.running_state
+              type: keyword
+              description: "The state of the SQL thread (analogous to Replica_IO_State)."
+            - name: transactional_groups
+              type: long
+              metric_type: counter
+              description: "This status variable counts the occurrence of transactional event groups. This is a replica-side counter for optimistic parallel replication."
+        - name: replicate_do_domain_ids
+          type: keyword
+          description: "The do_domain_id option value for change master.(The DO_DOMAIN_IDS option for CHANGE MASTER can be used to configure a replica to only apply binary log events if the transaction's GTID is in a specific gtid_domain_id value.)"
+        - name: replicate_ignore_domain_ids
+          type: keyword
+          description: "The ignore_domain_id option value for change master.(The IGNORE_DOMAIN_IDS option for CHANGE MASTER can be used to configure a replica to ignore binary log events if the transaction's GTID is in a specific gtid_domain_id value)"
+        - name: replicate
+          type: group
+          fields:
+            - name: do_db
+              type: keyword
+              description: "The names of any databases that were specified with the --replicate-do-db option, or the CHANGE REPLICATION FILTER statement."
+            - name: do_table
+              type: keyword
+              description: "Tables specified with the replicate_do_table option."
+            - name: ignore
+              type: group
+              fields:
+                - name: do_db
+                  type: keyword
+                  description: "The names of any databases that were specified with the --replicate-ignore-db option, or the CHANGE REPLICATION FILTER statement."
+                - name: server_id
+                  type: keyword
+                  description: "The server IDs that are currently being ignored for replication."
+                - name: table
+                  type: keyword
+                  description: "Tables specified for ignoring with the replicate_ignore_table option."
+                - name: wild_table
+                  type: keyword
+                  description: "Tables specified with replicate-wild-ignore-table option."
+            - name: rewrite_db
+              type: keyword
+              description: "This field displays any replication filtering rules that were specified."
+            - name: wild_do_table
+              type: keyword
+              description: "Tables specified for replicating with the replicate_wild_do_table option."
+        - name: seconds_behind_source
+          type: long
+          metric_type: gauge
+          description: "This field is an indication of how 'late' the replica is: : When the replica is actively processing updates, this field shows the difference between the current timestamp on the replica and the original timestamp logged on the source for the event currently being processed on the replica and when no event is currently being processed on the replica, this value is 0."
+        - name: source
+          type: group
+          fields:
+            - name: binary_log_file
+              type: keyword
+              description: "The name of the source binary log file from which the I/O (receiver) thread is currently reading."
+            - name: bind
+              type: group
+              fields:
+                - name: interface.name
+                  type: keyword
+                  description: "The network interface that the replica is bound to, if any."
+            - name: file_info
+              type: keyword
+              description: "The location of the master.info file."
+            - name: host.name
+              type: keyword
+              description: "The source host that the replica is connected to."
+            - name: is_get_public_key
+              type: boolean
+              description: "Whether to request from the source the public key required for RSA key pair-based password exchange."
+            - name: log_file
+              type: group
+              fields:
+                - name: relay
+                  type: keyword
+                  description: "The name of the source binary log file containing the most recent event executed by the SQL (applier) thread."
+            - name: log_position
+              type: group
+              fields:
+                - name: exec
+                  type: long
+                  metric_type: counter
+                  description: "The position in the current source binary log file to which the replication SQL thread has read and executed."
+                - name: read
+                  type: long
+                  metric_type: counter
+                  description: "The position in the current source binary log file up to which the I/O (receiver) thread has read."
+            - name: public_key_path
+              type: keyword
+              description: "The path name to a file containing a replica-side copy of the public key required by the source."
+            - name: retry_count
+              type: long
+              metric_type: gauge
+              description: "The number of times the replica can attempt to reconnect to the source in the event of a lost connection."
+            - name: server
+              type: group
+              fields:
+                - name: id
+                  type: long
+                  dimension: true
+                  description: "Value of the server_id system variable from the source."
+                - name: uuid
+                  type: keyword
+                  dimension: true
+                  description: "Value of the server_uuid system variable from the source."
+            - name: ssl
+              type: group
+              fields:
+                - name: allowed
+                  type: keyword
+                  description: "Whether the replica supports SSL connections."
+                - name: ca_file
+                  type: keyword
+                  description: "The file used for the Certificate Authority (CA) certificate."
+                - name: ca_path
+                  type: keyword
+                  description: "The path to the Certificate Authority (CA) certificate."
+                - name: cert
+                  type: keyword
+                  description: "The name of the SSL certificate file."
+                - name: cipher
+                  type: keyword
+                  description: "The list of possible ciphers used in the handshake for the SSL connection."
+                - name: crl
+                  type: keyword
+                  description: "The SOURCE_SSL_CRL option of the CHANGE REPLICATION SOURCE TO Statement."
+                - name: crl_path
+                  type: keyword
+                  description: "The SOURCE_SSL_CRLPATH option of the CHANGE REPLICATION SOURCE TO Statement."
+                - name: key
+                  type: keyword
+                  description: "The name of the SSL key file."
+                - name: is_verify_server_cert
+                  type: boolean
+                  description: "Whether to verify the server certificate."
+            - name: tls_version
+              type: keyword
+              description: "The TLS version used on the source."    
+        - name: thread
+          type: group
+          fields:
+            - name: sql
+              type: group
+              fields:
+                - name: delay_remaining.sec
+                  type: long
+                  metric_type: gauge
+                  description: "When Replica_SQL_Running_State is waiting until MASTER_DELAY seconds after source executed event, this field contains the number of delay seconds remaining. At other times, this field is NULL."
+                - name: delay.sec
+                  type: long
+                  metric_type: gauge
+                  description: "The number of seconds that the replica must lag the source."
+        - name: until
+          type: group
+          fields:
+            - name: condition
+              type: keyword
+              description: "The values specified in the UNTIL clause of the START SLAVE statement."
+            - name: log_file
+              type: keyword
+              description: "Indicates the log file name that defines the coordinates at which the replication SQL thread stops executing."
+            - name: log_position
+              type: long
+              metric_type: counter
+              description: "Indicates the log file position that defines the coordinates at which the replication SQL thread stops executing."
