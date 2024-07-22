@@ -4,6 +4,36 @@ Endace is a company known for its network recording, traffic capture, and analys
 This integration allows users to ingest Network flow data from either Endace Flow via syslog input or use Elastic Agent to generate and ship Network Flow data to an Elastic deployment. Both of these methods add the `event.reference` field to each event when ingested into Elasticsearch which is a URL used to pivot to Endace.   
 
 
+## Additional Setup
+
+### Dataview
+Once the integration is deployed, in order for the pivot link to be clickable to format for the `event.reference` field needs to be set, this can be done via Kibana Dev Tools and making the following request:
+```
+POST kbn:/api/data_views/data_view/logs-*/fields
+{
+    "fields": {
+        "event.reference": {
+            "format":{
+              "id": "url"
+            }
+        }
+    }
+}
+```
+
+### IP Reputation
+When in Elastic Security users are able to quickly lookup information about IPs from external services, to add Endace as an IP Reputation lookup service run the following in Kibana Dev Tools. Ensure to replace `<Your Endace appliance url>` with your Endace appliance URL.
+
+```
+POST kbn:/api/kibana/settings
+{"changes":{"securitySolution:ipReputationLinks": """[
+  { "name": "Endace", "url_template": "https://<Your Endace appliance url>/vision2/v1/pivotintovision/?datasources=tag:all&title=Untitled&reltime=12h&sip={{ip}}&tools=conversations_by_ipaddress" },
+  { "name": "virustotal.com", "url_template": "https://www.virustotal.com/gui/search/{{ip}}" },
+  { "name": "talosIntelligence.com", "url_template": "https://talosintelligence.com/reputation_center/lookup?search={{ip}}" }
+]"""}}
+```
+
+
 ## Integration Variables
 #### `endace_url`
 The base URL for Endace UI. Example: https://myvprobe.com
@@ -202,6 +232,7 @@ The default value is 10s.
 | event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
 | event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.reference | Reference URL linking to additional information about this event. This URL links to a static definition of this event. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |
 | event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |

@@ -4,6 +4,36 @@ Endace is a company known for its network recording, traffic capture, and analys
 This integration allows users to ingest Network flow data from either Endace Flow via syslog input or use Elastic Agent to generate and ship Network Flow data to an Elastic deployment. Both of these methods add the `event.reference` field to each event when ingested into Elasticsearch which is a URL used to pivot to Endace.   
 
 
+## Additional Setup
+
+### Dataview
+Once the integration is deployed, in order for the pivot link to be clickable to format for the `event.reference` field needs to be set, this can be done via Kibana Dev Tools and making the following request:
+```
+POST kbn:/api/data_views/data_view/logs-*/fields
+{
+    "fields": {
+        "event.reference": {
+            "format":{
+              "id": "url"
+            }
+        }
+    }
+}
+```
+
+### IP Reputation
+When in Elastic Security users are able to quickly lookup information about IPs from external services, to add Endace as an IP Reputation lookup service run the following in Kibana Dev Tools. Ensure to replace `<Your Endace appliance url>` with your Endace appliance URL.
+
+```
+POST kbn:/api/kibana/settings
+{"changes":{"securitySolution:ipReputationLinks": """[
+  { "name": "Endace", "url_template": "https://<Your Endace appliance url>/vision2/v1/pivotintovision/?datasources=tag:all&title=Untitled&reltime=12h&sip={{`{{ip}}`}}&tools=conversations_by_ipaddress" },
+  { "name": "virustotal.com", "url_template": "https://www.virustotal.com/gui/search/{{`{{ip}}`}}" },
+  { "name": "talosIntelligence.com", "url_template": "https://talosintelligence.com/reputation_center/lookup?search={{`{{ip}}`}}" }
+]"""}}
+```
+
+
 ## Integration Variables
 #### `endace_url`
 The base URL for Endace UI. Example: https://myvprobe.com
