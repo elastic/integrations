@@ -26,23 +26,20 @@ Data streams:
 - `galera_status`: Collect various status and performance metrics, which provide insights into cluster performance, including replication health and node status, to maintain the robustness and fault tolerance of the distributed database system.
 - `replica_status`:  Collect metrics related to status and performance of the replication process, including details from source and replica servers.
 
-Note:
+## Note:
 - Users can monitor MySQL logs by using the logs-* index pattern in the Discover feature, while metrics can be viewed using the metrics-* index pattern.
 
 ## Compatibility
 
-The `error` and `slowlog` datasets were tested with logs from MySQL `5.5`, `5.7` and `8.0`, MariaDB `10.1`, `10.2` and `10.3`, and Percona `5.7` and `8.0`.
-
-The `galera_status` and `status` datasets were tested with MySQL and Percona `5.7` and `8.0` and are expected to work with all versions >= `5.7.0`. It is also tested with MariaDB `10.2`, `10.3` and `10.4`.
-
-The `replica_status` was tested with MySQL `5.7` and `8.0.22`,  MariaDB `10.4` and `10.5.1`, Percona `5.7` and `8.0.22`.
-
-Note:
-
-Information about which query is used to fetch replica status in Mysql, MariaDB and Percona:
-- MySQL versions `8.0.22` and newer support both [`SHOW REPLICA STATUS;`](https://dev.mysql.com/doc/refman/8.0/en/show-replica-status.html) and [`SHOW SLAVE STATUS;`](https://dev.mysql.com/doc/refman/8.0/en/show-slave-status.html) queries. However, versions older than `8.0.22` only support the `SHOW SLAVE STATUS;` query.
-- MariaDB versions `10.5.1` and newer support both [`SHOW REPLICA STATUS;`](https://mariadb.com/kb/en/show-replica-status/) and `SHOW SLAVE STATUS;` queries. However, versions older than `10.5.1` only support the `SHOW SLAVE STATUS;` query. Also, the output of both commands are identical, with the Replica Status metrics names remaining consistent across versions in MariaDB.
-- Percona versions `8.0.22` and newer support both [`SHOW REPLICA STATUS;`](https://docs.percona.com/percona-server/8.0/release-notes/Percona-Server-8.0.22-13.html) and `SHOW SLAVE STATUS;` queries. However, versions older than `8.0.22` only support the `SHOW SLAVE STATUS;` query.
+- Databases version compatibility across data streams.
+|Data Stream      | MySQL Version   | MariaDB Version    |Percona Version | 
+| ----------------|-----------------|--------------------|----------------|
+|error and slowlog|`5.5`,`5.7`,`8.0`|`10.1`,`10.2`,`10.3`|`5.7`,`5.8`     |
+|galera_status and status|`5.7`,`8.0`|`10.2`,`10.3`,`10.4`|`5.7`,`8.0`    |
+|replica_status|`5.7`,`8.0.22`|`10.4`,`10.5.1`|`5.7`,`8.0.22`|
+         
+## Note:
+- MySQL and Percona from version `8.0.22` onwards and MariaDB from version `10.5.1` onwards support the `SHOW REPLICA STATUS;` query. Versions prior to these use the `SHOW SLAVE STATUS;` query.
 
 ## Prerequisites
 
@@ -382,24 +379,24 @@ An example event for `replica_status` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-07-09T10:45:42.576Z",
+    "@timestamp": "2024-07-17T12:14:12.628Z",
     "agent": {
-        "ephemeral_id": "b4e51018-e584-4491-b1aa-699cb65973dd",
-        "id": "989d89f0-e902-423e-92e1-7a66f33d570a",
+        "ephemeral_id": "0958600a-590f-4be0-a91f-82235a00120f",
+        "id": "090a47b3-6a4e-48ef-9fd8-d8ccb4246e98",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.12.0"
     },
     "data_stream": {
         "dataset": "mysql.replica_status",
-        "namespace": "ep",
+        "namespace": "11434",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "989d89f0-e902-423e-92e1-7a66f33d570a",
+        "id": "090a47b3-6a4e-48ef-9fd8-d8ccb4246e98",
         "snapshot": false,
         "version": "8.12.0"
     },
@@ -409,8 +406,8 @@ An example event for `replica_status` looks as following:
             "database"
         ],
         "dataset": "mysql.replica_status",
-        "duration": 1779903,
-        "ingested": "2024-07-09T10:45:54Z",
+        "duration": 1456400,
+        "ingested": "2024-07-17T12:14:24Z",
         "kind": "event",
         "module": "mysql",
         "type": [
@@ -423,10 +420,10 @@ An example event for `replica_status` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "829324aac17946dcace17006fa82a2d2",
         "ip": [
-            "192.168.252.6"
+            "192.168.241.7"
         ],
         "mac": [
-            "02-42-C0-A8-FC-06"
+            "02-42-C0-A8-F1-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -455,7 +452,7 @@ An example event for `replica_status` looks as following:
             },
             "gtid": {
                 "executed": {
-                    "set": "54781015-3de0-11ef-add5-0242c0a8f504:1-10"
+                    "set": "06d1322f-4436-11ef-b5bf-0242c0a8fb05:1-10"
                 }
             },
             "is_auto_position": false,
@@ -471,7 +468,7 @@ An example event for `replica_status` looks as following:
                 }
             },
             "relay": {
-                "log_file": "39e386dfe692-relay-bin.000002",
+                "log_file": "21764f9e14b8-relay-bin.000002",
                 "log_position": 326,
                 "log_space": 543
             },
@@ -501,7 +498,7 @@ An example event for `replica_status` looks as following:
                 "retry_count": 86400,
                 "server": {
                     "id": 1,
-                    "uuid": "54405d9e-3de0-11ef-ac2e-0242c0a8f502"
+                    "uuid": "06a246d4-4436-11ef-b5ed-0242c0a8fb02"
                 },
                 "ssl": {
                     "allowed": "No",
@@ -522,7 +519,7 @@ An example event for `replica_status` looks as following:
         }
     },
     "service": {
-        "address": "elastic-package-service-mysql_replica-1:3306",
+        "address": "svc-mysql_replica:3306",
         "type": "mysql"
     },
     "source": {
@@ -556,7 +553,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mysql.replica_status.gtid.executed.set | The set of global transaction IDs written in the binary log. This is same as the value for the global gtid_executed system variable on this server, as well as the value for Executed_Gtid_Set in the output of SHOW MASTER STATUS on this server. | keyword |  |
 | mysql.replica_status.gtid.retrieved.set | The set of global transaction IDs corresponding to all transactions received by this replica. Empty if GTIDs are not in use. | keyword |  |
 | mysql.replica_status.gtid_io_position | Current global transaction ID value. | long | counter |
-| mysql.replica_status.is_auto_position | true if GTID auto-positioning is in use for the channel, otherwise false. | boolean |  |
+| mysql.replica_status.is_auto_position | True if GTID auto-positioning is in use for the channel, otherwise false. | boolean |  |
 | mysql.replica_status.is_gtid_using | Whether or not global transaction ID's are being used for replication (can be No, Slave_Pos, or Current_Pos). | keyword |  |
 | mysql.replica_status.is_io_thread_running | Whether the replication I/O (receiver) thread is started and has connected successfully to the source. | keyword |  |
 | mysql.replica_status.is_sql_thread_running | Whether the replication SQL (applier) thread is started. | keyword |  |
@@ -572,8 +569,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mysql.replica_status.relay.log_file | The name of the relay log file from which the SQL (applier) thread is currently reading and executing. | keyword |  |
 | mysql.replica_status.relay.log_position | The position in the current relay log file up to which the SQL (applier) thread has read and executed. | long | counter |
 | mysql.replica_status.relay.log_space | The total combined size of all existing relay log files. | long | counter |
+| mysql.replica_status.replica.ddl_groups | This status variable counts the occurrence of DDL statements. This is a replica-side counter for optimistic parallel replication. | long | counter |
 | mysql.replica_status.replica.io.state | The current status of the replica. | keyword |  |
+| mysql.replica_status.replica.non_transactional_groups | This status variable counts the occurrence of non-transactional event groups. This is a replica-side counter for optimistic parallel replication. | long | counter |
 | mysql.replica_status.replica.sql.running_state | The state of the SQL thread (analogous to Replica_IO_State). | keyword |  |
+| mysql.replica_status.replica.transactional_groups | This status variable counts the occurrence of transactional event groups. This is a replica-side counter for optimistic parallel replication. | long | counter |
 | mysql.replica_status.replicate.do_db | The names of any databases that were specified with the --replicate-do-db option, or the CHANGE REPLICATION FILTER statement. | keyword |  |
 | mysql.replica_status.replicate.do_table | Tables specified with the replicate_do_table option. | keyword |  |
 | mysql.replica_status.replicate.ignore.do_db | The names of any databases that were specified with the --replicate-ignore-db option, or the CHANGE REPLICATION FILTER statement. | keyword |  |
@@ -585,9 +585,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mysql.replica_status.replicate_do_domain_ids | The do_domain_id option value for change master.(The DO_DOMAIN_IDS option for CHANGE MASTER can be used to configure a replica to only apply binary log events if the transaction's GTID is in a specific gtid_domain_id value.) | keyword |  |
 | mysql.replica_status.replicate_ignore_domain_ids | The ignore_domain_id option value for change master.(The IGNORE_DOMAIN_IDS option for CHANGE MASTER can be used to configure a replica to ignore binary log events if the transaction's GTID is in a specific gtid_domain_id value) | keyword |  |
 | mysql.replica_status.seconds_behind_source | This field is an indication of how 'late' the replica is: : When the replica is actively processing updates, this field shows the difference between the current timestamp on the replica and the original timestamp logged on the source for the event currently being processed on the replica and when no event is currently being processed on the replica, this value is 0. | long | gauge |
-| mysql.replica_status.slave.ddl_groups | This status variable counts the occurrence of DDL statements. This is a replica-side counter for optimistic parallel replication. | long | counter |
-| mysql.replica_status.slave.non_transactional_groups | This status variable counts the occurrence of non-transactional event groups. This is a replica-side counter for optimistic parallel replication. | long | counter |
-| mysql.replica_status.slave.transactional_groups | This status variable counts the occurrence of transactional event groups. This is a replica-side counter for optimistic parallel replication. | long | counter |
 | mysql.replica_status.source.binary_log_file | The name of the source binary log file from which the I/O (receiver) thread is currently reading. | keyword |  |
 | mysql.replica_status.source.bind.interface.name | The network interface that the replica is bound to, if any. | keyword |  |
 | mysql.replica_status.source.file_info | The location of the master.info file. | keyword |  |
@@ -611,7 +608,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mysql.replica_status.source.ssl.key | The name of the SSL key file. | keyword |  |
 | mysql.replica_status.source.tls_version | The TLS version used on the source. | keyword |  |
 | mysql.replica_status.thread.sql.delay.sec | The number of seconds that the replica must lag the source. | long | gauge |
-| mysql.replica_status.thread.sql.delay_remaining.sec | When Replica_SQL_Running_State is Waiting until MASTER_DELAY seconds after source executed event, this field contains the number of delay seconds remaining. At other times, this field is NULL. | long | gauge |
+| mysql.replica_status.thread.sql.delay_remaining.sec | When Replica_SQL_Running_State is waiting until MASTER_DELAY seconds after source executed event, this field contains the number of delay seconds remaining. At other times, this field is NULL. | long | gauge |
 | mysql.replica_status.until.condition | The values specified in the UNTIL clause of the START SLAVE statement. | keyword |  |
 | mysql.replica_status.until.log_file | Indicates the log file name that defines the coordinates at which the replication SQL thread stops executing. | keyword |  |
 | mysql.replica_status.until.log_position | Indicates the log file position that defines the coordinates at which the replication SQL thread stops executing. | long | counter |

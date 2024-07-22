@@ -30,7 +30,7 @@
           description: "Current global transaction ID value."
         - name: is_auto_position
           type: boolean
-          description: "true if GTID auto-positioning is in use for the channel, otherwise false."
+          description: "True if GTID auto-positioning is in use for the channel, otherwise false."
         - name: is_gtid_using
           type: keyword
           description: "Whether or not global transaction ID's are being used for replication (can be No, Slave_Pos, or Current_Pos)."
@@ -96,12 +96,24 @@
         - name: replica
           type: group
           fields:
+            - name: ddl_groups
+              type: long
+              metric_type: counter
+              description: "This status variable counts the occurrence of DDL statements. This is a replica-side counter for optimistic parallel replication."
             - name: io.state
               type: keyword
               description: "The current status of the replica."
+            - name: non_transactional_groups
+              type: long
+              metric_type: counter
+              description: "This status variable counts the occurrence of non-transactional event groups. This is a replica-side counter for optimistic parallel replication."
             - name: sql.running_state
               type: keyword
               description: "The state of the SQL thread (analogous to Replica_IO_State)."
+            - name: transactional_groups
+              type: long
+              metric_type: counter
+              description: "This status variable counts the occurrence of transactional event groups. This is a replica-side counter for optimistic parallel replication."
         - name: replicate_do_domain_ids
           type: keyword
           description: "The do_domain_id option value for change master.(The DO_DOMAIN_IDS option for CHANGE MASTER can be used to configure a replica to only apply binary log events if the transaction's GTID is in a specific gtid_domain_id value.)"
@@ -230,22 +242,7 @@
                   description: "Whether to verify the server certificate."
             - name: tls_version
               type: keyword
-              description: "The TLS version used on the source."
-        - name: slave
-          type: group
-          fields:
-            - name: ddl_groups
-              type: long
-              metric_type: counter
-              description: "This status variable counts the occurrence of DDL statements. This is a replica-side counter for optimistic parallel replication."
-            - name: non_transactional_groups
-              type: long
-              metric_type: counter
-              description: "This status variable counts the occurrence of non-transactional event groups. This is a replica-side counter for optimistic parallel replication."
-            - name: transactional_groups
-              type: long
-              metric_type: counter
-              description: "This status variable counts the occurrence of transactional event groups. This is a replica-side counter for optimistic parallel replication."
+              description: "The TLS version used on the source."    
         - name: thread
           type: group
           fields:
@@ -255,7 +252,7 @@
                 - name: delay_remaining.sec
                   type: long
                   metric_type: gauge
-                  description: "When Replica_SQL_Running_State is Waiting until MASTER_DELAY seconds after source executed event, this field contains the number of delay seconds remaining. At other times, this field is NULL."
+                  description: "When Replica_SQL_Running_State is waiting until MASTER_DELAY seconds after source executed event, this field contains the number of delay seconds remaining. At other times, this field is NULL."
                 - name: delay.sec
                   type: long
                   metric_type: gauge

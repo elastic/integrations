@@ -26,23 +26,20 @@ Data streams:
 - `galera_status`: Collect various status and performance metrics, which provide insights into cluster performance, including replication health and node status, to maintain the robustness and fault tolerance of the distributed database system.
 - `replica_status`:  Collect metrics related to status and performance of the replication process, including details from source and replica servers.
 
-Note:
+## Note:
 - Users can monitor MySQL logs by using the logs-* index pattern in the Discover feature, while metrics can be viewed using the metrics-* index pattern.
 
 ## Compatibility
 
-The `error` and `slowlog` datasets were tested with logs from MySQL `5.5`, `5.7` and `8.0`, MariaDB `10.1`, `10.2` and `10.3`, and Percona `5.7` and `8.0`.
-
-The `galera_status` and `status` datasets were tested with MySQL and Percona `5.7` and `8.0` and are expected to work with all versions >= `5.7.0`. It is also tested with MariaDB `10.2`, `10.3` and `10.4`.
-
-The `replica_status` was tested with MySQL `5.7` and `8.0.22`,  MariaDB `10.4` and `10.5.1`, Percona `5.7` and `8.0.22`.
-
-Note:
-
-Information about which query is used to fetch replica status in Mysql, MariaDB and Percona:
-- MySQL versions `8.0.22` and newer support both [`SHOW REPLICA STATUS;`](https://dev.mysql.com/doc/refman/8.0/en/show-replica-status.html) and [`SHOW SLAVE STATUS;`](https://dev.mysql.com/doc/refman/8.0/en/show-slave-status.html) queries. However, versions older than `8.0.22` only support the `SHOW SLAVE STATUS;` query.
-- MariaDB versions `10.5.1` and newer support both [`SHOW REPLICA STATUS;`](https://mariadb.com/kb/en/show-replica-status/) and `SHOW SLAVE STATUS;` queries. However, versions older than `10.5.1` only support the `SHOW SLAVE STATUS;` query. Also, the output of both commands are identical, with the Replica Status metrics names remaining consistent across versions in MariaDB.
-- Percona versions `8.0.22` and newer support both [`SHOW REPLICA STATUS;`](https://docs.percona.com/percona-server/8.0/release-notes/Percona-Server-8.0.22-13.html) and `SHOW SLAVE STATUS;` queries. However, versions older than `8.0.22` only support the `SHOW SLAVE STATUS;` query.
+- Databases version compatibility across data streams.
+|Data Stream      | MySQL Version   | MariaDB Version    |Percona Version | 
+| ----------------|-----------------|--------------------|----------------|
+|error and slowlog|`5.5`,`5.7`,`8.0`|`10.1`,`10.2`,`10.3`|`5.7`,`5.8`     |
+|galera_status and status|`5.7`,`8.0`|`10.2`,`10.3`,`10.4`|`5.7`,`8.0`    |
+|replica_status|`5.7`,`8.0.22`|`10.4`,`10.5.1`|`5.7`,`8.0.22`|
+         
+## Note:
+- MySQL and Percona from version `8.0.22` onwards and MariaDB from version `10.5.1` onwards support the `SHOW REPLICA STATUS;` query. Versions prior to these use the `SHOW SLAVE STATUS;` query.
 
 ## Prerequisites
 
