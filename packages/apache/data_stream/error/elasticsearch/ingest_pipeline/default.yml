@@ -25,9 +25,9 @@ processors:
       patterns:
       - \[%{APACHE_TIME:apache.error.timestamp}\] \[%{LOGLEVEL:log.level}\]( \[client
         %{IPORHOST:source.address}(:%{POSINT:source.port})?\])? %{GREEDYDATA:message}
-      - \[%{APACHE_TIME:apache.error.timestamp}\] \[%{DATA:apache.error.module}:%{APACHE_LOGLEVEL:log.level}\]
+      - (\[%{APACHE_TIME:apache.error.timestamp}\] )?(\[%{DATA:apache.error.module}:%{APACHE_LOGLEVEL:log.level}\]
         \[pid %{NUMBER:process.pid:long}(:tid %{NUMBER:process.thread.id:long})?\](
-        \[client %{IPORHOST:source.address}(:%{POSINT:source.port})?\])? %{GREEDYDATA:message}
+        \[client %{IPORHOST:source.address}(:%{POSINT:source.port})?\])? )?%{GREEDYDATA:message}
       pattern_definitions:
         # Apache log level can have numeric sub-levels such as trace1.
         APACHE_LOGLEVEL: '%{LOGLEVEL}[0-9]*'
@@ -41,7 +41,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - date:
-      if: ctx.event.timezone == null
+      if: ctx.event.timezone == null && ctx.apache?.error?.timestamp != null
       field: apache.error.timestamp
       target_field: '@timestamp'
       formats:
@@ -52,7 +52,7 @@ processors:
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
   - date:
-      if: ctx.event.timezone != null
+      if: ctx.event.timezone != null && ctx.apache?.error?.timestamp != null
       field: apache.error.timestamp
       target_field: '@timestamp'
       formats:
