@@ -16,6 +16,8 @@ Host Configuration Format: `http[s]://username:password@host:port`
 
 Example Host Configuration: `http://admin:changeme@localhost:5984`
 
+> Note: To mask the password in the Hosts connection string, remove the username and password from the string. Then, set up the Hosts field with only the host address (`localhost:5984` in the example) and any additional connection parameters. Finally, use the `username` and `password` fields under advanced options for configuration.
+
 ## Metrics
 
 ### Server
