@@ -3,7 +3,7 @@ description: Pipeline for Snyk Audit logs
 processors:
   - set:
       field: ecs.version
-      value: 8.12.0
+      value: 8.11.0
   - rename:
       field: message
       target_field: event.original
@@ -12,23 +12,30 @@ processors:
   - json:
       field: event.original
       target_field: json
+# Cleanup equivalent names
+  - rename:
+      field: json.groupId
+      target_field: json.group_id
+      ignore_missing: true
+  - rename:
+      field: json.orgId
+      target_field: json.org_id
+      ignore_missing: true
   - fingerprint:
       fields:
         - json.org_id
+        - json.group_id
         - json.created
         - json.event
       target_field: _id
+      ignore_missing: true
   - rename:
       field: json
       target_field: snyk.audit_logs
       ignore_missing: true
   - rename:
-      field: snyk.audit_logs.groupId
+      field: snyk.audit_logs.group_id
       target_field: user.group.id
-      ignore_missing: true
-  - rename:
-      field: snyk.audit_logs.orgId
-      target_field: snyk.audit_logs.org_id
       ignore_missing: true
   - set:
       field: organization.id

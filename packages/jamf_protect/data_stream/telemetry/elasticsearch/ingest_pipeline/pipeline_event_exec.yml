@@ -1,0 +1,196 @@
+---
+description: Pipeline for parsing specific fields related to exec events in Jamf Protect
+processors:
+
+##########################
+## ECS Event Specific ##
+##########################
+    - set:
+        field: event.reason
+        value: A new process has been executed
+    - append:
+        field: event.type
+        value: start
+
+##########################
+## ECS Process ##
+##########################
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.start_time
+        target_field: process.start
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.exec.target.audit_token.egid
+        target_field: jamf_protect.telemetry.event.exec.target.audit_token.egid
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.exec.target.audit_token.euid
+        target_field: jamf_protect.telemetry.event.exec.target.audit_token.euid
+        type: string
+        ignore_missing: true
+    - append:
+        field: user.effective.id
+        value: '{{{jamf_protect.telemetry.event.exec.target.audit_token.euid}}}'
+        if: ctx.jamf_protect.telemetry?.event?.exec?.target?.audit_token?.euid != null
+        allow_duplicates: false
+        ignore_failure: true
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.is_platform_binary
+        target_field: jamf_protect.telemetry.platform_binary
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.is_es_client
+        target_field: jamf_protect.telemetry.es_client
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.cdhash
+        target_field: jamf_protect.telemetry.code_directory_hash
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.executable.sha1
+        target_field: process.hash.sha1
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.executable.sha256
+        target_field: process.hash.sha256
+        ignore_missing: true
+    - append:
+        field: related.hash
+        value: '{{{process.hash.sha1}}}'
+        if: ctx.process?.hash?.sha1 != null
+        allow_duplicates: false
+    - append:
+        field: related.hash
+        value: '{{{process.hash.sha256}}}'
+        if: ctx.process?.hash?.sha256 != null
+        allow_duplicates: false
+    - append:
+        field: related.hash
+        value: '{{{jamf_protect.telemetry.code_directory_hash}}}'
+        if: ctx.jamf_protect?.code_directory_hash != null
+        allow_duplicates: false
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.tty.path
+        target_field: jamf_protect.telemetry.tty
+        ignore_missing: true
+    - set:
+        field: process.interactive
+        value: true
+        if: ctx.jamf_protect.telemetry?.event?.exec?.target?.tty != null
+    - set:
+        field: process.interactive
+        value: false
+        if: ctx.jamf_protect.telemetry?.event?.exec?.target?.tty == null
+    - convert:
+        field: jamf_protect.telemetry.event.exec.target.audit_token.pid
+        target_field: process.pid
+        type: long
+        ignore_missing: true
+        on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.audit_token.uuid
+        target_field: process.entity_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.executable.path
+        target_field: process.executable
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.thread.thread_id
+        target_field: process.thread.id
+        ignore_missing: true
+
+    - rename:
+        field: jamf_protect.telemetry.event.exec.args
+        target_field: process.args
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.exec?.args != null
+    - script:
+        description: Counts the indexes of the arguments
+        lang: painless
+        source: >
+            if (ctx.process.args instanceof List) {
+              ctx.process.args_count = ctx.process.args.size();
+            } else {
+              ctx.process = ctx.process != null ? ctx.process : new HashMap();
+              ctx.process.args_count = 0;
+            }
+        ignore_failure: true
+    - rename:
+        field: jamf_protect.telemetry.event.exec.env
+        target_field: process.env_vars
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.exec?.env != null
+    - rename:
+        field: jamf_protect.telemetry.event.exec.cwd.path
+        target_field: process.working_directory
+        ignore_missing: true
+        if: ctx.jamf_protect?.telemetry?.event?.exec?.cwd?.path != null
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.signing_id
+        target_field: process.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.team_id
+        target_field: process.code_signature.team_id
+        ignore_missing: true
+
+##########################
+## ECS Parent Process ##
+##########################
+
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.parent_audit_token.uuid
+        target_field: process.parent.entity_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.parent_audit_token.pid
+        target_field: process.parent.pid
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.exec.target.parent_audit_token.euid
+        target_field: process.parent.user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.exec.target.parent_audit_token.ruid
+        target_field: process.parent.real_user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.exec.target.parent_audit_token.rgid
+        target_field: process.parent.real_group.id
+        type: string
+        ignore_missing: true
+
+##########################
+## ECS Responsible Process ##
+##########################
+
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.responsible_audit_token.uuid
+        target_field: process.group_leader.entity_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.exec.target.responsible_audit_token.pid
+        target_field: process.group_leader.pid
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.exec.target.responsible_audit_token.euid
+        target_field: process.group_leader.user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.exec.target.responsible_audit_token.ruid
+        target_field: process.group_leader.real_user.id
+        type: string
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.exec.target.responsible_audit_token.rgid
+        target_field: process.group_leader.real_group.id
+        type: string
+        ignore_missing: true
