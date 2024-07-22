@@ -31,59 +31,47 @@ processors:
   - drop:
       if: "ctx?.event?.original?.startsWith('#')"
       description: "Drop if logline contains header(s), which startswith `#`"
+
+  # pipeline custom csv...
+
   - csv:
+      description: Parse cloudfront csv row
       field: event.original
       separator: "\t"
       target_fields:
-      - _tmp.date
-      - _tmp.time
-      - aws.cloudfront.edge_location
-      - http.response.bytes
-      - source.address
-      - http.request.method
-      - aws.cloudfront.domain
-      - url.path
-      - http.response.status_code
-      - http.request.referrer
-      - _tmp.user_agent
-      - url.query
-      - aws.cloudfront.cookies
-      - aws.cloudfront.edge_result_type
-      - http.request.id
-      - destination.address
-      - network.protocol
-      - http.request.bytes
-      - event.duration
-      - _tmp.forwarded_ip
-      - _tmp.ssl_protocol
-      - tls.cipher
-      - aws.cloudfront.edge_response_result_type
-      - _tmp.protocol
-      - aws.cloudfront.fle_status
-      - aws.cloudfront.fle_encrypted_fields
-      - source.port
-      - aws.cloudfront.time_to_first_byte
-      - aws.cloudfront.edge_detailed_result_type
-      - aws.cloudfront.content_type
-      - http.response.body.bytes
-      - aws.cloudfront.range_start
-      - aws.cloudfront.range_end
-
-  - script:
-      lang: painless
-      description: Remove empty maps and fields of '-' value (cf placeholder for empty fields).
-      source: |
-        void handleMap(Map map) {
-          for (def x : map.values()) {
-            if (x instanceof Map) {
-                handleMap(x);
-            }
-          }
-          map.values().removeIf(v ->
-            (v == '-') ||
-            (v instanceof Map && v.size() == 0));
-        }
-        handleMap(ctx);
+      - _tmp.date                                   # date
+      - _tmp.time                                   # time
+      - aws.cloudfront.edge_location                # x-edge-location
+      - http.response.bytes                         # sc-bytes
+      - source.address                              # c-ip
+      - http.request.method                         # cs-method
+      - aws.cloudfront.domain                       # cs(Host)
+      - url.path                                    # cs-uri-stem
+      - http.response.status_code                   # cs-status
+      - http.request.referrer                       # cs(Referer)
+      - _tmp.user_agent                             # cs(User-Agents)
+      - url.query                                   # cs-uri-query
+      - aws.cloudfront.cookies                      # cs(Cookie)
+      - aws.cloudfront.edge_result_type             # x-edge-result-type
+      - http.request.id                             # x-edge-request-id
+      - destination.address                         # x-host-header
+      - network.protocol                            # cs-protocol
+      - http.request.bytes                          # cs-bytes
+      - event.duration                              # time-taken
+      - _tmp.forwarded_ip                           # x-forwarded-for
+      - _tmp.ssl_protocol                           # ssl-protocol
+      - tls.cipher                                  # ssl-cipher
+      - aws.cloudfront.edge_response_result_type    # x-edge-response-result-type
+      - _tmp.protocol                               # cs-protocol-version
+      - aws.cloudfront.fle_status                   # fle-status
+      - aws.cloudfront.fle_encrypted_fields         # fle-encrypted-fields
+      - source.port                                 # c-port
+      - aws.cloudfront.time_to_first_byte           # time-to-first-byte
+      - aws.cloudfront.edge_detailed_result_type    # x-edge-detailed-result-type
+      - http.response.mime_type                      # sc-content-type
+      - http.response.body.bytes                    # sc-content-len
+      - aws.cloudfront.range_start                  # sc-range-start
+      - aws.cloudfront.range_end                    # sc-range-end
   - set:
       field: _tmp.time
       value: "{{ _tmp.date }} {{ _tmp.time }}"
@@ -104,10 +92,16 @@ processors:
   - urldecode:
       field: _tmp.user_agent
       ignore_missing: true
+  - remove:
+      field: uri.query
+      if: "ctx?.uri?.query != null && ctx.uri.query == '-'"
   - user_agent:
       field: _tmp.user_agent
       target_field: user_agent
       ignore_missing: true
+  - remove:
+      field: aws.cloudfront.cookies
+      if: "ctx?.aws?.cloudfront?.cookies != null && ctx.aws.cloudfront.cookies == '-'"
   - convert:
       field: http.request.bytes
       type: long
@@ -119,6 +113,9 @@ processors:
         S_TO_NS: 1000000000
       source: >-
         ctx.event.duration = (Long)(Float.parseFloat(ctx.event.duration) * params.S_TO_NS);
+  - remove:
+      field: _tmp.forwarded_ip
+      if: "ctx?._tmp?.forwarded_ip != null && ctx?._tmp?.forwarded_ip == '-'"
   - lowercase:
       field: _tmp.forwarded_ip
       ignore_missing: true
@@ -138,11 +135,14 @@ processors:
       target_field: _tmp.forwarded_ip_converted
       type: ip
       ignore_missing: true
+      tag: convert_forwarded_ip
       on_failure:
         - append:
             description: Add convert failure to error message and continue.
             field: error.message
-            value: '{{{ _ingest.on_failure_message }}}'
+            value: 'Processor with tag {{ _ingest.on_failure_processor_tag }} failed with message {{ _ingest.on_failure_message }}'
+        - remove:
+            field: _tmp.forwarded_ip
   - set:
       field: related.ip
       copy_from: _tmp.forwarded_ip_converted
@@ -154,7 +154,7 @@ processors:
   - script:
       lang: painless
       description: Set tls protocol and version
-      if: 'ctx?._tmp?.ssl_protocol != null'
+      if: "ctx?._tmp?.ssl_protocol != null && ctx._tmp.ssl_protocol != '-'"
       source: |
         String ssl_protocol = ctx?._tmp?.ssl_protocol;
         String[] protocol_version = ssl_protocol.splitOnToken('v');
@@ -162,13 +162,21 @@ processors:
         if (!ctx.containsKey('tls')) {
           ctx['tls'] = new HashMap();
         }
-
         ctx.tls.version_protocol = protocol_version[0];
         ctx.tls.version          = protocol_version[1];
+  - remove:
+      field: tls.cipher
+      if: "ctx?.tls?.cipher != null && ctx?.tls?.cipher == '-'"
   - dissect:
       field: _tmp.protocol
       pattern: "%{}/%{http.version}"
       ignore_failure: true
+  - remove:
+      field: aws.cloudfront.fle_status
+      if: "ctx?.aws?.cloudfront?.fle_status != null && ctx.aws.cloudfront.fle_status == '-'"
+  - remove:
+      field: aws.cloudfront.fle_encrypted_fields
+      if: "ctx?.aws?.cloudfront?.fle_encrypted_fields != null && ctx.aws.cloudfront.fle_encrypted_fields == '-'"
   - set:
       field: destination.domain
       copy_from: destination.address
@@ -181,10 +189,19 @@ processors:
       field: aws.cloudfront.time_to_first_byte
       type: float
       ignore_missing: true
+  - remove:
+      field: http.response.body.bytes
+      if: "ctx?.http?.response?.body?.bytes != null && ctx?.http?.response?.body?.bytes == '-'"
   - convert:
       field: http.response.body.bytes
       type: long
       ignore_missing: true
+  - remove:
+      field: aws.cloudfront.range_start
+      if: "ctx?.aws?.cloudfront?.range_start != null && ctx.aws.cloudfront.range_start == '-'"
+  - remove:
+      field: aws.cloudfront.range_end
+      if: "ctx?.aws?.cloudfront?.range_end != null && ctx.aws.cloudfront.range_end == '-'"
   - script:
       lang: painless
       description: This script builds the `url.full` field out of the available `url.*` parts.
