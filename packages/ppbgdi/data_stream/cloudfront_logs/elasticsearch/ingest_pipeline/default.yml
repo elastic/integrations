@@ -71,39 +71,19 @@ processors:
 
   - script:
       lang: painless
-      description: Remove all fields which are null or empty.  '-' values are treated as empty
+      description: Remove empty maps and fields of '-' value (cf placeholder for empty fields).
       source: |
-        void handleMap(Map map, Map params) {
+        void handleMap(Map map) {
           for (def x : map.values()) {
             if (x instanceof Map) {
-                handleMap(x, params);
-            } else if (x instanceof List) {
-                handleList(x, params);
+                handleMap(x);
             }
           }
           map.values().removeIf(v ->
-            (v == null) ||
-            (v == '') ||
             (v == '-') ||
-            (v instanceof Map && v.size() == 0) ||
-            (v instanceof List && v.size() == 0));
+            (v instanceof Map && v.size() == 0));
         }
-        void handleList(List list, Map params) {
-          for (def x : list) {
-              if (x instanceof Map) {
-                  handleMap(x, params);
-              } else if (x instanceof List) {
-                  handleList(x, params);
-              }
-          }
-          list.removeIf(v ->
-            (v == null) ||
-            (v == '') ||
-            (v == '-') ||
-            (v instanceof Map && v.size() == 0) ||
-            (v instanceof List && v.size() == 0));
-        }
-        handleMap(ctx, params);
+        handleMap(ctx);
   - set:
       field: _tmp.time
       value: "{{ _tmp.date }} {{ _tmp.time }}"
@@ -132,17 +112,13 @@ processors:
       field: http.request.bytes
       type: long
       ignore_missing: true
-  - convert:
-      field: event.duration
-      type: float
-      ignore_missing: true
   - script:
       lang: painless
       if: ctx.event?.duration != null
       params:
         S_TO_NS: 1000000000
       source: >-
-        ctx.event.duration *= params.S_TO_NS;
+        ctx.event.duration = (Long)(Float.parseFloat(ctx.event.duration) * params.S_TO_NS);
   - lowercase:
       field: _tmp.forwarded_ip
       ignore_missing: true
@@ -308,13 +284,6 @@ processors:
       field: event.outcome
       value: failure
       if: ctx?.http?.response?.status_code == 000
-  - script:
-      lang: painless
-      if: ctx?.event?.duration != null
-      params:
-        S_TO_NS: 1000000000
-      source: >-
-        ctx.event.duration *= params.S_TO_NS;
   - lowercase:
       field: tls.version_protocol
       ignore_missing: true
