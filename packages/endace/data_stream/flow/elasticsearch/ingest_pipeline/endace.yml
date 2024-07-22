@@ -5,21 +5,21 @@ processors:
       description: "Set IP Conversation if both destination.ip and source.ip are present"
       field: _conf.ip_conv
       value: "ip_conv={{ source.ip }}%26{{ destination.ip }}"
-      if: ctx.destination?.ip != null && ctx.destination?.ip != '' && ctx.source?.ip != null && ctx.source?.ip != ''
+      if: (ctx.destination?.ip != null && ctx.destination?.ip != '') && (ctx.source?.ip != null && ctx.source?.ip != '')
       tag: endace conversation set
   
   - set: 
       description: "Set IP Conversation if only destination.ip is present"
       field: _conf.ip_conv
       value: "ip={{ destination.ip }}"
-      if: ctx.destination?.ip != null && ctx.destination?.ip != '' && (ctx.source?.ip == null || ctx.source?.ip == '')
+      if: (ctx.destination?.ip != null && ctx.destination?.ip != '') && (ctx.source?.ip == null || ctx.source?.ip == '')
       tag: endace destination ip set
 
   - set: 
       description: "Set IP Conversation if only source.ip is present"
       field: _conf.ip_conv
       value: "ip={{ source.ip }}"
-      if: (ctx.destination?.ip == null || ctx.destination?.ip == '') && ctx.source?.ip != null && ctx.source?.ip != ''
+      if: (ctx.destination?.ip == null || ctx.destination?.ip == '') && (ctx.source?.ip != null && ctx.source?.ip != '')
       tag: endace source ip set
 
   - date:
@@ -60,13 +60,13 @@ processors:
       source: "ctx._conf.event.end = ctx._conf.event.end + ctx._conf.timedelta/2"
       tag: "Calculate Endtime as Timestamp + half of Timedelta"
       description: "Calculate Endtime"
-      if: ctx._conf?.event?.end != null && ctx._conf?.event?.end != '' && ctx._conf?.timedelta != null && ctx._conf?.timedelta != ''
+      if: (ctx._conf?.event?.end != null && ctx._conf?.event?.end != '') && (ctx._conf?.timedelta != null && ctx._conf?.timedelta != '')
 
   - script:
       source: "ctx._conf.event.start = ctx._conf.event.start - ctx._conf.timedelta/2"
       tag: "Calculate Starttime as Timestamp - half of Timedelta"
       description: "Calculate Endtime"
-      if: ctx._conf?.event?.start != null && ctx._conf?.event?.start != '' && ctx._conf?.timedelta != null && ctx._conf?.timedelta != ''
+      if: (ctx._conf?.event?.start != null && ctx._conf?.event?.start != '') && (ctx._conf?.timedelta != null && ctx._conf?.timedelta != '')
 
   - set:
       field: event.reference
