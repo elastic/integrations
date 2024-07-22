@@ -18,7 +18,12 @@ To enable the `add_session_metadata` processor for Auditd Manager:
 
 . Navigate to the Auditd Manager integration configuration in {kib}.
 . Add the `add_session_metadata` processor configuration under the advanced options section.
-. Configure the audit rules.
+. Add these rules to the **Audit Rules** section of the configuration: 
+
+```bash
+-a always,exit -F arch=b64 -S execve,execveat -k exec 
+-a always,exit -F arch=b64 -S exit_group 
+-a always,exit -F arch=b64 -S setsid
 
 Changes are applied automatically, and you do not have to restart the service.
 
