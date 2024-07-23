@@ -6,7 +6,8 @@ processors:
     field: ecs.version
     value: '8.11.0'
 
-# Fail when jsonRPC is enabled, but message is not in jsonRPC format. 
+# Fail when jsonRPC is enabled, but message is not in jsonRPC format.
+# Fail when jsonRPC is disabled, but message is in jsonRPC format.
 # Use the json.error.message set on the input.
 - fail:
     if: ctx.json?.error?.message != null
@@ -85,6 +86,186 @@ processors:
     type: string
     ignore_missing: true
 
+- convert:
+    field: bitdefender.event.auto_renew_period
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.auto_renew_period
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.blocked
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.blocked
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.cleaned
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.cleaned
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.deleted
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.deleted
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.ignored
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.ignored
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.deviceClass
+    type: integer
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.deviceClass
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.license_limit
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.license_limit
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.mailboxes
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.mailboxes
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.minimal_commitment_usage_endpoints
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.minimal_commitment_usage_endpoints
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.parent_process_id
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.parent_process_id
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.present
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.present
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.productId
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.productId
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.quarantined
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.quarantined
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.vendorId
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.vendorId
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
+- convert:
+    field: bitdefender.event.storage_ip
+    type: ip
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: bitdefender.event.storage_ip
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: '{{{ _ingest.on_failure_message }}}'
+
 - date:
     if: ctx.bitdefender?.event?.lastAdReportDate != null && ctx.bitdefender?.event?.lastAdReportDate != ""
     field: bitdefender.event.lastAdReportDate
@@ -92,6 +273,7 @@ processors:
     formats:
       - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
       - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
       - ISO8601
       - UNIX
 
@@ -102,6 +284,7 @@ processors:
     formats:
       - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
       - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
       - ISO8601
       - UNIX
 
@@ -112,6 +295,7 @@ processors:
     formats:
       - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
       - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
       - ISO8601
       - UNIX
 
@@ -122,6 +306,7 @@ processors:
     formats:
       - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
       - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
       - ISO8601
       - UNIX
 
@@ -132,6 +317,7 @@ processors:
     formats:
       - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
       - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
       - ISO8601
       - UNIX
 
@@ -142,6 +328,7 @@ processors:
     formats:
       - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
       - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
       - ISO8601
       - UNIX
 
@@ -152,6 +339,7 @@ processors:
     formats:
       - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
       - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
       - ISO8601
       - UNIX
 
@@ -162,6 +350,7 @@ processors:
     formats:
       - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
       - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
       - ISO8601
       - UNIX
 
@@ -172,6 +361,7 @@ processors:
     formats:
       - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
       - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
       - ISO8601
       - UNIX
 
@@ -182,6 +372,7 @@ processors:
     formats:
       - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
       - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
       - ISO8601
       - UNIX
 
@@ -192,6 +383,18 @@ processors:
     formats:
       - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
       - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
+      - ISO8601
+      - UNIX
+
+- date:
+    if: ctx.bitdefender?.event?.end_subscription_date != null && ctx.bitdefender?.event?.end_subscription_date != ""
+    field: bitdefender.event.end_subscription_date
+    target_field: bitdefender.event.end_subscription_date
+    formats:
+      - "yyyy-MM-dd'T'HH:' 'mm:ss.SSS'Z'"
+      - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      - "yyyy- MM - dd'T'HH: mm:ss.SSS'Z'"
       - ISO8601
       - UNIX
 
@@ -208,6 +411,13 @@ processors:
     type: string
     ignore_missing: true
 
+- convert:
+    description: Company ID provided by BitDefender is stored as ECS organization ID
+    field: bitdefender.event.moved_company_id
+    target_field: organization.id
+    type: string
+    ignore_missing: true
+
 - script:
     description: Map organization ID to organization name
     lang: painless
@@ -218,6 +428,12 @@ processors:
       if (conftenants instanceof Map && conftenants.containsKey(orgid)) {
         ctx.organization.name = conftenants[orgid];
       }
+
+- set: 
+    field: organization.name
+    copy_from: bitdefender.event.moved_company_name
+    ignore_empty_value: true
+    if: ctx.organization?.name == null
 
 ### event fields
 
@@ -526,11 +742,14 @@ processors:
     ignore_missing: true
     if: "!(ctx.bitdefender?.event?.computer_ip instanceof List) && !(ctx.bitdefender?.event?.computer_ip == ctx.bitdefender?.event?.computer_name) && !(ctx.bitdefender?.event?.computer_ip == ctx.host?.name)"
 
-- set:
-    copy_from: bitdefender.event.computer_ip
-    field: host.ip
-    ignore_empty_value: true
-    if: "ctx.bitdefender?.event?.computer_ip instanceof List"
+- foreach:
+    field: bitdefender.event.computer_ip
+    if: ctx.bitdefender?.event?.computer_ip instanceof List
+    processor:
+      append:
+        field: host.ip
+        value: '{{{_ingest._value}}}'
+        allow_duplicates: false
 
 - convert:
     field: bitdefender.event.computerIp
@@ -696,14 +915,6 @@ processors:
     target_field: destination.ip
     ignore_missing: true
     ignore_failure: true
-
-- grok:
-    field: bitdefender.event.computer_ip
-    patterns:
-      - '%{IP:destination.ip},%{GREEDYDATA}'
-      - '%{IP:destination.ip}'
-    ignore_missing: true
-    if: ctx.destination?.ip == null && ctx.bitdefender?.event?.computer_ip != null && ctx.bitdefender?.event?.computer_ip != ""
 
 # IP Geolocation Lookup
 - geoip:
@@ -886,11 +1097,24 @@ processors:
     field: file.hash.sha256
     ignore_empty_value: true
 
+- set:
+    copy_from: bitdefender.event.file_hash
+    field: file.hash.sha256
+    ignore_empty_value: true
+    override: false
+
 - append:
     field: related.hash
     value:
       - "{{{bitdefender.event.file_hash_sha256}}}"
     if: ctx.bitdefender?.event?.file_hash_sha256 != null && ctx.bitdefender?.event?.file_hash_sha256 != ""
+    allow_duplicates: false
+
+- append:
+    field: related.hash
+    value:
+      - "{{{bitdefender.event.file_hash}}}"
+    if: ctx.bitdefender?.event?.file_hash != null && ctx.bitdefender?.event?.file_hash != ""
     allow_duplicates: false
 
 - set:
@@ -933,6 +1157,11 @@ processors:
     target_field: file.size
     ignore_missing: true
 
+- set:
+    copy_from: bitdefender.event.file_name
+    field: file.name
+    ignore_empty_value: true
+
 ### email related fields
 
 - set:
@@ -948,6 +1177,43 @@ processors:
 - set:
     copy_from: bitdefender.event.subject
     field: email.subject
+    ignore_empty_value: true
+
+### process fields
+
+- set:
+    copy_from: bitdefender.event.parent_process_path
+    field: process.parent.executable
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.parent_process_pid
+    field: process.parent.pid
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.parent_process_id
+    field: process.parent.pid
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.process_command_line
+    field: process.command_line
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.process_info_command_line
+    field: process.command_line
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.process_pid
+    field: process.pid
+    ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.process_info_path
+    field: process.executable
     ignore_empty_value: true
 
 ### incident fields
@@ -1079,12 +1345,28 @@ processors:
     field: threat.technique.id
     ignore_empty_value: true
 
-### related IP's
+### device fields
 
 - set:
-    field: related.ip
-    copy_from: host.ip
+    copy_from: bitdefender.event.deviceId
+    field: device.id
     ignore_empty_value: true
+
+- set:
+    copy_from: bitdefender.event.deviceName
+    field: device.model.name
+    ignore_empty_value: true
+
+### related IP's
+
+- foreach:
+    field: host.ip
+    if: ctx.host?.ip instanceof List
+    processor:
+      append:
+        field: related.ip
+        value: '{{{_ingest._value}}}'
+        allow_duplicates: false
 
 - append:
     field: related.ip
@@ -1267,6 +1549,19 @@ processors:
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))"
     field:
       - bitdefender.event.id
+      - bitdefender.event.deviceId
+      - bitdefender.event.deviceName
+      - bitdefender.event.file_hash
+      - bitdefender.event.file_name
+      - bitdefender.event.moved_company_id
+      - bitdefender.event.moved_company_name
+      - bitdefender.event.parent_process_path
+      - bitdefender.event.parent_process_pid
+      - bitdefender.event.parent_process_id
+      - bitdefender.event.process_command_line
+      - bitdefender.event.process_info_command_line
+      - bitdefender.event.process_pid
+      - bitdefender.event.process_info_path
     ignore_failure: true
     ignore_missing: true
 

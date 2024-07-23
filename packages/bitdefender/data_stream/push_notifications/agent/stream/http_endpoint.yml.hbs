@@ -38,9 +38,19 @@ program: |
   : 
     dyn({
       "error": {
-        "message": "Not jsonrpc formatted message, but parameter `Enable jsonRPC Format` is selected."
+        "message": "Not jsonrpc formatted message, but setting `Enable jsonRPC Format` is selected."
       }
     })
+{{else}}
+program: |
+  has(obj.jsonrpc) ?
+    dyn({
+      "error": {
+        "message": "Unable to process message. Received jsonrpc formatted message, but setting `Enable jsonRPC Format` is disabled."
+      }
+    })
+  :
+    obj
 {{/if}}
 
 {{#if preserve_original_event}}
