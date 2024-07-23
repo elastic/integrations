@@ -1,6 +1,8 @@
 name: {{channel}}
 condition: ${host.platform} == 'windows'
+{{#if event_id}}
 event_id: {{event_id}}
+{{/if}}
 {{#if ignore_older}}
 ignore_older: {{ignore_older}}
 {{/if}}
@@ -9,9 +11,17 @@ language: {{language}}
 {{/if}}
 {{#if tags.length}}
 tags:
-{{#each tags as |tag i|}}
-  - {{tag}}
+{{#each tags as |tag|}}
+- {{tag}}
 {{/each}}
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{else}}
+{{#if preserve_original_event}}
+tags:
+- preserve_original_event
+{{/if}}
 {{/if}}
 {{#if preserve_original_event}}
 include_xml: true
@@ -20,3 +30,4 @@ include_xml: true
 processors:
 {{processors}}
 {{/if}}
+{{custom}}
