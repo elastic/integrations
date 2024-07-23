@@ -1,7 +1,15 @@
 ---
-description: Pipeline for TYCHON Features Datasets
+description: Pipeline for TYCHON Certs Datasets
 processors:
 
+  - set:
+      field: labels.source
+      value: host
+      if: ctx.tychon.script.name.toLowerCase().contains('host')
+  - set:
+      field: labels.source
+      value: listening
+      if: ctx.tychon.script.name.toLowerCase().contains('listening')
   - remove:
       field: tychon.file.created
       if: ctx.tychon.file.created == ''
