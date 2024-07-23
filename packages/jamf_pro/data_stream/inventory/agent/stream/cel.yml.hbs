@@ -1,5 +1,5 @@
 config_version: 2
-resource.url: {{url}}
+resource.url: "{{api_host}}/api/preview/computers"
 {{#if oauth2}}
 auth.oauth2: {{oauth2}}
 {{/if}}
@@ -27,16 +27,18 @@ resource.tracer.maxbackups: 5
 processors:
 {{processors}}
 {{/if}}
-url: "{{api_host}}/api/preview/computers"
+url: resource.url
+sections: "section=GENERAL&section=OPERATING_SYSTEM&section=HARDWARE"
 page: 0
 fields_under_root: true
 keep_null: true
 fields:
   _conf:
-    url: {{url}}
+    url: "{{url}}?{{sections}}&page_size={{page_size}}&page={{page}}"
 program: |
   request(
     "GET",
+    state.url
   ).with({
     "Header": ({
       "Content-Type": ["application/json"]
@@ -52,19 +54,16 @@ program: |
         })
       :
         state.with({
-          "events": body.data.indicators.edges.map(e, e.node.with(
-            has(state.preserve_original_event) && state.preserve_original_event ?
-              { "event": { "original": e.node.encode_json() } }
-            :
-              {}
-          )),
-          "want_more": (total_count > (page+1) * page_size),
-          "cursor": { "value": body.data.indicators.pageInfo.endCursor },
+          "total_count": body.totalCount,  
+          "events": body.results,
+          "want_more": (body.totalCount > (state.page+1) * state.page_size),
+          "page": state.page+1, 
         })
     )
   )
 state:
+  want_more: {{want_more}}
   total_count: {{total_count}}
   page_size: {{page_size}}
-  page: {{page}} + 1
+  page: {{page}}
   preserve_original_event: {{preserve_original_event}}

@@ -9,7 +9,7 @@ For example, if you wanted to {sample use case} you could {action}. Then you can
 
 ## Data streams
 
- * __general_data__ provides basic information on devices - numbers, versions.
+ * __inventory__ provides Inventory data for computers. Includes: hardware, OS, etc. Saves each device as a separate log record.
 
 ## Requirements
 
