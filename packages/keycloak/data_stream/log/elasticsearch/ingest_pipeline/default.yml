@@ -12,7 +12,7 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "%{TIMESTAMP_ISO8601:_tmp.timestamp} %{LOGLEVEL:log.level}%{SPACE}\\[%{JAVACLASS:log.logger}\\] \\(%{DATA:process.thread.name}\\) %{GREEDYDATA:message}"
+        - "%{TIMESTAMP_ISO8601:_tmp.timestamp} %{LOGLEVEL:log.level}%{SPACE}\\[%{JAVACLASS:log.logger}\\] \\(%{DATA:process.thread.name}\\) (?<message>(.|\r|\n)*)"
   - set:
       field: event.timezone
       value: "{{_tmp.tz_offset}}"
