@@ -37,18 +37,25 @@ program: |
       "Content-Type": ["application/json"]
     })
   }).do_request().as(resp,
-    bytes(resp.Body).decode_json().as(body,
-      {{!-- has(body.errors) && size(body.errors) > 0 ?
+    bytes(resp.Body).decode_json().as(body, 
+      has(body.errors) && size(body.errors) > 0 ?
         state.with({
           "events": [{
             "error": { "message": body.errors.map(e, e.message) },
             "event": { "original": body.encode_json() }
           }]
         })
-       : --}}
-      state.with({
-        "events": body.results,
-      }) 
+      :
+        state.with({
+          "events": body.results.map(e, e.node.with(
+            has(state.preserve_original_event) && state.preserve_original_event ?
+              { "event": { "original": e.node.encode_json() } }
+            :
+              {}
+          )),
+          "want_more": (body.totalCount > (state.page+1)*state.page_size),
+          "cursor": { "total_count": body.totalCount },
+        })
     )
   )
 state:
