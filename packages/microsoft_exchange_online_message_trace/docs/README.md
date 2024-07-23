@@ -28,8 +28,6 @@ In order to continue using the Microsoft Exchange Online Message Trace you will 
         - Global Reader
     4) The App Registration should contain the following API permissions: Office 365 Exchange Online > `ReportingWebService.Read.All` (application). See [Specify the permissions your app requires to access the Reporting Web Service](https://learn.microsoft.com/en-gb/previous-versions/office/developer/o365-enterprise-developers/jj984325(v=office.15)#specify-the-permissions-your-app-requires-to-access-the-reporting-web-service).
 
-    NOTE: Make sure that at least one role includes the `ReportingWebService.Read.All` permission. For detailed steps, see [Microsoft's Assign Azure AD Roles to Users](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/manage-roles-portal) topic.
-
 - ### Configuring OAuth2 Credentials
   Once you have your service app registered and configured, you can now configure your OAuth2 credentials as follows:- 
     1) Generate a client secret for your registered service app. Copy and store the `client secret value` with you as this will be required for your OAuth2 credentials.
