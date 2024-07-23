@@ -2,10 +2,16 @@
 description: Pipeline for TYCHON Browser Tables
 processors:
 
-  - remove:
-      field: tychon.package.installed
-      if: ctx.tychon.package.installed == ""
-      ignore_missing: true
+  - script:
+      description: Covnert tychon.package.installed from boolean to date
+      lang: painless
+      source: |
+        if (['installed', 'true'].contains(ctx.tychon.package.installed)) {
+          ctx.tychon.package.installed = '1970-01-01T00:00:01Z';
+        } else {
+          ctx.tychon.package.remove('installed');
+        }
+      if: ctx.tychon.package?.installed != null
   - remove:
       field: tychon.package.size
       if: ctx.tychon.package.size == ""
