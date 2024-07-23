@@ -857,11 +857,37 @@ processors:
       tag: rename_proto
       target_field: zscaler_zia.web.prototype
       ignore_missing: true
+  # Set network.protocol from alpnprotocol
   - set:
       field: network.protocol
-      tag: set_network_protocol_from_web_prototype
-      copy_from: zscaler_zia.web.prototype
+      tag: set_network_protocol_from_web_alpn_protocol
+      copy_from: zscaler_zia.web.alpn_protocol
       ignore_empty_value: true
+  # Schemes taken from https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+  - script:
+      lang: painless
+      if: ctx.network?.protocol == null
+      description: Set network.protocol from prototype, if not already set.
+      tag: script_set_network_protocol
+      params:
+        dns-over-https: dns
+        ftp: ftp
+        ftp-over-http: ftp
+        http: http
+        http-proxy: http
+        https: https
+        ssl: https
+        tunnel: ssh
+        tunnel-ssl: ssh
+        websocket: ws
+        websocket-ssl: wss
+      source: >
+        String prototype = ctx.zscaler_zia?.web?.prototype?.toLowerCase()?.replace(' ', '-');
+        String scheme = params.getOrDefault(prototype, 'https');
+        if (ctx.network == null) {
+          ctx.network = new HashMap();
+        }
+        ctx.network.protocol = scheme;
   - lowercase:
       field: network.protocol
       tag: lowercase_network_protocol
@@ -1328,6 +1354,18 @@ processors:
       tag: urldecode_url
       ignore_missing: true
       ignore_failure: true
+  - script:
+      lang: painless
+      description: Add scheme to url if not already present
+      if: ctx.zscaler_zia?.web?.url?.name != null
+      tag: script_add_url_scheme
+      source: |-
+        def regex = /[a-z]+:\/\/.*/;
+        def url = ctx.zscaler_zia.web.url.name;
+        if (!regex.matcher(url).matches()) {
+          url = ctx.network.protocol + '://' + url;
+        }
+        ctx.zscaler_zia.web.url.name = url;
   - set:
       field: url.original
       tag: set_url_original_from_web_url_name
