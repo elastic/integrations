@@ -1,11 +1,9 @@
 config_version: 2
-resource.url: "{{api_host}}/api/preview/computers"
-{{#if oauth2}}
-auth.oauth2: {{oauth2}}
-{{/if}}
-{{#if ssl}}
-resource.ssl: {{ssl}}
-{{/if}}
+resource.url: "{{api_host}}/api/v1/computers-inventory"
+auth.oauth2.client.id: {{client_id}}
+auth.oauth2.client.secret: {{client_secret}}
+auth.oauth2.token_url: "{{api_host}}/api/oauth/token"
+auth.oauth2.endpoint_params.grant_type: "client_credentials" 
 interval: {{interval}}
 max_executions: {{max_executions}}
 resource.timeout: {{http_client_timeout}}
@@ -27,42 +25,33 @@ resource.tracer.maxbackups: 5
 processors:
 {{processors}}
 {{/if}}
-url: resource.url
-sections: "section=GENERAL&section=OPERATING_SYSTEM&section=HARDWARE"
 page: 0
 fields_under_root: true
 keep_null: true
-fields:
-  _conf:
-    url: "{{url}}?{{sections}}&page_size={{page_size}}&page={{page}}"
 program: |
   request(
     "GET",
-    state.url
+    state.url + "?section=GENERAL&section=OPERATING_SYSTEM&section=HARDWARE&page_size=100&page=0"
   ).with({
     "Header": ({
       "Content-Type": ["application/json"]
     })
   }).do_request().as(resp,
     bytes(resp.Body).decode_json().as(body,
-      has(body.errors) && size(body.errors) > 0 ?
+      {{!-- has(body.errors) && size(body.errors) > 0 ?
         state.with({
           "events": [{
             "error": { "message": body.errors.map(e, e.message) },
             "event": { "original": body.encode_json() }
           }]
         })
-      :
-        state.with({
-          "total_count": body.totalCount,  
-          "events": body.results,
-          "want_more": (body.totalCount > (state.page+1) * state.page_size),
-          "page": state.page+1, 
-        })
+       : --}}
+      state.with({
+        "events": body.results,
+      }) 
     )
   )
 state:
-  want_more: {{want_more}}
   total_count: {{total_count}}
   page_size: {{page_size}}
   page: {{page}}

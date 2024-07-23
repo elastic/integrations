@@ -1,9 +1,14 @@
 ---
 description: Pipeline for processing sample logs
 processors:
-- set:
-    field: sample_field
-    value: "1"
+- json:
+    field: message
+    target_field: jamf_pro.inventory
+    if: ctx.message != null
+- rename:
+    field: json
+    target_field: jamf_pro.inventory
+    if: ctx.json != null
 on_failure:
 - set:
     field: error.message
