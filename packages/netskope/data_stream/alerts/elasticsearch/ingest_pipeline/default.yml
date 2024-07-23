@@ -1325,6 +1325,22 @@ processors:
           ctx.user.email = setList;
         }
   - script:
+    if: ctx.user?.email != null
+    lang: painless
+    source: >-
+        def related_users = [];
+        def user_emails = [];
+        user_emails = ctx.user.email;
+        for (def email : user_emails) {
+          if (email.contains('@')) {
+            related_users.add(email.splitOnToken('@')[0])
+          }
+        }
+        ctx['related.user'] = related_users;
+        if (related_users.length == 1) {
+          ctx['user.name'] = related_users[0]
+        }
+  - script:
       if: ctx.netskope?.alerts?.quarantine?.app != null
       lang: painless
       source: >-
