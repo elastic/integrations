@@ -15,20 +15,20 @@ For more detailed information refer to the following blogs:
     - If using Elastic Defend, add a custom pipeline to the data stream. Go to **Stack Management > Ingest Pipelines**, and check if the pipeline `logs-endpoint.events.network@custom` exists. 
     ![Component Templates](../img/custom-pipeline.png)
     If it does not exist, you can create it by running the following command in the Dev Console. Be sure to replace `<VERSION>` with the current package version.
-        ```
-        PUT _ingest/pipeline/logs-endpoint.events.network@custom
-        {
-          "processors": [
-            {
-              "pipeline": {
-                "name": "<VERSION>-ml_dga_ingest_pipeline",
-                "ignore_missing_pipeline": true,
-                "ignore_failure": true
-              }
+      ```
+      PUT _ingest/pipeline/logs-endpoint.events.network@custom
+      {
+        "processors": [
+          {
+            "pipeline": {
+              "name": "<VERSION>-ml_dga_ingest_pipeline",
+              "ignore_missing_pipeline": true,
+              "ignore_failure": true
             }
-          ]
-        }
-        ```
+          }
+        ]
+      }
+      ```
     If `logs-endpoint.events.process@custom` already exists, select the three dots next to it and choose **Edit**. Click **Add a processor**. Select **Pipeline** for Processor, enter `<VERSION>-problem_child_ingest_pipeline` for name (replacing `<VERSION>` with the current package version), and check **Ignore missing pipeline** and **Ignore failures for this processor**. Select **Add Processor**.
     - If using an Elastic Beat such as Packetbeat, add the ingest pipeline to it by adding a simple configuration [setting](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#pipelines-for-beats) to `packetbeat.yml` and skip to the anomaly detector step.
 1. **Add the required mapping to the index or component template**: Go to **Stack Management > Index Management > Component Templates**. Templates that can be edited to add custom components will be marked with a `@custom` suffix. For instance, the custom component template for Elastic Defend network events is `logs-endpoint.events.network@custom`. **Note:** Do not attempt to edit the `@package` template.
