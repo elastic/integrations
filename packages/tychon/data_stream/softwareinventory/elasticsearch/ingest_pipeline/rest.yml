@@ -12,14 +12,16 @@ processors:
       target_field: tychon.package.description
       ignore_failure: true
       ignore_missing: true
-  - set:
-      field: tychon.package.installed
-      value: '1970-01-01T00:00:01Z'
-      if: ctx.tychon.package.installed == 'installed'
-  - set:
-      field: tychon.package.installed
-      value: '1970-01-01T00:00:01Z'
-      if: ctx.tychon.package.installed == ''
+  - script:
+      description: Covnert tychon.package.installed from boolean to date
+      lang: painless
+      source: |
+        if (['installed', 'true', ''].contains(ctx.tychon.package.installed)) {
+          ctx.tychon.package.installed = '1970-01-01T00:00:01Z';
+        } else {
+          ctx.tychon.package.remove('installed');
+        }
+      if: ctx.tychon.package?.installed != null
   - gsub:
       field: tychon.package.size
       pattern: '[^0-9]'
