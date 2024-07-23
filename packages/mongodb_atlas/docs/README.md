@@ -257,32 +257,32 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| mongodb_atlas.alert.acknowledged.comment | Comment left by the user who acknowledged the alert. Cloud Manager returns this value if the alert has been acknowledged. | keyword |
-| mongodb_atlas.alert.acknowledged.time | Timestamp in ISO 8601 date and time format in UTC until which the alert has been acknowledged. Cloud Manager returns this value if the alert has been acknowledged. | date |
-| mongodb_atlas.alert.acknowledged.user.name | Username of the user who acknowledged the alert. Cloud Manager returns this value if the alert has been acknowledged. | keyword |
-| mongodb_atlas.alert.cluster.id | Unique identifier for the cluster to which this alert applies. Cloud Manager returns this value if "eventTypeName" : "SHARDED_CLUSTER" | keyword |
-| mongodb_atlas.alert.cluster.name | Name of the cluster to which this alert applies. Cloud Manager returns this value if "eventTypeName" : "SHARDED_CLUSTER" | keyword |
-| mongodb_atlas.alert.cluster.parent.id | Unique 24-hexadecimal character string that identifies the parent cluster to which this alert applies. The parent cluster contains the sharded nodes. MongoDB Cloud returns this parameter only for alerts of events impacting sharded clusters. | keyword |
+| mongodb_atlas.alert.acknowledged.comment | Comment left by the user who acknowledged the alert. MongoDB Atlas returns this value if the alert has been acknowledged. | keyword |
+| mongodb_atlas.alert.acknowledged.time | Timestamp in ISO 8601 date and time format in UTC until which the alert has been acknowledged. MongoDB Atlas returns this value if the alert has been acknowledged. | date |
+| mongodb_atlas.alert.acknowledged.user.name | Username of the user who acknowledged the alert. MongoDB Atlas returns this value if the alert has been acknowledged. | keyword |
+| mongodb_atlas.alert.cluster.id | Unique identifier for the cluster to which this alert applies. MongoDB Atlas returns this value if "eventTypeName" : "SHARDED_CLUSTER" | keyword |
+| mongodb_atlas.alert.cluster.name | Name of the cluster to which this alert applies. MongoDB Atlas returns this value if "eventTypeName" : "SHARDED_CLUSTER" | keyword |
+| mongodb_atlas.alert.cluster.parent.id | Unique 24-hexadecimal character string that identifies the parent cluster to which this alert applies. The parent cluster contains the sharded nodes. MongoDB Atlas returns this parameter only for alerts of events impacting sharded clusters. | keyword |
 | mongodb_atlas.alert.config.id | Unique identifier for the alert configuration that triggered this alert. | keyword |
 | mongodb_atlas.alert.event_type.name | Name of the event that triggered the alert. | keyword |
-| mongodb_atlas.alert.host.id | unique identifier for the host to which the metric pertains. Cloud Manager returns this value if "eventTypeName" was set to one of the following : HOST_DOWN, OUTSIDE_METRIC_THRESHOLD, REPLICA_SET. | keyword |
+| mongodb_atlas.alert.host.id | Unique identifier for the host to which the metric pertains. MongoDB Atlas returns this value if "eventTypeName" was set to one of the following : HOST_DOWN, OUTSIDE_METRIC_THRESHOLD, REPLICA_SET. | keyword |
 | mongodb_atlas.alert.host.non_running.ids | List of unique 24-hexadecimal character strings that identify the replica set members that are not in PRIMARY nor SECONDARY state. | keyword |
-| mongodb_atlas.alert.host_name_and_port | Hostname and port of each host to which the alert applies. This can be a hostname, an FQDN, an IPv4 address, or an IPv6 address. Cloud Manager returns this value if "eventTypeName" was set to one of the following : HOST_DOWN, OUTSIDE_METRIC_THRESHOLD, REPLICA_SET. | keyword |
-| mongodb_atlas.alert.last_notified.time | Timestamp in ISO 8601 date and time format in UTC when the last notification was sent for this alert. Cloud Manager returns this value if notifications have been sent. | date |
-| mongodb_atlas.alert.metric.name | Name of the measurement whose value went outside the threshold. Cloud Manager returns this value if "eventTypeName" was set to OUTSIDE_METRIC_THRESHOLD. | keyword |
+| mongodb_atlas.alert.host_name_and_port | Hostname and port of each host to which the alert applies. This can be a hostname, an FQDN, an IPv4 address, or an IPv6 address. MongoDB Atlas returns this value if "eventTypeName" was set to one of the following : HOST_DOWN, OUTSIDE_METRIC_THRESHOLD, REPLICA_SET. | keyword |
+| mongodb_atlas.alert.last_notified.time | Timestamp in ISO 8601 date and time format in UTC when the last notification was sent for this alert. MongoDB Atlas returns this value if notifications have been sent. | date |
+| mongodb_atlas.alert.metric.name | Name of the measurement whose value went outside the threshold. MongoDB Atlas returns this value if "eventTypeName" was set to OUTSIDE_METRIC_THRESHOLD. | keyword |
 | mongodb_atlas.alert.metric.unit | Relevant units for value. | keyword |
 | mongodb_atlas.alert.metric.value | Value of the metric. | double |
 | mongodb_atlas.alert.processor.error_msg | The error message associated with the Stream Processor to which this alert applies. | keyword |
 | mongodb_atlas.alert.processor.instance.name | The name of the Stream Processing Instance to which this alert applies. The resource returns this parameter for alerts of events impacting Stream Processing Instances. | keyword |
 | mongodb_atlas.alert.processor.name | The name of the Stream Processor to which this alert applies. The resource returns this parameter for alerts of events impacting Stream Processors. | keyword |
 | mongodb_atlas.alert.processor.state | The state of the Stream Processor to which this alert applies. The resource returns this parameter for alerts of events impacting Stream Processors. | keyword |
-| mongodb_atlas.alert.replicaset.name | Name of the replica set. Cloud Manager returns this value if "eventTypeName" was set to one of the following : BACKUPHOST_DOWN, OUTSIDE_METRIC_THRESHOLD, REPLICA_SET. | keyword |
-| mongodb_atlas.alert.resolved.time | Timestamp in ISO 8601 date and time format in UTC when the alert was closed. Cloud Manager returns this value if "status":"CLOSED" | date |
-| mongodb_atlas.alert.source_type.name | Type of host being backed up when "eventTypeName" : "BACKUP". Cloud Manager can return one of the following : REPLICA_SET, SHARDED_CLUSTER, CONFIG_SERVER. | keyword |
-| mongodb_atlas.alert.status | Current state of the alert. Cloud Manager can return one of the following : TRACKING. The alert condition exists but has not persisted beyond the defined notification delay. For details, see Request Query Parameters. OPEN, CLOSED, CANCELLED. | keyword |
+| mongodb_atlas.alert.replicaset.name | Name of the replica set. MongoDB Atlas returns this value if "eventTypeName" was set to one of the following : BACKUPHOST_DOWN, OUTSIDE_METRIC_THRESHOLD, REPLICA_SET. | keyword |
+| mongodb_atlas.alert.resolved.time | Timestamp in ISO 8601 date and time format in UTC when the alert was closed. MongoDB Atlas returns this value if "status":"CLOSED" | date |
+| mongodb_atlas.alert.source_type.name | Type of host being backed up when "eventTypeName" : "BACKUP". MongoDB Atlas can return one of the following : REPLICA_SET, SHARDED_CLUSTER, CONFIG_SERVER. | keyword |
+| mongodb_atlas.alert.status | Current state of the alert. MongoDB Atlas can return one of the following : TRACKING, OPEN, CLOSED, CANCELLED. | keyword |
 | mongodb_atlas.alert.tags | Identifying labels set for this alert. | keyword |
 | mongodb_atlas.alert.updated.time | Timestamp in ISO 8601 date and time format in UTC when the alert was last updated. | date |
-| mongodb_atlas.alert.user.alias | Human-readable label that identifies the cluster node. MongoDB Cloud sets this hostname usually to the standard hostname for the cluster node. It appears in the connection string for a cluster instead of the value of the hostname parameter. | keyword |
+| mongodb_atlas.alert.user.alias | Human-readable label that identifies the cluster node. MongoDB Atlas sets this hostname usually to the standard hostname for the cluster node. It appears in the connection string for a cluster instead of the value of the hostname parameter. | keyword |
 
 
 ### Mongod Audit

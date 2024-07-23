@@ -113,13 +113,17 @@ processors:
       field: mongodb_atlas.alert.host_name_and_port
       patterns:
         - '%{HOSTNAME:source.address}:%{POSINT:source.port}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Failed to parse host_name_and_port: {{{ _ingest.on_failure_message }}}'
       ignore_missing: true
   - convert:
       field: source.port
       type: long
       ignore_missing: true
       on_failure:
-        - set:
+        - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
