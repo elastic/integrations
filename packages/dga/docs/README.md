@@ -62,7 +62,7 @@ For more detailed information refer to the following blogs:
   ```
   POST INDEX_NAME/_rollover
   ```
-1. **(Optional) [Create a data view](https://www.elastic.co/guide/en/kibana/current/data-views.html) 
+1. **(Optional) [Create a data view](https://www.elastic.co/guide/en/kibana/current/data-views.html)** for your network logs.
 1. **Add preconfigured anomaly detection jobs**: In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for `DGA`. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment. Note this job is only useful for indices that have been enriched by the ingest pipeline.
 1. **Enable detection rules**: You can also enable detection rules to alert on DGA activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine in **Security > Rules**, and can be found using the tag `Use Case: Domain Generated Algorithm Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
