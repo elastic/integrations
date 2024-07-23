@@ -67,7 +67,7 @@ For more detailed information refer to the following blogs and webinar:
       ```
     - If the `@custom` component template already exists, click the three dots next to it and select **Edit**. 
     ![Component Templates](../img/component-templates-edit.png)
-    On the index settings step, add the following. Be sure to change `<VERSION>` to the current package version.
+    - On the index settings step, add the following. Be sure to change `<VERSION>` to the current package version.
       ```
       {
         "index": {
