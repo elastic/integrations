@@ -1,0 +1,134 @@
+---
+description: Process goflow2 sflow data
+processors:
+- script:
+    source: ctx.time_flow_start_ns = (ctx.time_flow_start_ns / 1000000000);
+- script:
+    source: ctx.flow_size = ctx.bytes * ctx.sampling_rate;
+- date:
+    field: time_flow_start_ns
+    target_field: "@timestamp"
+    formats:
+    - UNIX
+    timezone: UTC
+    ignore_failure: false
+- rename:
+    field: type
+    target_field: event.action
+    if: ctx.type != ''
+- rename:
+    field: sampler_address
+    target_field: observer.ip
+- rename:
+    field: sequence_num
+    target_field: sflow.sequence_num
+- rename:
+    field: in_if
+    target_field: observer.ingress.interface.id
+    if: ctx.in_if != ''
+- rename:
+    field: out_if
+    target_field: observer.engress.interface.id
+    if: ctx.out_if != ''
+- convert:
+    field: src_addr
+    type: ip
+    if: ctx.src_addr != ''
+- rename:
+    field: src_addr
+    target_field: source.ip
+    if: ctx.src_addr != ''
+- convert:
+    field: dst_addr
+    type: ip
+    if: ctx.dst_addr != ''
+- rename:
+    field: dst_addr
+    target_field: destination.ip
+    if: ctx.dst_addr != ''
+- rename:
+    field: etype
+    target_field: network.type
+    if: ctx.etype != ''
+- rename:
+    field: proto
+    target_field: network.transport
+    if: ctx.proto != ''
+- rename:
+    field: src_port
+    target_field: source.port
+    if: ctx.src_port != ''
+- rename:
+    field: dst_port
+    target_field: destination.port
+    if: ctx.dst_port != ''
+- rename:
+    field: src_vlan
+    target_field: observer.ingress.vlan.id
+    if: ctx.src_vlan != ''
+- rename:
+    field: dst_vlan
+    target_field: observer.egress.vlan.id
+    if: ctx.dst_vlan != ''
+- rename:
+    field: sampling_rate
+    target_field: network.packets
+- rename:
+    field: bytes
+    target_field: sflow.bytes
+- set:
+    field: network.bytes
+    value: "{{flow_size}}"
+- geoip:
+    if: ctx.source?.geo == null
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    if: ctx.destination?.geo == null
+    field: destination.ip
+    target_field: destination.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: destination.ip
+    target_field: destination.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- rename:
+    field: destination.as.asn
+    target_field: destination.as.number
+    ignore_missing: true
+- rename:
+    field: destination.as.organization_name
+    target_field: destination.as.organization.name
+    ignore_missing: true
+- remove:
+    field:
+    - time_flow_start_ns
+    - flow_size
+    - message
+on_failure:
+- set:
+    field: error.message
+    value: Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag
+      }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message {{ _ingest.on_failure_message
+      }} - Source {{_source}}
