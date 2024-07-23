@@ -15,27 +15,54 @@ For more detailed information refer to the following blogs:
     - If using an Elastic Beat such as Packetbeat, add the ingest pipeline to it by adding a simple configuration [setting](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#pipelines-for-beats) to `packetbeat.yml`.
     - If adding the ingest pipeline to an existing pipeline, use a [pipeline processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/pipeline-processor.html). For example, you can check if Packetbeat (default index pattern `packetbeat-*`) or Elastic Defend (the default index pattern being `logs-endpoint.events.network-default`), already has an ingest pipeline by navigating to **Stack Management > Data > Index Management**, finding the index (sometimes you need to toggle "Include hidden indices"), and checking the index's settings for a default or final [pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#set-default-pipeline). To enable the enrichment policy as the default pipeline on an index, you can use this example and replace `INDEX_NAME` with the desired index:
       ```
-      POST INDEX_NAME/_settings
+      PUT INDEX_NAME/_settings
       {
         "index" : {
           "default_pipeline" : "<VERSION>-ml_dga_ingest_pipeline"
         }
       }
       ```
-1. **Check mappings** Check that DGA mappings exist in `GET INDEX_NAME/_mapping`, look for `ml_is_dga`. If they do not, add them with:
-  ```
-  PUT INDEX_NAME/_mapping
-  {
-    "runtime": {
-      "ml_is_dga.malicious_prediction": {
-        "type": "long"
-      },
-      "ml_is_dga.malicious_probability": {
-        "type": "long"
+1. **Add the required mapping to the index or component template**: Go to **Stack Management > Index Management > Component Templates**. Templates that can be edited to add custom components will be marked with a `@custom` suffix. For instance, the custom component template for Elastic Defend processes is `logs-endpoint.events.network@custom`. **Note:** Do not attempt to edit the `@package` template.
+    ![Component Templates](../img/component-templates.png)
+    - If the `@custom` component template does not exist, you can execute the following command in the Dev Console to create it and then continue to the rollover step.
+      ```
+      PUT _component_template/{COMPONENT_TEMPLATE_NAME}@custom
+      {
+        "template": {
+          "mappings": {
+            "properties": {
+              "ml_is_dga": {
+                "type": "object",
+                "properties": {
+                  "malicious_prediction": {
+                    "type": "long"
+                  },
+                  "malicious_probability": {
+                    "type": "float"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
-    }
-  }
+      ```
+    - If the `@custom` component template already exists, click the three dots next to it and select **Edit**. 
+    ![Component Templates](../img/component-templates-edit.png)
+    Proceed to the mappings step. Click **Add Field** at the bottom of the page and create an an `Object` field for `ml_is_dga`. 
+    ![Component Templates](../img/field1.png)
+    Finally create two properties under `ml_is_dga`.
+    ![Component Templates](../img/field1a.png)
+    The first for `malicious_prediction` of type `Long` and then for `prediction_probability` or type `Float`.
+    ![Component Templates](../img/field2.png)
+    Your component mappings should look like the following:
+    ![Component Templates](../img/fields-complete.png)
+    Click **Review** then **Save Component Template**.
+1. **Rollover** Depending on your environment, you may need to [rollover](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-rollover-index.html) in order for these mappings to get picked up.
   ```
+  POST INDEX_NAME/_rollover
+  ```
+1. **(Optional) [Create a data view](https://www.elastic.co/guide/en/kibana/current/data-views.html) 
 1. **Add preconfigured anomaly detection jobs**: In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for `DGA`. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment. Note this job is only useful for indices that have been enriched by the ingest pipeline.
 1. **Enable detection rules**: You can also enable detection rules to alert on DGA activity in your environment, based on anomalies flagged by the above ML jobs. As of version 2.0.0 of this package, these rules are available as part of the Detection Engine in **Security > Rules**, and can be found using the tag `Use Case: Domain Generated Algorithm Detection`. See this [documentation](https://www.elastic.co/guide/en/security/current/prebuilt-rules-management.html#load-prebuilt-rules) for more information on importing and enabling the rules.
 
