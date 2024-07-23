@@ -30,7 +30,7 @@ For more detailed information refer to the following blogs and webinar:
         ]
       }
       ```
-    If `logs-endpoint.events.process@custom` already exists, select the three dots next to it and choose **Edit**. Click **Add a processor**. Select **Pipeline** for Processor, enter `<VERSION>-problem_child_ingest_pipeline` for name (replacing `<VERSION>` with the current package version), and check **Ignore missing pipeline** and **Ignore failures for this processor**. Select **Add Processor**.
+    - If `logs-endpoint.events.process@custom` already exists, select the three dots next to it and choose **Edit**. Click **Add a processor**. Select **Pipeline** for Processor, enter `<VERSION>-problem_child_ingest_pipeline` for name (replacing `<VERSION>` with the current package version), and check **Ignore missing pipeline** and **Ignore failures for this processor**. Select **Add Processor**.
     - If using an Elastic Beat such as Winlogbeat, add the ingest pipeline to it by adding a simple configuration [setting](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html#pipelines-for-beats) to `winlogbeat.yml`.
 1. **Add the required mapping to the component template**: Go to **Stack Management > Index Management > Component Templates**. Templates that can be edited to add custom components will be marked with a `@custom` suffix. For instance, the custom component template for Elastic Defend process events is `logs-endpoint.events.process@custom`. **Note:** Do not attempt to edit the `@package` template.
     ![Component Templates](../img/component-templates.png)
@@ -75,17 +75,17 @@ For more detailed information refer to the following blogs and webinar:
         }
       }
       ```
-    Proceed to the mappings step. Click **Add Field** at the bottom of the page and create a `blocklist_label` field of type `Long`:
+    - Proceed to the mappings step. Click **Add Field** at the bottom of the page and create a `blocklist_label` field of type `Long`:
     ![Component Templates](../img/field1.png)
-    Then create an `Object` field for `problemchild`. 
+    - Then create an `Object` field for `problemchild`. 
     ![Component Templates](../img/field2.png)
-    Finally create two properties under ProblemChild.
+    - Finally create two properties under ProblemChild.
     ![Component Templates](../img/field2a.png)
-    The first for `prediction` of type `Long` and then for `prediction_probability` or type `Float`.
+    - The first for `prediction` of type `Long` and then for `prediction_probability` or type `Float`.
     ![Component Templates](../img/field3.png)
-    Your component mappings should look like the following:
+    - Your component mappings should look like the following:
     ![Component Templates](../img/fields-complete.png)
-    Click **Review** then **Save Component Template**.
+    - Click **Review** then **Save Component Template**.
 1. **Rollover** Depending on your environment, you may need to [rollover](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-rollover-index.html) in order for these mappings to get picked up. The deault index pattern for Elastic Defend is `logs-endpoint.events.process-default`.
   ```
   POST INDEX_NAME/_rollover
