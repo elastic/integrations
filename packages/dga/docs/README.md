@@ -53,7 +53,7 @@ For more detailed information refer to the following blogs:
     ![Component Templates](../img/field1.png)
     Finally create two properties under `ml_is_dga`.
     ![Component Templates](../img/field1a.png)
-    The first for `malicious_prediction` of type `Long` and then for `prediction_probability` or type `Float`.
+    The first for `malicious_prediction` of type `Long` and then for `malicious_probability` or type `Float`.
     ![Component Templates](../img/field2.png)
     Your component mappings should look like the following:
     ![Component Templates](../img/fields-complete.png)
