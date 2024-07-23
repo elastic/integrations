@@ -12,7 +12,7 @@ For more detailed information refer to the following blogs and webinar:
 1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
 1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Living off the Land Detection**. Configure the integration name and agent policy. Click Save and Continue.
 1. **Install assets**: Install the assets by clicking **Settings > Install Living off the Land Detection assets**.
-1. **Configure the pipeline** To configure the pipeline you can use one of the following steps:
+1. **Configure the pipeline**: To configure the pipeline you can use one of the following steps:
     - If using Elastic Defend, add a custom pipeline to the data stream. Go to **Stack Management > Ingest Pipelines**, and check if the pipeline `logs-endpoint.events.process@custom` exists. 
     ![Component Templates](../img/custom-pipeline.png)
     If it does not exist, you can create it by running the following command in the Dev Console. Be sure to replace `<VERSION>` with the current package version.
