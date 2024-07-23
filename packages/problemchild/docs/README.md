@@ -32,7 +32,6 @@ For more detailed information refer to the following blogs and webinar:
         "template": {
           "mappings": {
             "properties": {
-              "dynamic_templates": [],
               "blocklist_label": {
                 "type": "long"
               },
@@ -52,7 +51,7 @@ For more detailed information refer to the following blogs and webinar:
         }
       }
       ```
-    - If the @custom component template already exists, click the three dots next to it and select **Edit**. 
+    - If the `@custom` component template already exists, click the three dots next to it and select **Edit**. 
     ![Component Templates](../img/component-templates-edit.png)
     Proceed to the mappings step. Click **Add Field** at the bottom of the page and create a `blocklist_label` field of type `Long`:
     ![Component Templates](../img/field1.png)
