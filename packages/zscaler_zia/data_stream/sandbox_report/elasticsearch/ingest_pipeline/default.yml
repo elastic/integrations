@@ -1,0 +1,491 @@
+---
+description: Pipeline for processing Sandbox Report logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Drops null/empty/na values recursively.
+      tag: script_to_remove_na_values
+      lang: painless
+      source: |-
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '' || object == 'NA' || object == 'None') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - append:
+      field: event.category
+      tag: append_malware_into_event_category
+      value: malware
+      allow_duplicates: false
+      if: ctx.json?.Classification?.Type != null && ctx.json.Classification.Type == 'MALICIOUS'
+  - append:
+      field: event.category
+      tag: append_file_into_event_category
+      value: file
+      allow_duplicates: false
+      if: ctx.json?.Classification?.Type != null && ctx.json.Classification.Type == 'BENIGN'
+  - append:
+      field: event.category
+      tag: append_intrusion_detection_into_event_category
+      value: intrusion_detection
+      allow_duplicates: false
+      if: ctx.json?.Classification?.Type != null && ctx.json.Classification.Type == 'SUSPICIOUS'
+  - append:
+      field: event.type
+      tag: append_info_into_event_type
+      value: info
+      allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_event_to_event_kind
+      value: event
+      if: ctx.json?.Classification?.Type != null && ctx.json.Classification.Type == 'BENIGN'
+  - set:
+      field: event.kind
+      tag: set_alert_to_event_kind
+      value: alert
+      if: ctx.json?.Classification?.Type != null && (ctx.json.Classification.Type == 'MALICIOUS' || ctx.json.Classification.Type == 'SUSPICIOUS')
+  - rename:
+      field: json.Classification.Category
+      tag: rename_Classification_Category
+      target_field: zscaler_zia.sandbox_report.classification.category
+      ignore_missing: true
+  - rename:
+      field: json.Classification.DetectedMalware
+      tag: rename_Classification_DetectedMalware
+      target_field: zscaler_zia.sandbox_report.classification.detected_malware
+      ignore_missing: true
+  - convert:
+      field: json.Classification.Max Score
+      tag: convert_Classification_Max_Score_to_double
+      target_field: zscaler_zia.sandbox_report.classification.max_score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.Classification.Score
+      tag: convert_Classification_Score_to_double
+      target_field: zscaler_zia.sandbox_report.classification.score
+      type: double
+      ignore_missing: true
+      if: ctx.json?.Classification?.Score != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.risk_score
+      tag: set_event_risk_score_from_sandbox_report_classification_score
+      copy_from: zscaler_zia.sandbox_report.classification.score
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_file
+      value: file
+  - rename:
+      field: json.Classification.Type
+      tag: rename_Classification_Type
+      target_field: zscaler_zia.sandbox_report.classification.type
+      ignore_missing: true
+  - rename:
+      field: json.FileProperties.RootCA
+      tag: rename_File_Properties_RootCA
+      target_field: zscaler_zia.sandbox_report.file_properties.root_ca
+      ignore_missing: true
+  - rename:
+      field: json.FileProperties.DigitalCerificate
+      tag: rename_File_Properties_Digital_Cerificate
+      target_field: zscaler_zia.sandbox_report.file_properties.digital_cerificate
+      ignore_missing: true
+  - convert:
+      field: json.FileProperties.FileSize
+      tag: convert_File_Properties_File_Size_to_long
+      target_field: zscaler_zia.sandbox_report.file_properties.file_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      tag: set_file_size_from_sandbox_report_file_properties_file_size
+      copy_from: zscaler_zia.sandbox_report.file_properties.file_size
+      ignore_empty_value: true
+  - rename:
+      field: json.FileProperties.FileType
+      tag: rename_File_Properties_File_Type
+      target_field: zscaler_zia.sandbox_report.file_properties.file_type
+      ignore_missing: true
+  - rename:
+      field: json.FileProperties.Issuer
+      tag: rename_File_Properties_Issuer
+      target_field: zscaler_zia.sandbox_report.file_properties.issuer
+      ignore_missing: true
+  - append:
+      field: file.x509.issuer.common_name
+      tag: append_zscaler_zia_sandbox_report_file_properties_issuer_into_file_x509_issuer_common_name
+      value: '{{{zscaler_zia.sandbox_report.file_properties.issuer}}}'
+      allow_duplicates: false
+      if: ctx.zscaler_zia?.sandbox_report?.file_properties?.issuer != null
+  - rename:
+      field: json.FileProperties.MD5
+      tag: rename_File_Properties_MD5
+      target_field: zscaler_zia.sandbox_report.file_properties.md5
+      ignore_missing: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_sandbox_report_file_properties_md5
+      copy_from: zscaler_zia.sandbox_report.file_properties.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_hash_md5_into_related_hash
+      value: '{{{file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - rename:
+      field: json.FileProperties.SHA1
+      tag: rename_File_Properties_SHA1
+      target_field: zscaler_zia.sandbox_report.file_properties.sha1
+      ignore_missing: true
+  - set:
+      field: file.hash.sha1
+      tag: set_file_hash_sha1_from_sandbox_report_file_properties_sha1
+      copy_from: zscaler_zia.sandbox_report.file_properties.sha1
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha1_into_related_hash
+      value: '{{{file.hash.sha1}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha1 != null
+  - rename:
+      field: json.FileProperties.Sha256
+      tag: rename_File_Properties_Sha256
+      target_field: zscaler_zia.sandbox_report.file_properties.sha256
+      ignore_missing: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_sandbox_report_file_properties_sha256
+      copy_from: zscaler_zia.sandbox_report.file_properties.sha256
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha256_into_related_hash
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - rename:
+      field: json.FileProperties.SSDeep
+      tag: rename_File_Properties_SSDeep
+      target_field: zscaler_zia.sandbox_report.file_properties.ssdeep
+      ignore_missing: true
+  - set:
+      field: file.hash.ssdeep
+      tag: set_file_hash_ssdeep_from_sandbox_report_file_properties_ssdeep
+      copy_from: zscaler_zia.sandbox_report.file_properties.ssdeep
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_hash_ssdeep_into_related_hash
+      value: '{{{file.hash.ssdeep}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.ssdeep != null
+  - rename:
+      field: json.Networking.Risk
+      tag: rename_Networking_Risk
+      target_field: zscaler_zia.sandbox_report.networking.risk
+      ignore_missing: true
+  - rename:
+      field: json.Networking.Signature
+      tag: rename_Networking_Signature
+      target_field: zscaler_zia.sandbox_report.networking.signature
+      ignore_missing: true
+  - rename:
+      field: json.Networking.SignatureSources
+      tag: rename_Networking_Signature_Sources
+      target_field: zscaler_zia.sandbox_report.networking.signature_sources
+      ignore_missing: true
+  - rename:
+      field: json.Persistence.Risk
+      tag: rename_Persistence_Risk
+      target_field: zscaler_zia.sandbox_report.persistence.risk
+      ignore_missing: true
+  - rename:
+      field: json.Persistence.Signature
+      tag: rename_Persistence_Signature
+      target_field: zscaler_zia.sandbox_report.persistence.signature
+      ignore_missing: true
+  - rename:
+      field: json.Persistence.SignatureSources
+      tag: rename_Persistence_Signature_Sources
+      target_field: zscaler_zia.sandbox_report.persistence.signature_sources
+      ignore_missing: true
+  - rename:
+      field: json.SecurityBypass.Risk
+      tag: rename_SecurityBypass_Risk
+      target_field: zscaler_zia.sandbox_report.security_bypass.risk
+      ignore_missing: true
+  - rename:
+      field: json.SecurityBypass.Signature
+      tag: rename_SecurityBypass_Signature
+      target_field: zscaler_zia.sandbox_report.security_bypass.signature
+      ignore_missing: true
+  - rename:
+      field: json.SecurityBypass.SignatureSources
+      tag: rename_SecurityBypass_Signature_Sources
+      target_field: zscaler_zia.sandbox_report.security_bypass.signature_sources
+      ignore_missing: true
+  - rename:
+      field: json.Stealth.Risk
+      tag: rename_Stealth_Risk
+      target_field: zscaler_zia.sandbox_report.stealth.risk
+      ignore_missing: true
+  - rename:
+      field: json.Stealth.Signature
+      tag: rename_Stealth_Signature
+      target_field: zscaler_zia.sandbox_report.stealth.signature
+      ignore_missing: true
+  - rename:
+      field: json.Stealth.SignatureSources
+      tag: rename_Stealth_Signature_Sources
+      target_field: zscaler_zia.sandbox_report.stealth.signature_sources
+      ignore_missing: true
+  - rename:
+      field: json.Origin.Risk
+      tag: rename_Origin_Risk
+      target_field: zscaler_zia.sandbox_report.origin.risk
+      ignore_missing: true
+  - rename:
+      field: json.Origin.Language
+      tag: rename_Origin_Language
+      target_field: zscaler_zia.sandbox_report.origin.language
+      ignore_missing: true
+  - rename:
+      field: json.Origin.Country
+      tag: rename_Origin_Country
+      target_field: zscaler_zia.sandbox_report.origin.country
+      ignore_missing: true
+  - rename:
+      field: json.Exploit.Risk
+      tag: rename_Exploit_Risk
+      target_field: zscaler_zia.sandbox_report.exploit.risk
+      ignore_missing: true
+  - rename:
+      field: json.Exploit.Signature
+      tag: rename_Exploit_Signature
+      target_field: zscaler_zia.sandbox_report.exploit.signature
+      ignore_missing: true
+  - rename:
+      field: json.Exploit.SignatureSources
+      tag: rename_Exploit_Signature_Sources
+      target_field: zscaler_zia.sandbox_report.exploit.signature_sources
+      ignore_missing: true
+  - convert:
+      field: json.Summary.Analysis
+      tag: convert_Analysis_to_string
+      target_field: zscaler_zia.sandbox_report.summary.analysis
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.Summary.Category
+      tag: rename_Category
+      target_field: zscaler_zia.sandbox_report.summary.category
+      ignore_missing: true
+  - convert:
+      field: json.Summary.Duration
+      tag: convert_Duration_to_long
+      target_field: zscaler_zia.sandbox_report.summary.duration
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Convert duration from milliseconds to nanoseconds.
+      tag: script_duration_ms_to_ns
+      lang: painless
+      if: ctx.zscaler_zia?.sandbox_report?.summary?.duration != null
+      source: >-
+        ctx.event.duration = ctx.zscaler_zia.sandbox_report.summary.duration * 1000000;
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Summary.FileType
+      tag: rename_FileType
+      target_field: zscaler_zia.sandbox_report.summary.file.type
+      ignore_missing: true
+  - date:
+      field: json.Summary.StartTime
+      tag: date_StartTime
+      target_field: zscaler_zia.sandbox_report.summary.start_time
+      formats:
+        - MMM dd, yyyy hh:mm:ss a
+        - MMM d, yyyy h:m:s a
+        - UNIX
+      if: ctx.json?.Summary?.StartTime != null && ctx.json?.Summary?.StartTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_sandbox_report_summary_start_time
+      copy_from: zscaler_zia.sandbox_report.summary.start_time
+      ignore_empty_value: true
+  - rename:
+      field: json.Summary.Status
+      tag: rename_Summary_Status
+      target_field: zscaler_zia.sandbox_report.summary.status
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_sandbox_report_status
+      copy_from: zscaler_zia.sandbox_report.summary.status
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: ' '
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Summary.TimeUnit
+      tag: rename_Summary_TimeUnit
+      target_field: zscaler_zia.sandbox_report.summary.time_unit
+      ignore_missing: true
+  - rename:
+      field: json.Summary.Url
+      tag: rename_Summary_Url
+      target_field: zscaler_zia.sandbox_report.summary.url
+      ignore_missing: true
+  - set:
+      field: url.original
+      tag: set_url_original_from_sandbox_report_summary_url
+      copy_from: zscaler_zia.sandbox_report.summary.url
+      ignore_empty_value: true
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_url_original
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.SystemSummary.Risk
+      tag: rename_SystemSummary_Risk
+      target_field: zscaler_zia.sandbox_report.system_summary.risk
+      ignore_missing: true
+  - rename:
+      field: json.SystemSummary.Signature
+      tag: rename_SystemSummary_Signature
+      target_field: zscaler_zia.sandbox_report.system_summary.signature
+      ignore_missing: true
+  - rename:
+      field: json.SystemSummary.SignatureSources
+      tag: rename_SystemSummary_Signature_Sources
+      target_field: zscaler_zia.sandbox_report.system_summary.signature_sources
+      ignore_missing: true
+  - remove:
+      field:
+        - zscaler_zia.sandbox_report.classification.score
+        - zscaler_zia.sandbox_report.file_properties.file_size
+        - zscaler_zia.sandbox_report.file_properties.issuer
+        - zscaler_zia.sandbox_report.file_properties.md5
+        - zscaler_zia.sandbox_report.file_properties.sha1
+        - zscaler_zia.sandbox_report.file_properties.sha256
+        - zscaler_zia.sandbox_report.summary.duration
+        - zscaler_zia.sandbox_report.summary.start_time
+        - zscaler_zia.sandbox_report.summary.url
+        - zscaler_zia.sandbox_report.file_properties.ssdeep
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
