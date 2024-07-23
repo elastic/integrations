@@ -6,7 +6,7 @@ This SES Integration enables user to stream Events and EDR incidents data to Ela
 
 ## Data streams
 
-The Symantec Endpoint Security integration collects logs via AWS S3, SQS and GCP configuration for different events which are mapped with Integrated Cyber Defense Schema organizes into following categories:
+The Symantec Endpoint Security integration collects logs via Amazon S3 and SQS, and Google GCP for different events that The Integrated Cyber Defense Schema organizes into following categories:
 
 **Security [1]**
 
@@ -83,7 +83,7 @@ The Symantec Endpoint Security integration collects logs via AWS S3, SQS and GCP
 |----------------------------------------------------|
 | 1000 - Status                                      |
 
-The Symantec Endpoint Security integration also retrieve **EDR incidents** via API configuration. See more details in the API documentation [here](https://apidocs.securitycloud.symantec.com/#/doc?id=edr_incidents).
+The Symantec Endpoint Security integration can also retrieve **EDR incidents** via a REST API. See more details in the API documentation [here](https://apidocs.securitycloud.symantec.com/#/doc?id=edr_incidents).
 
 ## Requirements
 
@@ -109,8 +109,7 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
  
-This module has been tested against the **Symantec Integrated Cyber Defense Exchange 1.4.7** for events.  
-This module has been tested against the **Symantec Endpoint Security API Version v1** for EDR Incidents.  
+This module has been tested against **Symantec Integrated Cyber Defense Exchange 1.4.7** for events, and **Symantec Endpoint Security API Version v1** for EDR Incidents.   
 
 ## Setup
 
@@ -199,7 +198,7 @@ A sample JSON Credentials file looks as follows:
    - Buckets
    - Service Account Key/Service Account Credentials File
 
-   or if you want to collect logs via API, then you have to put the following details:
+   or if you want to collect logs via the REST API, then you have to put the following details:
    - Client ID
    - Client Secret
    - URL

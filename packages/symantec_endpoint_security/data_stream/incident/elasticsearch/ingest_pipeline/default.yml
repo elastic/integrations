@@ -61,18 +61,12 @@ processors:
       field: event.category
       tag: append_intrusion_detection_into_event_category
       value: intrusion_detection
-      if: >-
-        ctx.ses?.incident?.conclusion != null && [
-          'breach'
-        ].contains(ctx.ses.incident.conclusion.toLowerCase())
+      if: ctx.ses?.incident?.conclusion?.equalsIgnoreCase('breach') == true
   - append:
       field: event.category
       tag: append_network_into_event_category
       value: network
-      if: >-
-        ctx.ses?.incident?.conclusion != null && [
-          'network threat'
-        ].contains(ctx.ses.incident.conclusion.toLowerCase())
+      if: ctx.ses?.incident?.conclusion?.equalsIgnoreCase('network threat') == true
   - append:
       field: event.type
       tag: append_info_into_event_type

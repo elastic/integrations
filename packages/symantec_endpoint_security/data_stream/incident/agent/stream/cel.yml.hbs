@@ -27,21 +27,14 @@ state:
   next: 0
 program: |
   (
-    state.want_more
-    ?
+    state.want_more ?
       state
     :
       state.with({
         "limit": state.limit,
-        "start_date": (
-          has(state.cursor) && has(state.cursor.last_timestamp) && state.cursor.last_timestamp != null
-          ?
-            state.cursor.last_timestamp
-          :
-            string(now - duration(state.initial_interval))
-        ),
+        "start_date": state.?cursor.last_timestamp.orValue(string(now - duration(state.initial_interval))),
         "end_date": now,
-        "next": state.next
+        "next": state.next,
       })
   ).as(state,
     post_request(
@@ -54,35 +47,24 @@ program: |
         "next": state.next
       }.encode_json()
     ).do_request().as(resp, resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body, {
-          "events": body.incidents.map(e, {
-            "message": e.encode_json(),
-          }),
-          "next": (
-            has(body.next) && (body.next != body.total)
-            ?
-              body.next
-            :
-              0
-          ),
-          "want_more": has(body.next) && (body.next != body.total),
-          "limit": state.limit,
-          "start_date": string(state.start_date),
-          "end_date": string(state.end_date),
-          "cursor": {
-            "last_timestamp": (
-              (has(body.next) ? (body.next == body.total) : true)
-              ?
-                state.end_date
-              :
-                has(state.cursor) && has(state.cursor.last_timestamp)
-                ?
-                  state.cursor.last_timestamp
+        bytes(resp.Body).decode_json().as(body, 
+          (body.?next.orValue(body.total) != body.total).as(want_more, {
+            "events": body.incidents.map(e, {
+              "message": e.encode_json(),
+            }),
+            "next": want_more ? body.next : 0,
+            "want_more": want_more,
+            "limit": state.limit,
+            "start_date": string(state.start_date),
+            "end_date": string(state.end_date),
+            "cursor": {
+              ?"last_timestamp": want_more ?
+                  state.?cursor.last_timestamp
                 :
-                  null
-            )
-          }
-        })
+                  optional.of(state.end_date),
+            }
+          })
+        )
       :
         {
           "events": {
