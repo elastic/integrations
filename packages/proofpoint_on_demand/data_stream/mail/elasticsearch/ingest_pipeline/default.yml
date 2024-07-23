@@ -173,6 +173,30 @@ processors:
       tag: rename_sm_ctladdr
       target_field: proofpoint_on_demand.mail.sm.ctladdr
       ignore_missing: true
+  - grok:
+      field: proofpoint_on_demand.mail.sm.ctladdr
+      patterns:
+        - '^<%{EMAILADDRESS:_temp.address}> (%{NUMBER}/%{NUMBER})$'
+      tag: grok_for_ctladdr
+      ignore_failure: true
+  - set:
+      field: email.sender.address
+      tag: set_email_sender_address_from_temp_address
+      copy_from: _temp.address
+      ignore_empty_value: true
+      if: ctx.json?.sm?.from == null && ctx._temp?.address != null
+  - set:
+      field: email.from.address
+      tag: set_email_from_address_from_temp_address
+      copy_from: _temp.address
+      ignore_empty_value: true
+      if: ctx.json?.sm?.from == null && ctx._temp?.address != null
+  - append:
+      field: related.user
+      tag: append_temp_address_into_related_user
+      value: '{{{_temp.address}}}'
+      allow_duplicates: false
+      if: ctx._temp?.address != null
   - rename:
       field: json.sm.daemon
       tag: rename_sm_daemon
@@ -284,6 +308,16 @@ processors:
       tag: rename_sm_stat
       target_field: proofpoint_on_demand.mail.sm.status
       ignore_missing: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_success
+      value: success
+      if: ctx.proofpoint_on_demand?.mail?.sm?.status != null && ctx.proofpoint_on_demand.mail.sm.status.toLowerCase().contains('sent')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure
+      value: failure
+      if: ctx.proofpoint_on_demand?.mail?.sm?.status != null && (ctx.proofpoint_on_demand.mail.sm.status.toLowerCase().contains('service unavailable') || ctx.proofpoint_on_demand.mail.sm.status.toLowerCase().contains('connection refused'))
   - rename:
       field: json.sm.tls.verify
       tag: rename_sm_tls_verify
@@ -368,8 +402,10 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
-      field: json
-      tag: remove_json
+      field:
+        - json
+        - _temp
+      tag: remove_json_temp
       ignore_missing: true
   - script:
       tag: script_to_drop_null_values

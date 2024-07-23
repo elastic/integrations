@@ -67,22 +67,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2023-10-30T06:13:37.162Z",
     "agent": {
-        "ephemeral_id": "b91bfe40-a0b1-4d8d-a6b3-31349274c490",
-        "id": "edea5fcb-b045-4791-8aee-17f9771265b4",
+        "ephemeral_id": "26bf214d-6057-496b-a5c2-358c0898467e",
+        "id": "b70c058d-0ca0-4014-8c5e-c743338a38a3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "proofpoint_on_demand.audit",
-        "namespace": "24289",
+        "namespace": "13945",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "edea5fcb-b045-4791-8aee-17f9771265b4",
+        "id": "b70c058d-0ca0-4014-8c5e-c743338a38a3",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -94,7 +94,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "proofpoint_on_demand.audit",
         "id": "792f514f-15cb-480d-825e-e3565d32f928",
-        "ingested": "2024-07-17T16:30:44Z",
+        "ingested": "2024-07-23T12:24:04Z",
         "kind": "event",
         "original": "{\"audit\":{\"action\":\"login\",\"level\":\"INFO\",\"resourceType\":\"authorization\",\"tags\":[{\"name\":\"eventSubCategory\",\"value\":\"authorization\"},{\"name\":\"eventDetails\",\"value\":\"\"},{\"name\":\"login.authorization\",\"value\":\"true\"}],\"user\":{\"email\":\"bob@example.org\",\"id\":\"a7e6abcd-1234-7901-1234-abcdefc31236\",\"ipAddress\":\"1.128.0.0\"}},\"guid\":\"792f514f-15cb-480d-825e-e3565d32f928\",\"metadata\":{\"customerId\":\"c8215678-6e78-42dd-a327-abcde13f9cff\",\"origin\":{\"data\":{\"agent\":\"89.160.20.128\",\"cid\":\"pphosted_prodmgt_hosted\",\"version\":\"1.0\"},\"schemaVersion\":\"1.0\",\"type\":\"cadmin-api-gateway\"}},\"ts\":\"2023-10-30T06:13:37.162521+0000\"}",
         "type": [
@@ -104,11 +104,20 @@ An example event for `audit` looks as following:
     "input": {
         "type": "websocket"
     },
+    "labels": {
+        "eventSubCategory": "authorization",
+        "login.authorization": "true"
+    },
+    "log": {
+        "level": "INFO"
+    },
     "observer": {
         "ip": [
             "89.160.20.128"
         ],
         "name": "pphosted_prodmgt_hosted",
+        "product": "Proofpoint On Demand",
+        "vendor": "Proofpoint",
         "version": "1.0"
     },
     "proofpoint_on_demand": {
@@ -187,6 +196,17 @@ An example event for `audit` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.create.policyRoutes |  | keyword |
+| labels.create.threatProtectionApiKeys |  | keyword |
+| labels.delete.policyRoutes |  | keyword |
+| labels.delete.threatProtectionApiKeys |  | keyword |
+| labels.edit.spamDetection.policies |  | keyword |
+| labels.eventDetails |  | keyword |
+| labels.eventSubCategory |  | keyword |
+| labels.execute.search |  | keyword |
+| labels.login.authorization |  | keyword |
+| labels.logout.authorization |  | keyword |
+| labels.read.sendMailSearch |  | keyword |
 | log.offset | Log offset. | long |
 | proofpoint_on_demand.audit.action | Resource action. | keyword |
 | proofpoint_on_demand.audit.guid | Globally unique identifier for this message object. | keyword |
@@ -227,22 +247,22 @@ An example event for `mail` looks as following:
 {
     "@timestamp": "2024-06-19T12:28:32.533Z",
     "agent": {
-        "ephemeral_id": "2c2f1486-7b59-46be-8993-e51b90e0bd00",
-        "id": "edea5fcb-b045-4791-8aee-17f9771265b4",
+        "ephemeral_id": "83634ba3-b782-4693-8242-b16a7408af96",
+        "id": "b70c058d-0ca0-4014-8c5e-c743338a38a3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "proofpoint_on_demand.mail",
-        "namespace": "14309",
+        "namespace": "18969",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "edea5fcb-b045-4791-8aee-17f9771265b4",
+        "id": "b70c058d-0ca0-4014-8c5e-c743338a38a3",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -261,9 +281,10 @@ An example event for `mail` looks as following:
         ],
         "dataset": "proofpoint_on_demand.mail",
         "id": "NABCDefGH0/I1234slqccQ",
-        "ingested": "2024-07-17T16:31:44Z",
+        "ingested": "2024-07-23T12:25:00Z",
         "kind": "event",
         "original": "{\"data\":\"2024-06-19T05:28:32.533564-07:00 m0000123 sendmail[17416]: 45ABSW12341234: to=\\u003cmailive@example.com\\u003e, delay=00:00:00, xdelay=00:00:00, mailer=esmtp, tls_verify=OK, tls_version=TLSv1.2, cipher=ECDHE-RSA-AES256-GCM, pri=121557, relay=test4.example.net. [216.160.83.56], dsn=2.0.0, stat=Sent (Ok: queued)\",\"id\":\"NABCDefGH0/I1234slqccQ\",\"metadata\":{\"customerId\":\"c82abcde-5678-42dd-1234-1234563f9cff\",\"origin\":{\"data\":{\"agent\":\"m0000123.ppops.net\",\"cid\":\"pphosted_prodmgt_hosted\"},\"schemaVersion\":\"20200420\"}},\"pps\":{\"agent\":\"m0000123.ppops.net\",\"cid\":\"pphosted_prodmgt_hosted\"},\"sm\":{\"delay\":\"00:00:00\",\"dsn\":\"2.0.0\",\"mailer\":\"esmtp\",\"pri\":\"121557\",\"qid\":\"45ABSW12341234\",\"relay\":\"test4.example.net. [216.160.83.56]\",\"stat\":\"Sent (Ok: queued)\",\"to\":[\"\\u003cmailive@example.com\\u003e\"],\"xdelay\":\"00:00:00\"},\"tls\":{\"cipher\":\"ECDHE-RSA-AES256-GCM\",\"verify\":\"OK\",\"version\":\"TLSv1.2\"},\"ts\":\"2024-06-19T05:28:32.533564-0700\"}",
+        "outcome": "success",
         "type": [
             "info"
         ]
@@ -395,22 +416,22 @@ An example event for `message` looks as following:
 {
     "@timestamp": "2024-05-22T19:10:03.058Z",
     "agent": {
-        "ephemeral_id": "c7399ce4-1dc3-4ecd-8600-6b2eefabf8c4",
-        "id": "edea5fcb-b045-4791-8aee-17f9771265b4",
+        "ephemeral_id": "3a933e28-38a4-4a2d-985e-78fcfc810220",
+        "id": "b70c058d-0ca0-4014-8c5e-c743338a38a3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "proofpoint_on_demand.message",
-        "namespace": "50314",
+        "namespace": "38772",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "edea5fcb-b045-4791-8aee-17f9771265b4",
+        "id": "b70c058d-0ca0-4014-8c5e-c743338a38a3",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -443,7 +464,7 @@ An example event for `message` looks as following:
         "dataset": "proofpoint_on_demand.message",
         "duration": 118720000,
         "id": "vRq4ZIFWHXbuABCDEFghij0U4VvIc71x",
-        "ingested": "2024-07-17T16:33:05Z",
+        "ingested": "2024-07-23T12:25:54Z",
         "kind": "event",
         "original": "{\"connection\":{\"country\":\"**\",\"helo\":\"m0000123.ppops.net\",\"host\":\"localhost\",\"ip\":\"127.0.0.1\",\"protocol\":\"smtp:smtp\",\"resolveStatus\":\"ok\",\"sid\":\"3y8abcd123\",\"tls\":{\"inbound\":{\"cipher\":\"ECDHE-RSA-AES256-GCM-SHA384\",\"cipherBits\":256,\"version\":\"TLSv1.2\"}}},\"envelope\":{\"from\":\"pps@m0000123.ppops.net\",\"rcpts\":[\"pps@m0000123.ppops.net\"]},\"filter\":{\"actions\":[{\"action\":\"accept\",\"isFinal\":true,\"module\":\"access\",\"rule\":\"system\"}],\"delivered\":{\"rcpts\":[\"pps@m0000123.ppops.net\"]},\"disposition\":\"accept\",\"durationSecs\":0.11872,\"msgSizeBytes\":1127,\"qid\":\"44ABCDm0000123\",\"routeDirection\":\"outbound\",\"routes\":[\"allow_relay\",\"firewallsafe\"],\"suborgs\":{\"rcpts\":[\"0\"],\"sender\":\"0\"},\"verified\":{\"rcpts\":[\"pps@m0000123.ppops.net\"]}},\"guid\":\"vRq4ZIFWHXbuABCDEFghij0U4VvIc71x\",\"metadata\":{\"origin\":{\"data\":{\"agent\":\"m0000123.ppops.net\",\"cid\":\"pphosted_prodmgt_hosted\",\"version\":\"8.21.0.1358\"}}},\"msg\":{\"header\":{\"from\":[\"\\\"(Cron Daemon)\\\" \\u003cpps@m0000123.ppops.net\\u003e\"],\"message-id\":[\"\\u003c212345678910.44ABCDE1231370@m0000123.ppops.net\\u003e\"],\"subject\":[\"Cron \\u003cpps@m0000123\\u003e /opt/proofpoint/resttimer.pl\"],\"to\":[\"pps@m0000123.ppops.net\"]},\"lang\":\"\",\"normalizedHeader\":{\"from\":[\"\\\"(Cron Daemon)\\\" \\u003cpps@m0000123.ppops.net\\u003e\"],\"message-id\":[\"212345678910.44ABCDE1231370@m0000123.ppops.net\"],\"subject\":[\"Cron \\u003cpps@m0000123\\u003e /opt/proofpoint/resttimer.pl\"],\"to\":[\"pps@m0000123.ppops.net\"]},\"parsedAddresses\":{},\"sizeBytes\":1151},\"msgParts\":[],\"ts\":\"2024-05-22T12:10:03.058340-0700\"}",
         "type": [

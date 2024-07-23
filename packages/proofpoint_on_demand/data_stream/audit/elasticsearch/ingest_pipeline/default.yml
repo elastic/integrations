@@ -93,6 +93,14 @@ processors:
         hm.forEach((k, v) -> {
           ctx.event[k] = v
         });
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Proofpoint
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Proofpoint On Demand
   - rename:
       field: json.audit.action
       tag: rename_audit_action
@@ -122,6 +130,11 @@ processors:
       tag: rename_audit_level
       target_field: proofpoint_on_demand.audit.level
       ignore_missing: true
+  - set:
+      field: log.level
+      tag: set_log_level_from_audit_level
+      copy_from: proofpoint_on_demand.audit.level
+      ignore_empty_value: true
   - rename:
       field: json.metadata.customerId
       tag: rename_metadata_customerId
@@ -275,6 +288,44 @@ processors:
       tag: rename_audit_tags
       target_field: proofpoint_on_demand.audit.tags
       ignore_missing: true
+  - set:
+      field: labels
+      tag: set_labels_from_audit_tags
+      copy_from: proofpoint_on_demand.audit.tags
+      ignore_empty_value: true
+  - script:
+      description: Define labels object.
+      tag: script_define_labels_object
+      ignore_failure: true
+      if: ctx.proofpoint_on_demand?.audit?.tags instanceof List
+      lang: painless
+      source: >-
+        ctx.put("labels", new HashMap());
+        for (tag in ctx.proofpoint_on_demand.audit.tags) {
+          ctx.labels.put(tag.name, tag.value);
+        }
+  - script:
+      description: Dynamically map event.outcome from tags.
+      tag: script_dynamically_map_event_outcome
+      ignore_failure: true
+      if: ctx.proofpoint_on_demand?.audit?.tags instanceof List
+      lang: painless
+      source: >-
+        if (ctx.proofpoint_on_demand.audit.action == null) {
+          return;
+        }
+        String action = ctx.proofpoint_on_demand.audit.action + '.';
+        String outcome;
+        for (tag in ctx.proofpoint_on_demand.audit.tags) {
+          if (tag.name.startsWith(action)) {
+            if (tag.value.toLowerCase() == "true") {
+              outcome = "success";
+            } else if (tag.value.toLowerCase() == "false") {
+              outcome = "failure";
+            }
+          }
+        }
+        ctx.action.put("outcome", outcome);
   - date:
       field: json.ts
       tag: date_ts
@@ -380,6 +431,7 @@ processors:
         - proofpoint_on_demand.audit.user.id
         - proofpoint_on_demand.audit.user.ip_address
         - proofpoint_on_demand.audit.user.roles_assigned
+        - proofpoint_on_demand.audit.level
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
