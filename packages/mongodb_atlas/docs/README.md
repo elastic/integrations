@@ -6,7 +6,7 @@
 
 Use the MongoDB Atlas integration to:
 
-- Collect MongoDB Atlas mongod audit logs, mongod database logs, organization logs, project logs, hardware, and process metrics for comprehensive monitoring and analysis.
+- Collect MongoDB Atlas mongod audit, mongod database, organization and project logs, along with disk, hardware and process metrics for comprehensive monitoring and analysis.
 - Create informative visualizations to track usage trends, measure key metrics, and derive actionable business insights.
 - Set up alerts to minimize Mean Time to Detect (MTTD) and Mean Time to Resolve (MTTR) by quickly referencing relevant logs during troubleshooting.
 
@@ -16,9 +16,10 @@ The MongoDB Atlas integration collects logs and metrics.
 
 Logs help you keep a record of events that happen on your machine. The `Log` data stream collected by MongoDB Atlas integration are `mongod_audit`, `mongod_database`, `organization`, and `project`.
 
-Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration are `process` and `hardware` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
+Metrics give you insight into the statistics of the MongoDB Atlas. The `Metric` data stream collected by the MongoDB Atlas integration are `disk`, `hardware`, and `process` so that the user can monitor and troubleshoot the performance of the MongoDB Atlas instance.
 
 Data streams:
+- `disk`: This data stream collects metrics of disk or partition for all the hosts in the specified group. Metrics like measurements for the disk, such as I/O operations, read and write latency, and space usage.
 - `hardware`: This data stream collects all the Atlas search hardware and status data series within the provided time range for one process in the specified project.
 - `mongod_audit`: The auditing facility allows administrators and users to track system activity for deployments with multiple users and applications. Mongod Audit logs capture events related to database operations such as insertions, updates, deletions, user authentication, etc., occurring within the mongod instances.
 - `mongod_database`: This data stream collects a running log of events, including entries such as incoming connections, commands run, and issues encountered. Generally, database log messages are useful for diagnosing issues, monitoring your deployment, and tuning performance.
@@ -579,11 +580,11 @@ An example event for `project` looks as following:
 {
     "@timestamp": "2024-02-21T10:00:29.000Z",
     "agent": {
-        "ephemeral_id": "71a12b64-a637-4933-b64e-676b42558591",
-        "id": "c8e31bbe-eb0d-443a-a1e1-bcdbe26acdb4",
+        "ephemeral_id": "17d7fa94-ffd7-4b95-b352-8237022440da",
+        "id": "1e10d0dd-2ef8-4d56-a363-418cebf8b88d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.12.0"
     },
     "client": {
         "ip": "0.0.0.0"
@@ -597,9 +598,9 @@ An example event for `project` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c8e31bbe-eb0d-443a-a1e1-bcdbe26acdb4",
+        "id": "1e10d0dd-2ef8-4d56-a363-418cebf8b88d",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.12.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -609,11 +610,12 @@ An example event for `project` looks as following:
         ],
         "dataset": "mongodb_atlas.project",
         "id": "65d5c9bd2c86e3377aa5e5e4",
-        "ingested": "2024-07-08T11:21:04Z",
+        "ingested": "2024-06-26T12:17:36Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
             "info",
+            "access",
             "change"
         ]
     },
@@ -624,12 +626,12 @@ An example event for `project` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "id": "829324aac17946dcace17006fa82a2d2",
         "ip": [
-            "172.20.0.7"
+            "192.168.245.7"
         ],
         "mac": [
-            "02-42-AC-14-00-07"
+            "02-42-C0-A8-F5-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -810,13 +812,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mongodb_atlas.project.invoice.id | Unique identifier of the invoice associated with this event. | keyword |
 | mongodb_atlas.project.is_global_admin | Flag indicating whether the user who triggered this event is a MongoDB employee. | boolean |
 | mongodb_atlas.project.metric.name | Name of the measurement whose value went outside the threshold. | keyword |
-| mongodb_atlas.project.metric.unit | Unit for the value. | keyword |
+| mongodb_atlas.project.metric.unit | Relevant units for value. | keyword |
 | mongodb_atlas.project.metric.value | Value of the metric. | float |
 | mongodb_atlas.project.operation.type | Type of operation that generated the event. | keyword |
 | mongodb_atlas.project.payment.id | Unique identifier of the invoice payment associated with this event. | keyword |
 | mongodb_atlas.project.processor.error_msg | Error message linked to the stream processor associated with the event. | keyword |
 | mongodb_atlas.project.processor.instance.name | Name of the stream processing instance associated with the event. | keyword |
-| mongodb_atlas.project.processor.name | Name of the stream processor associated with the event. | keyword |
+| mongodb_atlas.project.processor.name | Error message linked to the stream processor associated with the event. | keyword |
 | mongodb_atlas.project.processor.state | State of the stream processor associated with the event. | keyword |
 | mongodb_atlas.project.provider_endpoint.id | Unique identification string that the cloud provider uses to identify the private endpoint. | keyword |
 | mongodb_atlas.project.public_key | Public key associated with the API Key that triggered this event. If this field is present in the response, Cloud Manager does not return the username field. | keyword |
@@ -835,31 +837,166 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ## Metrics reference
 
-### Hardware
-This data stream collects hardware and status metrics for each process in the specified group. It includes measurements such as CPU usage, memory consumption, JVM memory usage, disk usage, etc.
+## Disk
 
-An example event for `hardware` looks as following:
+This is the `disk` data stream. This data stream collects detailed view on disk usage and captures crucial information about I/O operations, read and write latency, and space utilization. To collect disk metrics, the requesting API Key must have the `Project Read Only` role.
+
+An example event for `disk` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-08T05:28:35.903Z",
+    "@timestamp": "2024-07-19T07:54:49.103Z",
     "agent": {
-        "ephemeral_id": "f1da46ba-c948-41e5-8858-28b1db234a9c",
-        "id": "130eb953-a957-4fbb-ba6f-5bd31442e2f2",
+        "ephemeral_id": "64510fda-1f61-422e-84e7-4d6b49c9e0ae",
+        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
-        "dataset": "mongodb_atlas.hardware",
-        "namespace": "ep",
+        "dataset": "mongodb_atlas.disk",
+        "namespace": "77804",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "130eb953-a957-4fbb-ba6f-5bd31442e2f2",
+        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "dataset": "mongodb_atlas.disk",
+        "ingested": "2024-07-19T07:55:01Z",
+        "kind": "metric",
+        "module": "mongodb_atlas",
+        "type": [
+            "info"
+        ]
+    },
+    "group": {
+        "id": "mongodb-group1"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "ip": [
+            "192.168.249.7"
+        ],
+        "mac": [
+            "02-42-C0-A8-F9-07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "mongodb_atlas": {
+        "disk": {
+            "read": {
+                "iops": {
+                    "throughput": 0.9994005994005996
+                }
+            },
+            "space": {
+                "free": {
+                    "bytes": 7906467840
+                }
+            },
+            "write": {
+                "iops": {
+                    "throughput": 4.25004682136163
+                }
+            }
+        },
+        "host_id": "hostname1",
+        "partition_name": "data",
+        "process_id": "hostname1:7780"
+    },
+    "tags": [
+        "mongodb_atlas-disk"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| mongodb_atlas.disk.read.iops.max.throughput | Max throughput of I/O read operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.read.iops.throughput | Throughput of I/O read operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.read.latency.max.ms | Max read latency of the disk partition that hosts MongoDB Atlas. | double | ms | gauge |
+| mongodb_atlas.disk.read.latency.ms | Read latency of the disk partition that hosts MongoDB Atlas. | double | ms | gauge |
+| mongodb_atlas.disk.space.free.bytes | Amount of disk space free in Bytes, on the disk partition used by MongoDB Atlas. | double | byte | gauge |
+| mongodb_atlas.disk.space.free.max.bytes | Max amount of disk space free in Bytes, on the disk partition used by MongoDB Atlas. | double | byte | gauge |
+| mongodb_atlas.disk.space.free.max.pct | Max percentage of disk free on the disk partition used by MongoDB Atlas. | double | percent | gauge |
+| mongodb_atlas.disk.space.free.pct | The percentage of disk free on the disk partition used by MongoDB Atlas. | double | percent | gauge |
+| mongodb_atlas.disk.space.used.bytes | Amount of disk space used in Bytes, on the disk partition used by MongoDB Atlas. | double | byte | gauge |
+| mongodb_atlas.disk.space.used.max.bytes | Max amount of disk space used in Bytes, on the disk partition used by MongoDB Atlas. | double | byte | gauge |
+| mongodb_atlas.disk.space.used.max.pct | Max percentage of disk used on the disk partition used by MongoDB Atlas. | double | percent | gauge |
+| mongodb_atlas.disk.space.used.pct | The percentage of disk used on the disk partition used by MongoDB Atlas. | double | percent | gauge |
+| mongodb_atlas.disk.total.iops.max.throughput | Max throughput of total I/O operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.total.iops.throughput | Throughput of total I/O operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.write.iops.max.throughput | Max throughput of I/O write operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.write.iops.throughput | Throughput of I/O write operations for the disk partition used for MongoDB Atlas. | double |  | gauge |
+| mongodb_atlas.disk.write.latency.max.ms | Max write latency of the disk partition that hosts MongoDB Atlas. | double | ms | gauge |
+| mongodb_atlas.disk.write.latency.ms | Write latency of the disk partition that hosts MongoDB Atlas. | double | ms | gauge |
+| mongodb_atlas.host_id | Unique identifier of the host for the MongoDB process. | keyword |  |  |
+| mongodb_atlas.partition_name | Name of the disk partition used by MongoDB Atlas. | keyword |  |  |
+| mongodb_atlas.process_id | Combination of hostname and Internet Assigned Numbers Authority (IANA) port that serves the MongoDB process. | keyword |  |  |
+
+
+### Hardware
+
+This is the `hardware` data stream. This data stream collects hardware and status metrics for each process in the specified group. It includes measurements such as CPU usage, memory consumption, JVM memory usage, disk usage, etc. To collect hardware metrics, the requesting API Key must have the `Project Read Only` or higher role.
+
+An example event for `hardware` looks as following:
+
+```json
+{
+    "@timestamp": "2024-07-18T13:09:27.510Z",
+    "agent": {
+        "ephemeral_id": "26f07cd8-42ea-4909-88e1-fbd017d8acc7",
+        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb_atlas.hardware",
+        "namespace": "87828",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -869,8 +1006,8 @@ An example event for `hardware` looks as following:
             "database"
         ],
         "dataset": "mongodb_atlas.hardware",
-        "ingested": "2024-05-08T05:28:45Z",
-        "kind": "event",
+        "ingested": "2024-07-18T13:09:39Z",
+        "kind": "metric",
         "module": "mongodb_atlas",
         "type": [
             "access",
@@ -886,16 +1023,16 @@ An example event for `hardware` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.253.7"
+            "192.168.249.7"
         ],
         "mac": [
-            "02-42-C0-A8-FD-07"
+            "02-42-C0-A8-F9-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.114.2.el7.x86_64",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -954,30 +1091,31 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 
 ### Process
-This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream. To collect process metrics, the requesting API Key must have the `Project Read Only` role.
+
+This is the `process` data stream. This data stream collects host metrics per process for all the hosts of the specified group. Metrics like measurements for the host, such as CPU usage, number of I/O operations and memory are available on this data stream. To collect process metrics, the requesting API Key must have the `Project Read Only` role.
 
 An example event for `process` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-24T13:14:25.586Z",
+    "@timestamp": "2024-07-18T13:11:22.466Z",
     "agent": {
-        "ephemeral_id": "effbd42a-d55f-49b6-a104-14e765397baf",
-        "id": "0e76a408-722e-4fbf-88cf-b53b90679dd9",
+        "ephemeral_id": "2b57b07e-9a6e-4c52-8b47-e2db2b136579",
+        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "mongodb_atlas.process",
-        "namespace": "ep",
+        "namespace": "45497",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0e76a408-722e-4fbf-88cf-b53b90679dd9",
+        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -987,8 +1125,8 @@ An example event for `process` looks as following:
             "process"
         ],
         "dataset": "mongodb_atlas.process",
-        "ingested": "2024-04-24T13:14:35Z",
-        "kind": "event",
+        "ingested": "2024-07-18T13:11:34Z",
+        "kind": "metric",
         "module": "mongodb_atlas",
         "type": [
             "info"
@@ -1003,16 +1141,16 @@ An example event for `process` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.252.7"
+            "192.168.249.7"
         ],
         "mac": [
-            "02-42-C0-A8-FC-07"
+            "02-42-C0-A8-F9-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.114.2.el7.x86_64",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
