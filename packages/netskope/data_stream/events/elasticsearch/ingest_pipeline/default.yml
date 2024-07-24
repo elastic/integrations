@@ -1082,20 +1082,24 @@ processors:
           ctx.user.email = setList;
         }
   - script:
-    if: ctx.user?.email != null
-    lang: painless
-    source: >-
+      description: parse user.email into user.name and related.user
+      tag: parse_user_email
+      if: ctx.user?.email instanceof List
+      lang: painless
+      source: >-
         def related_users = [];
-        def user_emails = [];
-        user_emails = ctx.user.email;
+        def user_emails = ctx.user.email;
         for (def email : user_emails) {
           if (email.contains('@')) {
             related_users.add(email.splitOnToken('@')[0])
           }
         }
-        ctx['related.user'] = related_users;
+        if (ctx.related == null) {
+          ctx['related'] = new HashMap();
+        }
+        ctx.related.user = related_users;
         if (related_users.length == 1) {
-          ctx['user.name'] = related_users[0]
+          ctx.user.name = related_users[0]
         }
   - script:
       description: Drops null/empty values recursively
