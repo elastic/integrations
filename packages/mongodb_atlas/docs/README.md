@@ -978,24 +978,24 @@ An example event for `hardware` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-05-08T05:28:35.903Z",
+    "@timestamp": "2024-07-18T13:09:27.510Z",
     "agent": {
-        "ephemeral_id": "f1da46ba-c948-41e5-8858-28b1db234a9c",
-        "id": "130eb953-a957-4fbb-ba6f-5bd31442e2f2",
+        "ephemeral_id": "26f07cd8-42ea-4909-88e1-fbd017d8acc7",
+        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "mongodb_atlas.hardware",
-        "namespace": "ep",
+        "namespace": "87828",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "130eb953-a957-4fbb-ba6f-5bd31442e2f2",
+        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -1005,8 +1005,8 @@ An example event for `hardware` looks as following:
             "database"
         ],
         "dataset": "mongodb_atlas.hardware",
-        "ingested": "2024-05-08T05:28:45Z",
-        "kind": "event",
+        "ingested": "2024-07-18T13:09:39Z",
+        "kind": "metric",
         "module": "mongodb_atlas",
         "type": [
             "access",
@@ -1022,16 +1022,16 @@ An example event for `hardware` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.253.7"
+            "192.168.249.7"
         ],
         "mac": [
-            "02-42-C0-A8-FD-07"
+            "02-42-C0-A8-F9-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.114.2.el7.x86_64",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -1097,24 +1097,24 @@ An example event for `process` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-24T13:14:25.586Z",
+    "@timestamp": "2024-07-18T13:11:22.466Z",
     "agent": {
-        "ephemeral_id": "effbd42a-d55f-49b6-a104-14e765397baf",
-        "id": "0e76a408-722e-4fbf-88cf-b53b90679dd9",
+        "ephemeral_id": "2b57b07e-9a6e-4c52-8b47-e2db2b136579",
+        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "mongodb_atlas.process",
-        "namespace": "ep",
+        "namespace": "45497",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0e76a408-722e-4fbf-88cf-b53b90679dd9",
+        "id": "e6fb98d1-ed5e-44e9-a2cb-e389b3fe8091",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -1124,8 +1124,8 @@ An example event for `process` looks as following:
             "process"
         ],
         "dataset": "mongodb_atlas.process",
-        "ingested": "2024-04-24T13:14:35Z",
-        "kind": "event",
+        "ingested": "2024-07-18T13:11:34Z",
+        "kind": "metric",
         "module": "mongodb_atlas",
         "type": [
             "info"
@@ -1140,16 +1140,16 @@ An example event for `process` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.252.7"
+            "192.168.249.7"
         ],
         "mac": [
-            "02-42-C0-A8-FC-07"
+            "02-42-C0-A8-F9-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.114.2.el7.x86_64",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
