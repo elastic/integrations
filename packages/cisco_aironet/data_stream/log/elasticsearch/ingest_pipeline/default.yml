@@ -14,13 +14,13 @@ processors:
       field: event.original
       patterns:
         - "%{SYSLOG_HEADER}:\\s%%{GREEDYDATA:_temp_.full_message}"
-        - "%{SYSLOGFACILITY}%{INT}: AP:%{MAC:host.mac}: \\*%{AIRONET_DATE:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
-        - "%{SYSLOGFACILITY}%{INT}: %{AIRONET_DATE:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
+        - "%{SYSLOGFACILITY}%{INT}: AP:%{MAC:host.mac}: \\*%{AIRONET_DATE}: %%{GREEDYDATA:_temp_.full_message}"
+        - "%{SYSLOGFACILITY}%{INT}: %{AIRONET_DATE}: %%{GREEDYDATA:_temp_.full_message}"
         - "%{SYSLOGFACILITY}%{DATA:host.name}: -%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
-        SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{AIRONET_DATE:_temp_.raw_date}"
+        SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{AIRONET_DATE}"
         SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.priority:int}>"
-        AIRONET_DATE: "%{MONTH} %{MONTHDAY} %{TIME}"
+        AIRONET_DATE: "%{MONTH:_temp_.raw_date_month}\\s+%{MONTHDAY:_temp_.raw_date_monthday} %{TIME:_temp_.raw_date_time}"
   - script:
       lang: painless
       source: |
@@ -82,10 +82,17 @@ processors:
       field: _conf.tz_offset
       value: UTC
       override: false
+  - set:
+      field: _temp_.raw_date
+      if: "ctx._temp_?.raw_date_month != null && ctx._temp_?.raw_date_monthday != null && ctx._temp_?.raw_date_time != null"
+      value: "{{{_temp_.raw_date_month}}} {{{_temp_.raw_date_monthday}}} {{{_temp_.raw_date_time}}}"
+      tag: "set_raw_date"
+      override: false
   - date:
       if: "ctx._temp_?.raw_date != null"
       field: "_temp_.raw_date"
       target_field: "@timestamp"
+      tag: "raw_date_processor"
       formats:
         - "MMM d HH:mm:ss.SSS"
       timezone: '{{{_conf.tz_offset}}}'

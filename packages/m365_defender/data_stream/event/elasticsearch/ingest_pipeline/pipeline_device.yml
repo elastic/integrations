@@ -1621,10 +1621,27 @@ processors:
       ignore_empty_value: true
   - set:
       field: Target.process.executable
+      copy_from: m365_defender.event.folder_path
+      description: Sometimes folder_path already includes the file.name
+      ignore_empty_value: true
+      tag: set_target_process_executable_folder_path
+      if: >-
+        ctx.event?.category != null 
+        && ctx.event.category.contains('api') 
+        && (ctx.m365_defender?.event?.action?.type != null && ['createremotethreadapicall', 'readprocessmemoryapicall', 'ntallocatevirtualmemoryremoteapicall', 'openprocessapicall'].contains(ctx.m365_defender.event.action.type.toLowerCase()))
+        && ctx.m365_defender?.event?.folder_path != null 
+        && ctx.m365_defender?.event?.file?.name != null
+        && ctx.m365_defender.event.folder_path.endsWith(ctx.m365_defender.event.file.name)
+  - set:
+      field: Target.process.executable
       value: >-
         {{{m365_defender.event.folder_path}}}\{{{m365_defender.event.file.name}}}
       tag: set_Target_process_executable
-      if: ctx.event?.category != null && ctx.event.category.contains('api') && (ctx.m365_defender?.event?.action?.type != null && ['createremotethreadapicall', 'readprocessmemoryapicall', 'ntallocatevirtualmemoryremoteapicall', 'openprocessapicall'].contains(ctx.m365_defender.event.action.type.toLowerCase()))
+      if: >- 
+        ctx.event?.category != null 
+        && ctx.event.category.contains('api') 
+        && (ctx.m365_defender?.event?.action?.type != null && ['createremotethreadapicall', 'readprocessmemoryapicall', 'ntallocatevirtualmemoryremoteapicall', 'openprocessapicall'].contains(ctx.m365_defender.event.action.type.toLowerCase()))
+        && ctx.Target?.process?.executable == null
       ignore_empty_value: true
   ## Then, mapping process.* below.
   ## All other DeviceEvent types that is not DeviceProcessEvent or DeviceEvent map InitiatingProcess* to process.* rather than process.parent.*
@@ -1730,12 +1747,26 @@ processors:
             || (ctx._temp_deviceevents_that_map_process != null && ctx._temp_deviceevents_that_map_process == true))
   - set:
       field: process.executable
+      copy_from: m365_defender.event.initiating_process.folder_path
+      description: Sometimes folder_path already includes the file_name
+      ignore_empty_value: true
+      tag: set_process_executable_folder_path
+      if: >-
+        ctx.event?.category != null 
+        && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
+        && ctx.m365_defender?.event?.initiating_process?.folder_path != null 
+        && ctx.m365_defender?.event?.initiating_process?.file_name != null
+        && ctx.m365_defender.event.initiating_process.folder_path.endsWith(ctx.m365_defender.event.initiating_process.file_name)
+  - set:
+      field: process.executable
       value: >-
         {{{m365_defender.event.initiating_process.folder_path}}}\{{{m365_defender.event.initiating_process.file_name}}}
+      description: If folder_path doesn't include the file_name, then append it.
       ignore_empty_value: true
-      tag: set_process_executable_api
+      tag: set_process_executable_folder_path_file
       if: >-
         ctx.event?.category != null && (ctx.event.category.contains('api') || ctx.event.category.contains('driver'))
+        && ctx.process?.executable == null
   - set:
       field: process.parent.name
       copy_from: m365_defender.event.initiating_process.parent_file_name
@@ -2308,10 +2339,33 @@ processors:
 
   # Network fields (Only one of them exists in an event)
   - set:
-      field: network.protocol
+      field: network.transport
       copy_from: m365_defender.event.protocol
-      tag: set_network_protocol
+      tag: set_network_transport
       ignore_empty_value: true
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+  - rename:
+      field: network.transport
+      target_field: network.protocol
+      tag: rename_network_transport_to_protocol_if_ntlm
+      if: ctx.network?.transport == 'ntlm'
+  - rename:
+      field: network.protocol
+      target_field: network.transport
+      tag: rename_network_protocol_to_transport_if_icmp
+      if: ctx.network?.protocol == 'icmp'
+  - set:
+      field: network.transport
+      value: tcp
+      tag: set_network_transport_tcp_if_tcpv4_or_tcpv6
+      if: ctx.network?.transport == 'tcpv4' || ctx.network?.transport == 'tcpv6'
+  - remove:
+      field: network.transport
+      tag: cleanup_network_transport
+      if: ctx.network?.transport == 'negotiate' || ctx.network?.transport == 'microsoft_authentication_package_v1_0'
   - set:
       field: network.protocol
       copy_from: m365_defender.event.request.protocol
@@ -2327,6 +2381,27 @@ processors:
       tag: set_network_protocol_dns
       if: ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('dns')
       override: true
+  - set:
+      field: network.protocol
+      value: http
+      tag: set_network_protocol_http
+      if: ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('http')
+      override: true
+  - set:
+      field: network.protocol
+      value: dns
+      tag: set_network_protocol_ssl
+      if: ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('ssl')
+      override: true
+  - set:
+      field: network.protocol
+      value: ftp
+      tag: set_network_protocol_ftp
+      if: ctx.m365_defender?.event?.action?.type != null && ctx.m365_defender.event.action.type.toLowerCase().contains('ftp')
+  - remove:
+      field: network.protocol
+      tag: cleanup_network_protocol
+      if: ctx.network?.protocol == 'local' || ctx.network?.protocol == 'unknown'
   - set:
       field: network.direction
       value: inbound

@@ -18,4 +18,8 @@ For detailed usage cost data, set the table pattern to `gcp_billing_export_resou
 
 ## Exported fields
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "billing"}}

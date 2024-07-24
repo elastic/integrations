@@ -59,13 +59,18 @@ program: |
       })
     :
       {
-        "events": [{
+        "events": {
           "error": {
             "code": string(get_resp.StatusCode),
             "id": string(get_resp.Status),
-            "message": "GET:"+string(get_resp.Body)
+            "message": "GET:"+(
+              size(get_resp.Body) != 0 ?
+                string(get_resp.Body)
+              :
+                string(get_resp.Status) + ' (' + string(get_resp.StatusCode) + ')'
+            ),
           },
-        }],
+        },
         "want_more": false,
       }
     )
@@ -97,13 +102,18 @@ program: |
         })
       :
         {
-          "events": [{
+          "events": {
             "error": {
               "code": string(post_resp.StatusCode),
               "id": string(post_resp.Status),
-              "message": "POST:"+string(post_resp.Body)
+              "message": "POST:"+(
+                size(post_resp.Body) != 0 ?
+                  string(post_resp.Body)
+                :
+                  string(post_resp.Status) + ' (' + string(post_resp.StatusCode) + ')'
+              ),
             },
-          }],
+          },
           "want_more": false,
         }
       )

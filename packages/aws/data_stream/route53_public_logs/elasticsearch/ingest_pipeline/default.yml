@@ -4,7 +4,7 @@ description: Pipeline for AWS Route53 Logs
 processors:
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.11.0'
   - set:
       field: cloud.provider
       value: aws
@@ -31,7 +31,7 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - '%{BASE10NUM} %{TIMESTAMP_ISO8601:_tmp.timestamp} %{DATA:aws.route53.hosted_zone_id} %{HOSTNAME:_tmp.question} %{WORD:dns.question.type} %{WORD:dns.response_code} %{WORD:network.transport} %{EDGE_LOCATION:aws.route53.edge_location} %{IP:source.address} (%{SUBNET:aws.route53.edns_client_subnet}|-)'
+        - '%{BASE10NUM} %{TIMESTAMP_ISO8601:_tmp.timestamp} %{DATA:aws.route53.hosted_zone_id} %{DATA:_tmp.question} %{WORD:dns.question.type} %{WORD:dns.response_code} %{WORD:network.transport} %{EDGE_LOCATION:aws.route53.edge_location} %{IP:source.address} (%{SUBNET:aws.route53.edns_client_subnet}|-)'
       pattern_definitions:
         EDGE_LOCATION: '[A-Z]{3}\d+(-[A-Z]+\d+)?'
         SUBNET: '%{IP}/[0-9]+'
