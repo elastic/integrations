@@ -58,12 +58,22 @@ processors:
     field: "message"
     tag: "ssh login 2"
     pattern: "%{_tmp.user.roles} %{user.name} login %{event.outcome} from %{}(%{source.ip}) %{}"
-    if: "ctx.message != null && ctx.message.startsWith('Administrator')"
+    if: "ctx.message != null && ctx.message.startsWith('Administrator') && !ctx.message.toLowerCase().contains('logged in')"
     on_failure:
       - append:
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     description: "Administrator philipp login failed from ssh(192.168.0.10) because of invalid ssh key"
+- dissect:
+      field: "message"
+      tag: "ssh login 3"
+      pattern: "%{_tmp.user.roles} %{user.name} logged in %{event.outcome} from %{}(%{source.ip})"
+      if: "ctx.message != null && ctx.message.startsWith('Administrator') && ctx.message.toLowerCase().contains('logged in')"
+      on_failure:
+          - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      description: "Administrator admin logged in successfully from ssh(172.16.200.254)"
 - set:
     field: "event.outcome"
     value: "failure"
