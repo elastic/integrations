@@ -31,7 +31,7 @@ keep_null: true
 program: |
   request(
     "GET",
-    state.url + "?section=GENERAL&section=OPERATING_SYSTEM&section=HARDWARE&page_size=100&page=0"
+    state.url + "?section=GENERAL&section=OPERATING_SYSTEM&section=HARDWARE&page_size=2&page=0"
   ).with({
     "Header": ({
       "Content-Type": ["application/json"]
@@ -47,13 +47,8 @@ program: |
         })
       :
         state.with({
-          "events": body.results.map(e, e.node.with(
-            has(state.preserve_original_event) && state.preserve_original_event ?
-              { "event": { "original": e.node.encode_json() } }
-            :
-              {}
-          )),
-          "want_more": (body.totalCount > (state.page+1)*state.page_size),
+          "events": body.results,
+          "want_more": false,
           "cursor": { "total_count": body.totalCount },
         })
     )
