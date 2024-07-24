@@ -4,9 +4,11 @@ This integration is for ingesting logs from [GitLab](https://about.gitlab.com/).
 
 - `api`: Collect logs for HTTP requests made to the GitLab API
 
-- `application`: Collect logs for events happing in GitLab like user creation or project deletion.
+- `application`: Collect logs for events in GitLab like user creation or project deletion.
 
-- `auth`: Collect logs for absuive protect paths requests or requests over the Rate Limit.
+- `audit`: Collect logs for changes to group or project settings and memberships.
+
+- `auth`: Collect logs for protected paths abusive requests or requests over the Rate Limit.
 
 - `production`: Collect logs for Rails controller requests received from GitLab.
 
@@ -18,7 +20,7 @@ The GitLab module has been developed with and tested against the [community edit
 
 ## Setup
 
-Refer to the GitLab documentation for the specific filepath(s) for your instance type. Both are provided as default in the configuration setup, but only one will be needed for use. See [API](https://docs.gitlab.com/ee/administration/logs/#api_jsonlog) and [Production](https://docs.gitlab.com/ee/administration/logs/#production_jsonlog) for details. 
+Refer to the [GitLab documentation](https://docs.gitlab.com/ee/administration/logs/) for the specific filepath(s) for your instance type. Both are provided as default in the configuration setup, but only one will be needed for use.
 
 ## Logs
 
@@ -293,7 +295,7 @@ An example event for `api` looks as following:
 
 ### application
 
-Collect logs for events happing in GitLab like user creation or project deletion.
+Collect logs for events happing in GitLab like user creation or project deletion. Check out the [GitLab API log docs](https://docs.gitlab.com/ee/administration/logs/#application_jsonlog) for more information.
 
 **Exported fields**
 
@@ -326,6 +328,20 @@ Collect logs for events happing in GitLab like user creation or project deletion
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | gitlab.application.attributes |  | keyword |
 | gitlab.application.caller |  | keyword |
+| gitlab.application.class |  | keyword |
+| gitlab.application.class_name |  | keyword |
+| gitlab.application.connection_name |  | keyword |
+| gitlab.application.current_iteration |  | long |
+| gitlab.application.event |  | keyword |
+| gitlab.application.lease_key |  | keyword |
+| gitlab.application.lease_timeout |  | long |
+| gitlab.application.lock_timeout_in_ms |  | long |
+| gitlab.application.login_method |  | keyword |
+| gitlab.application.mail_subject |  | keyword |
+| gitlab.application.memwd_handler_class |  | keyword |
+| gitlab.application.memwd_rss_bytes |  | byte |
+| gitlab.application.memwd_sleep_time_s |  | long |
+| gitlab.application.message |  | keyword |
 | gitlab.application.meta.caller_id |  | keyword |
 | gitlab.application.meta.client_id |  | keyword |
 | gitlab.application.meta.feature_category |  | keyword |
@@ -335,10 +351,18 @@ Collect logs for events happing in GitLab like user creation or project deletion
 | gitlab.application.meta.root_namespace |  | keyword |
 | gitlab.application.meta.user |  | keyword |
 | gitlab.application.meta.user_id |  | long |
+| gitlab.application.method |  | keyword |
 | gitlab.application.model |  | keyword |
+| gitlab.application.model_connection_name |  | keyword |
 | gitlab.application.model_id |  | long |
+| gitlab.application.partition_name |  | keyword |
 | gitlab.application.project_id |  | long |
-| gitlab.application.time |  | keyword |
+| gitlab.application.project_name |  | keyword |
+| gitlab.application.shared_connection_name |  | keyword |
+| gitlab.application.silent_mode_enabled |  | boolean |
+| gitlab.application.table_name |  | keyword |
+| gitlab.application.user_admin |  | boolean |
+| gitlab.application.worker_id |  | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -370,8 +394,8 @@ An example event for `application` looks as following:
 {
     "@timestamp": "2024-05-10T17:49:45.656Z",
     "agent": {
-        "ephemeral_id": "f82ba675-614b-4c79-984f-a74d41129494",
-        "id": "2048b1ac-b69b-4ba7-81fc-d4fecd6ffc89",
+        "ephemeral_id": "a618a754-7ca0-4492-a9b7-3e8525766fea",
+        "id": "98b5f3aa-8b45-4194-b617-3295fc2fb66e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.2"
@@ -385,7 +409,7 @@ An example event for `application` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2048b1ac-b69b-4ba7-81fc-d4fecd6ffc89",
+        "id": "98b5f3aa-8b45-4194-b617-3295fc2fb66e",
         "snapshot": false,
         "version": "8.13.2"
     },
@@ -396,9 +420,9 @@ An example event for `application` looks as following:
         ],
         "dataset": "gitlab.application",
         "id": "01HXHSYJJQNY08JV4JF2B69ZDR",
-        "ingested": "2024-05-29T15:05:23Z",
-        "original": "{\"severity\":\"INFO\",\"time\":\"2024-05-10T17:49:45.656Z\",\"correlation_id\":\"01HXHSYJJQNY08JV4JF2B69ZDR\",\"meta.caller_id\":\"ProjectCacheWorker\",\"meta.remote_ip\":\"208.58.198.174\",\"meta.feature_category\":\"source_code_management\",\"meta.user\":\"root\",\"meta.user_id\":1,\"meta.project\":\"root/test_1\",\"meta.root_namespace\":\"root\",\"meta.client_id\":\"user/1\",\"meta.root_caller_id\":\"ProjectsController#create\",\"message\":\"Acquiring lease for project statistics update\",\"model\":\"ProjectStatistics\",\"model_id\":1,\"project_id\":1,\"caller\":\"refresh!\",\"attributes\":[\"repository_size\",\"wiki_size\"]}",
-        "severity": 6,
+        "ingested": "2024-06-18T18:05:53Z",
+        "original": "{\"severity\":\"INFO\",\"time\":\"2024-05-10T17:49:45.656Z\",\"correlation_id\":\"01HXHSYJJQNY08JV4JF2B69ZDR\",\"meta.caller_id\":\"ProjectCacheWorker\",\"meta.remote_ip\":\"67.43.156.18\",\"meta.feature_category\":\"source_code_management\",\"meta.user\":\"root\",\"meta.user_id\":1,\"meta.project\":\"root/test_1\",\"meta.root_namespace\":\"root\",\"meta.client_id\":\"user/1\",\"meta.root_caller_id\":\"ProjectsController#create\",\"message\":\"Acquiring lease for project statistics update\",\"model\":\"ProjectStatistics\",\"model_id\":1,\"project_id\":1,\"caller\":\"refresh!\",\"attributes\":[\"repository_size\",\"wiki_size\"]}",
+        "severity": 1,
         "type": [
             "info"
         ]
@@ -410,12 +434,13 @@ An example event for `application` looks as following:
                 "wiki_size"
             ],
             "caller": "refresh!",
+            "message": "Acquiring lease for project statistics update",
             "meta": {
                 "caller_id": "ProjectCacheWorker",
                 "client_id": "user/1",
                 "feature_category": "source_code_management",
                 "project": "root/test_1",
-                "remote_ip": "208.58.198.174",
+                "remote_ip": "67.43.156.18",
                 "root_caller_id": "ProjectsController#create",
                 "root_namespace": "root",
                 "user": "root",
@@ -423,8 +448,7 @@ An example event for `application` looks as following:
             },
             "model": "ProjectStatistics",
             "model_id": 1,
-            "project_id": 1,
-            "time": "2024-05-10T17:49:45.656Z"
+            "project_id": 1
         }
     },
     "input": {
@@ -432,13 +456,12 @@ An example event for `application` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "42",
-            "inode": "53",
+            "device_id": "30",
+            "inode": "90",
             "path": "/tmp/service_logs/test-gitlab-application.log"
         },
         "offset": 0
     },
-    "message": "Acquiring lease for project statistics update",
     "tags": [
         "preserve_original_event",
         "gitlab-application",
@@ -447,9 +470,162 @@ An example event for `application` looks as following:
 }
 ```
 
+### audit
+
+Collect logs for changes to group or project settings and memberships. Check out the [GitLab API log docs](https://docs.gitlab.com/ee/administration/logs/#audit_jsonlog) for more information.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| gitlab.audit.change |  | keyword |
+| gitlab.audit.created_at |  | date |
+| gitlab.audit.entity_id | ID of the scope | long |
+| gitlab.audit.entity_type | Type of the scope (`Project`, `Group`, `User`, or `Gitlab::Audit::InstanceScope`). | keyword |
+| gitlab.audit.from |  | keyword |
+| gitlab.audit.meta.caller_id |  | keyword |
+| gitlab.audit.meta.client_id |  | keyword |
+| gitlab.audit.meta.feature_category |  | keyword |
+| gitlab.audit.meta.project |  | keyword |
+| gitlab.audit.meta.remote_ip |  | ip |
+| gitlab.audit.meta.root_namespace |  | keyword |
+| gitlab.audit.meta.user |  | keyword |
+| gitlab.audit.meta.user_id |  | long |
+| gitlab.audit.target_details | Details of the target | keyword |
+| gitlab.audit.target_id | ID of the target. | long |
+| gitlab.audit.target_type | Type of the target | keyword |
+| gitlab.audit.to |  | keyword |
+| gitlab.audit.with |  | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Log offset | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+
+
+An example event for `audit` looks as following:
+
+```json
+{
+    "@timestamp": "2018-10-17T17:38:22.523Z",
+    "agent": {
+        "ephemeral_id": "a0f06a9a-fbd7-46c9-ab68-3acc334ead1b",
+        "id": "c15bed11-95cd-4a3f-97d7-0530e1bc1805",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.13.2"
+    },
+    "data_stream": {
+        "dataset": "gitlab.audit",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "c15bed11-95cd-4a3f-97d7-0530e1bc1805",
+        "snapshot": false,
+        "version": "8.13.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "gitlab.audit",
+        "ingested": "2024-05-30T18:45:47Z",
+        "original": "{\"severity\": \"INFO\",\"time\": \"2018-10-17T17:38:22.523Z\",\"author_id\": 3,\"entity_id\": 2,\"entity_type\": \"Project\",\"change\": \"visibility\",\"from\": \"Private\",\"to\": \"Public\",\"author_name\": \"John Doe4\",\"target_id\": 2,\"target_type\": \"Project\",\"target_details\": \"namespace2/project2\"}",
+        "severity": 1,
+        "type": [
+            "info"
+        ]
+    },
+    "gitlab": {
+        "audit": {
+            "change": "visibility",
+            "entity_id": 2,
+            "entity_type": "Project",
+            "from": "Private",
+            "target_details": "namespace2/project2",
+            "target_id": 2,
+            "target_type": "Project",
+            "to": "Public"
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "device_id": "30",
+            "inode": "125",
+            "path": "/tmp/service_logs/test-gitlab-audit.log"
+        },
+        "offset": 507
+    },
+    "related": {
+        "user": [
+            "3",
+            "John Doe4"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "gitlab-audit",
+        "forwarded"
+    ],
+    "user": {
+        "id": "3",
+        "name": "John Doe4"
+    }
+}
+```
+
 ### auth
 
-Collect logs for absuive protect paths requests or requests over the Rate Limit.
+Collect logs for absuive protect paths requests or requests over the Rate Limit. Check out the [GitLab API log docs](https://docs.gitlab.com/ee/administration/logs/#auth_jsonlog) for more information.
 
 **Exported fields**
 
@@ -480,15 +656,107 @@ Collect logs for absuive protect paths requests or requests over the Rate Limit.
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| gitlab.auth.controller |  | keyword |
+| gitlab.auth.cpu_s |  | long |
+| gitlab.auth.db_cached_count |  | long |
+| gitlab.auth.db_ci_cached_count |  | long |
+| gitlab.auth.db_ci_count |  | long |
+| gitlab.auth.db_ci_duration_s |  | float |
+| gitlab.auth.db_ci_replica_cached_count |  | long |
+| gitlab.auth.db_ci_replica_count |  | long |
+| gitlab.auth.db_ci_replica_duration_s |  | float |
+| gitlab.auth.db_ci_replica_txn_count |  | long |
+| gitlab.auth.db_ci_replica_txn_duration_s |  | float |
+| gitlab.auth.db_ci_replica_wal_cached_count |  | long |
+| gitlab.auth.db_ci_replica_wal_count |  | long |
+| gitlab.auth.db_ci_txn_count |  | long |
+| gitlab.auth.db_ci_txn_duration_s |  | float |
+| gitlab.auth.db_ci_wal_cached_count |  | long |
+| gitlab.auth.db_ci_wal_count |  | long |
+| gitlab.auth.db_count |  | long |
+| gitlab.auth.db_duration_s |  | float |
+| gitlab.auth.db_main_cached_count |  | long |
+| gitlab.auth.db_main_count |  | long |
+| gitlab.auth.db_main_duration_s |  | float |
+| gitlab.auth.db_main_replica_cached_count |  | long |
+| gitlab.auth.db_main_replica_count |  | long |
+| gitlab.auth.db_main_replica_duration_s |  | float |
+| gitlab.auth.db_main_replica_txn_count |  | long |
+| gitlab.auth.db_main_replica_txn_duration_s |  | float |
+| gitlab.auth.db_main_replica_wal_cached_count |  | long |
+| gitlab.auth.db_main_replica_wal_count |  | long |
+| gitlab.auth.db_main_txn_count |  | long |
+| gitlab.auth.db_main_txn_duration_s |  | float |
+| gitlab.auth.db_main_wal_cached_count |  | long |
+| gitlab.auth.db_main_wal_count |  | long |
+| gitlab.auth.db_primary_cached_count |  | long |
+| gitlab.auth.db_primary_count |  | long |
+| gitlab.auth.db_primary_duration_s |  | float |
+| gitlab.auth.db_primary_txn_count |  | long |
+| gitlab.auth.db_primary_txn_duration_s |  | float |
+| gitlab.auth.db_primary_wal_cached_count |  | long |
+| gitlab.auth.db_primary_wal_count |  | long |
+| gitlab.auth.db_replica_cached_count |  | long |
+| gitlab.auth.db_replica_count |  | long |
+| gitlab.auth.db_replica_duration_s |  | float |
+| gitlab.auth.db_replica_txn_count |  | long |
+| gitlab.auth.db_replica_txn_duration_s |  | float |
+| gitlab.auth.db_replica_wal_cached_count |  | long |
+| gitlab.auth.db_replica_wal_count |  | long |
+| gitlab.auth.db_txn_count |  | long |
+| gitlab.auth.db_write_count |  | long |
 | gitlab.auth.env |  | keyword |
-| gitlab.meta.caller_id |  | keyword |
-| gitlab.meta.client_id |  | keyword |
-| gitlab.meta.feature_category |  | keyword |
-| gitlab.meta.project |  | keyword |
-| gitlab.meta.remote_ip |  | ip |
-| gitlab.meta.root_namespace |  | keyword |
-| gitlab.meta.user |  | keyword |
-| gitlab.meta.user_id |  | long |
+| gitlab.auth.format |  | keyword |
+| gitlab.auth.location |  | keyword |
+| gitlab.auth.matched |  | keyword |
+| gitlab.auth.mem_bytes |  | long |
+| gitlab.auth.mem_mallocs |  | long |
+| gitlab.auth.mem_objects |  | long |
+| gitlab.auth.mem_total_bytes |  | long |
+| gitlab.auth.message |  | keyword |
+| gitlab.auth.meta.user |  | keyword |
+| gitlab.auth.rate_limiting_gates |  | keyword |
+| gitlab.auth.redis_allowed_cross_slot_calls |  | long |
+| gitlab.auth.redis_cache_calls |  | long |
+| gitlab.auth.redis_cache_duration_s |  | float |
+| gitlab.auth.redis_cache_read_bytes |  | long |
+| gitlab.auth.redis_cache_write_bytes |  | long |
+| gitlab.auth.redis_calls |  | long |
+| gitlab.auth.redis_db_load_balancing_calls |  | long |
+| gitlab.auth.redis_db_load_balancing_duration_s |  | float |
+| gitlab.auth.redis_db_load_balancing_write_bytes |  | long |
+| gitlab.auth.redis_duration_s |  | float |
+| gitlab.auth.redis_feature_flag_calls |  | long |
+| gitlab.auth.redis_feature_flag_duration_s |  | float |
+| gitlab.auth.redis_feature_flag_read_bytes |  | long |
+| gitlab.auth.redis_feature_flag_write_bytes |  | long |
+| gitlab.auth.redis_queues_calls |  | long |
+| gitlab.auth.redis_queues_duration_s |  | float |
+| gitlab.auth.redis_queues_metadata_calls |  | long |
+| gitlab.auth.redis_queues_metadata_duration_s |  | float |
+| gitlab.auth.redis_queues_metadata_read_bytes |  | long |
+| gitlab.auth.redis_queues_metadata_write_bytes |  | long |
+| gitlab.auth.redis_queues_read_bytes |  | long |
+| gitlab.auth.redis_queues_write_bytes |  | long |
+| gitlab.auth.redis_rate_limiting_calls |  | long |
+| gitlab.auth.redis_rate_limiting_duration_s |  | float |
+| gitlab.auth.redis_rate_limiting_read_bytes |  | long |
+| gitlab.auth.redis_rate_limiting_write_bytes |  | long |
+| gitlab.auth.redis_read_bytes |  | long |
+| gitlab.auth.redis_sessions_allowed_cross_slot_calls |  | long |
+| gitlab.auth.redis_sessions_calls |  | long |
+| gitlab.auth.redis_sessions_duration_s |  | float |
+| gitlab.auth.redis_sessions_read_bytes |  | long |
+| gitlab.auth.redis_sessions_write_bytes |  | long |
+| gitlab.auth.redis_shared_state_calls |  | long |
+| gitlab.auth.redis_shared_state_duration_s |  | float |
+| gitlab.auth.redis_shared_state_read_bytes |  | long |
+| gitlab.auth.redis_shared_state_write_bytes |  | long |
+| gitlab.auth.redis_write_bytes |  | long |
+| gitlab.auth.remote_ip |  | ip |
+| gitlab.auth.request_urgency |  | keyword |
+| gitlab.auth.time |  | keyword |
+| gitlab.auth.worker_id |  | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -523,8 +791,8 @@ An example event for `auth` looks as following:
 {
     "@timestamp": "2023-04-19T22:14:25.893Z",
     "agent": {
-        "ephemeral_id": "cbf24f16-edf0-4cb7-8191-b9947e20391d",
-        "id": "c15bed11-95cd-4a3f-97d7-0530e1bc1805",
+        "ephemeral_id": "45d783d5-23a4-4d9a-b801-500f7f799428",
+        "id": "105000ed-5ebb-49ed-9e5a-cfa775284bcc",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.2"
@@ -554,7 +822,7 @@ An example event for `auth` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c15bed11-95cd-4a3f-97d7-0530e1bc1805",
+        "id": "105000ed-5ebb-49ed-9e5a-cfa775284bcc",
         "snapshot": false,
         "version": "8.13.2"
     },
@@ -565,7 +833,7 @@ An example event for `auth` looks as following:
         ],
         "dataset": "gitlab.auth",
         "id": "01GYDSAKAN2SPZPAMJNRWW5H8S",
-        "ingested": "2024-05-30T15:55:40Z",
+        "ingested": "2024-05-31T14:59:16Z",
         "original": "{\"severity\": \"ERROR\",\"time\": \"2023-04-19T22:14:25.893Z\",\"correlation_id\": \"01GYDSAKAN2SPZPAMJNRWW5H8S\",\"message\": \"Rack_Attack\",\"env\": \"blocklist\",\"remote_ip\": \"67.43.156.18\",\"request_method\": \"GET\",\"path\": \"/group/project.git/info/refs?service=git-upload-pack\"}",
         "severity": 3,
         "type": [
@@ -574,7 +842,8 @@ An example event for `auth` looks as following:
     },
     "gitlab": {
         "auth": {
-            "env": "blocklist"
+            "env": "blocklist",
+            "message": "Rack_Attack"
         }
     },
     "http": {
@@ -588,12 +857,11 @@ An example event for `auth` looks as following:
     "log": {
         "file": {
             "device_id": "30",
-            "inode": "79",
+            "inode": "380002",
             "path": "/tmp/service_logs/test-gitlab-auth.log"
         },
         "offset": 0
     },
-    "message": "Rack_Attack",
     "related": {
         "ip": [
             "67.43.156.18"

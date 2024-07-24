@@ -73,15 +73,33 @@ processors:
       field: gitlab.auth.correlation_id
       target_field: event.id
       ignore_missing: true 
+  - dot_expander:
+      path: gitlab.auth
+      field: meta.user
+  - convert:
+      field: gitlab.auth.user_id
+      type: string
+      ignore_missing: true
+  - rename:
+      field: gitlab.auth.user_id
+      target_field: user.id
+      ignore_missing: true
   - rename: 
       field: gitlab.auth.request_method
       target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: gitlab.auth.status
+      target_field: http.response.status_code
+      ignore_missing: true
+  - rename:
+      field: gitlab.auth.pid
+      target_field: process.pid
+      ignore_missing: true
   - rename:
       field: gitlab.auth.path
       target_field: url.path
-  - rename:
-      field: gitlab.auth.message
-      target_field: message
+      ignore_missing: true
   - rename:
       field: gitlab.auth.remote_ip
       target_field: client.ip

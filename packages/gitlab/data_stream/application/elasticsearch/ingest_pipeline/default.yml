@@ -34,6 +34,9 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       if: ctx.gitlab?.application?.time != null
+  - remove:
+      field: gitlab.application.time
+      ignore_missing: true
   - set:
       field: event.severity
       value: 0
@@ -70,6 +73,30 @@ processors:
   - rename:
       field: gitlab.application.correlation_id
       target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: gitlab.application.pid
+      target_field: process.pid
+      ignore_missing: true
+  - grok:
+      field: gitlab.application.message
+      patterns:
+        - 'Failed%{SPACE}Login:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}'
+        - '%{USERNAME:user.name}%{SPACE}created%{SPACE}a%{SPACE}new%{SPACE}project%{SPACE}"%{GREEDYDATA:gitlab.application.project_name}"'
+        - 'Project%{SPACE}"%{GREEDYDATA:gitlab.application.project_name}"%{SPACE}was%{SPACE}deleted'
+        - 'User%{SPACE}Logout:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}'
+        - 'Successful%{SPACE}Login:%{SPACE}username=%{USERNAME:user.name}%{SPACE}ip=%{IP:source.ip}%{SPACE}method=%{WORD:gitlab.application.login_method}%{SPACE}admin=%{WORD:gitlab.application.user_admin}'
+        - 'User%{SPACE}"%{USERNAME:user.name}"%{SPACE}\(%{EMAILADDRESS:user.email}\)%{SPACE}was%{SPACE}created'
+        - 'User%{SPACE}"%{USERNAME:user.name}"%{SPACE}\(%{EMAILADDRESS:user.email}\)%{SPACE}was%{SPACE}removed'
+        - 'Group%{SPACE}"%{USERNAME:group.name}"%{SPACE}was%{SPACE}created'
+        - 'Group%{SPACE}"%{USERNAME:group.name}"%{SPACE}was%{SPACE}removed'
+      tag: grok_message
+      if: ctx.gitlab.application.message != null
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: gitlab.application.user_admin
+      type: boolean
       ignore_missing: true
   - dot_expander:
       path: gitlab.application
@@ -109,9 +136,28 @@ processors:
   - dot_expander:
       path: gitlab.application
       field: meta.project
-  - rename:
-      field: gitlab.application.message
-      target_field: message
+  - append:
+      field: event.category
+      value: authentication
+      if: ctx.gitlab?.application?.message.contains("Failed Login:") || ctx.gitlab?.application?.message.contains("Successful Login:")
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.gitlab.application.message.contains("Failed Login:")
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.gitlab.application.message.contains("Successful Login:")
+  - append:
+      field: event.type
+      value:
+        - creation
+      if: ctx.gitlab.application.message.contains("created a new project") || ctx.gitlab.application.message.contains(" was created")
+  - append:
+      field: event.type
+      value:
+        - deletion
+      if: ctx.gitlab.application.message.contains(" was deleted")
   - append:
       tag: event_type_append
       field: event.type
@@ -121,6 +167,7 @@ processors:
       field: event.category
       value:
         - configuration
+      if: '!(ctx.gitlab?.application?.message.contains("Failed Login:") || ctx.gitlab?.application?.message.contains("Successful Login:"))'
   - remove:
       field: event.original
       tag: remove_original_event

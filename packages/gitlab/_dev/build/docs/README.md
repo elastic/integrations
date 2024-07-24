@@ -4,11 +4,11 @@ This integration is for ingesting logs from [GitLab](https://about.gitlab.com/).
 
 - `api`: Collect logs for HTTP requests made to the GitLab API
 
-- `application`: Collect logs for events happing in GitLab like user creation or project deletion.
+- `application`: Collect logs for events in GitLab like user creation or project deletion.
 
 - `audit`: Collect logs for changes to group or project settings and memberships.
 
-- `auth`: Collect logs for absuive protect paths requests or requests over the Rate Limit.
+- `auth`: Collect logs for protected paths abusive requests or requests over the Rate Limit.
 
 - `production`: Collect logs for Rails controller requests received from GitLab.
 
@@ -20,7 +20,7 @@ The GitLab module has been developed with and tested against the [community edit
 
 ## Setup
 
-Refer to the [GitLab documentation](https://docs.gitlab.com/ee/administration/logs/) for the specific filepath(s) for your instance type. Both are provided as default in the configuration setup, but only one will be needed for use. 
+Refer to the [GitLab documentation](https://docs.gitlab.com/ee/administration/logs/) for the specific filepath(s) for your instance type. Both are provided as default in the configuration setup, but only one will be needed for use.
 
 ## Logs
 
