@@ -243,7 +243,12 @@ processors:
       if: ctx.fortinet?.firewall?.type == 'event'
   - pipeline:
       name: '{{ IngestPipeline "login" }}'
-      if: "ctx.message instanceof String && (ctx.message.toLowerCase().contains('login') || ctx.message.toLowerCase().contains('logged in'))"
+      if: >-
+        if (ctx.message instanceof String) {
+          String normalizedMessage = ctx.message.toLowerCase();
+          return (normalizedMessage.contains('login') || normalizedMessage.contains('logged in'));
+        }
+        return false;
   - pipeline:
       name: '{{ IngestPipeline "traffic" }}'
       if: ctx.fortinet?.firewall?.type == 'traffic'
