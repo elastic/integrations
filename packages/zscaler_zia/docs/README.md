@@ -1570,26 +1570,26 @@ An example event for `web` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-17T07:04:57.000Z",
+    "@timestamp": "2021-12-31T08:08:08.000Z",
     "agent": {
-        "ephemeral_id": "de646ee7-84ac-491d-a5cb-05f4a8bb0003",
-        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
+        "ephemeral_id": "f97a3a33-4778-4f8f-a98e-42c9d5997a3b",
+        "id": "3afa5c75-c6e3-41a8-a773-ff6a6356f7b1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.14.3"
     },
     "data_stream": {
         "dataset": "zscaler_zia.web",
-        "namespace": "ep",
+        "namespace": "98923",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
+        "id": "3afa5c75-c6e3-41a8-a773-ff6a6356f7b1",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.14.3"
     },
     "event": {
         "action": "blocked",
@@ -1598,7 +1598,7 @@ An example event for `web` looks as following:
             "web"
         ],
         "dataset": "zscaler_zia.web",
-        "ingested": "2024-07-04T12:12:29Z",
+        "ingested": "2024-07-17T11:07:47Z",
         "kind": "event",
         "timezone": "UTC",
         "type": [
@@ -1621,12 +1621,7 @@ An example event for `web` looks as following:
         }
     },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.243.6:58884"
-        }
+        "type": "http_endpoint"
     },
     "network": {
         "protocol": "http_proxy"
