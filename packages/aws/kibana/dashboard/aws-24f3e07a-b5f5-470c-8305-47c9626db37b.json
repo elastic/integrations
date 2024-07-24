@@ -4,9 +4,9 @@
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
             "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"ba64b5a0-b091-4544-9c97-37ee58d19e7b\":{\"order\":0,\"width\":\"medium\",\"grow\":false,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"cloud.region\",\"title\":\"cloud.region\",\"id\":\"ba64b5a0-b091-4544-9c97-37ee58d19e7b\",\"enhancements\":{}}}}"
+            "panelsJSON": "{\"47e6800b-5ab8-4b3b-af07-5a7bcbac69bb\":{\"type\":\"optionsListControl\",\"order\":0,\"grow\":false,\"width\":\"medium\",\"explicitInput\":{\"id\":\"47e6800b-5ab8-4b3b-af07-5a7bcbac69bb\",\"fieldName\":\"cloud.region\",\"title\":\"Cloud Region\",\"grow\":false,\"width\":\"medium\",\"searchTechnique\":\"prefix\",\"enhancements\":{},\"existsSelected\":true,\"selectedOptions\":[]}},\"e757d2cf-bf31-44a0-a4ca-5a7b94465ab8\":{\"type\":\"optionsListControl\",\"order\":1,\"grow\":false,\"width\":\"medium\",\"explicitInput\":{\"id\":\"e757d2cf-bf31-44a0-a4ca-5a7b94465ab8\",\"fieldName\":\"aws.dimensions.LoadBalancer\",\"title\":\"Load Balancer\",\"grow\":false,\"width\":\"medium\",\"searchTechnique\":\"prefix\",\"enhancements\":{},\"selectedOptions\":[],\"existsSelected\":false}}}"
         },
-        "description": "Overview of AWS ELB Metrics",
+        "description": "Overview of AWS ALB Metrics",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -15,21 +15,54 @@
                             "store": "appState"
                         },
                         "meta": {
-                            "alias": null,
+                            "alias": "ALB Metrics Filter",
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
                             "negate": false,
-                            "params": {
-                                "query": "aws.elb_metrics"
-                            },
-                            "type": "phrase"
+                            "params": [
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "data_stream.dataset",
+                                        "index": "metrics-*",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "aws.elb_metrics"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "aws.elb_metrics"
+                                        }
+                                    }
+                                },
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "aws.cloudwatch.namespace",
+                                        "index": "metrics-*",
+                                        "key": "aws.cloudwatch.namespace",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "AWS/ApplicationELB"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "aws.cloudwatch.namespace": "AWS/ApplicationELB"
+                                        }
+                                    }
+                                }
+                            ],
+                            "relation": "AND",
+                            "type": "combined"
                         },
-                        "query": {
-                            "match_phrase": {
-                                "data_stream.dataset": "aws.elb_metrics"
-                            }
-                        }
+                        "query": {}
                     }
                 ],
                 "query": {
@@ -60,6 +93,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "95c74866-a10c-4846-99a6-d4478075f9aa": {
                                             "columnOrder": [
@@ -70,22 +104,24 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Healthy Host Count",
+                                                    "label": " ",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "compact": true
+                                                                "compact": true,
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.HealthyHostCount.max"
+                                                    "sourceField": "aws.applicationelb.metrics.HealthyHostCount.max"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -114,12 +150,12 @@
                 },
                 "gridData": {
                     "h": 5,
-                    "i": "8557212f-6209-489d-8153-60d4d9abf3e3",
+                    "i": "71396ae1-4748-41aa-b5d3-cd660f73c09d",
                     "w": 6,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "8557212f-6209-489d-8153-60d4d9abf3e3",
+                "panelIndex": "71396ae1-4748-41aa-b5d3-cd660f73c09d",
                 "title": "Healthy Host Count",
                 "type": "lens"
             },
@@ -137,6 +173,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "b13930d5-a245-45f1-82fe-11c7685a414b": {
                                             "columnOrder": [
@@ -148,7 +185,7 @@
                                                 "13771d8a-9f60-41fc-b3a1-f7ab4eeb8944": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -169,38 +206,43 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
                                                 },
                                                 "87310975-9879-4e51-9864-cad27918bb51": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Request Count",
-                                                    "operationType": "average",
+                                                    "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
-                                                            "id": "number"
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.RequestCount.sum"
+                                                    "sourceField": "aws.applicationelb.metrics.RequestCount.sum"
                                                 },
                                                 "cfc0612f-0f75-44f2-9753-6f100f269c55": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": "timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -217,7 +259,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "fillOpacity": 0,
@@ -277,7 +319,7 @@
                                     "mode": "full"
                                 },
                                 "yRightScale": "linear",
-                                "yTitle": ""
+                                "yTitle": "Number of Request "
                             }
                         },
                         "title": "",
@@ -289,13 +331,13 @@
                 },
                 "gridData": {
                     "h": 10,
-                    "i": "61ef1c18-5081-43c1-9088-8be41b915139",
-                    "w": 21,
+                    "i": "5b9d82be-bfa4-40fa-8d81-da0b88f6ed26",
+                    "w": 19,
                     "x": 6,
                     "y": 0
                 },
-                "panelIndex": "61ef1c18-5081-43c1-9088-8be41b915139",
-                "title": "Request Count",
+                "panelIndex": "5b9d82be-bfa4-40fa-8d81-da0b88f6ed26",
+                "title": "Total Request",
                 "type": "lens"
             },
             {
@@ -312,6 +354,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "9d68793b-90e0-4bc9-a029-e5310174d90a": {
                                             "columnOrder": [
@@ -324,26 +367,30 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Latency in seconds",
-                                                    "operationType": "average",
+                                                    "label": "New TCP Connection",
+                                                    "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
-                                                            "id": "number"
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.Latency.avg"
+                                                    "sourceField": "aws.applicationelb.metrics.NewConnectionCount.sum"
                                                 },
                                                 "5fe209cc-36e1-4118-b40b-2f8bfac5a2bf": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": "timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -351,7 +398,7 @@
                                                 "ea490648-c816-4c75-96d5-7e18f67cf646": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -372,10 +419,11 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -392,7 +440,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "fillOpacity": 0,
@@ -452,25 +500,26 @@
                                     "mode": "full"
                                 },
                                 "yRightScale": "linear",
-                                "yTitle": ""
+                                "yTitle": "Number of Connections"
                             }
                         },
                         "title": "",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Number of new TCP connections established from clients to the load balancer and from the load balancer to targets.",
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 10,
-                    "i": "cb0ee800-d74e-4cd2-ab38-19c08f43eb38",
-                    "w": 21,
-                    "x": 27,
+                    "i": "53edccdf-7a6b-41b1-8773-b5d3f8c8cbd8",
+                    "w": 23,
+                    "x": 25,
                     "y": 0
                 },
-                "panelIndex": "cb0ee800-d74e-4cd2-ab38-19c08f43eb38",
-                "title": "Latency in Seconds",
+                "panelIndex": "53edccdf-7a6b-41b1-8773-b5d3f8c8cbd8",
+                "title": "New Connections Overview",
                 "type": "lens"
             },
             {
@@ -487,6 +536,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "d825a0ad-7b01-4867-b39d-b265fa804a77": {
                                             "columnOrder": [
@@ -497,22 +547,24 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Unhealthy Host Count",
+                                                    "label": " ",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "compact": true
+                                                                "compact": true,
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.UnHealthyHostCount.max"
+                                                    "sourceField": "aws.applicationelb.metrics.UnHealthyHostCount.max"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -541,12 +593,12 @@
                 },
                 "gridData": {
                     "h": 5,
-                    "i": "469adff0-7199-4e1a-a972-e4ecbbbea386",
+                    "i": "3154e8a1-71dd-42d9-a389-e68d68efb161",
                     "w": 6,
                     "x": 0,
                     "y": 5
                 },
-                "panelIndex": "469adff0-7199-4e1a-a972-e4ecbbbea386",
+                "panelIndex": "3154e8a1-71dd-42d9-a389-e68d68efb161",
                 "title": "Unhealthy Host Count",
                 "type": "lens"
             },
@@ -556,182 +608,7 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-7690d39e-d3ab-4208-9969-d7d04191d29e",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "7690d39e-d3ab-4208-9969-d7d04191d29e": {
-                                            "columnOrder": [
-                                                "b195b7c0-f9fc-4a17-8ffa-19a3f99ab967",
-                                                "3f54b8c0-28f2-4e78-9da6-4f5b0a8385f4",
-                                                "4bc190bf-5558-4fdd-bf7c-3c1eb86144f6"
-                                            ],
-                                            "columns": {
-                                                "3f54b8c0-28f2-4e78-9da6-4f5b0a8385f4": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "4bc190bf-5558-4fdd-bf7c-3c1eb86144f6",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
-                                                },
-                                                "4bc190bf-5558-4fdd-bf7c-3c1eb86144f6": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Backend Connection Errors",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "number"
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.BackendConnectionErrors.sum"
-                                                },
-                                                "b195b7c0-f9fc-4a17-8ffa-19a3f99ab967": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": true,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "5m"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "fillOpacity": 0,
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "4bc190bf-5558-4fdd-bf7c-3c1eb86144f6"
-                                        ],
-                                        "layerId": "7690d39e-d3ab-4208-9969-d7d04191d29e",
-                                        "layerType": "data",
-                                        "palette": {
-                                            "name": "default",
-                                            "type": "palette"
-                                        },
-                                        "seriesType": "line",
-                                        "splitAccessor": "3f54b8c0-28f2-4e78-9da6-4f5b0a8385f4",
-                                        "xAccessor": "b195b7c0-f9fc-4a17-8ffa-19a3f99ab967",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "color": "#3185FC",
-                                                "forAccessor": "4bc190bf-5558-4fdd-bf7c-3c1eb86144f6"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "maxLines": 1,
-                                    "position": "right",
-                                    "shouldTruncate": true,
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yLeftScale": "linear",
-                                "yRightExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightScale": "linear",
-                                "yTitle": ""
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "1baa4fb5-a42b-4587-811b-f0ff129fd077",
-                    "w": 23,
-                    "x": 0,
-                    "y": 10
-                },
-                "panelIndex": "1baa4fb5-a42b-4587-811b-f0ff129fd077",
-                "title": "Backend Connection Errors",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-18b6e056-dd9a-44d5-a2e5-d5948e17dbd5",
+                                "name": "indexpattern-datasource-layer-9f526dfb-6d74-411e-9159-4883bd63ba72",
                                 "type": "index-pattern"
                             }
                         ],
@@ -741,30 +618,32 @@
                                 "formBased": {
                                     "currentIndexPatternId": "metrics-*",
                                     "layers": {
-                                        "18b6e056-dd9a-44d5-a2e5-d5948e17dbd5": {
+                                        "9f526dfb-6d74-411e-9159-4883bd63ba72": {
                                             "columnOrder": [
-                                                "63840df4-7369-46cd-a0e4-aa04a2cffd9b",
-                                                "553de913-204d-4653-a2e2-b2683c2b3ba2",
-                                                "f3d4bab9-b1c1-48ac-ba36-efe7c88db647"
+                                                "15ecdf78-4fe2-4517-86f6-1d96b207f32f",
+                                                "0b486a7a-9c80-40fc-ade6-7319e4b45e8d",
+                                                "92238e26-2618-43b5-be4e-ff6fbc27ca3c"
                                             ],
                                             "columns": {
-                                                "553de913-204d-4653-a2e2-b2683c2b3ba2": {
+                                                "0b486a7a-9c80-40fc-ade6-7319e4b45e8d": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": "timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 },
-                                                "63840df4-7369-46cd-a0e4-aa04a2cffd9b": {
+                                                "15ecdf78-4fe2-4517-86f6-1d96b207f32f": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
+                                                    "label": "Load Balancer Name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -773,7 +652,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "f3d4bab9-b1c1-48ac-ba36-efe7c88db647",
+                                                            "columnId": "92238e26-2618-43b5-be4e-ff6fbc27ca3c",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -781,28 +660,29 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 10
+                                                        "secondaryFields": [],
+                                                        "size": 15
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
                                                 },
-                                                "f3d4bab9-b1c1-48ac-ba36-efe7c88db647": {
+                                                "92238e26-2618-43b5-be4e-ff6fbc27ca3c": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": " Request Count",
+                                                    "label": "Active Connection Count",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "decimals": 2
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.RequestCount.sum"
+                                                    "sourceField": "aws.applicationelb.metrics.ActiveConnectionCount.sum"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -828,13 +708,13 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "f3d4bab9-b1c1-48ac-ba36-efe7c88db647"
+                                            "92238e26-2618-43b5-be4e-ff6fbc27ca3c"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -854,550 +734,49 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "18b6e056-dd9a-44d5-a2e5-d5948e17dbd5",
+                                        "layerId": "9f526dfb-6d74-411e-9159-4883bd63ba72",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "line",
                                         "showGridlines": false,
-                                        "splitAccessor": "63840df4-7369-46cd-a0e4-aa04a2cffd9b",
-                                        "xAccessor": "553de913-204d-4653-a2e2-b2683c2b3ba2",
+                                        "splitAccessor": "15ecdf78-4fe2-4517-86f6-1d96b207f32f",
+                                        "xAccessor": "0b486a7a-9c80-40fc-ade6-7319e4b45e8d",
                                         "yConfig": [
                                             {
                                                 "axisMode": "left",
-                                                "forAccessor": "f3d4bab9-b1c1-48ac-ba36-efe7c88db647"
+                                                "forAccessor": "92238e26-2618-43b5-be4e-ff6fbc27ca3c"
                                             }
                                         ]
                                     }
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "maxLines": 1,
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
-                                "valueLabels": "hide"
+                                "valueLabels": "hide",
+                                "yTitle": "Number of Connections"
                             }
                         },
                         "title": "",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
+                    "description": "",
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "569ffd9e-bf84-4734-851c-7a4db258bb1c",
-                    "w": 25,
-                    "x": 23,
+                    "h": 12,
+                    "i": "273f5360-4f79-4ae7-8235-2d7ca6d9a3cf",
+                    "w": 48,
+                    "x": 0,
                     "y": 10
                 },
-                "panelIndex": "569ffd9e-bf84-4734-851c-7a4db258bb1c",
-                "title": "Request Count",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-f7b43736-5165-4dcb-9014-b35785844a79",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "f7b43736-5165-4dcb-9014-b35785844a79": {
-                                            "columnOrder": [
-                                                "cced0a45-b5b7-4daf-a7dc-f3bc0ea8f2ca",
-                                                "644bfee1-9394-47fd-833c-3b5fecb0fa19",
-                                                "47a7ddfc-fdc9-4b53-8713-8c948be2dcaa"
-                                            ],
-                                            "columns": {
-                                                "47a7ddfc-fdc9-4b53-8713-8c948be2dcaa": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "HTTP Backend 4XX Errors",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "number"
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.HTTPCode_Backend_4XX.sum"
-                                                },
-                                                "644bfee1-9394-47fd-833c-3b5fecb0fa19": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "47a7ddfc-fdc9-4b53-8713-8c948be2dcaa",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
-                                                },
-                                                "cced0a45-b5b7-4daf-a7dc-f3bc0ea8f2ca": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": true,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "5m"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "fillOpacity": 0,
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "47a7ddfc-fdc9-4b53-8713-8c948be2dcaa"
-                                        ],
-                                        "layerId": "f7b43736-5165-4dcb-9014-b35785844a79",
-                                        "layerType": "data",
-                                        "palette": {
-                                            "name": "default",
-                                            "type": "palette"
-                                        },
-                                        "seriesType": "line",
-                                        "splitAccessor": "644bfee1-9394-47fd-833c-3b5fecb0fa19",
-                                        "xAccessor": "cced0a45-b5b7-4daf-a7dc-f3bc0ea8f2ca",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "color": "#3185FC",
-                                                "forAccessor": "47a7ddfc-fdc9-4b53-8713-8c948be2dcaa"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "maxLines": 1,
-                                    "position": "right",
-                                    "shouldTruncate": true,
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yLeftScale": "linear",
-                                "yRightExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightScale": "linear",
-                                "yTitle": ""
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "df4aa5c0-0248-43df-8cb5-bdd3992cb3ae",
-                    "w": 23,
-                    "x": 0,
-                    "y": 19
-                },
-                "panelIndex": "df4aa5c0-0248-43df-8cb5-bdd3992cb3ae",
-                "title": "HTTP Backend 4XX Errors",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-7ec4934b-efdc-45fa-b892-64d887b29a57",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "7ec4934b-efdc-45fa-b892-64d887b29a57": {
-                                            "columnOrder": [
-                                                "cf79f5c9-e409-45de-a55b-019e989a43c0",
-                                                "0ce67984-0161-42fa-8cac-6127e5b67a5f",
-                                                "0930787f-3ce9-42ef-a954-afc4fb518e29"
-                                            ],
-                                            "columns": {
-                                                "0930787f-3ce9-42ef-a954-afc4fb518e29": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "HTTP Backend 2XX",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "number"
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.HTTPCode_Backend_2XX.sum"
-                                                },
-                                                "0ce67984-0161-42fa-8cac-6127e5b67a5f": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "0930787f-3ce9-42ef-a954-afc4fb518e29",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
-                                                },
-                                                "cf79f5c9-e409-45de-a55b-019e989a43c0": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": true,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "5m"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "fillOpacity": 0,
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "0930787f-3ce9-42ef-a954-afc4fb518e29"
-                                        ],
-                                        "layerId": "7ec4934b-efdc-45fa-b892-64d887b29a57",
-                                        "layerType": "data",
-                                        "palette": {
-                                            "name": "default",
-                                            "type": "palette"
-                                        },
-                                        "seriesType": "line",
-                                        "splitAccessor": "0ce67984-0161-42fa-8cac-6127e5b67a5f",
-                                        "xAccessor": "cf79f5c9-e409-45de-a55b-019e989a43c0",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "color": "#3185FC",
-                                                "forAccessor": "0930787f-3ce9-42ef-a954-afc4fb518e29"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "maxLines": 1,
-                                    "position": "right",
-                                    "shouldTruncate": true,
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yLeftScale": "linear",
-                                "yRightExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightScale": "linear",
-                                "yTitle": ""
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "e606fcf8-60d8-4ac3-a9a7-f97a57530fa8",
-                    "w": 25,
-                    "x": 23,
-                    "y": 19
-                },
-                "panelIndex": "e606fcf8-60d8-4ac3-a9a7-f97a57530fa8",
-                "title": "HTTP Backend 2XX",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-3835e6a5-4b6c-4fca-b784-430cff82c81f",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
-                                    "layers": {
-                                        "3835e6a5-4b6c-4fca-b784-430cff82c81f": {
-                                            "columnOrder": [
-                                                "8ea5d918-cb4f-4c4e-a0f4-88122cf1f654",
-                                                "fcefc227-bd17-41cf-aef3-911d362ba11e",
-                                                "b3f72312-f487-4391-b8e1-3cf84b992be4"
-                                            ],
-                                            "columns": {
-                                                "8ea5d918-cb4f-4c4e-a0f4-88122cf1f654": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 15 values of aws.dimensions.LoadBalancerName",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "b3f72312-f487-4391-b8e1-3cf84b992be4",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 15
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
-                                                },
-                                                "b3f72312-f487-4391-b8e1-3cf84b992be4": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": " ",
-                                                    "operationType": "sum",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.BackendConnectionErrors.sum",
-                                                    "timeScale": "s"
-                                                },
-                                                "fcefc227-bd17-41cf-aef3-911d362ba11e": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "5m"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "b3f72312-f487-4391-b8e1-3cf84b992be4"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "3835e6a5-4b6c-4fca-b784-430cff82c81f",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "splitAccessor": "8ea5d918-cb4f-4c4e-a0f4-88122cf1f654",
-                                        "xAccessor": "fcefc227-bd17-41cf-aef3-911d362ba11e"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "b4639871-f934-4424-be87-2f700346db6e",
-                    "w": 23,
-                    "x": 0,
-                    "y": 28
-                },
-                "panelIndex": "b4639871-f934-4424-be87-2f700346db6e",
-                "title": "Backend Connection Errors",
+                "panelIndex": "273f5360-4f79-4ae7-8235-2d7ca6d9a3cf",
+                "title": "Active Connection",
                 "type": "lens"
             },
             {
@@ -1414,6 +793,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "ffbfd017-33c1-4c39-b465-a6ae518b91eb": {
                                             "columnOrder": [
@@ -1425,7 +805,7 @@
                                                 "831c6cca-3fa4-4f38-9b9f-32c44673e4d6": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of aws.dimensions.LoadBalancerName",
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1446,17 +826,18 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
                                                 },
                                                 "aaa3c457-d1a2-459e-900c-0751073db3d8": {
+                                                    "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
-                                                    "label": "@timestamp",
+                                                    "label": " timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": true,
-                                                        "interval": "5m"
+                                                        "interval": "auto"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -1465,19 +846,23 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "HTTP 5XX Errors",
-                                                    "operationType": "average",
+                                                    "label": "HTTP 5XX Count",
+                                                    "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
-                                                            "id": "number"
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.HTTPCode_ELB_5XX.sum"
+                                                    "sourceField": "aws.applicationelb.metrics.HTTPCode_ELB_5XX_Count.sum"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 },
@@ -1565,14 +950,14 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "e8b3818c-9fae-47d5-b287-5c73f3973b7d",
-                    "w": 25,
-                    "x": 23,
-                    "y": 28
+                    "h": 11,
+                    "i": "83061ad9-175f-463d-b66d-ec7c548b6d6e",
+                    "w": 23,
+                    "x": 0,
+                    "y": 22
                 },
-                "panelIndex": "e8b3818c-9fae-47d5-b287-5c73f3973b7d",
-                "title": "HTTP 5XX Errors",
+                "panelIndex": "83061ad9-175f-463d-b66d-ec7c548b6d6e",
+                "title": "HTTP 5XX Count",
                 "type": "lens"
             },
             {
@@ -1581,7 +966,7 @@
                         "references": [
                             {
                                 "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-fc101dd5-461f-4eea-b126-ce0c72970d17",
+                                "name": "indexpattern-datasource-layer-f7b43736-5165-4dcb-9014-b35785844a79",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1591,48 +976,35 @@
                                 "formBased": {
                                     "currentIndexPatternId": "metrics-*",
                                     "layers": {
-                                        "fc101dd5-461f-4eea-b126-ce0c72970d17": {
+                                        "f7b43736-5165-4dcb-9014-b35785844a79": {
                                             "columnOrder": [
-                                                "fec2f89b-cc63-4fca-9896-478c00775c3c",
-                                                "d3d02ce0-3f2a-4e76-9c5a-c3486e4b02af",
-                                                "4d14e6cf-2907-4b8b-ac40-ba96125a84d1"
+                                                "cced0a45-b5b7-4daf-a7dc-f3bc0ea8f2ca",
+                                                "644bfee1-9394-47fd-833c-3b5fecb0fa19",
+                                                "47a7ddfc-fdc9-4b53-8713-8c948be2dcaa"
                                             ],
                                             "columns": {
-                                                "4d14e6cf-2907-4b8b-ac40-ba96125a84d1": {
+                                                "47a7ddfc-fdc9-4b53-8713-8c948be2dcaa": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": " Estimated ALB Active Connection Count",
-                                                    "operationType": "average",
+                                                    "label": "4XX count",
+                                                    "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "decimals": 2
+                                                                "decimals": 0
                                                             }
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "aws.elb.metrics.EstimatedALBActiveConnectionCount.avg"
+                                                    "sourceField": "aws.applicationelb.metrics.HTTPCode_ELB_4XX_Count.sum"
                                                 },
-                                                "d3d02ce0-3f2a-4e76-9c5a-c3486e4b02af": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "5m"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "fec2f89b-cc63-4fca-9896-478c00775c3c": {
+                                                "644bfee1-9394-47fd-833c-3b5fecb0fa19": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 15 values of aws.dimensions.LoadBalancerName",
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1641,7 +1013,185 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "4d14e6cf-2907-4b8b-ac40-ba96125a84d1",
+                                                            "columnId": "47a7ddfc-fdc9-4b53-8713-8c948be2dcaa",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
+                                                },
+                                                "cced0a45-b5b7-4daf-a7dc-f3bc0ea8f2ca": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "47a7ddfc-fdc9-4b53-8713-8c948be2dcaa"
+                                        ],
+                                        "layerId": "f7b43736-5165-4dcb-9014-b35785844a79",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "644bfee1-9394-47fd-833c-3b5fecb0fa19",
+                                        "xAccessor": "cced0a45-b5b7-4daf-a7dc-f3bc0ea8f2ca",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185FC",
+                                                "forAccessor": "47a7ddfc-fdc9-4b53-8713-8c948be2dcaa"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear",
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "d4b7c663-ab5d-41ec-9ee6-536df698bd39",
+                    "w": 25,
+                    "x": 23,
+                    "y": 22
+                },
+                "panelIndex": "d4b7c663-ab5d-41ec-9ee6-536df698bd39",
+                "title": "HTTP 4XX Count",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-81519aa6-22ce-42cf-ada9-9f648abac6a1",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "81519aa6-22ce-42cf-ada9-9f648abac6a1": {
+                                            "columnOrder": [
+                                                "3d5db9d2-1ced-4dc1-88ad-8c4fc7d3479b",
+                                                "0b5d15e9-afff-427d-be42-49cfec9ab25b",
+                                                "b91b2066-5d95-4804-b413-8fce629f2872"
+                                            ],
+                                            "columns": {
+                                                "0b5d15e9-afff-427d-be42-49cfec9ab25b": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "3d5db9d2-1ced-4dc1-88ad-8c4fc7d3479b": {
+                                                    "customLabel": false,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b91b2066-5d95-4804-b413-8fce629f2872",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -1649,10 +1199,30 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 15
+                                                        "secondaryFields": [],
+                                                        "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "aws.dimensions.LoadBalancerName"
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
+                                                },
+                                                "b91b2066-5d95-4804-b413-8fce629f2872": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "3XX Count",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.applicationelb.metrics.HTTPCode_ELB_3XX_Count.sum"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -1684,9 +1254,9 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "4d14e6cf-2907-4b8b-ac40-ba96125a84d1"
+                                            "b91b2066-5d95-4804-b413-8fce629f2872"
                                         ],
-                                        "collapseFn": "avg",
+                                        "collapseFn": "",
                                         "colorMapping": {
                                             "assignments": [],
                                             "colorMode": {
@@ -1705,17 +1275,17 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "fc101dd5-461f-4eea-b126-ce0c72970d17",
+                                        "layerId": "81519aa6-22ce-42cf-ada9-9f648abac6a1",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "line",
                                         "showGridlines": false,
-                                        "splitAccessor": "fec2f89b-cc63-4fca-9896-478c00775c3c",
-                                        "xAccessor": "d3d02ce0-3f2a-4e76-9c5a-c3486e4b02af",
+                                        "splitAccessor": "3d5db9d2-1ced-4dc1-88ad-8c4fc7d3479b",
+                                        "xAccessor": "0b5d15e9-afff-427d-be42-49cfec9ab25b",
                                         "yConfig": [
                                             {
                                                 "axisMode": "left",
-                                                "forAccessor": "4d14e6cf-2907-4b8b-ac40-ba96125a84d1"
+                                                "forAccessor": "b91b2066-5d95-4804-b413-8fce629f2872"
                                             }
                                         ]
                                     }
@@ -1737,24 +1307,561 @@
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 9,
-                    "i": "4593eecb-a8ea-4eef-b1ca-979a4bbb1f94",
+                    "h": 11,
+                    "i": "92731498-6561-4aa5-a9d7-d3f2b329f06a",
                     "w": 23,
                     "x": 0,
-                    "y": 37
+                    "y": 33
                 },
-                "panelIndex": "4593eecb-a8ea-4eef-b1ca-979a4bbb1f94",
-                "title": "Estimated ALB Active Connection Count",
+                "panelIndex": "92731498-6561-4aa5-a9d7-d3f2b329f06a",
+                "title": "HTTP 3XX Count",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-7690d39e-d3ab-4208-9969-d7d04191d29e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "7690d39e-d3ab-4208-9969-d7d04191d29e": {
+                                            "columnOrder": [
+                                                "b195b7c0-f9fc-4a17-8ffa-19a3f99ab967",
+                                                "3f54b8c0-28f2-4e78-9da6-4f5b0a8385f4",
+                                                "4bc190bf-5558-4fdd-bf7c-3c1eb86144f6"
+                                            ],
+                                            "columns": {
+                                                "3f54b8c0-28f2-4e78-9da6-4f5b0a8385f4": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "4bc190bf-5558-4fdd-bf7c-3c1eb86144f6",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
+                                                },
+                                                "4bc190bf-5558-4fdd-bf7c-3c1eb86144f6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Client TLS Negotiation Error Count",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.applicationelb.metrics.ClientTLSNegotiationErrorCount.sum"
+                                                },
+                                                "b195b7c0-f9fc-4a17-8ffa-19a3f99ab967": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "4bc190bf-5558-4fdd-bf7c-3c1eb86144f6"
+                                        ],
+                                        "layerId": "7690d39e-d3ab-4208-9969-d7d04191d29e",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "3f54b8c0-28f2-4e78-9da6-4f5b0a8385f4",
+                                        "xAccessor": "b195b7c0-f9fc-4a17-8ffa-19a3f99ab967",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185FC",
+                                                "forAccessor": "4bc190bf-5558-4fdd-bf7c-3c1eb86144f6"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear",
+                                "yTitle": "TLS Error Count"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "236be6bd-ab38-4b7d-865b-bd0a7efacab8",
+                    "w": 25,
+                    "x": 23,
+                    "y": 33
+                },
+                "panelIndex": "236be6bd-ab38-4b7d-865b-bd0a7efacab8",
+                "title": "Client TLS Negotiation Error",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-7ec4934b-efdc-45fa-b892-64d887b29a57",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "7ec4934b-efdc-45fa-b892-64d887b29a57": {
+                                            "columnOrder": [
+                                                "cf79f5c9-e409-45de-a55b-019e989a43c0",
+                                                "0ce67984-0161-42fa-8cac-6127e5b67a5f",
+                                                "0930787f-3ce9-42ef-a954-afc4fb518e29"
+                                            ],
+                                            "columns": {
+                                                "0930787f-3ce9-42ef-a954-afc4fb518e29": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "HTTP Redirect Count sum",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.applicationelb.metrics.HTTP_Redirect_Count.sum"
+                                                },
+                                                "0ce67984-0161-42fa-8cac-6127e5b67a5f": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of aws.dimensions.LoadBalancer",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0930787f-3ce9-42ef-a954-afc4fb518e29",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
+                                                },
+                                                "cf79f5c9-e409-45de-a55b-019e989a43c0": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
+                                        }
+                                    }
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fillOpacity": 0,
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "0930787f-3ce9-42ef-a954-afc4fb518e29"
+                                        ],
+                                        "layerId": "7ec4934b-efdc-45fa-b892-64d887b29a57",
+                                        "layerType": "data",
+                                        "palette": {
+                                            "name": "default",
+                                            "type": "palette"
+                                        },
+                                        "seriesType": "line",
+                                        "splitAccessor": "0ce67984-0161-42fa-8cac-6127e5b67a5f",
+                                        "xAccessor": "cf79f5c9-e409-45de-a55b-019e989a43c0",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#3185FC",
+                                                "forAccessor": "0930787f-3ce9-42ef-a954-afc4fb518e29"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "maxLines": 1,
+                                    "position": "right",
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightScale": "linear",
+                                "yTitle": "Number of Redirects "
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "7eed0441-1948-42f1-94d4-e55b3b8cf61e",
+                    "w": 23,
+                    "x": 0,
+                    "y": 44
+                },
+                "panelIndex": "7eed0441-1948-42f1-94d4-e55b3b8cf61e",
+                "title": "HTTP Redirects Analytics",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-8c76a5d5-6e87-42e5-a8d0-25aa359245fd",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "8c76a5d5-6e87-42e5-a8d0-25aa359245fd": {
+                                            "columnOrder": [
+                                                "97b26cb1-2adb-4b63-960b-ca5e966a6b15",
+                                                "987b5c8d-be1e-4b36-8c16-aa1fec135f6b",
+                                                "c8399bea-82cd-45b6-b378-58217eda05b4"
+                                            ],
+                                            "columns": {
+                                                "97b26cb1-2adb-4b63-960b-ca5e966a6b15": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "987b5c8d-be1e-4b36-8c16-aa1fec135f6b": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 15 values of aws.dimensions.LoadBalancer",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "c8399bea-82cd-45b6-b378-58217eda05b4",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 15
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws.dimensions.LoadBalancer"
+                                                },
+                                                "c8399bea-82cd-45b6-b378-58217eda05b4": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": " Target Response Time",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws.applicationelb.metrics.TargetResponseTime.avg"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "c8399bea-82cd-45b6-b378-58217eda05b4"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "8c76a5d5-6e87-42e5-a8d0-25aa359245fd",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "987b5c8d-be1e-4b36-8c16-aa1fec135f6b",
+                                        "xAccessor": "97b26cb1-2adb-4b63-960b-ca5e966a6b15",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "c8399bea-82cd-45b6-b378-58217eda05b4"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yTitle": "Avg Response Time"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "The time elapsed after the request leaves the load balancer until the target starts to send the response headers.",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "85d89a0c-6354-42c3-9d0d-1d21663c68e8",
+                    "w": 25,
+                    "x": 23,
+                    "y": 44
+                },
+                "panelIndex": "85d89a0c-6354-42c3-9d0d-1d21663c68e8",
+                "title": "Response Time Analytic",
                 "type": "lens"
             }
         ],
         "timeRestore": false,
-        "title": "[Metrics AWS] ELB Overview",
+        "title": "[Metrics AWS] ALB Overview",
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-07-09T09:06:50.095Z",
-    "id": "aws-77fe691d-db80-414d-acda-bfa53d19e631",
+    "created_at": "2024-07-23T10:27:18.232Z",
+    "id": "aws-24f3e07a-b5f5-470c-8305-47c9626db37b",
     "managed": false,
     "references": [
         {
@@ -1764,62 +1871,67 @@
         },
         {
             "id": "metrics-*",
-            "name": "8557212f-6209-489d-8153-60d4d9abf3e3:indexpattern-datasource-layer-95c74866-a10c-4846-99a6-d4478075f9aa",
+            "name": "71396ae1-4748-41aa-b5d3-cd660f73c09d:indexpattern-datasource-layer-95c74866-a10c-4846-99a6-d4478075f9aa",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "61ef1c18-5081-43c1-9088-8be41b915139:indexpattern-datasource-layer-b13930d5-a245-45f1-82fe-11c7685a414b",
+            "name": "5b9d82be-bfa4-40fa-8d81-da0b88f6ed26:indexpattern-datasource-layer-b13930d5-a245-45f1-82fe-11c7685a414b",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "cb0ee800-d74e-4cd2-ab38-19c08f43eb38:indexpattern-datasource-layer-9d68793b-90e0-4bc9-a029-e5310174d90a",
+            "name": "53edccdf-7a6b-41b1-8773-b5d3f8c8cbd8:indexpattern-datasource-layer-9d68793b-90e0-4bc9-a029-e5310174d90a",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "469adff0-7199-4e1a-a972-e4ecbbbea386:indexpattern-datasource-layer-d825a0ad-7b01-4867-b39d-b265fa804a77",
+            "name": "3154e8a1-71dd-42d9-a389-e68d68efb161:indexpattern-datasource-layer-d825a0ad-7b01-4867-b39d-b265fa804a77",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "1baa4fb5-a42b-4587-811b-f0ff129fd077:indexpattern-datasource-layer-7690d39e-d3ab-4208-9969-d7d04191d29e",
+            "name": "273f5360-4f79-4ae7-8235-2d7ca6d9a3cf:indexpattern-datasource-layer-9f526dfb-6d74-411e-9159-4883bd63ba72",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "569ffd9e-bf84-4734-851c-7a4db258bb1c:indexpattern-datasource-layer-18b6e056-dd9a-44d5-a2e5-d5948e17dbd5",
+            "name": "83061ad9-175f-463d-b66d-ec7c548b6d6e:indexpattern-datasource-layer-ffbfd017-33c1-4c39-b465-a6ae518b91eb",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "df4aa5c0-0248-43df-8cb5-bdd3992cb3ae:indexpattern-datasource-layer-f7b43736-5165-4dcb-9014-b35785844a79",
+            "name": "d4b7c663-ab5d-41ec-9ee6-536df698bd39:indexpattern-datasource-layer-f7b43736-5165-4dcb-9014-b35785844a79",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "e606fcf8-60d8-4ac3-a9a7-f97a57530fa8:indexpattern-datasource-layer-7ec4934b-efdc-45fa-b892-64d887b29a57",
+            "name": "92731498-6561-4aa5-a9d7-d3f2b329f06a:indexpattern-datasource-layer-81519aa6-22ce-42cf-ada9-9f648abac6a1",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "b4639871-f934-4424-be87-2f700346db6e:indexpattern-datasource-layer-3835e6a5-4b6c-4fca-b784-430cff82c81f",
+            "name": "236be6bd-ab38-4b7d-865b-bd0a7efacab8:indexpattern-datasource-layer-7690d39e-d3ab-4208-9969-d7d04191d29e",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "e8b3818c-9fae-47d5-b287-5c73f3973b7d:indexpattern-datasource-layer-ffbfd017-33c1-4c39-b465-a6ae518b91eb",
+            "name": "7eed0441-1948-42f1-94d4-e55b3b8cf61e:indexpattern-datasource-layer-7ec4934b-efdc-45fa-b892-64d887b29a57",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "4593eecb-a8ea-4eef-b1ca-979a4bbb1f94:indexpattern-datasource-layer-fc101dd5-461f-4eea-b126-ce0c72970d17",
+            "name": "85d89a0c-6354-42c3-9d0d-1d21663c68e8:indexpattern-datasource-layer-8c76a5d5-6e87-42e5-a8d0-25aa359245fd",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_ba64b5a0-b091-4544-9c97-37ee58d19e7b:optionsListDataView",
+            "name": "controlGroup_47e6800b-5ab8-4b3b-af07-5a7bcbac69bb:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "controlGroup_e757d2cf-bf31-44a0-a4ca-5a7b94465ab8:optionsListDataView",
             "type": "index-pattern"
         }
     ],
