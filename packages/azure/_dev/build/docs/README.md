@@ -129,6 +129,77 @@ If you are familiar with Kafka, here's a conceptual mapping between the two:
 | Consumer Group | Consumer Group    |
 | Offset         | Offset            |
 
+
+#### How many partitions?
+
+Creating an event hub with the correct number of partitions balances cost and performance.
+
+##### Single Agent
+
+With a single Agent deployment, increasing the number of partitions on the event hub is the primary driver in scale-up performances. The Agent creates one worker for each partition.
+
+```text
+┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+
+│                         │    │                         │
+
+│   ┌─────────────────┐   │    │   ┌─────────────────┐   │
+    │   partition 0   │◀───────────│     worker      │
+│   └─────────────────┘   │    │   └─────────────────┘   │
+    ┌─────────────────┐            ┌─────────────────┐
+│   │   partition 1   │◀──┼────┼───│     worker      │   │
+    └─────────────────┘            └─────────────────┘
+│   ┌─────────────────┐   │    │   ┌─────────────────┐   │
+    │   partition 2   │◀────────── │     worker      │
+│   └─────────────────┘   │    │   └─────────────────┘   │
+    ┌─────────────────┐            ┌─────────────────┐
+│   │   partition 3   │◀──┼────┼───│     worker      │   │
+    └─────────────────┘            └─────────────────┘
+│                         │    │                         │
+
+│                         │    │                         │
+
+└ Event Hub ─ ─ ─ ─ ─ ─ ─ ┘    └ Agent ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+```
+
+
+##### Two or more Agents
+
+With more than one Agent, setting the number of partitions is critical. Using the shared storage account, the agents share the existing partitions equally to scale out performance and high availability.
+
+```text
+┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+
+│                         │    │   ┌─────────────────┐   │
+                            ┌──────│     worker      │
+│   ┌─────────────────┐   │ │  │   └─────────────────┘   │
+    │   partition 0   │◀────┘      ┌─────────────────┐
+│   └─────────────────┘   │ ┌──┼───│     worker      │   │
+    ┌─────────────────┐     │      └─────────────────┘
+│   │   partition 1   │◀──┼─┘  │                         │
+    └─────────────────┘         ─Agent─ ─ ─ ─ ─ ─ ─ ─ ─ ─
+│   ┌─────────────────┐   │    ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+    │   partition 2   │◀────┐
+│   └─────────────────┘   │ │  │  ┌─────────────────┐    │
+    ┌─────────────────┐     └─────│     worker      │
+│   │   partition 3   │◀──┼─┐  │  └─────────────────┘    │
+    └─────────────────┘     │     ┌─────────────────┐
+│                         │ └──┼──│     worker      │    │
+                                  └─────────────────┘
+│                         │    │                         │
+
+└ Event Hub ─ ─ ─ ─ ─ ─ ─ ┘    └ Agent ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+```
+
+
+##### Recommendations
+
+Create an event hub with at least two partitions. Two partitions allow low-volume deployment to support high availability with two agents. Please consider creating four partitions to handle medium-volume deployments with higher availability.
+
+To learn more about Event Hub partitions, you can read an in-depth guide from Microsoft at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create.
+
+To learn more about Event Hub partition from the performance perspective, you can read the scalability-focused document at https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-scalability#partitions.
+
 #### How many event hubs?
 
 Elastic strongly recommends creating one event hub for each Azure service you collect data from.
